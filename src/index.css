@@ -1,0 +1,40 @@
+/* Global styles for Leads Nearby (Vite + React)
+   - Ensures the background image sits behind every page
+   - Works on mobile (avoids iOS background-attachment issues)
+*/
+
+html, body, #root {
+  height: 100%;
+}
+
+/* Base body styling (text color mostly controlled by component classes) */
+body {
+  margin: 0;
+  color: #fff; /* safe default; components also set text colors */
+  background: #0a0f14; /* fallback color while image loads */
+}
+
+/* Fixed pseudo-element so the image stays put and covers the viewport */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: url("/background.png") center / cover no-repeat;
+  opacity: 0.35;                 /* adjust to taste */
+  filter: saturate(0.95) contrast(1.05);
+  z-index: -1;                   /* ensures it's behind the app */
+}
+
+/* Optional translucent panels for readability on top of the image */
+.panel {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+/* Utility for faint section separators over photo backgrounds */
+.divider {
+  border-color: rgba(255, 255, 255, 0.08);
+}

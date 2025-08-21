@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Location Enrichment Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="assets/logo.png" />
+
+  <!-- Leaflet + PapaParse -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+
+  <style>
+    :root{
+      --primary:#2563eb;--secondary:#10b981;--accent:#f59e0b;--danger:#ef4444;
+      --bg:#f8fafc;--surface:#fff;--border:#e2e8f0;--text:#1e293b;--text-muted:#64748b;
+      --shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);--shadow-lg:0 10px 15px -3px rgb(0 0 0 / 0.1);
+      --gradient:linear-gradient(135deg,#667eea 0%,#764ba2 100%);--logo-size:200px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text);background:var(--bg);line-height:1.6}
+
+    /* Views */
+    body.view-map #mainContent{display:none}
+    body.view-map #map, body.view-map #sidebar-map{display:block}
+    body.view-config{display:block;min-height:100vh;background:linear-gradient(135deg,#667eea22 0%,#764ba244 100%)}
+    body.view-map{display:grid;grid-template-columns:400px 1fr;grid-template-rows:auto 1fr;grid-template-areas:"controls controls" "sidebar map";height:100vh}
+    body.view-config #map,body.view-config #sidebar-map{display:none}
+
+    /* Header */
+    .header{background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow);padding:1rem 2rem;position:sticky;top:0;z-index:100;grid-area:controls}
+    .header-content{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap}
+    .logo-section{display:flex;align-items:center;gap:.75rem;min-width:200px}
+    .brand-logo{height:var(--logo-size);width:auto;object-fit:contain;display:block}
+    .brand-text{display:flex;flex-direction:column}
+    .brand-name{font-size:1.25rem;font-weight:700;color:var(--primary);margin:0}
+    .brand-tagline{font-size:.75rem;color:var(--text-muted);margin:0}
+    .search-section{flex:1;min-width:300px;max-width:650px}
+    .search-input{width:100%;padding:.875rem 1rem;border:2px solid var(--border);border-radius:12px;font-size:1rem;background:var(--surface);transition:.2s}
+    .search-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgb(37 99 235 / .1)}
+    .action-buttons{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+    .btn{padding:.875rem 1.5rem;border:none;border-radius:10px;font-weight:600;font-size:.875rem;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap}
+    .btn-primary{background:var(--primary);color:#fff;box-shadow:var(--shadow)}
+    .btn-primary:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+    .btn-secondary{background:var(--surface);color:var(--text);border:2px solid var(--border)}
+    .btn-secondary:hover{background:var(--bg);border-color:var(--primary)}
+    .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .form-control{padding:.75rem 1rem;border:1px solid var(--border);border-radius:8px;font-size:.875rem;background:var(--surface);transition:.2s}
+    .form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgb(37 99 235 / .1)}
+
+    .main-container{max-width:1400px;margin:0 auto;padding:1.25rem 2rem}
+
+    /* Hero */
+    .hero{text-align:center;padding:1.5rem;background:var(--surface);border-radius:16px;margin-bottom:1.25rem;box-shadow:var(--shadow-lg);background:linear-gradient(135deg,var(--surface) 0%,#f1f5f9 100%)}
+    .hero h1{font-size:1.9rem;font-weight:800;margin:0;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero-subtitle{font-size:.95rem;color:var(--text-muted);margin:.35rem 0 0 0}
+
+    .config-grid{display:grid;grid-template-columns:1fr;gap:1rem;margin-top:1rem}
+
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);transition:.2s}
+    .card:hover{box-shadow:var(--shadow-lg)}
+    .card-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--surface) 0%,#f8fafc 100%)}
+    .card-title{font-size:1.1rem;font-weight:700;margin:0;color:var(--text);display:flex;align-items:center;gap:.75rem}
+    .card-subtitle{font-size:.875rem;color:var(--text-muted);margin:.35rem 0 0 0}
+    .card-body{padding:1.25rem}
+
+    /* Enrichment groups (collapsible) */
+    .group{margin:1rem 0 .75rem}
+    details.group-details{border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);margin:.5rem 0}
+    details.group-details[open]{box-shadow:var(--shadow-lg)}
+    details.group-details summary{list-style:none;cursor:pointer;padding:.75rem 1rem;font-weight:700;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--border)}
+    details.group-details summary::marker{display:none}
+    .pill-container{display:flex;flex-wrap:wrap;gap:.5rem;padding:1rem}
+    .pill{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--bg);border:1px solid var(--border);border-radius:999px;font-size:.875rem;cursor:pointer;transition:.2s}
+    .pill:has(input:checked){background:var(--primary);color:#fff;border-color:var(--primary)}
+    .pill:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .pill input[type="checkbox"]{margin:0}
+
+    /* Progress */
+    .progress-container{margin:1rem 0}
+    .progress-bar{width:100%;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+    .progress-fill{height:100%;background:var(--primary);transition:width .3s;border-radius:4px}
+
+    /* Map + sidebar */
+    #sidebar-map{grid-area:sidebar;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:1.5rem}
+    #map{grid-area:map;width:100%;height:100%}
+    .leaflet-container{background:#f8fafc}
+
+    /* Basemap (map-only) */
+    .basemap-ctl{background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:.4rem}
+    .basemap-ctl select{border:1px solid var(--border);border-radius:8px;padding:.35rem .5rem;font-size:.85rem}
+
+    /* Run panel */
+    #runPanel{position:fixed;right:16px;bottom:16px;display:none;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);min-width:260px}
+    #runPanel header{display:flex;justify-content:space-between;align-items:center;padding:.6rem .75rem;border-bottom:1px solid var(--border)}
+    #runPanel .body{padding:.75rem}
+    .spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Results (single lookup) */
+    .overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem}
+    .kv{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.6rem .75rem}
+    .kv .k{font-weight:700}
+    .kv .v{color:var(--text)}
+
+    /* Floating CSV button */
+    #mapDownloadBtn{position:fixed;right:16px;bottom:88px;z-index:160;display:none;text-decoration:none}
+
+    @media (max-width:1024px){
+      body.view-map{grid-template-columns:1fr;grid-template-areas:"controls" "map" "sidebar"}
+      #sidebar-map{border-right:none;border-top:1px solid var(--border);max-height:300px}
+      #mapDownloadBtn{right:12px;bottom:96px}
+    }
+    @media (max-width:768px){
+      .header-content{flex-direction:column;gap:1rem}
+      .search-section{width:100%}
+      .action-buttons{width:100%;justify-content:center}
+    }
+  </style>
+</head>
+
+<body class="view-config">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo-section">
+        <a href="https://locationmart.com" target="_blank" rel="noopener" aria-label="LocationMart (opens in new tab)">
+          <img src="assets/logo.png" alt="LocationMart" class="brand-logo" />
+        </a>
+        <div class="brand-text">
+          <h1 class="brand-name">EnrichMyLocation</h1>
+          <p class="brand-tagline">Professional Geocoding &amp; Enrichment</p>
+        </div>
+      </div>
+
+      <div class="search-section">
+        <input id="searchInput" type="text" class="search-input" placeholder="Enter address (e.g., 123 Main St, Boston, MA)" />
+      </div>
+
+      <div class="action-buttons">
+        <button id="searchBtn" class="btn btn-primary">🔍 Search &amp; Enrich</button>
+        <button id="overviewBtn" class="btn btn-secondary">ℹ️ Features</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main id="mainContent" class="main-container">
+    <section class="hero">
+      <h1>Advanced Location Intelligence</h1>
+      <p class="hero-subtitle">Fast geocoding + deep enrichment (demographics, hazards, proximity, environment). Single address or batch CSV.</p>
+  
+    </section>
+
+    <!-- Unified Batch + Enrichment form -->
+    <div class="config-grid">
+      <div class="card" style="grid-column:1 / -1;">
+        <div class="card-header">
+          <h3 class="card-title">📁 Batch Geocoding &amp; Enrichment</h3>
+          <p class="card-subtitle">Upload, map fields, pick enrichment (collapse/expand), and process.</p>
+        </div>
+        <div class="card-body">
+
+          <!-- Enrichment (top-level still collapsible) -->
+          <details id="enrichmentDetails" open>
+            <summary class="card-title" style="cursor:pointer;display:flex;align-items:center;gap:.5rem;">⚙️ Enrichment Options</summary>
+            <p class="card-subtitle" style="margin:.35rem 0 1rem 0;">Select data to include (single search uses selected options).</p>
+            <div id="enrichmentGroups"></div>
+            <hr style="margin:1rem 0;border-color:var(--border)"/>
+          </details>
+
+          <!-- File -->
+          <div class="form-group">
+            <label class="form-label">Select CSV File</label>
+            <input type="file" id="fileInput" accept=".csv" class="form-control" />
+          </div>
+
+          <!-- Field mapping -->
+          <div id="fieldMapping" class="field-mapping" style="display:none;">
+            <h4 style="margin:0 0 1rem 0;">📋 Address Field Mapping</h4>
+
+            <div class="mapping-section">
+              <div class="mapping-title"><span>🎯 Option A: Single Address Column</span></div>
+              <div class="field-selector" id="singleAddressFields"></div>
+            </div>
+
+            <div class="mapping-section">
+              <div class="mapping-title"><span>🏗️ Option B: Multiple Address Components</span></div>
+              <div style="display:grid;gap:1rem;">
+                <div>
+                  <label class="form-label">Street Address:</label>
+                  <div class="field-selector" id="streetFields"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                  <div><label class="form-label">City:</label><div class="field-selector" id="cityFields"></div></div>
+                  <div><label class="form-label">State:</label><div class="field-selector" id="stateFields"></div></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                  <div><label class="form-label">ZIP Code:</label><div class="field-selector" id="zipFields"></div></div>
+                  <div><label class="form-label">Country:</label><div class="field-selector" id="countryFields"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mapping-section">
+              <div class="mapping-title"><span>👁️ Address Preview</span></div>
+              <div class="build-preview"><strong>Sample built address:</strong>
+                <div id="addressPreview" style="margin-top:.5rem;color:var(--primary);">Select fields above to see preview</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Run controls -->
+          <div class="form-row" style="margin-top:1rem;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Processing Speed (requests/sec)</label>
+              <input id="rpsInput" type="number" class="form-control" min="0.2" max="5" step="0.2" value="1" style="width:120px;" />
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Row Limit (optional)</label>
+              <input id="rowLimit" type="number" class="form-control" min="1" placeholder="All rows" style="width:120px;" />
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top:1rem;gap:1rem;">
+            <button id="startBatch" class="btn btn-primary" disabled>🚀 Start Batch Processing</button>
+            <button id="cancelBatch" class="btn btn-secondary" disabled>⏹️ Cancel</button>
+          </div>
+
+          <div id="batchProgress" class="progress-container" style="display:none;">
+            <div class="progress-bar"><div id="progressFill" class="progress-fill" style="width:0%;"></div></div>
+            <p id="progressText" style="margin:.5rem 0 0;color:var(--text-muted);font-size:.875rem;">Ready…</p>
+          </div>
+
+          <div id="downloadSection" style="display:none;margin-top:1rem;">
+            <a id="downloadCsv" class="btn btn-primary" download="enriched_results.csv">💾 Download Enriched Results</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Map View -->
+  <div id="sidebar-map" style="display:none;">
+    <div class="card">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:.75rem;">
+        <h3 class="card-title">📍 Location Details</h3>
+        <button id="backToConfig" class="btn btn-secondary" style="padding:.5rem 1rem;">← Back to Config</button>
+      </div>
+      <div class="card-body">
+        <div id="locationOverview"><p style="color:var(--text-muted);">Search for an address to see enrichment data here.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+  <a id="mapDownloadBtn" class="btn btn-primary" download="enriched_results.csv" href="#">💾 Download CSV</a>
+
+  <!-- Compact Run Panel -->
+  <div id="runPanel" role="status" aria-live="polite">
+    <header><strong>Run Status</strong><button id="closeRunPanel" class="btn btn-secondary" style="padding:.3rem .6rem;">Hide</button></header>
+    <div class="body"><div style="display:flex;align-items:center;gap:.5rem;"><span class="spinner"></span><span id="runText">Working…</span></div></div>
+  </div>
+
+  <!-- Feature Modal -->
+  <div id="featureModal" class="modal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:1000;">
+    <div class="modal-content">
+      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <h2 style="margin:0;">🌟 Platform Features</h2>
+        <button id="closeModal" class="btn btn-secondary">✕</button>
+      </div>
+      <div class="card-body">
+        <h3>🎯 Multi-Source Geocoding</h3>
+        <ul><li>OpenStreetMap Nominatim</li><li>US Census Geocoder (fallback)</li></ul>
+        <h3>📊 Enrichment & Proximity</h3>
+        <ul>
+          <li>Environmental, Demographics, Hazards</li>
+          <li>Community, Retail, Health, Power &amp; Infrastructure, Transportation, Recreation, Quirky/Fun</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== App Script ===== -->
+  <script>
+  (async () => {
+    /* ---------- Boot ---------- */
+    async function ensureLeaflet(){ if(window.L) return;
+      await new Promise((resolve,reject)=>{ const s=document.createElement('script'); s.src='https://unpkg.com/leaflet/dist/leaflet.js';
+        s.onload=resolve; s.onerror=()=>reject(new Error('Leaflet load failed')); document.head.appendChild(s); });
+      if(![...document.styleSheets].some(ss=>(ss.href||'').includes('leaflet.css'))){
+        const l=document.createElement('link'); l.rel='stylesheet'; l.href='https://unpkg.com/leaflet/dist/leaflet.css'; document.head.appendChild(l);
+      }
+    }
+    await new Promise(r => (document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', r, {once:true}) : r()));
+    await ensureLeaflet();
+
+    const $ = (sel)=>document.querySelector(sel);
+
+    /* ---------- CORS helpers ---------- */
+    // When you open this file via file:// origin is "null" and many endpoints block it.
+    // These helpers retry through permissive proxies so the demo "just works".
+    const USE_CORS_PROXY = true; // set false if you serve over http://localhost
+    const CORS_PROXIES = [
+      { type:"prefix", value:"https://cors.isomorphic-git.org/" },
+      { type:"wrap",   value:"https://api.allorigins.win/raw?url=" }
+    ];
+    function proxied(url, which=0){
+      const p=CORS_PROXIES[which];
+      if(!p) return url;
+      return p.type==="prefix" ? (p.value+url) : (p.value+encodeURIComponent(url));
+    }
+    async function fetchJSONSmart(url, opts={}, retries=1, backoff=500){
+      // try direct first (unless forced)
+      const attempts = USE_CORS_PROXY ? [url, proxied(url,0), proxied(url,1)] : [url, proxied(url,0), proxied(url,1)];
+      let err;
+      for(let i=0;i<attempts.length;i++){
+        try{
+          const res = await fetch(attempts[i], { ...opts, headers:{ "Accept":"application/json", ...(opts.headers||{}) }});
+          if(!res.ok) throw new Error(`HTTP ${res.status}`);
+          // Some proxies return text/plain
+          const ct = res.headers.get("content-type") || "";
+          const body = ct.includes("application/json") ? await res.json() : JSON.parse(await res.text());
+          return body;
+        }catch(e){ err=e; if(i<attempts.length-1) await new Promise(r=>setTimeout(r, backoff)); }
+      }
+      throw err || new Error("fetchJSONSmart failed");
+    }
+    async function fetchTEXTSmart(url, retries=1, backoff=500){
+      const attempts = USE_CORS_PROXY ? [url, proxied(url,0), proxied(url,1)] : [url, proxied(url,0), proxied(url,1)];
+      let err;
+      for(let i=0;i<attempts.length;i++){
+        try{
+          const res = await fetch(attempts[i]);
+          if(!res.ok) throw new Error(`HTTP ${res.status}`);
+          return await res.text();
+        }catch(e){ err=e; if(i<attempts.length-1) await new Promise(r=>setTimeout(r, backoff)); }
+      }
+      throw err || new Error("fetchTEXTSmart failed");
+    }
+
+    /* ---------- Basemaps ---------- */
+    const MAPTILER_BASEMAPS = {
+      streets:'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
+      satellite:'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=Ts9pNkQtWsmoz4BHQIxF',
+      topo:'https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF'
+    };
+
+    /* ---------- External proximity constants ---------- */
+    const OPENCELLID_KEY = ""; // optional; add key to enable
+    const OPENEI_PLANTS_URL = "https://data.openei.org/api/views/f9yf-3pn4/rows.geojson"; // fetched via proxy
+    // Replaced PowerGenome (404) with WRI Global Power Plant Database (CORS OK via raw.githubusercontent)
+    const GPPD_CSV = "https://raw.githubusercontent.com/wri/global-power-plant-database/master/output_database/global_power_plant_database.csv";
+    /* MD substation layer removed */
+    const EPA_FRS_ARCGIS = "https://services.arcgis.com/cJ9YHowT8TU7DUyn/arcgis/rest/services/FRS_INTERESTS/FeatureServer/0/query";
+    const FEMA_NFHL_LAYER28 = "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query"; // often CORS-blocked → proxy
+    const USGS_VOLCANO_GEOJSON = "https://volcanoes.usgs.gov/vsc/api/volcanoApi/geojson";
+    const OVERPASS = "https://overpass-api.de/api/interpreter";
+    const ECHO_BASE = ""; // optional proxy for EPA ECHO
+
+    // USGS The National Map - Transportation MapServer
+    const TNM_TRANSPORT = "https://carto.nationalmap.gov/arcgis/rest/services/transportation/MapServer";
+    const TNM = { airports:27, ferries_tunnels:34, roads_4wd:35, trails:37, railroads:38 };
+
+    // USGS The National Map - Structures MapServer (for Recreation)
+    const TNM_STRUCTURES = "https://carto.nationalmap.gov/arcgis/rest/services/structures/MapServer";
+    const TNM_STRUCT = { trailheads:61, picnic:64, visitor_centers:66, ranger_stations:67 };
+
+    /* ---------- OSM filter helpers ---------- */
+    function buildFilterStrings(def){
+      const out=[]; (def||[]).forEach(part=> (part.values||[]).forEach(v=> out.push(`${part.k}=${v}`)));
+      return out;
+    }
+
+    /* ---------- Enrichments + Groups ---------- */
+    const ENRICHMENTS = [
+      // Core
+      { id:"elev", label:"Elevation (Open-Meteo)", isPOI:false },
+      { id:"airq", label:"Air Quality: PM2.5 (Open-Meteo)", isPOI:false },
+      { id:"fips", label:"Census ID: State/County/Tract (FCC/Census)", isPOI:false },
+      { id:"acs",  label:"ACS Demographics (tract)", isPOI:false },
+      { id:"nws_alerts", label:"NWS Weather Alerts (at point)", isPOI:false },
+
+      // OSM community
+      { id:"poi_schools",   label:"Schools (OSM)",   isPOI:true, defaultMiles:5 },
+      { id:"poi_hospitals", label:"Hospitals (OSM)", isPOI:true, defaultMiles:5 },
+      { id:"poi_parks",     label:"Parks (OSM)",     isPOI:true, defaultMiles:5 },
+
+      // Hazards & environment
+      { id:"poi_eq",              label:"Earthquakes (USGS, last 30d, M≥2.5)", isPOI:true,  defaultMiles:100 },
+      { id:"poi_fema_floodzones", label:"FEMA Flood Hazard Zones",            isPOI:true,  defaultMiles:2 },
+      { id:"poi_usgs_volcano",    label:"USGS Volcanoes",                     isPOI:true,  defaultMiles:100 },
+      { id:"poi_usgs_streamgages",label:"USGS Streamgages (NWIS)",            isPOI:true,  defaultMiles:15 },
+      { id:"poi_epa_frs",         label:"EPA Facility Registry (FRS)",        isPOI:true,  defaultMiles:3 },
+      { id:"poi_echo",            label:"EPA ECHO Facilities",                isPOI:true,  defaultMiles:5 },
+
+      // Power & infrastructure
+      { id:"poi_power_plants_openei",      label:"Power Plants (OpenEI)",          isPOI:true, defaultMiles:25 },
+      { id:"poi_power_plants_powergenome", label:"Power Plants (GPPD)",            isPOI:true, defaultMiles:25 }, /* uses WRI GPPD under the hood */
+      { id:"poi_grid_opengridmap",         label:"Electric Grid (OpenGridMap/OSM)",isPOI:true, defaultMiles:15 },
+      { id:"poi_substations",              label:"Power Substations (OSM)",        isPOI:true, defaultMiles:6 },
+      { id:"poi_cell_towers",              label:"Cell Towers (OpenCellID)*",      isPOI:true, defaultMiles:3 },
+
+      /* ---- Retail / Food / Services (OSM) ---- */
+      { id:"poi_grocery", label:"Grocery", isPOI:true, defaultMiles:3 },
+      { id:"poi_banks", label:"Banks & ATMs", isPOI:true, defaultMiles:3 },
+      { id:"poi_restaurants", label:"Restaurants", isPOI:true, defaultMiles:3 },
+      { id:"poi_fast_food", label:"Fast Food", isPOI:true, defaultMiles:3 },
+      { id:"poi_cafes_drinks", label:"Cafés & Drinks", isPOI:true, defaultMiles:3 },
+      { id:"poi_salons", label:"Salons", isPOI:true, defaultMiles:3 },
+      { id:"poi_convenience", label:"Convenience Stores", isPOI:true, defaultMiles:3 },
+      { id:"poi_pharmacies", label:"Pharmacies", isPOI:true, defaultMiles:3 },
+      { id:"poi_hardware", label:"Hardware Stores", isPOI:true, defaultMiles:3 },
+      { id:"poi_home_improvement", label:"Home Improvement", isPOI:true, defaultMiles:5 },
+      { id:"poi_liquor", label:"Beer/Wine/Liquor", isPOI:true, defaultMiles:3 },
+      { id:"poi_bakeries", label:"Bakeries (Retail)", isPOI:true, defaultMiles:3 },
+      { id:"poi_butchers", label:"Butchers/Meat Markets", isPOI:true, defaultMiles:3 },
+      { id:"poi_seafood", label:"Seafood Markets", isPOI:true, defaultMiles:3 },
+      { id:"poi_sporting_goods", label:"Sporting Goods", isPOI:true, defaultMiles:3 },
+      { id:"poi_bookstores", label:"Bookstores", isPOI:true, defaultMiles:3 },
+      { id:"poi_clothing", label:"Clothing Stores", isPOI:true, defaultMiles:3 },
+      { id:"poi_shoes", label:"Shoe Stores", isPOI:true, defaultMiles:3 },
+      { id:"poi_thrift", label:"Thrift/Second-Hand", isPOI:true, defaultMiles:3 },
+      { id:"poi_pet_supplies", label:"Pet Supplies", isPOI:true, defaultMiles:3 },
+      { id:"poi_florists", label:"Florists", isPOI:true, defaultMiles:3 },
+      { id:"poi_variety", label:"Variety/Dollar Stores", isPOI:true, defaultMiles:3 },
+
+      // Auto
+      { id:"poi_gas", label:"Gas Stations", isPOI:true, defaultMiles:3 },
+      { id:"poi_car_wash", label:"Car Washes", isPOI:true, defaultMiles:3 },
+      { id:"poi_auto_repair", label:"Auto Repair", isPOI:true, defaultMiles:3 },
+      { id:"poi_auto_parts", label:"Auto Parts", isPOI:true, defaultMiles:3 },
+      { id:"poi_auto_dealers", label:"Auto Dealers", isPOI:true, defaultMiles:5 },
+
+      // Health
+      { id:"poi_dentists", label:"Dentists", isPOI:true, defaultMiles:3 },
+      { id:"poi_doctors_clinics", label:"Doctors & Clinics", isPOI:true, defaultMiles:3 },
+      { id:"poi_chiropractors", label:"Chiropractors", isPOI:true, defaultMiles:3 },
+      { id:"poi_optometry_opticians", label:"Optometrists/Opticians", isPOI:true, defaultMiles:3 },
+      { id:"poi_veterinary", label:"Veterinary Services", isPOI:true, defaultMiles:3 },
+
+      // Personal services
+      { id:"poi_barbers", label:"Barber Shops", isPOI:true, defaultMiles:3 },
+      { id:"poi_nail_salons", label:"Nail Salons", isPOI:true, defaultMiles:3 },
+      { id:"poi_dry_cleaning", label:"Dry Cleaning", isPOI:true, defaultMiles:3 },
+      { id:"poi_laundromats", label:"Laundromats", isPOI:true, defaultMiles:3 },
+
+      // Fitness & Leisure / Entertainment
+      { id:"poi_gyms", label:"Gyms & Fitness", isPOI:true, defaultMiles:3 },
+      { id:"poi_bowling", label:"Bowling", isPOI:true, defaultMiles:5 },
+      { id:"poi_arcades", label:"Amusement Arcades", isPOI:true, defaultMiles:5 },
+      { id:"poi_cinemas", label:"Cinemas", isPOI:true, defaultMiles:5 },
+      { id:"poi_theatres", label:"Theatres", isPOI:true, defaultMiles:5 },
+
+      // Lodging & Travel
+      { id:"poi_hotels", label:"Hotels & Motels", isPOI:true, defaultMiles:5 },
+      { id:"poi_rv_parks", label:"RV Parks", isPOI:true, defaultMiles:10 },
+      { id:"poi_campgrounds", label:"Campgrounds", isPOI:true, defaultMiles:10 },
+
+      // Nightlife
+      { id:"poi_bars_pubs", label:"Bars & Pubs", isPOI:true, defaultMiles:3 },
+      { id:"poi_caterers", label:"Caterers", isPOI:true, defaultMiles:5 },
+      { id:"poi_nightclubs", label:"Nightclubs", isPOI:true, defaultMiles:5 },
+
+      // Education & Childcare
+      { id:"poi_colleges", label:"Colleges/Universities", isPOI:true, defaultMiles:8 },
+      { id:"poi_childcare", label:"Childcare/Daycare", isPOI:true, defaultMiles:3 },
+
+      // Professional & Finance
+      { id:"poi_accountants", label:"Accountants/CPAs", isPOI:true, defaultMiles:5 },
+      { id:"poi_lawyers", label:"Lawyers", isPOI:true, defaultMiles:5 },
+      { id:"poi_insurance", label:"Insurance Agencies", isPOI:true, defaultMiles:5 },
+      { id:"poi_real_estate", label:"Real Estate Agents", isPOI:true, defaultMiles:5 },
+
+      // Post/Parcel & Civic
+      { id:"poi_post_offices", label:"Post Offices", isPOI:true, defaultMiles:5 },
+      { id:"poi_parcel_lockers", label:"Parcel Lockers/Boxes", isPOI:true, defaultMiles:5 },
+      { id:"poi_worship", label:"Places of Worship", isPOI:true, defaultMiles:5 },
+      { id:"poi_community_centres", label:"Community Centres", isPOI:true, defaultMiles:5 },
+      { id:"poi_town_halls", label:"Town Halls", isPOI:true, defaultMiles:8 },
+      { id:"poi_courthouses", label:"Courthouses", isPOI:true, defaultMiles:8 },
+
+      // Transportation (TNM + OSM combo where appropriate)
+      { id:"poi_tnm_airports", label:"Airports (USGS TNM + OSM)", isPOI:true, defaultMiles:10 },
+      { id:"poi_tnm_ferries_tunnels", label:"Ferries & Tunnels (USGS TNM + OSM)", isPOI:true, defaultMiles:15 },
+      { id:"poi_tnm_4wd_roads", label:"4WD Roads (USGS TNM)", isPOI:true, defaultMiles:15 },
+      { id:"poi_tnm_trails", label:"Trails (USGS TNM + OSM)", isPOI:true, defaultMiles:10 },
+      { id:"poi_tnm_railroads", label:"Railroads (USGS TNM + OSM)", isPOI:true, defaultMiles:15 },
+
+      // Recreation (TNM Structures only)
+      { id:"poi_tnm_trailheads",       label:"Trailheads (USGS TNM)",      isPOI:true, defaultMiles:10 },
+      { id:"poi_tnm_picnic_areas",     label:"Picnic Areas (USGS TNM)",    isPOI:true, defaultMiles:10 },
+      { id:"poi_tnm_visitor_centers",  label:"Visitor Centers (USGS TNM)", isPOI:true, defaultMiles:10 },
+      { id:"poi_tnm_ranger_stations",  label:"Ranger Stations (USGS TNM)", isPOI:true, defaultMiles:10 },
+
+      // Quirky / Fun
+      { id:"poi_breweries",  label:"Breweries (OpenBreweryDB)", isPOI:true, defaultMiles:10 },
+      { id:"poi_wikipedia",  label:"Wikipedia Curiosities",      isPOI:true, defaultMiles:3 }
+    ];
+
+    const ENRICHMENT_GROUPS = [
+      { title:"Core Attributes", ids:["elev","airq","fips","acs","nws_alerts"] },
+      { title:"Community POIs",  ids:["poi_schools","poi_hospitals","poi_parks"] },
+      { title:"Retail", ids:["poi_grocery","poi_convenience","poi_pharmacies","poi_hardware","poi_home_improvement","poi_liquor","poi_bakeries","poi_butchers","poi_seafood","poi_sporting_goods","poi_bookstores","poi_clothing","poi_shoes","poi_thrift","poi_pet_supplies","poi_florists","poi_variety"]},
+      { title:"Food & Drink", ids:["poi_restaurants","poi_fast_food","poi_cafes_drinks","poi_bars_pubs","poi_caterers","poi_nightclubs"] },
+      { title:"Auto", ids:["poi_gas","poi_car_wash","poi_auto_repair","poi_auto_parts","poi_auto_dealers"] },
+      { title:"Health & Medical", ids:["poi_dentists","poi_doctors_clinics","poi_chiropractors","poi_optometry_opticians","poi_veterinary","poi_hospitals"] },
+      { title:"Personal Services", ids:["poi_salons","poi_barbers","poi_nail_salons","poi_dry_cleaning","poi_laundromats"] },
+      { title:"Fitness & Leisure / Entertainment", ids:["poi_gyms","poi_bowling","poi_arcades","poi_cinemas","poi_theatres"] },
+      { title:"Lodging & Travel", ids:["poi_hotels","poi_rv_parks","poi_campgrounds"] },
+      { title:"Education & Childcare", ids:["poi_schools","poi_colleges","poi_childcare"] },
+      { title:"Professional & Finance", ids:["poi_banks","poi_accountants","poi_lawyers","poi_insurance","poi_real_estate"] },
+      { title:"Post/Parcel & Civic", ids:["poi_post_offices","poi_parcel_lockers","poi_worship","poi_community_centres","poi_town_halls","poi_courthouses"] },
+      { title:"Hazards & Environment", ids:["poi_eq","poi_fema_floodzones","poi_usgs_volcano","poi_usgs_streamgages","poi_epa_frs","poi_echo"] },
+      { title:"Power & Infrastructure", ids:["poi_power_plants_openei","poi_power_plants_powergenome","poi_grid_opengridmap","poi_substations","poi_cell_towers"] },
+      { title:"Transportation", ids:["poi_tnm_airports","poi_tnm_ferries_tunnels","poi_tnm_4wd_roads","poi_tnm_trails","poi_tnm_railroads"] },
+      { title:"Recreation", ids:["poi_tnm_trailheads","poi_tnm_picnic_areas","poi_tnm_visitor_centers","poi_tnm_ranger_stations"] },
+      { title:"Quirky / Fun", ids:["poi_breweries","poi_wikipedia"] }
+    ];
+
+    // OSM filters (subset shown; extended with transportation)
+    const OSM_POI_DEFS = {
+      poi_schools:[{k:"amenity",values:["school"]}],
+      poi_hospitals:[{k:"amenity",values:["hospital"]}],
+      poi_parks:[{k:"leisure",values:["park"]}],
+      // Power (OSM)
+      poi_substations:[{k:"power",values:["substation"]}],
+      // Food/Retail/Services...
+      poi_grocery:[{k:"shop",values:["supermarket","greengrocer"]}],
+      poi_banks:[{k:"amenity",values:["bank","atm"]}],
+      poi_restaurants:[{k:"amenity",values:["restaurant"]}],
+      poi_fast_food:[{k:"amenity",values:["fast_food"]}],
+      poi_cafes_drinks:[{k:"amenity",values:["cafe","ice_cream","bubble_tea","juice_bar"]}],
+      poi_salons:[{k:"shop",values:["hairdresser","beauty"]}],
+      poi_convenience:[{k:"shop",values:["convenience"]}],
+      poi_pharmacies:[{k:"amenity",values:["pharmacy"]}],
+      poi_hardware:[{k:"shop",values:["hardware"]}],
+      poi_home_improvement:[{k:"shop",values:["doityourself"]}],
+      poi_liquor:[{k:"shop",values:["alcohol","beverages"]}],
+      poi_bakeries:[{k:"shop",values:["bakery"]}],
+      poi_butchers:[{k:"shop",values:["butcher"]}],
+      poi_seafood:[{k:"shop",values:["seafood"]}],
+      poi_sporting_goods:[{k:"shop",values:["sports"]}],
+      poi_bookstores:[{k:"shop",values:["books"]}],
+      poi_clothing:[{k:"shop",values:["clothes"]}],
+      poi_shoes:[{k:"shop",values:["shoes"]}],
+      poi_thrift:[{k:"shop",values:["second_hand","charity"]}],
+      poi_pet_supplies:[{k:"shop",values:["pet"]}],
+      poi_florists:[{k:"shop",values:["florist"]}],
+      poi_variety:[{k:"shop",values:["variety_store"]}],
+      poi_gas:[{k:"amenity",values:["fuel"]}],
+      poi_car_wash:[{k:"amenity",values:["car_wash"]}],
+      poi_auto_repair:[{k:"shop",values:["car_repair"]}],
+      poi_auto_parts:[{k:"shop",values:["car_parts"]}],
+      poi_auto_dealers:[{k:"shop",values:["car"]}],
+      poi_dentists:[{k:"amenity",values:["dentist"]}],
+      poi_doctors_clinics:[{k:"amenity",values:["doctors"]},{k:"healthcare",values:["doctor","clinic"]}],
+      poi_chiropractors:[{k:"healthcare",values:["chiropractor"]}],
+      poi_optometry_opticians:[{k:"healthcare",values:["optometrist"]},{k:"shop",values:["optician"]}],
+      poi_veterinary:[{k:"amenity",values:["veterinary"]}],
+      poi_barbers:[{k:"shop",values:["barber"]}],
+      poi_nail_salons:[{k:"shop",values:["beauty"]}],
+      poi_dry_cleaning:[{k:"shop",values:["dry_cleaning"]}],
+      poi_laundromats:[{k:"shop",values:["laundry"]}],
+      poi_gyms:[{k:"leisure",values:["fitness_centre"]}],
+      poi_bowling:[{k:"leisure",values:["bowling_alley"]}],
+      poi_arcades:[{k:"leisure",values:["amusement_arcade"]}],
+      poi_cinemas:[{k:"amenity",values:["cinema"]}],
+      poi_theatres:[{k:"amenity",values:["theatre"]}],
+
+      // Transportation (OSM side)
+      poi_tnm_airports:[{k:"aeroway",values:["aerodrome","heliport"]}],
+      poi_tnm_ferries_tunnels:[{k:"route",values:["ferry"]},{k:"tunnel",values:["yes"]}],
+      poi_tnm_trails:[{k:"highway",values:["path","footway","cycleway"]}],
+      poi_tnm_railroads:[{k:"railway",values:["rail","light_rail","subway","tram"]}]
+    };
+
+    /* ---------- Friendly labels ---------- */
+    const FRIENDLY = {
+      elevation_m:"Elevation (m)", pm25:"PM2.5 (µg/m³)", nws_active_alerts:"NWS Active Alerts",
+      fips_block:"Census Block FIPS", fips_tract:"Census Tract FIPS", county_name:"County", state_code:"State",
+      fips_state:"FIPS State Code", fips_county:"FIPS County Code", fips_tract6:"Tract (6-digit)",
+      acs_population:"ACS Population", acs_median_hh_income:"ACS Median Household Income",
+      acs_median_age:"ACS Median Age", acs_name:"ACS Area Name"
+    };
+
+    /* ---------- ACS setup ---------- */
+    const ACS_DATASET = "https://api.census.gov/data/2022/acs/acs5";
+    const ACS_VARS = { B01003_001E:"acs_population", B19013_001E:"acs_median_hh_income", B01002_001E:"acs_median_age" };
+
+    /* ---------- State ---------- */
+    let map, featureGroup, baseLayers={}, activeBaseLayer, basemapControl;
+    let layerControl;
+    let csvHeaders=[], csvRows=[], chosenFields={street:null,city:null,state:null,zip:null,country:null,single:null};
+    let cancelBatchFlag=false, currentMarkers=[];
+    const poiLayers = {}; // created for each isPOI id
+
+    /* ---------- Utils ---------- */
+    const milesToMeters = (mi)=> mi*1609.34;
+    const deg2rad = (d)=> d*Math.PI/180;
+    function haversineMiles(lat1,lon1,lat2,lon2){
+      const R=3958.7613;
+      const dLat=deg2rad(lat2-lat1), dLon=deg2rad(lon2-lon1);
+      const a=Math.sin(dLat/2)**2 + Math.cos(deg2rad(lat1))*Math.cos(deg2rad(lat2))*Math.sin(dLon/2)**2;
+      return 2*R*Math.asin(Math.sqrt(a));
+    }
+    function bboxFromCenterMiles(lat,lon,miles){
+      const dLat = miles/69.0;
+      const dLon = miles/(Math.cos(deg2rad(lat))*69.172);
+      return { minLat: lat-dLat, maxLat: lat+dLat, minLon: lon-dLon, maxLon: lon+dLon };
+    }
+    function showRunPanel(msg="Working…"){ $("#runText").textContent=msg; $("#runPanel").style.display="block"; }
+    function updateRunPanel(msg){ $("#runText").textContent=msg; }
+    function hideRunPanel(){ $("#runPanel").style.display="none"; }
+    function blobDownload(filename, text){
+      const blob=new Blob([text],{type:"text/csv;charset=utf-8;"}); const url=URL.createObjectURL(blob);
+      [$("#downloadCsv"), $("#mapDownloadBtn")].forEach(a=>{ if(a){ a.href=url; a.download=filename; } });
+      $("#downloadSection").style.display="inline-block"; $("#mapDownloadBtn").style.display="inline-flex";
+    }
+
+    function toView(view){
+      document.body.classList.remove("view-config","view-map");
+      document.body.classList.add(view);
+      if(view==="view-map") setTimeout(()=> map?.invalidateSize(), 100);
+    }
+
+    /* ---------- Map + controls ---------- */
+    function initMap(){
+      map=L.map("map",{zoomControl:true,center:[39.5,-98.35],zoom:4});
+      Object.entries(MAPTILER_BASEMAPS).forEach(([name,url])=>{ baseLayers[name]=L.tileLayer(url,{attribution:"&copy; MapTiler & OSM"}); });
+      activeBaseLayer=baseLayers.streets.addTo(map);
+      featureGroup=L.featureGroup().addTo(map);
+
+      ENRICHMENTS.filter(e=>e.isPOI).forEach(e=>{ poiLayers[e.id]=L.layerGroup(); });
+      layerControl=L.control.layers(
+        { "Streets":baseLayers.streets, "Satellite":baseLayers.satellite, "Topo":baseLayers.topo },
+        Object.fromEntries(ENRICHMENTS.filter(e=>e.isPOI).map(e=>[e.label, poiLayers[e.id]])),
+        { collapsed:true }
+      ).addTo(map);
+
+      // Basemap selector (map-only)
+      basemapControl = L.control({position:'topright'});
+      basemapControl.onAdd = function(){
+        const div=L.DomUtil.create('div','basemap-ctl'); const sel=document.createElement('select');
+        ["streets","satellite","topo"].forEach(k=>{ const o=document.createElement("option"); o.value=k; o.textContent=`🗺️ Basemap: ${k}`; if(k==="streets") o.selected=true; sel.appendChild(o); });
+        sel.addEventListener("change",()=>{ const v=sel.value; if(activeBaseLayer) map.removeLayer(activeBaseLayer); activeBaseLayer=baseLayers[v].addTo(map); });
+        div.appendChild(sel); L.DomEvent.disableClickPropagation(div); return div;
+      };
+      basemapControl.addTo(map);
+    }
+    function clearMap(){ featureGroup.clearLayers(); currentMarkers=[]; Object.values(poiLayers).forEach(g=>g.clearLayers()); }
+    function addPoint(lat,lon,html,raw=null){
+      const m=L.circleMarker([lat,lon],{radius:7,weight:2,color:"#2563eb",fillColor:"#2563eb",fillOpacity:.6}).bindPopup(html);
+      m.addTo(featureGroup); currentMarkers.push({lat,lon,marker:m,data:raw});
+    }
+    function fitToAll(){ if(!currentMarkers.length) return;
+      const lats=currentMarkers.map(p=>p.lat), lons=currentMarkers.map(p=>p.lon);
+      const south=Math.min(...lats), north=Math.max(...lats), west=Math.min(...lons), east=Math.max(...lons);
+      map.fitBounds([[south,west],[north,east]],{padding:[20,20]}); }
+
+    /* ---------- Geocoding ---------- */
+    async function geocodeNominatim(q){
+      const u=new URL("https://nominatim.openstreetmap.org/search");
+      u.searchParams.set("q",q); u.searchParams.set("format","json"); u.searchParams.set("addressdetails","1"); u.searchParams.set("limit","1"); u.searchParams.set("email","noreply@locationmart.com");
+      const d=await fetchJSONSmart(u.toString()); if(d&&d.length){ const x=d[0]; return {lat:+x.lat, lon:+x.lon, source:"Nominatim (OSM)", raw:x}; } return null;
+    }
+    async function geocodeUSCensus(q){
+      try{
+        const u=new URL("https://geocoding.geo.census.gov/geocoder/locations/onelineaddress");
+        u.searchParams.set("address",q); u.searchParams.set("benchmark","Public_AR_Current"); u.searchParams.set("format","json");
+        const d=await fetchJSONSmart(u.toString()); const r=d?.result?.addressMatches?.[0];
+        return (r?.coordinates) ? {lat:r.coordinates.y, lon:r.coordinates.x, source:"US Census", raw:r} : null;
+      }catch{ return null; }
+    }
+    async function geocodeAddress(q){
+      let g=await geocodeNominatim(q); if(g) return g;
+      if(/\b(US|USA|United States|[A-Z]{2})\b/i.test(q)||/,\s*[A-Z]{2}\b/.test(q)) g=await geocodeUSCensus(q);
+      return g;
+    }
+
+    /* ---------- Point enrichments ---------- */
+    async function enrichElevation(lat,lon){ const u=new URL("https://api.open-meteo.com/v1/elevation"); u.searchParams.set("latitude",lat); u.searchParams.set("longitude",lon); const j=await fetchJSONSmart(u.toString()); return (j?.elevation?.[0]??null); }
+    async function enrichAirQuality(lat,lon){ const u=new URL("https://air-quality-api.open-meteo.com/v1/air-quality"); u.searchParams.set("latitude",lat); u.searchParams.set("longitude",lon); u.searchParams.set("hourly","pm2_5"); const j=await fetchJSONSmart(u.toString()); const vals=j?.hourly?.pm2_5||[]; return vals.length?vals[vals.length-1]:null; }
+    async function enrichFIPS(lat,lon){
+      const u=new URL("https://geo.fcc.gov/api/census/block/find"); u.searchParams.set("latitude",lat); u.searchParams.set("longitude",lon); u.searchParams.set("format","json");
+      const j=await fetchJSONSmart(u.toString()); const b=j?.Block?.FIPS||null, county=j?.County?.name||null, state=j?.State?.code||null;
+      const tract=b?b.substring(0,11):null, ss=b?b.substring(0,2):null, ccc=b?b.substring(2,5):null, t6=tract?tract.substring(5,11):null;
+      return { fips_block:b, fips_tract:tract, county_name:county, state_code:state, fips_state:ss, fips_county:ccc, fips_tract6:t6 };
+    }
+    async function enrichACS(state2,county3,tract6){
+      if(!state2||!county3||!tract6) return {};
+      const vars=Object.keys(ACS_VARS).join(","), url=`${ACS_DATASET}?get=${vars},NAME&for=tract:${tract6}&in=state:${state2}%20county:${county3}`;
+      const j=await fetchJSONSmart(url); if(!Array.isArray(j)||j.length<2) return {}; const header=j[0],row=j[1],out={}; header.forEach((h,i)=>{ if(ACS_VARS[h]) out[ACS_VARS[h]]=row[i]; }); out["acs_name"]=row[header.indexOf("NAME")]||null; return out;
+    }
+
+    /* ---------- OSM via Overpass ---------- */
+    function filtersFor(id){
+      if(id==="poi_schools") return ["amenity=school"];
+      if(id==="poi_hospitals") return ["amenity=hospital"];
+      if(id==="poi_parks") return ["leisure=park"];
+      const def = OSM_POI_DEFS[id];
+      return def ? buildFilterStrings(def) : [];
+    }
+    async function overpassCountMiles(lat,lon,radiusMiles,filters){
+      const radiusMeters=Math.max(100,Math.floor(milesToMeters(+radiusMiles||0)));
+      const around=`around:${radiusMeters},${lat},${lon}`;
+      const ors=filters.map(f=>`node[${f}](${around});way[${f}](${around});relation[${f}](${around});`).join("");
+      const q=`[out:json][timeout:25];(${ors});out center;`;
+      const res=await fetchJSONSmart(OVERPASS,{method:"POST",body:q,headers:{ "Content-Type":"text/plain;charset=UTF-8" }});
+      const elements=res.elements||[], seen=new Set(), unique=[];
+      const norm=(s)=>(s||"").trim().toLowerCase().replace(/\s+/g," ");
+      for(const el of elements){
+        const latc=el.lat||el.center?.lat, lonc=el.lon||el.center?.lon; if(latc==null||lonc==null) continue;
+        const key=`${norm(el.tags?.name)||"noname"}|${latc.toFixed(3)},${lonc.toFixed(3)}`;
+        if(!seen.has(key)){seen.add(key);unique.push(el);}
+      }
+      return { count:unique.length, elements:unique };
+    }
+
+    /* ---------- Geo helpers ---------- */
+    function centerFromGeometry(geom){
+      try{
+        const pts=[];
+        (function flat(c){
+          if(typeof c[0]==="number"){ pts.push(c); }
+          else c.forEach(flat);
+        })(geom.coordinates);
+        const lats=pts.map(p=>p[1]), lons=pts.map(p=>p[0]);
+        const lat=(Math.min(...lats)+Math.max(...lats))/2, lon=(Math.min(...lons)+Math.max(...lons))/2;
+        return {lat,lon};
+      }catch{ return {lat:null,lon:null}; }
+    }
+
+    /* ---------- Other proximity fetchers ---------- */
+    async function usgsEarthquakes(lat,lon,miles,{days=30,minmag=2.5}={}){
+      const u=new URL("https://earthquake.usgs.gov/fdsnws/event/1/query");
+      const start=new Date(Date.now()-days*24*60*60*1000).toISOString().slice(0,10), end=new Date().toISOString().slice(0,10);
+      u.search = new URLSearchParams({ format:"geojson", latitude:String(lat), longitude:String(lon), maxradiuskm:(miles*1.60934).toFixed(2), starttime:start, endtime:end, minmagnitude:String(minmag) });
+      const j=await fetchJSONSmart(u.toString()); const feats=j?.features||[];
+      return feats.map(f=>({ lat:f.geometry.coordinates[1], lon:f.geometry.coordinates[0], props:f.properties }));
+    }
+    async function epaEchoFacilities(lat,lon,miles){
+      if(!ECHO_BASE) return [];
+      const u=new URL(ECHO_BASE); u.searchParams.set("p_lat",String(lat)); u.searchParams.set("p_long",String(lon));
+      u.searchParams.set("p_radius",String(miles)); u.searchParams.set("p_radius_unit","MI"); u.searchParams.set("output","JSON");
+      try{ const j=await fetchJSONSmart(u.toString()); const rows=j?.Results?.Facilities||j?.Facilities||j?.results||[]; return rows.map(r=>({lat:+(r.Latitude??r.latitude), lon:+(r.Longitude??r.longitude), props:r})).filter(x=>isFinite(x.lat)&&isFinite(x.lon)); }catch{return [];}
+    }
+    async function openeiPlants(lat,lon,miles){
+      // CORS via proxy; if it still fails, we just return []
+      try{
+        const b=bboxFromCenterMiles(lat,lon,miles);
+        const url=`${OPENEI_PLANTS_URL}?bbox=${b.minLon},${b.minLat},${b.maxLon},${b.maxLat}`;
+        const j=await fetchJSONSmart(url);
+        const feats=j?.features||[]; 
+        return feats.map(f=>({lat:f.geometry.coordinates[1], lon:f.geometry.coordinates[0], props:f.properties}))
+                    .filter(p=>haversineMiles(lat,lon,p.lat,p.lon)<=miles);
+      }catch{return [];}
+    }
+    async function powerGenomePlants(lat,lon,miles){
+      // Now uses WRI GPPD CSV
+      try{
+        const text=await fetchTEXTSmart(GPPD_CSV);
+        const parsed=Papa.parse(text,{header:true,dynamicTyping:true});
+        const rows=parsed?.data||[];
+        const out=[];
+        for(const r of rows){
+          const la=+r["latitude"], lo=+r["longitude"];
+          if(!isFinite(la)||!isFinite(lo)) continue;
+          if(haversineMiles(lat,lon,la,lo)<=miles) out.push({lat:la, lon:lo, props:r});
+        }
+        return out;
+      }catch{return [];}
+    }
+    async function openGridMap(lat,lon,miles){
+      // Try OpenGridMap; if DNS/CORS fails, fallback to OSM power=* features
+      const b=bboxFromCenterMiles(lat,lon,miles);
+      try{
+        const j=await fetchJSONSmart(`https://opengridmap.org/api/get_objects?bbox=${b.minLat},${b.minLon},${b.maxLat},${b.maxLon}`);
+        const arr=Array.isArray(j)?j:[];
+        const res = arr.map(o=>({lat:+o.lat, lon:+o.lng, props:o}))
+                       .filter(p=>isFinite(p.lat)&&isFinite(p.lon)&&haversineMiles(lat,lon,p.lat,p.lon)<=miles);
+        if(res.length) return res;
+      }catch{ /* swallow and fallback */ }
+      // Fallback: OSM power infrastructure around point
+      try{
+        const filters=["power=substation","power=transformer","power=line","power=minor_line","power=cable","power=generator"];
+        const r=await overpassCountMiles(lat,lon,miles,filters);
+        return (r.elements||[]).map(el=>{
+          const la=el.lat||el.center?.lat, lo=el.lon||el.center?.lon;
+          return {lat:la, lon:lo, props:{type:el.tags?.power||"power"}};
+        }).filter(p=>isFinite(p.lat)&&isFinite(p.lon));
+      }catch{return [];}
+    }
+    async function openCellId(lat,lon,miles){
+      if(!OPENCELLID_KEY) return [];
+      const meters=Math.round(milesToMeters(miles));
+      try{
+        const j=await fetchJSONSmart(`https://opencellid.org/cell/getInArea?key=${encodeURIComponent(OPENCELLID_KEY)}&lat=${lat}&lon=${lon}&radius=${meters}`);
+        const cells=j?.cells||j||[]; return cells.map(c=>({lat:+(c.lat||c.latitude), lon:+(c.lon||c.longitude), props:c})).filter(p=>isFinite(p.lat)&&isFinite(p.lon));
+      }catch{return [];}
+    }
+    async function socrataHospitals(lat,lon,miles){
+      const meters=Math.round(milesToMeters(miles));
+      try{
+        const j=await fetchJSONSmart(`https://healthdata.gov/resource/6niy-4vnr.json?$limit=500&$where=within_circle(location,${lat},${lon},${meters})`);
+        return (j||[]).map(r=>({lat:+r.location?.latitude, lon:+r.location?.longitude, props:r})).filter(p=>isFinite(p.lat)&&isFinite(p.lon));
+      }catch{return [];}
+    }
+
+    // Generic ArcGIS map/feature layer query around point (handles line/polygon by centroid)
+    async function arcgisPointQuery(url,lat,lon,meters){
+      try{
+        const u=new URL(url); u.searchParams.set("f","geojson"); u.searchParams.set("geometry",`${lon},${lat}`);
+        u.searchParams.set("geometryType","esriGeometryPoint"); u.searchParams.set("inSR","4326"); u.searchParams.set("spatialRel","esriSpatialRelIntersects");
+        u.searchParams.set("distance",String(meters)); u.searchParams.set("units","esriSRUnit_Meter"); u.searchParams.set("outFields","*");
+        const j=await fetchJSONSmart(u.toString());
+        return (j?.features||[]).map(f=>{
+          let la=null, lo=null;
+          if(f.geometry?.type==="Point"){ lo=f.geometry.coordinates[0]; la=f.geometry.coordinates[1]; }
+          else if(f.geometry?.coordinates){ const c=centerFromGeometry(f.geometry); la=c.lat; lo=c.lon; }
+          return {lat:la, lon:lo, props:f.properties};
+        }).filter(p=>isFinite(p.lat)&&isFinite(p.lon));
+      }catch{return [];}
+    }
+    const arcgisMapLayerPointQuery = (base,layerId,lat,lon,meters)=> arcgisPointQuery(`${base}/${layerId}/query`,lat,lon,meters);
+
+    async function nwisStreamgages(lat,lon,miles){
+      const b=bboxFromCenterMiles(lat,lon,miles);
+      try{
+        const txt=await fetchTEXTSmart(`https://waterservices.usgs.gov/nwis/site/?format=rdb&bBox=${b.minLon},${b.minLat},${b.maxLon},${b.maxLat}&parameterCd=00060,00065`);
+        const lines=txt.split(/\r?\n/).filter(l=>l && !l.startsWith("#"));
+        const header=lines.find(l=>l.startsWith("agency_cd"))?.split("\t")||[];
+        const latIdx=header.indexOf("dec_lat_va"), lonIdx=header.indexOf("dec_long_va"), nameIdx=header.indexOf("station_nm");
+        const out=[]; lines.forEach(l=>{ if(l.startsWith("agency_cd")) return; const cols=l.split("\t");
+          const la=+cols[latIdx], lo=+cols[lonIdx]; if(!isFinite(la)||!isFinite(lo)) return;
+          if(haversineMiles(lat,lon,la,lo)<=miles) out.push({lat:la, lon:lo, props:{name:cols[nameIdx]}}); });
+        return out;
+      }catch{return [];}
+    }
+    async function usgsVolcano(lat,lon,miles){
+      try{
+        const j=await fetchJSONSmart(USGS_VOLCANO_GEOJSON); const feats=j?.features||[];
+        return feats.map(f=>({lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],props:f.properties}))
+                    .filter(p=>haversineMiles(lat,lon,p.lat,p.lon)<=miles);
+      }catch{return [];}
+    }
+    async function nwsAlerts(lat,lon){ try{ const j=await fetchJSONSmart(`https://api.weather.gov/alerts?point=${lat},${lon}`); return j?.features||[]; }catch{return [];} }
+
+    // Quirky sources
+    async function breweriesOBDB(lat,lon,miles){
+      try{
+        const res=await fetchJSONSmart(`https://api.openbrewerydb.org/v1/breweries?per_page=200&by_dist=${lat},${lon}`);
+        const arr=Array.isArray(res)?res:[]; return arr.map(b=>{
+          const la=+b.latitude, lo=+b.longitude; return {lat:la, lon:lo, props:b};
+        }).filter(p=>isFinite(p.lat)&&isFinite(p.lon)&&haversineMiles(lat,lon,p.lat,p.lon)<=miles);
+      }catch{return [];}
+    }
+    async function wikipediaGeo(lat,lon,miles){
+      try{
+        const meters=Math.round(milesToMeters(miles));
+        const url=`https://en.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${lat}%7C${lon}&gsradius=${meters}&gslimit=50&format=json&origin=*`;
+        const j=await fetchJSONSmart(url); const arr=j?.query?.geosearch||[];
+        return arr.map(it=>({lat:+it.lat, lon:+it.lon, props:it}));
+      }catch{return [];}
+    }
+
+    /* ---------- Enrichment runner ---------- */
+    function labelFor(id){ const e=ENRICHMENTS.find(x=>x.id===id); return e?e.label:id; }
+    async function runEnrichment(lat,lon,selectedIds,poiRadiusById={},wantPoiOverlay=false){
+      const out={}; let fipsCache=null;
+      for(const id of selectedIds){
+        try{
+          if(id==="elev") out.elevation_m = await enrichElevation(lat,lon);
+          else if(id==="airq") out.pm25 = await enrichAirQuality(lat,lon);
+          else if(id==="fips"){ fipsCache=await enrichFIPS(lat,lon); Object.assign(out,fipsCache); }
+          else if(id==="acs"){ if(!fipsCache) fipsCache=await enrichFIPS(lat,lon); Object.assign(out, await enrichACS(fipsCache.fips_state,fipsCache.fips_county,fipsCache.fips_tract6)); }
+          else if(id==="nws_alerts"){ out.nws_active_alerts=(await nwsAlerts(lat,lon)).length; }
+
+          // OSM categories (including Transportation combos)
+          else if(id.startsWith("poi_") && (OSM_POI_DEFS[id] || ["poi_schools","poi_hospitals","poi_parks"].includes(id))){
+            const miles=+poiRadiusById[id] || ENRICHMENTS.find(e=>e.id===id)?.defaultMiles || 5;
+            const r=await overpassCountMiles(lat,lon,miles,filtersFor(id));
+            const key=`${id}_count_${miles}mi`;
+            out[key]=(out[key]||0)+r.count;
+            if(wantPoiOverlay){
+              const g=poiLayers[id]; g.clearLayers();
+              r.elements.forEach(el=>{
+                const la=el.lat||el.center?.lat, lo=el.lon||el.center?.lon; if(la==null||lo==null) return;
+                const name=el.tags?.name||`(${labelFor(id)})`;
+                L.circleMarker([la,lo],{radius:5,weight:1}).bindPopup(`<strong>${name}</strong>`).addTo(g);
+              });
+              if(!map.hasLayer(g)) g.addTo(map);
+            }
+          }
+
+          // Hazards & environment (non-OSM)
+          else if(id==="poi_eq"){
+            const miles=+poiRadiusById[id] || 100; const eqs=await usgsEarthquakes(lat,lon,miles,{days:30,minmag:2.5});
+            out[`${id}_count_${miles}mi`]=eqs.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); eqs.forEach(e=>{ const d=new Date(e.props.time); L.circleMarker([e.lat,e.lon],{radius:5,weight:1}).bindPopup(`<strong>M${e.props.mag}</strong> — ${e.props.place}<br>${d.toLocaleString()}`).addTo(g); }); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_fema_floodzones"){
+            const miles=+poiRadiusById[id] || 2; const rows=await arcgisPointQuery(FEMA_NFHL_LAYER28,lat,lon,Math.round(milesToMeters(miles)));
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>Flood Zone</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_usgs_volcano"){
+            const miles=+poiRadiusById[id] || 100; const rows=await usgsVolcano(lat,lon,miles);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>${f.props?.volcano_name||"Volcano"}</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_usgs_streamgages"){
+            const miles=+poiRadiusById[id] || 15; const rows=await nwisStreamgages(lat,lon,miles);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>${f.props?.name||"Streamgage"}</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_epa_frs"){
+            const miles=+poiRadiusById[id] || 3; const rows=await arcgisPointQuery(EPA_FRS_ARCGIS,lat,lon,Math.round(milesToMeters(miles)));
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>${f.props?.PRIMARY_NAME||"FRS Facility"}</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_echo"){
+            const miles=+poiRadiusById[id] || 5; const facs=await epaEchoFacilities(lat,lon,miles);
+            out[`${id}_count_${miles}mi`]=facs.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); facs.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>${f.props?.FacilityName||f.props?.Name||"Facility"}</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+
+          // Power & infra (non-OSM)
+          else if(id==="poi_power_plants_openei"){
+            const miles=+poiRadiusById[id] || 25; const rows=await openeiPlants(lat,lon,miles);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>${f.props?.plant_name||f.props?.Plant_name||"Plant"}</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_power_plants_powergenome"){
+            const miles=+poiRadiusById[id] || 25; const rows=await powerGenomePlants(lat,lon,miles);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>${f.props?.plant_name||f.props?.plant_name||"Plant"}</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_grid_opengridmap"){
+            const miles=+poiRadiusById[id] || 15; const rows=await openGridMap(lat,lon,miles);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>${f.props?.type||"Grid feature"}</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_cell_towers"){
+            const miles=+poiRadiusById[id] || 3; const rows=await openCellId(lat,lon,miles);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:4,weight:1}).bindPopup(`<strong>Cell Tower</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+
+          // Transportation (TNM + OSM where appropriate)
+          else if(id==="poi_tnm_airports"){
+            const miles=+poiRadiusById[id] || 10; const meters=Math.round(milesToMeters(miles));
+            const tnm=await arcgisMapLayerPointQuery(TNM_TRANSPORT,TNM.airports,lat,lon,meters);
+            const osm=await overpassCountMiles(lat,lon,miles,filtersFor(id));
+            const key=`${id}_count_${miles}mi`; out[key]=(tnm.length)+(osm.count||0);
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers();
+              tnm.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>Airport</strong>`).addTo(g));
+              osm.elements.forEach(el=>{ const la=el.lat||el.center?.lat, lo=el.lon||el.center?.lon; if(la&&lo) L.circleMarker([la,lo],{radius:5,weight:1}).bindPopup(`<strong>${el.tags?.name||"Airport / Heliport"}</strong>`).addTo(g); });
+              if(!map.hasLayer(g)) g.addTo(map);
+            }
+          }
+          else if(id==="poi_tnm_ferries_tunnels"){
+            const miles=+poiRadiusById[id] || 15; const meters=Math.round(milesToMeters(miles));
+            const tnm=await arcgisMapLayerPointQuery(TNM_TRANSPORT,TNM.ferries_tunnels,lat,lon,meters);
+            const osm=await overpassCountMiles(lat,lon,miles,filtersFor(id));
+            const key=`${id}_count_${miles}mi`; out[key]=(tnm.length)+(osm.count||0);
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers();
+              tnm.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>Ferry/Tunnel</strong>`).addTo(g));
+              osm.elements.forEach(el=>{ const la=el.lat||el.center?.lat, lo=el.lon||el.center?.lon; if(la&&lo) L.circleMarker([la,lo],{radius:5,weight:1}).bindPopup(`<strong>Ferry/Tunnel</strong>`).addTo(g); });
+              if(!map.hasLayer(g)) g.addTo(map);
+            }
+          }
+          else if(id==="poi_tnm_4wd_roads"){
+            const miles=+poiRadiusById[id] || 15; const meters=Math.round(milesToMeters(miles));
+            const tnm=await arcgisMapLayerPointQuery(TNM_TRANSPORT,TNM.roads_4wd,lat,lon,meters);
+            out[`${id}_count_${miles}mi`]=tnm.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); tnm.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>4WD Road</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_tnm_trails"){
+            const miles=+poiRadiusById[id] || 10; const meters=Math.round(milesToMeters(miles));
+            const tnm=await arcgisMapLayerPointQuery(TNM_TRANSPORT,TNM.trails,lat,lon,meters);
+            const osm=await overpassCountMiles(lat,lon,miles,filtersFor(id));
+            const key=`${id}_count_${miles}mi`; out[key]=(tnm.length)+(osm.count||0);
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers();
+              tnm.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>Trail</strong>`).addTo(g));
+              osm.elements.forEach(el=>{ const la=el.lat||el.center?.lat, lo=el.lon||el.center?.lon; if(la&&lo) L.circleMarker([la,lo],{radius:5,weight:1}).bindPopup(`<strong>Trail</strong>`).addTo(g); });
+              if(!map.hasLayer(g)) g.addTo(map);
+            }
+          }
+          else if(id==="poi_tnm_railroads"){
+            const miles=+poiRadiusById[id] || 15; const meters=Math.round(milesToMeters(miles));
+            const tnm=await arcgisMapLayerPointQuery(TNM_TRANSPORT,TNM.railroads,lat,lon,meters);
+            const osm=await overpassCountMiles(lat,lon,miles,filtersFor(id));
+            const key=`${id}_count_${miles}mi`; out[key]=(tnm.length)+(osm.count||0);
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers();
+              tnm.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>Railroad</strong>`).addTo(g));
+              osm.elements.forEach(el=>{ const la=el.lat||el.center?.lat, lo=el.lon||el.center?.lon; if(la&&lo) L.circleMarker([la,lo],{radius:5,weight:1}).bindPopup(`<strong>Rail</strong>`).addTo(g); });
+              if(!map.hasLayer(g)) g.addTo(map);
+            }
+          }
+
+          // Recreation (TNM Structures)
+          else if(id==="poi_tnm_trailheads"){
+            const miles=+poiRadiusById[id] || 10; const meters=Math.round(milesToMeters(miles));
+            const rows=await arcgisMapLayerPointQuery(TNM_STRUCTURES,TNM_STRUCT.trailheads,lat,lon,meters);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup("<strong>Trailhead</strong>").addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_tnm_picnic_areas"){
+            const miles=+poiRadiusById[id] || 10; const meters=Math.round(milesToMeters(miles));
+            const rows=await arcgisMapLayerPointQuery(TNM_STRUCTURES,TNM_STRUCT.picnic,lat,lon,meters);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup("<strong>Picnic Area</strong>").addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_tnm_visitor_centers"){
+            const miles=+poiRadiusById[id] || 10; const meters=Math.round(milesToMeters(miles));
+            const rows=await arcgisMapLayerPointQuery(TNM_STRUCTURES,TNM_STRUCT.visitor_centers,lat,lon,meters);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup("<strong>Visitor Center</strong>").addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_tnm_ranger_stations"){
+            const miles=+poiRadiusById[id] || 10; const meters=Math.round(milesToMeters(miles));
+            const rows=await arcgisMapLayerPointQuery(TNM_STRUCTURES,TNM_STRUCT.ranger_stations,lat,lon,meters);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup("<strong>Ranger Station</strong>").addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+
+          // Quirky / Fun
+          else if(id==="poi_breweries"){
+            const miles=+poiRadiusById[id] || 10; const rows=await breweriesOBDB(lat,lon,miles);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:5,weight:1}).bindPopup(`<strong>${f.props?.name||"Brewery"}</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+          else if(id==="poi_wikipedia"){
+            const miles=+poiRadiusById[id] || 3; const rows=await wikipediaGeo(lat,lon,miles);
+            out[`${id}_count_${miles}mi`]=rows.length;
+            if(wantPoiOverlay){ const g=poiLayers[id]; g.clearLayers(); rows.forEach(f=>L.circleMarker([f.lat,f.lon],{radius:4,weight:1}).bindPopup(`<strong>${f.props?.title||"Nearby article"}</strong>`).addTo(g)); if(!map.hasLayer(g)) g.addTo(map); }
+          }
+
+        }catch(e){ out[id+"_error"]=String(e?.message||e); }
+      }
+      return out;
+    }
+
+    /* ---------- UI: grouped enrichment pills (collapsible) ---------- */
+    function renderGroupBlock(title, ids){
+      const details=document.createElement("details");
+      details.className="group-details";
+      const summary=document.createElement("summary");
+      summary.textContent=title;
+      details.appendChild(summary);
+
+      const row=document.createElement("div");
+      row.className="pill-container";
+      ids.forEach(eid=>{
+        const e=ENRICHMENTS.find(x=>x.id===eid); if(!e) return;
+        const id=`chk_${e.id}`, radiusId=`rad_${e.id}`;
+        const lbl=document.createElement("label"); lbl.className="pill"; lbl.style.display="flex"; lbl.style.alignItems="center"; lbl.style.gap=".5rem";
+        lbl.innerHTML = `
+          <input id="${id}" type="checkbox" data-enrich="${e.id}"/>
+          <span>${e.label}</span>
+          ${e.isPOI ? `
+            <span style="font-size:.8rem;opacity:.8;">— radius</span>
+            <input id="${radiusId}" type="number" min="0.1" step="0.1" value="${e.defaultMiles||5}" style="width:70px;padding:.25rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);" />
+            <span style="font-size:.8rem;opacity:.8;">mi</span>` : ``}
+        `;
+        row.appendChild(lbl);
+      });
+      details.appendChild(row);
+      return details;
+    }
+    function renderEnrichmentGroups(){
+      const root=$("#enrichmentGroups"); root.innerHTML="";
+      ENRICHMENT_GROUPS.forEach(g=>root.appendChild(renderGroupBlock(g.title, g.ids)));
+    }
+    function getSelectedEnrichmentsWithRadii(){
+      const selected=[], radii={};
+      ENRICHMENTS.forEach(e=>{
+        const chk=$("#chk_"+e.id); if(chk && chk.checked) selected.push(e.id);
+        if(e.isPOI){ const r=$("#rad_"+e.id); radii[e.id]=r?(+r.value||e.defaultMiles||5):(e.defaultMiles||5); }
+      });
+      // Safer default: core only (no POI calls unless explicitly chosen)
+      if(!selected.length) selected.push("elev","airq","fips","acs","nws_alerts");
+      return {selected, radii};
+    }
+
+    /* ---------- Display helpers ---------- */
+    function kv(label, value){ return `<div class="kv"><div class="k">${label}</div><div class="v">${value}</div></div>`; }
+    function formatResultBlocks(enrich){
+      const parts=[];
+      Object.entries(enrich).forEach(([k,v])=>{
+        if(k.endsWith("_error")) return;
+        if(FRIENDLY[k]) parts.push(kv(FRIENDLY[k], v ?? ""));
+      });
+      Object.keys(enrich).forEach(k=>{
+        const m=k.match(/^(poi_[a-z0-9_]+)_count_(\d+(?:\.\d+)?)mi$/);
+        if(!m) return; const id=m[1], miles=m[2];
+        parts.push(kv(`${labelFor(id)} within ${miles} mi`, enrich[k]));
+      });
+      return parts.join("");
+    }
+
+    /* ---------- Single search ---------- */
+    async function handleSingleSearch(){
+      const q=$("#searchInput").value?.trim(); if(!q){ alert("Please enter an address."); return; }
+      const btn=$("#searchBtn");
+      btn.disabled=true; showRunPanel("Geocoding address…");
+      try{
+        const geo=await geocodeAddress(q); if(!geo) throw new Error("No geocode result");
+        const {lat,lon,source}=geo;
+
+        const {selected,radii}=getSelectedEnrichmentsWithRadii();
+        updateRunPanel("Running enrichment…");
+        const enrich=await runEnrichment(lat,lon,selected,radii,true);
+
+        clearMap();
+        addPoint(lat,lon,`<div style="min-width:220px"><div class="k">Address</div><div class="v">${q}</div><div class="k" style="margin-top:6px">Lat/Lon (source)</div><div class="v">${lat.toFixed(6)}, ${lon.toFixed(6)} (${source})</div></div>`,{address:q,...enrich});
+        toView("view-map"); fitToAll();
+
+        const details = `
+          <div class="overview-grid">
+            ${kv("Geocode Source", source)}${kv("Latitude", lat)}${kv("Longitude", lon)}
+          </div>
+          <hr/>
+          <div class="overview-grid">${formatResultBlocks(enrich)}</div>`;
+        $("#locationOverview").innerHTML = details;
+        updateRunPanel("Done.");
+      }catch(e){ console.error(e); alert("Geocoding/enrichment failed. See console for details."); updateRunPanel("Error."); }
+      finally{ btn.disabled=false; setTimeout(hideRunPanel, 400); }
+    }
+
+    /* ---------- Batch mapping helpers ---------- */
+    function renderFieldCandidates(containerId, headers, onPick){
+      const cont=$("#"+containerId); cont.innerHTML="";
+      headers.forEach(h=>{ const div=document.createElement("label"); div.className="field-option"; div.innerHTML=`<input type="radio" name="${containerId}" value="${h}"/> <span>${h}</span>`; div.addEventListener("change",()=>onPick(h)); cont.appendChild(div); });
+    }
+    function updateAddressPreview(){
+      if(!csvRows.length || !csvHeaders.length){ $("#addressPreview").textContent="No data loaded"; return; }
+      const r0=csvRows[0]||{}; let preview="Select fields above to see preview";
+      if(chosenFields.single) preview = r0[chosenFields.single] ?? "";
+      else{
+        const parts=[r0[chosenFields.street]??"", r0[chosenFields.city]??"", r0[chosenFields.state]??"", r0[chosenFields.zip]??"", r0[chosenFields.country]??""].filter(Boolean);
+        preview = parts.join(", ");
+      }
+      $("#addressPreview").textContent = preview || "(empty)";
+    }
+    $("#fileInput").addEventListener("change",(e)=>{
+      const f=e.target.files?.[0]; if(!f) return;
+      Papa.parse(f,{header:true,skipEmptyLines:true,complete:(res)=>{
+        csvHeaders=res.meta.fields||[]; csvRows=res.data||[];
+        $("#fieldMapping").style.display="block";
+        renderFieldCandidates("singleAddressFields",csvHeaders,(h)=>{chosenFields.single=h; updateAddressPreview();});
+        renderFieldCandidates("streetFields",csvHeaders,(h)=>{chosenFields.street=h; chosenFields.single=null; updateAddressPreview();});
+        renderFieldCandidates("cityFields",csvHeaders,(h)=>{chosenFields.city=h; chosenFields.single=null; updateAddressPreview();});
+        renderFieldCandidates("stateFields",csvHeaders,(h)=>{chosenFields.state=h; chosenFields.single=null; updateAddressPreview();});
+        renderFieldCandidates("zipFields",csvHeaders,(h)=>{chosenFields.zip=h; chosenFields.single=null; updateAddressPreview();});
+        renderFieldCandidates("countryFields",csvHeaders,(h)=>{chosenFields.country=h; chosenFields.single=null; updateAddressPreview();});
+        $("#startBatch").disabled=false;
+      }});
+    });
+    function buildAddressFromRow(row){
+      if(chosenFields.single) return (row[chosenFields.single]||"").toString();
+      const parts=[];
+      if(chosenFields.street&&row[chosenFields.street]) parts.push(row[chosenFields.street]);
+      if(chosenFields.city&&row[chosenFields.city]) parts.push(row[chosenFields.city]);
+      if(chosenFields.state&&row[chosenFields.state]) parts.push(row[chosenFields.state]);
+      if(chosenFields.zip&&row[chosenFields.zip]) parts.push(row[chosenFields.zip]);
+      if(chosenFields.country&&row[chosenFields.country]) parts.push(row[chosenFields.country]);
+      return parts.join(", ");
+    }
+
+    /* ---------- Batch runner ---------- */
+    async function runBatch(){
+      const rps=Math.max(0.2, Math.min(5, +$("#rpsInput").value||1));
+      const limit=Math.max(1, +$("#rowLimit").value || csvRows.length);
+      const {selected:selectedEnrich, radii:poiRadiusById} = getSelectedEnrichmentsWithRadii();
+
+      $("#startBatch").disabled=true; $("#cancelBatch").disabled=false;
+      $("#batchProgress").style.display="block"; $("#downloadSection").style.display="none"; $("#mapDownloadBtn").style.display="none";
+      showRunPanel(`Batch started @ ${rps} req/s`);
+
+      cancelBatchFlag=false; clearMap();
+
+      const outRows=[]; const total=Math.min(limit,csvRows.length); let done=0;
+      const headersOut=[...csvHeaders,"lm_lat","lm_lon","lm_geosource"];
+      if(selectedEnrich.includes("elev")) headersOut.push("lm_elevation_m");
+      if(selectedEnrich.includes("airq")) headersOut.push("lm_pm25");
+      if(selectedEnrich.includes("fips")) headersOut.push("lm_fips_block","lm_fips_tract","lm_county_name","lm_state_code","lm_fips_state","lm_fips_county","lm_fips_tract6");
+      if(selectedEnrich.includes("acs"))  headersOut.push("lm_acs_population","lm_acs_median_hh_income","lm_acs_median_age","lm_acs_name");
+      ENRICHMENTS.filter(e=>e.isPOI && selectedEnrich.includes(e.id)).forEach(e=>{ const miles=poiRadiusById[e.id]||e.defaultMiles||5; headersOut.push(`lm_${e.id}_count_${miles}mi`); });
+      if(selectedEnrich.includes("nws_alerts")) headersOut.push("lm_nws_active_alerts");
+
+      const delayPer=1000/rps;
+
+      for(let i=0;i<total;i++){
+        if(cancelBatchFlag) break;
+        const row=csvRows[i]; const addr=buildAddressFromRow(row);
+        $("#progressText").textContent=`Geocoding row ${i+1}/${total}`; updateRunPanel(`Row ${i+1}/${total}: geocoding…`);
+        try{
+          const geo=await geocodeAddress(addr);
+          let lat=null, lon=null, src=null, enrich={};
+          if(geo){
+            lat=geo.lat; lon=geo.lon; src=geo.source;
+            $("#progressText").textContent=`Enriching row ${i+1}/${total}`; updateRunPanel(`Row ${i+1}/${total}: enriching…`);
+            enrich=await runEnrichment(lat,lon,selectedEnrich,poiRadiusById,false);
+            addPoint(lat,lon,`<div><div class="k">${addr}</div><div class="v">${lat.toFixed(5)}, ${lon.toFixed(5)} (${src})</div></div>`,{address:addr,...enrich});
+          }
+          const out={...row, lm_lat:lat, lm_lon:lon, lm_geosource:src};
+          if("elevation_m" in enrich) out["lm_elevation_m"]=enrich.elevation_m??"";
+          if("pm25" in enrich) out["lm_pm25"]=enrich.pm25??"";
+          if("fips_block" in enrich){
+            out["lm_fips_block"]=enrich.fips_block??""; out["lm_fips_tract"]=enrich.fips_tract??"";
+            out["lm_county_name"]=enrich.county_name??""; out["lm_state_code"]=enrich.state_code??"";
+            out["lm_fips_state"]=enrich.fips_state??""; out["lm_fips_county"]=enrich.fips_county??""; out["lm_fips_tract6"]=enrich.fips_tract6??"";
+          }
+          if("acs_population" in enrich || "acs_median_hh_income" in enrich || "acs_median_age" in enrich || "acs_name" in enrich){
+            out["lm_acs_population"]=enrich.acs_population??""; out["lm_acs_median_hh_income"]=enrich.acs_median_hh_income??"";
+            out["lm_acs_median_age"]=enrich.acs_median_age??""; out["lm_acs_name"]=enrich.acs_name??"";
+          }
+          ENRICHMENTS.filter(e=>e.isPOI && selectedEnrich.includes(e.id)).forEach(e=>{
+            const miles=poiRadiusById[e.id]||e.defaultMiles||5; const k=`${e.id}_count_${miles}mi`; out[`lm_${k}`]=enrich[k]??"";
+          });
+          if("nws_active_alerts" in enrich) out["lm_nws_active_alerts"]=enrich.nws_active_alerts??"";
+
+          headersOut.forEach(h=>{ if(!(h in out)) out[h]=out[h]??""; });
+          outRows.push(out);
+        }catch(err){ console.error("Row error",i,err); }
+        done++; $("#progressFill").style.width = `${Math.round(done/total*100)}%`;
+        await new Promise(r=>setTimeout(r, delayPer));
+      }
+
+      const csv = Papa.unparse({ fields: headersOut, data: outRows.map(r=>headersOut.map(h=>r[h]??"")) });
+      blobDownload("enriched_results.csv", csv);
+
+      toView("view-map"); fitToAll();
+
+      $("#startBatch").disabled=false; $("#cancelBatch").disabled=true;
+      $("#progressText").textContent = cancelBatchFlag ? "Batch cancelled." : "Batch complete.";
+      updateRunPanel(cancelBatchFlag ? "Cancelled." : "Batch complete."); setTimeout(hideRunPanel, 600);
+    }
+
+    /* ---------- Events ---------- */
+    $("#searchBtn").addEventListener("click", handleSingleSearch);
+    $("#overviewBtn").addEventListener("click", () => $("#featureModal").style.display="flex");
+    $("#closeModal").addEventListener("click", () => $("#featureModal").style.display="none");
+    $("#closeRunPanel").addEventListener("click", hideRunPanel);
+    $("#backToConfig").addEventListener("click", ()=>{ toView("view-config"); hideRunPanel(); });
+
+    $("#startBatch").addEventListener("click", async ()=>{ if(!csvRows.length){ alert("Please upload a CSV first."); return; } cancelBatchFlag=false; await runBatch(); });
+    $("#cancelBatch").addEventListener("click", ()=>{ cancelBatchFlag=true; updateRunPanel("Cancelling…"); });
+
+    renderEnrichmentGroups();
+    initMap();
+  })();
+  </script>
+</body>
+</html>
