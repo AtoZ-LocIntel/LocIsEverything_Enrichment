@@ -10,6 +10,19 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: false, // Disable sourcemaps for production
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          leaflet: ['leaflet', 'react-leaflet'],
+          utils: ['papaparse', 'clsx', 'tailwind-merge']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
+  },
+  preview: {
+    port: 3000
   }
 })

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Header from './components/Header';
 import SingleSearch from './components/SingleSearch';
 import BatchProcessing from './components/BatchProcessing';
@@ -96,7 +96,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black">
       <Header />
       
       {viewMode === 'config' ? (
@@ -105,28 +105,28 @@ function App() {
             <h1 className="text-4xl font-bold text-gradient mb-4">
               Advanced Location Intelligence
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Professional geocoding and enrichment platform with multi-source data integration. 
               Single address lookup or batch CSV processing with comprehensive location insights.
             </p>
-            <p className="text-lg text-primary-600 font-medium mt-4">
+            <p className="text-lg text-primary-400 font-medium mt-4">
               Powered by The Location Is Everything Co
             </p>
           </div>
 
           {/* Error Display */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded-lg">
               <div className="flex items-center space-x-2">
-                <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
-                  <span className="text-red-600 text-sm">!</span>
+                <div className="w-5 h-5 bg-red-800 rounded-full flex items-center justify-center">
+                  <span className="text-red-300 text-sm">!</span>
                 </div>
-                <p className="text-red-800 font-medium">Search Error</p>
+                <p className="text-red-200 font-medium">Search Error</p>
               </div>
-              <p className="text-red-700 mt-2">{error}</p>
+              <p className="text-red-300 mt-2">{error}</p>
               <button
                 onClick={() => setError(null)}
-                className="mt-2 text-red-600 hover:text-red-800 underline text-sm"
+                className="mt-2 text-red-400 hover:text-red-200 underline text-sm"
               >
                 Dismiss
               </button>

@@ -4,7 +4,15 @@
 
 @layer base {
   html {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Raleway', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  body {
+    @apply bg-black text-white;
+  }
+  
+  #root {
+    @apply bg-black min-h-screen;
   }
 }
 
@@ -18,11 +26,11 @@
   }
   
   .btn-secondary {
-    @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-primary-500;
+    @apply bg-gray-800 text-white border border-gray-600 hover:bg-gray-700 focus:ring-primary-500;
   }
   
   .btn-outline {
-    @apply bg-transparent text-primary-600 border border-primary-600 hover:bg-primary-50 focus:ring-primary-500;
+    @apply bg-transparent text-primary-400 border border-primary-400 hover:bg-primary-900 focus:ring-primary-500;
   }
   
   .card {
@@ -38,7 +46,7 @@
   }
   
   .form-input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-3 py-2 bg-white border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
   }
   
   .form-label {
@@ -46,7 +54,7 @@
   }
   
   .enrichment-pill {
-    @apply inline-flex items-center gap-2 px-3 py-2 bg-gray-100 border border-gray-300 rounded-full text-sm cursor-pointer transition-all duration-200 hover:bg-primary-50 hover:border-primary-300;
+    @apply inline-flex items-center gap-2 px-3 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-full text-sm cursor-pointer transition-all duration-200 hover:bg-primary-50 hover:border-primary-300;
   }
   
   .enrichment-pill.selected {
@@ -83,11 +91,11 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-gray-100 rounded-full;
+  @apply bg-gray-800 rounded-full;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+  @apply bg-gray-600 rounded-full hover:bg-gray-500;
 }
 
 /* Loading animations */

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, ChevronDown, ChevronRight, MapPin, Users, Building2, Car, Heart, Zap, TreePine, Mountain, Bus, Coffee, BookOpen } from 'lucide-react';
+import { Settings, ChevronDown, ChevronRight, Users, Building2, Heart, Zap, TreePine, Mountain, Bus, Coffee } from 'lucide-react';
 
 interface EnrichmentConfigProps {
   selectedEnrichments: string[];
@@ -160,11 +160,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       ...poiRadii,
       [enrichmentId]: radius
     });
-  };
-
-  const getCategoryIcon = (categoryId: string) => {
-    const category = ENRICHMENT_CATEGORIES.find(c => c.id === categoryId);
-    return category?.icon || <MapPin className="w-5 h-5" />;
   };
 
   return (

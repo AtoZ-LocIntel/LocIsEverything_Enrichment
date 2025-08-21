@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Download, Search, FileText, Building2, Truck } from 'lucide-react';
+import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock } from 'lucide-react';
 
 const Header: React.FC = () => {
   const [showDocs, setShowDocs] = useState(false);
@@ -11,10 +11,10 @@ const Header: React.FC = () => {
           <div className="flex justify-between items-center h-28">
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">
-                {/* Custom Logo - User's actual logo.png with proper spacing */}
+                {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}
                 <div className="w-28 h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-200 flex-shrink-0">
                   <img 
-                    src="/assets/logo.png" 
+                    src="/assets/new-logo.png" 
                     alt="The Location Is Everything Co Logo" 
                     className="w-full h-full object-cover"
                   />
@@ -204,6 +204,80 @@ const Header: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <CheckCircle className="w-4 h-4 text-green-600" />
                         <span className="text-sm text-gray-700">Real-time progress tracking</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rate Limits & Performance */}
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <Clock className="w-5 h-5 text-primary-600" />
+                    <span>Rate Limits & Performance</span>
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                      <h4 className="font-semibold text-yellow-900 mb-3">⚠️ Important: Free API Rate Limits</h4>
+                      <div className="space-y-3 text-sm text-yellow-800">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-3 h-3 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <div>
+                            <span className="font-medium">Nominatim (OpenStreetMap):</span>
+                            <p className="text-xs mt-1">• 1 request per second • Global coverage • High accuracy</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-3 h-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <div>
+                            <span className="font-medium">US Census Bureau:</span>
+                            <p className="text-xs mt-1">• 10 requests per second • US addresses only • Official validation</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <div>
+                            <span className="font-medium">GeoNames:</span>
+                            <p className="text-xs mt-1">• 4 requests per second • Geographic database • Global coverage</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <h4 className="font-semibold text-blue-900 mb-2">Batch Processing Times</h4>
+                        <div className="text-sm text-blue-800 space-y-1">
+                          <div>• <strong>1-100 addresses:</strong> 1-2 minutes</div>
+                          <div>• <strong>100-500 addresses:</strong> 2-8 minutes</div>
+                          <div>• <strong>500-1000 addresses:</strong> 8-20 minutes</div>
+                          <div>• <strong>1000+ addresses:</strong> 20+ minutes</div>
+                        </div>
+                        <p className="text-xs text-blue-700 mt-2">
+                          💡 Processing time includes rate limiting delays to respect API limits
+                        </p>
+                      </div>
+
+                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                        <h4 className="font-semibold text-green-900 mb-2">Performance Features</h4>
+                        <div className="text-sm text-green-800 space-y-1">
+                          <div>• <strong>Automatic fallbacks</strong> between geocoders</div>
+                          <div>• <strong>Progress tracking</strong> with time estimates</div>
+                          <div>• <strong>Rate limit compliance</strong> built-in</div>
+                          <div>• <strong>Error handling</strong> for failed addresses</div>
+                        </div>
+                        <p className="text-xs text-green-700 mt-2">
+                          ✅ Large batches are fully supported with clear expectations
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <h4 className="font-semibold text-gray-900 mb-2">Best Practices for Large Batches</h4>
+                      <div className="text-sm text-gray-700 space-y-1">
+                        <div>• <strong>Start with small batches</strong> to test your data format</div>
+                        <div>• <strong>Use consistent address formatting</strong> for better geocoding success</div>
+                        <div>• <strong>Process during off-peak hours</strong> for better API response times</div>
+                        <div>• <strong>Monitor progress</strong> - you can safely leave the page during processing</div>
                       </div>
                     </div>
                   </div>

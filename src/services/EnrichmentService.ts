@@ -8,13 +8,16 @@ const CORS_PROXIES = [
   { type: "wrap", value: "https://api.allorigins.win/raw?url=" }
 ];
 
+// Rate limiting constants
+const NOMINATIM_RATE_LIMIT_MS = 1100; // 1 request per second + buffer
+
 function proxied(url: string, which: number = 0): string {
   const p = CORS_PROXIES[which];
   if (!p) return url;
   return p.type === "prefix" ? (p.value + url) : (p.value + encodeURIComponent(url));
 }
 
-async function fetchJSONSmart(url: string, opts: RequestInit = {}, retries: number = 1, backoff: number = 500): Promise<any> {
+async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: number = 500): Promise<any> {
   const attempts = USE_CORS_PROXY ? [url, proxied(url, 0), proxied(url, 1)] : [url, proxied(url, 0), proxied(url, 1)];
   let err: any;
   
@@ -41,21 +44,9 @@ async function fetchJSONSmart(url: string, opts: RequestInit = {}, retries: numb
   throw err || new Error("fetchJSONSmart failed");
 }
 
-async function fetchTEXTSmart(url: string, retries: number = 1, backoff: number = 500): Promise<string> {
-  const attempts = USE_CORS_PROXY ? [url, proxied(url, 0), proxied(url, 1)] : [url, proxied(url, 0), proxied(url, 1)];
-  let err: any;
-  
-  for (let i = 0; i < attempts.length; i++) {
-    try {
-      const res = await fetch(attempts[i]);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.text();
-    } catch (e) { 
-      err = e; 
-      if (i < attempts.length - 1) await new Promise(r => setTimeout(r, backoff)); 
-    }
-  }
-  throw err || new Error("fetchTEXTSmart failed");
+// Rate limiting utility
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export class EnrichmentService {
@@ -94,20 +85,42 @@ export class EnrichmentService {
     addresses: string[],
     selectedEnrichments: string[],
     poiRadii: Record<string, number>,
-    onProgress?: (current: number, total: number) => void
+    onProgress?: (current: number, total: number, estimatedTimeRemaining: number) => void
   ): Promise<EnrichmentResult[]> {
     const results: EnrichmentResult[] = [];
+    const startTime = Date.now();
+    
+    // Calculate estimated processing time
+    const estimatedTotalTime = this.calculateEstimatedTime(addresses.length);
+    
+    console.log(`🚀 Starting batch processing of ${addresses.length} addresses`);
+    console.log(`⏱️  Estimated total time: ${this.formatTime(estimatedTotalTime)}`);
+    console.log(`📊 Rate limits: Nominatim (1/sec), US Census (10/sec), GeoNames (4/sec)`);
     
     for (let i = 0; i < addresses.length; i++) {
+      const currentTime = Date.now();
+      const elapsedTime = currentTime - startTime;
+      const estimatedTimeRemaining = Math.max(0, estimatedTotalTime - elapsedTime);
+      
       try {
+        console.log(`📍 Processing ${i + 1}/${addresses.length}: ${addresses[i]}`);
+        
         const result = await this.enrichSingleLocation(
           addresses[i], 
           selectedEnrichments, 
           poiRadii
         );
         results.push(result);
+        
+        // Rate limiting delay between requests
+        if (i < addresses.length - 1) {
+          const delay = this.calculateDelayForNextRequest();
+          console.log(`⏳ Rate limiting: waiting ${delay}ms before next request...`);
+          await sleep(delay);
+        }
+        
       } catch (error) {
-        console.error(`Failed to enrich address ${i + 1}: ${addresses[i]}`, error);
+        console.error(`❌ Failed to enrich address ${i + 1}: ${addresses[i]}`, error);
         // Add a placeholder result for failed addresses
         results.push({
           location: {
@@ -123,14 +136,43 @@ export class EnrichmentService {
       }
       
       if (onProgress) {
-        onProgress(i + 1, addresses.length);
+        onProgress(i + 1, addresses.length, estimatedTimeRemaining);
       }
     }
 
+    const totalTime = Date.now() - startTime;
+    console.log(`✅ Batch processing complete in ${this.formatTime(totalTime)}`);
+    
     return results;
   }
 
-  // Working geocoding functions from original geocoder.html
+  // Calculate estimated processing time based on rate limits
+  private calculateEstimatedTime(addressCount: number): number {
+    // Conservative estimate: 1.2 seconds per address (includes rate limiting)
+    return addressCount * 1200;
+  }
+
+  // Format time in human-readable format
+  private formatTime(ms: number): string {
+    if (ms < 60000) {
+      return `${Math.round(ms / 1000)} seconds`;
+    } else if (ms < 3600000) {
+      return `${Math.round(ms / 60000)} minutes`;
+    } else {
+      const hours = Math.floor(ms / 3600000);
+      const minutes = Math.round((ms % 3600000) / 60000);
+      return `${hours}h ${minutes}m`;
+    }
+  }
+
+  // Calculate appropriate delay based on geocoder usage
+  private calculateDelayForNextRequest(): number {
+    // For now, use Nominatim rate limit as primary constraint
+    // In future, could track which geocoder was used last
+    return NOMINATIM_RATE_LIMIT_MS;
+  }
+
+  // Working geocoding functions from original geocoder.html with rate limiting
   private async geocodeNominatim(q: string): Promise<GeocodeResult | null> {
     try {
       const u = new URL("https://nominatim.openstreetmap.org/search");
