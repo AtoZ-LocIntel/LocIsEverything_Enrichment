@@ -135,7 +135,11 @@ function App() {
 
           <div className="grid lg:grid-cols-2 gap-8 mb-8">
             <SingleSearch onSearch={handleSingleSearch} />
-            <BatchProcessing onComplete={handleBatchComplete} />
+            <BatchProcessing 
+              onComplete={handleBatchComplete} 
+              selectedEnrichments={selectedEnrichments}
+              poiRadii={poiRadii}
+            />
           </div>
 
           <EnrichmentConfig

@@ -4,9 +4,11 @@ import Papa from 'papaparse';
 
 interface BatchProcessingProps {
   onComplete: (results: any[]) => void;
+  selectedEnrichments: string[];
+  poiRadii: Record<string, number>;
 }
 
-const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete }) => {
+const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedEnrichments, poiRadii }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentAddress, setCurrentAddress] = useState('');
@@ -57,16 +59,17 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete }) => {
         setCurrentAddress(address);
         setProgress(((i + 1) / addresses.length) * 100);
         
-        // Calculate estimated time remaining
-        const estimatedTimePerAddress = 1.2; // seconds (conservative estimate)
+        // Calculate estimated time remaining based on number of enrichments
+        const baseTimePerAddress = 0.8; // base geocoding time
+        const enrichmentTime = selectedEnrichments.length * 0.3; // additional time per enrichment
+        const estimatedTimePerAddress = baseTimePerAddress + enrichmentTime;
         const remainingAddresses = addresses.length - i - 1;
         const estimatedSeconds = remainingAddresses * estimatedTimePerAddress;
         setEstimatedTimeRemaining(estimatedSeconds);
 
         if (address.trim()) {
           try {
-            const defaultEnrichments = ['elev', 'airq', 'fips'];
-            const result = await enrichmentService.enrichSingleLocation(address, defaultEnrichments, {});
+            const result = await enrichmentService.enrichSingleLocation(address, selectedEnrichments, poiRadii);
             results.push(result);
           } catch (error) {
             console.error(`Failed to enrich address: ${address}`, error);
@@ -148,9 +151,9 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete }) => {
                 <span className="font-medium">GeoNames:</span>
                 <span>4 requests/second (geographic database)</span>
               </div>
-              <div className="mt-3 p-2 bg-blue-100 rounded text-xs">
-                <strong>Processing Time:</strong> ~1.2 seconds per address (includes rate limiting delays)
-              </div>
+                             <div className="mt-3 p-2 bg-blue-100 rounded text-xs">
+                 <strong>Processing Time:</strong> ~{Math.round((0.8 + selectedEnrichments.length * 0.3) * 10) / 10}s per address (includes rate limiting delays)
+               </div>
             </div>
           </div>
         )}
@@ -234,9 +237,9 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete }) => {
                 <p className="text-sm font-medium text-green-900">
                   Estimated time remaining: {formatTime(estimatedTimeRemaining)}
                 </p>
-                <p className="text-xs text-green-700">
-                  Total estimated time: {formatTime(totalAddresses * 1.2)}
-                </p>
+                                 <p className="text-xs text-green-700">
+                   Total estimated time: {formatTime(totalAddresses * (0.8 + selectedEnrichments.length * 0.3))}
+                 </p>
               </div>
             </div>
           </div>
