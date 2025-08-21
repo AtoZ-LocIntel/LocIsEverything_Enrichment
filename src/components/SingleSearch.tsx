@@ -6,7 +6,7 @@ interface SingleSearchProps {
 }
 
 const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch }) => {
-  const [address, setAddress] = useState('8 Valley Dr, Gilford, NH');
+  const [address, setAddress] = useState('1600 Pennsylvania Avenue NW, Washington, DC 20500');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,7 +83,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch }) => {
             <li>• Include city and state for better accuracy</li>
             <li>• Use ZIP codes when available</li>
             <li>• Results include coordinates, demographics, and nearby POIs</li>
-            <li>• Try the pre-filled example: "8 Valley Dr, Gilford, NH"</li>
+            <li>• Try the pre-filled example: "1600 Pennsylvania Avenue NW, Washington, DC 20500"</li>
           </ul>
         </div>
       </div>
