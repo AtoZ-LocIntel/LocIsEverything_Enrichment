@@ -171,7 +171,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Enrichment Configuration</h3>
-            <p className="text-sm text-gray-600">Select data sources and configure search radii</p>
+            <p className="text-sm text-gray-700">Select data sources and configure search radii</p>
           </div>
         </div>
       </div>
@@ -190,12 +190,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="text-gray-600">
+                    <div className="text-gray-700">
                       {category.icon}
                     </div>
                     <div className="text-left">
                       <h4 className="font-medium text-gray-900">{category.title}</h4>
-                      <p className="text-sm text-gray-600">{category.description}</p>
+                      <p className="text-sm text-gray-700">{category.description}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -233,13 +233,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer">
                                   {enrichment.label}
                                 </label>
-                                <p className="text-sm text-gray-600">{enrichment.description}</p>
+                                <p className="text-sm text-gray-700">{enrichment.description}</p>
                               </div>
                             </div>
 
                             {enrichment.isPOI && isSelected && (
                               <div className="flex items-center space-x-2">
-                                <span className="text-sm text-gray-600">Radius:</span>
+                                <span className="text-sm text-gray-900 font-medium">Radius:</span>
                                 <input
                                   type="number"
                                   min="0.1"
@@ -247,9 +247,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   step="0.1"
                                   value={currentRadius}
                                   onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                                  className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
+                                  className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 text-gray-900 font-medium"
                                 />
-                                <span className="text-sm text-gray-600">miles</span>
+                                <span className="text-sm text-gray-900 font-medium">miles</span>
                               </div>
                             )}
                           </div>

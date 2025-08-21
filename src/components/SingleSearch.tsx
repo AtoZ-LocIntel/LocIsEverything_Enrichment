@@ -33,7 +33,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch }) => {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Single Address Search</h3>
-            <p className="text-sm text-gray-600">Geocode and enrich a single location</p>
+            <p className="text-sm text-gray-700">Geocode and enrich a single location</p>
           </div>
         </div>
       </div>
