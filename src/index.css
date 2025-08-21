@@ -1,40 +1,115 @@
-/* Global styles for Leads Nearby (Vite + React)
-   - Ensures the background image sits behind every page
-   - Works on mobile (avoids iOS background-attachment issues)
-*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-html, body, #root {
-  height: 100%;
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
 }
 
-/* Base body styling (text color mostly controlled by component classes) */
-body {
-  margin: 0;
-  color: #fff; /* safe default; components also set text colors */
-  background: #0a0f14; /* fallback color while image loads */
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-primary-500;
+  }
+  
+  .btn-outline {
+    @apply bg-transparent text-primary-600 border border-primary-600 hover:bg-primary-50 focus:ring-primary-500;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .card-header {
+    @apply px-6 py-4 border-b border-gray-200 bg-gray-50 rounded-t-xl;
+  }
+  
+  .card-body {
+    @apply px-6 py-4;
+  }
+  
+  .form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+  }
+  
+  .enrichment-pill {
+    @apply inline-flex items-center gap-2 px-3 py-2 bg-gray-100 border border-gray-300 rounded-full text-sm cursor-pointer transition-all duration-200 hover:bg-primary-50 hover:border-primary-300;
+  }
+  
+  .enrichment-pill.selected {
+    @apply bg-primary-100 border-primary-500 text-primary-700;
+  }
 }
 
-/* Fixed pseudo-element so the image stays put and covers the viewport */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: url("/background.png") center / cover no-repeat;
-  opacity: 0.35;                 /* adjust to taste */
-  filter: saturate(0.95) contrast(1.05);
-  z-index: -1;                   /* ensures it's behind the app */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent;
+  }
+  
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  }
 }
 
-/* Optional translucent panels for readability on top of the image */
-.panel {
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+/* Leaflet map customizations */
+.leaflet-container {
+  @apply rounded-lg border border-gray-200;
 }
 
-/* Utility for faint section separators over photo backgrounds */
-.divider {
-  border-color: rgba(255, 255, 255, 0.08);
+.leaflet-popup-content {
+  @apply text-sm;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply rounded-lg;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+}
+
+/* Loading animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
