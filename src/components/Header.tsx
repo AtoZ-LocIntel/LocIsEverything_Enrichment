@@ -3,6 +3,7 @@ import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database,
 
 const Header: React.FC = () => {
   const [showDocs, setShowDocs] = useState(false);
+  const [showDataSources, setShowDataSources] = useState(false);
 
   return (
     <>
@@ -20,25 +21,39 @@ const Header: React.FC = () => {
                   />
                 </div>
                 <div className="flex-shrink-0">
-                  <h1 className="text-xl font-bold text-gray-900">The Location Is Everything Co</h1>
-                  <p className="text-sm text-gray-500">Enrichment Platform</p>
+                  <h1 className="text-2xl font-bold text-gray-900">Enrichment Platform</h1>
                 </div>
               </div>
             </div>
 
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              <button 
+                onClick={() => {
+                  const element = document.querySelector('[data-section="single-search"]');
+                  element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+              >
                 <MapPin className="w-4 h-4 inline mr-2" />
                 Single Search
-              </a>
-              <a href="#" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              </button>
+              <button 
+                onClick={() => {
+                  const element = document.querySelector('[data-section="batch-processing"]');
+                  element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+              >
                 <BarChart3 className="w-4 h-4 inline mr-2" />
                 Batch Processing
-              </a>
-              <a href="#" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              </button>
+              <button 
+                onClick={() => setShowDataSources(true)}
+                className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+              >
                 <Globe className="w-4 h-4 inline mr-2" />
                 Data Sources
-              </a>
+              </button>
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -326,6 +341,147 @@ const Header: React.FC = () => {
                       <FileText className="w-4 h-4 mr-2" />
                       Upload CSV
                     </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Data Sources Modal */}
+      {showDataSources && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
+                  <Globe className="w-6 h-6 text-primary-600" />
+                  <span>Data Sources & Usage Information</span>
+                </h2>
+                <button
+                  onClick={() => setShowDataSources(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-8">
+                {/* Geocoding Services */}
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <Map className="w-5 h-5 text-primary-600" />
+                    <span>Geocoding Services</span>
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h4 className="font-semibold text-blue-900 mb-2">Nominatim (OpenStreetMap)</h4>
+                      <div className="text-sm text-blue-800 space-y-1">
+                        <div>• <strong>Coverage:</strong> Global</div>
+                        <div>• <strong>Rate Limit:</strong> 1 request/second</div>
+                        <div>• <strong>Use Case:</strong> International addresses, open data</div>
+                        <div>• <strong>Accuracy:</strong> Community-maintained, varies by region</div>
+                      </div>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <h4 className="font-semibold text-green-900 mb-2">US Census Geocoder</h4>
+                      <div className="text-sm text-green-800 space-y-1">
+                        <div>• <strong>Coverage:</strong> United States only</div>
+                        <div>• <strong>Rate Limit:</strong> 10 requests/second</div>
+                        <div>• <strong>Use Case:</strong> US addresses, official validation</div>
+                        <div>• <strong>Accuracy:</strong> High for US addresses</div>
+                      </div>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                      <h4 className="font-semibold text-purple-900 mb-2">GeoNames</h4>
+                      <div className="text-sm text-purple-800 space-y-1">
+                        <div>• <strong>Coverage:</strong> Geographic features worldwide</div>
+                        <div>• <strong>Rate Limit:</strong> 4 requests/second</div>
+                        <div>• <strong>Use Case:</strong> Place names, geographic entities</div>
+                        <div>• <strong>Accuracy:</strong> Excellent for geographic features</div>
+                      </div>
+                    </div>
+                    <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                      <h4 className="font-semibold text-orange-900 mb-2">PLUTO NYC</h4>
+                      <div className="text-sm text-orange-800 space-y-1">
+                        <div>• <strong>Coverage:</strong> New York City only</div>
+                        <div>• <strong>Rate Limit:</strong> No limit</div>
+                        <div>• <strong>Use Case:</strong> NYC parcel-level precision</div>
+                        <div>• <strong>Accuracy:</strong> Highest for NYC addresses</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enrichment Data Sources */}
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <Database className="w-5 h-5 text-primary-600" />
+                    <span>Enrichment Data Sources</span>
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                      <h4 className="font-semibold text-indigo-900 mb-2">Environmental Data</h4>
+                      <div className="text-sm text-indigo-800 space-y-1">
+                        <div>• <strong>Elevation:</strong> USGS elevation data</div>
+                        <div>• <strong>Air Quality:</strong> EPA air quality monitoring</div>
+                        <div>• <strong>Weather Alerts:</strong> National Weather Service</div>
+                        <div>• <strong>Flood Zones:</strong> FEMA flood hazard areas</div>
+                      </div>
+                    </div>
+                    <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+                      <h4 className="font-semibold text-teal-900 mb-2">Demographic Data</h4>
+                      <div className="text-sm text-teal-800 space-y-1">
+                        <div>• <strong>Population:</strong> US Census ACS 5-year estimates</div>
+                        <div>• <strong>Income:</strong> Median household income data</div>
+                        <div>• <strong>Age:</strong> Median age statistics</div>
+                        <div>• <strong>Geography:</strong> FIPS codes for state/county/tract</div>
+                      </div>
+                    </div>
+                    <div className="bg-pink-50 p-4 rounded-lg border border-pink-200">
+                      <h4 className="font-semibold text-pink-900 mb-2">Points of Interest</h4>
+                      <div className="text-sm text-pink-800 space-y-1">
+                        <div>• <strong>Schools:</strong> Educational institutions</div>
+                        <div>• <strong>Hospitals:</strong> Medical facilities</div>
+                        <div>• <strong>Transportation:</strong> Airports, trails, railroads</div>
+                        <div>• <strong>Infrastructure:</strong> Power plants, cell towers</div>
+                      </div>
+                    </div>
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                      <h4 className="font-semibold text-yellow-900 mb-2">Specialized Data</h4>
+                      <div className="text-sm text-yellow-800 space-y-1">
+                        <div>• <strong>Earthquakes:</strong> USGS seismic activity</div>
+                        <div>• <strong>Volcanoes:</strong> Active and dormant volcanoes</div>
+                        <div>• <strong>Breweries:</strong> Craft brewery locations</div>
+                        <div>• <strong>Wikipedia:</strong> Nearby points of interest</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Data Quality & Usage */}
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Data Quality & Best Practices</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <h4 className="font-semibold text-gray-900 mb-2">Data Accuracy</h4>
+                      <div className="text-sm text-gray-700 space-y-1">
+                        <div>• <strong>Geocoding:</strong> 95%+ success rate for valid addresses</div>
+                        <div>• <strong>Enrichment:</strong> Real-time data from official sources</div>
+                        <div>• <strong>Coverage:</strong> Global with regional specializations</div>
+                        <div>• <strong>Updates:</strong> Regular updates from data providers</div>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <h4 className="font-semibold text-gray-900 mb-2">Usage Guidelines</h4>
+                      <div className="text-sm text-gray-700 space-y-1">
+                        <div>• <strong>Rate Limits:</strong> Built-in compliance with all APIs</div>
+                        <div>• <strong>Attribution:</strong> Required for some data sources</div>
+                        <div>• <strong>Commercial Use:</strong> Check individual source terms</div>
+                        <div>• <strong>Data Retention:</strong> Results available for immediate download</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
