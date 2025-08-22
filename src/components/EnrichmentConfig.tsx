@@ -128,9 +128,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   };
 
   const handleRadiusChange = (enrichmentId: string, radius: number) => {
+    // Cap radius at 5 miles maximum for performance and accuracy
+    const cappedRadius = Math.min(radius, 5);
     onPoiRadiiChange({
       ...poiRadii,
-      [enrichmentId]: radius
+      [enrichmentId]: cappedRadius
     });
   };
 
@@ -210,18 +212,33 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             </div>
 
                             {enrichment.isPOI && isSelected && (
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm text-gray-900 font-medium">Radius:</span>
-                                <input
-                                  type="number"
-                                  min="0.1"
-                                  max="100"
-                                  step="0.1"
-                                  value={currentRadius}
-                                  onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                                  className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 text-gray-900 font-medium"
-                                />
-                                <span className="text-sm text-gray-900 font-medium">miles</span>
+                              <div className="flex flex-col space-y-2">
+                                {/* Radius Note */}
+                                <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                                  ⚠️ Maximum radius: 5 miles (for performance & accuracy)
+                                </div>
+                                
+                                {/* Radius Input */}
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-sm text-gray-900 font-medium">Radius:</span>
+                                  <input
+                                    type="number"
+                                    min="0.1"
+                                    max="5"
+                                    step="0.1"
+                                    value={currentRadius}
+                                    onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
+                                    className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 text-gray-900 font-medium"
+                                  />
+                                  <span className="text-sm text-gray-900 font-medium">miles</span>
+                                  
+                                  {/* Show warning if user tries to exceed 5 miles */}
+                                  {currentRadius > 5 && (
+                                    <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                                      Capped at 5 miles
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             )}
                           </div>

@@ -88,24 +88,24 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_gyms', label: 'Gyms & Fitness', description: 'Fitness centers and gyms', isPOI: true, defaultRadius: 3, category: 'health', section: 'health' },
   
   // Transportation
-  { id: 'poi_tnm_airports', label: 'Airports', description: 'Commercial and private airports', isPOI: true, defaultRadius: 10, category: 'transportation', section: 'transportation' },
-  { id: 'poi_tnm_railroads', label: 'Railroads', description: 'Rail lines and stations', isPOI: true, defaultRadius: 15, category: 'transportation', section: 'transportation' },
-  { id: 'poi_tnm_trails', label: 'Trails', description: 'Hiking and biking trails', isPOI: true, defaultRadius: 10, category: 'transportation', section: 'transportation' },
+  { id: 'poi_tnm_airports', label: 'Airports', description: 'Commercial and private airports', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
+  { id: 'poi_tnm_railroads', label: 'Railroads', description: 'Rail lines and stations', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
   
   // Infrastructure
   { id: 'poi_power_plants_openei', label: 'Power Plants', description: 'Electric power generation facilities', isPOI: true, defaultRadius: 25, category: 'infrastructure', section: 'infrastructure' },
   { id: 'poi_substations', label: 'Substations', description: 'Electrical substations', isPOI: true, defaultRadius: 6, category: 'infrastructure', section: 'infrastructure' },
   
   // Recreation
-  { id: 'poi_tnm_trailheads', label: 'Trailheads', description: 'Hiking trail starting points', isPOI: true, defaultRadius: 10, category: 'recreation', section: 'recreation' },
+  { id: 'poi_tnm_trailheads', label: 'Trailheads', description: 'Hiking trail starting points', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
+  { id: 'poi_tnm_trails', label: 'Trails', description: 'Hiking and biking trails', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
   { id: 'poi_cinemas', label: 'Cinemas', description: 'Movie theaters', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
   { id: 'poi_hotels', label: 'Hotels', description: 'Accommodation options', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
-  { id: 'poi_golf_courses', label: 'Golf Courses', description: 'Golf courses and country clubs', isPOI: true, defaultRadius: 15, category: 'recreation', section: 'recreation' },
-  { id: 'poi_boat_ramps', label: 'Boat Ramps', description: 'Boat launches and marinas', isPOI: true, defaultRadius: 10, category: 'recreation', section: 'recreation' },
+  { id: 'poi_golf_courses', label: 'Golf Courses', description: 'Golf courses and country clubs', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
+  { id: 'poi_boat_ramps', label: 'Boat Ramps', description: 'Boat launches and marinas', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
   
   // Quirky
-  { id: 'poi_breweries', label: 'Breweries', description: 'Craft breweries with names, types, addresses, contact info', isPOI: true, defaultRadius: 10, category: 'quirky', section: 'quirky' },
-  { id: 'poi_wikipedia', label: 'Wikipedia Articles', description: 'Haunted sites, historic oddities, museums, and quirky landmarks with intelligent categorization', isPOI: true, defaultRadius: 3, category: 'quirky', section: 'quirky' }
+  { id: 'poi_breweries', label: 'Breweries', description: 'Craft breweries with names, types, addresses, contact info', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' },
+  { id: 'poi_wikipedia', label: 'Wikipedia Articles', description: 'Haunted sites, historic oddities, museums, and quirky landmarks with intelligent categorization', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' }
 ];
 
 class POIConfigManager {

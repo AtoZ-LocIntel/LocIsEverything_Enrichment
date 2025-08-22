@@ -283,7 +283,8 @@ export class EnrichmentService {
     lon: number, 
     poiRadii: Record<string, number>
   ): Promise<Record<string, any>> {
-    const radius = poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId);
+    // Cap all radii at 5 miles maximum for performance and accuracy
+    const radius = Math.min(poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId), 5);
 
     switch (enrichmentId) {
       case 'elev':
@@ -432,9 +433,16 @@ export class EnrichmentService {
       // Use Overpass API for OSM-based POIs
       const filters = this.getFiltersFor(enrichmentId);
       if (filters.length > 0) {
-        const count = await this.overpassCountMiles(lat, lon, radius, filters);
-        const key = `${enrichmentId}_count_${radius}mi`;
-        return { [key]: count.count };
+        const result = await this.overpassCountMiles(lat, lon, radius, filters);
+        const countKey = `${enrichmentId}_count_${radius}mi`;
+        const poiResult: Record<string, any> = { [countKey]: result.count };
+        
+        // Include detailed POI data for mapping (if available)
+        if ((result as any).detailed_pois && (result as any).detailed_pois.length > 0) {
+          poiResult[`${enrichmentId}_detailed`] = (result as any).detailed_pois;
+        }
+        
+        return poiResult;
       }
       
       // Return 0 for POI types without proper OSM filters
@@ -650,7 +658,31 @@ export class EnrichmentService {
          console.log(`🔍 Sample POIs:`, samplePOIs);
        }
       
-      return { count: nearbyPOIs.length, elements: nearbyPOIs };
+      // Return both count and detailed POI data for mapping
+      const result: any = { count: nearbyPOIs.length, elements: nearbyPOIs };
+      
+      // Add detailed POI data for single search results (to enable mapping)
+      // We'll include up to 50 POIs for mapping to avoid overwhelming the map
+      if (nearbyPOIs.length > 0) {
+        const sortedPOIs = [...nearbyPOIs].sort((a, b) => a.distance_miles - b.distance_miles);
+        result.detailed_pois = sortedPOIs.slice(0, 50).map(poi => ({
+          id: poi.id,
+          type: poi.type,
+          name: poi.tags?.name || 'Unnamed',
+          lat: poi.lat || poi.center?.lat,
+          lon: poi.lon || poi.center?.lon,
+          distance_miles: poi.distance_miles,
+          tags: poi.tags,
+          amenity: poi.tags?.amenity,
+          shop: poi.tags?.shop,
+          tourism: poi.tags?.tourism,
+          address: poi.tags?.['addr:street'] || poi.tags?.['addr:full'],
+          phone: poi.tags?.phone,
+          website: poi.tags?.website
+        }));
+      }
+      
+      return result;
     } catch (error) {
       console.error('Overpass API error:', error);
       return { count: 0, elements: [] };
@@ -668,23 +700,25 @@ export class EnrichmentService {
       'poi_pharmacies': 3,
       'poi_gas': 3,
       'poi_hotels': 5,
-      'poi_airports': 10,
-      'poi_power_plants': 25,
-      'poi_substations': 6,
-      'poi_eq': 100,
+      'poi_airports': 5,
+      'poi_power_plants': 5,
+      'poi_substations': 5,
+      'poi_eq': 5,
       'poi_fema_floodzones': 2,
-      'poi_usgs_volcano': 100,
-      'poi_wikipedia': 3,
+      'poi_usgs_volcano': 5,
+      'poi_wikipedia': 5,
       'poi_police_stations': 5,
       'poi_fire_stations': 5,
       'poi_urgent_care': 5,
-      'poi_golf_courses': 15,
-      'poi_boat_ramps': 10,
+      'poi_golf_courses': 5,
+      'poi_boat_ramps': 5,
       'poi_cafes_coffee': 3,
       'poi_markets': 5
     };
     
-    return defaultRadii[enrichmentId] || 5;
+    // Cap all radii at 5 miles maximum
+    const radius = defaultRadii[enrichmentId] || 5;
+    return Math.min(radius, 5);
   }
 
   
@@ -737,6 +771,8 @@ export class EnrichmentService {
           distance_miles: Math.round(distance * 0.621371 * 100) / 100,
           page_id: pageId,
           categories,
+          lat: article.lat,
+          lon: article.lon,
           url: `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`
         };
       });
