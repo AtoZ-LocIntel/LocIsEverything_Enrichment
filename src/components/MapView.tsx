@@ -184,16 +184,16 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
         if (results.length === 1) {
           console.log(`🎯 FORCING map to geocoded location: [${lat}, ${lon}]`);
           
-          // Set the view immediately
-          map.setView([lat, lon], 14, { animate: false });
+                     // Set the view immediately with much higher zoom for block-level detail
+           map.setView([lat, lon], 19, { animate: false });
           
           // Add POI markers (but don't let them affect the map view)
           addPOIMarkers(map, result);
           
-          // Force the map back every 100ms for the next 1 second to ensure it stays put
-          const forceView = () => {
-            map.setView([lat, lon], 14, { animate: false });
-          };
+                     // Force the map back every 100ms for the next 1 second to ensure it stays put
+           const forceView = () => {
+             map.setView([lat, lon], 19, { animate: false });
+           };
           
           setTimeout(forceView, 50);
           setTimeout(forceView, 100);
@@ -208,11 +208,11 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
             const targetLat = lat;
             const targetLon = lon;
             
-            // If map moved more than 0.01 degrees from target, force it back
-            if (Math.abs(currentCenter.lat - targetLat) > 0.01 || Math.abs(currentCenter.lng - targetLon) > 0.01) {
-              console.log(`🚫 Map moved to [${currentCenter.lat}, ${currentCenter.lng}], forcing back to [${targetLat}, ${targetLon}]`);
-              map.setView([targetLat, targetLon], 14, { animate: false });
-            }
+                         // If map moved more than 0.01 degrees from target, force it back
+             if (Math.abs(currentCenter.lat - targetLat) > 0.01 || Math.abs(currentCenter.lng - targetLon) > 0.01) {
+               console.log(`🚫 Map moved to [${currentCenter.lat}, ${currentCenter.lng}], forcing back to [${targetLat}, ${targetLon}]`);
+               map.setView([targetLat, targetLon], 19, { animate: false });
+             }
           };
           
           map.on('moveend', onMoveEnd);
