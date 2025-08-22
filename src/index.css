@@ -77,6 +77,15 @@
   @apply rounded-lg border border-gray-200;
 }
 
+/* Map view layout fixes */
+.map-view-container {
+  @apply relative h-full overflow-hidden;
+}
+
+.map-container {
+  @apply w-full h-full relative;
+}
+
 .leaflet-popup-content {
   @apply text-sm;
 }

@@ -58,6 +58,12 @@ function App() {
       Object.keys(result.enrichments).forEach(key => enrichmentKeys.add(key));
     });
 
+    // Add special Wikipedia article columns
+    if (enrichmentKeys.has('poi_wikipedia_articles')) {
+      enrichmentKeys.add('poi_wikipedia_top_articles');
+      enrichmentKeys.add('poi_wikipedia_categories');
+    }
+
     const allHeaders = [...headers, ...Array.from(enrichmentKeys)];
     
     const csvContent = [
@@ -72,7 +78,29 @@ function App() {
         ];
         
         enrichmentKeys.forEach(key => {
-          row.push(result.enrichments[key] || '');
+          let value = result.enrichments[key] || '';
+          
+          // Special handling for Wikipedia POI data
+          if (key === 'poi_wikipedia_top_articles') {
+            const articles = result.enrichments.poi_wikipedia_articles;
+            if (Array.isArray(articles) && articles.length > 0) {
+              const topArticles = articles.slice(0, 3).map((a: any) => a.title).join('; ');
+              value = topArticles;
+            }
+          } else if (key === 'poi_wikipedia_categories') {
+            const articles = result.enrichments.poi_wikipedia_articles;
+            if (Array.isArray(articles) && articles.length > 0) {
+              const allCategories = new Set<string>();
+              articles.forEach((a: any) => {
+                if (Array.isArray(a.categories)) {
+                  a.categories.forEach((c: string) => allCategories.add(c));
+                }
+              });
+              value = Array.from(allCategories).join('; ');
+            }
+          }
+          
+          row.push(value);
         });
         
         return row.join(',');
@@ -96,7 +124,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className={`${viewMode === 'map' ? 'h-screen' : 'min-h-screen'} bg-black flex flex-col`}>
       <Header />
       
       {viewMode === 'config' ? (
@@ -112,6 +140,52 @@ function App() {
             <p className="text-lg text-primary-400 font-medium mt-4">
               Powered by The Location Is Everything Co
             </p>
+          </div>
+
+          {/* Enrichment Options Preview */}
+          <div className="mb-8 p-6 bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl border border-blue-700">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-white mb-2">🎯 Available Enrichment Options</h2>
+              <p className="text-blue-200">Configure your search to include any combination of these data sources</p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <div className="bg-blue-800/50 p-4 rounded-lg border border-blue-600">
+                <h3 className="font-semibold text-blue-100 mb-2">📍 Core Location Data</h3>
+                <ul className="text-blue-200 space-y-1">
+                  <li>• Elevation & Air Quality</li>
+                  <li>• Census FIPS Codes</li>
+                  <li>• Demographics (Population, Income, Age)</li>
+                  <li>• Weather Alerts</li>
+                </ul>
+              </div>
+              
+              <div className="bg-purple-800/50 p-4 rounded-lg border border-purple-600">
+                <h3 className="font-semibold text-purple-100 mb-2">🏢 Points of Interest</h3>
+                <ul className="text-purple-200 space-y-1">
+                  <li>• Schools, Hospitals, Parks, Police & Fire</li>
+                  <li>• Retail & Restaurants</li>
+                  <li>• Transportation & Infrastructure</li>
+                  <li>• Health & Professional Services</li>
+                </ul>
+              </div>
+              
+              <div className="bg-green-800/50 p-4 rounded-lg border border-green-600">
+                <h3 className="font-semibold text-green-100 mb-2">🌍 Specialized Data</h3>
+                <ul className="text-green-200 space-y-1">
+                  <li>• Environmental Hazards</li>
+                  <li>• Power Plants & Cell Towers</li>
+                  <li>• Breweries & Enhanced Wikipedia (haunted sites, oddities, museums)</li>
+                  <li>• Recreation & Entertainment (Golf, Boating, Cinemas)</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="text-center mt-4">
+              <p className="text-blue-200 text-sm">
+                💡 <strong>Scroll down</strong> to see the full configuration panel with all options and customizable search radii
+              </p>
+            </div>
           </div>
 
           {/* Error Display */}
@@ -154,10 +228,12 @@ function App() {
           />
         </div>
       ) : (
-        <MapView
-          results={enrichmentResults}
-          onBackToConfig={handleBackToConfig}
-        />
+        <div className="flex-1">
+          <MapView
+            results={enrichmentResults}
+            onBackToConfig={handleBackToConfig}
+          />
+        </div>
       )}
     </div>
   );

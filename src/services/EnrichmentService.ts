@@ -1,5 +1,6 @@
 import { GeocodeResult } from '../lib/types';
 import { EnrichmentResult } from '../App';
+import { poiConfigManager } from '../lib/poiConfig';
 
 // CORS proxy helpers from original geocoder.html
 const USE_CORS_PROXY = true;
@@ -52,7 +53,7 @@ function sleep(ms: number): Promise<void> {
 export class EnrichmentService {
   
   constructor() {
-    // No need to instantiate CompositeGeocoder for now
+    // Using your proven working geocoding approach instead of CompositeGeocoder
   }
 
   async enrichSingleLocation(
@@ -229,17 +230,30 @@ export class EnrichmentService {
   }
 
   private async geocodeAddress(q: string): Promise<GeocodeResult | null> {
-    // Try Nominatim first
+    // Use your proven working geocoding approach
+    console.log(`🔍 Geocoding address: ${q}`);
+    
+    // Try Nominatim first (most reliable)
     let g = await this.geocodeNominatim(q);
-    if (g) return g;
+    if (g) {
+      console.log(`✅ Geocoded via Nominatim: ${g.lat}, ${g.lon}`);
+      return g;
+    }
     
     // Try US Census for US addresses
     if (/\b(US|USA|United States|[A-Z]{2})\b/i.test(q) || /,\s*[A-Z]{2}\b/.test(q)) {
       g = await this.geocodeUSCensus(q);
+      if (g) {
+        console.log(`✅ Geocoded via US Census: ${g.lat}, ${g.lon}`);
+        return g;
+      }
     }
     
-    return g;
+    console.log(`❌ Geocoding failed for: ${q}`);
+    return null;
   }
+
+
 
   private async runEnrichments(
     lat: number, 
@@ -288,8 +302,16 @@ export class EnrichmentService {
       case 'nws_alerts':
         return { nws_active_alerts: await this.getNWSAlerts(lat, lon) };
       
+      case 'poi_wikipedia':
+        return await this.getWikipediaPOIs(lat, lon, radius);
+      
       default:
         if (enrichmentId.startsWith('poi_')) {
+          // Check if this is a custom POI type
+          const customPOI = this.getCustomPOIData(enrichmentId);
+          if (customPOI) {
+            return await this.getCustomPOICount(enrichmentId, lat, lon, radius, customPOI);
+          }
           return await this.getPOICount(enrichmentId, lat, lon, radius);
         }
         return {};
@@ -415,10 +437,11 @@ export class EnrichmentService {
         return { [key]: count.count };
       }
       
-      // Fallback to mock count for other POI types
-      const mockCount = Math.floor(Math.random() * 10) + 1;
+      // Return 0 for POI types without proper OSM filters
+      // This prevents fake random numbers from appearing
       const key = `${enrichmentId}_count_${radius}mi`;
-      return { [key]: mockCount };
+      console.log(`⚠️  No OSM filters found for ${enrichmentId}, returning 0`);
+      return { [key]: 0 };
     } catch (error) {
       console.error(`POI count failed for ${enrichmentId}:`, error);
       const key = `${enrichmentId}_count_${radius}mi`;
@@ -427,6 +450,9 @@ export class EnrichmentService {
   }
 
   private getFiltersFor(id: string): string[] {
+    // Add comprehensive logging to debug POI filter issues
+    console.log(`🔍 Looking for OSM filters for: ${id}`);
+    
     if (id === "poi_schools") return ["amenity=school"];
     if (id === "poi_hospitals") return ["amenity=hospital"];
     if (id === "poi_parks") return ["leisure=park"];
@@ -442,15 +468,60 @@ export class EnrichmentService {
     if (id === "poi_hotels") return ["tourism=hotel", "tourism=hostel"];
     if (id === "poi_breweries") return ["craft=brewery", "amenity=pub"];
     
+    // Updated police and fire station filters using canonical OSM tags
+    if (id === "poi_police_stations") return ["amenity=police"];
+    if (id === "poi_fire_stations") return ["amenity=fire_station"];
+    
+    if (id === "poi_urgent_care") return ["amenity=clinic"];
+    if (id === "poi_golf_courses") return ["leisure=golf_course"];
+    if (id === "poi_boat_ramps") return ["leisure=boat_ramp"];
+    if (id === "poi_cafes_coffee") return ["amenity=cafe", "shop=coffee"];
+    if (id === "poi_markets") return ["shop=marketplace", "amenity=marketplace"];
+    
+         // Add missing POI types that were showing up in your results
+     if (id === "poi_airports") return ["aeroway=aerodrome", "aeroway=airport"];
+     if (id === "poi_substations") return ["power=substation"];
+     if (id === "poi_power_plants") return ["power=plant", "power=generator"];
+     if (id === "poi_railroads") return ["railway=rail"];
+     if (id === "poi_gas") return ["amenity=fuel"];
+     
+     // Fix missing POI types showing 0 counts
+     if (id === "poi_tnm_airports") return ["aeroway=aerodrome", "aeroway=airport"];
+     if (id === "poi_tnm_railroads") return ["railway=rail"];
+     if (id === "poi_tnm_trails") return ["route=hiking", "route=foot", "leisure=park"];
+    
+    console.log(`⚠️  No OSM filters found for: ${id}`);
     return [];
   }
 
+
+
   private async overpassCountMiles(lat: number, lon: number, radiusMiles: number, filters: string[]): Promise<{ count: number, elements: any[] }> {
     try {
-      const radiusMeters = Math.max(100, Math.floor(radiusMiles * 1609.34));
-      const around = `around:${radiusMeters},${lat},${lon}`;
-      const ors = filters.map(f => `node[${f}](${around});way[${f}](${around});relation[${f}](${around});`).join("");
-      const q = `[out:json][timeout:25];(${ors});out center;`;
+      // Calculate accurate bounding box using proven 111,320 meters per degree formula
+      const bbox = this.calculateBoundingBox(lat, lon, radiusMiles);
+      
+          // Build query using your exact working syntax - ALL element types for POIs
+    let queryParts: string[] = [];
+    filters.forEach(filter => {
+      // Fix: Overpass needs separate quotes around key and value: ["key"="value"]
+      const [key, value] = filter.split('=');
+      queryParts.push(`  node["${key}"="${value}"](${bbox});`);
+      queryParts.push(`  way["${key}"="${value}"](${bbox});`);
+      queryParts.push(`  relation["${key}"="${value}"](${bbox});`);
+    });
+      
+             const q = `[out:json][timeout:60];
+ (
+ ${queryParts.join('\n')}
+ );
+ out center;`;
+      
+      console.log(`🗺️  Overpass API Query for ${radiusMiles}mi radius:`);
+      console.log(`📍 Location: ${lat}, ${lon}`);
+      console.log(`📦 Bounding Box: ${bbox}`);
+      console.log(`🔍 Filters: ${filters.join(', ')}`);
+      console.log(`📝 Query: ${q}`);
       
       const res = await fetchJSONSmart("https://overpass-api.de/api/interpreter", {
         method: "POST",
@@ -458,25 +529,128 @@ export class EnrichmentService {
         headers: { "Content-Type": "text/plain;charset=UTF-8" }
       });
       
-      const elements = res.elements || [];
-      const seen = new Set();
-      const unique: any[] = [];
+      console.log(`📊 Overpass API response:`, res);
       
-      const norm = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
-      
-      for (const el of elements) {
-        const latc = el.lat || el.center?.lat;
-        const lonc = el.lon || el.center?.lon;
-        if (latc == null || lonc == null) continue;
-        
-        const key = `${norm(el.tags?.name) || "noname"}|${latc.toFixed(3)},${lonc.toFixed(3)}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          unique.push(el);
-        }
+      if (!res || !res.elements) {
+        console.error(`❌ Invalid Overpass API response:`, res);
+        return { count: 0, elements: [] };
       }
       
-      return { count: unique.length, elements: unique };
+      const elements = res.elements || [];
+      console.log(`📊 Overpass API returned ${elements.length} elements within bbox`);
+      
+             // Filter POIs by actual distance from center point (not just bbox)
+       const nearbyPOIs: any[] = [];
+       const seen = new Set();
+       
+       const norm = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
+       
+       for (const el of elements) {
+         // Handle different element types with out center format
+         let latc: number | null = null;
+         let lonc: number | null = null;
+         
+         if (el.type === 'node') {
+           // Nodes have direct lat/lon coordinates
+           latc = el.lat;
+           lonc = el.lon;
+         } else if (el.type === 'way' || el.type === 'relation') {
+           // Ways and relations use center coordinates with out center
+           latc = el.center?.lat;
+           lonc = el.center?.lon;
+         }
+         
+         if (latc == null || lonc == null) continue;
+         
+         // Calculate actual distance from center point
+         const distanceMiles = Math.round(this.calculateDistance(lat, lon, latc, lonc) * 0.621371 * 100) / 100;
+         
+                   // Only include POIs within the specified radius
+          if (distanceMiles <= radiusMiles) {
+            // Skip POIs with no name or "unnamed" names
+            const poiName = el.tags?.name;
+            if (!poiName || poiName.toLowerCase().includes('unnamed')) {
+              continue;
+            }
+            
+            const key = `${norm(poiName)}|${latc.toFixed(3)},${lonc.toFixed(3)}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              nearbyPOIs.push({
+                ...el,
+                distance_miles: distanceMiles
+              });
+            }
+          }
+       }
+      
+             console.log(`✅ Bbox query results: ${nearbyPOIs.length} unique POIs within ${radiusMiles} miles`);
+       
+               // TEMPORARY: Show detailed restaurant records for inspection
+        if (nearbyPOIs.length > 0 && filters.some(f => f.includes('restaurant') || f.includes('fast_food'))) {
+          // Sort by distance (closest to farthest)
+          const sortedPOIs = [...nearbyPOIs].sort((a, b) => a.distance_miles - b.distance_miles);
+          
+          console.log(`🍽️  DETAILED RESTAURANT RECORDS (showing top 250 by proximity):`);
+          console.log(`📊 Total restaurants found: ${nearbyPOIs.length}`);
+          console.log(`📍 Distance range: ${sortedPOIs[0].distance_miles} - ${sortedPOIs[sortedPOIs.length - 1].distance_miles} miles`);
+          
+          sortedPOIs.slice(0, 250).forEach((poi, index) => {
+            console.log(`\n--- Restaurant ${index + 1} (${poi.distance_miles} miles) ---`);
+            console.log(`Name: ${poi.tags?.name || 'Unnamed'}`);
+            console.log(`Type: ${poi.tags?.amenity || 'Unknown'}`);
+            console.log(`OSM ID: ${poi.id}`);
+            console.log(`Element Type: ${poi.type}`);
+            console.log(`Coordinates: ${poi.lat || poi.center?.lat}, ${poi.lon || poi.center?.lon}`);
+            console.log(`Distance: ${poi.distance_miles} miles`);
+            console.log(`Address: ${poi.tags?.['addr:street'] || 'N/A'} ${poi.tags?.['addr:housenumber'] || ''}`);
+            console.log(`City: ${poi.tags?.['addr:city'] || 'N/A'}`);
+            console.log(`All Tags:`, poi.tags);
+          });
+          
+          if (nearbyPOIs.length > 250) {
+            console.log(`\n... and ${nearbyPOIs.length - 250} more restaurants`);
+          }
+        }
+        
+        // TEMPORARY: Show detailed police and fire station records for inspection
+        if (nearbyPOIs.length > 0 && filters.some(f => f.includes('police') || f.includes('fire_station'))) {
+          // Sort by distance (closest to farthest)
+          const sortedPOIs = [...nearbyPOIs].sort((a, b) => a.distance_miles - b.distance_miles);
+          
+          const poiType = filters.some(f => f.includes('police')) ? 'POLICE STATIONS' : 'FIRE STATIONS';
+          console.log(`🚔  DETAILED ${poiType} RECORDS (showing ALL by proximity):`);
+          console.log(`📊 Total ${poiType.toLowerCase()} found: ${nearbyPOIs.length}`);
+          console.log(`📍 Distance range: ${sortedPOIs[0].distance_miles} - ${sortedPOIs[sortedPOIs.length - 1].distance_miles} miles`);
+          
+          sortedPOIs.forEach((poi, index) => {
+            console.log(`\n--- ${poiType.slice(0, -1)} ${index + 1} (${poi.distance_miles} miles) ---`);
+            console.log(`Name: ${poi.tags?.name || 'Unnamed'}`);
+            console.log(`Type: ${poi.tags?.amenity || 'Unknown'}`);
+            console.log(`OSM ID: ${poi.id}`);
+            console.log(`Element Type: ${poi.type}`);
+            console.log(`Coordinates: ${poi.lat || poi.center?.lat}, ${poi.lon || poi.center?.lon}`);
+            console.log(`Distance: ${poi.distance_miles} miles`);
+            console.log(`Address: ${poi.tags?.['addr:street'] || 'N/A'} ${poi.tags?.['addr:housenumber'] || ''}`);
+            console.log(`City: ${poi.tags?.['addr:city'] || 'N/A'}`);
+            console.log(`All Tags:`, poi.tags);
+          });
+        }
+       
+       if (nearbyPOIs.length > 0) {
+         const distances = nearbyPOIs.map(p => p.distance_miles).sort((a, b) => a - b);
+         console.log(`📍 Distance range: ${distances[0]} - ${distances[distances.length - 1]} miles`);
+         
+         // Show some sample POIs
+         const samplePOIs = nearbyPOIs.slice(0, 3).map(p => ({
+           name: p.tags?.name || 'Unnamed',
+           distance: p.distance_miles,
+           type: p.tags?.amenity || p.tags?.shop || p.tags?.tourism || 'Unknown'
+         }));
+         console.log(`🔍 Sample POIs:`, samplePOIs);
+       }
+      
+      return { count: nearbyPOIs.length, elements: nearbyPOIs };
     } catch (error) {
       console.error('Overpass API error:', error);
       return { count: 0, elements: [] };
@@ -499,9 +673,332 @@ export class EnrichmentService {
       'poi_substations': 6,
       'poi_eq': 100,
       'poi_fema_floodzones': 2,
-      'poi_usgs_volcano': 100
+      'poi_usgs_volcano': 100,
+      'poi_wikipedia': 3,
+      'poi_police_stations': 5,
+      'poi_fire_stations': 5,
+      'poi_urgent_care': 5,
+      'poi_golf_courses': 15,
+      'poi_boat_ramps': 10,
+      'poi_cafes_coffee': 3,
+      'poi_markets': 5
     };
     
     return defaultRadii[enrichmentId] || 5;
+  }
+
+  
+  
+  // Enhanced Wikipedia/Wikidata POI enrichment for quirky and interesting sites
+  private async getWikipediaPOIs(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔍 Wikipedia POI: Searching for articles near ${lat}, ${lon} within ${radiusMiles} miles`);
+      
+      // Wikipedia API requires radius in meters, minimum 10,000 (10km)
+      // Convert miles to meters and ensure minimum 10km radius
+      const radiusMeters = Math.max(10000, Math.floor(radiusMiles * 1609.34));
+      
+      // Use Wikipedia's geosearch API to find nearby articles
+      const wikiUrl = new URL('https://en.wikipedia.org/w/api.php');
+      wikiUrl.searchParams.set('action', 'query');
+      wikiUrl.searchParams.set('list', 'geosearch');
+      wikiUrl.searchParams.set('gscoord', `${lat}|${lon}`);
+      wikiUrl.searchParams.set('gsradius', radiusMeters.toString());
+      wikiUrl.searchParams.set('gslimit', '50');
+      wikiUrl.searchParams.set('format', 'json');
+      wikiUrl.searchParams.set('origin', '*');
+      
+      console.log(`🔗 Wikipedia API URL: ${wikiUrl.toString()}`);
+      console.log(`📏 Radius: ${radiusMeters}m (${Math.round(radiusMeters * 0.000621371 * 100) / 100} miles)`);
+      
+      const wikiData = await fetchJSONSmart(wikiUrl.toString());
+      console.log(`📊 Wikipedia API response:`, wikiData);
+      
+      const articles = wikiData?.query?.geosearch || [];
+      console.log(`📚 Found ${articles.length} Wikipedia articles`);
+      
+      if (articles.length === 0) {
+        console.log(`⚠️  No Wikipedia articles found for this location`);
+        return { poi_wikipedia_count: 0, poi_wikipedia_articles: [] };
+      }
+
+      // Categorize articles by interesting tags and types
+      const categorizedArticles = articles.map((article: any) => {
+        const title = article.title;
+        const distance = article.dist;
+        const pageId = article.pageid;
+        
+        // Detect interesting categories and types
+        const categories = this.categorizeWikipediaArticle(title, article);
+        
+        return {
+          title,
+          distance_km: distance,
+          distance_miles: Math.round(distance * 0.621371 * 100) / 100,
+          page_id: pageId,
+          categories,
+          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`
+        };
+      });
+
+      // Group by category for better organization
+      const articlesByCategory = this.groupArticlesByCategory(categorizedArticles);
+      
+      return {
+        poi_wikipedia_count: articles.length,
+        poi_wikipedia_articles: categorizedArticles,
+        poi_wikipedia_by_category: articlesByCategory,
+        poi_wikipedia_summary: this.generateWikipediaSummary(articlesByCategory)
+      };
+      
+    } catch (error) {
+      console.error('Wikipedia POI enrichment failed:', error);
+      return { poi_wikipedia_count: 0, poi_wikipedia_error: 'Failed to fetch Wikipedia data' };
+    }
+  }
+
+
+  
+  // Calculate accurate bounding box using proven 111,320 meters per degree formula
+  private calculateBoundingBox(lat: number, lon: number, radiusMiles: number): string {
+    // Convert miles to meters
+    const radiusMeters = radiusMiles * 1609.34;
+    
+    // Your proven working formula: 111,320 meters per degree latitude
+    const latDelta = radiusMeters / 111320;
+    const lonDelta = radiusMeters / (111320 * Math.cos(lat * Math.PI / 180)); // Adjusted for longitude
+    
+    // Create bounding box: south,west,north,east
+    const south = Math.max(-90, lat - latDelta);
+    const west = Math.max(-180, lon - lonDelta);
+    const north = Math.min(90, lat + latDelta);
+    const east = Math.min(180, lon + lonDelta);
+    
+    console.log(`📦 Proven bbox calculation:`);
+    console.log(`📍 Location: ${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+    console.log(`📏 Radius: ${radiusMiles} miles (${Math.round(radiusMeters)}m)`);
+    console.log(`📐 Lat delta: ${latDelta.toFixed(6)}°, Lon delta: ${lonDelta.toFixed(6)}°`);
+    console.log(`📦 Bbox: ${south.toFixed(6)}, ${west.toFixed(6)}, ${north.toFixed(6)}, ${east.toFixed(6)}`);
+    
+    return `${south},${west},${north},${east}`;
+  }
+
+  // Calculate distance between two points using Haversine formula
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+  
+  // Categorize Wikipedia articles for quirky and interesting discovery
+  private categorizeWikipediaArticle(title: string, _article: any): string[] {
+    const titleLower = title.toLowerCase();
+    const categories: string[] = [];
+    
+    // Historic and Cultural Sites
+    if (titleLower.includes('historic') || titleLower.includes('heritage') || titleLower.includes('landmark')) {
+      categories.push('historic_landmark');
+    }
+    if (titleLower.includes('museum') || titleLower.includes('gallery') || titleLower.includes('exhibit')) {
+      categories.push('museum_gallery');
+    }
+    if (titleLower.includes('theater') || titleLower.includes('theatre') || titleLower.includes('opera')) {
+      categories.push('performing_arts');
+    }
+    
+    // Haunted and Paranormal
+    if (titleLower.includes('haunted') || titleLower.includes('ghost') || titleLower.includes('paranormal')) {
+      categories.push('haunted_paranormal');
+    }
+    if (titleLower.includes('cemetery') || titleLower.includes('graveyard') || titleLower.includes('burial')) {
+      categories.push('cemetery_burial');
+    }
+    
+    // Oddities and Curiosities
+    if (titleLower.includes('oddity') || titleLower.includes('curiosity') || titleLower.includes('unusual')) {
+      categories.push('oddity_curiosity');
+    }
+    if (titleLower.includes('mystery') || titleLower.includes('legend') || titleLower.includes('folklore')) {
+      categories.push('mystery_legend');
+    }
+    
+    // Architecture and Engineering
+    if (titleLower.includes('bridge') || titleLower.includes('tunnel') || titleLower.includes('viaduct')) {
+      categories.push('infrastructure');
+    }
+    if (titleLower.includes('skyscraper') || titleLower.includes('tower') || titleLower.includes('building')) {
+      categories.push('architecture');
+    }
+    
+    // Natural Wonders
+    if (titleLower.includes('park') || titleLower.includes('garden') || titleLower.includes('reserve')) {
+      categories.push('natural_area');
+    }
+    if (titleLower.includes('mountain') || titleLower.includes('hill') || titleLower.includes('peak')) {
+      categories.push('geographic_feature');
+    }
+    
+    // Entertainment and Recreation
+    if (titleLower.includes('amusement') || titleLower.includes('theme park') || titleLower.includes('zoo')) {
+      categories.push('entertainment');
+    }
+    if (titleLower.includes('stadium') || titleLower.includes('arena') || titleLower.includes('field')) {
+      categories.push('sports_venue');
+    }
+    
+    // Food and Culture
+    if (titleLower.includes('restaurant') || titleLower.includes('cafe') || titleLower.includes('diner')) {
+      categories.push('food_culture');
+    }
+    if (titleLower.includes('market') || titleLower.includes('bazaar') || titleLower.includes('fair')) {
+      categories.push('market_fair');
+    }
+    
+    // Religious and Spiritual
+    if (titleLower.includes('church') || titleLower.includes('temple') || titleLower.includes('mosque')) {
+      categories.push('religious_site');
+    }
+    
+    // Transportation
+    if (titleLower.includes('station') || titleLower.includes('terminal') || titleLower.includes('hub')) {
+      categories.push('transportation');
+    }
+    
+    // If no specific categories found, add general
+    if (categories.length === 0) {
+      categories.push('general_poi');
+    }
+    
+    return categories;
+  }
+
+  // Group articles by category for better organization
+  private groupArticlesByCategory(articles: any[]): Record<string, any[]> {
+    const grouped: Record<string, any[]> = {};
+    
+    articles.forEach(article => {
+      article.categories.forEach((category: string) => {
+        if (!grouped[category]) {
+          grouped[category] = [];
+        }
+        grouped[category].push(article);
+      });
+    });
+    
+    return grouped;
+  }
+
+  // Generate a human-readable summary of Wikipedia findings
+  private generateWikipediaSummary(articlesByCategory: Record<string, any[]>): string {
+    const categoryCounts = Object.entries(articlesByCategory).map(([category, articles]) => ({
+      category: this.formatCategoryName(category),
+      count: articles.length
+    }));
+    
+
+    const uniqueArticles = new Set(Object.values(articlesByCategory).flat().map(a => a.title)).size;
+    
+    let summary = `Found ${uniqueArticles} unique Wikipedia articles within ${this.getDefaultRadius('poi_wikipedia')} miles. `;
+    
+    if (categoryCounts.length > 0) {
+      const topCategories = categoryCounts
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3)
+        .map(c => `${c.category} (${c.count})`);
+      
+      summary += `Top categories: ${topCategories.join(', ')}.`;
+    }
+    
+    return summary;
+  }
+
+  // Format category names for display
+  private formatCategoryName(category: string): string {
+    const nameMap: Record<string, string> = {
+      'historic_landmark': 'Historic Landmarks',
+      'museum_gallery': 'Museums & Galleries',
+      'performing_arts': 'Performing Arts',
+      'haunted_paranormal': 'Haunted & Paranormal',
+      'cemetery_burial': 'Cemeteries & Burial Sites',
+      'oddity_curiosity': 'Oddities & Curiosities',
+      'mystery_legend': 'Mysteries & Legends',
+      'infrastructure': 'Infrastructure',
+      'architecture': 'Architecture',
+      'natural_area': 'Natural Areas',
+      'geographic_feature': 'Geographic Features',
+      'entertainment': 'Entertainment',
+      'sports_venue': 'Sports Venues',
+      'food_culture': 'Food & Culture',
+      'market_fair': 'Markets & Fairs',
+      'religious_site': 'Religious Sites',
+      'transportation': 'Transportation',
+      'general_poi': 'General Points of Interest'
+    };
+    
+    return nameMap[category] || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  // Custom POI handling methods
+  private getCustomPOIData(poiId: string): any {
+    return poiConfigManager.getCustomPOIData(poiId);
+  }
+
+  private async getCustomPOICount(poiId: string, lat: number, lon: number, radiusMiles: number, customPOIData: any): Promise<Record<string, any>> {
+    try {
+      const { data, mapping } = customPOIData;
+      if (!data || !Array.isArray(data)) {
+        return { [`${poiId}_count`]: 0, [`${poiId}_error`]: 'No data available' };
+      }
+
+      let count = 0;
+      const nearbyPOIs: any[] = [];
+
+      for (const poi of data) {
+        let poiLat: number | null = null;
+        let poiLon: number | null = null;
+
+        // Try to get coordinates from the POI data
+        if (mapping.lat && mapping.lon && poi[mapping.lat] && poi[mapping.lon]) {
+          poiLat = parseFloat(poi[mapping.lat]);
+          poiLon = parseFloat(poi[mapping.lon]);
+        } else if (poi.lat && poi.lon) {
+          poiLat = parseFloat(poi.lat);
+          poiLon = parseFloat(poi.lon);
+        }
+
+        if (poiLat && poiLon && !isNaN(poiLat) && !isNaN(poiLon)) {
+          // Calculate distance using Haversine formula
+          const distance = this.calculateDistance(lat, lon, poiLat, poiLon);
+          const distanceMiles = distance * 0.621371; // Convert km to miles
+
+          if (distanceMiles <= radiusMiles) {
+            count++;
+            nearbyPOIs.push({
+              name: poi[mapping.name] || poi.name || 'Unnamed',
+              address: poi[mapping.address] || poi.address || '',
+              lat: poiLat,
+              lon: poiLon,
+              distance_miles: Math.round(distanceMiles * 100) / 100,
+              raw_data: poi
+            });
+          }
+        }
+      }
+
+      return {
+        [`${poiId}_count`]: count,
+        [`${poiId}_pois`]: nearbyPOIs,
+        [`${poiId}_summary`]: `Found ${count} ${customPOIData.poi.label} within ${radiusMiles} miles`
+      };
+
+    } catch (error) {
+      console.error(`Custom POI enrichment failed for ${poiId}:`, error);
+      return { [`${poiId}_count`]: 0, [`${poiId}_error`]: String(error) };
+    }
   }
 }

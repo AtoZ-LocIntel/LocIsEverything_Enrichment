@@ -152,7 +152,42 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
       if (Object.keys(poiEnrichments).length > 0) {
         content += '<div>';
         content += '<h5 style="margin: 0 0 8px 0; color: #4b5563; font-size: 13px; font-weight: 500;">Nearby Points of Interest:</h5>';
+        
+        // Special handling for Wikipedia POIs to show article details
+        if (poiEnrichments.poi_wikipedia_articles && Array.isArray(poiEnrichments.poi_wikipedia_articles)) {
+          const articles = poiEnrichments.poi_wikipedia_articles;
+          const count = poiEnrichments.poi_wikipedia_count || articles.length;
+          
+          content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
+            <span style="color: #6b7280;">Wikipedia Articles:</span>
+            <span style="color: #1f2937; font-weight: 500;">${count} found</span>
+          </div>`;
+          
+          // Show top articles with names
+          if (articles.length > 0) {
+            const topArticles = articles.slice(0, 5); // Show top 5
+            content += '<div style="margin: 8px 0; padding: 8px; background: #f9fafb; border-radius: 4px;">';
+            content += '<div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Top articles:</div>';
+            topArticles.forEach((article: any) => {
+              const distance = article.distance_miles || Math.round((article.distance_km || 0) * 0.621371 * 100) / 100;
+              content += `<div style="font-size: 11px; margin: 2px 0; color: #374151;">
+                • <a href="${article.url}" target="_blank" style="color: #3b82f6; text-decoration: none;">${article.title}</a>
+                <span style="color: #9ca3af;"> (${distance} mi)</span>
+              </div>`;
+            });
+            if (articles.length > 5) {
+              content += `<div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">...and ${articles.length - 5} more</div>`;
+            }
+            content += '</div>';
+          }
+        }
+        
+        // Handle other POI types
         Object.entries(poiEnrichments).forEach(([key, value]) => {
+          if (key === 'poi_wikipedia_articles' || key === 'poi_wikipedia_by_category' || key === 'poi_wikipedia_summary') {
+            return; // Skip these as they're handled above
+          }
+          
           const label = formatEnrichmentLabel(key);
           content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
             <span style="color: #6b7280;">${label}:</span>
@@ -181,7 +216,9 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
       acs_population: 'Population',
       acs_median_hh_income: 'Median Income',
       acs_median_age: 'Median Age',
-      nws_active_alerts: 'Weather Alerts'
+      nws_active_alerts: 'Weather Alerts',
+      poi_wikipedia_count: 'Wikipedia Articles',
+      poi_wikipedia_summary: 'Wikipedia Summary'
     };
 
     // Handle POI counts
@@ -200,6 +237,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
     if (key === 'pm25') return `${value} µg/m³`;
     if (key === 'acs_median_hh_income') return `$${value?.toLocaleString() || value}`;
     if (key.endsWith('_count_')) return `${value} found`;
+    if (key === 'poi_wikipedia_summary') return value || 'No summary available';
     
     return String(value);
   };
@@ -248,8 +286,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
   };
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
+    <div className="h-full flex flex-col bg-white">
+      {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <button
           onClick={onBackToConfig}
@@ -277,8 +315,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
       </div>
 
       {/* Map Container */}
-      <div className="flex-1 relative">
-        <div ref={mapRef} className="w-full h-full" />
+      <div className="flex-1 relative map-view-container">
+        <div ref={mapRef} className="w-full h-full map-container" />
         
         {/* Batch Success Message */}
         {showBatchSuccess && (

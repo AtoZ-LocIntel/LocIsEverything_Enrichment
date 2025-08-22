@@ -85,6 +85,11 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch }) => {
             <li>• Results include coordinates, demographics, and nearby POIs</li>
             <li>• Try the pre-filled example: "1600 Pennsylvania Avenue NW, Washington, DC 20500"</li>
           </ul>
+          <div className="mt-3 pt-3 border-t border-blue-200">
+            <p className="text-xs text-blue-700">
+              🔧 <strong>Customize your search:</strong> Scroll down to configure which enrichment data to include and set search radii for points of interest
+            </p>
+          </div>
         </div>
       </div>
     </div>

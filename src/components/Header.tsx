@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock } from 'lucide-react';
+import AdminPanel from './AdminPanel';
 
 const Header: React.FC = () => {
   const [showDocs, setShowDocs] = useState(false);
   const [showDataSources, setShowDataSources] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   return (
     <>
@@ -53,6 +55,13 @@ const Header: React.FC = () => {
               >
                 <Globe className="w-4 h-4 inline mr-2" />
                 Data Sources
+              </button>
+              <button 
+                onClick={() => setShowAdmin(true)}
+                className="text-purple-700 hover:text-purple-800 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-purple-200 hover:border-purple-300"
+              >
+                <span className="mr-2">🔒</span>
+                Admin
               </button>
             </nav>
 
@@ -488,6 +497,11 @@ const Header: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Admin Panel Modal */}
+      {showAdmin && (
+        <AdminPanel onClose={() => setShowAdmin(false)} />
       )}
     </>
   );

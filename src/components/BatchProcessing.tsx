@@ -197,6 +197,18 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
               </div>
             </div>
           </div>
+          
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <h4 className="font-semibold text-blue-900 mb-2 flex items-center space-x-2">
+              <Info className="w-4 h-4 text-blue-600" />
+              <span>Enrichment Configuration</span>
+            </h4>
+            <div className="text-sm text-blue-700 space-y-1">
+              <div>• <strong>Customize your batch:</strong> Scroll down to select which data sources to include</div>
+              <div>• <strong>Set search radii:</strong> Configure how far to search for points of interest</div>
+              <div>• <strong>Data sources:</strong> Choose from 50+ enrichment options including demographics, POIs, and specialized data</div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
