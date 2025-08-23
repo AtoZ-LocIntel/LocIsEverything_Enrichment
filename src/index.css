@@ -94,6 +94,43 @@
   @apply rounded-lg;
 }
 
+/* Fix z-index conflicts between dropdowns and popups */
+.enrichment-config {
+  @apply relative z-10;
+}
+
+.enrichment-config .dropdown-content {
+  @apply relative z-20;
+}
+
+/* Ensure popup forms are above dropdowns */
+.single-search,
+.batch-processing {
+  @apply relative z-30;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+  .enrichment-config {
+    @apply z-20;
+  }
+  
+  .single-search,
+  .batch-processing {
+    @apply z-30;
+  }
+  
+  /* Stack elements vertically on mobile */
+  .mobile-stack {
+    @apply flex-col space-y-4;
+  }
+  
+  /* Simplify mobile buttons */
+  .mobile-simplified {
+    @apply text-sm px-3 py-2;
+  }
+}
+
 /* Custom scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

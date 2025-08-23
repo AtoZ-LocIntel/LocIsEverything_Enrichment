@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, AlertTriangle, Clock, Zap, Info } from 'lucide-react';
+import { Upload, AlertTriangle, Clock, Zap, Info } from 'lucide-react';
 import Papa from 'papaparse';
 
 interface BatchProcessingProps {
@@ -111,14 +111,16 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-      <div className="flex items-center space-x-3 mb-4">
-        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-          <FileText className="w-5 h-5 text-blue-600" />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Batch CSV Processing</h3>
-          <p className="text-sm text-gray-700">Upload CSV and process multiple addresses</p>
+    <div className="batch-processing card">
+      <div className="card-header">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+            <Upload className="w-5 h-5 text-primary-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Batch Address Processing</h3>
+            <p className="text-sm text-gray-700">Upload CSV and process multiple locations</p>
+          </div>
         </div>
       </div>
 

@@ -38,6 +38,7 @@ const CORE_ENRICHMENTS = [
 // Icon mapping for sections
 const SECTION_ICONS: Record<string, React.ReactNode> = {
   core: <Settings className="w-5 h-5" />,
+  hazards: <span className="text-xl">🌊</span>,
   community: <Users className="w-5 h-5" />,
   retail: <Building2 className="w-5 h-5" />,
   health: <Heart className="w-5 h-5" />,
@@ -137,141 +138,145 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   };
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-            <Settings className="w-5 h-5 text-purple-600" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Enrichment Configuration</h3>
-            <p className="text-sm text-gray-700">Select data sources and configure search radii</p>
+    <div className="enrichment-config">
+      <div className="card">
+        <div className="card-header">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+              <Settings className="w-5 h-5 text-primary-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Enrichment Configuration</h3>
+              <p className="text-sm text-gray-700">Select data sources and configure search parameters</p>
+            </div>
           </div>
         </div>
-      </div>
+        
+        <div className="card-body">
+          <div className="space-y-4">
+            {enrichmentCategories.map((category) => {
+              const isExpanded = expandedCategories.has(category.id);
+              const categoryEnrichments = category.enrichments;
+              const hasSelectedEnrichments = categoryEnrichments.some(enrichment => 
+                selectedEnrichments.includes(enrichment.id)
+              );
 
-      <div className="card-body">
-        <div className="space-y-4">
-          {enrichmentCategories.map((category) => {
-            const isExpanded = expandedCategories.has(category.id);
-            const categoryEnrichments = category.enrichments;
-            const selectedInCategory = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id));
-
-            return (
-              <div key={category.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => toggleCategory(category.id)}
-                  className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="text-gray-700">
-                      {category.icon}
+              return (
+                <div key={category.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => toggleCategory(category.id)}
+                    className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="text-gray-700">
+                        {category.icon}
+                      </div>
+                      <div className="text-left">
+                        <h4 className="font-medium text-gray-900">{category.title}</h4>
+                        <p className="text-sm text-gray-700">{category.description}</p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <h4 className="font-medium text-gray-900">{category.title}</h4>
-                      <p className="text-sm text-gray-700">{category.description}</p>
+                    <div className="flex items-center space-x-2">
+                      {hasSelectedEnrichments && (
+                        <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
+                          {categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length} selected
+                        </span>
+                      )}
+                      {isExpanded ? (
+                        <ChevronDown className="w-5 h-5 text-gray-500" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-gray-500" />
+                      )}
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {selectedInCategory.length > 0 && (
-                      <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
-                        {selectedInCategory.length} selected
-                      </span>
-                    )}
-                    {isExpanded ? (
-                      <ChevronDown className="w-5 h-5 text-gray-500" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-gray-500" />
-                    )}
-                  </div>
-                </button>
+                  </button>
 
-                {isExpanded && (
-                  <div className="p-4 bg-white border-t border-gray-200">
-                    <div className="grid gap-3">
-                      {categoryEnrichments.map((enrichment) => {
-                        const isSelected = selectedEnrichments.includes(enrichment.id);
-                        const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
+                  {isExpanded && (
+                    <div className="p-4 bg-white border-t border-gray-200">
+                      <div className="grid gap-3">
+                        {categoryEnrichments.map((enrichment) => {
+                          const isSelected = selectedEnrichments.includes(enrichment.id);
+                          const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
 
-                        return (
-                          <div key={enrichment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="checkbox"
-                                id={enrichment.id}
-                                checked={isSelected}
-                                onChange={() => handleEnrichmentToggle(enrichment.id)}
-                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                              />
-                              <div>
-                                <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer">
-                                  {enrichment.label}
-                                </label>
-                                <p className="text-sm text-gray-700">{enrichment.description}</p>
-                              </div>
-                            </div>
-
-                            {enrichment.isPOI && isSelected && (
-                              <div className="flex flex-col space-y-2">
-                                {/* Radius Note */}
-                                <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
-                                  ⚠️ Maximum radius: 5 miles (for performance & accuracy)
+                          return (
+                            <div key={enrichment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  id={enrichment.id}
+                                  checked={isSelected}
+                                  onChange={() => handleEnrichmentToggle(enrichment.id)}
+                                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                />
+                                <div>
+                                  <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer">
+                                    {enrichment.label}
+                                  </label>
+                                  <p className="text-sm text-gray-700">{enrichment.description}</p>
                                 </div>
-                                
-                                {/* Radius Input */}
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-sm text-gray-900 font-medium">Radius:</span>
-                                  <input
-                                    type="number"
-                                    min="0.1"
-                                    max="5"
-                                    step="0.1"
-                                    value={currentRadius}
-                                    onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                                    className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 text-gray-900 font-medium"
-                                  />
-                                  <span className="text-sm text-gray-900 font-medium">miles</span>
+                              </div>
+
+                              {enrichment.isPOI && isSelected && (
+                                <div className="flex flex-col space-y-2">
+                                  {/* Radius Note */}
+                                  <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                                    ⚠️ Maximum radius: 5 miles (for performance & accuracy)
+                                  </div>
                                   
-                                  {/* Show warning if user tries to exceed 5 miles */}
-                                  {currentRadius > 5 && (
-                                    <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
-                                      Capped at 5 miles
-                                    </span>
-                                  )}
+                                  {/* Radius Input */}
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-sm text-gray-900 font-medium">Radius:</span>
+                                    <input
+                                      type="number"
+                                      min="0.1"
+                                      max="5"
+                                      step="0.1"
+                                      value={currentRadius}
+                                      onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
+                                      className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 text-gray-900 font-medium"
+                                    />
+                                    <span className="text-sm text-gray-900 font-medium">miles</span>
+                                    
+                                    {/* Show warning if user tries to exceed 5 miles */}
+                                    {currentRadius > 5 && (
+                                      <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                                        Capped at 5 miles
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">📊 Selected Enrichments</h4>
-          <div className="flex flex-wrap gap-2">
-            {selectedEnrichments.length === 0 ? (
-              <span className="text-sm text-blue-700">No enrichments selected</span>
-            ) : (
-              selectedEnrichments.map(id => {
-                const enrichment = enrichmentCategories
-                  .flatMap(c => c.enrichments)
-                  .find(e => e.id === id);
-                return (
-                  <span key={id} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                    {enrichment?.label || id}
-                    {enrichment?.isPOI && poiRadii[id] && (
-                      <span className="ml-1 text-blue-600">({poiRadii[id]}mi)</span>
-                    )}
-                  </span>
-                );
-              })
-            )}
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h4 className="text-sm font-medium text-blue-900 mb-2">📊 Selected Enrichments</h4>
+            <div className="flex flex-wrap gap-2">
+              {selectedEnrichments.length === 0 ? (
+                <span className="text-sm text-blue-700">No enrichments selected</span>
+              ) : (
+                selectedEnrichments.map(id => {
+                  const enrichment = enrichmentCategories
+                    .flatMap(c => c.enrichments)
+                    .find(e => e.id === id);
+                  return (
+                    <span key={id} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      {enrichment?.label || id}
+                      {enrichment?.isPOI && poiRadii[id] && (
+                        <span className="ml-1 text-blue-600">({poiRadii[id]}mi)</span>
+                      )}
+                    </span>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
       </div>

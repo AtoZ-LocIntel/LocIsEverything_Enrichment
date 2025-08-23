@@ -25,7 +25,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch }) => {
   };
 
   return (
-    <div className="card">
+    <div className="single-search card">
       <div className="card-header">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">

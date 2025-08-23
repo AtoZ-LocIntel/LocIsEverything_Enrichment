@@ -1,6 +1,6 @@
 import { GeocodeResult } from '../lib/types';
 import { EnrichmentResult } from '../App';
-import { poiConfigManager } from '../lib/poiConfig';
+// import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
 
 // CORS proxy helpers from original geocoder.html
 const USE_CORS_PROXY = true;
@@ -54,6 +54,123 @@ export class EnrichmentService {
   
   constructor() {
     // Using your proven working geocoding approach instead of CompositeGeocoder
+  }
+
+  // Utility methods for coordinate calculations
+  private calculateBoundingBox(lat: number, lon: number, radiusMiles: number): string {
+    // Convert miles to meters
+    const radiusMeters = radiusMiles * 1609.34;
+    
+    // Use your proven working formula: 111,320 meters per degree
+    const latDelta = radiusMeters / 111320;
+    const lonDelta = radiusMeters / (111320 * Math.cos(lat * Math.PI / 180));
+    
+    const south = lat - latDelta;
+    const north = lat + latDelta;
+    const west = lon - lonDelta;
+    const east = lon + lonDelta;
+    
+    // Return as comma-separated string for Overpass API
+    return `${south.toFixed(6)},${west.toFixed(6)},${north.toFixed(6)},${east.toFixed(6)}`;
+  }
+  
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    // Haversine formula for calculating distance between two points on Earth
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in kilometers
+  }
+  
+  private getEPAProgramFilter(programType: string): string {
+    // Create WHERE clause filters for ArcGIS Feature Service queries
+    const programFilters: Record<string, string> = {
+      'ACRES': "PGM_SYS_ACRNM = 'ACRES'",
+      'SEMS/CERCLIS': "PGM_SYS_ACRNM = 'SEMS'",
+      'RCRAInfo': "PGM_SYS_ACRNM = 'RCRA'",
+      'TRI': "PGM_SYS_ACRNM = 'TRI'",
+      'NPDES': "PGM_SYS_ACRNM = 'NPDES'",
+      'ICIS-AIR': "PGM_SYS_ACRNM = 'ICIS-AIR'",
+      'RADINFO': "PGM_SYS_ACRNM = 'RADINFO'",
+      'EGRID': "PGM_SYS_ACRNM = 'EGRID'",
+      'SPCC/FRP': "PGM_SYS_ACRNM IN ('SPCC', 'FRP')"
+    };
+    return programFilters[programType] || '';
+  }
+  
+  private getFEMAFloodZones(_lat: number, _lon: number, _radiusMiles: number): Promise<Record<string, any>> {
+    // This method should be implemented for FEMA flood zones
+    // For now, return a placeholder
+    return Promise.resolve({
+      poi_fema_flood_zones_count: 0,
+      poi_fema_flood_zones_summary: 'FEMA flood zones not yet implemented'
+    });
+  }
+  
+  private getCustomPOIData(_enrichmentId: string): any {
+    // This method should return custom POI data from poiConfigManager
+    // For now, return null
+    return null;
+  }
+  
+  private getCustomPOICount(_enrichmentId: string, _lat: number, _lon: number, _radius: number, _customPOI: any): Promise<Record<string, any>> {
+    // This method should handle custom POI counting
+    // For now, return a placeholder
+    return Promise.resolve({
+      [`${_enrichmentId}_count`]: 0,
+      [`${_enrichmentId}_summary`]: 'Custom POI not yet implemented'
+    });
+  }
+  
+  private categorizeWikipediaArticle(title: string, _article: any): string[] {
+    // Simple categorization based on title keywords
+    const categories: string[] = [];
+    
+    if (title.toLowerCase().includes('school') || title.toLowerCase().includes('university') || title.toLowerCase().includes('college')) {
+      categories.push('Education');
+    }
+    if (title.toLowerCase().includes('park') || title.toLowerCase().includes('garden') || title.toLowerCase().includes('trail')) {
+      categories.push('Recreation');
+    }
+    if (title.toLowerCase().includes('museum') || title.toLowerCase().includes('theater') || title.toLowerCase().includes('gallery')) {
+      categories.push('Culture');
+    }
+    if (title.toLowerCase().includes('hospital') || title.toLowerCase().includes('clinic') || title.toLowerCase().includes('medical')) {
+      categories.push('Healthcare');
+    }
+    if (title.toLowerCase().includes('church') || title.toLowerCase().includes('temple') || title.toLowerCase().includes('mosque')) {
+      categories.push('Religion');
+    }
+    
+    return categories.length > 0 ? categories : ['General'];
+  }
+  
+  private groupArticlesByCategory(categorizedArticles: Array<{title: string, categories: string[], article: any}>): Record<string, any[]> {
+    const grouped: Record<string, any[]> = {};
+    
+    categorizedArticles.forEach(({title, categories, article}) => {
+      categories.forEach(category => {
+        if (!grouped[category]) {
+          grouped[category] = [];
+        }
+        grouped[category].push({title, article});
+      });
+    });
+    
+    return grouped;
+  }
+  
+  private generateWikipediaSummary(articlesByCategory: Record<string, any[]>): string {
+    const categorySummaries = Object.entries(articlesByCategory).map(([category, articles]) => {
+      return `${category}: ${articles.length} articles`;
+    });
+    
+    return categorySummaries.join(', ');
   }
 
   async enrichSingleLocation(
@@ -306,16 +423,57 @@ export class EnrichmentService {
       case 'poi_wikipedia':
         return await this.getWikipediaPOIs(lat, lon, radius);
       
-      default:
-        if (enrichmentId.startsWith('poi_')) {
-          // Check if this is a custom POI type
-          const customPOI = this.getCustomPOIData(enrichmentId);
-          if (customPOI) {
-            return await this.getCustomPOICount(enrichmentId, lat, lon, radius, customPOI);
-          }
-          return await this.getPOICount(enrichmentId, lat, lon, radius);
+      case 'poi_museums_historic':
+        return await this.getPOICount('poi_museums_historic', lat, lon, radius);
+      
+      case 'poi_powerlines':
+        return await this.getPOICount('poi_powerlines', lat, lon, radius);
+      
+      case 'poi_fema_flood_zones':
+        return await this.getFEMAFloodZones(lat, lon, radius);
+      
+      // EPA FRS Environmental Hazards
+      case 'poi_epa_brownfields':
+        return await this.getEPAFRSFacilities(lat, lon, radius, 'ACRES');
+      case 'poi_epa_superfund':
+        return await this.getEPAFRSFacilities(lat, lon, radius, 'SEMS/CERCLIS');
+      case 'poi_epa_rcra':
+        return await this.getEPAFRSFacilities(lat, lon, radius, 'RCRAInfo');
+      case 'poi_epa_tri':
+        return await this.getEPAFRSFacilities(lat, lon, radius, 'TRI');
+      case 'poi_epa_npdes':
+        return await this.getEPAFRSFacilities(lat, lon, radius, 'NPDES');
+      case 'poi_epa_air':
+        return await this.getEPAFRSFacilities(lat, lon, radius, 'ICIS-AIR');
+      case 'poi_epa_radiation':
+        return await this.getEPAFRSFacilities(lat, lon, radius, 'RADINFO');
+      case 'poi_epa_power':
+        return await this.getEPAFRSFacilities(lat, lon, radius, 'EGRID');
+      case 'poi_epa_oil_spill':
+        return await this.getEPAFRSFacilities(lat, lon, radius, 'SPCC/FRP');
+      
+      // USDA Local Food Portal - Farmers Markets & Local Food
+      case 'poi_usda_agritourism':
+        return await this.getUSDALocalFood(lat, lon, radius, 'agritourism');
+      case 'poi_usda_csa':
+        return await this.getUSDALocalFood(lat, lon, radius, 'csa');
+      case 'poi_usda_farmers_market':
+        return await this.getUSDALocalFood(lat, lon, radius, 'farmersmarket');
+      case 'poi_usda_food_hub':
+        return await this.getUSDALocalFood(lat, lon, radius, 'foodhub');
+      case 'poi_usda_onfarm_market':
+        return await this.getUSDALocalFood(lat, lon, radius, 'onfarmmarket');
+    
+    default:
+      if (enrichmentId.startsWith('poi_')) {
+        // Check if this is a custom POI type
+        const customPOI = this.getCustomPOIData(enrichmentId);
+        if (customPOI) {
+          return await this.getCustomPOICount(enrichmentId, lat, lon, radius, customPOI);
         }
-        return {};
+        return await this.getPOICount(enrichmentId, lat, lon, radius);
+      }
+      return {};
     }
   }
 
@@ -430,18 +588,34 @@ export class EnrichmentService {
 
   private async getPOICount(enrichmentId: string, lat: number, lon: number, radius: number): Promise<Record<string, any>> {
     try {
+      console.log(`🔍 getPOICount called for ${enrichmentId} at [${lat}, ${lon}] with ${radius}mi radius`);
+      
       // Use Overpass API for OSM-based POIs
       const filters = this.getFiltersFor(enrichmentId);
+      console.log(`🔍 Filters found for ${enrichmentId}:`, filters);
+      
       if (filters.length > 0) {
+        console.log(`🔍 Calling overpassCountMiles for ${enrichmentId}...`);
         const result = await this.overpassCountMiles(lat, lon, radius, filters);
+        console.log(`🔍 overpassCountMiles result for ${enrichmentId}:`, {
+          count: result.count,
+          elementsCount: result.elements?.length || 0,
+          hasDetailedPois: !!(result as any).detailed_pois,
+          detailedPoisCount: (result as any).detailed_pois?.length || 0
+        });
+        
         const countKey = `${enrichmentId}_count_${radius}mi`;
         const poiResult: Record<string, any> = { [countKey]: result.count };
         
         // Include detailed POI data for mapping (if available)
         if ((result as any).detailed_pois && (result as any).detailed_pois.length > 0) {
           poiResult[`${enrichmentId}_detailed`] = (result as any).detailed_pois;
+          console.log(`✅ Added ${(result as any).detailed_pois.length} detailed POIs for ${enrichmentId}`);
+        } else {
+          console.log(`⚠️  No detailed POIs found for ${enrichmentId}`);
         }
         
+        console.log(`🔍 Final poiResult for ${enrichmentId}:`, poiResult);
         return poiResult;
       }
       
@@ -461,7 +635,10 @@ export class EnrichmentService {
     // Add comprehensive logging to debug POI filter issues
     console.log(`🔍 Looking for OSM filters for: ${id}`);
     
-    if (id === "poi_schools") return ["amenity=school"];
+    if (id === "poi_schools") {
+      console.log(`🏫 Schools filter requested - returning ["amenity=school"]`);
+      return ["amenity=school"];
+    }
     if (id === "poi_hospitals") return ["amenity=hospital"];
     if (id === "poi_parks") return ["leisure=park"];
     if (id === "poi_grocery") return ["shop=supermarket", "shop=convenience"];
@@ -473,6 +650,8 @@ export class EnrichmentService {
     if (id === "poi_dentists") return ["amenity=dentist"];
     if (id === "poi_gyms") return ["leisure=fitness_centre", "leisure=gym"];
     if (id === "poi_cinemas") return ["amenity=cinema"];
+    if (id === "poi_theatres") return ["amenity=theatre"];
+    if (id === "poi_museums_historic") return ["tourism=museum", "historic=memorial", "historic=monument", "historic=castle", "historic=ruins", "historic=archaeological_site"];
     if (id === "poi_hotels") return ["tourism=hotel", "tourism=hostel"];
     if (id === "poi_breweries") return ["craft=brewery", "amenity=pub"];
     
@@ -489,6 +668,7 @@ export class EnrichmentService {
          // Add missing POI types that were showing up in your results
      if (id === "poi_airports") return ["aeroway=aerodrome", "aeroway=airport"];
      if (id === "poi_substations") return ["power=substation"];
+     if (id === "poi_powerlines") return ["power=line"];
      if (id === "poi_power_plants") return ["power=plant", "power=generator"];
      if (id === "poi_railroads") return ["railway=rail"];
      if (id === "poi_gas") return ["amenity=fuel"];
@@ -497,6 +677,27 @@ export class EnrichmentService {
      if (id === "poi_tnm_airports") return ["aeroway=aerodrome", "aeroway=airport"];
      if (id === "poi_tnm_railroads") return ["railway=rail"];
      if (id === "poi_tnm_trails") return ["route=hiking", "route=foot", "leisure=park"];
+     
+           // Hazards
+      if (id === "poi_fema_flood_zones") return ["fema_flood_zones"]; // Special handling for FEMA flood zones
+      
+      // EPA FRS Environmental Hazards
+      if (id === "poi_epa_brownfields") return ["epa_frs_brownfields"];
+      if (id === "poi_epa_superfund") return ["epa_frs_superfund"];
+      if (id === "poi_epa_rcra") return ["epa_frs_rcra"];
+      if (id === "poi_epa_tri") return ["epa_frs_tri"];
+      if (id === "poi_epa_npdes") return ["epa_frs_npdes"];
+      if (id === "poi_epa_air") return ["epa_frs_air"];
+      if (id === "poi_epa_radiation") return ["epa_frs_radiation"];
+      if (id === "poi_epa_power") return ["epa_frs_power"];
+      if (id === "poi_epa_oil_spill") return ["epa_frs_oil_spill"];
+      
+      // USDA Local Food Portal - Farmers Markets & Local Food
+      if (id === "poi_usda_agritourism") return ["usda_agritourism"];
+      if (id === "poi_usda_csa") return ["usda_csa"];
+      if (id === "poi_usda_farmers_market") return ["usda_farmers_market"];
+      if (id === "poi_usda_food_hub") return ["usda_food_hub"];
+      if (id === "poi_usda_onfarm_market") return ["usda_onfarm_market"];
     
     console.log(`⚠️  No OSM filters found for: ${id}`);
     return [];
@@ -506,6 +707,14 @@ export class EnrichmentService {
 
   private async overpassCountMiles(lat: number, lon: number, radiusMiles: number, filters: string[]): Promise<{ count: number, elements: any[] }> {
     try {
+      console.log(`🗺️  overpassCountMiles called with:`, {
+        lat,
+        lon,
+        radiusMiles,
+        filters,
+        timestamp: new Date().toISOString()
+      });
+      
       // Calculate accurate bounding box using proven 111,320 meters per degree formula
       const bbox = this.calculateBoundingBox(lat, lon, radiusMiles);
       
@@ -514,6 +723,8 @@ export class EnrichmentService {
     filters.forEach(filter => {
       // Fix: Overpass needs separate quotes around key and value: ["key"="value"]
       const [key, value] = filter.split('=');
+      // Overpass expects bbox in parentheses: (south,west,north,east)
+      // The bbox variable already contains the comma-separated values
       queryParts.push(`  node["${key}"="${value}"](${bbox});`);
       queryParts.push(`  way["${key}"="${value}"](${bbox});`);
       queryParts.push(`  relation["${key}"="${value}"](${bbox});`);
@@ -528,8 +739,10 @@ export class EnrichmentService {
       console.log(`🗺️  Overpass API Query for ${radiusMiles}mi radius:`);
       console.log(`📍 Location: ${lat}, ${lon}`);
       console.log(`📦 Bounding Box: ${bbox}`);
+      console.log(`📦 Formatted Bbox: (${bbox})`);
       console.log(`🔍 Filters: ${filters.join(', ')}`);
-      console.log(`📝 Query: ${q}`);
+      console.log(`🔍 Query Parts:`, queryParts);
+      console.log(`📝 Final Query: ${q}`);
       
       const res = await fetchJSONSmart("https://overpass-api.de/api/interpreter", {
         method: "POST",
@@ -549,11 +762,11 @@ export class EnrichmentService {
       
              // Filter POIs by actual distance from center point (not just bbox)
        const nearbyPOIs: any[] = [];
-       const seen = new Set();
-       
-       const norm = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
-       
-       for (const el of elements) {
+      const seen = new Set();
+      
+      const norm = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
+      
+      for (const el of elements) {
          // Handle different element types with out center format
          let latc: number | null = null;
          let lonc: number | null = null;
@@ -568,8 +781,8 @@ export class EnrichmentService {
            lonc = el.center?.lon;
          }
          
-         if (latc == null || lonc == null) continue;
-         
+        if (latc == null || lonc == null) continue;
+        
          // Calculate actual distance from center point
          const distanceMiles = Math.round(this.calculateDistance(lat, lon, latc, lonc) * 0.621371 * 100) / 100;
          
@@ -582,8 +795,8 @@ export class EnrichmentService {
             }
             
             const key = `${norm(poiName)}|${latc.toFixed(3)},${lonc.toFixed(3)}`;
-            if (!seen.has(key)) {
-              seen.add(key);
+        if (!seen.has(key)) {
+          seen.add(key);
               nearbyPOIs.push({
                 ...el,
                 distance_miles: distanceMiles
@@ -633,6 +846,29 @@ export class EnrichmentService {
           
           sortedPOIs.forEach((poi, index) => {
             console.log(`\n--- ${poiType.slice(0, -1)} ${index + 1} (${poi.distance_miles} miles) ---`);
+            console.log(`Name: ${poi.tags?.name || 'Unnamed'}`);
+            console.log(`Type: ${poi.tags?.amenity || 'Unknown'}`);
+            console.log(`OSM ID: ${poi.id}`);
+            console.log(`Element Type: ${poi.type}`);
+            console.log(`Coordinates: ${poi.lat || poi.center?.lat}, ${poi.lon || poi.center?.lon}`);
+            console.log(`Distance: ${poi.distance_miles} miles`);
+            console.log(`Address: ${poi.tags?.['addr:street'] || 'N/A'} ${poi.tags?.['addr:housenumber'] || ''}`);
+            console.log(`City: ${poi.tags?.['addr:city'] || 'N/A'}`);
+            console.log(`All Tags:`, poi.tags);
+          });
+        }
+
+        // TEMPORARY: Show detailed school records for inspection
+        if (nearbyPOIs.length > 0 && filters.some(f => f.includes('school'))) {
+          // Sort by distance (closest to farthest)
+          const sortedPOIs = [...nearbyPOIs].sort((a, b) => a.distance_miles - b.distance_miles);
+          
+          console.log(`🏫  DETAILED SCHOOL RECORDS (showing ALL by proximity):`);
+          console.log(`📊 Total schools found: ${nearbyPOIs.length}`);
+          console.log(`📍 Distance range: ${sortedPOIs[0].distance_miles} - ${sortedPOIs[sortedPOIs.length - 1].distance_miles} miles`);
+          
+          sortedPOIs.forEach((poi, index) => {
+            console.log(`\n--- School ${index + 1} (${poi.distance_miles} miles) ---`);
             console.log(`Name: ${poi.tags?.name || 'Unnamed'}`);
             console.log(`Type: ${poi.tags?.amenity || 'Unknown'}`);
             console.log(`OSM ID: ${poi.id}`);
@@ -703,6 +939,7 @@ export class EnrichmentService {
       'poi_airports': 5,
       'poi_power_plants': 5,
       'poi_substations': 5,
+      'poi_powerlines': 5,
       'poi_eq': 5,
       'poi_fema_floodzones': 2,
       'poi_usgs_volcano': 5,
@@ -713,7 +950,26 @@ export class EnrichmentService {
       'poi_golf_courses': 5,
       'poi_boat_ramps': 5,
       'poi_cafes_coffee': 3,
-      'poi_markets': 5
+       'poi_markets': 5,
+       'poi_fema_flood_zones': 5,
+       
+       // EPA FRS Environmental Hazards
+       'poi_epa_brownfields': 5,
+       'poi_epa_superfund': 5,
+       'poi_epa_rcra': 5,
+       'poi_epa_tri': 5,
+       'poi_epa_npdes': 5,
+       'poi_epa_air': 5,
+       'poi_epa_radiation': 5,
+       'poi_epa_power': 5,
+       'poi_epa_oil_spill': 5,
+       
+       // USDA Local Food Portal - Farmers Markets & Local Food
+       'poi_usda_agritourism': 5,
+       'poi_usda_csa': 5,
+       'poi_usda_farmers_market': 5,
+       'poi_usda_food_hub': 5,
+       'poi_usda_onfarm_market': 5
     };
     
     // Cap all radii at 5 miles maximum
@@ -793,248 +1049,472 @@ export class EnrichmentService {
     }
   }
 
-
-  
-  // Calculate accurate bounding box using proven 111,320 meters per degree formula
-  private calculateBoundingBox(lat: number, lon: number, radiusMiles: number): string {
-    // Convert miles to meters
-    const radiusMeters = radiusMiles * 1609.34;
+     // EPA FRS (Facility Registry Service) Environmental Hazards enrichment
+   private async getEPAFRSFacilities(lat: number, lon: number, radiusMiles: number, programType: string): Promise<Record<string, any>> {
+    console.log(`🏭 EPA FRS ${programType} query for [${lat}, ${lon}] within ${radiusMiles} miles`);
     
-    // Your proven working formula: 111,320 meters per degree latitude
-    const latDelta = radiusMeters / 111320;
-    const lonDelta = radiusMeters / (111320 * Math.cos(lat * Math.PI / 180)); // Adjusted for longitude
-    
-    // Create bounding box: south,west,north,east
-    const south = Math.max(-90, lat - latDelta);
-    const west = Math.max(-180, lon - lonDelta);
-    const north = Math.min(90, lat + latDelta);
-    const east = Math.min(180, lon + lonDelta);
-    
-    console.log(`📦 Proven bbox calculation:`);
-    console.log(`📍 Location: ${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-    console.log(`📏 Radius: ${radiusMiles} miles (${Math.round(radiusMeters)}m)`);
-    console.log(`📐 Lat delta: ${latDelta.toFixed(6)}°, Lon delta: ${lonDelta.toFixed(6)}°`);
-    console.log(`📦 Bbox: ${south.toFixed(6)}, ${west.toFixed(6)}, ${north.toFixed(6)}, ${east.toFixed(6)}`);
-    
-    return `${south},${west},${north},${east}`;
-  }
-
-  // Calculate distance between two points using Haversine formula
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371; // Earth's radius in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }
-  
-  // Categorize Wikipedia articles for quirky and interesting discovery
-  private categorizeWikipediaArticle(title: string, _article: any): string[] {
-    const titleLower = title.toLowerCase();
-    const categories: string[] = [];
-    
-    // Historic and Cultural Sites
-    if (titleLower.includes('historic') || titleLower.includes('heritage') || titleLower.includes('landmark')) {
-      categories.push('historic_landmark');
-    }
-    if (titleLower.includes('museum') || titleLower.includes('gallery') || titleLower.includes('exhibit')) {
-      categories.push('museum_gallery');
-    }
-    if (titleLower.includes('theater') || titleLower.includes('theatre') || titleLower.includes('opera')) {
-      categories.push('performing_arts');
-    }
-    
-    // Haunted and Paranormal
-    if (titleLower.includes('haunted') || titleLower.includes('ghost') || titleLower.includes('paranormal')) {
-      categories.push('haunted_paranormal');
-    }
-    if (titleLower.includes('cemetery') || titleLower.includes('graveyard') || titleLower.includes('burial')) {
-      categories.push('cemetery_burial');
-    }
-    
-    // Oddities and Curiosities
-    if (titleLower.includes('oddity') || titleLower.includes('curiosity') || titleLower.includes('unusual')) {
-      categories.push('oddity_curiosity');
-    }
-    if (titleLower.includes('mystery') || titleLower.includes('legend') || titleLower.includes('folklore')) {
-      categories.push('mystery_legend');
-    }
-    
-    // Architecture and Engineering
-    if (titleLower.includes('bridge') || titleLower.includes('tunnel') || titleLower.includes('viaduct')) {
-      categories.push('infrastructure');
-    }
-    if (titleLower.includes('skyscraper') || titleLower.includes('tower') || titleLower.includes('building')) {
-      categories.push('architecture');
-    }
-    
-    // Natural Wonders
-    if (titleLower.includes('park') || titleLower.includes('garden') || titleLower.includes('reserve')) {
-      categories.push('natural_area');
-    }
-    if (titleLower.includes('mountain') || titleLower.includes('hill') || titleLower.includes('peak')) {
-      categories.push('geographic_feature');
-    }
-    
-    // Entertainment and Recreation
-    if (titleLower.includes('amusement') || titleLower.includes('theme park') || titleLower.includes('zoo')) {
-      categories.push('entertainment');
-    }
-    if (titleLower.includes('stadium') || titleLower.includes('arena') || titleLower.includes('field')) {
-      categories.push('sports_venue');
-    }
-    
-    // Food and Culture
-    if (titleLower.includes('restaurant') || titleLower.includes('cafe') || titleLower.includes('diner')) {
-      categories.push('food_culture');
-    }
-    if (titleLower.includes('market') || titleLower.includes('bazaar') || titleLower.includes('fair')) {
-      categories.push('market_fair');
-    }
-    
-    // Religious and Spiritual
-    if (titleLower.includes('church') || titleLower.includes('temple') || titleLower.includes('mosque')) {
-      categories.push('religious_site');
-    }
-    
-    // Transportation
-    if (titleLower.includes('station') || titleLower.includes('terminal') || titleLower.includes('hub')) {
-      categories.push('transportation');
-    }
-    
-    // If no specific categories found, add general
-    if (categories.length === 0) {
-      categories.push('general_poi');
-    }
-    
-    return categories;
-  }
-
-  // Group articles by category for better organization
-  private groupArticlesByCategory(articles: any[]): Record<string, any[]> {
-    const grouped: Record<string, any[]> = {};
-    
-    articles.forEach(article => {
-      article.categories.forEach((category: string) => {
-        if (!grouped[category]) {
-          grouped[category] = [];
-        }
-        grouped[category].push(article);
-      });
-    });
-    
-    return grouped;
-  }
-
-  // Generate a human-readable summary of Wikipedia findings
-  private generateWikipediaSummary(articlesByCategory: Record<string, any[]>): string {
-    const categoryCounts = Object.entries(articlesByCategory).map(([category, articles]) => ({
-      category: this.formatCategoryName(category),
-      count: articles.length
-    }));
-    
-
-    const uniqueArticles = new Set(Object.values(articlesByCategory).flat().map(a => a.title)).size;
-    
-    let summary = `Found ${uniqueArticles} unique Wikipedia articles within ${this.getDefaultRadius('poi_wikipedia')} miles. `;
-    
-    if (categoryCounts.length > 0) {
-      const topCategories = categoryCounts
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 3)
-        .map(c => `${c.category} (${c.count})`);
-      
-      summary += `Top categories: ${topCategories.join(', ')}.`;
-    }
-    
-    return summary;
-  }
-
-  // Format category names for display
-  private formatCategoryName(category: string): string {
-    const nameMap: Record<string, string> = {
-      'historic_landmark': 'Historic Landmarks',
-      'museum_gallery': 'Museums & Galleries',
-      'performing_arts': 'Performing Arts',
-      'haunted_paranormal': 'Haunted & Paranormal',
-      'cemetery_burial': 'Cemeteries & Burial Sites',
-      'oddity_curiosity': 'Oddities & Curiosities',
-      'mystery_legend': 'Mysteries & Legends',
-      'infrastructure': 'Infrastructure',
-      'architecture': 'Architecture',
-      'natural_area': 'Natural Areas',
-      'geographic_feature': 'Geographic Features',
-      'entertainment': 'Entertainment',
-      'sports_venue': 'Sports Venues',
-      'food_culture': 'Food & Culture',
-      'market_fair': 'Markets & Fairs',
-      'religious_site': 'Religious Sites',
-      'transportation': 'Transportation',
-      'general_poi': 'General Points of Interest'
-    };
-    
-    return nameMap[category] || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  }
-
-  // Custom POI handling methods
-  private getCustomPOIData(poiId: string): any {
-    return poiConfigManager.getCustomPOIData(poiId);
-  }
-
-  private async getCustomPOICount(poiId: string, lat: number, lon: number, radiusMiles: number, customPOIData: any): Promise<Record<string, any>> {
+    // Try the ArcGIS Feature Service first (more reliable, no CORS issues)
+    console.log(`🔄 Attempting ArcGIS Feature Service for ${programType}...`);
     try {
-      const { data, mapping } = customPOIData;
-      if (!data || !Array.isArray(data)) {
-        return { [`${poiId}_count`]: 0, [`${poiId}_error`]: 'No data available' };
+      const arcgisResult = await this.getEPAFRSFacilitiesFallback(lat, lon, radiusMiles, programType);
+      if (arcgisResult[`poi_epa_${this.getEPAProgramId(programType)}_count`] > 0) {
+        console.log(`✅ ArcGIS Feature Service successful for ${programType}`);
+        return arcgisResult;
       }
-
-      let count = 0;
-      const nearbyPOIs: any[] = [];
-
-      for (const poi of data) {
-        let poiLat: number | null = null;
-        let poiLon: number | null = null;
-
-        // Try to get coordinates from the POI data
-        if (mapping.lat && mapping.lon && poi[mapping.lat] && poi[mapping.lon]) {
-          poiLat = parseFloat(poi[mapping.lat]);
-          poiLon = parseFloat(poi[mapping.lon]);
-        } else if (poi.lat && poi.lon) {
-          poiLat = parseFloat(poi.lat);
-          poiLon = parseFloat(poi.lon);
+    } catch (arcgisError) {
+      console.log(`⚠️  ArcGIS fallback failed for ${programType}:`, arcgisError);
+    }
+    
+    // If ArcGIS fails, try the EPA FRS REST API (may have CORS issues)
+    console.log(`🔄 Attempting EPA FRS REST API for ${programType}...`);
+    const baseUrl = 'https://ofmpub.epa.gov/enviro/frs_rest_services.get_facilities';
+    const url = new URL(baseUrl);
+    
+    // Set query parameters for proximity search using correct parameter names
+    url.searchParams.set('latitude83', lat.toString());
+    url.searchParams.set('longitude83', lon.toString());
+    url.searchParams.set('search_radius', radiusMiles.toString());
+    url.searchParams.set('output', 'JSON');
+    
+    // Add program-specific filters using the correct parameter name
+    if (programType !== 'ACRES') {
+      url.searchParams.set('pgm_sys_acrnm', programType);
+    }
+    
+    console.log(`🔗 EPA FRS API URL: ${url.toString()}`);
+    
+    try {
+      const response = await fetchJSONSmart(url.toString());
+      console.log(`📊 EPA FRS API response:`, response);
+    
+      if (!response || !response.results || !Array.isArray(response.results)) {
+        console.log(`⚠️  No EPA FRS facilities found for ${programType}`);
+        return {
+          [`poi_epa_${this.getEPAProgramId(programType)}_count`]: 0,
+          [`poi_epa_${this.getEPAProgramId(programType)}_facilities`]: [],
+          [`poi_epa_${this.getEPAProgramId(programType)}_summary`]: `No ${this.getEPAProgramLabel(programType)} facilities found within ${radiusMiles} miles`
+        };
+      }
+      
+      const facilities = response.results;
+      console.log(`🏭 Found ${facilities.length} EPA FRS ${programType} facilities`);
+      
+      // Process and categorize facilities
+      const processedFacilities = facilities.map((facility: any) => ({
+        id: facility.facility_id || facility.registry_id,
+        name: facility.facility_name || 'Unnamed Facility',
+        program: programType,
+        status: facility.facility_status || 'Unknown',
+        address: facility.street_address || 'N/A',
+        city: facility.city_name || 'N/A',
+        state: facility.state_code || 'N/A',
+        zip: facility.zip_code || 'N/A',
+        lat: facility.latitude83 || facility.latitude,
+        lon: facility.longitude83 || facility.longitude,
+        distance_miles: this.calculateDistance(lat, lon, facility.latitude83 || facility.latitude, facility.longitude83 || facility.longitude) * 0.621371,
+        raw_data: facility
+      }));
+      
+      // Filter by actual distance and sort by proximity
+      const nearbyFacilities = processedFacilities
+        .filter((f: any) => f.distance_miles <= radiusMiles)
+        .sort((a: any, b: any) => a.distance_miles - b.distance_miles);
+      
+      console.log(`✅ EPA FRS ${programType}: ${nearbyFacilities.length} facilities within ${radiusMiles} miles`);
+      
+      // Show detailed facility records for inspection
+      if (nearbyFacilities.length > 0) {
+        console.log(`🏭 DETAILED EPA FRS ${programType} FACILITIES (showing ALL by proximity):`);
+        nearbyFacilities.forEach((facility: any, index: number) => {
+          console.log(`\n--- Facility ${index + 1} (${facility.distance_miles.toFixed(2)} miles) ---`);
+          console.log(`Name: ${facility.name}`);
+          console.log(`Program: ${facility.program}`);
+          console.log(`Status: ${facility.status}`);
+          console.log(`Address: ${facility.address}, ${facility.city}, ${facility.state} ${facility.zip}`);
+          console.log(`Coordinates: ${facility.lat}, ${facility.lon}`);
+          console.log(`Distance: ${facility.distance_miles.toFixed(2)} miles`);
+        });
+      }
+      
+      const programId = this.getEPAProgramId(programType);
+      const programLabel = this.getEPAProgramLabel(programType);
+      
+      return {
+        [`poi_epa_${programId}_count`]: nearbyFacilities.length,
+        [`poi_epa_${programId}_facilities`]: nearbyFacilities,
+        [`poi_epa_${programId}_summary`]: `Found ${nearbyFacilities.length} ${programLabel} facilities within ${radiusMiles} miles`
+      };
+      
+    } catch (error) {
+      console.error(`❌ EPA FRS ${programType} API error:`, error);
+      console.error(`🔗 Failed URL: ${baseUrl}`);
+      console.error(`📋 Program Type: ${programType}`);
+      console.error(`📍 Coordinates: [${lat}, ${lon}]`);
+      console.error(`📏 Radius: ${radiusMiles} miles`);
+      
+      // Check if this is a CORS error
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const isCORSError = errorMessage.includes('CORS') || errorMessage.includes('blocked') || errorMessage.includes('Access-Control');
+      
+      if (isCORSError) {
+        console.log(`🌐 CORS policy blocked EPA FRS API access - this is expected in browser environments`);
+        console.log(`💡 EPA FRS data may be available through the ArcGIS fallback service`);
+      }
+      
+      const programId = this.getEPAProgramId(programType);
+      return {
+        [`poi_epa_${programId}_count`]: 0,
+        [`poi_epa_${programId}_facilities`]: [],
+        [`poi_epa_${programId}_error`]: isCORSError 
+          ? `EPA FRS API blocked by CORS policy - data may be available through alternative sources`
+          : `EPA FRS API endpoint not accessible - service may be down or endpoint changed`,
+        [`poi_epa_${programId}_status`]: isCORSError ? 'CORS blocked' : 'API endpoint unavailable',
+        [`poi_epa_${programId}_note`]: 'Try enabling EPA layers in the Hazards section for alternative data sources'
+      };
+    }
+  }
+  
+  // Helper methods for EPA program identification
+  private getEPAProgramId(programType: string): string {
+    const programMap: Record<string, string> = {
+      'ACRES': 'brownfields',
+      'SEMS/CERCLIS': 'superfund',
+      'RCRAInfo': 'rcra',
+      'TRI': 'tri',
+      'NPDES': 'npdes',
+      'ICIS-AIR': 'air',
+      'RADINFO': 'radiation',
+      'EGRID': 'power',
+      'SPCC/FRP': 'oil_spill'
+    };
+        return programMap[programType] || programType.toLowerCase();
+ }
+  
+  // Fallback method using ArcGIS Feature Service
+  private async getEPAFRSFacilitiesFallback(lat: number, lon: number, radiusMiles: number, programType: string): Promise<Record<string, any>> {
+    try {
+      console.log(`🔄 EPA FRS Fallback: Using ArcGIS Feature Service for ${programType}`);
+      
+      // Use the comprehensive FRS Interests ArcGIS Feature Service
+      const baseUrl = 'https://services.arcgis.com/cJ9YHowT8TU7DUyn/arcgis/rest/services/FRS_INTERESTS/FeatureServer/0/query';
+      const url = new URL(baseUrl);
+      
+      // Set query parameters for ArcGIS Feature Service
+      url.searchParams.set('f', 'json');
+      url.searchParams.set('outFields', '*');
+      url.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+      url.searchParams.set('geometry', JSON.stringify({
+        x: lon,
+        y: lat,
+        spatialReference: { wkid: 4326 }
+      }));
+      url.searchParams.set('geometryType', 'esriGeometryPoint');
+      url.searchParams.set('inSR', '4326');
+      url.searchParams.set('distance', (radiusMiles * 1.60934).toString()); // Convert miles to km
+      url.searchParams.set('units', 'esriSRUnit_Kilometer');
+      
+      // Add program filter if available
+      if (programType !== 'ACRES') {
+        const programFilter = this.getEPAProgramFilter(programType);
+        if (programFilter) {
+          url.searchParams.set('where', programFilter);
         }
-
-        if (poiLat && poiLon && !isNaN(poiLat) && !isNaN(poiLon)) {
-          // Calculate distance using Haversine formula
-          const distance = this.calculateDistance(lat, lon, poiLat, poiLon);
-          const distanceMiles = distance * 0.621371; // Convert km to miles
-
+      }
+      
+      console.log(`🔗 ArcGIS Fallback URL: ${url.toString()}`);
+      
+      // Use a more reliable fetch approach for ArcGIS
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`ArcGIS HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`📊 ArcGIS Fallback response:`, data);
+      
+      if (!data || !data.features) {
+        console.log(`⚠️  No ArcGIS fallback data found for ${programType}`);
+        return this.createEmptyEPAResult(programType, radiusMiles);
+      }
+      
+      const features = data.features;
+      console.log(`🔄 ArcGIS fallback found ${features.length} features for ${programType}`);
+      
+      // Process features and calculate distances
+      const nearbyFacilities = features
+        .map((feature: any) => {
+          const geometry = feature.geometry;
+          if (!geometry || !geometry.x || !geometry.y) return null;
+          
+          const facilityLat = geometry.y;
+          const facilityLon = geometry.x;
+          const distanceMiles = this.calculateDistance(lat, lon, facilityLat, facilityLon) * 0.621371;
+          
           if (distanceMiles <= radiusMiles) {
-            count++;
-            nearbyPOIs.push({
-              name: poi[mapping.name] || poi.name || 'Unnamed',
-              address: poi[mapping.address] || poi.address || '',
-              lat: poiLat,
-              lon: poiLon,
+            return {
+              id: feature.attributes.FRS_ID || feature.attributes.REGISTRY_ID || Math.random().toString(36).substr(2, 9),
+              name: feature.attributes.FACILITY_NAME || feature.attributes.SITE_NAME || 'Unnamed Facility',
+              type: programType,
+              lat: facilityLat,
+              lon: facilityLon,
               distance_miles: Math.round(distanceMiles * 100) / 100,
-              raw_data: poi
-            });
+              address: feature.attributes.LOCATION_ADDRESS || 'N/A',
+              city: feature.attributes.CITY_NAME || 'N/A',
+              state: feature.attributes.STATE_CODE || 'N/A',
+              zip: feature.attributes.POSTAL_CODE || 'N/A',
+              raw_data: feature.attributes
+            };
           }
-        }
+          return null;
+        })
+        .filter(Boolean)
+        .sort((a: any, b: any) => a.distance_miles - b.distance_miles);
+      
+      console.log(`✅ ArcGIS fallback: ${nearbyFacilities.length} facilities within ${radiusMiles} miles`);
+      
+      const programId = this.getEPAProgramId(programType);
+      const programLabel = this.getEPAProgramLabel(programType);
+      
+      return {
+        [`poi_epa_${programId}_count`]: nearbyFacilities.length,
+        [`poi_epa_${programId}_facilities`]: nearbyFacilities,
+        [`poi_epa_${programId}_summary`]: `Found ${nearbyFacilities.length} ${programLabel} facilities within ${radiusMiles} miles (ArcGIS fallback)`,
+        [`poi_epa_${programId}_source`]: 'ArcGIS Feature Service (EPA FRS fallback)',
+        [`poi_epa_${programId}_note`]: 'Data from EPA FRS via ArcGIS Feature Service'
+      };
+      
+    } catch (error) {
+      console.error(`❌ ArcGIS fallback error for ${programType}:`, error);
+      
+      const programId = this.getEPAProgramId(programType);
+      return {
+        [`poi_epa_${programId}_count`]: 0,
+        [`poi_epa_${programId}_facilities`]: [],
+        [`poi_epa_${programId}_error`]: `ArcGIS fallback failed: ${error instanceof Error ? error.message : String(error)}`,
+        [`poi_epa_${programId}_status`]: 'ArcGIS fallback failed'
+      };
+    }
+  }
+  
+  // Helper methods for EPA program labels
+  private getEPAProgramLabel(programType: string): string {
+    const programMap: Record<string, string> = {
+      'ACRES': 'Brownfields',
+      'SEMS/CERCLIS': 'Superfund',
+      'RCRAInfo': 'RCRA',
+      'TRI': 'TRI',
+      'NPDES': 'NPDES',
+      'ICIS-AIR': 'Air Facilities',
+      'RADINFO': 'Radiation',
+      'EGRID': 'Power Generation',
+      'SPCC/FRP': 'Oil Spill Response'
+    };
+    return programMap[programType] || programType;
+  }
+  
+  // Helper method to create empty EPA results
+  private createEmptyEPAResult(programType: string, radiusMiles: number): Record<string, any> {
+    const programId = this.getEPAProgramId(programType);
+    const programLabel = this.getEPAProgramLabel(programType);
+    
+    return {
+      [`poi_epa_${programId}_count`]: 0,
+      [`poi_epa_${programId}_facilities`]: [],
+      [`poi_epa_${programId}_summary`]: `No ${programLabel} facilities found within ${radiusMiles} miles`,
+      [`poi_epa_${programId}_source`]: 'EPA FRS',
+      [`poi_epa_${programId}_note`]: 'No facilities in this area'
+    };
+  }
+  
+  // USDA Local Food Portal - Farmers Markets & Local Food enrichment
+  private async getUSDALocalFood(lat: number, lon: number, radiusMiles: number, foodType: string): Promise<Record<string, any>> {
+    try {
+      console.log(`🌾 USDA Local Food Portal ${foodType} query for [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // USDA Local Food Portal API endpoints
+      const apiEndpoints: Record<string, string> = {
+        'agritourism': 'https://www.usdalocalfoodportal.com/api/agritourism/',
+        'csa': 'https://www.usdalocalfoodportal.com/api/csa/',
+        'farmersmarket': 'https://www.usdalocalfoodportal.com/api/farmersmarket/',
+        'foodhub': 'https://www.usdalocalfoodportal.com/api/foodhub/',
+        'onfarmmarket': 'https://www.usdalocalfoodportal.com/api/onfarmmarket/'
+      };
+      
+      const apiUrl = apiEndpoints[foodType];
+      if (!apiUrl) {
+        throw new Error(`Unknown USDA food type: ${foodType}`);
       }
+      
+      // Build URL with correct query parameters
+      // Use x, y, and radius parameters for coordinate-based search
+      const url = new URL(apiUrl);
+      url.searchParams.set('x', lon.toString()); // longitude
+      url.searchParams.set('y', lat.toString()); // latitude
+      url.searchParams.set('radius', Math.min(radiusMiles, 100).toString()); // max 100 miles
+      
+      console.log(`🔗 USDA API URL: ${url.toString()}`);
+      
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`USDA API HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`📊 USDA ${foodType} API response:`, data);
+      
+      if (!data || !Array.isArray(data)) {
+        console.log(`⚠️  No USDA ${foodType} data found`);
+        return this.createEmptyUSDAResult(foodType, radiusMiles);
+      }
+      
+      const facilities = data;
+      console.log(`🌾 Found ${facilities.length} USDA ${foodType} facilities`);
+      
+      // Process facilities and calculate distances
+      const processedFacilities = facilities.map((facility: any) => {
+                // Extract coordinates from facility data
+        let facilityLat: number | null = null;
+        let facilityLon: number | null = null;
+        
+        // Try different possible coordinate field names from USDA API response
+        if (facility.latitude && facility.longitude) {
+          facilityLat = parseFloat(facility.latitude);
+          facilityLon = parseFloat(facility.longitude);
+        } else if (facility.lat && facility.lon) {
+          facilityLat = parseFloat(facility.lat);
+          facilityLon = parseFloat(facility.lon);
+        } else if (facility.x && facility.y) {
+          // Handle x,y coordinate format
+          facilityLon = parseFloat(facility.x);
+          facilityLat = parseFloat(facility.y);
+        } else if (facility.geometry && facility.geometry.coordinates) {
+          // Handle GeoJSON format if present
+          facilityLon = parseFloat(facility.geometry.coordinates[0]);
+          facilityLat = parseFloat(facility.geometry.coordinates[1]);
+        }
+        
+        if (facilityLat && facilityLon && !isNaN(facilityLat) && !isNaN(facilityLon)) {
+          const distanceMiles = this.calculateDistance(lat, lon, facilityLat, facilityLon) * 0.621371;
+          
+          return {
+            id: facility.id || facility.listing_id || facility.record_id || Math.random().toString(36).substr(2, 9),
+            name: facility.listing_name || facility.name || facility.facility_name || facility.market_name || 'Unnamed Facility',
+            type: foodType,
+            lat: facilityLat,
+            lon: facilityLon,
+              distance_miles: Math.round(distanceMiles * 100) / 100,
+            address: facility.location_address || facility.address || facility.street_address || 'N/A',
+            city: facility.location_city || facility.city || facility.city_name || 'N/A',
+            state: facility.location_state || facility.state || facility.state_code || 'N/A',
+            zip: facility.location_zipcode || facility.zip || facility.zip_code || 'N/A',
+            phone: facility.phone || facility.phone_number || 'N/A',
+            website: facility.media_website || facility.website || facility.url || 'N/A',
+            description: facility.description || facility.notes || '',
+            season: facility.season || facility.seasonality || 'N/A',
+            raw_data: facility
+          };
+        }
+        
+        return null;
+      }).filter(Boolean); // Remove null entries
+      
+            console.log(`🌾 Processed ${processedFacilities.length} USDA ${foodType} facilities with coordinates`);
+      
+      // Filter by actual distance and sort by proximity
+      const nearbyFacilities = processedFacilities
+        .filter((f: any) => f.distance_miles <= radiusMiles)
+        .sort((a: any, b: any) => a.distance_miles - b.distance_miles);
+      
+      console.log(`✅ USDA ${foodType}: ${nearbyFacilities.length} facilities within ${radiusMiles} miles`);
+      
+      // Show detailed facility records for inspection
+      if (nearbyFacilities.length > 0) {
+        console.log(`🌾 DETAILED USDA ${foodType.toUpperCase()} FACILITIES (showing ALL by proximity):`);
+        nearbyFacilities.forEach((facility: any, index: number) => {
+          console.log(`\n--- Facility ${index + 1} (${facility.distance_miles.toFixed(2)} miles) ---`);
+          console.log(`Name: ${facility.name}`);
+          console.log(`Type: ${facility.type}`);
+          console.log(`Address: ${facility.address}, ${facility.city}, ${facility.state} ${facility.zip}`);
+          console.log(`Coordinates: ${facility.lat}, ${facility.lon}`);
+          console.log(`Distance: ${facility.distance_miles.toFixed(2)} miles`);
+          console.log(`Phone: ${facility.phone}`);
+          console.log(`Website: ${facility.website}`);
+          console.log(`Season: ${facility.season}`);
+        });
+      }
+      
+      const foodTypeId = this.getUSDAFoodTypeId(foodType);
+      const foodTypeLabel = this.getUSDAFoodTypeLabel(foodType);
 
       return {
-        [`${poiId}_count`]: count,
-        [`${poiId}_pois`]: nearbyPOIs,
-        [`${poiId}_summary`]: `Found ${count} ${customPOIData.poi.label} within ${radiusMiles} miles`
+        [`poi_usda_${foodTypeId}_count`]: nearbyFacilities.length,
+        [`poi_usda_${foodTypeId}_facilities`]: nearbyFacilities,
+        [`poi_usda_${foodTypeId}_summary`]: `Found ${nearbyFacilities.length} ${foodTypeLabel} within ${radiusMiles} miles`,
+        [`poi_usda_${foodTypeId}_source`]: 'USDA Local Food Portal',
+        [`poi_usda_${foodTypeId}_note`]: 'Data from USDA Local Food Portal API'
       };
 
     } catch (error) {
-      console.error(`Custom POI enrichment failed for ${poiId}:`, error);
-      return { [`${poiId}_count`]: 0, [`${poiId}_error`]: String(error) };
+      console.error(`❌ USDA Local Food Portal ${foodType} API error:`, error);
+      
+      const foodTypeId = this.getUSDAFoodTypeId(foodType);
+      return {
+        [`poi_usda_${foodTypeId}_count`]: 0,
+        [`poi_usda_${foodTypeId}_facilities`]: [],
+        [`poi_usda_${foodTypeId}_error`]: `USDA API error: ${error instanceof Error ? error.message : String(error)}`,
+        [`poi_usda_${foodTypeId}_status`]: 'API error'
+      };
     }
+  }
+  
+  // Helper methods for USDA food type identification
+  private getUSDAFoodTypeId(foodType: string): string {
+    const foodTypeMap: Record<string, string> = {
+      'agritourism': 'agritourism',
+      'csa': 'csa',
+      'farmersmarket': 'farmers_market',
+      'foodhub': 'food_hub',
+      'onfarmmarket': 'onfarm_market'
+    };
+    return foodTypeMap[foodType] || foodType;
+  }
+  
+  private getUSDAFoodTypeLabel(foodType: string): string {
+    const foodTypeMap: Record<string, string> = {
+      'agritourism': 'Agritourism',
+      'csa': 'CSA Programs',
+      'farmersmarket': 'Farmers Markets',
+      'foodhub': 'Food Hubs',
+      'onfarmmarket': 'On-Farm Markets'
+    };
+    return foodTypeMap[foodType] || foodType;
+  }
+  
+  // Helper method to create empty USDA results
+  private createEmptyUSDAResult(foodType: string, radiusMiles: number): Record<string, any> {
+    const foodTypeId = this.getUSDAFoodTypeId(foodType);
+    const foodTypeLabel = this.getUSDAFoodTypeLabel(foodType);
+    
+    return {
+      [`poi_usda_${foodTypeId}_count`]: 0,
+      [`poi_usda_${foodTypeId}_facilities`]: [],
+      [`poi_usda_${foodTypeId}_summary`]: `No ${foodTypeLabel} found within ${radiusMiles} miles`,
+      [`poi_usda_${foodTypeId}_source`]: 'USDA Local Food Portal',
+      [`poi_usda_${foodTypeId}_note`]: 'No facilities in this area'
+    };
   }
 }

@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Download, MapPin, Info, CheckCircle } from 'lucide-react';
 import { EnrichmentResult } from '../App';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -43,6 +42,33 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_tnm_trails': { icon: '🥾', color: '#059669', title: 'Trails' },
   'poi_tnm_railroads': { icon: '🚂', color: '#7c3aed', title: 'Railroads' },
   'poi_wikipedia': { icon: '📖', color: '#1d4ed8', title: 'Wikipedia Articles' },
+  'poi_fema_flood_zones': { icon: '🌊', color: '#0891b2', title: 'FEMA Flood Zones' },
+  
+  // EPA FRS Environmental Hazards
+  'poi_epa_brownfields': { icon: '🏭', color: '#8b4513', title: 'EPA Brownfields' },
+  'poi_epa_superfund': { icon: '⚠️', color: '#dc2626', title: 'EPA Superfund Sites' },
+  'poi_epa_rcra': { icon: '☣️', color: '#7c2d12', title: 'EPA RCRA Facilities' },
+  'poi_epa_tri': { icon: '🧪', color: '#059669', title: 'EPA TRI Facilities' },
+  'poi_epa_npdes': { icon: '💧', color: '#0891b2', title: 'EPA NPDES Permits' },
+  'poi_epa_air': { icon: '💨', color: '#6b7280', title: 'EPA Air Facilities' },
+  'poi_epa_radiation': { icon: '☢️', color: '#fbbf24', title: 'EPA Radiation Facilities' },
+  'poi_epa_power': { icon: '⚡', color: '#f59e0b', title: 'EPA Power Generation' },
+  'poi_epa_oil_spill': { icon: '🛢️', color: '#1f2937', title: 'EPA Oil Spill Response' },
+  
+  // Power and Infrastructure
+  'poi_powerlines': { icon: '⚡', color: '#f59e0b', title: 'Powerlines' },
+  
+  // Recreation and Leisure
+  'poi_theatres': { icon: '🎭', color: '#800080', title: 'Theatres' },
+  'poi_museums_historic': { icon: '🏛️', color: '#7c3aed', title: 'Museums, Historic Sites & Memorials' },
+  
+  // USDA Local Food Portal - Farmers Markets & Local Food
+  'poi_usda_agritourism': { icon: '🚜', color: '#22c55e', title: 'Agritourism' },
+  'poi_usda_csa': { icon: '🧺', color: '#16a34a', title: 'CSA Programs' },
+  'poi_usda_farmers_market': { icon: '🍎', color: '#dc2626', title: 'Farmers Markets' },
+  'poi_usda_food_hub': { icon: '📦', color: '#f97316', title: 'Food Hubs' },
+  'poi_usda_onfarm_market': { icon: '🥕', color: '#eab308', title: 'On-Farm Markets' },
+  
   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
 
@@ -338,8 +364,176 @@ if (bounds.isValid() && results.length > 1) {
       console.log(`❌ No Wikipedia articles found in enrichments`);
     }
     
+    // Add EPA FRS Environmental Hazards facilities
+    const epaPrograms = [
+      'poi_epa_brownfields',
+      'poi_epa_superfund', 
+      'poi_epa_rcra',
+      'poi_epa_tri',
+      'poi_epa_npdes',
+      'poi_epa_air',
+      'poi_epa_radiation',
+      'poi_epa_power',
+      'poi_epa_oil_spill'
+    ];
+    
+    epaPrograms.forEach(programKey => {
+      const facilities = result.enrichments[`${programKey}_facilities`];
+      if (facilities && Array.isArray(facilities) && facilities.length > 0) {
+        console.log(`🏭 Found ${facilities.length} EPA FRS ${programKey} facilities`);
+        const iconConfig = POI_ICONS[programKey] || POI_ICONS.default;
+        
+        // Add to legend
+        currentLegendItems.push({
+          icon: iconConfig.icon,
+          color: iconConfig.color,
+          title: iconConfig.title,
+          count: facilities.length
+        });
+        
+        // Add markers for each facility
+        facilities.forEach((facility: any) => {
+          if (facility.lat && facility.lon && facility.name) {
+            console.log(`🏭 Adding EPA FRS marker: ${facility.name} at [${facility.lat}, ${facility.lon}]`);
+            const facilityMarker = L.marker([facility.lat, facility.lon], {
+              icon: createPOIIcon(iconConfig.icon, iconConfig.color)
+            })
+              .bindPopup(createEPAFRSPopupContent(facility))
+              .addTo(map);
+            
+            markersRef.current.push(facilityMarker);
+          }
+        });
+      }
+    });
+    
+    // Add USDA Local Food Portal facilities
+    const usdaPrograms = [
+      'poi_usda_agritourism',
+      'poi_usda_csa',
+      'poi_usda_farmers_market',
+      'poi_usda_food_hub',
+      'poi_usda_onfarm_market'
+    ];
+    
+    usdaPrograms.forEach(programKey => {
+      const facilities = result.enrichments[`${programKey}_facilities`];
+      if (facilities && Array.isArray(facilities) && facilities.length > 0) {
+        console.log(`🌾 Found ${facilities.length} USDA ${programKey} facilities`);
+        const iconConfig = POI_ICONS[programKey] || POI_ICONS.default;
+        
+        // Add to legend
+        currentLegendItems.push({
+          icon: iconConfig.icon,
+          color: iconConfig.color,
+          title: iconConfig.title,
+          count: facilities.length
+        });
+        
+        // Add markers for each facility
+        facilities.forEach((facility: any) => {
+          if (facility.lat && facility.lon && facility.name) {
+            console.log(`🌾 Adding USDA marker: ${facility.name} at [${facility.lat}, ${facility.lon}]`);
+            const facilityMarker = L.marker([facility.lat, facility.lon], {
+              icon: createPOIIcon(iconConfig.icon, iconConfig.color)
+            })
+              .bindPopup(createUSDAFacilityPopupContent(facility))
+              .addTo(map);
+            
+            markersRef.current.push(facilityMarker);
+          }
+        });
+      }
+    });
+    
     // Update legend state
     setLegendItems(currentLegendItems);
+  };
+
+  // Create popup content for EPA FRS facilities
+  const createEPAFRSPopupContent = (facility: any): string => {
+    const name = facility.name || 'Unnamed Facility';
+    const program = facility.program || 'EPA Facility';
+    const status = facility.status || 'Unknown';
+    const address = facility.address || 'N/A';
+    const city = facility.city || 'N/A';
+    const state = facility.state || 'N/A';
+    const distance = facility.distance_miles?.toFixed(2) || 'Unknown';
+    
+    let content = `
+      <div style="min-width: 250px; max-width: 350px;">
+        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
+        <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+          🏭 ${program} • ${distance} miles away
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #374151;">
+          <strong>Status:</strong> ${status}
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #374151;">
+          <strong>Address:</strong> ${address}, ${city}, ${state}
+        </div>
+        <div style="margin: 6px 0 4px 0; font-size: 11px; color: #9ca3af;">
+          ${facility.lat?.toFixed(6)}, ${facility.lon?.toFixed(6)}
+        </div>
+      </div>
+    `;
+    
+    return content;
+  };
+
+  // Create popup content for USDA facilities
+  const createUSDAFacilityPopupContent = (facility: any): string => {
+    const name = facility.name || 'Unnamed Facility';
+    const program = facility.program || 'USDA Program';
+    const distance = facility.distance_miles || 'Unknown';
+    
+    let content = `
+      <div style="min-width: 250px; max-width: 350px;">
+        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
+        <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+          🌾 ${program} • ${distance} miles away
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+          🏷️ Type: ${facility.tags?.amenity || facility.tags?.shop || facility.tags?.tourism || 'Facility'}
+        </div>
+    `;
+
+    // Add address if available
+    const address = facility.tags?.['addr:street'] || facility.address || facility.tags?.['addr:full'];
+    if (address) {
+      content += `<div style="margin: 4px 0; font-size: 12px; color: #6b7280;">📍 ${address}</div>`;
+    }
+
+    // Add phone if available
+    if (facility.tags?.phone) {
+      content += `<div style="margin: 4px 0; font-size: 12px; color: #6b7280;">📞 ${facility.tags.phone}</div>`;
+    }
+
+    // Add website if available
+    if (facility.tags?.website) {
+      content += `<div style="margin: 4px 0; font-size: 12px;">
+        🌐 <a href="${facility.tags.website}" target="_blank" style="color: #3b82f6;">Website</a>
+      </div>`;
+    }
+
+    // Add coordinates
+    const lat = facility.lat || facility.center?.lat;
+    const lon = facility.lon || facility.center?.lon;
+    if (lat && lon) {
+      content += `<div style="margin: 6px 0 4px 0; font-size: 11px; color: #9ca3af;">
+        ${lat.toFixed(6)}, ${lon.toFixed(6)}
+      </div>`;
+    }
+
+    // Add OSM ID for reference
+    if (facility.id) {
+      content += `<div style="margin: 2px 0; font-size: 10px; color: #d1d5db;">
+        OSM ID: ${facility.id}
+      </div>`;
+    }
+
+    content += '</div>';
+    return content;
   };
 
   // Create popup content for POI markers
@@ -541,7 +735,23 @@ if (bounds.isValid() && results.length > 1) {
       acs_median_age: 'Median Age',
       nws_active_alerts: 'Weather Alerts',
       poi_wikipedia_count: 'Wikipedia Articles',
-      poi_wikipedia_summary: 'Wikipedia Summary'
+      poi_wikipedia_summary: 'Wikipedia Summary',
+      poi_fema_flood_zones_current_zone: 'Current Flood Zone',
+      poi_fema_flood_zones_nearby_zone: 'Nearest Flood Zone (5 mi)',
+      
+      // EPA FRS Environmental Hazards
+      poi_epa_brownfields_count: 'EPA Brownfields',
+      poi_epa_superfund_count: 'EPA Superfund Sites',
+      poi_epa_rcra_count: 'EPA RCRA Facilities',
+      poi_epa_tri_count: 'EPA TRI Facilities',
+      poi_epa_npdes_count: 'EPA NPDES Permits',
+      poi_epa_air_count: 'EPA Air Facilities',
+      poi_epa_radiation_count: 'EPA Radiation Facilities',
+      poi_epa_power_count: 'EPA Power Generation',
+      poi_epa_oil_spill_count: 'EPA Oil Spill Response',
+      
+      // Recreation and Leisure
+      poi_museums_historic_count: 'Museums, Historic Sites & Memorials'
     };
 
     // Handle POI counts
@@ -574,48 +784,7 @@ if (bounds.isValid() && results.length > 1) {
     return String(value);
   };
 
-  const downloadResults = () => {
-    if (!results.length) return;
 
-    // Convert results to CSV format
-    const headers = ['Address', 'Latitude', 'Longitude', 'Source', 'Confidence'];
-    const enrichmentKeys = new Set<string>();
-    
-    results.forEach(result => {
-      Object.keys(result.enrichments).forEach(key => enrichmentKeys.add(key));
-    });
-
-    const allHeaders = [...headers, ...Array.from(enrichmentKeys)];
-    
-    const csvContent = [
-      allHeaders.join(','),
-      ...results.map(result => {
-        const row = [
-          result.location.name,
-          result.location.lat,
-          result.location.lon,
-          result.location.source,
-          result.location.confidence
-        ];
-        
-        enrichmentKeys.forEach(key => {
-          row.push(result.enrichments[key] || '');
-        });
-        
-        return row.join(',');
-      })
-    ].join('\n');
-
-    // Create and download file with timestamp
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `enrichment_results_${timestamp}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
 
   // Download single lookup results with detailed POI data
   const downloadSingleLookupResults = (result: EnrichmentResult) => {
@@ -690,6 +859,137 @@ if (bounds.isValid() && results.length > 1) {
           ]);
         });
       }
+      
+      // Add museums, historic sites, and memorials data
+      if (key === 'poi_museums_historic_detailed' && Array.isArray(value)) {
+        value.forEach((poi: any) => {
+          rows.push([
+            result.location.name,
+            result.location.lat,
+            result.location.lon,
+            result.location.source,
+            result.location.confidence,
+            'MUSEUMS_HISTORIC',
+            poi.name || poi.title || 'Unnamed',
+            poi.lat || poi.center?.lat || '',
+            poi.lon || poi.center?.lon || '',
+            poi.distance_miles || 'Unknown',
+            poi.tags?.tourism || poi.tags?.historic || 'Cultural Site',
+            poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
+            poi.tags?.phone || '',
+            poi.tags?.website || ''
+          ]);
+        });
+      }
+    });
+
+    // Add FEMA flood zone data
+    if (result.enrichments.poi_fema_flood_zones_current_zone) {
+      rows.push([
+        result.location.name,
+        result.location.lat,
+        result.location.lon,
+        result.location.source,
+        result.location.confidence,
+        'FEMA_FLOOD_ZONE',
+        'Current Zone',
+        result.location.lat,
+        result.location.lon,
+        '0.0',
+        'Flood Zone Assessment',
+        result.enrichments.poi_fema_flood_zones_current_zone,
+        '',
+        ''
+      ]);
+    }
+    
+    if (result.enrichments.poi_fema_flood_zones_nearby_zone) {
+      rows.push([
+        result.location.name,
+        result.location.lat,
+        result.location.lon,
+        result.location.source,
+        result.location.confidence,
+        'FEMA_FLOOD_ZONE',
+        'Nearest Zone',
+        result.location.lat,
+        result.location.lon,
+        '5.0',
+        'Flood Zone Assessment',
+        result.enrichments.poi_fema_flood_zones_nearby_zone,
+        '',
+        ''
+      ]);
+    }
+    
+    // Add EPA FRS Environmental Hazards data
+    const epaPrograms = [
+      'poi_epa_brownfields',
+      'poi_epa_superfund', 
+      'poi_epa_rcra',
+      'poi_epa_tri',
+      'poi_epa_npdes',
+      'poi_epa_air',
+      'poi_epa_radiation',
+      'poi_epa_power',
+      'poi_epa_oil_spill'
+    ];
+    
+    epaPrograms.forEach(programKey => {
+      const facilities = result.enrichments[`${programKey}_facilities`];
+      if (facilities && Array.isArray(facilities) && facilities.length > 0) {
+        facilities.forEach((facility: any) => {
+          rows.push([
+            result.location.name,
+            result.location.lat,
+            result.location.lon,
+            result.location.source,
+            result.location.confidence,
+            programKey.replace('poi_', '').toUpperCase(),
+            facility.name || 'Unnamed Facility',
+            facility.lat,
+            facility.lon,
+            facility.distance_miles?.toFixed(2) || 'Unknown',
+            facility.program || 'EPA Facility',
+            facility.address || '',
+            '',
+            ''
+          ]);
+        });
+      }
+    });
+
+    // Add USDA Local Food Portal facilities
+    const usdaPrograms = [
+      'poi_usda_agritourism',
+      'poi_usda_csa',
+      'poi_usda_farmers_market',
+      'poi_usda_food_hub',
+      'poi_usda_onfarm_market'
+    ];
+    
+    usdaPrograms.forEach(programKey => {
+      const facilities = result.enrichments[`${programKey}_facilities`];
+      if (facilities && Array.isArray(facilities) && facilities.length > 0) {
+        facilities.forEach((facility: any) => {
+          rows.push([
+            result.location.name,
+            result.location.lat,
+            result.location.lon,
+            result.location.source,
+            result.location.confidence,
+            programKey.replace('poi_', '').toUpperCase(),
+            facility.name || 'Unnamed Facility',
+            facility.lat,
+            facility.lon,
+            facility.distance_miles?.toFixed(2) || 'Unknown',
+            facility.program || 'USDA Program',
+            facility.address || '',
+            '',
+            ''
+          ]);
+        });
+      }
     });
 
     const csvContent = [
@@ -716,7 +1016,7 @@ if (bounds.isValid() && results.length > 1) {
           onClick={onBackToConfig}
           className="btn btn-outline flex items-center space-x-2"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <span className="w-4 h-4">←</span>
           <span>Back to Configuration</span>
         </button>
 
@@ -725,15 +1025,6 @@ if (bounds.isValid() && results.length > 1) {
             <h2 className="text-lg font-semibold text-gray-900">Location Results</h2>
             <p className="text-sm text-gray-600">{results.length} location{results.length !== 1 ? 's' : ''} processed</p>
           </div>
-
-          <button
-            onClick={downloadResults}
-            disabled={!results.length}
-            className="btn btn-primary flex items-center space-x-2"
-          >
-            <Download className="w-4 h-4" />
-            <span>Download CSV</span>
-          </button>
         </div>
       </div>
 
@@ -742,7 +1033,7 @@ if (bounds.isValid() && results.length > 1) {
          <div className="bg-white border-b border-gray-200 p-3">
            <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-2">
-               <Info className="h-4 w-4 text-blue-600" />
+               <span className="h-4 w-4 text-blue-600">ℹ️</span>
                <span className="text-sm font-medium text-gray-700">Map Legend</span>
              </div>
              
@@ -752,7 +1043,7 @@ if (bounds.isValid() && results.length > 1) {
                className="btn btn-primary btn-sm flex items-center gap-2 px-3 py-1"
                title="Download all proximity layers and distances for this location"
              >
-               <Download className="h-3 w-3" />
+               <span className="h-3 w-3">⬇️</span>
                <span className="text-xs">Download Results</span>
              </button>
            </div>
@@ -782,7 +1073,7 @@ if (bounds.isValid() && results.length > 1) {
         {showBatchSuccess && (
           <div className="absolute top-4 left-4 bg-green-50 border border-green-200 rounded-lg shadow-lg max-w-sm">
             <div className="p-4 flex items-center space-x-3">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="w-5 h-5 text-green-600">✅</span>
               <div>
                 <h3 className="font-medium text-green-900">Batch Processing Complete!</h3>
                 <p className="text-sm text-green-700">CSV download started automatically</p>
@@ -796,7 +1087,7 @@ if (bounds.isValid() && results.length > 1) {
           <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 max-w-sm max-h-96 overflow-y-auto">
             <div className="p-4 border-b border-gray-200">
               <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
-                <Info className="w-4 h-4 text-primary-600" />
+                <span className="w-4 h-4 text-primary-600">ℹ️</span>
                 <span>Results Summary</span>
               </h3>
             </div>
@@ -805,7 +1096,7 @@ if (bounds.isValid() && results.length > 1) {
               {results.map((result, index) => (
                 <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <div className="flex items-start space-x-2">
-                    <MapPin className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0" />
+                    <span className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0">📍</span>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-gray-900 text-sm truncate">
                         {result.location.name}

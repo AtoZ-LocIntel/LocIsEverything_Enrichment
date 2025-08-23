@@ -207,7 +207,7 @@ function App() {
             </div>
           )}
 
-          <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <div className="grid lg:grid-cols-2 gap-8 mb-8 mobile-stack">
             <div data-section="single-search">
               <SingleSearch onSearch={handleSingleSearch} />
             </div>
