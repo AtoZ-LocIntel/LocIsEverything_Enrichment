@@ -1,0 +1,400 @@
+[1mdiff --git a/index.html b/index.html[m
+[1mindex a701229..6aec73d 100644[m
+[1m--- a/index.html[m
+[1m+++ b/index.html[m
+[36m@@ -7,6 +7,11 @@[m
+     <title>The Location Is Everything Co - Enrichment Platform</title>[m
+     <meta name="description" content="Professional geocoding and enrichment platform with multi-source data integration" />[m
+     [m
+[32m+[m[32m    <!-- Cache-busting meta tags -->[m
+[32m+[m[32m    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />[m
+[32m+[m[32m    <meta http-equiv="Pragma" content="no-cache" />[m
+[32m+[m[32m    <meta http-equiv="Expires" content="0" />[m
+[32m+[m[41m    [m
+     <!-- Preload fonts -->[m
+     <link rel="preconnect" href="https://fonts.googleapis.com">[m
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>[m
+[1mdiff --git a/src/App.tsx b/src/App.tsx[m
+[1mindex e01e197..b78f6ad 100644[m
+[1m--- a/src/App.tsx[m
+[1m+++ b/src/App.tsx[m
+[36m@@ -21,6 +21,24 @@[m [mfunction App() {[m
+   const [poiRadii, setPoiRadii] = useState<Record<string, number>>({});[m
+   const [error, setError] = useState<string | null>(null);[m
+ [m
+[32m+[m[32m  const resetAppState = () => {[m
+[32m+[m[32m    // Reset all state variables to initial values[m
+[32m+[m[32m    setViewMode('config');[m
+[32m+[m[32m    setEnrichmentResults([]);[m
+[32m+[m[32m    setSelectedEnrichments(['elev', 'airq', 'fips']);[m
+[32m+[m[32m    setPoiRadii({});[m
+[32m+[m[32m    setError(null);[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear any cached data in the enrichment service[m
+[32m+[m[32m    if (window.EnrichmentService) {[m
+[32m+[m[32m      // Clear any cached results or data[m
+[32m+[m[32m      console.log('Clearing enrichment service cache...');[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Force re-render of all components[m
+[32m+[m[32m    window.location.reload();[m
+[32m+[m[32m  };[m
+[32m+[m
+   const handleSingleSearch = async (address: string) => {[m
+     try {[m
+       setError(null);[m
+[1mdiff --git a/src/components/ConfigurationView.tsx b/src/components/ConfigurationView.tsx[m
+[1mnew file mode 100644[m
+[1mindex 0000000..b28b04f[m
+[1m--- /dev/null[m
+[1m+++ b/src/components/ConfigurationView.tsx[m
+[36m@@ -0,0 +1,3 @@[m
+[32m+[m
+[32m+[m
+[32m+[m
+[1mdiff --git a/src/components/EnrichmentConfig.tsx b/src/components/EnrichmentConfig.tsx[m
+[1mindex 031ccff..d1e817f 100644[m
+[1m--- a/src/components/EnrichmentConfig.tsx[m
+[1m+++ b/src/components/EnrichmentConfig.tsx[m
+[36m@@ -222,6 +222,57 @@[m [mconst EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({[m
+     onPoiRadiiChange(defaultRadii);[m
+   };[m
+ [m
+[32m+[m[32m  const handleResetApp = () => {[m
+[32m+[m[32m    console.log('🔄 Starting comprehensive app reset from config...');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear all cached data[m
+[32m+[m[32m    if ('caches' in window) {[m
+[32m+[m[32m      caches.keys().then(names => {[m
+[32m+[m[32m        console.log('🗑️ Clearing caches:', names);[m
+[32m+[m[32m        names.forEach(name => {[m
+[32m+[m[32m          caches.delete(name);[m
+[32m+[m[32m        });[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear all storage[m
+[32m+[m[32m    localStorage.clear();[m
+[32m+[m[32m    sessionStorage.clear();[m
+[32m+[m[32m    console.log('🗑️ Cleared localStorage and sessionStorage');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear any service worker registrations[m
+[32m+[m[32m    if ('serviceWorker' in navigator) {[m
+[32m+[m[32m      navigator.serviceWorker.getRegistrations().then(registrations => {[m
+[32m+[m[32m        console.log('🗑️ Unregistering service workers:', registrations.length);[m
+[32m+[m[32m        registrations.forEach(registration => {[m
+[32m+[m[32m          registration.unregister();[m
+[32m+[m[32m        });[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear IndexedDB if available[m
+[32m+[m[32m    if ('indexedDB' in window) {[m
+[32m+[m[32m      indexedDB.databases().then(databases => {[m
+[32m+[m[32m        databases.forEach(db => {[m
+[32m+[m[32m          if (db.name) {[m
+[32m+[m[32m            console.log('🗑️ Deleting IndexedDB:', db.name);[m
+[32m+[m[32m            indexedDB.deleteDatabase(db.name);[m
+[32m+[m[32m          }[m
+[32m+[m[32m        });[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Add cache-busting parameter to force reload[m
+[32m+[m[32m    const timestamp = Date.now();[m
+[32m+[m[32m    const currentUrl = new URL(window.location.href);[m
+[32m+[m[32m    currentUrl.searchParams.set('_cb', timestamp.toString());[m
+[32m+[m[41m    [m
+[32m+[m[32m    console.log('🔄 Reloading app with cache busting...');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Force a complete page reload with cache busting[m
+[32m+[m[32m    window.location.href = currentUrl.toString();[m
+[32m+[m[32m  };[m
+[32m+[m
+   return ([m
+     <div className="enrichment-config">[m
+       <div className="card">[m
+[36m@@ -238,14 +289,25 @@[m [mconst EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({[m
+             </div>[m
+             [m
+             {/* Reset All Filters Button */}[m
+[31m-            <button[m
+[31m-              onClick={handleResetAllFilters}[m
+[31m-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg border border-gray-300 transition-colors duration-200 flex items-center space-x-2"[m
+[31m-              title="Reset all selected enrichments and radii to defaults"[m
+[31m-            >[m
+[31m-              <span>🔄</span>[m
+[31m-              <span>Reset All Filters</span>[m
+[31m-            </button>[m
+[32m+[m[32m            <div className="mt-6 flex gap-3">[m
+[32m+[m[32m              <button[m
+[32m+[m[32m                onClick={handleResetAllFilters}[m
+[32m+[m[32m                className="btn btn-outline flex items-center space-x-2"[m
+[32m+[m[32m                title="Reset all selected enrichments and radii to defaults"[m
+[32m+[m[32m              >[m
+[32m+[m[32m                <span className="w-4 h-4">🔄</span>[m
+[32m+[m[32m                <span>Reset All Filters</span>[m
+[32m+[m[32m              </button>[m
+[32m+[m[41m              [m
+[32m+[m[32m              <button[m
+[32m+[m[32m                onClick={handleResetApp}[m
+[32m+[m[32m                className="btn btn-outline flex items-center space-x-2"[m
+[32m+[m[32m                title="Clear browser cache and refresh application to ensure latest code"[m
+[32m+[m[32m              >[m
+[32m+[m[32m                <span className="w-4 h-4">🔄</span>[m
+[32m+[m[32m                <span>Reset App</span>[m
+[32m+[m[32m              </button>[m
+[32m+[m[32m            </div>[m
+           </div>[m
+         </div>[m
+         [m
+[1mdiff --git a/src/components/Header.tsx b/src/components/Header.tsx[m
+[1mindex bb1f558..04ffa7d 100644[m
+[1m--- a/src/components/Header.tsx[m
+[1m+++ b/src/components/Header.tsx[m
+[36m@@ -1,5 +1,5 @@[m
+ import React, { useState } from 'react';[m
+[31m-import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock } from 'lucide-react';[m
+[32m+[m[32mimport { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw } from 'lucide-react';[m
+ import AdminPanel from './AdminPanel';[m
+ [m
+ const Header: React.FC = () => {[m
+[36m@@ -7,6 +7,76 @@[m [mconst Header: React.FC = () => {[m
+   const [showDataSources, setShowDataSources] = useState(false);[m
+   const [showAdmin, setShowAdmin] = useState(false);[m
+ [m
+[32m+[m[32m  const handleResetApp = () => {[m
+[32m+[m[32m    console.log('🔄 Starting comprehensive app reset...');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear all cached data[m
+[32m+[m[32m    if ('caches' in window) {[m
+[32m+[m[32m      caches.keys().then(names => {[m
+[32m+[m[32m        console.log('🗑️ Clearing caches:', names);[m
+[32m+[m[32m        names.forEach(name => {[m
+[32m+[m[32m          caches.delete(name);[m
+[32m+[m[32m        });[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear all storage[m
+[32m+[m[32m    localStorage.clear();[m
+[32m+[m[32m    sessionStorage.clear();[m
+[32m+[m[32m    console.log('🗑️ Cleared localStorage and sessionStorage');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear any service worker registrations[m
+[32m+[m[32m    if ('serviceWorker' in navigator) {[m
+[32m+[m[32m      navigator.serviceWorker.getRegistrations().then(registrations => {[m
+[32m+[m[32m        console.log('🗑️ Unregistering service workers:', registrations.length);[m
+[32m+[m[32m        registrations.forEach(registration => {[m
+[32m+[m[32m          registration.unregister();[m
+[32m+[m[32m        });[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear IndexedDB if available[m
+[32m+[m[32m    if ('indexedDB' in window) {[m
+[32m+[m[32m      indexedDB.databases().then(databases => {[m
+[32m+[m[32m        databases.forEach(db => {[m
+[32m+[m[32m          if (db.name) {[m
+[32m+[m[32m            console.log('🗑️ Deleting IndexedDB:', db.name);[m
+[32m+[m[32m            indexedDB.deleteDatabase(db.name);[m
+[32m+[m[32m          }[m
+[32m+[m[32m        });[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Clear any fetch cache[m
+[32m+[m[32m    if ('fetch' in window) {[m
+[32m+[m[32m      // Force fetch to not use cache[m
+[32m+[m[32m      const originalFetch = window.fetch;[m
+[32m+[m[32m      window.fetch = (input, init) => {[m
+[32m+[m[32m        const newInit = {[m
+[32m+[m[32m          ...init,[m
+[32m+[m[32m          cache: 'no-cache',[m
+[32m+[m[32m          headers: {[m
+[32m+[m[32m            ...init?.headers,[m
+[32m+[m[32m            'Cache-Control': 'no-cache, no-store, must-revalidate',[m
+[32m+[m[32m            'Pragma': 'no-cache',[m
+[32m+[m[32m            'Expires': '0'[m
+[32m+[m[32m          }[m
+[32m+[m[32m        };[m
+[32m+[m[32m        return originalFetch(input, newInit);[m
+[32m+[m[32m      };[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Add cache-busting parameter to force reload[m
+[32m+[m[32m    const timestamp = Date.now();[m
+[32m+[m[32m    const currentUrl = new URL(window.location.href);[m
+[32m+[m[32m    currentUrl.searchParams.set('_cb', timestamp.toString());[m
+[32m+[m[41m    [m
+[32m+[m[32m    console.log('🔄 Reloading app with cache busting...');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Force a complete page reload with cache busting[m
+[32m+[m[32m    window.location.href = currentUrl.toString();[m
+[32m+[m[32m  };[m
+[32m+[m
+   return ([m
+     <>[m
+       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">[m
+[36m@@ -17,7 +87,7 @@[m [mconst Header: React.FC = () => {[m
+                 {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}[m
+                 <div className="w-28 h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-200 flex-shrink-0">[m
+                   <img [m
+[31m-                    src="/assets/new-logo.png" [m
+[32m+[m[32m                    src={`/assets/new-logo.png?v=${Date.now()}`}[m
+                     alt="The Location Is Everything Co Logo" [m
+                     className="w-full h-full object-cover"[m
+                   />[m
+[36m@@ -28,7 +98,7 @@[m [mconst Header: React.FC = () => {[m
+               </div>[m
+             </div>[m
+ [m
+[31m-            <nav className="hidden md:flex items-center space-x-8">[m
+[32m+[m[32m            <nav className="hidden md:flex items-center space-x-8 mr-8">[m
+               <button [m
+                 onClick={() => {[m
+                   const element = document.querySelector('[data-section="single-search"]');[m
+[36m@@ -65,14 +135,21 @@[m [mconst Header: React.FC = () => {[m
+               </button>[m
+             </nav>[m
+ [m
+[31m-            <div className="flex items-center space-x-4">[m
+[32m+[m[32m            <div className="flex items-center space-x-6">[m
+               <button [m
+                 onClick={() => setShowDocs(true)}[m
+[31m-                className="btn btn-outline text-sm flex items-center space-x-2"[m
+[32m+[m[32m                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex"[m
+               >[m
+                 <BookOpen className="w-4 h-4" />[m
+                 <span>Documentation</span>[m
+               </button>[m
+[32m+[m[32m              <button[m[41m [m
+[32m+[m[32m                onClick={handleResetApp}[m
+[32m+[m[32m                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex"[m
+[32m+[m[32m              >[m
+[32m+[m[32m                <RefreshCw className="w-4 h-4" />[m
+[32m+[m[32m                <span>Reset App</span>[m
+[32m+[m[32m              </button>[m
+             </div>[m
+           </div>[m
+         </div>[m
+[1mdiff --git a/src/components/MapView.tsx b/src/components/MapView.tsx[m
+[1mindex fe1da4a..c3fbeb4 100644[m
+[1m--- a/src/components/MapView.tsx[m
+[1m+++ b/src/components/MapView.tsx[m
+[36m@@ -135,11 +135,36 @@[m [mconst MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {[m
+       'OpenStreetMap': osmLayer[m
+     };[m
+ [m
+[31m-    // Add layer control to map[m
+[31m-    L.control.layers(maptilerLayers, {}, {[m
+[32m+[m[32m    // Add layer control to map (hidden on mobile for better UX)[m
+[32m+[m[32m    const layerControl = L.control.layers(maptilerLayers, {}, {[m
+       position: 'topright',[m
+       collapsed: false[m
+[31m-    }).addTo(map);[m
+[32m+[m[32m    });[m
+[32m+[m[41m    [m
+[32m+[m[32m    let layerControlAdded = false;[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Only add layer control on larger screens (hide on mobile)[m
+[32m+[m[32m    if (window.innerWidth > 768) {[m
+[32m+[m[32m      layerControl.addTo(map);[m
+[32m+[m[32m      layerControlAdded = true;[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Listen for window resize to show/hide layer control[m
+[32m+[m[32m    const handleResize = () => {[m
+[32m+[m[32m      if (window.innerWidth > 768) {[m
+[32m+[m[32m        if (!layerControlAdded) {[m
+[32m+[m[32m          layerControl.addTo(map);[m
+[32m+[m[32m          layerControlAdded = true;[m
+[32m+[m[32m        }[m
+[32m+[m[32m      } else {[m
+[32m+[m[32m        if (layerControlAdded) {[m
+[32m+[m[32m          map.removeControl(layerControl);[m
+[32m+[m[32m          layerControlAdded = false;[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m[32m    };[m
+[32m+[m[41m    [m
+[32m+[m[32m    window.addEventListener('resize', handleResize);[m
+ [m
+     mapInstanceRef.current = map;[m
+ [m
+[36m@@ -148,6 +173,8 @@[m [mconst MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {[m
+         mapInstanceRef.current.remove();[m
+         mapInstanceRef.current = null;[m
+       }[m
+[32m+[m[32m      // Clean up resize event listener[m
+[32m+[m[32m      window.removeEventListener('resize', handleResize);[m
+     };[m
+   }, []);[m
+ [m
+[36m@@ -619,10 +646,17 @@[m [mif (bounds.isValid() && results.length > 1) {[m
+   const createPopupContent = (result: EnrichmentResult): string => {[m
+     const { location, enrichments } = result;[m
+     [m
+[32m+[m[32m    // Check if we're on mobile[m
+[32m+[m[32m    const isMobile = window.innerWidth <= 768;[m
+[32m+[m[32m    const minWidth = isMobile ? '250px' : '300px';[m
+[32m+[m[32m    const maxWidth = isMobile ? '350px' : '400px';[m
+[32m+[m[32m    const fontSize = isMobile ? '11px' : '12px';[m
+[32m+[m[32m    const headerFontSize = isMobile ? '14px' : '16px';[m
+[32m+[m[41m    [m
+     let content = `[m
+[31m-      <div style="min-width: 300px; max-width: 400px;">[m
+[31m-        <h3 style="margin: 0 0 12px 0; color: #1f2937; font-weight: 600; font-size: 16px;">${location.name}</h3>[m
+[31m-        <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 13px;">[m
+[32m+[m[32m      <div style="min-width: ${minWidth}; max-width: ${maxWidth};">[m
+[32m+[m[32m        <h3 style="margin: 0 0 12px 0; color: #1f2937; font-weight: 600; font-size: ${headerFontSize};">${location.name}</h3>[m
+[32m+[m[32m        <p style="margin: 0 0 12px 0; color: #6b7280; font-size: ${fontSize};">[m
+           📍 ${location.lat.toFixed(6)}, ${location.lon.toFixed(6)}<br>[m
+           🔍 Source: ${location.source}[m
+         </p>[m
+[36m@@ -630,11 +664,11 @@[m [mif (bounds.isValid() && results.length > 1) {[m
+ [m
+     if (Object.keys(enrichments).length > 0) {[m
+       content += '<hr style="margin: 12px 0; border-color: #e5e7eb;">';[m
+[31m-      content += '<h4 style="margin: 0 0 12px 0; color: #374151; font-size: 14px; font-weight: 600;">Enrichment Data:</h4>';[m
+[32m+[m[32m      content += `<h4 style="margin: 0 0 12px 0; color: #374151; font-size: ${isMobile ? '12px' : '14px'}; font-weight: 600;">Enrichment Data:</h4>`;[m
+       [m
+       // Special handling for FEMA flood zones - show only two clean rows[m
+       if (enrichments.poi_fema_flood_zones_current || enrichments.poi_fema_flood_zones_nearby) {[m
+[31m-        content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">[m
+[32m+[m[32m        content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">[m
+           <span style="color: #6b7280;">FEMA Flood Zone:</span>[m
+           <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_fema_flood_zones_current || 'None'}</span>[m
+         </div>`;[m
+[36m@@ -643,7 +677,7 @@[m [mif (bounds.isValid() && results.length > 1) {[m
+           const nearestZone = enrichments.poi_fema_flood_zones_nearby[0];[m
+           const zoneName = nearestZone.zone || 'Unknown Zone';[m
+           const distance = nearestZone.distance_miles || 5;[m
+[31m-          content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">[m
+[32m+[m[32m          content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">[m
+             <span style="color: #6b7280;">FEMA Flood Zone within ${distance} mi:</span>[m
+             <span style="color: #1f2937; font-weight: 500;">${zoneName}</span>[m
+           </div>`;[m
+[36m@@ -657,6 +691,16 @@[m [mif (bounds.isValid() && results.length > 1) {[m
+           return;[m
+         }[m
+         [m
+[32m+[m[32m        // Skip Wikipedia summary fields (redundant with count)[m
+[32m+[m[32m        if (key.includes('poi_wikipedia_summary')) {[m
+[32m+[m[32m          return;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Skip EPA summary fields (redundant with count)[m
+[32m+[m[32m        if (key.includes('_summary') && key.includes('poi_epa_')) {[m
+[32m+[m[32m          return;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+         if (value !== null && value !== undefined && value !== '') {[m
+           // Skip detailed POI arrays and complex objects[m
+           if (key.includes('_detailed') || key.includes('_facilities') || key.includes('_nearby')) {[m
+[36m@@ -671,9 +715,9 @@[m [mif (bounds.isValid() && results.length > 1) {[m
+           const label = formatEnrichmentLabel(key);[m
+           const displayValue = formatEnrichmentValue(key, value);[m
+           [m
+[31m-          content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">[m
+[31m-            <span style="color: #6b7280;">${label}

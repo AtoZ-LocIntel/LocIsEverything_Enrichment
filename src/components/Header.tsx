@@ -1,11 +1,81 @@
 import React, { useState } from 'react';
-import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock } from 'lucide-react';
+import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 
 const Header: React.FC = () => {
   const [showDocs, setShowDocs] = useState(false);
   const [showDataSources, setShowDataSources] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+
+  const handleResetApp = () => {
+    console.log('🔄 Starting comprehensive app reset...');
+    
+    // Clear all cached data
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        console.log('🗑️ Clearing caches:', names);
+        names.forEach(name => {
+          caches.delete(name);
+        });
+      });
+    }
+    
+    // Clear all storage
+    localStorage.clear();
+    sessionStorage.clear();
+    console.log('🗑️ Cleared localStorage and sessionStorage');
+    
+    // Clear any service worker registrations
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        console.log('🗑️ Unregistering service workers:', registrations.length);
+        registrations.forEach(registration => {
+          registration.unregister();
+        });
+      });
+    }
+    
+    // Clear IndexedDB if available
+    if ('indexedDB' in window) {
+      indexedDB.databases().then(databases => {
+        databases.forEach(db => {
+          if (db.name) {
+            console.log('🗑️ Deleting IndexedDB:', db.name);
+            indexedDB.deleteDatabase(db.name);
+          }
+        });
+      });
+    }
+    
+    // Clear any fetch cache
+    if ('fetch' in window) {
+      // Force fetch to not use cache by modifying the global fetch
+      const originalFetch = window.fetch;
+      window.fetch = (input, init) => {
+        const newInit: RequestInit = {
+          ...init,
+          cache: 'no-cache' as RequestCache,
+          headers: {
+            ...init?.headers,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        };
+        return originalFetch(input, newInit);
+      };
+    }
+    
+    // Add cache-busting parameter to force reload
+    const timestamp = Date.now();
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('_cb', timestamp.toString());
+    
+    console.log('🔄 Reloading app with cache busting...');
+    
+    // Force a complete page reload with cache busting
+    window.location.href = currentUrl.toString();
+  };
 
   return (
     <>
@@ -17,7 +87,7 @@ const Header: React.FC = () => {
                 {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}
                 <div className="w-28 h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-200 flex-shrink-0">
                   <img 
-                    src="/assets/new-logo.png" 
+                    src="/assets/new-logo.png?v=2.0"
                     alt="The Location Is Everything Co Logo" 
                     className="w-full h-full object-cover"
                   />
@@ -28,7 +98,7 @@ const Header: React.FC = () => {
               </div>
             </div>
 
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-8 mr-8">
               <button 
                 onClick={() => {
                   const element = document.querySelector('[data-section="single-search"]');
@@ -65,13 +135,20 @@ const Header: React.FC = () => {
               </button>
             </nav>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
               <button 
                 onClick={() => setShowDocs(true)}
-                className="btn btn-outline text-sm flex items-center space-x-2"
+                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex"
               >
                 <BookOpen className="w-4 h-4" />
                 <span>Documentation</span>
+              </button>
+              <button 
+                onClick={handleResetApp}
+                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Reset App</span>
               </button>
             </div>
           </div>

@@ -222,6 +222,57 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     onPoiRadiiChange(defaultRadii);
   };
 
+  const handleResetApp = () => {
+    console.log('🔄 Starting comprehensive app reset from config...');
+    
+    // Clear all cached data
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        console.log('🗑️ Clearing caches:', names);
+        names.forEach(name => {
+          caches.delete(name);
+        });
+      });
+    }
+    
+    // Clear all storage
+    localStorage.clear();
+    sessionStorage.clear();
+    console.log('🗑️ Cleared localStorage and sessionStorage');
+    
+    // Clear any service worker registrations
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        console.log('🗑️ Unregistering service workers:', registrations.length);
+        registrations.forEach(registration => {
+          registration.unregister();
+        });
+      });
+    }
+    
+    // Clear IndexedDB if available
+    if ('indexedDB' in window) {
+      indexedDB.databases().then(databases => {
+        databases.forEach(db => {
+          if (db.name) {
+            console.log('🗑️ Deleting IndexedDB:', db.name);
+            indexedDB.deleteDatabase(db.name);
+          }
+        });
+      });
+    }
+    
+    // Add cache-busting parameter to force reload
+    const timestamp = Date.now();
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('_cb', timestamp.toString());
+    
+    console.log('🔄 Reloading app with cache busting...');
+    
+    // Force a complete page reload with cache busting
+    window.location.href = currentUrl.toString();
+  };
+
   return (
     <div className="enrichment-config">
       <div className="card">
@@ -238,14 +289,25 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             </div>
             
             {/* Reset All Filters Button */}
-            <button
-              onClick={handleResetAllFilters}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg border border-gray-300 transition-colors duration-200 flex items-center space-x-2"
-              title="Reset all selected enrichments and radii to defaults"
-            >
-              <span>🔄</span>
-              <span>Reset All Filters</span>
-            </button>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={handleResetAllFilters}
+                className="btn btn-outline flex items-center space-x-2"
+                title="Reset all selected enrichments and radii to defaults"
+              >
+                <span className="w-4 h-4">🔄</span>
+                <span>Reset All Filters</span>
+              </button>
+              
+              <button
+                onClick={handleResetApp}
+                className="btn btn-outline flex items-center space-x-2"
+                title="Clear browser cache and refresh application to ensure latest code"
+              >
+                <span className="w-4 h-4">🔄</span>
+                <span>Reset App</span>
+              </button>
+            </div>
           </div>
         </div>
         

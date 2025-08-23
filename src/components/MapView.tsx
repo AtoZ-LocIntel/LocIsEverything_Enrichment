@@ -135,11 +135,36 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
       'OpenStreetMap': osmLayer
     };
 
-    // Add layer control to map
-    L.control.layers(maptilerLayers, {}, {
+    // Add layer control to map (hidden on mobile for better UX)
+    const layerControl = L.control.layers(maptilerLayers, {}, {
       position: 'topright',
       collapsed: false
-    }).addTo(map);
+    });
+    
+    let layerControlAdded = false;
+    
+    // Only add layer control on larger screens (hide on mobile)
+    if (window.innerWidth > 768) {
+      layerControl.addTo(map);
+      layerControlAdded = true;
+    }
+    
+    // Listen for window resize to show/hide layer control
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        if (!layerControlAdded) {
+          layerControl.addTo(map);
+          layerControlAdded = true;
+        }
+      } else {
+        if (layerControlAdded) {
+          map.removeControl(layerControl);
+          layerControlAdded = false;
+        }
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
 
     mapInstanceRef.current = map;
 
@@ -148,6 +173,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      // Clean up resize event listener
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -619,10 +646,17 @@ if (bounds.isValid() && results.length > 1) {
   const createPopupContent = (result: EnrichmentResult): string => {
     const { location, enrichments } = result;
     
+    // Check if we're on mobile
+    const isMobile = window.innerWidth <= 768;
+    const minWidth = isMobile ? '250px' : '300px';
+    const maxWidth = isMobile ? '350px' : '400px';
+    const fontSize = isMobile ? '11px' : '12px';
+    const headerFontSize = isMobile ? '14px' : '16px';
+    
     let content = `
-      <div style="min-width: 300px; max-width: 400px;">
-        <h3 style="margin: 0 0 12px 0; color: #1f2937; font-weight: 600; font-size: 16px;">${location.name}</h3>
-        <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 13px;">
+      <div style="min-width: ${minWidth}; max-width: ${maxWidth};">
+        <h3 style="margin: 0 0 12px 0; color: #1f2937; font-weight: 600; font-size: ${headerFontSize};">${location.name}</h3>
+        <p style="margin: 0 0 12px 0; color: #6b7280; font-size: ${fontSize};">
           📍 ${location.lat.toFixed(6)}, ${location.lon.toFixed(6)}<br>
           🔍 Source: ${location.source}
         </p>
@@ -630,11 +664,11 @@ if (bounds.isValid() && results.length > 1) {
 
     if (Object.keys(enrichments).length > 0) {
       content += '<hr style="margin: 12px 0; border-color: #e5e7eb;">';
-      content += '<h4 style="margin: 0 0 12px 0; color: #374151; font-size: 14px; font-weight: 600;">Enrichment Data:</h4>';
+      content += `<h4 style="margin: 0 0 12px 0; color: #374151; font-size: ${isMobile ? '12px' : '14px'}; font-weight: 600;">Enrichment Data:</h4>`;
       
       // Special handling for FEMA flood zones - show only two clean rows
       if (enrichments.poi_fema_flood_zones_current || enrichments.poi_fema_flood_zones_nearby) {
-        content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
+        content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
           <span style="color: #6b7280;">FEMA Flood Zone:</span>
           <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_fema_flood_zones_current || 'None'}</span>
         </div>`;
@@ -643,7 +677,7 @@ if (bounds.isValid() && results.length > 1) {
           const nearestZone = enrichments.poi_fema_flood_zones_nearby[0];
           const zoneName = nearestZone.zone || 'Unknown Zone';
           const distance = nearestZone.distance_miles || 5;
-          content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
+          content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
             <span style="color: #6b7280;">FEMA Flood Zone within ${distance} mi:</span>
             <span style="color: #1f2937; font-weight: 500;">${zoneName}</span>
           </div>`;
@@ -654,6 +688,16 @@ if (bounds.isValid() && results.length > 1) {
       Object.entries(enrichments).forEach(([key, value]) => {
         // Skip FEMA flood zone fields as they're handled above
         if (key.includes('poi_fema_flood_zones')) {
+          return;
+        }
+        
+        // Skip Wikipedia summary fields (redundant with count)
+        if (key.includes('poi_wikipedia_summary')) {
+          return;
+        }
+        
+        // Skip EPA summary fields (redundant with count)
+        if (key.includes('_summary') && key.includes('poi_epa_')) {
           return;
         }
         
@@ -671,9 +715,9 @@ if (bounds.isValid() && results.length > 1) {
           const label = formatEnrichmentLabel(key);
           const displayValue = formatEnrichmentValue(key, value);
           
-          content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
-            <span style="color: #6b7280;">${label}:</span>
-            <span style="color: #1f2937; font-weight: 500;">${displayValue}</span>
+          content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between; flex-wrap: wrap;">
+            <span style="color: #6b7280; margin-right: 8px;">${label}:</span>
+            <span style="color: #1f2937; font-weight: 500; text-align: right;">${displayValue}</span>
           </div>`;
         }
       });
@@ -699,7 +743,6 @@ if (bounds.isValid() && results.length > 1) {
       acs_median_age: 'Median Age',
       nws_active_alerts: 'Weather Alerts',
       poi_wikipedia_count: 'Wikipedia Articles',
-      poi_wikipedia_summary: 'Wikipedia Summary',
       
       // EPA FRS Environmental Hazards
       poi_epa_brownfields_count: 'EPA Brownfields',
@@ -756,6 +799,10 @@ if (bounds.isValid() && results.length > 1) {
   const downloadSingleLookupResults = (result: EnrichmentResult) => {
     if (!result) return;
 
+    console.log('📥 Starting CSV download for single lookup results...');
+    console.log('📍 Location:', result.location);
+    console.log('🔍 Enrichments:', Object.keys(result.enrichments));
+
     // Create comprehensive CSV with all POI details
     const headers = ['Address', 'Latitude', 'Longitude', 'Source', 'Confidence'];
     const poiHeaders = ['POI_Type', 'POI_Name', 'POI_Latitude', 'POI_Longitude', 'Distance_Miles', 'POI_Category', 'POI_Address', 'POI_Phone', 'POI_Website'];
@@ -769,7 +816,7 @@ if (bounds.isValid() && results.length > 1) {
         result.location.lat,
         result.location.lon,
         result.location.source,
-        result.location.confidence,
+        result.location.confidence || 'N/A',
         'MAIN_LOCATION',
         result.location.name,
         result.location.lat,
@@ -784,6 +831,8 @@ if (bounds.isValid() && results.length > 1) {
 
     // Add all POI data
     Object.entries(result.enrichments).forEach(([key, value]) => {
+      console.log(`🔍 Processing enrichment key: ${key}`, value);
+      
       if (key.includes('_detailed') && Array.isArray(value)) {
         // Handle detailed POI arrays
         value.forEach((poi: any) => {
@@ -792,7 +841,7 @@ if (bounds.isValid() && results.length > 1) {
             result.location.lat,
             result.location.lon,
             result.location.source,
-            result.location.confidence,
+            result.location.confidence || 'N/A',
             key.replace('_detailed', '').replace('poi_', '').toUpperCase(),
             poi.name || poi.title || 'Unnamed',
             poi.lat || poi.center?.lat || '',
@@ -812,7 +861,7 @@ if (bounds.isValid() && results.length > 1) {
             result.location.lat,
             result.location.lon,
             result.location.source,
-            result.location.confidence,
+            result.location.confidence || 'N/A',
             'WIKIPEDIA',
             article.title,
             article.lat,
@@ -834,7 +883,7 @@ if (bounds.isValid() && results.length > 1) {
             result.location.lat,
             result.location.lon,
             result.location.source,
-            result.location.confidence,
+            result.location.confidence || 'N/A',
             'MUSEUMS_HISTORIC',
             poi.name || poi.title || 'Unnamed',
             poi.lat || poi.center?.lat || '',
@@ -850,39 +899,40 @@ if (bounds.isValid() && results.length > 1) {
     });
 
     // Add FEMA flood zone data
-    if (result.enrichments.poi_fema_flood_zones_current_zone) {
+    if (result.enrichments.poi_fema_flood_zones_current) {
       rows.push([
         result.location.name,
         result.location.lat,
         result.location.lon,
         result.location.source,
-        result.location.confidence,
+        result.location.confidence || 'N/A',
         'FEMA_FLOOD_ZONE',
         'Current Zone',
         result.location.lat,
         result.location.lon,
         '0.0',
         'Flood Zone Assessment',
-        result.enrichments.poi_fema_flood_zones_current_zone,
+        result.enrichments.poi_fema_flood_zones_current,
         '',
         ''
       ]);
     }
     
-    if (result.enrichments.poi_fema_flood_zones_nearby_zone) {
+    if (result.enrichments.poi_fema_flood_zones_nearby && Array.isArray(result.enrichments.poi_fema_flood_zones_nearby) && result.enrichments.poi_fema_flood_zones_nearby.length > 0) {
+      const nearestZone = result.enrichments.poi_fema_flood_zones_nearby[0];
       rows.push([
         result.location.name,
         result.location.lat,
         result.location.lon,
         result.location.source,
-        result.location.confidence,
+        result.location.confidence || 'N/A',
         'FEMA_FLOOD_ZONE',
         'Nearest Zone',
         result.location.lat,
         result.location.lon,
-        '5.0',
+        nearestZone.distance_miles || '5.0',
         'Flood Zone Assessment',
-        result.enrichments.poi_fema_flood_zones_nearby_zone,
+        nearestZone.zone || 'Unknown Zone',
         '',
         ''
       ]);
@@ -910,7 +960,7 @@ if (bounds.isValid() && results.length > 1) {
             result.location.lat,
             result.location.lon,
             result.location.source,
-            result.location.confidence,
+            result.location.confidence || 'N/A',
             programKey.replace('poi_', '').toUpperCase(),
             facility.name || 'Unnamed Facility',
             facility.lat,
@@ -943,7 +993,7 @@ if (bounds.isValid() && results.length > 1) {
             result.location.lat,
             result.location.lon,
             result.location.source,
-            result.location.confidence,
+            result.location.confidence || 'N/A',
             programKey.replace('poi_', '').toUpperCase(),
             facility.name || 'Unnamed Facility',
             facility.lat,
@@ -958,20 +1008,39 @@ if (bounds.isValid() && results.length > 1) {
       }
     });
 
+    console.log(`📊 CSV will contain ${rows.length} rows with headers:`, allHeaders);
+
     const csvContent = [
       allHeaders.join(','),
-      ...rows.map(row => row.join(','))
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
     ].join('\n');
 
     // Create and download file with timestamp
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `single_lookup_results_${result.location.name.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    const filename = `single_lookup_results_${result.location.name.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.csv`;
+    
+    console.log(`💾 Downloading CSV file: ${filename}`);
+    
+    try {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      console.log('✅ CSV download completed successfully');
+    } catch (error) {
+      console.error('❌ Error downloading CSV:', error);
+      // Fallback: try to open in new window
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(`<pre>${csvContent}</pre>`);
+        newWindow.document.title = filename;
+      }
+    }
   };
 
   return (
@@ -991,6 +1060,18 @@ if (bounds.isValid() && results.length > 1) {
             <h2 className="text-lg font-semibold text-gray-900">Location Results</h2>
             <p className="text-sm text-gray-600">{results.length} location{results.length !== 1 ? 's' : ''} processed</p>
           </div>
+          
+          {/* Prominent Download Button for Single Lookup */}
+          {results.length === 1 && (
+            <button
+              onClick={() => downloadSingleLookupResults(results[0])}
+              className="btn btn-primary flex items-center space-x-2 px-4 py-2"
+              title="Download all proximity layers and distances for this location"
+            >
+              <span className="w-4 h-4">⬇️</span>
+              <span>Download Results</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -1050,15 +1131,15 @@ if (bounds.isValid() && results.length > 1) {
         
         {/* Results Summary Panel */}
         {results.length > 0 && (
-          <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 max-w-sm max-h-96 overflow-y-auto">
-            <div className="p-4 border-b border-gray-200">
+          <div className="fixed top-24 right-6 bg-white rounded-lg shadow-xl border border-gray-200 max-w-sm max-h-80 overflow-y-auto z-[9999]">
+            <div className="p-4 border-b border-gray-200 bg-gray-50">
               <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
                 <span className="w-4 h-4 text-primary-600">ℹ️</span>
                 <span>Results Summary</span>
               </h3>
             </div>
             
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 max-h-64 overflow-y-auto">
               {results.map((result, index) => (
                 <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <div className="flex items-start space-x-2">
