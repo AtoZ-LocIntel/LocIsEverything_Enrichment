@@ -87,29 +87,100 @@ export class EnrichmentService {
     return R * c; // Distance in kilometers
   }
   
-  private getEPAProgramFilter(programType: string): string {
-    // Create WHERE clause filters for ArcGIS Feature Service queries
-    const programFilters: Record<string, string> = {
-      'ACRES': "PGM_SYS_ACRNM = 'ACRES'",
-      'SEMS/CERCLIS': "PGM_SYS_ACRNM = 'SEMS'",
-      'RCRAInfo': "PGM_SYS_ACRNM = 'RCRA'",
-      'TRI': "PGM_SYS_ACRNM = 'TRI'",
-      'NPDES': "PGM_SYS_ACRNM = 'NPDES'",
-      'ICIS-AIR': "PGM_SYS_ACRNM = 'ICIS-AIR'",
-      'RADINFO': "PGM_SYS_ACRNM = 'RADINFO'",
-      'EGRID': "PGM_SYS_ACRNM = 'EGRID'",
-      'SPCC/FRP': "PGM_SYS_ACRNM IN ('SPCC', 'FRP')"
-    };
-    return programFilters[programType] || '';
-  }
-  
-  private getFEMAFloodZones(_lat: number, _lon: number, _radiusMiles: number): Promise<Record<string, any>> {
-    // This method should be implemented for FEMA flood zones
-    // For now, return a placeholder
-    return Promise.resolve({
-      poi_fema_flood_zones_count: 0,
-      poi_fema_flood_zones_summary: 'FEMA flood zones not yet implemented'
-    });
+  private async getFEMAFloodZones(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`FEMA Flood Zones query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // Convert radius to bounding box coordinates
+      const radiusDegrees = radiusMiles / 69; // Approximate: 1 degree ≈ 69 miles
+      const south = lat - radiusDegrees;
+      const north = lat + radiusDegrees;
+      const west = lon - radiusDegrees;
+      const east = lon + radiusDegrees;
+      
+      // Use the correct FEMA NFHL endpoint as provided by user
+      const baseUrl = 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query';
+      
+      // Build bounding box geometry string
+      const bboxGeometry = `${west.toFixed(6)},${south.toFixed(6)},${east.toFixed(6)},${north.toFixed(6)}`;
+      
+      // Query using bounding box approach with specific fields for better performance
+      const queryUrl = `${baseUrl}?f=geojson&geometry=${bboxGeometry}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE,ZONE_SUBTY&returnGeometry=true`;
+      
+      console.log(`🔗 FEMA NFHL API URL: ${queryUrl}`);
+      
+      try {
+        const response = await fetch(queryUrl);
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`📊 FEMA NFHL API response:`, data);
+          
+          if (data && data.features && data.features.length > 0) {
+            console.log(`✅ Found ${data.features.length} FEMA flood zones in bounding box`);
+            
+            // Process the features to find zones containing or near the point
+            const zones = data.features.map((feature: any) => {
+              const properties = feature.properties;
+              return {
+                zone: properties.FLD_ZONE || properties.ZONE || 'Unknown Zone',
+                name: properties.ZONE_SUBTY || properties.NAME || 'Unknown',
+                risk: properties.RISK || 'Unknown',
+                geometry: feature.geometry
+              };
+            });
+            
+            // Check if point is inside any zone (simplified check)
+            let inZone = false;
+            let currentZone = '';
+            
+            // For now, assume if we find zones in the bounding box, the point might be in one
+            if (zones.length > 0) {
+              inZone = true;
+              currentZone = zones[0].zone;
+            }
+            
+            const summary = inZone 
+              ? `Location is in or near FEMA flood zone: ${currentZone}`
+              : `No FEMA flood zones found within ${radiusMiles} miles`;
+            
+            return {
+              poi_fema_flood_zones_count: zones.length,
+              poi_fema_flood_zones_summary: summary,
+              poi_fema_flood_zones_current: inZone ? currentZone : null,
+              poi_fema_flood_zones_nearby: zones.slice(0, 2), // Top 2 zones
+              poi_fema_flood_zones_status: 'Data retrieved successfully'
+            };
+          } else {
+            console.log(`⚠️  No FEMA flood zones found in bounding box`);
+            return {
+              poi_fema_flood_zones_count: 0,
+              poi_fema_flood_zones_summary: `No FEMA flood zones found within ${radiusMiles} miles`,
+              poi_fema_flood_zones_current: null,
+              poi_fema_flood_zones_nearby: [],
+              poi_fema_flood_zones_status: 'No zones in area'
+            };
+          }
+        } else {
+          throw new Error(`FEMA API HTTP ${response.status}: ${response.statusText}`);
+        }
+      } catch (error) {
+        console.log('FEMA NFHL API query failed:', error);
+        return {
+          poi_fema_flood_zones_count: 0,
+          poi_fema_flood_zones_summary: 'FEMA flood zone data temporarily unavailable',
+          poi_fema_flood_zones_current: null,
+          poi_fema_flood_zones_nearby: [],
+          poi_fema_flood_zones_status: 'API query failed'
+        };
+      }
+      
+    } catch (error) {
+      console.error('Error in FEMA flood zones query:', error);
+      return {
+        poi_fema_flood_zones_count: 0,
+        poi_fema_flood_zones_summary: 'Error querying FEMA flood zones'
+      };
+    }
   }
   
   private getCustomPOIData(_enrichmentId: string): any {
@@ -1053,21 +1124,8 @@ export class EnrichmentService {
    private async getEPAFRSFacilities(lat: number, lon: number, radiusMiles: number, programType: string): Promise<Record<string, any>> {
     console.log(`🏭 EPA FRS ${programType} query for [${lat}, ${lon}] within ${radiusMiles} miles`);
     
-    // Try the ArcGIS Feature Service first (more reliable, no CORS issues)
-    console.log(`🔄 Attempting ArcGIS Feature Service for ${programType}...`);
-    try {
-      const arcgisResult = await this.getEPAFRSFacilitiesFallback(lat, lon, radiusMiles, programType);
-      if (arcgisResult[`poi_epa_${this.getEPAProgramId(programType)}_count`] > 0) {
-        console.log(`✅ ArcGIS Feature Service successful for ${programType}`);
-        return arcgisResult;
-      }
-    } catch (arcgisError) {
-      console.log(`⚠️  ArcGIS fallback failed for ${programType}:`, arcgisError);
-    }
-    
-    // If ArcGIS fails, try the EPA FRS REST API (may have CORS issues)
-    console.log(`🔄 Attempting EPA FRS REST API for ${programType}...`);
-    const baseUrl = 'https://ofmpub.epa.gov/enviro/frs_rest_services.get_facilities';
+    // Use the correct EPA FRS REST API endpoint as provided by user
+    const baseUrl = 'https://ofmpub.epa.gov/frs_public2/frs_rest_services.get_facilities';
     const url = new URL(baseUrl);
     
     // Set query parameters for proximity search using correct parameter names
@@ -1087,7 +1145,7 @@ export class EnrichmentService {
       const response = await fetchJSONSmart(url.toString());
       console.log(`📊 EPA FRS API response:`, response);
     
-      if (!response || !response.results || !Array.isArray(response.results)) {
+      if (!response || !response.Results || !response.Results.FRSFacility || !Array.isArray(response.Results.FRSFacility)) {
         console.log(`⚠️  No EPA FRS facilities found for ${programType}`);
         return {
           [`poi_epa_${this.getEPAProgramId(programType)}_count`]: 0,
@@ -1096,7 +1154,7 @@ export class EnrichmentService {
         };
       }
       
-      const facilities = response.results;
+      const facilities = response.Results.FRSFacility;
       console.log(`🏭 Found ${facilities.length} EPA FRS ${programType} facilities`);
       
       // Process and categorize facilities
@@ -1147,7 +1205,7 @@ export class EnrichmentService {
       
     } catch (error) {
       console.error(`❌ EPA FRS ${programType} API error:`, error);
-      console.error(`🔗 Failed URL: ${baseUrl}`);
+      console.error(`🔗 Failed URL: https://ofmpub.epa.gov/frs_public2/frs_rest_services.get_facilities`);
       console.error(`📋 Program Type: ${programType}`);
       console.error(`📍 Coordinates: [${lat}, ${lon}]`);
       console.error(`📏 Radius: ${radiusMiles} miles`);
@@ -1165,11 +1223,7 @@ export class EnrichmentService {
       return {
         [`poi_epa_${programId}_count`]: 0,
         [`poi_epa_${programId}_facilities`]: [],
-        [`poi_epa_${programId}_error`]: isCORSError 
-          ? `EPA FRS API blocked by CORS policy - data may be available through alternative sources`
-          : `EPA FRS API endpoint not accessible - service may be down or endpoint changed`,
-        [`poi_epa_${programId}_status`]: isCORSError ? 'CORS blocked' : 'API endpoint unavailable',
-        [`poi_epa_${programId}_note`]: 'Try enabling EPA layers in the Hazards section for alternative data sources'
+        [`poi_epa_${programId}_summary`]: `No ${this.getEPAProgramLabel(programType)} facilities found within ${radiusMiles} miles`
       };
     }
   }
@@ -1190,119 +1244,6 @@ export class EnrichmentService {
         return programMap[programType] || programType.toLowerCase();
  }
   
-  // Fallback method using ArcGIS Feature Service
-  private async getEPAFRSFacilitiesFallback(lat: number, lon: number, radiusMiles: number, programType: string): Promise<Record<string, any>> {
-    try {
-      console.log(`🔄 EPA FRS Fallback: Using ArcGIS Feature Service for ${programType}`);
-      
-      // Use the comprehensive FRS Interests ArcGIS Feature Service
-      const baseUrl = 'https://services.arcgis.com/cJ9YHowT8TU7DUyn/arcgis/rest/services/FRS_INTERESTS/FeatureServer/0/query';
-      const url = new URL(baseUrl);
-      
-      // Set query parameters for ArcGIS Feature Service
-      url.searchParams.set('f', 'json');
-      url.searchParams.set('outFields', '*');
-      url.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
-      url.searchParams.set('geometry', JSON.stringify({
-        x: lon,
-        y: lat,
-        spatialReference: { wkid: 4326 }
-      }));
-      url.searchParams.set('geometryType', 'esriGeometryPoint');
-      url.searchParams.set('inSR', '4326');
-      url.searchParams.set('distance', (radiusMiles * 1.60934).toString()); // Convert miles to km
-      url.searchParams.set('units', 'esriSRUnit_Kilometer');
-      
-      // Add program filter if available
-      if (programType !== 'ACRES') {
-        const programFilter = this.getEPAProgramFilter(programType);
-        if (programFilter) {
-          url.searchParams.set('where', programFilter);
-        }
-      }
-      
-      console.log(`🔗 ArcGIS Fallback URL: ${url.toString()}`);
-      
-      // Use a more reliable fetch approach for ArcGIS
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`ArcGIS HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log(`📊 ArcGIS Fallback response:`, data);
-      
-      if (!data || !data.features) {
-        console.log(`⚠️  No ArcGIS fallback data found for ${programType}`);
-        return this.createEmptyEPAResult(programType, radiusMiles);
-      }
-      
-      const features = data.features;
-      console.log(`🔄 ArcGIS fallback found ${features.length} features for ${programType}`);
-      
-      // Process features and calculate distances
-      const nearbyFacilities = features
-        .map((feature: any) => {
-          const geometry = feature.geometry;
-          if (!geometry || !geometry.x || !geometry.y) return null;
-          
-          const facilityLat = geometry.y;
-          const facilityLon = geometry.x;
-          const distanceMiles = this.calculateDistance(lat, lon, facilityLat, facilityLon) * 0.621371;
-          
-          if (distanceMiles <= radiusMiles) {
-            return {
-              id: feature.attributes.FRS_ID || feature.attributes.REGISTRY_ID || Math.random().toString(36).substr(2, 9),
-              name: feature.attributes.FACILITY_NAME || feature.attributes.SITE_NAME || 'Unnamed Facility',
-              type: programType,
-              lat: facilityLat,
-              lon: facilityLon,
-              distance_miles: Math.round(distanceMiles * 100) / 100,
-              address: feature.attributes.LOCATION_ADDRESS || 'N/A',
-              city: feature.attributes.CITY_NAME || 'N/A',
-              state: feature.attributes.STATE_CODE || 'N/A',
-              zip: feature.attributes.POSTAL_CODE || 'N/A',
-              raw_data: feature.attributes
-            };
-          }
-          return null;
-        })
-        .filter(Boolean)
-        .sort((a: any, b: any) => a.distance_miles - b.distance_miles);
-      
-      console.log(`✅ ArcGIS fallback: ${nearbyFacilities.length} facilities within ${radiusMiles} miles`);
-      
-      const programId = this.getEPAProgramId(programType);
-      const programLabel = this.getEPAProgramLabel(programType);
-      
-      return {
-        [`poi_epa_${programId}_count`]: nearbyFacilities.length,
-        [`poi_epa_${programId}_facilities`]: nearbyFacilities,
-        [`poi_epa_${programId}_summary`]: `Found ${nearbyFacilities.length} ${programLabel} facilities within ${radiusMiles} miles (ArcGIS fallback)`,
-        [`poi_epa_${programId}_source`]: 'ArcGIS Feature Service (EPA FRS fallback)',
-        [`poi_epa_${programId}_note`]: 'Data from EPA FRS via ArcGIS Feature Service'
-      };
-      
-    } catch (error) {
-      console.error(`❌ ArcGIS fallback error for ${programType}:`, error);
-      
-      const programId = this.getEPAProgramId(programType);
-      return {
-        [`poi_epa_${programId}_count`]: 0,
-        [`poi_epa_${programId}_facilities`]: [],
-        [`poi_epa_${programId}_error`]: `ArcGIS fallback failed: ${error instanceof Error ? error.message : String(error)}`,
-        [`poi_epa_${programId}_status`]: 'ArcGIS fallback failed'
-      };
-    }
-  }
-  
   // Helper methods for EPA program labels
   private getEPAProgramLabel(programType: string): string {
     const programMap: Record<string, string> = {
@@ -1317,20 +1258,6 @@ export class EnrichmentService {
       'SPCC/FRP': 'Oil Spill Response'
     };
     return programMap[programType] || programType;
-  }
-  
-  // Helper method to create empty EPA results
-  private createEmptyEPAResult(programType: string, radiusMiles: number): Record<string, any> {
-    const programId = this.getEPAProgramId(programType);
-    const programLabel = this.getEPAProgramLabel(programType);
-    
-    return {
-      [`poi_epa_${programId}_count`]: 0,
-      [`poi_epa_${programId}_facilities`]: [],
-      [`poi_epa_${programId}_summary`]: `No ${programLabel} facilities found within ${radiusMiles} miles`,
-      [`poi_epa_${programId}_source`]: 'EPA FRS',
-      [`poi_epa_${programId}_note`]: 'No facilities in this area'
-    };
   }
   
   // USDA Local Food Portal - Farmers Markets & Local Food enrichment

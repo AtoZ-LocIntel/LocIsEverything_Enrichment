@@ -632,91 +632,32 @@ if (bounds.isValid() && results.length > 1) {
       content += '<hr style="margin: 12px 0; border-color: #e5e7eb;">';
       content += '<h4 style="margin: 0 0 12px 0; color: #374151; font-size: 14px; font-weight: 600;">Enrichment Data:</h4>';
       
-      // Group enrichments by category for better organization
-      const coreEnrichments: Record<string, any> = {};
-      const poiEnrichments: Record<string, any> = {};
-      
+      // Display all enrichments as simple name: count pairs
       Object.entries(enrichments).forEach(([key, value]) => {
         if (value !== null && value !== undefined && value !== '') {
-          if (key.includes('poi_') || key.includes('_count_')) {
-            poiEnrichments[key] = value;
-          } else {
-            coreEnrichments[key] = value;
+          // Skip detailed POI arrays and complex objects
+          if (key.includes('_detailed') || key.includes('_facilities') || key.includes('_nearby')) {
+            return;
           }
-        }
-      });
-
-      // Display core enrichments first
-      if (Object.keys(coreEnrichments).length > 0) {
-        content += '<div style="margin-bottom: 12px;">';
-        content += '<h5 style="margin: 0 0 8px 0; color: #4b5563; font-size: 13px; font-weight: 500;">Core Attributes:</h5>';
-        Object.entries(coreEnrichments).forEach(([key, value]) => {
+          
+          // Skip complex objects, only show simple values
+          if (typeof value === 'object' && value !== null) {
+            return;
+          }
+          
           const label = formatEnrichmentLabel(key);
+          const displayValue = formatEnrichmentValue(key, value);
+          
           content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
             <span style="color: #6b7280;">${label}:</span>
-            <span style="color: #1f2937; font-weight: 500;">${formatEnrichmentValue(key, value)}</span>
+            <span style="color: #1f2937; font-weight: 500;">${displayValue}</span>
           </div>`;
-        });
-        content += '</div>';
-      }
-
-      // Display POI enrichments
-      if (Object.keys(poiEnrichments).length > 0) {
-        content += '<div>';
-        content += '<h5 style="margin: 0 0 8px 0; color: #4b5563; font-size: 13px; font-weight: 500;">Nearby Points of Interest:</h5>';
-        
-        // Special handling for Wikipedia POIs to show article details
-        if (poiEnrichments.poi_wikipedia_articles && Array.isArray(poiEnrichments.poi_wikipedia_articles)) {
-          const articles = poiEnrichments.poi_wikipedia_articles;
-          const count = poiEnrichments.poi_wikipedia_count || articles.length;
-          
-          content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
-            <span style="color: #6b7280;">Wikipedia Articles:</span>
-            <span style="color: #1f2937; font-weight: 500;">${count} found</span>
-          </div>`;
-          
-          // Show top articles with names
-          if (articles.length > 0) {
-            const topArticles = articles.slice(0, 5); // Show top 5
-            content += '<div style="margin: 8px 0; padding: 8px; background: #f9fafb; border-radius: 4px;">';
-            content += '<div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Top articles:</div>';
-            topArticles.forEach((article: any) => {
-              const distance = article.distance_miles || Math.round((article.distance_km || 0) * 0.621371 * 100) / 100;
-              content += `<div style="font-size: 11px; margin: 2px 0; color: #374151;">
-                • <a href="${article.url}" target="_blank" style="color: #3b82f6; text-decoration: none;">${article.title}</a>
-                <span style="color: #9ca3af;"> (${distance} mi)</span>
-              </div>`;
-            });
-            if (articles.length > 5) {
-              content += `<div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">...and ${articles.length - 5} more</div>`;
-            }
-            content += '</div>';
-          }
         }
-        
-                 // Handle other POI types - just show counts, not detailed data
-         Object.entries(poiEnrichments).forEach(([key, value]) => {
-           if (key === 'poi_wikipedia_articles' || key === 'poi_wikipedia_by_category' || key === 'poi_wikipedia_summary') {
-             return; // Skip these as they're handled above
-           }
-           
-           // Only show POI counts, not detailed arrays
-           if (key.includes('_detailed')) {
-             return; // Skip detailed POI arrays
-           }
-           
-           const label = formatEnrichmentLabel(key);
-           content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
-             <span style="color: #6b7280;">${label}:</span>
-             <span style="color: #1f2937; font-weight: 500;">${formatEnrichmentValue(key, value)}</span>
-           </div>`;
-         });
-        content += '</div>';
-      }
+      });
     } else {
       content += '<p style="margin: 12px 0; color: #6b7280; font-style: italic; font-size: 13px;">No enrichments selected or available for this location.</p>';
     }
-
+    
     content += '</div>';
     return content;
   };
@@ -769,12 +710,16 @@ if (bounds.isValid() && results.length > 1) {
     if (key === 'elevation_m') return `${value} m`;
     if (key === 'pm25') return `${value} µg/m³`;
     if (key === 'acs_median_hh_income') return `$${value?.toLocaleString() || value}`;
-    if (key.endsWith('_count_')) return `${value} found`;
-    if (key === 'poi_wikipedia_summary') return value || 'No summary available';
     
     // Handle POI counts specifically
-    if (key.includes('_count_')) {
-      return `${value} found`;
+    if (key.includes('_count') || key.includes('poi_')) {
+      if (typeof value === 'number') {
+        return `${value} found`;
+      } else if (typeof value === 'string' && value.includes('found')) {
+        return value;
+      } else {
+        return '0 found';
+      }
     }
     
     // For any other values, convert to string safely
