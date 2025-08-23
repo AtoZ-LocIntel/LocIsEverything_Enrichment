@@ -79,30 +79,29 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-black border-b border-gray-700 shadow-sm sticky top-0 z-50">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-28">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <div className="flex items-center">
                 {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}
-                <div className="w-28 h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-200 flex-shrink-0">
+                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
                   <img 
                     src="/assets/new-logo.png?v=2.0"
                     alt="The Location Is Everything Co Logo" 
                     className="w-full h-full object-cover"
                   />
                 </div>
-
               </div>
             </div>
 
-            <nav className="hidden md:flex items-center space-x-8 mr-8">
+            <nav className="hidden md:flex items-center space-x-8">
               <button 
                 onClick={() => {
                   const element = document.querySelector('[data-section="single-search"]');
                   element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
-                className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
                 <MapPin className="w-4 h-4 inline mr-2" />
                 Single Search
@@ -112,38 +111,38 @@ const Header: React.FC = () => {
                   const element = document.querySelector('[data-section="batch-processing"]');
                   element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
-                className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
                 <BarChart3 className="w-4 h-4 inline mr-2" />
                 Batch Processing
               </button>
               <button 
                 onClick={() => setShowDataSources(true)}
-                className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
                 <Globe className="w-4 h-4 inline mr-2" />
                 Data Sources
               </button>
               <button 
                 onClick={() => setShowAdmin(true)}
-                className="text-purple-700 hover:text-purple-800 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-purple-200 hover:border-purple-300"
+                className="text-purple-300 hover:text-purple-200 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-purple-600 hover:border-purple-500"
               >
                 <span className="mr-2">🔒</span>
                 Admin
               </button>
             </nav>
 
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4 sm:space-x-6">
               <button 
                 onClick={() => setShowDocs(true)}
-                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex"
+                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex text-gray-300 border-gray-600 hover:text-white hover:border-gray-500"
               >
                 <BookOpen className="w-4 h-4" />
                 <span>Documentation</span>
               </button>
               <button 
                 onClick={handleResetApp}
-                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex"
+                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex text-gray-300 border-gray-600 hover:text-white hover:border-gray-500"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>Reset App</span>
