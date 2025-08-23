@@ -632,8 +632,31 @@ if (bounds.isValid() && results.length > 1) {
       content += '<hr style="margin: 12px 0; border-color: #e5e7eb;">';
       content += '<h4 style="margin: 0 0 12px 0; color: #374151; font-size: 14px; font-weight: 600;">Enrichment Data:</h4>';
       
-      // Display all enrichments as simple name: count pairs
+      // Special handling for FEMA flood zones - show only two clean rows
+      if (enrichments.poi_fema_flood_zones_current || enrichments.poi_fema_flood_zones_nearby) {
+        content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
+          <span style="color: #6b7280;">FEMA Flood Zone:</span>
+          <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_fema_flood_zones_current || 'None'}</span>
+        </div>`;
+        
+        if (enrichments.poi_fema_flood_zones_nearby && Array.isArray(enrichments.poi_fema_flood_zones_nearby) && enrichments.poi_fema_flood_zones_nearby.length > 0) {
+          const nearestZone = enrichments.poi_fema_flood_zones_nearby[0];
+          const zoneName = nearestZone.zone || 'Unknown Zone';
+          const distance = nearestZone.distance_miles || 5;
+          content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
+            <span style="color: #6b7280;">FEMA Flood Zone within ${distance} mi:</span>
+            <span style="color: #1f2937; font-weight: 500;">${zoneName}</span>
+          </div>`;
+        }
+      }
+      
+      // Display all other enrichments as simple name: count pairs
       Object.entries(enrichments).forEach(([key, value]) => {
+        // Skip FEMA flood zone fields as they're handled above
+        if (key.includes('poi_fema_flood_zones')) {
+          return;
+        }
+        
         if (value !== null && value !== undefined && value !== '') {
           // Skip detailed POI arrays and complex objects
           if (key.includes('_detailed') || key.includes('_facilities') || key.includes('_nearby')) {
@@ -677,8 +700,6 @@ if (bounds.isValid() && results.length > 1) {
       nws_active_alerts: 'Weather Alerts',
       poi_wikipedia_count: 'Wikipedia Articles',
       poi_wikipedia_summary: 'Wikipedia Summary',
-      poi_fema_flood_zones_current_zone: 'Current Flood Zone',
-      poi_fema_flood_zones_nearby_zone: 'Nearest Flood Zone (5 mi)',
       
       // EPA FRS Environmental Hazards
       poi_epa_brownfields_count: 'EPA Brownfields',

@@ -207,18 +207,45 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     });
   };
 
+  const handleResetAllFilters = () => {
+    // Reset all selected enrichments
+    onSelectionChange([]);
+    // Reset all POI radii to defaults
+    const defaultRadii: Record<string, number> = {};
+    enrichmentCategories.forEach(category => {
+      category.enrichments.forEach(enrichment => {
+        if (enrichment.isPOI) {
+          defaultRadii[enrichment.id] = enrichment.defaultRadius;
+        }
+      });
+    });
+    onPoiRadiiChange(defaultRadii);
+  };
+
   return (
     <div className="enrichment-config">
       <div className="card">
         <div className="card-header">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-              <Settings className="w-5 h-5 text-primary-600" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+                <Settings className="w-5 h-5 text-primary-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Enrichment Configuration</h3>
+                <p className="text-sm text-gray-700">Select data sources and configure search parameters</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Enrichment Configuration</h3>
-              <p className="text-sm text-gray-700">Select data sources and configure search parameters</p>
-            </div>
+            
+            {/* Reset All Filters Button */}
+            <button
+              onClick={handleResetAllFilters}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg border border-gray-300 transition-colors duration-200 flex items-center space-x-2"
+              title="Reset all selected enrichments and radii to defaults"
+            >
+              <span>🔄</span>
+              <span>Reset All Filters</span>
+            </button>
           </div>
         </div>
         
