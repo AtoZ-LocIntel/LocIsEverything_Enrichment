@@ -54,6 +54,52 @@ function App() {
     }
   };
 
+  const handleLocationSearch = async () => {
+    try {
+      setError(null);
+      
+      // Check if geolocation is supported
+      if (!navigator.geolocation) {
+        throw new Error('Geolocation is not supported by your browser');
+      }
+
+      // Get current position
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      
+      // Create a location string for the enrichment service
+      const locationString = `${latitude}, ${longitude}`;
+      
+      // Use the enrichment service to get data for current location
+      const enrichmentService = new EnrichmentService();
+      const result = await enrichmentService.enrichSingleLocation(locationString, selectedEnrichments, poiRadii);
+      setEnrichmentResults([result]);
+      
+      // On mobile, show mobile results view; on desktop, show map
+      if (isMobile) {
+        setViewMode('mobile-results');
+      } else {
+        setViewMode('map');
+      }
+    } catch (error) {
+      console.error('Location search failed:', error);
+      if (error instanceof Error && error.message.includes('timeout')) {
+        setError('Location request timed out. Please try again or use manual address entry.');
+      } else if (error instanceof Error && error.message.includes('denied')) {
+        setError('Location access denied. Please enable location services or use manual address entry.');
+      } else {
+        setError(error instanceof Error ? error.message : 'Location search failed. Please try again or use manual address entry.');
+      }
+    }
+  };
+
   const handleViewMap = () => {
     setViewMode('map');
   };
@@ -251,7 +297,11 @@ function App() {
 
           <div className="grid lg:grid-cols-2 gap-8 mb-8 mobile-stack">
             <div data-section="single-search" className={isMobile ? "lg:col-span-2" : ""}>
-              <SingleSearch onSearch={handleSingleSearch} />
+              <SingleSearch 
+                onSearch={handleSingleSearch} 
+                onLocationSearch={handleLocationSearch}
+                isMobile={isMobile}
+              />
             </div>
             {!isMobile && (
               <div data-section="batch-processing">

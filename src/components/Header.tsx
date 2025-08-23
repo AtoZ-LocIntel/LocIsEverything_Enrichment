@@ -79,9 +79,9 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="bg-black border-b border-gray-700 shadow-sm sticky top-0 z-50">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-28">
+      <header className="bg-black border-b border-gray-700 shadow-sm sticky top-0 z-50 w-full">
+        <div className="w-full px-0 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-28 px-4 sm:px-0">
             <div className="flex items-center">
               <div className="flex items-center">
                 {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}

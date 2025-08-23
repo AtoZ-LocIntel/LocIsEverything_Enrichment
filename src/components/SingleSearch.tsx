@@ -3,11 +3,15 @@ import { Search, MapPin, Loader2 } from 'lucide-react';
 
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
+  onLocationSearch?: () => Promise<void>;
+  isMobile?: boolean;
 }
 
-const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch }) => {
+const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, isMobile = false }) => {
   const [address, setAddress] = useState('1600 Pennsylvania Avenue NW, Washington, DC 20500');
   const [isLoading, setIsLoading] = useState(false);
+  const [showLocationButton, setShowLocationButton] = useState(false);
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,8 +59,51 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch }) => {
                 disabled={isLoading}
               />
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              
+              {/* Location Toggle - Mobile Only */}
+              {isMobile && (
+                <button
+                  type="button"
+                  onClick={() => setShowLocationButton(!showLocationButton)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-primary-600 transition-colors"
+                  title="Toggle location search"
+                >
+                  <MapPin className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </div>
+
+          {/* Location Search Button - Shows when toggle is clicked */}
+          {isMobile && showLocationButton && onLocationSearch && (
+            <button
+              type="button"
+              onClick={async () => {
+                setIsLocationLoading(true);
+                try {
+                  await onLocationSearch();
+                } catch (error) {
+                  console.error('Location search failed:', error);
+                } finally {
+                  setIsLocationLoading(false);
+                }
+              }}
+              disabled={isLocationLoading}
+              className="btn btn-secondary w-full flex items-center justify-center space-x-2 py-4 text-lg font-semibold mb-3"
+            >
+              {isLocationLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Getting your location...</span>
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-5 h-5" />
+                  <span>Search from my location</span>
+                </>
+              )}
+            </button>
+          )}
 
           <button
             type="submit"
