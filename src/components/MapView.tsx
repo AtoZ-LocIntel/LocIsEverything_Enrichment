@@ -98,8 +98,21 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
-  const [showBatchSuccess, setShowBatchSuccess] = useState(false);
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
+  const [showBatchSuccess, setShowBatchSuccess] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -287,8 +300,8 @@ if (bounds.isValid() && results.length > 1) {
   });
 }
 
-    // Auto-open popup for first marker after a short delay to ensure map is ready
-    if (firstMarker) {
+    // Auto-open popup for first marker after a short delay to ensure map is ready (only on desktop)
+    if (firstMarker && !isMobile) {
       setTimeout(() => {
         firstMarker?.openPopup();
       }, 500);
@@ -1130,7 +1143,7 @@ if (bounds.isValid() && results.length > 1) {
         )}
         
         {/* Results Summary Panel */}
-        {results.length > 0 && (
+        {!isMobile && results.length > 0 && (
           <div className="fixed top-24 right-6 bg-white rounded-lg shadow-xl border border-gray-200 max-w-sm max-h-80 overflow-y-auto z-[9999]">
             <div className="p-4 border-b border-gray-200 bg-gray-50">
               <h3 className="font-semibold text-gray-900 flex items-center space-x-2">

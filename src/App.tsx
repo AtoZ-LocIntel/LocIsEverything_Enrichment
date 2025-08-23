@@ -184,8 +184,7 @@ function App() {
             </p>
           </div>
 
-          {/* Enrichment Options Preview - Hidden on Mobile */}
-          {!isMobile && (
+          {/* Enrichment Options Preview */}
             <div className="mb-8 p-6 bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl border border-blue-700">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-white mb-2">🎯 Available Enrichment Options</h2>
@@ -266,14 +265,12 @@ function App() {
             )}
           </div>
 
-          {!isMobile && (
-            <EnrichmentConfig
-              selectedEnrichments={selectedEnrichments}
-              onSelectionChange={setSelectedEnrichments}
-              poiRadii={poiRadii}
-              onPoiRadiiChange={setPoiRadii}
-            />
-          )}
+          <EnrichmentConfig
+            selectedEnrichments={selectedEnrichments}
+            onSelectionChange={setSelectedEnrichments}
+            poiRadii={poiRadii}
+            onPoiRadiiChange={setPoiRadii}
+          />
         </div>
       ) : viewMode === 'mobile-results' ? (
         <MobileResultsView
