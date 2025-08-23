@@ -28,7 +28,7 @@ interface EnrichmentItem {
 
 // Core enrichments (non-POI)
 const CORE_ENRICHMENTS = [
-  { id: 'elev', label: 'Elevation', description: 'Terrain elevation in meters', isPOI: false, defaultRadius: 0, category: 'core' },
+  { id: 'elev', label: 'Elevation', description: 'Terrain elevation in feet', isPOI: false, defaultRadius: 0, category: 'core' },
   { id: 'airq', label: 'Air Quality', description: 'PM2.5 air quality index', isPOI: false, defaultRadius: 0, category: 'core' },
   { id: 'fips', label: 'Census IDs', description: 'FIPS codes for state/county/tract', isPOI: false, defaultRadius: 0, category: 'core' },
   { id: 'acs', label: 'Demographics', description: 'ACS population and income data', isPOI: false, defaultRadius: 0, category: 'core' },

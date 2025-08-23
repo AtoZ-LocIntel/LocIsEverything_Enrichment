@@ -664,7 +664,7 @@ if (bounds.isValid() && results.length > 1) {
 
   const formatEnrichmentLabel = (key: string): string => {
     const labels: Record<string, string> = {
-      elevation_m: 'Elevation',
+      elevation_ft: 'Elevation',
       pm25: 'Air Quality (PM2.5)',
       fips_state: 'FIPS State',
       fips_county: 'FIPS County',
@@ -707,7 +707,7 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   const formatEnrichmentValue = (key: string, value: any): string => {
-    if (key === 'elevation_m') return `${value} m`;
+    if (key === 'elevation_ft') return `${value} ft`;
     if (key === 'pm25') return `${value} µg/m³`;
     if (key === 'acs_median_hh_income') return `$${value?.toLocaleString() || value}`;
     

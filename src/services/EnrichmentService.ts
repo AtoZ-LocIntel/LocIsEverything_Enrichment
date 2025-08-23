@@ -91,21 +91,11 @@ export class EnrichmentService {
     try {
       console.log(`FEMA Flood Zones query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
       
-      // Convert radius to bounding box coordinates
-      const radiusDegrees = radiusMiles / 69; // Approximate: 1 degree ≈ 69 miles
-      const south = lat - radiusDegrees;
-      const north = lat + radiusDegrees;
-      const west = lon - radiusDegrees;
-      const east = lon + radiusDegrees;
-      
       // Use the correct FEMA NFHL endpoint as provided by user
       const baseUrl = 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query';
       
-      // Build bounding box geometry string
-      const bboxGeometry = `${west.toFixed(6)},${south.toFixed(6)},${east.toFixed(6)},${north.toFixed(6)}`;
-      
-      // Query using bounding box approach with specific fields for better performance
-      const queryUrl = `${baseUrl}?f=geojson&geometry=${bboxGeometry}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE,ZONE_SUBTY&returnGeometry=true`;
+      // Use point-based query instead of bounding box (more reliable)
+      const queryUrl = `${baseUrl}?f=json&where=1=1&geometry=${lon.toFixed(6)},${lat.toFixed(6)}&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE,ZONE_SUBTY&returnGeometry=true&resultRecordCount=5`;
       
       console.log(`🔗 FEMA NFHL API URL: ${queryUrl}`);
       
@@ -114,13 +104,19 @@ export class EnrichmentService {
         if (response.ok) {
           const data = await response.json();
           console.log(`📊 FEMA NFHL API response:`, data);
+          console.log(`🔍 FEMA response structure:`, {
+            hasFeatures: !!data.features,
+            featuresLength: data.features?.length,
+            responseKeys: Object.keys(data),
+            firstFeature: data.features?.[0]
+          });
           
           if (data && data.features && data.features.length > 0) {
-            console.log(`✅ Found ${data.features.length} FEMA flood zones in bounding box`);
+            console.log(`✅ Found ${data.features.length} FEMA flood zones containing the point`);
             
-            // Process the features to find zones containing or near the point
+            // Process the features to find zones containing the point
             const zones = data.features.map((feature: any) => {
-              const properties = feature.properties;
+              const properties = feature.attributes || feature.properties;
               return {
                 zone: properties.FLD_ZONE || properties.ZONE || 'Unknown Zone',
                 name: properties.ZONE_SUBTY || properties.NAME || 'Unknown',
@@ -129,35 +125,25 @@ export class EnrichmentService {
               };
             });
             
-            // Check if point is inside any zone (simplified check)
-            let inZone = false;
-            let currentZone = '';
-            
-            // For now, assume if we find zones in the bounding box, the point might be in one
-            if (zones.length > 0) {
-              inZone = true;
-              currentZone = zones[0].zone;
-            }
-            
-            const summary = inZone 
-              ? `Location is in or near FEMA flood zone: ${currentZone}`
-              : `No FEMA flood zones found within ${radiusMiles} miles`;
+            // Since we're using a point query, the point should be inside the returned zones
+            const currentZone = zones[0].zone;
+            const summary = `Location is in FEMA flood zone: ${currentZone}`;
             
             return {
               poi_fema_flood_zones_count: zones.length,
               poi_fema_flood_zones_summary: summary,
-              poi_fema_flood_zones_current: inZone ? currentZone : null,
+              poi_fema_flood_zones_current: currentZone,
               poi_fema_flood_zones_nearby: zones.slice(0, 2), // Top 2 zones
               poi_fema_flood_zones_status: 'Data retrieved successfully'
             };
           } else {
-            console.log(`⚠️  No FEMA flood zones found in bounding box`);
+            console.log(`⚠️  No FEMA flood zones found containing the point`);
             return {
               poi_fema_flood_zones_count: 0,
-              poi_fema_flood_zones_summary: `No FEMA flood zones found within ${radiusMiles} miles`,
+              poi_fema_flood_zones_summary: `No FEMA flood zones found at this location`,
               poi_fema_flood_zones_current: null,
               poi_fema_flood_zones_nearby: [],
-              poi_fema_flood_zones_status: 'No zones in area'
+              poi_fema_flood_zones_status: 'No zones at location'
             };
           }
         } else {
@@ -476,7 +462,9 @@ export class EnrichmentService {
 
     switch (enrichmentId) {
       case 'elev':
-        return { elevation_m: await this.getElevation(lat, lon) };
+        const elevationMeters = await this.getElevation(lat, lon);
+        const elevationFeet = elevationMeters ? Math.round(elevationMeters * 3.28084) : null;
+        return { elevation_ft: elevationFeet };
       
       case 'airq':
         return { pm25: await this.getAirQuality(lat, lon) };

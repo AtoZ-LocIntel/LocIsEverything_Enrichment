@@ -431,39 +431,108 @@ const Header: React.FC = () => {
                   </h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-                      <h4 className="font-semibold text-indigo-900 mb-2">Environmental Data</h4>
+                      <h4 className="font-semibold text-indigo-900 mb-2">Environmental & Hazards</h4>
                       <div className="text-sm text-indigo-800 space-y-1">
-                        <div>• <strong>Elevation:</strong> USGS elevation data</div>
-                        <div>• <strong>Air Quality:</strong> EPA air quality monitoring</div>
-                        <div>• <strong>Weather Alerts:</strong> National Weather Service</div>
-                        <div>• <strong>Flood Zones:</strong> FEMA flood hazard areas</div>
+                        <div>• <strong>Elevation:</strong> Open-Meteo elevation API (converted to feet)</div>
+                        <div>• <strong>Air Quality:</strong> EPA air quality monitoring (PM2.5)</div>
+                        <div>• <strong>Weather Alerts:</strong> National Weather Service active alerts</div>
+                        <div>• <strong>Flood Zones:</strong> FEMA National Flood Hazard Layer (NFHL)</div>
+                        <div>• <strong>EPA FRS:</strong> Brownfields, Superfund, RCRA, TRI, NPDES</div>
+                        <div>• <strong>EPA FRS:</strong> Air facilities, radiation, power generation</div>
                       </div>
                     </div>
                     <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
-                      <h4 className="font-semibold text-teal-900 mb-2">Demographic Data</h4>
+                      <h4 className="font-semibold text-teal-900 mb-2">Demographic & Census</h4>
                       <div className="text-sm text-teal-800 space-y-1">
                         <div>• <strong>Population:</strong> US Census ACS 5-year estimates</div>
                         <div>• <strong>Income:</strong> Median household income data</div>
                         <div>• <strong>Age:</strong> Median age statistics</div>
                         <div>• <strong>Geography:</strong> FIPS codes for state/county/tract</div>
+                        <div>• <strong>Census Blocks:</strong> Detailed geographic boundaries</div>
                       </div>
                     </div>
                     <div className="bg-pink-50 p-4 rounded-lg border border-pink-200">
-                      <h4 className="font-semibold text-pink-900 mb-2">Points of Interest</h4>
+                      <h4 className="font-semibold text-pink-900 mb-2">Points of Interest (OSM)</h4>
                       <div className="text-sm text-pink-800 space-y-1">
-                        <div>• <strong>Schools:</strong> Educational institutions</div>
-                        <div>• <strong>Hospitals:</strong> Medical facilities</div>
-                        <div>• <strong>Transportation:</strong> Airports, trails, railroads</div>
-                        <div>• <strong>Infrastructure:</strong> Power plants, cell towers</div>
+                        <div>• <strong>Education:</strong> Schools, universities, libraries</div>
+                        <div>• <strong>Healthcare:</strong> Hospitals, clinics, pharmacies</div>
+                        <div>• <strong>Transportation:</strong> Airports, trails, railroads, bus stops</div>
+                        <div>• <strong>Infrastructure:</strong> Power plants, substations, cell towers</div>
+                        <div>• <strong>Emergency:</strong> Police stations, fire stations</div>
+                        <div>• <strong>Recreation:</strong> Parks, golf courses, cinemas, theatres</div>
                       </div>
                     </div>
                     <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                      <h4 className="font-semibold text-yellow-900 mb-2">Specialized Data</h4>
+                      <h4 className="font-semibold text-yellow-900 mb-2">Specialized & Local</h4>
                       <div className="text-sm text-yellow-800 space-y-1">
-                        <div>• <strong>Earthquakes:</strong> USGS seismic activity</div>
-                        <div>• <strong>Volcanoes:</strong> Active and dormant volcanoes</div>
+                        <div>• <strong>Wikipedia:</strong> Nearby points of interest articles</div>
+                        <div>• <strong>USDA Local Food:</strong> Farmers markets, CSAs, agritourism</div>
+                        <div>• <strong>USDA Local Food:</strong> Food hubs, on-farm markets</div>
                         <div>• <strong>Breweries:</strong> Craft brewery locations</div>
-                        <div>• <strong>Wikipedia:</strong> Nearby points of interest</div>
+                        <div>• <strong>Hotels:</strong> Accommodation facilities</div>
+                        <div>• <strong>Powerlines:</strong> Electrical transmission infrastructure</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Data Source Details */}
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <Search className="w-5 h-5 text-primary-600" />
+                    <span>Data Source Details & APIs</span>
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h4 className="font-semibold text-blue-900 mb-2">Government & Official Sources</h4>
+                      <div className="text-sm text-blue-800 space-y-1">
+                        <div>• <strong>FEMA NFHL:</strong> National Flood Hazard Layer REST API</div>
+                        <div>• <strong>EPA FRS:</strong> Facility Registry Service REST API</div>
+                        <div>• <strong>US Census:</strong> American Community Survey & TIGER/Line</div>
+                        <div>• <strong>USDA:</strong> Local Food Portal API (5 categories)</div>
+                        <div>• <strong>NWS:</strong> National Weather Service alerts</div>
+                        <div>• <strong>USGS:</strong> Geographic names & elevation data</div>
+                      </div>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <h4 className="font-semibold text-green-900 mb-2">Open Data & Community</h4>
+                      <div className="text-sm text-green-800 space-y-1">
+                        <div>• <strong>OpenStreetMap:</strong> Overpass API for POI data</div>
+                        <div>• <strong>Wikipedia:</strong> MediaWiki Geosearch API</div>
+                        <div>• <strong>Open-Meteo:</strong> Free elevation & weather APIs</div>
+                        <div>• <strong>Nominatim:</strong> OSM geocoding service</div>
+                        <div>• <strong>GeoNames:</strong> Geographic database</div>
+                        <div>• <strong>PLUTO NYC:</strong> NYC parcel data</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Coverage & Capabilities */}
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <BarChart3 className="w-5 h-5 text-primary-600" />
+                    <span>Coverage & Capabilities</span>
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                      <h4 className="font-semibold text-purple-900 mb-2">Geographic Coverage</h4>
+                      <div className="text-sm text-purple-800 space-y-1">
+                        <div>• <strong>Global:</strong> Wikipedia, OSM, elevation, weather</div>
+                        <div>• <strong>United States:</strong> Census, FEMA, EPA, USDA, NWS</div>
+                        <div>• <strong>Regional:</strong> PLUTO NYC, state-specific data</div>
+                        <div>• <strong>Proximity:</strong> Configurable search radii (max 5 miles)</div>
+                        <div>• <strong>Bounding Box:</strong> Efficient spatial queries for POIs</div>
+                      </div>
+                    </div>
+                    <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                      <h4 className="font-semibold text-orange-900 mb-2">Data Types & Formats</h4>
+                      <div className="text-sm text-orange-800 space-y-1">
+                        <div>• <strong>Vector Data:</strong> Points, lines, polygons from OSM</div>
+                        <div>• <strong>Raster Data:</strong> Elevation, flood zones</div>
+                        <div>• <strong>Tabular Data:</strong> Demographics, facility information</div>
+                        <div>• <strong>Real-time:</strong> Weather alerts, air quality</div>
+                        <div>• <strong>Export Formats:</strong> CSV, GeoJSON, interactive maps</div>
                       </div>
                     </div>
                   </div>
@@ -474,21 +543,25 @@ const Header: React.FC = () => {
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Data Quality & Best Practices</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <h4 className="font-semibold text-gray-900 mb-2">Data Accuracy</h4>
+                      <h4 className="font-semibold text-gray-900 mb-2">Data Accuracy & Coverage</h4>
                       <div className="text-sm text-gray-700 space-y-1">
                         <div>• <strong>Geocoding:</strong> 95%+ success rate for valid addresses</div>
-                        <div>• <strong>Enrichment:</strong> Real-time data from official sources</div>
-                        <div>• <strong>Coverage:</strong> Global with regional specializations</div>
-                        <div>• <strong>Updates:</strong> Regular updates from data providers</div>
+                        <div>• <strong>Enrichment:</strong> 50+ data layers from official sources</div>
+                        <div>• <strong>Coverage:</strong> Global with US specializations</div>
+                        <div>• <strong>POI Data:</strong> 25+ categories via OpenStreetMap</div>
+                        <div>• <strong>Hazards:</strong> FEMA flood zones + 9 EPA FRS layers</div>
+                        <div>• <strong>Local Food:</strong> 5 USDA categories for community data</div>
                       </div>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <h4 className="font-semibold text-gray-900 mb-2">Usage Guidelines</h4>
+                      <h4 className="font-semibold text-gray-900 mb-2">Usage Guidelines & Features</h4>
                       <div className="text-sm text-gray-700 space-y-1">
                         <div>• <strong>Rate Limits:</strong> Built-in compliance with all APIs</div>
-                        <div>• <strong>Attribution:</strong> Required for some data sources</div>
-                        <div>• <strong>Commercial Use:</strong> Check individual source terms</div>
-                        <div>• <strong>Data Retention:</strong> Results available for immediate download</div>
+                        <div>• <strong>Proximity Search:</strong> Configurable radii up to 5 miles</div>
+                        <div>• <strong>Export Options:</strong> CSV, interactive maps, GeoJSON</div>
+                        <div>• <strong>Mobile Friendly:</strong> Responsive design for all devices</div>
+                        <div>• <strong>Real-time Data:</strong> Weather, air quality, alerts</div>
+                        <div>• <strong>Batch Processing:</strong> Handle large datasets efficiently</div>
                       </div>
                     </div>
                   </div>
