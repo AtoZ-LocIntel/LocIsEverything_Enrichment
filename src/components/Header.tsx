@@ -92,9 +92,7 @@ const Header: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="flex-shrink-0">
-                  <h1 className="text-2xl font-bold text-gray-900">Enrichment Platform</h1>
-                </div>
+
               </div>
             </div>
 

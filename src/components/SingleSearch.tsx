@@ -51,7 +51,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch }) => {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="e.g., 123 Main St, Boston, MA 02108"
-                className="form-input pl-10"
+                className="form-input pl-10 text-base"
                 disabled={isLoading}
               />
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -61,23 +61,24 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch }) => {
           <button
             type="submit"
             disabled={!address.trim() || isLoading}
-            className="btn btn-primary w-full flex items-center justify-center space-x-2"
+            className="btn btn-primary w-full flex items-center justify-center space-x-2 py-4 text-lg font-semibold"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
                 <span>Searching...</span>
               </>
             ) : (
               <>
-                <Search className="w-4 h-4" />
+                <Search className="w-5 h-5" />
                 <span>Search & Enrich</span>
               </>
             )}
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        {/* Pro Tips - Hidden on Mobile for cleaner experience */}
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 hidden md:block">
           <h4 className="text-sm font-medium text-blue-900 mb-2">💡 Pro Tips</h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• Include city and state for better accuracy</li>
