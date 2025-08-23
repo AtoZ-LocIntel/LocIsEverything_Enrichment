@@ -185,7 +185,7 @@ function App() {
           </div>
 
           {/* Enrichment Options Preview */}
-            <div className="mb-8 p-6 bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl border border-blue-700">
+          <div className="mb-8 p-6 bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl border border-blue-700">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-white mb-2">🎯 Available Enrichment Options</h2>
                 <p className="text-blue-200">Configure your search to include any combination of these data sources</p>
@@ -229,7 +229,6 @@ function App() {
                 </p>
               </div>
             </div>
-          )}
 
           {/* Error Display */}
           {error && (
