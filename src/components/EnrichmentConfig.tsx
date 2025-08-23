@@ -50,6 +50,76 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   custom: <span className="text-xl">🔧</span>
 };
 
+// Color scheme for each category section
+const SECTION_COLORS: Record<string, { bg: string; border: string; header: string; headerHover: string }> = {
+  core: { 
+    bg: 'bg-slate-50', 
+    border: 'border-slate-200', 
+    header: 'bg-slate-100', 
+    headerHover: 'hover:bg-slate-200' 
+  },
+  hazards: { 
+    bg: 'bg-red-50', 
+    border: 'border-red-200', 
+    header: 'bg-red-100', 
+    headerHover: 'hover:bg-red-200' 
+  },
+  community: { 
+    bg: 'bg-blue-50', 
+    border: 'border-blue-200', 
+    header: 'bg-blue-100', 
+    headerHover: 'hover:bg-blue-200' 
+  },
+  retail: { 
+    bg: 'bg-purple-50', 
+    border: 'border-purple-200', 
+    header: 'bg-purple-100', 
+    headerHover: 'hover:bg-purple-200' 
+  },
+  health: { 
+    bg: 'bg-pink-50', 
+    border: 'border-pink-200', 
+    header: 'bg-pink-100', 
+    headerHover: 'hover:bg-pink-200' 
+  },
+  transportation: { 
+    bg: 'bg-indigo-50', 
+    border: 'border-indigo-200', 
+    header: 'bg-indigo-100', 
+    headerHover: 'hover:bg-indigo-200' 
+  },
+  infrastructure: { 
+    bg: 'bg-amber-50', 
+    border: 'border-amber-200', 
+    header: 'bg-amber-100', 
+    headerHover: 'hover:bg-amber-200' 
+  },
+  environment: { 
+    bg: 'bg-green-50', 
+    border: 'border-green-200', 
+    header: 'bg-green-100', 
+    headerHover: 'hover:bg-green-200' 
+  },
+  recreation: { 
+    bg: 'bg-emerald-50', 
+    border: 'border-emerald-200', 
+    header: 'bg-emerald-100', 
+    headerHover: 'hover:bg-emerald-200' 
+  },
+  quirky: { 
+    bg: 'bg-orange-50', 
+    border: 'border-orange-200', 
+    header: 'bg-orange-100', 
+    headerHover: 'hover:bg-orange-200' 
+  },
+  custom: { 
+    bg: 'bg-gray-50', 
+    border: 'border-gray-200', 
+    header: 'bg-gray-100', 
+    headerHover: 'hover:bg-gray-200' 
+  }
+};
+
 
 const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   selectedEnrichments,
@@ -160,12 +230,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const hasSelectedEnrichments = categoryEnrichments.some(enrichment => 
                 selectedEnrichments.includes(enrichment.id)
               );
+              
+              // Get color scheme for this category
+              const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
 
               return (
-                <div key={category.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                <div key={category.id} className={`border ${colors.border} rounded-lg overflow-hidden shadow-sm`}>
                   <button
                     onClick={() => toggleCategory(category.id)}
-                    className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+                    className={`w-full px-4 py-3 ${colors.header} ${colors.headerHover} transition-colors flex items-center justify-between`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="text-gray-700">
@@ -191,14 +264,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   </button>
 
                   {isExpanded && (
-                    <div className="p-4 bg-white border-t border-gray-200">
+                    <div className={`p-4 ${colors.bg} border-t ${colors.border}`}>
                       <div className="grid gap-3">
                         {categoryEnrichments.map((enrichment) => {
                           const isSelected = selectedEnrichments.includes(enrichment.id);
                           const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
 
                           return (
-                            <div key={enrichment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div key={enrichment.id} className={`flex items-center justify-between p-3 rounded-lg ${isSelected ? 'bg-white shadow-sm border border-gray-200' : 'bg-white/60 hover:bg-white/80'}`}>
                               <div className="flex items-center space-x-3">
                                 <input
                                   type="checkbox"
