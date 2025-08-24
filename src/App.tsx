@@ -207,7 +207,7 @@ function App() {
       <Header />
       
       {viewMode === 'config' ? (
-        <div className="max-w-7xl mx-auto px-4 py-8 pt-36">
+        <div className={`${isMobile ? 'w-full px-2 mobile-full-width' : 'max-w-7xl mx-auto px-4'} py-8 pt-36`}>
           {/* Mobile Instructions */}
           {isMobile && (
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
