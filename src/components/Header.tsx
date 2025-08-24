@@ -79,14 +79,7 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="bg-black border-b border-gray-700 shadow-sm sticky top-0 z-50" style={{ 
-        width: '100vw', 
-        maxWidth: '100vw',
-        marginLeft: 'calc(-50vw + 50%)',
-        left: '0',
-        right: '0',
-        position: 'sticky'
-      }}>
+      <header className="bg-black border-b border-gray-700 shadow-sm fixed top-0 left-0 right-0 w-full z-50">
         <div className="w-full px-0 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-28 px-4 sm:px-0">
             <div className="flex items-center">

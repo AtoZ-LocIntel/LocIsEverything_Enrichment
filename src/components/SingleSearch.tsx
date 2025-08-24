@@ -55,17 +55,17 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="e.g., 123 Main St, Boston, MA 02108"
-                className="form-input pl-10 text-base"
+                className={`form-input text-base ${isMobile ? 'pr-16' : 'pl-10'}`}
                 disabled={isLoading}
               />
-              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <Search className={`w-5 h-5 text-gray-400 absolute top-1/2 transform -translate-y-1/2 ${isMobile ? 'left-3' : 'left-3'}`} />
               
               {/* Location Toggle - Mobile Only */}
               {isMobile && (
                 <button
                   type="button"
                   onClick={() => setShowLocationButton(!showLocationButton)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-primary-600 transition-colors"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-primary-600 transition-colors"
                   title="Toggle location search"
                 >
                   <MapPin className="w-5 h-5" />
