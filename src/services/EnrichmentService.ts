@@ -745,6 +745,11 @@ export class EnrichmentService {
      if (id === "poi_tnm_railroads") return ["railway=rail"];
      if (id === "poi_tnm_trails") return ["route=hiking", "route=foot", "leisure=park"];
      
+     // New comprehensive transportation POI types
+     if (id === "poi_train_stations") return ["railway=station", "railway=halt", "station=subway"];
+     if (id === "poi_bus_stations") return ["amenity=bus_station", "public_transport=station"];
+     if (id === "poi_bus_stops") return ["highway=platform", "public_transport=platform"];
+     
            // Hazards
       if (id === "poi_fema_flood_zones") return ["fema_flood_zones"]; // Special handling for FEMA flood zones
       

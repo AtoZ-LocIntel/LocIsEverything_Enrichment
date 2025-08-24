@@ -42,6 +42,9 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_airports': { icon: '✈️', color: '#6366f1', title: 'Airports' },
   'poi_tnm_trails': { icon: '🥾', color: '#059669', title: 'Trails' },
   'poi_tnm_railroads': { icon: '🚂', color: '#7c3aed', title: 'Railroads' },
+  'poi_train_stations': { icon: '🚉', color: '#dc2626', title: 'Train Stations' },
+  'poi_bus_stations': { icon: '🚌', color: '#2563eb', title: 'Bus Stations' },
+  'poi_bus_stops': { icon: '🚏', color: '#0891b2', title: 'Bus Stops' },
   'poi_wikipedia': { icon: '📖', color: '#1d4ed8', title: 'Wikipedia Articles' },
   'poi_fema_flood_zones': { icon: '🌊', color: '#0891b2', title: 'FEMA Flood Zones' },
   
