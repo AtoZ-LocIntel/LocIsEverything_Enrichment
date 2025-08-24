@@ -110,11 +110,18 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Initialize map
+    // Initialize map with mobile-appropriate settings
+    const isMobileView = window.innerWidth <= 768;
+    const initialZoom = isMobileView ? 15 : 4; // Lower zoom for mobile to show more area
+    
     const map = L.map(mapRef.current, {
       center: [39.8283, -98.5795], // Center of USA
-      zoom: 4,
+      zoom: initialZoom,
       zoomControl: true,
+      // Mobile-specific settings
+      maxBounds: isMobileView ? undefined : undefined, // Allow full movement on mobile
+      minZoom: isMobileView ? 10 : 2, // Lower minimum zoom for mobile
+      maxZoom: 19,
     });
 
     // Add OpenStreetMap tiles as default
@@ -239,13 +246,13 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
           firstMarker = mainMarker;
         }
 
-                // For single search results, set initial map view to the geocoded location
+        // For single search results, set initial map view to the geocoded location
         if (results.length === 1) {
           console.log(`🎯 Setting initial map view to geocoded location: [${lat}, ${lon}]`);
           
-          // Set the initial view with appropriate zoom for block-level detail
-          // But don't force it to stay there - let users adjust manually
-          map.setView([lat, lon], 18, { animate: true });
+          // Set the initial view with appropriate zoom for mobile vs desktop
+          const targetZoom = isMobile ? 16 : 18; // Lower zoom on mobile to show more area
+          map.setView([lat, lon], targetZoom, { animate: true });
           
           // Add POI markers
           addPOIMarkers(map, result);
