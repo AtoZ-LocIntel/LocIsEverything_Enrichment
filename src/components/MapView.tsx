@@ -270,18 +270,15 @@ if (bounds.isValid() && results.length > 1) {
         // Estimate popup dimensions based on typical content size
         // This prevents the need to open/close the popup to measure it
         const estimatedPopupHeight = 200; // pixels - typical popup height
-        const estimatedPopupWidth = 300;  // pixels - typical popup width
         
         // Calculate how much we need to shift the map to show the full popup
         // Popup opens above the marker, so we need to shift down
         const mapContainer = map.getContainer();
         const mapHeight = mapContainer.offsetHeight;
-        const mapWidth = mapContainer.offsetWidth;
         
         // Calculate the optimal center position
         // We want the popup to be centered in the visible map area
         const pixelsPerDegreeLat = mapHeight / (map.getBounds().getNorth() - map.getBounds().getSouth());
-        const pixelsPerDegreeLng = mapWidth / (map.getBounds().getEast() - map.getBounds().getWest());
         
         // Shift the map so the popup appears in the center of the visible area
         // This ensures the popup is never cut off
