@@ -485,8 +485,14 @@ export class EnrichmentService {
       case 'poi_museums_historic':
         return await this.getPOICount('poi_museums_historic', lat, lon, radius);
       
+      case 'poi_bars_nightlife':
+        return await this.getPOICount('poi_bars_nightlife', lat, lon, radius);
+      
       case 'poi_powerlines':
         return await this.getPOICount('poi_powerlines', lat, lon, radius);
+      
+      case 'poi_cell_towers':
+        return await this.getPOICount('poi_cell_towers', lat, lon, radius);
       
       case 'poi_fema_flood_zones':
         return await this.getFEMAFloodZones(lat, lon, radius);
@@ -749,6 +755,8 @@ export class EnrichmentService {
      if (id === "poi_train_stations") return ["railway=station", "railway=halt", "station=subway"];
      if (id === "poi_bus_stations") return ["amenity=bus_station", "public_transport=station"];
      if (id === "poi_bus_stops") return ["highway=platform", "public_transport=platform"];
+     if (id === "poi_cell_towers") return ["man_made=mast", "man_made=tower", "tower:type=communication", "communication:mobile_phone=yes"];
+     if (id === "poi_bars_nightlife") return ["amenity=bar", "amenity=pub", "amenity=nightclub", "amenity=biergarten", "amenity=music_venue"];
      
            // Hazards
       if (id === "poi_fema_flood_zones") return ["fema_flood_zones"]; // Special handling for FEMA flood zones
@@ -1030,6 +1038,7 @@ export class EnrichmentService {
       'poi_power_plants': 5,
       'poi_substations': 5,
       'poi_powerlines': 5,
+      'poi_cell_towers': 5,
       'poi_eq': 5,
       'poi_fema_floodzones': 2,
       'poi_usgs_volcano': 5,
@@ -1038,6 +1047,7 @@ export class EnrichmentService {
       'poi_fire_stations': 5,
       'poi_urgent_care': 5,
       'poi_golf_courses': 5,
+      'poi_bars_nightlife': 2,
       'poi_boat_ramps': 5,
       'poi_cafes_coffee': 3,
        'poi_markets': 5,
