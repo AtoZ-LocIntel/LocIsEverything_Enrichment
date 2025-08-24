@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 interface MapViewProps {
   results: EnrichmentResult[];
   onBackToConfig: () => void;
+  isMobile?: boolean;
 }
 
 interface LegendItem {
@@ -94,25 +95,12 @@ const createPOIIcon = (emoji: string, color: string) => {
   });
 };
 
-const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig }) => {
+const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = false }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -303,7 +291,22 @@ if (bounds.isValid() && results.length > 1) {
     // Auto-open popup for first marker after a short delay to ensure map is ready (only on desktop)
     if (firstMarker && !isMobile) {
       setTimeout(() => {
-        firstMarker?.openPopup();
+        // Adjust map view to ensure popup is fully visible
+        const markerLatLng = firstMarker!.getLatLng();
+        const popupHeight = 200; // Approximate popup height in pixels
+        const mapContainer = map.getContainer();
+        const mapHeight = mapContainer.clientHeight;
+        const pixelsPerDegree = mapHeight / (map.getBounds().getNorth() - map.getBounds().getSouth());
+        const degreesToShift = (popupHeight / 2) / pixelsPerDegree;
+        
+        // Shift the map view up to make room for the popup
+        const newLat = markerLatLng.lat + degreesToShift;
+        map.setView([newLat, markerLatLng.lng], map.getZoom(), { animate: true });
+        
+        // Open the popup after adjusting the view
+        setTimeout(() => {
+          firstMarker?.openPopup();
+        }, 300);
       }, 500);
     }
 
@@ -842,31 +845,52 @@ if (bounds.isValid() && results.length > 1) {
       ]
     ];
 
-    // Add all POI data
-    Object.entries(result.enrichments).forEach(([key, value]) => {
-      console.log(`🔍 Processing enrichment key: ${key}`, value);
-      
-      if (key.includes('_detailed') && Array.isArray(value)) {
-        // Handle detailed POI arrays
-        value.forEach((poi: any) => {
-          rows.push([
-            result.location.name,
-            result.location.lat,
-            result.location.lon,
-            result.location.source,
-            result.location.confidence || 'N/A',
-            key.replace('_detailed', '').replace('poi_', '').toUpperCase(),
-            poi.name || poi.title || 'Unnamed',
-            poi.lat || poi.center?.lat || '',
-            poi.lon || poi.center?.lon || '',
-            poi.distance_miles || 'Unknown',
-            poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
-            poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
-            poi.tags?.phone || '',
-            poi.tags?.website || ''
-          ]);
-        });
-      } else if (key === 'poi_wikipedia_articles' && Array.isArray(value)) {
+         // Add all POI data
+     Object.entries(result.enrichments).forEach(([key, value]) => {
+       console.log(`🔍 Processing enrichment key: ${key}`, value);
+       
+       // Check for both detailed_pois (map display) and all_pois (complete dataset)
+       if (key.includes('_detailed') && Array.isArray(value)) {
+         // Handle detailed POI arrays (limited to 50 for map)
+         value.forEach((poi: any) => {
+           rows.push([
+             result.location.name,
+             result.location.lat,
+             result.location.lon,
+             result.location.source,
+             result.location.confidence || 'N/A',
+             key.replace('_detailed', '').replace('poi_', '').toUpperCase(),
+             poi.name || poi.title || 'Unnamed',
+             poi.lat || poi.center?.lat || '',
+             poi.lon || poi.center?.lon || '',
+             poi.distance_miles || 'Unknown',
+             poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
+             poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
+             poi.tags?.phone || '',
+             poi.tags?.website || ''
+           ]);
+         });
+       } else if (key.includes('_all') && Array.isArray(value)) {
+         // Handle ALL POI arrays (complete dataset for CSV)
+         value.forEach((poi: any) => {
+           rows.push([
+             result.location.name,
+             result.location.lat,
+             result.location.lon,
+             result.location.source,
+             result.location.confidence || 'N/A',
+             key.replace('_all', '').replace('poi_', '').toUpperCase(),
+             poi.name || poi.title || 'Unnamed',
+             poi.lat || poi.center?.lat || '',
+             poi.lon || poi.center?.lon || '',
+             poi.distance_miles || 'Unknown',
+             poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
+             poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
+             poi.tags?.phone || '',
+             poi.tags?.website || ''
+           ]);
+         });
+       } else if (key === 'poi_wikipedia_articles' && Array.isArray(value)) {
         // Handle Wikipedia articles
         value.forEach((article: any) => {
           rows.push([
@@ -1057,15 +1081,16 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white pt-28">
       {/* Results Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
         <button
           onClick={onBackToConfig}
-          className="btn btn-outline flex items-center space-x-2"
+          className="btn btn-outline flex items-center space-x-2 text-sm sm:text-base"
         >
           <span className="w-4 h-4">←</span>
-          <span>Back to Configuration</span>
+          <span className="hidden sm:inline">Back to Configuration</span>
+          <span className="sm:hidden">Back</span>
         </button>
 
         <div className="flex items-center space-x-4">
@@ -1091,22 +1116,12 @@ if (bounds.isValid() && results.length > 1) {
              {/* Dynamic Legend for Single Location Results */}
        {results.length === 1 && legendItems.length > 0 && (
          <div className="bg-white border-b border-gray-200 p-3">
-           <div className="flex items-center justify-between mb-2">
-             <div className="flex items-center gap-2">
-               <span className="h-4 w-4 text-blue-600">ℹ️</span>
-               <span className="text-sm font-medium text-gray-700">Map Legend</span>
-             </div>
-             
-             {/* Download Single Lookup Results Button */}
-             <button
-               onClick={() => downloadSingleLookupResults(results[0])}
-               className="btn btn-primary btn-sm flex items-center gap-2 px-3 py-1"
-               title="Download all proximity layers and distances for this location"
-             >
-               <span className="h-3 w-3">⬇️</span>
-               <span className="text-xs">Download Results</span>
-             </button>
-           </div>
+                       <div className="flex items-center mb-2">
+              <div className="flex items-center gap-2">
+                <span className="h-4 w-4 text-blue-600">ℹ️</span>
+                <span className="text-sm font-medium text-gray-700">Map Legend</span>
+              </div>
+            </div>
            <div className="flex flex-wrap gap-3">
              {legendItems.map((item, index) => (
                <div key={index} className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-md">
@@ -1142,9 +1157,9 @@ if (bounds.isValid() && results.length > 1) {
           </div>
         )}
         
-        {/* Results Summary Panel */}
-        {!isMobile && results.length > 0 && (
-          <div className="fixed top-24 right-6 bg-white rounded-lg shadow-xl border border-gray-200 max-w-sm max-h-80 overflow-y-auto z-[9999]">
+                 {/* Results Summary Panel */}
+         {!isMobile && results.length > 0 && (
+           <div className="fixed top-52 right-20 bg-white rounded-lg shadow-xl border border-gray-200 max-w-sm max-h-80 overflow-y-auto z-[9999]">
             <div className="p-4 border-b border-gray-200 bg-gray-50">
               <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
                 <span className="w-4 h-4 text-primary-600">ℹ️</span>

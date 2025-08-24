@@ -674,6 +674,14 @@ export class EnrichmentService {
           console.log(`⚠️  No detailed POIs found for ${enrichmentId}`);
         }
         
+        // Include ALL POI data for CSV export (complete dataset)
+        if ((result as any).all_pois && (result as any).all_pois.length > 0) {
+          poiResult[`${enrichmentId}_all`] = (result as any).all_pois;
+          console.log(`✅ Added ${(result as any).all_pois.length} ALL POIs for ${enrichmentId} CSV export`);
+        } else {
+          console.log(`⚠️  No all_pois found for ${enrichmentId}`);
+        }
+        
         console.log(`🔍 Final poiResult for ${enrichmentId}:`, poiResult);
         return poiResult;
       }
@@ -957,9 +965,27 @@ export class EnrichmentService {
       const result: any = { count: nearbyPOIs.length, elements: nearbyPOIs };
       
       // Add detailed POI data for single search results (to enable mapping)
-      // We'll include up to 50 POIs for mapping to avoid overwhelming the map
       if (nearbyPOIs.length > 0) {
         const sortedPOIs = [...nearbyPOIs].sort((a, b) => a.distance_miles - b.distance_miles);
+        
+        // Store ALL POIs for CSV export (complete dataset)
+        result.all_pois = sortedPOIs.map(poi => ({
+          id: poi.id,
+          type: poi.type,
+          name: poi.tags?.name || 'Unnamed',
+          lat: poi.lat || poi.center?.lat,
+          lon: poi.lon || poi.center?.lon,
+          distance_miles: poi.distance_miles,
+          tags: poi.tags,
+          amenity: poi.tags?.amenity,
+          shop: poi.tags?.shop,
+          tourism: poi.tags?.tourism,
+          address: poi.tags?.['addr:street'] || poi.tags?.['addr:full'],
+          phone: poi.tags?.phone,
+          website: poi.tags?.website
+        }));
+        
+        // Limit to top 50 closest POIs for map display (to avoid overwhelming the map)
         result.detailed_pois = sortedPOIs.slice(0, 50).map(poi => ({
           id: poi.id,
           type: poi.type,

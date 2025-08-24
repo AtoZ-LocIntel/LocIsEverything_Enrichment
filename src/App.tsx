@@ -333,6 +333,7 @@ function App() {
           <MapView
             results={enrichmentResults}
             onBackToConfig={handleBackToConfig}
+            isMobile={isMobile}
           />
         </div>
       )}

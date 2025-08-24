@@ -49,16 +49,16 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
               Address or Location
             </label>
             <div className="relative">
-              <input
-                id="address"
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="e.g., 123 Main St, Boston, MA 02108"
-                className={`form-input text-base ${isMobile ? 'pr-16' : 'pl-10'}`}
-                disabled={isLoading}
-              />
-              <Search className={`w-5 h-5 text-gray-400 absolute top-1/2 transform -translate-y-1/2 ${isMobile ? 'left-3' : 'left-3'}`} />
+                             <input
+                 id="address"
+                 type="text"
+                 value={address}
+                 onChange={(e) => setAddress(e.target.value)}
+                 placeholder="e.g., 123 Main St, Boston, MA 02108"
+                 className={`form-input text-base ${isMobile ? 'pl-12 pr-16' : 'pl-10'}`}
+                 disabled={isLoading}
+               />
+               <Search className={`w-5 h-5 text-gray-400 absolute top-1/2 transform -translate-y-1/2 ${isMobile ? 'left-3' : 'left-3'}`} />
               
               {/* Location Toggle - Mobile Only */}
               {isMobile && (
