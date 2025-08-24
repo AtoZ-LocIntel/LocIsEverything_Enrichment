@@ -239,14 +239,15 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
           firstMarker = mainMarker;
         }
 
-                // For single search results, FORCE the map to stay at the geocoded location
+                // For single search results, set initial map view to the geocoded location
         if (results.length === 1) {
-          console.log(`🎯 Setting map to geocoded location: [${lat}, ${lon}]`);
+          console.log(`🎯 Setting initial map view to geocoded location: [${lat}, ${lon}]`);
           
-          // Set the view immediately with much higher zoom for block-level detail
-          map.setView([lat, lon], 19, { animate: false });
+          // Set the initial view with appropriate zoom for block-level detail
+          // But don't force it to stay there - let users adjust manually
+          map.setView([lat, lon], 18, { animate: true });
           
-          // Add POI markers (but don't let them affect the map view)
+          // Add POI markers
           addPOIMarkers(map, result);
         }
   }
@@ -264,36 +265,9 @@ if (bounds.isValid() && results.length > 1) {
     // Auto-open popup for first marker after a short delay to ensure map is ready (only on desktop)
     if (firstMarker && !isMobile) {
       setTimeout(() => {
-        // Calculate optimal map position to show full popup without any movement
-        const markerLatLng = firstMarker!.getLatLng();
-        
-        // Estimate popup dimensions based on typical content size
-        // This prevents the need to open/close the popup to measure it
-        const estimatedPopupHeight = 200; // pixels - typical popup height
-        
-        // Calculate how much we need to shift the map to show the full popup
-        // Popup opens above the marker, so we need to shift down
-        const mapContainer = map.getContainer();
-        const mapHeight = mapContainer.offsetHeight;
-        
-        // Calculate the optimal center position
-        // We want the popup to be centered in the visible map area
-        const pixelsPerDegreeLat = mapHeight / (map.getBounds().getNorth() - map.getBounds().getSouth());
-        
-        // Shift the map so the popup appears in the center of the visible area
-        // This ensures the popup is never cut off
-        const optimalLat = markerLatLng.lat - (estimatedPopupHeight / 2 / pixelsPerDegreeLat);
-        const optimalLng = markerLatLng.lng;
-        
-        // Set the map to the optimal position in one smooth movement
-        map.setView([optimalLat, optimalLng], 19, { animate: true });
-        
-        // Wait for the map to settle, then open the popup
-        setTimeout(() => {
-          firstMarker?.openPopup();
-        }, 300);
-        
-      }, 500); // Shorter delay since we're not fighting the map anymore
+        // Simply open the popup - let the map handle positioning naturally
+        firstMarker?.openPopup();
+      }, 500);
     }
 
     // Show batch success message if multiple results
