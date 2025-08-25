@@ -47,6 +47,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_bus_stops': { icon: '🚏', color: '#0891b2', title: 'Bus Stops' },
   'poi_wikipedia': { icon: '📖', color: '#1d4ed8', title: 'Wikipedia Articles' },
   'poi_fema_flood_zones': { icon: '🌊', color: '#0891b2', title: 'FEMA Flood Zones' },
+  'poi_wetlands': { icon: '🌿', color: '#059669', title: 'USGS Wetlands' },
+  'poi_earthquakes': { icon: '🌋', color: '#dc2626', title: 'USGS Earthquakes' },
   
   // EPA FRS Environmental Hazards
   'poi_epa_brownfields': { icon: '🏭', color: '#8b4513', title: 'EPA Brownfields' },
@@ -667,10 +669,53 @@ if (bounds.isValid() && results.length > 1) {
         }
       }
       
+      // Special handling for USGS Wetlands - show two simple Yes/No fields with dynamic distance
+      if (enrichments.poi_wetlands_point_in_wetland !== undefined) {
+        // Get the actual proximity distance from the enrichment data or use default
+        const proximityDistance = enrichments.poi_wetlands_proximity_distance || 2; // Default to 2 miles if not specified
+        
+        content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+          <span style="color: #6b7280;">Point in Wetland:</span>
+          <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_wetlands_point_in_wetland ? 'Yes' : 'No'}</span>
+        </div>`;
+        content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+          <span style="color: #6b7280;">Wetlands Within ${proximityDistance} mi:</span>
+          <span style="color: #1f2937; font-weight: 500;">${(enrichments.poi_wetlands_count || 0) > 0 ? 'Yes' : 'No'}</span>
+        </div>`;
+      }
+      
+      // Special handling for USGS Earthquakes - show count and largest magnitude with dynamic distance
+      if (enrichments.poi_earthquakes_count !== undefined) {
+        // Get the actual proximity distance from the enrichment data or use default
+        const proximityDistance = enrichments.poi_earthquakes_proximity_distance || 5; // Default to 5 miles if not specified
+        
+        content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+          <span style="color: #6b7280;">Earthquakes Within ${proximityDistance} mi:</span>
+          <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_earthquakes_count || 0} found</span>
+        </div>`;
+        
+        if (enrichments.poi_earthquakes_largest_magnitude > 0) {
+          content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+            <span style="color: #6b7280;">Largest Magnitude:</span>
+            <span style="color: #1f2937; font-weight: 500;">M${enrichments.poi_earthquakes_largest_magnitude.toFixed(1)}</span>
+          </div>`;
+        }
+      }
+      
       // Display all other enrichments as simple name: count pairs
       Object.entries(enrichments).forEach(([key, value]) => {
         // Skip FEMA flood zone fields as they're handled above
         if (key.includes('poi_fema_flood_zones')) {
+          return;
+        }
+        
+        // Skip wetlands fields as they're handled above
+        if (key.includes('poi_wetlands')) {
+          return;
+        }
+        
+        // Skip earthquake fields as they're handled above
+        if (key.includes('poi_earthquakes')) {
           return;
         }
         
@@ -738,6 +783,14 @@ if (bounds.isValid() && results.length > 1) {
       poi_epa_power_count: 'EPA Power Generation',
       poi_epa_oil_spill_count: 'EPA Oil Spill Response',
       
+      // Hazards
+      poi_wetlands_count: 'USGS Wetlands',
+      poi_wetlands_point_in_wetland: 'Point in Wetland',
+      poi_wetlands_summary: 'Wetlands Summary',
+      poi_earthquakes_count: 'USGS Earthquakes',
+      poi_earthquakes_largest_magnitude: 'Largest Magnitude',
+      poi_earthquakes_summary: 'Earthquake Summary',
+      
       // Recreation and Leisure
       poi_museums_historic_count: 'Museums, Historic Sites & Memorials'
     };
@@ -757,6 +810,22 @@ if (bounds.isValid() && results.length > 1) {
     if (key === 'elevation_ft') return `${value} ft`;
     if (key === 'pm25') return `${value} µg/m³`;
     if (key === 'acs_median_hh_income') return `$${value?.toLocaleString() || value}`;
+    
+    // Handle wetlands data
+    if (key === 'poi_wetlands_point_in_wetland') {
+      return value ? 'Yes' : 'No';
+    }
+    if (key === 'poi_wetlands_summary') {
+      return value || 'No data available';
+    }
+    
+    // Handle earthquake data
+    if (key === 'poi_earthquakes_largest_magnitude') {
+      return value > 0 ? `M${value.toFixed(1)}` : 'None';
+    }
+    if (key === 'poi_earthquakes_summary') {
+      return value || 'No data available';
+    }
     
     // Handle POI counts specifically
     if (key.includes('_count') || key.includes('poi_')) {
@@ -942,6 +1011,82 @@ if (bounds.isValid() && results.length > 1) {
       ]);
     }
     
+    // Add USGS Wetlands data - simplified Yes/No format
+    if (result.enrichments.poi_wetlands_point_in_wetland !== undefined) {
+      rows.push([
+        result.location.name,
+        result.location.lat,
+        result.location.lon,
+        result.location.source,
+        result.location.confidence || 'N/A',
+        'USGS_WETLANDS',
+        'Point in Wetland',
+        result.location.lat,
+        result.location.lon,
+        '0.0',
+        'Wetland Assessment',
+        result.enrichments.poi_wetlands_point_in_wetland ? 'Yes' : 'No',
+        '',
+        ''
+      ]);
+      
+             rows.push([
+         result.location.name,
+         result.location.lat,
+         result.location.lon,
+         result.location.source,
+         result.location.confidence || 'N/A',
+         'USGS_WETLANDS',
+         'Wetlands Within Distance',
+         result.location.lat,
+         result.location.lon,
+         (result.enrichments.poi_wetlands_proximity_distance || 2.0).toFixed(1), // Use actual proximity distance
+         'Wetland Assessment',
+         (result.enrichments.poi_wetlands_count || 0) > 0 ? 'Yes' : 'No',
+         '',
+         ''
+       ]);
+    }
+    
+    // Add USGS Earthquake data
+    if (result.enrichments.poi_earthquakes_count !== undefined) {
+      rows.push([
+        result.location.name,
+        result.location.lat,
+        result.location.lon,
+        result.location.source,
+        result.location.confidence || 'N/A',
+        'USGS_EARTHQUAKES',
+        'Historical Earthquakes',
+        result.location.lat,
+        result.location.lon,
+        (result.enrichments.poi_earthquakes_proximity_distance || 5.0).toFixed(1), // Use actual proximity distance
+        'Seismic Assessment',
+        `${result.enrichments.poi_earthquakes_count || 0} found`,
+        '',
+        ''
+      ]);
+      
+      if (result.enrichments.poi_earthquakes_largest_magnitude > 0) {
+        rows.push([
+          result.location.name,
+          result.location.lat,
+          result.location.lon,
+          result.location.source,
+          result.location.confidence || 'N/A',
+          'USGS_EARTHQUAKES',
+          'Largest Magnitude',
+          result.location.lat,
+          result.location.lon,
+          '0.0',
+          'Seismic Assessment',
+          `M${result.enrichments.poi_earthquakes_largest_magnitude.toFixed(1)}`,
+          '',
+          ''
+        ]);
+      }
+    }
+    
     // Add EPA FRS Environmental Hazards data
     const epaPrograms = [
       'poi_epa_brownfields',
@@ -1124,9 +1269,9 @@ if (bounds.isValid() && results.length > 1) {
           </div>
         )}
         
-                 {/* Results Summary Panel */}
-         {!isMobile && results.length > 0 && (
-           <div className="fixed top-52 right-20 bg-white rounded-lg shadow-xl border border-gray-200 max-w-sm max-h-80 overflow-y-auto z-[9999]">
+                         {/* Results Summary Panel */}
+        {!isMobile && results.length > 0 && (
+          <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-xl border border-gray-200 max-w-sm max-h-80 overflow-y-auto z-[9999]">
             <div className="p-4 border-b border-gray-200 bg-gray-50">
               <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
                 <span className="w-4 h-4 text-primary-600">ℹ️</span>

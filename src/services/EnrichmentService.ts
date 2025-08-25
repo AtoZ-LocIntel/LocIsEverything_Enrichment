@@ -169,6 +169,220 @@ export class EnrichmentService {
     }
   }
   
+    private async getWetlands(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`USGS Wetlands query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // Official USGS NWI Wetlands MapServer endpoint (preferred service)
+      const baseUrl = 'https://fwspublicservices.wim.usgs.gov/wetlandsmapservice/rest/services/Wetlands/MapServer/0/query';
+      
+      // Use simple comma-separated coordinates for the official MapServer
+      const geometryParam = `${lon.toFixed(6)},${lat.toFixed(6)}`;
+      
+      console.log(`🔍 Geometry parameter: ${geometryParam}`);
+      
+      // First, check if point is inside any wetland (point-in-polygon query)
+      // Use the official MapServer with proper parameters
+      const pointQueryUrl = `${baseUrl}?where=1%3D1&geometry=${geometryParam}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true&f=json`;
+      
+      console.log(`🔗 USGS NWI Wetlands Point Query URL: ${pointQueryUrl}`);
+      
+      let pointInWetland = false;
+      let currentWetland = null;
+      
+      try {
+        const pointResponse = await fetch(pointQueryUrl);
+        if (pointResponse.ok) {
+          const pointData = await pointResponse.json();
+          console.log(`📊 USGS NWI Wetlands Point Query response:`, pointData);
+          
+          if (pointData && pointData.features && pointData.features.length > 0) {
+            pointInWetland = true;
+            const feature = pointData.features[0];
+            const properties = feature.attributes || feature.properties;
+            currentWetland = {
+              type: properties.WETLAND_TY || properties.WETLAND_TYPE || properties.ATTRIBUTE || 'Unknown',
+              attribute: properties.ATTRIBUTE || 'Unknown',
+              acres: properties.ACRES || null,
+              geometry: feature.geometry
+            };
+            console.log(`✅ Point is inside wetland: ${currentWetland.type}`);
+          } else {
+            console.log(`⚠️  Point is not inside any wetland`);
+          }
+        } else {
+          console.log(`❌ Point query failed with status: ${pointResponse.status} ${pointResponse.statusText}`);
+        }
+      } catch (error) {
+        console.log('USGS NWI Wetlands point query failed:', error);
+      }
+      
+      // Now check for wetlands nearby within the specified radius using the distance parameter
+      // Use the official MapServer with proper distance units
+      const nearbyQueryUrl = `${baseUrl}?where=1%3D1&geometry=${geometryParam}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&distance=${radiusMiles}&units=esriSRUnit_StatuteMile&outFields=*&returnGeometry=true&f=json`;
+      
+      console.log(`🔗 USGS NWI Wetlands Nearby Query URL: ${nearbyQueryUrl}`);
+      
+      let nearbyWetlands = [];
+      let totalNearbyCount = 0;
+      
+      try {
+        const nearbyResponse = await fetch(nearbyQueryUrl);
+        if (nearbyResponse.ok) {
+          const nearbyData = await nearbyResponse.json();
+          console.log(`📊 USGS NWI Wetlands Nearby Query response:`, nearbyData);
+          
+          if (nearbyData && nearbyData.features && nearbyData.features.length > 0) {
+            console.log(`📊 Wetlands found within ${radiusMiles} miles: ${nearbyData.features.length}`);
+            
+            totalNearbyCount = nearbyData.features.length;
+            nearbyWetlands = nearbyData.features.slice(0, 5).map((feature: any) => {
+              const properties = feature.attributes || feature.properties;
+              return {
+                type: properties.WETLAND_TY || properties.WETLAND_TYPE || properties.ATTRIBUTE || 'Unknown',
+                attribute: properties.ATTRIBUTE || 'Unknown',
+                acres: properties.ACRES || null,
+                geometry: feature.geometry
+              };
+            });
+            console.log(`✅ Found ${totalNearbyCount} wetlands within ${radiusMiles} miles`);
+          } else {
+            console.log(`⚠️  No wetlands found within ${radiusMiles} miles`);
+          }
+        } else {
+          console.log(`❌ Nearby query failed with status: ${nearbyResponse.status} ${nearbyResponse.statusText}`);
+        }
+      } catch (error) {
+        console.log('USGS NWI Wetlands nearby query failed:', error);
+      }
+      
+      // Generate summary and return results
+      let summary = '';
+      if (pointInWetland && currentWetland) {
+        summary = `Location is inside ${currentWetland.type} wetland`;
+        if (currentWetland.acres) {
+          summary += ` (${currentWetland.acres.toFixed(2)} acres)`;
+        }
+      } else {
+        summary = `Location is not inside any wetland`;
+      }
+      
+      if (totalNearbyCount > 0) {
+        summary += `. Found ${totalNearbyCount} wetlands within ${radiusMiles} miles`;
+      }
+      
+      return {
+        poi_wetlands_count: totalNearbyCount,
+        poi_wetlands_point_in_wetland: pointInWetland,
+        poi_wetlands_current: currentWetland,
+        poi_wetlands_nearby: nearbyWetlands,
+        poi_wetlands_summary: summary,
+        poi_wetlands_status: 'Data retrieved successfully',
+        poi_wetlands_proximity_distance: radiusMiles
+      };
+      
+    } catch (error) {
+      console.error('Error in USGS NWI Wetlands query:', error);
+      return {
+        poi_wetlands_count: 0,
+        poi_wetlands_point_in_wetland: false,
+        poi_wetlands_current: null,
+        poi_wetlands_nearby: [],
+        poi_wetlands_summary: 'Error querying USGS NWI Wetlands data',
+        poi_wetlands_status: 'API query failed',
+        poi_wetlands_proximity_distance: radiusMiles
+      };
+    }
+  }
+
+  private async getEarthquakes(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`USGS Earthquake query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // USGS Earthquake API endpoint
+      const baseUrl = 'https://earthquake.usgs.gov/fdsnws/event/1/query';
+      
+      // Convert miles to kilometers (USGS API uses kilometers)
+      const radiusKm = radiusMiles * 1.60934;
+      
+      // Query for earthquakes within the specified radius
+      const queryUrl = `${baseUrl}?format=geojson&starttime=1900-01-01&endtime=2024-12-31&latitude=${lat}&longitude=${lon}&maxradiuskm=${radiusKm}&minmagnitude=2.0&orderby=time`;
+      
+      console.log(`🔗 USGS Earthquake Query URL: ${queryUrl}`);
+      
+      let earthquakeCount = 0;
+      let largestMagnitude = 0;
+      let recentEarthquakes = [];
+      
+      try {
+        const response = await fetch(queryUrl);
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`📊 USGS Earthquake response:`, data);
+          
+          if (data && data.features && Array.isArray(data.features)) {
+            earthquakeCount = data.features.length;
+            
+            // Get the largest magnitude earthquake
+            if (earthquakeCount > 0) {
+              largestMagnitude = Math.max(...data.features.map((eq: any) => eq.properties.mag || 0));
+              
+              // Get the 5 most recent earthquakes
+              recentEarthquakes = data.features
+                .sort((a: any, b: any) => new Date(b.properties.time).getTime() - new Date(a.properties.time).getTime())
+                .slice(0, 5)
+                .map((eq: any) => ({
+                  magnitude: eq.properties.mag || 0,
+                  date: new Date(eq.properties.time).toLocaleDateString(),
+                  depth: eq.properties.depth || 0,
+                  place: eq.properties.place || 'Unknown location'
+                }));
+            }
+            
+            console.log(`✅ Found ${earthquakeCount} earthquakes within ${radiusMiles} miles (${radiusKm.toFixed(1)} km)`);
+          } else {
+            console.log(`⚠️  No earthquakes found within ${radiusMiles} miles`);
+          }
+        } else {
+          console.log(`❌ USGS Earthquake API error: ${response.status} ${response.statusText}`);
+        }
+      } catch (error) {
+        console.log('USGS Earthquake query failed:', error);
+      }
+      
+      // Generate summary
+      let summary = '';
+      if (earthquakeCount > 0) {
+        summary = `Found ${earthquakeCount} historical earthquakes within ${radiusMiles} miles`;
+        if (largestMagnitude > 0) {
+          summary += ` (largest: M${largestMagnitude.toFixed(1)})`;
+        }
+      } else {
+        summary = `No historical earthquakes found within ${radiusMiles} miles`;
+      }
+      
+      return {
+        poi_earthquakes_count: earthquakeCount,
+        poi_earthquakes_largest_magnitude: largestMagnitude,
+        poi_earthquakes_recent: recentEarthquakes,
+        poi_earthquakes_summary: summary,
+        poi_earthquakes_status: 'Data retrieved successfully',
+        poi_earthquakes_proximity_distance: radiusMiles
+      };
+      
+    } catch (error) {
+      console.error('Error in USGS Earthquake query:', error);
+      return {
+        poi_earthquakes_count: 0,
+        poi_earthquakes_largest_magnitude: 0,
+        poi_earthquakes_recent: [],
+        poi_earthquakes_summary: 'Error querying USGS Earthquake data',
+        poi_earthquakes_status: 'API query failed',
+        poi_earthquakes_proximity_distance: radiusMiles
+      };
+    }
+  }
+  
   private getCustomPOIData(_enrichmentId: string): any {
     // This method should return custom POI data from poiConfigManager
     // For now, return null
@@ -496,6 +710,12 @@ export class EnrichmentService {
       
       case 'poi_fema_flood_zones':
         return await this.getFEMAFloodZones(lat, lon, radius);
+      
+      case 'poi_wetlands':
+        return await this.getWetlands(lat, lon, radius);
+      
+      case 'poi_earthquakes':
+        return await this.getEarthquakes(lat, lon, radius);
       
       // EPA FRS Environmental Hazards
       case 'poi_epa_brownfields':

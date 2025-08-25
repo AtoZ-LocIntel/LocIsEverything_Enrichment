@@ -43,7 +43,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('elev') || key.includes('airq') || key.includes('weather')) return 'Environmental';
     if (key.includes('fips') || key.includes('population') || key.includes('income') || key.includes('age')) return 'Demographics';
     if (key.includes('poi_')) return 'Points of Interest';
-    if (key.includes('hazard') || key.includes('flood') || key.includes('epa')) return 'Hazards & Safety';
+          if (key.includes('hazard') || key.includes('flood') || key.includes('epa') || key.includes('wetlands') || key.includes('earthquakes')) return 'Hazards & Safety';
     if (key.includes('wikipedia')) return 'Local Information';
     return 'Other';
   };
