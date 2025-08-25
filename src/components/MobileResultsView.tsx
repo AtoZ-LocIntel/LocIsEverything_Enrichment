@@ -42,8 +42,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   const getEnrichmentCategory = (key: string): string => {
     if (key.includes('elev') || key.includes('airq') || key.includes('weather')) return 'Environmental';
     if (key.includes('fips') || key.includes('population') || key.includes('income') || key.includes('age')) return 'Demographics';
+    if (key.includes('hazard') || key.includes('flood') || key.includes('epa') || key.includes('wetlands') || key.includes('earthquakes') || key.includes('volcanoes')) return 'Hazards & Safety';
+    if (key.includes('bus') || key.includes('train') || key.includes('subway') || key.includes('metro') || key.includes('tram') || key.includes('monorail') || key.includes('aerialway') || key.includes('ferry') || key.includes('airport') || key.includes('taxi') || key.includes('bike') || key.includes('scooter') || key.includes('dockless')) return 'Transportation';
     if (key.includes('poi_')) return 'Points of Interest';
-                       if (key.includes('hazard') || key.includes('flood') || key.includes('epa') || key.includes('wetlands') || key.includes('earthquakes') || key.includes('volcanoes')) return 'Hazards & Safety';
     if (key.includes('wikipedia')) return 'Local Information';
     return 'Other';
   };

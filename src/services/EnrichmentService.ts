@@ -1077,7 +1077,20 @@ export class EnrichmentService {
      if (id === "poi_tnm_railroads") return ["railway=rail"];
      if (id === "poi_tnm_trails") return ["route=hiking", "route=foot", "leisure=park"];
      
-     // New comprehensive transportation POI types
+     // Comprehensive transportation POI types
+     if (id === "poi_bus") return ["highway=bus_stop", "amenity=bus_station"];
+     if (id === "poi_train") return ["railway=station", "railway=halt", "public_transport=platform"];
+     if (id === "poi_subway_metro") return ["railway=station", "railway=subway_entrance", "public_transport=platform"];
+     if (id === "poi_tram") return ["railway=tram_stop", "public_transport=platform"];
+     if (id === "poi_monorail") return ["railway=monorail", "public_transport=platform"];
+     if (id === "poi_aerialway") return ["aerialway=gondola", "aerialway=cable_car", "aerialway=chair_lift", "aerialway=station"];
+     if (id === "poi_ferry") return ["amenity=ferry_terminal", "route=ferry"];
+     if (id === "poi_airport_air") return ["aeroway=terminal", "aeroway=gate", "public_transport=platform"];
+     if (id === "poi_taxi") return ["amenity=taxi"];
+     if (id === "poi_bike_scooter_share") return ["amenity=bicycle_rental", "amenity=scooter_rental"];
+     if (id === "poi_dockless_hub") return ["amenity=bicycle_rental", "amenity=scooter_rental"];
+     
+     // Legacy transportation POI types (keeping for backward compatibility)
      if (id === "poi_train_stations") return ["railway=station", "railway=halt", "station=subway"];
      if (id === "poi_bus_stations") return ["amenity=bus_station", "public_transport=station"];
      if (id === "poi_bus_stops") return ["highway=platform", "public_transport=platform"];

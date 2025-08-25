@@ -531,7 +531,7 @@ const Header: React.FC = () => {
                       <div className="text-sm text-pink-800 space-y-1">
                         <div>• <strong>Education:</strong> Schools, universities, libraries</div>
                         <div>• <strong>Healthcare:</strong> Hospitals, clinics, pharmacies</div>
-                        <div>• <strong>Transportation:</strong> Airports, trails, railroads, bus stops</div>
+                        <div>• <strong>Transportation:</strong> Comprehensive transit coverage including bus, train, subway, tram, monorail, aerialway, ferry, airport, taxi, bike/scooter share, and dockless hubs</div>
                         <div>• <strong>Infrastructure:</strong> Power plants, substations, cell towers</div>
                         <div>• <strong>Emergency:</strong> Police stations, fire stations</div>
                         <div>• <strong>Recreation:</strong> Parks, golf courses, cinemas, theatres</div>
@@ -628,7 +628,7 @@ const Header: React.FC = () => {
                         <div>• <strong>Geocoding:</strong> 95%+ success rate for valid addresses</div>
                         <div>• <strong>Enrichment:</strong> 50+ data layers from official sources</div>
                         <div>• <strong>Coverage:</strong> Global with US specializations</div>
-                        <div>• <strong>POI Data:</strong> 25+ categories via OpenStreetMap</div>
+                        <div>• <strong>POI Data:</strong> 35+ categories via OpenStreetMap including comprehensive transportation</div>
                                                    <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes + 9 EPA FRS layers</div>
                         <div>• <strong>Local Food:</strong> 5 USDA categories for community data</div>
                       </div>

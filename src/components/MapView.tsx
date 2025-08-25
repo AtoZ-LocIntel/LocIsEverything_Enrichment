@@ -41,10 +41,6 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_gas': { icon: '⛽', color: '#fbbf24', title: 'Gas Stations' },
   'poi_airports': { icon: '✈️', color: '#6366f1', title: 'Airports' },
   'poi_tnm_trails': { icon: '🥾', color: '#059669', title: 'Trails' },
-  'poi_tnm_railroads': { icon: '🚂', color: '#7c3aed', title: 'Railroads' },
-  'poi_train_stations': { icon: '🚉', color: '#dc2626', title: 'Train Stations' },
-  'poi_bus_stations': { icon: '🚌', color: '#2563eb', title: 'Bus Stations' },
-  'poi_bus_stops': { icon: '🚏', color: '#0891b2', title: 'Bus Stops' },
   'poi_wikipedia': { icon: '📖', color: '#1d4ed8', title: 'Wikipedia Articles' },
   'poi_fema_flood_zones': { icon: '🌊', color: '#0891b2', title: 'FEMA Flood Zones' },
   'poi_wetlands': { icon: '🌿', color: '#059669', title: 'USGS Wetlands' },
@@ -79,6 +75,19 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_usda_farmers_market': { icon: '🍎', color: '#dc2626', title: 'Farmers Markets' },
   'poi_usda_food_hub': { icon: '📦', color: '#f97316', title: 'Food Hubs' },
   'poi_usda_onfarm_market': { icon: '🥕', color: '#eab308', title: 'On-Farm Markets' },
+  
+  // Transportation
+  'poi_bus': { icon: '🚌', color: '#2563eb', title: 'Bus' },
+  'poi_train': { icon: '🚂', color: '#7c3aed', title: 'Train' },
+  'poi_subway_metro': { icon: '🚇', color: '#dc2626', title: 'Subway/Metro' },
+  'poi_tram': { icon: '🚊', color: '#059669', title: 'Tram' },
+  'poi_monorail': { icon: '🚝', color: '#ea580c', title: 'Monorail' },
+  'poi_aerialway': { icon: '🚡', color: '#0891b2', title: 'Aerialway' },
+  'poi_ferry': { icon: '⛴️', color: '#1d4ed8', title: 'Ferry' },
+  'poi_airport_air': { icon: '✈️', color: '#7c2d12', title: 'Airport/Air' },
+  'poi_taxi': { icon: '🚕', color: '#fbbf24', title: 'Taxi' },
+  'poi_bike_scooter_share': { icon: '🚲', color: '#10b981', title: 'Bike/Scooter Share' },
+  'poi_dockless_hub': { icon: '🛴️', color: '#8b5cf6', title: 'Dockless Hub' },
   
   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
@@ -828,6 +837,19 @@ if (bounds.isValid() && results.length > 1) {
        poi_volcanoes_active: 'Active Volcanoes',
        poi_volcanoes_summary: 'Volcano Summary',
 
+      // Transportation
+      poi_bus_count: 'Bus',
+      poi_train_count: 'Train',
+      poi_subway_metro_count: 'Subway/Metro',
+      poi_tram_count: 'Tram',
+      poi_monorail_count: 'Monorail',
+      poi_aerialway_count: 'Aerialway',
+      poi_ferry_count: 'Ferry',
+      poi_airport_air_count: 'Airport/Air',
+      poi_taxi_count: 'Taxi',
+      poi_bike_scooter_share_count: 'Bike/Scooter Share',
+      poi_dockless_hub_count: 'Dockless Hub',
+
        
       
       // Recreation and Leisure
@@ -1176,6 +1198,36 @@ if (bounds.isValid() && results.length > 1) {
          ]);
        }
      }
+     
+     // Add Transportation data
+     const transportationPOIs = [
+       'poi_bus', 'poi_train', 'poi_subway_metro', 'poi_tram', 'poi_monorail',
+       'poi_aerialway', 'poi_ferry', 'poi_airport_air', 'poi_taxi', 
+       'poi_bike_scooter_share', 'poi_dockless_hub'
+     ];
+     
+     transportationPOIs.forEach(poiType => {
+       const count = result.enrichments[`${poiType}_count`];
+       if (count !== undefined) {
+         const label = poiType.replace('poi_', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+         rows.push([
+           result.location.name,
+           result.location.lat,
+           result.location.lon,
+           result.location.source,
+           result.location.confidence || 'N/A',
+           'TRANSPORTATION',
+           label,
+           result.location.lat,
+           result.location.lon,
+           (result.enrichments[`${poiType}_proximity_distance`] || 5.0).toFixed(1), // Use actual proximity distance
+           'Transportation Assessment',
+           `${count || 0} found`,
+           '',
+           ''
+         ]);
+       }
+     });
      
 
      

@@ -108,11 +108,17 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_gyms', label: 'Gyms & Fitness', description: 'Fitness centers and gyms', isPOI: true, defaultRadius: 3, category: 'health', section: 'health' },
   
   // Transportation
-  { id: 'poi_tnm_airports', label: 'Airports', description: 'Commercial and private airports', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
-  { id: 'poi_tnm_railroads', label: 'Railroads', description: 'Rail lines and stations', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
-  { id: 'poi_train_stations', label: 'Train Stations', description: 'Passenger train stations, subways, and rail hubs', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
-  { id: 'poi_bus_stations', label: 'Bus Stations', description: 'Major bus terminals and transfer stations', isPOI: true, defaultRadius: 3, category: 'transportation', section: 'transportation' },
-  { id: 'poi_bus_stops', label: 'Bus Stops', description: 'Individual bus stops and platforms', isPOI: true, defaultRadius: 2, category: 'transportation', section: 'transportation' },
+  { id: 'poi_bus', label: 'Bus', description: 'Bus stops and bus stations', isPOI: true, defaultRadius: 3, category: 'transportation', section: 'transportation' },
+  { id: 'poi_train', label: 'Train', description: 'Train stations, halts, and platforms', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
+  { id: 'poi_subway_metro', label: 'Subway/Metro', description: 'Subway stations, entrances, and platforms', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
+  { id: 'poi_tram', label: 'Tram', description: 'Tram stops and platforms', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
+  { id: 'poi_monorail', label: 'Monorail', description: 'Monorail stations and platforms', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
+  { id: 'poi_aerialway', label: 'Aerialway', description: 'Gondolas, cable cars, chair lifts, and stations', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
+  { id: 'poi_ferry', label: 'Ferry', description: 'Ferry terminals and ferry routes', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
+  { id: 'poi_airport_air', label: 'Airport/Air', description: 'Air terminals, gates, and platforms', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
+  { id: 'poi_taxi', label: 'Taxi', description: 'Taxi services and stands', isPOI: true, defaultRadius: 3, category: 'transportation', section: 'transportation' },
+  { id: 'poi_bike_scooter_share', label: 'Bike/Scooter Share', description: 'Bicycle and scooter rental services', isPOI: true, defaultRadius: 3, category: 'transportation', section: 'transportation' },
+  { id: 'poi_dockless_hub', label: 'Dockless Hub', description: 'Dockless transportation hubs', isPOI: true, defaultRadius: 3, category: 'transportation', section: 'transportation' },
   
   // Infrastructure
   { id: 'poi_power_plants_openei', label: 'Power Plants', description: 'Electric power generation facilities', isPOI: true, defaultRadius: 25, category: 'infrastructure', section: 'infrastructure' },
