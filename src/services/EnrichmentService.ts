@@ -382,6 +382,106 @@ export class EnrichmentService {
       };
     }
   }
+
+  private async getVolcanoes(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`USGS Volcano query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // Use the working USGS Volcano API that returns GeoJSON
+      const baseUrl = 'https://volcanoes.usgs.gov/vsc/api/volcanoApi/geojson';
+      
+      console.log(`🔗 USGS Volcano Query URL: ${baseUrl}`);
+      
+      let volcanoCount = 0;
+      let nearestVolcano = null;
+      let activeVolcanoes = 0;
+      
+      try {
+        const response = await fetch(baseUrl);
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`📊 USGS Volcano response:`, data);
+          
+          if (data && data.features && Array.isArray(data.features)) {
+            // Filter volcanoes within the specified radius
+            const volcanoesInRange = data.features.filter((volcano: any) => {
+              if (volcano.geometry && volcano.geometry.coordinates) {
+                const [volcLon, volcLat] = volcano.geometry.coordinates;
+                const distance = this.calculateDistance(lat, lon, volcLat, volcLon);
+                return distance <= radiusMiles;
+              }
+              return false;
+            });
+            
+            volcanoCount = volcanoesInRange.length;
+            
+            if (volcanoCount > 0) {
+              // Find the nearest volcano
+              nearestVolcano = volcanoesInRange.reduce((nearest: any, current: any) => {
+                const [nearestLon, nearestLat] = nearest.geometry.coordinates;
+                const [currentLon, currentLat] = current.geometry.coordinates;
+                const nearestDist = this.calculateDistance(lat, lon, nearestLat, nearestLon);
+                const currentDist = this.calculateDistance(lat, lon, currentLat, currentLon);
+                return currentDist < nearestDist ? current : nearest;
+              });
+              
+              // Count active volcanoes
+              activeVolcanoes = volcanoesInRange.filter((v: any) => 
+                v.properties && v.properties.status && 
+                v.properties.status.toLowerCase().includes('active')
+              ).length;
+            }
+            
+            console.log(`✅ Found ${volcanoCount} volcanoes within ${radiusMiles} miles`);
+          } else {
+            console.log(`⚠️  No volcano data available`);
+          }
+        } else {
+          console.log(`❌ USGS Volcano API error: ${response.status} ${response.statusText}`);
+        }
+      } catch (error) {
+        console.log('USGS Volcano query failed:', error);
+      }
+      
+      let summary = '';
+      if (volcanoCount > 0) {
+        summary = `Found ${volcanoCount} volcanoes within ${radiusMiles} miles`;
+        if (activeVolcanoes > 0) {
+          summary += ` (${activeVolcanoes} active)`;
+        }
+        if (nearestVolcano) {
+          const [nearestLon, nearestLat] = nearestVolcano.geometry.coordinates;
+          const distance = this.calculateDistance(lat, lon, nearestLat, nearestLon);
+          summary += ` - nearest: ${nearestVolcano.properties?.name || 'Unknown'} at ${distance.toFixed(1)} miles`;
+        }
+      } else {
+        summary = `No volcanoes found within ${radiusMiles} miles`;
+      }
+      
+      return {
+        poi_volcanoes_count: volcanoCount,
+        poi_volcanoes_active: activeVolcanoes,
+        poi_volcanoes_nearest: nearestVolcano,
+        poi_volcanoes_summary: summary,
+        poi_volcanoes_status: 'Data retrieved successfully',
+        poi_volcanoes_proximity_distance: radiusMiles
+      };
+    } catch (error) {
+      console.error('Error in USGS Volcano query:', error);
+      return {
+        poi_volcanoes_count: 0,
+        poi_volcanoes_active: 0,
+        poi_volcanoes_nearest: null,
+        poi_volcanoes_summary: 'Error querying USGS Volcano data',
+        poi_volcanoes_status: 'API query failed',
+        poi_volcanoes_proximity_distance: radiusMiles
+      };
+    }
+  }
+
+
+
+
   
   private getCustomPOIData(_enrichmentId: string): any {
     // This method should return custom POI data from poiConfigManager
@@ -716,6 +816,12 @@ export class EnrichmentService {
       
       case 'poi_earthquakes':
         return await this.getEarthquakes(lat, lon, radius);
+      
+      case 'poi_volcanoes':
+        return await this.getVolcanoes(lat, lon, radius);
+      
+
+      
       
       // EPA FRS Environmental Hazards
       case 'poi_epa_brownfields':

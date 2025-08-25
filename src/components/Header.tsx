@@ -563,7 +563,10 @@ const Header: React.FC = () => {
                       <div className="text-sm text-blue-800 space-y-1">
                         <div>• <strong>FEMA NFHL:</strong> National Flood Hazard Layer REST API</div>
                         <div>• <strong>USGS Wetlands:</strong> National Wetlands Inventory (NWI) MapServer</div>
-                <div>• <strong>USGS Earthquakes:</strong> FDSNWS Event Query Service</div>
+                                        <div>• <strong>USGS Earthquakes:</strong> FDSNWS Event Query Service</div>
+                                                   <div>• <strong>USGS Volcanoes:</strong> Volcano Status & Location API</div>
+                        
+                        
                         <div>• <strong>EPA FRS:</strong> Facility Registry Service REST API</div>
                         <div>• <strong>US Census:</strong> American Community Survey & TIGER/Line</div>
                         <div>• <strong>USDA:</strong> Local Food Portal API (5 categories)</div>
@@ -626,7 +629,7 @@ const Header: React.FC = () => {
                         <div>• <strong>Enrichment:</strong> 50+ data layers from official sources</div>
                         <div>• <strong>Coverage:</strong> Global with US specializations</div>
                         <div>• <strong>POI Data:</strong> 25+ categories via OpenStreetMap</div>
-                        <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands + 9 EPA FRS layers</div>
+                                                   <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes + 9 EPA FRS layers</div>
                         <div>• <strong>Local Food:</strong> 5 USDA categories for community data</div>
                       </div>
                     </div>

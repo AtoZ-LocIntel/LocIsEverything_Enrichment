@@ -199,8 +199,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   };
 
   const handleRadiusChange = (enrichmentId: string, radius: number) => {
-    // Cap radius based on POI type: earthquakes can go up to 25 miles, others capped at 5 miles
-    const maxRadius = enrichmentId === 'poi_earthquakes' ? 25 : 5;
+    // Cap radius based on POI type: different hazards have different maximums
+    let maxRadius = 5; // Default for most POI types
+    
+    if (enrichmentId === 'poi_earthquakes') {
+      maxRadius = 25; // Earthquakes can go up to 25 miles
+    } else if (enrichmentId === 'poi_volcanoes') {
+      maxRadius = 50; // Volcanoes can go up to 50 miles
+    }
+    
     const cappedRadius = Math.min(radius, maxRadius);
     onPoiRadiiChange({
       ...poiRadii,
@@ -382,7 +389,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 <div className="flex flex-col space-y-2">
                                   {/* Radius Note */}
                                   <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
-                                    ⚠️ Maximum radius: {enrichment.id === 'poi_earthquakes' ? '25 miles (earthquakes)' : '5 miles'} (for performance & accuracy)
+                                    ⚠️ Maximum radius: {
+                                      enrichment.id === 'poi_earthquakes' ? '25 miles (earthquakes)' :
+                                      enrichment.id === 'poi_volcanoes' ? '50 miles (volcanoes)' :
+                                      '5 miles'
+                                    } (for performance & accuracy)
                                   </div>
                                   
                                   {/* Radius Input */}
@@ -391,7 +402,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     <input
                                       type="number"
                                       min="0.1"
-                                      max={enrichment.id === 'poi_earthquakes' ? 25 : 5}
+                                      max={
+                                        enrichment.id === 'poi_earthquakes' ? 25 :
+                                        enrichment.id === 'poi_volcanoes' ? 50 :
+                                        5
+                                      }
                                       step="0.1"
                                       value={currentRadius}
                                       onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
@@ -400,9 +415,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     <span className="text-sm text-gray-900 font-medium">miles</span>
                                     
                                     {/* Show warning if user tries to exceed the limit */}
-                                    {currentRadius > (enrichment.id === 'poi_earthquakes' ? 25 : 5) && (
+                                    {currentRadius > (
+                                      enrichment.id === 'poi_earthquakes' ? 25 :
+                                      enrichment.id === 'poi_volcanoes' ? 50 :
+                                      5
+                                    ) && (
                                       <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
-                                        Capped at {enrichment.id === 'poi_earthquakes' ? '25' : '5'} miles
+                                        Capped at {
+                                          enrichment.id === 'poi_earthquakes' ? '25' :
+                                          enrichment.id === 'poi_volcanoes' ? '50' :
+                                          '5'
+                                        } miles
                                       </span>
                                     )}
                                   </div>

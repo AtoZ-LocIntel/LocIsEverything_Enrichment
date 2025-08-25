@@ -49,6 +49,9 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_fema_flood_zones': { icon: '🌊', color: '#0891b2', title: 'FEMA Flood Zones' },
   'poi_wetlands': { icon: '🌿', color: '#059669', title: 'USGS Wetlands' },
   'poi_earthquakes': { icon: '🌋', color: '#dc2626', title: 'USGS Earthquakes' },
+             'poi_volcanoes': { icon: '🌋', color: '#ea580c', title: 'USGS Volcanoes' },
+  
+  
   
   // EPA FRS Environmental Hazards
   'poi_epa_brownfields': { icon: '🏭', color: '#8b4513', title: 'EPA Brownfields' },
@@ -684,23 +687,45 @@ if (bounds.isValid() && results.length > 1) {
         </div>`;
       }
       
-      // Special handling for USGS Earthquakes - show count and largest magnitude with dynamic distance
-      if (enrichments.poi_earthquakes_count !== undefined) {
-        // Get the actual proximity distance from the enrichment data or use default
-        const proximityDistance = enrichments.poi_earthquakes_proximity_distance || 25; // Default to 25 miles if not specified
-        
-        content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-          <span style="color: #6b7280;">Earthquakes Within ${proximityDistance} mi:</span>
-          <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_earthquakes_count || 0} found</span>
-        </div>`;
-        
-        if (enrichments.poi_earthquakes_largest_magnitude > 0) {
-          content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-            <span style="color: #6b7280;">Largest Magnitude:</span>
-            <span style="color: #1f2937; font-weight: 500;">M${enrichments.poi_earthquakes_largest_magnitude.toFixed(1)}</span>
-          </div>`;
-        }
-      }
+             // Special handling for USGS Earthquakes - show count and largest magnitude with dynamic distance
+       if (enrichments.poi_earthquakes_count !== undefined) {
+         // Get the actual proximity distance from the enrichment data or use default
+         const proximityDistance = enrichments.poi_earthquakes_proximity_distance || 25; // Default to 25 miles if not specified
+         
+         content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+           <span style="color: #6b7280;">Earthquakes Within ${proximityDistance} mi:</span>
+           <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_earthquakes_count || 0} found</span>
+         </div>`;
+         
+         if (enrichments.poi_earthquakes_largest_magnitude > 0) {
+           content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+             <span style="color: #6b7280;">Largest Magnitude:</span>
+             <span style="color: #1f2937; font-weight: 500;">M${enrichments.poi_earthquakes_largest_magnitude.toFixed(1)}</span>
+           </div>`;
+         }
+       }
+       
+                  // Special handling for NOAA Volcanoes - show count and active status with dynamic distance
+       if (enrichments.poi_volcanoes_count !== undefined) {
+         // Get the actual proximity distance from the enrichment data or use default
+         const proximityDistance = enrichments.poi_volcanoes_proximity_distance || 50; // Default to 50 miles if not specified
+         
+         content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+           <span style="color: #6b7280;">Volcanoes Within ${proximityDistance} mi:</span>
+           <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_volcanoes_count || 0} found</span>
+         </div>`;
+         
+         if (enrichments.poi_volcanoes_active > 0) {
+           content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+             <span style="color: #6b7280;">Active Volcanoes:</span>
+             <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_volcanoes_active} active</span>
+           </div>`;
+         }
+       }
+       
+       
+       
+
       
       // Display all other enrichments as simple name: count pairs
       Object.entries(enrichments).forEach(([key, value]) => {
@@ -714,10 +739,19 @@ if (bounds.isValid() && results.length > 1) {
           return;
         }
         
-        // Skip earthquake fields as they're handled above
-        if (key.includes('poi_earthquakes')) {
-          return;
-        }
+                 // Skip earthquake fields as they're handled above
+         if (key.includes('poi_earthquakes')) {
+           return;
+         }
+         
+         // Skip volcano fields as they're handled above
+         if (key.includes('poi_volcanoes')) {
+           return;
+         }
+         
+
+         
+
         
         // Skip Wikipedia summary fields (redundant with count)
         if (key.includes('poi_wikipedia_summary')) {
@@ -787,9 +821,14 @@ if (bounds.isValid() && results.length > 1) {
       poi_wetlands_count: 'USGS Wetlands',
       poi_wetlands_point_in_wetland: 'Point in Wetland',
       poi_wetlands_summary: 'Wetlands Summary',
-      poi_earthquakes_count: 'USGS Earthquakes',
-      poi_earthquakes_largest_magnitude: 'Largest Magnitude',
-      poi_earthquakes_summary: 'Earthquake Summary',
+             poi_earthquakes_count: 'USGS Earthquakes',
+       poi_earthquakes_largest_magnitude: 'Largest Magnitude',
+       poi_earthquakes_summary: 'Earthquake Summary',
+       poi_volcanoes_count: 'NOAA Volcanoes',
+       poi_volcanoes_active: 'Active Volcanoes',
+       poi_volcanoes_summary: 'Volcano Summary',
+
+       
       
       // Recreation and Leisure
       poi_museums_historic_count: 'Museums, Historic Sites & Memorials'
@@ -819,13 +858,25 @@ if (bounds.isValid() && results.length > 1) {
       return value || 'No data available';
     }
     
-    // Handle earthquake data
-    if (key === 'poi_earthquakes_largest_magnitude') {
-      return value > 0 ? `M${value.toFixed(1)}` : 'None';
-    }
-    if (key === 'poi_earthquakes_summary') {
-      return value || 'No data available';
-    }
+         // Handle earthquake data
+     if (key === 'poi_earthquakes_largest_magnitude') {
+       return value > 0 ? `M${value.toFixed(1)}` : 'None';
+     }
+     if (key === 'poi_earthquakes_summary') {
+       return value || 'No data available';
+     }
+     
+     // Handle volcano data
+     if (key === 'poi_volcanoes_active') {
+       return value > 0 ? `${value} active` : 'None active';
+     }
+     if (key === 'poi_volcanoes_summary') {
+       return value || 'No data available';
+     }
+     
+
+     
+
     
     // Handle POI counts specifically
     if (key.includes('_count') || key.includes('poi_')) {
@@ -1048,44 +1099,87 @@ if (bounds.isValid() && results.length > 1) {
        ]);
     }
     
-    // Add USGS Earthquake data
-    if (result.enrichments.poi_earthquakes_count !== undefined) {
-      rows.push([
-        result.location.name,
-        result.location.lat,
-        result.location.lon,
-        result.location.source,
-        result.location.confidence || 'N/A',
-        'USGS_EARTHQUAKES',
-        'Historical Earthquakes',
-        result.location.lat,
-        result.location.lon,
-        (result.enrichments.poi_earthquakes_proximity_distance || 25.0).toFixed(1), // Use actual proximity distance
-        'Seismic Assessment',
-        `${result.enrichments.poi_earthquakes_count || 0} found`,
-        '',
-        ''
-      ]);
-      
-      if (result.enrichments.poi_earthquakes_largest_magnitude > 0) {
-        rows.push([
-          result.location.name,
-          result.location.lat,
-          result.location.lon,
-          result.location.source,
-          result.location.confidence || 'N/A',
-          'USGS_EARTHQUAKES',
-          'Largest Magnitude',
-          result.location.lat,
-          result.location.lon,
-          '0.0',
-          'Seismic Assessment',
-          `M${result.enrichments.poi_earthquakes_largest_magnitude.toFixed(1)}`,
-          '',
-          ''
-        ]);
-      }
-    }
+         // Add USGS Earthquake data
+     if (result.enrichments.poi_earthquakes_count !== undefined) {
+       rows.push([
+         result.location.name,
+         result.location.lat,
+         result.location.lon,
+         result.location.source,
+         result.location.confidence || 'N/A',
+         'USGS_EARTHQUAKES',
+         'Historical Earthquakes',
+         result.location.lat,
+         result.location.lon,
+         (result.enrichments.poi_earthquakes_proximity_distance || 25.0).toFixed(1), // Use actual proximity distance
+         'Seismic Assessment',
+         `${result.enrichments.poi_earthquakes_count || 0} found`,
+         '',
+         ''
+       ]);
+       
+       if (result.enrichments.poi_earthquakes_largest_magnitude > 0) {
+         rows.push([
+           result.location.name,
+           result.location.lat,
+           result.location.lon,
+           result.location.source,
+           result.location.confidence || 'N/A',
+           'USGS_EARTHQUAKES',
+           'Largest Magnitude',
+           result.location.lat,
+           result.location.lon,
+           '0.0',
+           'Seismic Assessment',
+           `M${result.enrichments.poi_earthquakes_largest_magnitude.toFixed(1)}`,
+           '',
+           ''
+         ]);
+       }
+     }
+     
+     // Add USGS Volcano data
+     if (result.enrichments.poi_volcanoes_count !== undefined) {
+       rows.push([
+         result.location.name,
+         result.location.lat,
+         result.location.lon,
+         result.location.source,
+         result.location.confidence || 'N/A',
+         'NOAA_VOLCANOES',
+         'Volcanoes',
+         result.location.lat,
+         result.location.lon,
+         (result.enrichments.poi_volcanoes_proximity_distance || 50.0).toFixed(1), // Use actual proximity distance
+         'Volcanic Assessment',
+         `${result.enrichments.poi_volcanoes_count || 0} found`,
+         '',
+         ''
+       ]);
+       
+       if (result.enrichments.poi_volcanoes_active > 0) {
+         rows.push([
+           result.location.name,
+           result.location.lat,
+           result.location.lon,
+           result.location.source,
+           result.location.confidence || 'N/A',
+           'NOAA_VOLCANOES',
+           'Active Volcanoes',
+           result.location.lat,
+           result.location.lon,
+           '0.0',
+           'Volcanic Assessment',
+           `${result.enrichments.poi_volcanoes_active} active`,
+           '',
+           ''
+         ]);
+       }
+     }
+     
+
+     
+
     
     // Add EPA FRS Environmental Hazards data
     const epaPrograms = [
