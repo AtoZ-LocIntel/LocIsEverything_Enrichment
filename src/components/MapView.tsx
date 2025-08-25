@@ -687,7 +687,7 @@ if (bounds.isValid() && results.length > 1) {
       // Special handling for USGS Earthquakes - show count and largest magnitude with dynamic distance
       if (enrichments.poi_earthquakes_count !== undefined) {
         // Get the actual proximity distance from the enrichment data or use default
-        const proximityDistance = enrichments.poi_earthquakes_proximity_distance || 5; // Default to 5 miles if not specified
+        const proximityDistance = enrichments.poi_earthquakes_proximity_distance || 25; // Default to 25 miles if not specified
         
         content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
           <span style="color: #6b7280;">Earthquakes Within ${proximityDistance} mi:</span>
@@ -1060,7 +1060,7 @@ if (bounds.isValid() && results.length > 1) {
         'Historical Earthquakes',
         result.location.lat,
         result.location.lon,
-        (result.enrichments.poi_earthquakes_proximity_distance || 5.0).toFixed(1), // Use actual proximity distance
+        (result.enrichments.poi_earthquakes_proximity_distance || 25.0).toFixed(1), // Use actual proximity distance
         'Seismic Assessment',
         `${result.enrichments.poi_earthquakes_count || 0} found`,
         '',
