@@ -68,6 +68,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: '🏔️'
   },
   {
+    id: 'public_lands',
+    title: 'Public Lands & Protected Areas',
+    description: 'Comprehensive coverage of public lands, parks, and protected areas',
+    icon: '🏞️'
+  },
+  {
     id: 'quirky',
     title: 'Quirky & Fun',
     description: 'Interesting and unique nearby places',
@@ -170,7 +176,11 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_epa_air', label: 'EPA Air Facilities', description: 'Air Facility System (AFS/ICIS-AIR) - stationary sources of air pollution', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
   { id: 'poi_epa_radiation', label: 'EPA Radiation Facilities', description: 'RADINFO - facilities dealing with radioactivity or radiation', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
   { id: 'poi_epa_power', label: 'EPA Power Generation', description: 'EGRID/EIA-860 - power plant and generation facilities', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
-  { id: 'poi_epa_oil_spill', label: 'EPA Oil Spill Response', description: 'SPCC/FRP - countermeasure and facility response plan subject facilities', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' }
+  { id: 'poi_epa_oil_spill', label: 'EPA Oil Spill Response', description: 'SPCC/FRP - countermeasure and facility response plan subject facilities', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
+  
+  // Public Lands & Protected Areas
+  { id: 'poi_padus_public_access', label: 'PAD-US Public Access', description: 'USGS Protected Areas Database - public land boundaries, manager info, and access status', isPOI: true, defaultRadius: 5, category: 'public_lands', section: 'public_lands' },
+  { id: 'poi_padus_protection_status', label: 'PAD-US Protection Status', description: 'GAP status codes and IUCN categories for protected areas', isPOI: true, defaultRadius: 5, category: 'public_lands', section: 'public_lands' }
 ];
 
 class POIConfigManager {

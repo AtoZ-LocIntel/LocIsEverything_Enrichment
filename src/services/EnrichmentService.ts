@@ -966,6 +966,12 @@ export class EnrichmentService {
       case 'poi_epa_oil_spill':
         return await this.getEPAFRSFacilities(lat, lon, radius, 'SPCC/FRP');
       
+      // PAD-US Public Lands & Protected Areas
+      case 'poi_padus_public_access':
+        return await this.getPADUSPublicAccess(lat, lon, radius);
+      case 'poi_padus_protection_status':
+        return await this.getPADUSProtectionStatus(lat, lon, radius);
+      
       // USDA Local Food Portal - Farmers Markets & Local Food
       case 'poi_usda_agritourism':
         return await this.getUSDALocalFood(lat, lon, radius, 'agritourism');
@@ -2156,4 +2162,145 @@ export class EnrichmentService {
     }
   }
 
+  // PAD-US Public Access Query
+  private async getPADUSPublicAccess(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏞️ PAD-US Public Access query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // First, check if point is inside any public land (point-in-polygon)
+      const insideQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=false`;
+      
+      console.log(`🔗 PAD-US Inside Query URL: ${insideQueryUrl}`);
+      const insideResponse = await fetch(insideQueryUrl);
+      
+      if (!insideResponse.ok) {
+        throw new Error(`PAD-US API failed: ${insideResponse.status} ${insideResponse.statusText}`);
+      }
+      
+      const insideData = await insideResponse.json();
+      console.log(`📊 PAD-US Inside Query response:`, insideData);
+      
+      // Check if point is inside any public land
+      const isInsidePublicLand = insideData.features && insideData.features.length > 0;
+      let insideLandInfo = null;
+      
+      if (isInsidePublicLand) {
+        const feature = insideData.features[0];
+        insideLandInfo = {
+          category: feature.attributes.Category,
+          featureClass: feature.attributes.FeatClass,
+          unitName: feature.attributes.Unit_Nm,
+          publicAccess: feature.attributes.Pub_Access,
+          gapStatus: feature.attributes.GAP_Sts,
+          iucnCategory: feature.attributes.IUCN_Cat,
+          managerType: feature.attributes.MngTp_Desc,
+          managerName: feature.attributes.MngNm_Desc,
+          designationType: feature.attributes.DesTp_Desc,
+          boundaryName: feature.attributes.BndryName,
+          state: feature.attributes.ST_Name,
+          acres: feature.attributes.GIS_AcrsDb
+        };
+      }
+      
+      // Now query for nearby public lands within radius
+      const radiusKm = radiusMiles * 1.60934;
+      const nearbyQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=false&maxRecordCount=1000`;
+      
+      console.log(`🔗 PAD-US Nearby Query URL: ${nearbyQueryUrl}`);
+      const nearbyResponse = await fetch(nearbyQueryUrl);
+      
+      if (!nearbyResponse.ok) {
+        throw new Error(`PAD-US Nearby API failed: ${nearbyResponse.status} ${nearbyResponse.statusText}`);
+      }
+      
+      const nearbyData = await nearbyResponse.json();
+      console.log(`📊 PAD-US Nearby Query response:`, nearbyData);
+      
+      const nearbyLands = nearbyData.features || [];
+      
+      // Count by access type
+      const accessCounts = {
+        open: nearbyLands.filter((f: any) => f.attributes.Pub_Access === 'OA').length,
+        restricted: nearbyLands.filter((f: any) => f.attributes.Pub_Access === 'RA').length,
+        closed: nearbyLands.filter((f: any) => f.attributes.Pub_Access === 'XA').length
+      };
+      
+      // Count by manager type
+      const managerCounts: Record<string, number> = {};
+      nearbyLands.forEach((feature: any) => {
+        const managerType = feature.attributes.MngTp_Desc || 'Unknown';
+        managerCounts[managerType] = (managerCounts[managerType] || 0) + 1;
+      });
+      
+      return {
+        padus_public_access_inside: isInsidePublicLand,
+        padus_public_access_inside_info: insideLandInfo,
+        padus_public_access_nearby_count: nearbyLands.length,
+        padus_public_access_nearby_access_counts: accessCounts,
+        padus_public_access_nearby_manager_counts: managerCounts,
+        padus_public_access_summary: isInsidePublicLand 
+          ? `Location is inside ${insideLandInfo?.unitName || 'public land'} (${insideLandInfo?.managerName || 'Unknown Manager'}) - ${insideLandInfo?.publicAccess || 'Unknown'} access`
+          : `No public lands at this location. Found ${nearbyLands.length} public lands within ${radiusMiles} miles.`
+      };
+      
+    } catch (error) {
+      console.error('🏞️ PAD-US Public Access query failed:', error);
+      return { padus_public_access_error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
+  // PAD-US Protection Status Query
+  private async getPADUSProtectionStatus(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛡️ PAD-US Protection Status query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const radiusKm = radiusMiles * 1.60934;
+      const queryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,GAP_Sts,IUCN_Cat,Category,Unit_Nm,Pub_Access&f=json&returnGeometry=false&maxRecordCount=1000`;
+      
+      console.log(`🔗 PAD-US Protection Status Query URL: ${queryUrl}`);
+      const response = await fetch(queryUrl);
+      
+      if (!response.ok) {
+        throw new Error(`PAD-US Protection Status API failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`📊 PAD-US Protection Status response:`, data);
+      
+      const features = data.features || [];
+      
+      // Count by GAP status
+      const gapStatusCounts: Record<string, number> = {};
+      features.forEach((feature: any) => {
+        const gapStatus = feature.attributes.GAP_Sts || 'Unknown';
+        gapStatusCounts[gapStatus] = (gapStatusCounts[gapStatus] || 0) + 1;
+      });
+      
+      // Count by IUCN category
+      const iucnCounts: Record<string, number> = {};
+      features.forEach((feature: any) => {
+        const iucnCat = feature.attributes.IUCN_Cat || 'Unknown';
+        iucnCounts[iucnCat] = (iucnCounts[iucnCat] || 0) + 1;
+      });
+      
+      // Count by category
+      const categoryCounts: Record<string, number> = {};
+      features.forEach((feature: any) => {
+        const category = feature.attributes.Category || 'Unknown';
+        categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+      });
+      
+      return {
+        padus_protection_status_nearby_count: features.length,
+        padus_protection_status_gap_counts: gapStatusCounts,
+        padus_protection_status_iucn_counts: iucnCounts,
+        padus_protection_status_category_counts: categoryCounts,
+        padus_protection_status_summary: `Found ${features.length} protected areas within ${radiusMiles} miles with various protection levels and categories.`
+      };
+      
+    } catch (error) {
+      console.error('🛡️ PAD-US Protection Status query failed:', error);
+      return { padus_protection_status_error: error instanceof Error ? error.message : String(error) };
+    }
+  }
 }

@@ -121,11 +121,11 @@ const SECTION_COLORS: Record<string, { bg: string; border: string; header: strin
 };
 
 
-const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
-  selectedEnrichments,
-  onSelectionChange,
-  poiRadii,
-  onPoiRadiiChange
+const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({ 
+  selectedEnrichments, 
+  onSelectionChange, 
+  poiRadii, 
+  onPoiRadiiChange 
 }) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['core']));
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
@@ -435,6 +435,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       </span>
                                     )}
                                   </div>
+                                  
                                 </div>
                               )}
                             </div>

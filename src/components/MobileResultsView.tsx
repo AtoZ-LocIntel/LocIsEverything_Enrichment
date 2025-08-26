@@ -70,6 +70,12 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_wikipedia')) {
       return 'Local Knowledge';
     }
+    if (key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
+      return 'Public Lands';
+    }
+    if (key.includes('poi_epa_power') || key.includes('poi_epa_oil_spill')) {
+      return 'Hazards & Safety';
+    }
     return 'Other';
   };
 

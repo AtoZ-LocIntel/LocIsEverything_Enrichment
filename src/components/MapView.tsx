@@ -763,20 +763,55 @@ if (bounds.isValid() && results.length > 1) {
                     <span style="color: #6b7280;">🌡️ Current Weather:</span>
                     <span style="color: #1f2937; font-weight: 500;">${enrichments.open_meteo_weather_temperature_f.toFixed(1)}°F</span>
                   </div>`;
-
                   if (enrichments.open_meteo_weather_weather_description) {
                     content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
                       <span style="color: #6b7280;">Condition:</span>
                       <span style="color: #1f2937; font-weight: 500;">${enrichments.open_meteo_weather_weather_description}</span>
                     </div>`;
                   }
-
                   if (enrichments.open_meteo_weather_windspeed_mph !== undefined) {
                     content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
                       <span style="color: #6b7280;">Wind:</span>
                       <span style="color: #1f2937; font-weight: 500;">${enrichments.open_meteo_weather_windspeed_mph.toFixed(1)} mph</span>
                     </div>`;
                   }
+                }
+
+                // Special handling for PAD-US Public Access
+                if (enrichments.padus_public_access_inside !== undefined) {
+                  content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                    <span style="color: #6b7280;">🏞️ Public Land:</span>
+                    <span style="color: #1f2937; font-weight: 500;">${enrichments.padus_public_access_inside ? 'Yes' : 'No'}</span>
+                  </div>`;
+                  if (enrichments.padus_public_access_inside && enrichments.padus_public_access_inside_info) {
+                    const info = enrichments.padus_public_access_inside_info;
+                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                      <span style="color: #6b7280;">Unit Name:</span>
+                      <span style="color: #1f2937; font-weight: 500;">${info.unitName || 'N/A'}</span>
+                    </div>`;
+                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                      <span style="color: #6b7280;">Manager:</span>
+                      <span style="color: #1f2937; font-weight: 500;">${info.managerName || 'N/A'}</span>
+                    </div>`;
+                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                      <span style="color: #6b7280;">Access:</span>
+                      <span style="color: #1f2937; font-weight: 500;">${info.publicAccess || 'N/A'}</span>
+                    </div>`;
+                  }
+                  if (enrichments.padus_public_access_nearby_count !== undefined) {
+                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                      <span style="color: #6b7280;">Nearby Lands:</span>
+                      <span style="color: #1f2937; font-weight: 500;">${enrichments.padus_public_access_nearby_count}</span>
+                    </div>`;
+                  }
+                }
+
+                // Special handling for PAD-US Protection Status
+                if (enrichments.padus_protection_status_nearby_count !== undefined) {
+                  content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                    <span style="color: #6b7280;">🛡️ Protected Areas:</span>
+                    <span style="color: #1f2937; font-weight: 500;">${enrichments.padus_protection_status_nearby_count}</span>
+                  </div>`;
                 }
 
                 // Special handling for NWS Weather Alerts - show count and severity breakdown
@@ -803,7 +838,6 @@ if (bounds.isValid() && results.length > 1) {
                     }
                   }
                 }
-      
 
       // Display all other enrichments as simple name: count pairs
       Object.entries(enrichments).forEach(([key, value]) => {
@@ -1342,6 +1376,65 @@ if (bounds.isValid() && results.length > 1) {
                    `${result.enrichments.open_meteo_weather_temperature_f.toFixed(1)}°F (${result.enrichments.open_meteo_weather_temperature_c}°C)`,
                    result.enrichments.open_meteo_weather_weather_description || 'Unknown',
                    result.enrichments.open_meteo_weather_windspeed_mph ? `${result.enrichments.open_meteo_weather_windspeed_mph.toFixed(1)} mph (${result.enrichments.open_meteo_weather_windspeed} km/h)` : 'Unknown'
+                 ]);
+               }
+
+               // Add PAD-US Public Access data
+               if (result.enrichments.padus_public_access_inside !== undefined) {
+                 rows.push([
+                   result.location.name,
+                   result.location.lat,
+                   result.location.lon,
+                   result.location.source,
+                   result.location.confidence || 'N/A',
+                   'PADUS_PUBLIC_ACCESS',
+                   'Public Land Status',
+                   result.location.lat,
+                   result.location.lon,
+                   '0.0',
+                   'Public Lands Assessment',
+                   result.enrichments.padus_public_access_inside ? 'Inside Public Land' : 'Not Inside Public Land',
+                   result.enrichments.padus_public_access_inside_info?.unitName || 'N/A',
+                   result.enrichments.padus_public_access_inside_info?.managerName || 'N/A'
+                 ]);
+                 
+                 if (result.enrichments.padus_public_access_nearby_count !== undefined) {
+                   rows.push([
+                     result.location.name,
+                     result.location.lat,
+                     result.location.lon,
+                     result.location.source,
+                     result.location.confidence || 'N/A',
+                     'PADUS_PUBLIC_ACCESS',
+                     'Nearby Public Lands',
+                     result.location.lat,
+                     result.location.lon,
+                     '5.0', // Default radius
+                     'Public Lands Proximity',
+                     `${result.enrichments.padus_public_access_nearby_count} found`,
+                     '',
+                     ''
+                   ]);
+                 }
+               }
+
+               // Add PAD-US Protection Status data
+               if (result.enrichments.padus_protection_status_nearby_count !== undefined) {
+                 rows.push([
+                   result.location.name,
+                   result.location.lat,
+                   result.location.lon,
+                   result.location.source,
+                   result.location.confidence || 'N/A',
+                   'PADUS_PROTECTION_STATUS',
+                   'Protected Areas',
+                   result.location.lat,
+                   result.location.lon,
+                   '5.0', // Default radius
+                   'Protection Status Assessment',
+                   `${result.enrichments.padus_protection_status_nearby_count} found`,
+                   '',
+                   ''
                  ]);
                }
 

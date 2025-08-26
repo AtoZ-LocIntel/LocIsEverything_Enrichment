@@ -207,119 +207,123 @@ function App() {
       <Header />
       
       {viewMode === 'config' ? (
-        <div className={`${isMobile ? 'w-full px-2 mobile-full-width' : 'max-w-7xl mx-auto px-4'} py-8 pt-36`}>
-          {/* Mobile Instructions */}
-          {isMobile && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-              <p className="text-blue-800 font-medium">
-                📱 <strong>Mobile Optimized:</strong> Enter an address below to get instant enrichment results
-              </p>
-            </div>
-          )}
-          
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gradient mb-4">
-              Advanced Location Intelligence
-            </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Professional geocoding and enrichment platform with multi-source data integration. 
-              Single address lookup or batch CSV processing with comprehensive location insights.
-            </p>
-            <p className="text-lg text-primary-400 font-medium mt-4">
-              Powered by The Location Is Everything Co
-            </p>
-          </div>
-
-          {/* Enrichment Options Preview */}
-          <div className="mb-8 p-6 bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl border border-blue-700">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2">🎯 Available Enrichment Options</h2>
-                <p className="text-blue-200">Configure your search to include any combination of these data sources</p>
-              </div>
-              
-              <div className="grid md:grid-cols-3 gap-4 text-sm">
-                <div className="bg-blue-800/50 p-4 rounded-lg border border-blue-600">
-                  <h3 className="font-semibold text-blue-100 mb-2">📍 Core Location Data</h3>
-                  <ul className="text-blue-200 space-y-1">
-                    <li>• Elevation & Air Quality</li>
-                    <li>• Census FIPS Codes</li>
-                    <li>• Demographics (Population, Income, Age)</li>
-                    <li>• Weather Alerts</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-purple-800/50 p-4 rounded-lg border border-purple-600">
-                  <h3 className="font-semibold text-purple-100 mb-2">🏢 Points of Interest</h3>
-                  <ul className="text-purple-200 space-y-1">
-                    <li>• Schools, Hospitals, Parks, Police & Fire</li>
-                    <li>• Retail & Restaurants</li>
-                    <li>• Transportation & Infrastructure</li>
-                    <li>• Health & Professional Services</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-green-800/50 p-4 rounded-lg border border-green-600">
-                  <h3 className="font-semibold text-green-100 mb-2">🌍 Specialized Data</h3>
-                  <ul className="text-green-200 space-y-1">
-                    <li>• Environmental Hazards</li>
-                    <li>• Power Plants & Cell Towers</li>
-                    <li>• Breweries & Enhanced Wikipedia (haunted sites, oddities, museums)</li>
-                    <li>• Recreation & Entertainment (Golf, Boating, Cinemas)</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="text-center mt-4">
-                <p className="text-blue-200 text-sm">
-                  💡 <strong>Scroll down</strong> to see the full configuration panel with all options and customizable search radii
+        <div className="pt-28 px-4 sm:px-6 lg:px-8">
+          {/* Main Content */}
+          <div className="max-w-7xl mx-auto">
+            {/* Mobile Instructions */}
+            {isMobile && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                <p className="text-blue-800 font-medium">
+                  📱 <strong>Mobile Optimized:</strong> Enter an address below to get instant enrichment results
                 </p>
               </div>
+            )}
+            
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-bold text-gradient mb-4">
+                Advanced Location Intelligence
+              </h1>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Professional geocoding and enrichment platform with multi-source data integration. 
+                Single address lookup or batch CSV processing with comprehensive location insights.
+              </p>
+              <p className="text-lg text-primary-400 font-medium mt-4">
+                Powered by The Location Is Everything Co
+              </p>
             </div>
 
-          {/* Error Display */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <div className="w-5 h-5 bg-red-800 rounded-full flex items-center justify-center">
-                  <span className="text-red-300 text-sm">!</span>
+            {/* Enrichment Options Preview */}
+            <div className="mb-8 p-6 bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl border border-blue-700">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold text-white mb-2">🎯 Available Enrichment Options</h2>
+                  <p className="text-blue-200">Configure your search to include any combination of these data sources</p>
                 </div>
-                <p className="text-red-200 font-medium">Search Error</p>
+                
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="bg-blue-800/50 p-4 rounded-lg border border-blue-600">
+                    <h3 className="font-semibold text-blue-100 mb-2">📍 Core Location Data</h3>
+                    <ul className="text-blue-200 space-y-1">
+                      <li>• Elevation & Air Quality</li>
+                      <li>• Census FIPS Codes</li>
+                      <li>• Demographics (Population, Income, Age)</li>
+                      <li>• Weather Alerts</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-purple-800/50 p-4 rounded-lg border border-purple-600">
+                    <h3 className="font-semibold text-purple-100 mb-2">🏢 Points of Interest</h3>
+                    <ul className="text-purple-200 space-y-1">
+                      <li>• Schools, Hospitals, Parks, Police & Fire</li>
+                      <li>• Retail & Restaurants</li>
+                      <li>• Transportation & Infrastructure</li>
+                      <li>• Health & Professional Services</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-green-800/50 p-4 rounded-lg border border-green-600">
+                    <h3 className="font-semibold text-green-100 mb-2">🌍 Specialized Data</h3>
+                    <ul className="text-green-200 space-y-1">
+                      <li>• Environmental Hazards</li>
+                      <li>• Power Plants & Cell Towers</li>
+                      <li>• Breweries & Enhanced Wikipedia (haunted sites, oddities, museums)</li>
+                      <li>• Recreation & Entertainment (Golf, Boating, Cinemas)</li>
+                      <li>• Public Lands & Protected Areas (PAD-US)</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="text-center mt-4">
+                  <p className="text-blue-200 text-sm">
+                    💡 <strong>Scroll down</strong> to see the full configuration panel with all options and customizable search radii
+                  </p>
+                </div>
               </div>
-              <p className="text-red-300 mt-2">{error}</p>
-              <button
-                onClick={() => setError(null)}
-                className="mt-2 text-red-400 hover:text-red-200 underline text-sm"
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
 
-          <div className="grid lg:grid-cols-2 gap-8 mb-8 mobile-stack">
-            <div data-section="single-search" className={isMobile ? "lg:col-span-2" : ""}>
-              <SingleSearch 
-                onSearch={handleSingleSearch} 
-                onLocationSearch={handleLocationSearch}
-                isMobile={isMobile}
-              />
-            </div>
-            {!isMobile && (
-              <div data-section="batch-processing">
-                <BatchProcessing 
-                  onComplete={handleBatchComplete} 
-                  selectedEnrichments={selectedEnrichments}
-                  poiRadii={poiRadii}
-                />
+            {/* Error Display */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <div className="w-5 h-5 bg-red-800 rounded-full flex items-center justify-center">
+                    <span className="text-red-300 text-sm">!</span>
+                  </div>
+                  <p className="text-red-200 font-medium">Search Error</p>
+                </div>
+                <p className="text-red-300 mt-2">{error}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="mt-2 text-red-400 hover:text-red-200 underline text-sm"
+                >
+                  Dismiss
+                </button>
               </div>
             )}
-          </div>
 
-          <EnrichmentConfig
-            selectedEnrichments={selectedEnrichments}
-            onSelectionChange={setSelectedEnrichments}
-            poiRadii={poiRadii}
-            onPoiRadiiChange={setPoiRadii}
-          />
+            <div className="grid lg:grid-cols-2 gap-8 mb-8 mobile-stack">
+              <div data-section="single-search" className={isMobile ? "lg:col-span-2" : ""}>
+                <SingleSearch 
+                  onSearch={handleSingleSearch} 
+                  onLocationSearch={handleLocationSearch}
+                  isMobile={isMobile}
+                />
+              </div>
+              {!isMobile && (
+                <div data-section="batch-processing">
+                  <BatchProcessing 
+                    onComplete={handleBatchComplete} 
+                    selectedEnrichments={selectedEnrichments}
+                    poiRadii={poiRadii}
+                  />
+                </div>
+              )}
+            </div>
+
+            <EnrichmentConfig
+              selectedEnrichments={selectedEnrichments}
+              onSelectionChange={setSelectedEnrichments}
+              poiRadii={poiRadii}
+              onPoiRadiiChange={setPoiRadii}
+            />
+          </div>
         </div>
       ) : viewMode === 'mobile-results' ? (
         <MobileResultsView
