@@ -158,6 +158,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
             { id: 'poi_wetlands', label: 'USGS Wetlands', description: 'National Wetlands Inventory - wetland types, locations, and proximity analysis', isPOI: true, defaultRadius: 2, category: 'hazards', section: 'hazards' },
           { id: 'poi_earthquakes', label: 'USGS Earthquakes', description: 'Historical earthquake events - frequency, magnitude, and proximity analysis for risk assessment', isPOI: true, defaultRadius: 25, category: 'hazards', section: 'hazards' },
           { id: 'poi_volcanoes', label: 'USGS Volcanoes', description: 'Active and dormant volcanoes - status, location, and proximity analysis for volcanic risk assessment', isPOI: true, defaultRadius: 50, category: 'hazards', section: 'hazards' },
+          { id: 'poi_flood_reference_points', label: 'USGS Flood Reference Points', description: 'Real-time flooding reference points - actively flooding locations within proximity', isPOI: true, defaultRadius: 25, category: 'hazards', section: 'hazards' },
     
   
   // EPA FRS Environmental Hazards

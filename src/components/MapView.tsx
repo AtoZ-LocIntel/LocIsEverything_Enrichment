@@ -46,6 +46,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_wetlands': { icon: '🌿', color: '#059669', title: 'USGS Wetlands' },
   'poi_earthquakes': { icon: '🌋', color: '#dc2626', title: 'USGS Earthquakes' },
              'poi_volcanoes': { icon: '🌋', color: '#ea580c', title: 'USGS Volcanoes' },
+  'poi_flood_reference_points': { icon: '🚨', color: '#dc2626', title: 'USGS Flood Reference Points' },
   
   
   
@@ -738,10 +739,25 @@ if (bounds.isValid() && results.length > 1) {
          }
        }
        
-       
-       
-
+        // Special handling for USGS Flood Reference Points - show count and actively flooding status with dynamic distance
+        if (enrichments.poi_flood_reference_points_count !== undefined) {
+          // Get the actual proximity distance from the enrichment data or use default
+          const proximityDistance = enrichments.poi_flood_reference_points_proximity_distance || 25; // Default to 25 miles if not specified
+          
+          content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+            <span style="color: #6b7280;">Flood Reference Points Within ${proximityDistance} mi:</span>
+            <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_flood_reference_points_count || 0} found</span>
+          </div>`;
+          
+          if (enrichments.poi_flood_reference_points_active_flooding > 0) {
+            content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+              <span style="color: #6b7280;">🚨 Actively Flooding:</span>
+              <span style="color: #dc2626; font-weight: 500;">${enrichments.poi_flood_reference_points_active_flooding} points</span>
+            </div>`;
+          }
+        }
       
+
       // Display all other enrichments as simple name: count pairs
       Object.entries(enrichments).forEach(([key, value]) => {
         // Skip FEMA flood zone fields as they're handled above
@@ -764,6 +780,10 @@ if (bounds.isValid() && results.length > 1) {
            return;
          }
          
+         // Skip flood reference points fields as they're handled above
+         if (key.includes('poi_flood_reference_points')) {
+           return;
+         }
 
          
 
@@ -842,6 +862,9 @@ if (bounds.isValid() && results.length > 1) {
        poi_volcanoes_count: 'NOAA Volcanoes',
        poi_volcanoes_active: 'Active Volcanoes',
        poi_volcanoes_summary: 'Volcano Summary',
+       poi_flood_reference_points_count: 'USGS Flood Reference Points',
+       poi_flood_reference_points_active_flooding: 'Actively Flooding Points',
+       poi_flood_reference_points_summary: 'Flood Reference Summary',
 
       // Transportation
       poi_bus_count: 'Bus',
@@ -906,6 +929,13 @@ if (bounds.isValid() && results.length > 1) {
        return value || 'No data available';
      }
      
+     // Handle flood reference points data
+     if (key === 'poi_flood_reference_points_active_flooding') {
+       return value > 0 ? `${value} points` : 'None active';
+     }
+     if (key === 'poi_flood_reference_points_summary') {
+       return value || 'No data available';
+     }
 
      
 
@@ -1203,6 +1233,45 @@ if (bounds.isValid() && results.length > 1) {
            '0.0',
            'Volcanic Assessment',
            `${result.enrichments.poi_volcanoes_active} active`,
+           '',
+           ''
+         ]);
+       }
+     }
+     
+     // Add Flood Reference Points data
+     if (result.enrichments.poi_flood_reference_points_count !== undefined) {
+       rows.push([
+         result.location.name,
+         result.location.lat,
+         result.location.lon,
+         result.location.source,
+         result.location.confidence || 'N/A',
+         'USGS_FLOOD_REFERENCE_POINTS',
+         'Flood Reference Points',
+         result.location.lat,
+         result.location.lon,
+         (result.enrichments.poi_flood_reference_points_proximity_distance || 25.0).toFixed(1), // Use actual proximity distance
+         'Flood Reference Assessment',
+         `${result.enrichments.poi_flood_reference_points_count || 0} found`,
+         '',
+         ''
+       ]);
+       
+       if (result.enrichments.poi_flood_reference_points_active_flooding > 0) {
+         rows.push([
+           result.location.name,
+           result.location.lat,
+           result.location.lon,
+           result.location.source,
+           result.location.confidence || 'N/A',
+           'USGS_FLOOD_REFERENCE_POINTS',
+           'Actively Flooding Points',
+           result.location.lat,
+           result.location.lon,
+           '0.0',
+           'Flood Reference Assessment',
+           `${result.enrichments.poi_flood_reference_points_active_flooding} points`,
            '',
            ''
          ]);

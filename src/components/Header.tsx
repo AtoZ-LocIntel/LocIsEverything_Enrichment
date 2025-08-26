@@ -514,6 +514,7 @@ const Header: React.FC = () => {
                         <div>• <strong>Wetlands:</strong> USGS National Wetlands Inventory (NWI)</div>
                         <div>• <strong>Earthquakes:</strong> USGS FDSNWS Historical Event Query</div>
                         <div>• <strong>Volcanoes:</strong> USGS Volcano Status & Location API</div>
+                        <div>• <strong>Flood Reference Points:</strong> USGS RTFI Real-time Flooding API</div>
                         <div>• <strong>EPA FRS:</strong> Brownfields, Superfund, RCRA, TRI, NPDES</div>
                         <div>• <strong>EPA FRS:</strong> Air facilities, radiation, power generation, oil spill</div>
                       </div>
@@ -693,7 +694,7 @@ const Header: React.FC = () => {
                         <div>• <strong>POI Data:</strong> 35+ categories via OpenStreetMap</div>
                         <div>• <strong>Transportation:</strong> 11 comprehensive transit layers</div>
                         <div>• <strong>Natural Resources:</strong> 4 geographic feature layers</div>
-                        <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes + 9 EPA FRS layers</div>
+                        <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes, flood reference points + 9 EPA FRS layers</div>
                         <div>• <strong>Local Food:</strong> 5 USDA categories for community data</div>
                       </div>
                     </div>

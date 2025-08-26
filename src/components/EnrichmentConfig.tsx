@@ -201,13 +201,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const handleRadiusChange = (enrichmentId: string, radius: number) => {
     // Cap radius based on POI type: different hazards have different maximums
     let maxRadius = 5; // Default for most POI types
-    
+
     if (enrichmentId === 'poi_earthquakes') {
       maxRadius = 25; // Earthquakes can go up to 25 miles
     } else if (enrichmentId === 'poi_volcanoes') {
       maxRadius = 50; // Volcanoes can go up to 50 miles
+    } else if (enrichmentId === 'poi_flood_reference_points') {
+      maxRadius = 25; // Flood reference points can go up to 25 miles
     }
-    
+
     const cappedRadius = Math.min(radius, maxRadius);
     onPoiRadiiChange({
       ...poiRadii,
@@ -392,6 +394,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     ⚠️ Maximum radius: {
                                       enrichment.id === 'poi_earthquakes' ? '25 miles (earthquakes)' :
                                       enrichment.id === 'poi_volcanoes' ? '50 miles (volcanoes)' :
+                                      enrichment.id === 'poi_flood_reference_points' ? '25 miles (flood reference points)' :
                                       '5 miles'
                                     } (for performance & accuracy)
                                   </div>
@@ -405,6 +408,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       max={
                                         enrichment.id === 'poi_earthquakes' ? 25 :
                                         enrichment.id === 'poi_volcanoes' ? 50 :
+                                        enrichment.id === 'poi_flood_reference_points' ? 25 :
                                         5
                                       }
                                       step="0.1"
@@ -418,12 +422,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     {currentRadius > (
                                       enrichment.id === 'poi_earthquakes' ? 25 :
                                       enrichment.id === 'poi_volcanoes' ? 50 :
+                                      enrichment.id === 'poi_flood_reference_points' ? 25 :
                                       5
                                     ) && (
                                       <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
                                         Capped at {
                                           enrichment.id === 'poi_earthquakes' ? '25' :
                                           enrichment.id === 'poi_volcanoes' ? '50' :
+                                          enrichment.id === 'poi_flood_reference_points' ? '25' :
                                           '5'
                                         } miles
                                       </span>

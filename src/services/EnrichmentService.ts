@@ -383,99 +383,193 @@ export class EnrichmentService {
     }
   }
 
-  private async getVolcanoes(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+  private async getVolcanoes(lat: number, lon: number, radiusMiles: number): Promise<any> {
     try {
-      console.log(`USGS Volcano query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      console.log(`🌋 USGS Volcano query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
       
-      // Use the working USGS Volcano API that returns GeoJSON
+      // USGS Volcano API endpoint
       const baseUrl = 'https://volcanoes.usgs.gov/vsc/api/volcanoApi/geojson';
       
-      console.log(`🔗 USGS Volcano Query URL: ${baseUrl}`);
+      // Download all volcano data and filter by proximity
+      const response = await fetch(baseUrl);
+      if (!response.ok) {
+        throw new Error(`USGS Volcano API failed: ${response.status} ${response.statusText}`);
+      }
       
-      let volcanoCount = 0;
-      let nearestVolcano = null;
-      let activeVolcanoes = 0;
+      const data = await response.json();
+      console.log(`🌋 Downloaded ${data.features?.length || 0} volcano features from USGS API`);
       
+      if (!data.features || !Array.isArray(data.features)) {
+        console.log('🌋 No volcano features found in response');
+        return { count: 0, active: 0, summary: 'No volcanoes found' };
+      }
+      
+      // Filter volcanoes by proximity
+      const radiusKm = radiusMiles * 1.60934; // Convert miles to km
+      const nearbyVolcanoes = data.features.filter((volcano: any) => {
+        if (volcano.geometry?.coordinates && volcano.geometry.coordinates.length >= 2) {
+          const [volcanoLon, volcanoLat] = volcano.geometry.coordinates;
+          const distance = this.calculateDistance(lat, lon, volcanoLat, volcanoLon);
+          return distance <= radiusKm;
+        }
+        return false;
+      });
+      
+      console.log(`🌋 Found ${nearbyVolcanoes.length} volcanoes within ${radiusMiles} miles`);
+      
+      // Count active volcanoes
+      const activeVolcanoes = nearbyVolcanoes.filter((volcano: any) => 
+        volcano.properties?.status?.toLowerCase().includes('active') ||
+        volcano.properties?.status?.toLowerCase().includes('erupting')
+      );
+      
+      const summary = nearbyVolcanoes.length > 0 
+        ? `${nearbyVolcanoes.length} volcano${nearbyVolcanoes.length !== 1 ? 'es' : ''} found within ${radiusMiles} miles`
+        : 'No volcanoes found';
+      
+      return {
+        count: nearbyVolcanoes.length,
+        active: activeVolcanoes.length,
+        summary,
+        volcanoes: nearbyVolcanoes
+      };
+    } catch (error) {
+      console.error('🌋 USGS Volcano query failed:', error);
+      return { count: 0, active: 0, summary: 'Volcano data unavailable', error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
+  private async getFloodReferencePoints(lat: number, lon: number, radiusMiles: number): Promise<any> {
+    try {
+      console.log(`🌊 USGS Flood Reference Points query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // USGS RTFI API endpoint for flooding reference points
+      const baseUrl = 'https://api.waterdata.usgs.gov/rtfi-api/referencepoints/flooding';
+      
+      // Try to query with proximity parameters first
+      let response;
+      let usedProximityQuery = false;
       try {
-        const response = await fetch(baseUrl);
+        // Attempt proximity query (if supported by the API)
+        const radiusKm = radiusMiles * 1.60934; // Convert miles to km
+        const proximityUrl = `${baseUrl}?latitude=${lat}&longitude=${lon}&radius=${radiusKm}`;
+        console.log(`🔗 USGS RTFI Proximity Query URL: ${proximityUrl}`);
+        
+        response = await fetch(proximityUrl);
         if (response.ok) {
           const data = await response.json();
-          console.log(`📊 USGS Volcano response:`, data);
+          console.log(`🌊 Proximity query successful, found ${data.length || 0} reference points`);
           
-          if (data && data.features && Array.isArray(data.features)) {
-            // Filter volcanoes within the specified radius
-            const volcanoesInRange = data.features.filter((volcano: any) => {
-              if (volcano.geometry && volcano.geometry.coordinates) {
-                const [volcLon, volcLat] = volcano.geometry.coordinates;
-                const distance = this.calculateDistance(lat, lon, volcLat, volcLon);
-                return distance <= radiusMiles;
+          if (data && Array.isArray(data) && data.length > 0) {
+            // Verify the data actually contains points near our location
+            const nearbyPoints = data.filter((point: any) => {
+              if (point.latitude && point.longitude) {
+                const distance = this.calculateDistance(lat, lon, point.latitude, point.longitude);
+                const isNearby = distance <= radiusKm;
+                if (isNearby) {
+                  console.log(`🌊 Found nearby point: ${point.site_name} at distance ${distance.toFixed(2)} km`);
+                }
+                return isNearby;
               }
               return false;
             });
             
-            volcanoCount = volcanoesInRange.length;
+            console.log(`🌊 After proximity filtering: ${nearbyPoints.length} points within ${radiusKm} km`);
             
-            if (volcanoCount > 0) {
-              // Find the nearest volcano
-              nearestVolcano = volcanoesInRange.reduce((nearest: any, current: any) => {
-                const [nearestLon, nearestLat] = nearest.geometry.coordinates;
-                const [currentLon, currentLat] = current.geometry.coordinates;
-                const nearestDist = this.calculateDistance(lat, lon, nearestLat, nearestLon);
-                const currentDist = this.calculateDistance(lat, lon, currentLat, currentLon);
-                return currentDist < nearestDist ? current : nearest;
-              });
-              
-              // Count active volcanoes
-              activeVolcanoes = volcanoesInRange.filter((v: any) => 
-                v.properties && v.properties.status && 
-                v.properties.status.toLowerCase().includes('active')
-              ).length;
-            }
+            // Filter for actively flooding points
+            const activeFloodingPoints = nearbyPoints.filter((point: any) => 
+              point.is_flooding === true && point.active === true
+            );
             
-            console.log(`✅ Found ${volcanoCount} volcanoes within ${radiusMiles} miles`);
+            console.log(`🌊 Found ${activeFloodingPoints.length} actively flooding reference points`);
+            
+            const summary = activeFloodingPoints.length > 0 
+              ? `${activeFloodingPoints.length} actively flooding reference point${activeFloodingPoints.length !== 1 ? 's' : ''} found within ${radiusMiles} miles`
+              : 'No actively flooding reference points found';
+            
+            usedProximityQuery = true;
+            return {
+              count: nearbyPoints.length,
+              active_flooding: activeFloodingPoints.length,
+              summary,
+              reference_points: activeFloodingPoints
+            };
           } else {
-            console.log(`⚠️  No volcano data available`);
+            console.log('🌊 Proximity query returned no data or invalid format, falling back to full dataset');
           }
         } else {
-          console.log(`❌ USGS Volcano API error: ${response.status} ${response.statusText}`);
+          console.log(`🌊 Proximity query failed with status ${response.status}: ${response.statusText}`);
         }
-      } catch (error) {
-        console.log('USGS Volcano query failed:', error);
+      } catch (proximityError) {
+        console.log('🌊 Proximity query failed, falling back to full dataset filtering:', proximityError);
       }
       
-      let summary = '';
-      if (volcanoCount > 0) {
-        summary = `Found ${volcanoCount} volcanoes within ${radiusMiles} miles`;
-        if (activeVolcanoes > 0) {
-          summary += ` (${activeVolcanoes} active)`;
-        }
-        if (nearestVolcano) {
-          const [nearestLon, nearestLat] = nearestVolcano.geometry.coordinates;
-          const distance = this.calculateDistance(lat, lon, nearestLat, nearestLon);
-          summary += ` - nearest: ${nearestVolcano.properties?.name || 'Unknown'} at ${distance.toFixed(1)} miles`;
-        }
-      } else {
-        summary = `No volcanoes found within ${radiusMiles} miles`;
+      // Fallback: Download all data and filter client-side
+      console.log(`🌊 Falling back to full dataset query and client-side filtering`);
+      response = await fetch(baseUrl);
+      
+      if (!response.ok) {
+        throw new Error(`USGS RTFI API failed: ${response.status} ${response.statusText}`);
       }
+      
+      const data = await response.json();
+      console.log(`🌊 Downloaded ${data.length || 0} reference points from USGS RTFI API`);
+      
+      if (!data || !Array.isArray(data)) {
+        console.log('🌊 No reference points found in response');
+        return { count: 0, active_flooding: 0, summary: 'No reference points found' };
+      }
+      
+      // Log a few sample points to verify data structure
+      if (data.length > 0) {
+        console.log('🌊 Sample data structure:', {
+          firstPoint: data[0],
+          hasLatLon: data[0].latitude !== undefined && data[0].longitude !== undefined,
+          latLonType: typeof data[0].latitude
+        });
+      }
+      
+      // Filter reference points by proximity and flooding status
+      const radiusKm = radiusMiles * 1.60934; // Convert miles to km
+      console.log(`🌊 Filtering ${data.length} points for proximity within ${radiusKm} km of [${lat}, ${lon}]`);
+      
+      const nearbyPoints = data.filter((point: any) => {
+        if (point.latitude && point.longitude) {
+          const distance = this.calculateDistance(lat, lon, point.latitude, point.longitude);
+          const isNearby = distance <= radiusKm;
+          
+          // Log some debugging info for the first few points
+          if (data.indexOf(point) < 5) {
+            console.log(`🌊 Point ${point.site_name || 'unnamed'}: [${point.latitude}, ${point.longitude}] - distance: ${distance.toFixed(2)} km - nearby: ${isNearby}`);
+          }
+          
+          return isNearby;
+        }
+        return false;
+      });
+      
+      console.log(`🌊 Found ${nearbyPoints.length} reference points within ${radiusMiles} miles`);
+      
+      // Filter for actively flooding points
+      const activeFloodingPoints = nearbyPoints.filter((point: any) => 
+        point.is_flooding === true && point.active === true
+      );
+      
+      console.log(`🌊 Found ${activeFloodingPoints.length} actively flooding reference points`);
+      
+      const summary = activeFloodingPoints.length > 0 
+        ? `${activeFloodingPoints.length} actively flooding reference point${activeFloodingPoints.length !== 1 ? 's' : ''} found within ${radiusMiles} miles`
+        : 'No actively flooding reference points found';
       
       return {
-        poi_volcanoes_count: volcanoCount,
-        poi_volcanoes_active: activeVolcanoes,
-        poi_volcanoes_nearest: nearestVolcano,
-        poi_volcanoes_summary: summary,
-        poi_volcanoes_status: 'Data retrieved successfully',
-        poi_volcanoes_proximity_distance: radiusMiles
+        count: nearbyPoints.length,
+        active_flooding: activeFloodingPoints.length,
+        summary,
+        reference_points: activeFloodingPoints
       };
     } catch (error) {
-      console.error('Error in USGS Volcano query:', error);
-      return {
-        poi_volcanoes_count: 0,
-        poi_volcanoes_active: 0,
-        poi_volcanoes_nearest: null,
-        poi_volcanoes_summary: 'Error querying USGS Volcano data',
-        poi_volcanoes_status: 'API query failed',
-        poi_volcanoes_proximity_distance: radiusMiles
-      };
+      console.error('🌊 USGS Flood Reference Points query failed:', error);
+      return { count: 0, active_flooding: 0, summary: 'Flood reference points data unavailable', error: error instanceof Error ? error.message : String(error) };
     }
   }
 
@@ -818,10 +912,22 @@ export class EnrichmentService {
         return await this.getEarthquakes(lat, lon, radius);
       
       case 'poi_volcanoes':
-        return await this.getVolcanoes(lat, lon, radius);
+        const volcanoData = await this.getVolcanoes(lat, lon, radius);
+        return {
+          poi_volcanoes_count: volcanoData.count,
+          poi_volcanoes_active: volcanoData.active,
+          poi_volcanoes_summary: volcanoData.summary,
+          poi_volcanoes_proximity_distance: radius
+        };
       
-
-      
+      case 'poi_flood_reference_points':
+        const floodRefData = await this.getFloodReferencePoints(lat, lon, radius);
+        return {
+          poi_flood_reference_points_count: floodRefData.count,
+          poi_flood_reference_points_active_flooding: floodRefData.active_flooding,
+          poi_flood_reference_points_summary: floodRefData.summary,
+          poi_flood_reference_points_proximity_distance: radius
+        };
       
       // EPA FRS Environmental Hazards
       case 'poi_epa_brownfields':
