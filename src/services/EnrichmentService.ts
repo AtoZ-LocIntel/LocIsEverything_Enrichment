@@ -1090,6 +1090,12 @@ export class EnrichmentService {
      if (id === "poi_bike_scooter_share") return ["amenity=bicycle_rental", "amenity=scooter_rental"];
      if (id === "poi_dockless_hub") return ["amenity=bicycle_rental", "amenity=scooter_rental"];
      
+     // Natural Resources
+     if (id === "poi_beaches") return ["natural=beach"];
+     if (id === "poi_lakes_ponds") return ["water=lake", "water=pond"];
+     if (id === "poi_rivers_streams") return ["waterway=river", "waterway=stream", "waterway=brook"];
+     if (id === "poi_mountains_peaks") return ["natural=peak", "natural=mountain"];
+     
      // Legacy transportation POI types (keeping for backward compatibility)
      if (id === "poi_train_stations") return ["railway=station", "railway=halt", "station=subway"];
      if (id === "poi_bus_stations") return ["amenity=bus_station", "public_transport=station"];

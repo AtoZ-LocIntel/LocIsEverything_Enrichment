@@ -44,6 +44,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('fips') || key.includes('population') || key.includes('income') || key.includes('age')) return 'Demographics';
     if (key.includes('hazard') || key.includes('flood') || key.includes('epa') || key.includes('wetlands') || key.includes('earthquakes') || key.includes('volcanoes')) return 'Hazards & Safety';
     if (key.includes('bus') || key.includes('train') || key.includes('subway') || key.includes('metro') || key.includes('tram') || key.includes('monorail') || key.includes('aerialway') || key.includes('ferry') || key.includes('airport') || key.includes('taxi') || key.includes('bike') || key.includes('scooter') || key.includes('dockless')) return 'Transportation';
+    if (key.includes('beach') || key.includes('lake') || key.includes('pond') || key.includes('river') || key.includes('stream') || key.includes('brook') || key.includes('mountain') || key.includes('peak')) return 'Natural Resources';
     if (key.includes('poi_')) return 'Points of Interest';
     if (key.includes('wikipedia')) return 'Local Information';
     return 'Other';

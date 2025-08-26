@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw } from 'lucide-react';
+import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw, Bus } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 
 const Header: React.FC = () => {
@@ -512,8 +512,10 @@ const Header: React.FC = () => {
                         <div>• <strong>Weather Alerts:</strong> National Weather Service active alerts</div>
                         <div>• <strong>Flood Zones:</strong> FEMA National Flood Hazard Layer (NFHL)</div>
                         <div>• <strong>Wetlands:</strong> USGS National Wetlands Inventory (NWI)</div>
+                        <div>• <strong>Earthquakes:</strong> USGS FDSNWS Historical Event Query</div>
+                        <div>• <strong>Volcanoes:</strong> USGS Volcano Status & Location API</div>
                         <div>• <strong>EPA FRS:</strong> Brownfields, Superfund, RCRA, TRI, NPDES</div>
-                        <div>• <strong>EPA FRS:</strong> Air facilities, radiation, power generation</div>
+                        <div>• <strong>EPA FRS:</strong> Air facilities, radiation, power generation, oil spill</div>
                       </div>
                     </div>
                     <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
@@ -531,10 +533,12 @@ const Header: React.FC = () => {
                       <div className="text-sm text-pink-800 space-y-1">
                         <div>• <strong>Education:</strong> Schools, universities, libraries</div>
                         <div>• <strong>Healthcare:</strong> Hospitals, clinics, pharmacies</div>
-                        <div>• <strong>Transportation:</strong> Comprehensive transit coverage including bus, train, subway, tram, monorail, aerialway, ferry, airport, taxi, bike/scooter share, and dockless hubs</div>
+                        <div>• <strong>Transportation:</strong> Comprehensive transit coverage</div>
                         <div>• <strong>Infrastructure:</strong> Power plants, substations, cell towers</div>
                         <div>• <strong>Emergency:</strong> Police stations, fire stations</div>
                         <div>• <strong>Recreation:</strong> Parks, golf courses, cinemas, theatres</div>
+                        <div>• <strong>Retail:</strong> Restaurants, cafes, banks, gas stations</div>
+                        <div>• <strong>Natural Resources:</strong> Beaches, lakes, rivers, mountains, peaks</div>
                       </div>
                     </div>
                     <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
@@ -546,6 +550,66 @@ const Header: React.FC = () => {
                         <div>• <strong>Breweries:</strong> Craft brewery locations</div>
                         <div>• <strong>Hotels:</strong> Accommodation facilities</div>
                         <div>• <strong>Powerlines:</strong> Electrical transmission infrastructure</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Comprehensive Transportation Details */}
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <Bus className="w-5 h-5 text-primary-600" />
+                    <span>Comprehensive Transportation Coverage</span>
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h4 className="font-semibold text-blue-900 mb-2">Public Transit & Rail</h4>
+                      <div className="text-sm text-blue-800 space-y-1">
+                        <div>• <strong>Bus:</strong> Bus stops & bus stations</div>
+                        <div>• <strong>Train:</strong> Train stations, halts & platforms</div>
+                        <div>• <strong>Subway/Metro:</strong> Subway stations & entrances</div>
+                        <div>• <strong>Tram:</strong> Tram stops & platforms</div>
+                        <div>• <strong>Monorail:</strong> Monorail stations & platforms</div>
+                        <div>• <strong>Aerialway:</strong> Gondolas, cable cars & chair lifts</div>
+                      </div>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <h4 className="font-semibold text-green-900 mb-2">Air, Water & Modern Transit</h4>
+                      <div className="text-sm text-green-800 space-y-1">
+                        <div>• <strong>Ferry:</strong> Ferry terminals & ferry routes</div>
+                        <div>• <strong>Airport/Air:</strong> Air terminals, gates & platforms</div>
+                        <div>• <strong>Taxi:</strong> Taxi services & stands</div>
+                        <div>• <strong>Bike/Scooter Share:</strong> Rental services</div>
+                        <div>• <strong>Dockless Hub:</strong> Modern mobility solutions</div>
+                        <div>• <strong>Coverage:</strong> Global via OpenStreetMap data</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Natural Resources Details */}
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <span className="text-2xl">🏔️</span>
+                    <span>Natural Resources & Geographic Features</span>
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h4 className="font-semibold text-blue-900 mb-2">Water Features</h4>
+                      <div className="text-sm text-blue-800 space-y-1">
+                        <div>• <strong>Beaches:</strong> Natural beaches & coastal areas</div>
+                        <div>• <strong>Lakes & Ponds:</strong> Water bodies & reservoirs</div>
+                        <div>• <strong>Rivers & Streams:</strong> Waterways & brooks</div>
+                        <div>• <strong>Coverage:</strong> Global via OpenStreetMap data</div>
+                      </div>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <h4 className="font-semibold text-green-900 mb-2">Terrain & Elevation</h4>
+                      <div className="text-sm text-green-800 space-y-1">
+                        <div>• <strong>Mountains & Peaks:</strong> High elevation features</div>
+                        <div>• <strong>Elevation Data:</strong> Peak heights when available</div>
+                        <div>• <strong>Named Features:</strong> Identified peaks & mountains</div>
+                        <div>• <strong>Proximity:</strong> Configurable search radii</div>
                       </div>
                     </div>
                   </div>
@@ -563,10 +627,8 @@ const Header: React.FC = () => {
                       <div className="text-sm text-blue-800 space-y-1">
                         <div>• <strong>FEMA NFHL:</strong> National Flood Hazard Layer REST API</div>
                         <div>• <strong>USGS Wetlands:</strong> National Wetlands Inventory (NWI) MapServer</div>
-                                        <div>• <strong>USGS Earthquakes:</strong> FDSNWS Event Query Service</div>
-                                                   <div>• <strong>USGS Volcanoes:</strong> Volcano Status & Location API</div>
-                        
-                        
+                        <div>• <strong>USGS Earthquakes:</strong> FDSNWS Event Query Service</div>
+                        <div>• <strong>USGS Volcanoes:</strong> Volcano Status & Location API</div>
                         <div>• <strong>EPA FRS:</strong> Facility Registry Service REST API</div>
                         <div>• <strong>US Census:</strong> American Community Survey & TIGER/Line</div>
                         <div>• <strong>USDA:</strong> Local Food Portal API (5 categories)</div>
@@ -601,7 +663,7 @@ const Header: React.FC = () => {
                         <div>• <strong>Global:</strong> Wikipedia, OSM, elevation, weather</div>
                         <div>• <strong>United States:</strong> Census, FEMA, EPA, USDA, NWS</div>
                         <div>• <strong>Regional:</strong> PLUTO NYC, state-specific data</div>
-                        <div>• <strong>Proximity:</strong> Configurable search radii (max 5 miles)</div>
+                        <div>• <strong>Proximity:</strong> Configurable search radii (max 25 miles for hazards)</div>
                         <div>• <strong>Bounding Box:</strong> Efficient spatial queries for POIs</div>
                       </div>
                     </div>
@@ -628,8 +690,10 @@ const Header: React.FC = () => {
                         <div>• <strong>Geocoding:</strong> 95%+ success rate for valid addresses</div>
                         <div>• <strong>Enrichment:</strong> 50+ data layers from official sources</div>
                         <div>• <strong>Coverage:</strong> Global with US specializations</div>
-                        <div>• <strong>POI Data:</strong> 35+ categories via OpenStreetMap including comprehensive transportation</div>
-                                                   <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes + 9 EPA FRS layers</div>
+                        <div>• <strong>POI Data:</strong> 35+ categories via OpenStreetMap</div>
+                        <div>• <strong>Transportation:</strong> 11 comprehensive transit layers</div>
+                        <div>• <strong>Natural Resources:</strong> 4 geographic feature layers</div>
+                        <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes + 9 EPA FRS layers</div>
                         <div>• <strong>Local Food:</strong> 5 USDA categories for community data</div>
                       </div>
                     </div>
@@ -637,7 +701,7 @@ const Header: React.FC = () => {
                       <h4 className="font-semibold text-gray-900 mb-2">Usage Guidelines & Features</h4>
                       <div className="text-sm text-gray-700 space-y-1">
                         <div>• <strong>Rate Limits:</strong> Built-in compliance with all APIs</div>
-                        <div>• <strong>Proximity Search:</strong> Configurable radii up to 5 miles</div>
+                        <div>• <strong>Proximity Search:</strong> Configurable radii (5-25 miles for hazards)</div>
                         <div>• <strong>Export Options:</strong> CSV, interactive maps, GeoJSON</div>
                         <div>• <strong>Mobile Friendly:</strong> Responsive design for all devices</div>
                         <div>• <strong>Real-time Data:</strong> Weather, air quality, alerts</div>

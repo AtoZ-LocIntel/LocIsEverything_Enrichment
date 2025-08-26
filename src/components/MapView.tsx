@@ -88,8 +88,14 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_taxi': { icon: '🚕', color: '#fbbf24', title: 'Taxi' },
   'poi_bike_scooter_share': { icon: '🚲', color: '#10b981', title: 'Bike/Scooter Share' },
   'poi_dockless_hub': { icon: '🛴️', color: '#8b5cf6', title: 'Dockless Hub' },
-  
-  'default': { icon: '📍', color: '#6b7280', title: 'POI' }
+   
+   // Natural Resources
+   'poi_beaches': { icon: '🏖️', color: '#fbbf24', title: 'Beaches' },
+   'poi_lakes_ponds': { icon: '🏞️', color: '#0891b2', title: 'Lakes & Ponds' },
+   'poi_rivers_streams': { icon: '🌊', color: '#1d4ed8', title: 'Rivers & Streams' },
+   'poi_mountains_peaks': { icon: '🏔️', color: '#7c2d12', title: 'Mountains & Peaks' },
+   
+   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
 
 // Create custom POI marker icons
@@ -850,9 +856,13 @@ if (bounds.isValid() && results.length > 1) {
       poi_bike_scooter_share_count: 'Bike/Scooter Share',
       poi_dockless_hub_count: 'Dockless Hub',
 
+       // Natural Resources
+       poi_beaches_count: 'Beaches',
+       poi_lakes_ponds_count: 'Lakes & Ponds',
+       poi_rivers_streams_count: 'Rivers & Streams',
+       poi_mountains_peaks_count: 'Mountains & Peaks',
        
-      
-      // Recreation and Leisure
+       // Recreation and Leisure
       poi_museums_historic_count: 'Museums, Historic Sites & Memorials'
     };
 
@@ -1229,11 +1239,35 @@ if (bounds.isValid() && results.length > 1) {
        }
      });
      
-
+     // Add Natural Resources data
+     const naturalResourcePOIs = [
+       'poi_beaches', 'poi_lakes_ponds', 'poi_rivers_streams', 'poi_mountains_peaks'
+     ];
      
-
-    
-    // Add EPA FRS Environmental Hazards data
+     naturalResourcePOIs.forEach(poiType => {
+       const count = result.enrichments[`${poiType}_count`];
+       if (count !== undefined) {
+         const label = poiType.replace('poi_', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+         rows.push([
+           result.location.name,
+           result.location.lat,
+           result.location.lon,
+           result.location.source,
+           result.location.confidence || 'N/A',
+           'NATURAL_RESOURCES',
+           label,
+           result.location.lat,
+           result.location.lon,
+           (result.enrichments[`${poiType}_proximity_distance`] || 5.0).toFixed(1), // Use actual proximity distance
+           'Natural Resources Assessment',
+           `${count || 0} found`,
+           '',
+           ''
+         ]);
+       }
+     });
+     
+     // Add EPA FRS Environmental Hazards data
     const epaPrograms = [
       'poi_epa_brownfields',
       'poi_epa_superfund', 
