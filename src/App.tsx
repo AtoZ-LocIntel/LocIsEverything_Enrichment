@@ -187,12 +187,12 @@ function App() {
     ].join('\n');
 
     // Create and download file with timestamp
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const timestamp = new Date().toISOString().slice(0, 10); // Just YYYY-MM-DD
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `batch_enrichment_results_${timestamp}.csv`;
+    a.download = `batch_${timestamp}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };

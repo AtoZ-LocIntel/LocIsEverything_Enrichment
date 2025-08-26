@@ -448,7 +448,6 @@ export class EnrichmentService {
       
       // Try to query with proximity parameters first
       let response;
-      let usedProximityQuery = false;
       try {
         // Attempt proximity query (if supported by the API)
         const radiusKm = radiusMiles * 1.60934; // Convert miles to km
@@ -487,7 +486,6 @@ export class EnrichmentService {
               ? `${activeFloodingPoints.length} actively flooding reference point${activeFloodingPoints.length !== 1 ? 's' : ''} found within ${radiusMiles} miles`
               : 'No actively flooding reference points found';
             
-            usedProximityQuery = true;
             return {
               count: nearbyPoints.length,
               active_flooding: activeFloodingPoints.length,
@@ -844,6 +842,25 @@ export class EnrichmentService {
     poiRadii: Record<string, number>
   ): Promise<Record<string, any>> {
     const enrichments: Record<string, any> = {};
+    
+    // Always run weather queries by default (no need to select them)
+    try {
+      console.log(`🌡️  Running default Open-Meteo weather query for coordinates [${lat}, ${lon}]`);
+      const openMeteoWeather = await this.getOpenMeteoWeather(lat, lon);
+      Object.assign(enrichments, openMeteoWeather);
+    } catch (error) {
+      console.error('Default Open-Meteo weather query failed:', error);
+      enrichments.open_meteo_weather_error = error instanceof Error ? error.message : 'Unknown error';
+    }
+
+    try {
+      console.log(`🌤️  Running default weather alert query for coordinates [${lat}, ${lon}]`);
+      const weatherAlerts = await this.getNWSWeatherAlerts(lat, lon, 25); // Default 25 mile radius
+      Object.assign(enrichments, weatherAlerts);
+    } catch (error) {
+      console.error('Default weather alert query failed:', error);
+      enrichments.nws_weather_alerts_error = error instanceof Error ? error.message : 'Unknown error';
+    }
     
     // Run each selected enrichment
     for (const enrichmentId of selectedEnrichments) {
@@ -1924,4 +1941,219 @@ export class EnrichmentService {
       [`poi_usda_${foodTypeId}_note`]: 'No facilities in this area'
     };
   }
+
+  private async getNWSWeatherAlerts(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌤️  NWS Weather Alerts query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+
+      // NWS Alerts API endpoint with point parameter (lat,lon format)
+      // The NWS API will return alerts that intersect with the specified point
+      const url = `https://api.weather.gov/alerts/active?point=${lat.toFixed(6)},${lon.toFixed(6)}`;
+
+      console.log(`🔗 NWS Weather Alerts API URL: ${url}`);
+      console.log(`📍 Query Point: [${lat}, ${lon}] (${radiusMiles} mile radius)`);
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`NWS API failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`📊 NWS API response:`, data);
+
+      if (!data || !data.features || !Array.isArray(data.features)) {
+        console.log('🌤️  No weather alerts found in response');
+        return {
+          nws_weather_alerts_count: 0,
+          nws_weather_alerts_active: 0,
+          nws_weather_alerts_summary: 'No active weather alerts',
+          nws_weather_alerts_details: []
+        };
+      }
+
+      console.log(`🌤️  Found ${data.features.length} weather alerts at point`);
+
+      // Filter alerts to only include those within the actual radius
+      const radiusKm = radiusMiles * 1.60934; // Convert miles to km
+      const alertsWithinRadius = data.features.filter((alert: any) => {
+        // Check if the alert's area intersects with our radius
+        if (alert.geometry && alert.geometry.coordinates) {
+          // For simplicity, check if the center of the alert area is within our radius
+          // This is a simplified approach - for more precision, you could check polygon intersection
+          let alertLat: number, alertLon: number;
+
+          if (alert.geometry.type === 'Point') {
+            // Single point alert
+            [alertLon, alertLat] = alert.geometry.coordinates;
+          } else if (alert.geometry.type === 'Polygon') {
+            // Polygon alert - use the centroid (simplified)
+            const coords = alert.geometry.coordinates[0]; // First ring
+            const centerLon = coords.reduce((sum: number, coord: number[]) => sum + coord[0], 0) / coords.length;
+            const centerLat = coords.reduce((sum: number, coord: number[]) => sum + coord[1], 0) / coords.length;
+            alertLon = centerLon;
+            alertLat = centerLat;
+          } else {
+            // Other geometry types - skip for now
+            return false;
+          }
+
+          if (alertLat && alertLon) {
+            const distance = this.calculateDistance(lat, lon, alertLat, alertLon);
+            return distance <= radiusKm;
+          }
+        }
+        return false;
+      });
+
+      console.log(`🌤️  Found ${alertsWithinRadius.length} weather alerts within ${radiusMiles} miles`);
+
+      // Process alert details
+      const alertDetails = alertsWithinRadius.map((alert: any) => {
+        const properties = alert.properties || {};
+        return {
+          id: alert.id || 'Unknown',
+          event: properties.event || 'Unknown Event',
+          severity: properties.severity || 'Unknown',
+          urgency: properties.urgency || 'Unknown',
+          certainty: properties.certainty || 'Unknown',
+          headline: properties.headline || 'No headline',
+          description: properties.description || 'No description',
+          instruction: properties.instruction || 'No instructions',
+          area_desc: properties.areaDesc || 'Unknown area',
+          effective: properties.effective ? new Date(properties.effective).toLocaleString() : 'Unknown',
+          expires: properties.expires ? new Date(properties.expires).toLocaleString() : 'Unknown',
+          status: properties.status || 'Unknown'
+        };
+      });
+
+      // Count by severity
+      const severityCounts = alertDetails.reduce((counts: Record<string, number>, alert: any) => {
+        const severity = alert.severity.toLowerCase();
+        counts[severity] = (counts[severity] || 0) + 1;
+        return counts;
+      }, {});
+
+      // Generate summary
+      let summary = '';
+      if (alertsWithinRadius.length === 0) {
+        summary = 'No active weather alerts';
+      } else if (alertsWithinRadius.length === 1) {
+        summary = `1 active weather alert: ${alertDetails[0].event}`;
+      } else {
+        summary = `${alertsWithinRadius.length} active weather alerts`;
+        if (severityCounts.extreme) {
+          summary += ` (${severityCounts.extreme} extreme)`;
+        }
+        if (severityCounts.severe) {
+          summary += ` (${severityCounts.severe} severe)`;
+        }
+      }
+
+      return {
+        nws_weather_alerts_count: alertsWithinRadius.length,
+        nws_weather_alerts_active: alertsWithinRadius.length,
+        nws_weather_alerts_summary: summary,
+        nws_weather_alerts_details: alertDetails,
+        nws_weather_alerts_severity_breakdown: severityCounts,
+        nws_weather_alerts_radius_miles: radiusMiles
+      };
+
+    } catch (error) {
+      console.error('🌤️  NWS Weather Alerts query failed:', error);
+      return {
+        nws_weather_alerts_count: 0,
+        nws_weather_alerts_active: 0,
+        nws_weather_alerts_summary: 'Weather alert data unavailable',
+        nws_weather_alerts_error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  }
+
+  private async getOpenMeteoWeather(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌡️  Open-Meteo Weather query for coordinates [${lat}, ${lon}]`);
+
+      // Open-Meteo API endpoint for current weather
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+
+      console.log(`🔗 Open-Meteo Weather API URL: ${url}`);
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Open-Meteo API failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`📊 Open-Meteo API response:`, data);
+
+      if (!data || !data.current_weather) {
+        console.log('🌡️  No current weather data found in response');
+        return {
+          open_meteo_weather_error: 'No current weather data available'
+        };
+      }
+
+      const currentWeather = data.current_weather;
+      console.log(`🌡️  Current weather data:`, currentWeather);
+
+      // Convert weather code to human-readable description
+      const weatherDescriptions: Record<number, string> = {
+        0: 'Clear sky',
+        1: 'Mainly clear',
+        2: 'Partly cloudy',
+        3: 'Overcast',
+        45: 'Foggy',
+        48: 'Depositing rime fog',
+        51: 'Light drizzle',
+        53: 'Moderate drizzle',
+        55: 'Dense drizzle',
+        56: 'Light freezing drizzle',
+        57: 'Dense freezing drizzle',
+        61: 'Slight rain',
+        63: 'Moderate rain',
+        65: 'Heavy rain',
+        66: 'Light freezing rain',
+        67: 'Heavy freezing rain',
+        71: 'Slight snow fall',
+        73: 'Moderate snow fall',
+        75: 'Heavy snow fall',
+        77: 'Snow grains',
+        80: 'Slight rain showers',
+        81: 'Moderate rain showers',
+        82: 'Violent rain showers',
+        85: 'Slight snow showers',
+        86: 'Heavy snow showers',
+        95: 'Thunderstorm',
+        96: 'Thunderstorm with slight hail',
+        99: 'Thunderstorm with heavy hail'
+      };
+
+      const weatherDescription = weatherDescriptions[currentWeather.weathercode] || 'Unknown weather condition';
+
+      // Convert Celsius to Fahrenheit: (°C × 9/5) + 32
+      const temperatureF = (currentWeather.temperature * 9/5) + 32;
+      
+      // Convert km/h to mph: km/h × 0.621371
+      const windspeedMph = currentWeather.windspeed * 0.621371;
+
+      return {
+        open_meteo_weather_temperature_c: currentWeather.temperature,
+        open_meteo_weather_temperature_f: temperatureF,
+        open_meteo_weather_windspeed: currentWeather.windspeed,
+        open_meteo_weather_windspeed_mph: windspeedMph,
+        open_meteo_weather_winddirection: currentWeather.winddirection,
+        open_meteo_weather_weathercode: currentWeather.weathercode,
+        open_meteo_weather_weather_description: weatherDescription,
+        open_meteo_weather_time: currentWeather.time,
+        open_meteo_weather_summary: `Current weather: ${weatherDescription}, ${temperatureF.toFixed(1)}°F, ${windspeedMph.toFixed(1)} mph wind`
+      };
+
+    } catch (error) {
+      console.error('🌡️  Open-Meteo Weather query failed:', error);
+      return {
+        open_meteo_weather_error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  }
+
 }

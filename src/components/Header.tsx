@@ -633,7 +633,8 @@ const Header: React.FC = () => {
                         <div>• <strong>EPA FRS:</strong> Facility Registry Service REST API</div>
                         <div>• <strong>US Census:</strong> American Community Survey & TIGER/Line</div>
                         <div>• <strong>USDA:</strong> Local Food Portal API (5 categories)</div>
-                        <div>• <strong>NWS:</strong> National Weather Service alerts</div>
+                                                   <div>• <strong>Open-Meteo:</strong> Real-time weather conditions (default for all lookups)</div>
+                           <div>• <strong>NWS:</strong> National Weather Service alerts (default for all lookups)</div>
                         <div>• <strong>USGS:</strong> Geographic names & elevation data</div>
                       </div>
                     </div>
@@ -674,7 +675,7 @@ const Header: React.FC = () => {
                         <div>• <strong>Vector Data:</strong> Points, lines, polygons from OSM</div>
                         <div>• <strong>Raster Data:</strong> Elevation, flood zones</div>
                         <div>• <strong>Tabular Data:</strong> Demographics, facility information</div>
-                        <div>• <strong>Real-time:</strong> Weather alerts, air quality</div>
+                                                   <div>• <strong>Real-time:</strong> Current weather conditions (default), weather alerts (default), air quality</div>
                         <div>• <strong>Export Formats:</strong> CSV, GeoJSON, interactive maps</div>
                       </div>
                     </div>
@@ -694,7 +695,8 @@ const Header: React.FC = () => {
                         <div>• <strong>POI Data:</strong> 35+ categories via OpenStreetMap</div>
                         <div>• <strong>Transportation:</strong> 11 comprehensive transit layers</div>
                         <div>• <strong>Natural Resources:</strong> 4 geographic feature layers</div>
-                        <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes, flood reference points + 9 EPA FRS layers</div>
+                                                   <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes, flood reference points, NWS weather alerts + 9 EPA FRS layers</div>
+                           <div>• <strong>Weather:</strong> Open-Meteo real-time conditions + NWS alerts (both default)</div>
                         <div>• <strong>Local Food:</strong> 5 USDA categories for community data</div>
                       </div>
                     </div>

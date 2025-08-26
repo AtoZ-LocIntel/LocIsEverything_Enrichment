@@ -40,13 +40,36 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   };
 
   const getEnrichmentCategory = (key: string): string => {
-    if (key.includes('elev') || key.includes('airq') || key.includes('weather')) return 'Environmental';
-    if (key.includes('fips') || key.includes('population') || key.includes('income') || key.includes('age')) return 'Demographics';
-    if (key.includes('hazard') || key.includes('flood') || key.includes('epa') || key.includes('wetlands') || key.includes('earthquakes') || key.includes('volcanoes')) return 'Hazards & Safety';
-    if (key.includes('bus') || key.includes('train') || key.includes('subway') || key.includes('metro') || key.includes('tram') || key.includes('monorail') || key.includes('aerialway') || key.includes('ferry') || key.includes('airport') || key.includes('taxi') || key.includes('bike') || key.includes('scooter') || key.includes('dockless')) return 'Transportation';
-    if (key.includes('beach') || key.includes('lake') || key.includes('pond') || key.includes('river') || key.includes('stream') || key.includes('brook') || key.includes('mountain') || key.includes('peak')) return 'Natural Resources';
-    if (key.includes('poi_')) return 'Points of Interest';
-    if (key.includes('wikipedia')) return 'Local Information';
+    if (key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points')) {
+      return 'Hazards & Safety';
+    }
+                if (key.includes('open_meteo_weather')) {
+              return 'Weather & Alerts';
+            }
+            if (key.includes('nws_weather_alerts')) {
+              return 'Weather & Alerts';
+            }
+    if (key.includes('poi_bus') || key.includes('poi_train') || key.includes('poi_subway_metro') || key.includes('poi_tram') || key.includes('poi_monorail') || key.includes('poi_aerialway') || key.includes('poi_ferry') || key.includes('poi_airport_air') || key.includes('poi_taxi') || key.includes('poi_bike_scooter_share') || key.includes('poi_dockless_hub')) {
+      return 'Transportation';
+    }
+    if (key.includes('poi_beaches') || key.includes('poi_lakes_ponds') || key.includes('poi_rivers_streams') || key.includes('poi_mountains_peaks')) {
+      return 'Natural Resources';
+    }
+    if (key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_parks') || key.includes('poi_grocery') || key.includes('poi_restaurants') || key.includes('poi_banks') || key.includes('poi_pharmacies') || key.includes('poi_worship') || key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_gyms') || key.includes('poi_cinemas') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_hotels') || key.includes('poi_breweries')) {
+      return 'Community & Services';
+    }
+    if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_urgent_care')) {
+      return 'Emergency Services';
+    }
+    if (key.includes('poi_airports') || key.includes('poi_substations') || key.includes('poi_powerlines') || key.includes('poi_power_plants') || key.includes('poi_railroads') || key.includes('poi_gas') || key.includes('poi_cell_towers')) {
+      return 'Infrastructure';
+    }
+    if (key.includes('poi_epa_') || key.includes('poi_usda_')) {
+      return 'Environmental & Regulatory';
+    }
+    if (key.includes('poi_wikipedia')) {
+      return 'Local Knowledge';
+    }
     return 'Other';
   };
 

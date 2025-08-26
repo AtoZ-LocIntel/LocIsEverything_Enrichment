@@ -756,6 +756,53 @@ if (bounds.isValid() && results.length > 1) {
             </div>`;
           }
         }
+        
+                        // Special handling for Open-Meteo Weather - show current conditions
+                if (enrichments.open_meteo_weather_temperature_f !== undefined) {
+                  content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                    <span style="color: #6b7280;">🌡️ Current Weather:</span>
+                    <span style="color: #1f2937; font-weight: 500;">${enrichments.open_meteo_weather_temperature_f.toFixed(1)}°F</span>
+                  </div>`;
+
+                  if (enrichments.open_meteo_weather_weather_description) {
+                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                      <span style="color: #6b7280;">Condition:</span>
+                      <span style="color: #1f2937; font-weight: 500;">${enrichments.open_meteo_weather_weather_description}</span>
+                    </div>`;
+                  }
+
+                  if (enrichments.open_meteo_weather_windspeed_mph !== undefined) {
+                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                      <span style="color: #6b7280;">Wind:</span>
+                      <span style="color: #1f2937; font-weight: 500;">${enrichments.open_meteo_weather_windspeed_mph.toFixed(1)} mph</span>
+                    </div>`;
+                  }
+                }
+
+                // Special handling for NWS Weather Alerts - show count and severity breakdown
+                if (enrichments.nws_weather_alerts_count !== undefined) {
+                  const alertRadius = enrichments.nws_weather_alerts_radius_miles || 25;
+                  content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                    <span style="color: #6b7280;">🌤️ Weather Alerts Within ${alertRadius} mi:</span>
+                    <span style="color: #1f2937; font-weight: 500;">${enrichments.nws_weather_alerts_count || 0} active</span>
+                  </div>`;
+
+                  if (enrichments.nws_weather_alerts_count > 0 && enrichments.nws_weather_alerts_severity_breakdown) {
+                    const severityBreakdown = enrichments.nws_weather_alerts_severity_breakdown;
+                    if (severityBreakdown.extreme) {
+                      content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                        <span style="color: #dc2626;">🚨 Extreme Alerts:</span>
+                        <span style="color: #dc2626; font-weight: 500;">${severityBreakdown.extreme}</span>
+                      </div>`;
+                    }
+                    if (severityBreakdown.severe) {
+                      content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
+                        <span style="color: #ea580c;">⚠️ Severe Alerts:</span>
+                        <span style="color: #ea580c; font-weight: 500;">${severityBreakdown.severe}</span>
+                      </div>`;
+                    }
+                  }
+                }
       
 
       // Display all other enrichments as simple name: count pairs
@@ -1278,6 +1325,69 @@ if (bounds.isValid() && results.length > 1) {
        }
      }
      
+                    // Add Open-Meteo Weather data
+               if (result.enrichments.open_meteo_weather_temperature_f !== undefined) {
+                 rows.push([
+                   result.location.name,
+                   result.location.lat,
+                   result.location.lon,
+                   result.location.source,
+                   result.location.confidence || 'N/A',
+                   'OPEN_METEO_WEATHER',
+                   'Current Weather Conditions',
+                   result.location.lat,
+                   result.location.lon,
+                   '0.0',
+                   'Real-time Weather Data',
+                   `${result.enrichments.open_meteo_weather_temperature_f.toFixed(1)}°F (${result.enrichments.open_meteo_weather_temperature_c}°C)`,
+                   result.enrichments.open_meteo_weather_weather_description || 'Unknown',
+                   result.enrichments.open_meteo_weather_windspeed_mph ? `${result.enrichments.open_meteo_weather_windspeed_mph.toFixed(1)} mph (${result.enrichments.open_meteo_weather_windspeed} km/h)` : 'Unknown'
+                 ]);
+               }
+
+               // Add NWS Weather Alerts data
+               if (result.enrichments.nws_weather_alerts_count !== undefined) {
+                 const alertRadius = result.enrichments.nws_weather_alerts_radius_miles || 25.0;
+                 rows.push([
+                   result.location.name,
+                   result.location.lat,
+                   result.location.lon,
+                   result.location.source,
+                   result.location.confidence || 'N/A',
+                   'NWS_WEATHER_ALERTS',
+                   'Active Weather Alerts',
+                   result.location.lat,
+                   result.location.lon,
+                   alertRadius.toFixed(1),
+                   'Weather Alert Assessment',
+                   `${result.enrichments.nws_weather_alerts_count || 0} active alerts`,
+                   '',
+                   ''
+                 ]);
+
+                 // Add individual alert details if available
+                 if (result.enrichments.nws_weather_alerts_details && result.enrichments.nws_weather_alerts_details.length > 0) {
+                   result.enrichments.nws_weather_alerts_details.forEach((alert: any) => {
+                     rows.push([
+                       result.location.name,
+                       result.location.lat,
+                       result.location.lon,
+                       result.location.source,
+                       result.location.confidence || 'N/A',
+                       'NWS_WEATHER_ALERTS',
+                       alert.event || 'Unknown Event',
+                       result.location.lat,
+                       result.location.lon,
+                       alertRadius.toFixed(1),
+                       `${alert.severity} - ${alert.urgency} - ${alert.certainty}`,
+                       alert.headline || 'No headline',
+                       alert.area_desc || 'Unknown area',
+                       alert.effective || 'Unknown'
+                     ]);
+                   });
+                 }
+               }
+     
      // Add Transportation data
      const transportationPOIs = [
        'poi_bus', 'poi_train', 'poi_subway_metro', 'poi_tram', 'poi_monorail',
@@ -1414,8 +1524,9 @@ if (bounds.isValid() && results.length > 1) {
     ].join('\n');
 
     // Create and download file with timestamp
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = `single_lookup_results_${result.location.name.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.csv`;
+    const timestamp = new Date().toISOString().slice(0, 10); // Just YYYY-MM-DD
+    const cleanName = result.location.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20); // Limit to 20 chars, remove special chars
+    const filename = `enrichment_${cleanName}_${timestamp}.csv`;
     
     console.log(`💾 Downloading CSV file: ${filename}`);
     
