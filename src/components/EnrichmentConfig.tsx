@@ -360,14 +360,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           {/* Category Configuration Modal */}
           {activeModal && (
             <div 
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]" 
+              className="fixed inset-0 bg-black bg-opacity-50 z-[9999] overflow-y-auto" 
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setActiveModal(null);
                 }
               }}
             >
-              <div className="bg-white rounded-xl w-full max-w-2xl h-[90vh] max-h-[90vh] flex flex-col overflow-hidden">
+              <div className="min-h-screen flex items-center justify-center p-4">
+                <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
                 {(() => {
                   const category = enrichmentCategories.find(c => c.id === activeModal);
                   if (!category) return null;
@@ -389,7 +390,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           </div>
                           <button
                             onClick={() => setActiveModal(null)}
-                            className="text-white hover:text-gray-300 text-2xl font-bold"
+                            className="text-white hover:text-gray-300 text-3xl font-bold p-2 -m-2 flex-shrink-0"
+                            style={{minWidth: '44px', minHeight: '44px'}}
                           >
                             ×
                           </button>
@@ -496,6 +498,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     </>
                   );
                 })()}
+                </div>
               </div>
             </div>
           )}

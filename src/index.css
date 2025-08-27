@@ -728,15 +728,15 @@ body.modal-open {
     margin-right: auto !important;
   }
   
-  /* Modal specific mobile fixes */
+  /* Modal specific mobile fixes - Simple approach */
   .fixed.inset-0.bg-black.bg-opacity-50 {
-    padding: 8px !important;
+    padding: 16px !important;
   }
   
-  .fixed.inset-0.bg-black.bg-opacity-50 > div {
-    width: calc(100vw - 16px) !important;
-    max-width: calc(100vw - 16px) !important;
-    height: calc(100vh - 16px) !important;
-    max-height: calc(100vh - 16px) !important;
+  /* Ensure modal content is scrollable and fits */
+  .fixed.inset-0.bg-black.bg-opacity-50 .bg-white {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    min-height: auto !important;
   }
 }
