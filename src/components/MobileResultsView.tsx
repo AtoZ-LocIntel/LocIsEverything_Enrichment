@@ -142,10 +142,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   }, {} as Record<string, Array<{ key: string; value: any }>>);
 
   return (
-    <div className="min-h-screen bg-gray-50 md:hidden pt-28" style={{ width: '100vw', overflowX: 'hidden' }}>
+    <div className="min-h-screen bg-gray-50 md:hidden pt-28 mobile-results-container">
       {/* Header with Action Buttons */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-28 z-40" style={{ width: '100vw' }}>
-        <div className="flex items-center justify-between" style={{ padding: '12px', width: '100%' }}>
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-28 z-40 mobile-header">
+        <div className="flex items-center justify-between mobile-header-content">
           <button
             onClick={onBackToSearch}
             className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -175,9 +175,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       </div>
 
       {/* Results Content */}
-      <div className="py-4 space-y-4" style={{ width: '100vw', padding: '16px 8px' }}>
+      <div className="py-4 space-y-4 mobile-content">
         {/* Location Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200" style={{ margin: '0 8px', padding: '12px', width: 'calc(100vw - 32px)' }}>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mobile-card">
           <div className="text-center">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words">{location.name}</h1>
             <div className="text-gray-600 space-y-1 text-sm sm:text-base">
@@ -190,12 +190,12 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
 
         {/* Enrichment Data */}
         {Object.entries(groupedEnrichments).map(([category, items]) => (
-          <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200" style={{ margin: '0 8px', width: 'calc(100vw - 32px)' }}>
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl" style={{ padding: '12px' }}>
+          <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 mobile-card">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl mobile-card-header">
               <h2 className="text-lg font-bold text-white">{category}</h2>
             </div>
             
-            <div className="space-y-3" style={{ padding: '12px' }}>
+            <div className="space-y-3 mobile-card-body">
               {items.map(({ key, value }) => (
                 <div key={key} className="border-b border-gray-100 last:border-b-0 pb-3 sm:pb-4 last:pb-0">
                   <div className="flex flex-col space-y-2">
@@ -213,7 +213,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         ))}
 
         {/* Bottom Action Buttons */}
-        <div className="flex flex-col gap-3 pb-8" style={{ margin: '0 8px', width: 'calc(100vw - 32px)' }}>
+        <div className="flex flex-col gap-3 pb-8 mobile-buttons">
           <button
             onClick={onViewMap}
             className="flex-1 bg-blue-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"

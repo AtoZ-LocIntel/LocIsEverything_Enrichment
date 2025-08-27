@@ -250,6 +250,58 @@ body {
     padding-left: 0 !important;
     padding-right: 0 !important;
   }
+  
+  /* Mobile Results View Specific Fixes */
+  .mobile-results-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+  }
+  
+  .mobile-header {
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  
+  .mobile-header-content {
+    padding: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .mobile-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .mobile-card {
+    width: calc(100% - 8px) !important;
+    max-width: calc(100% - 8px) !important;
+    margin: 0 4px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .mobile-card-header {
+    padding: 12px !important;
+  }
+  
+  .mobile-card-body {
+    padding: 12px !important;
+  }
+  
+  .mobile-buttons {
+    width: calc(100% - 8px) !important;
+    max-width: calc(100% - 8px) !important;
+    margin: 0 4px !important;
+    box-sizing: border-box !important;
+  }
 }
 
 .enrichment-config .dropdown-content {
