@@ -231,6 +231,18 @@ function App() {
           } else if (key === 'poi_animal_vehicle_collisions_source') {
             // Include AVI source field directly
             value = value || 'FARS, CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT';
+          } else if (key === 'poi_wildfires_count') {
+            // Special handling for Wildfire data - include incident details
+            const wildfireData = result.enrichments.poi_wildfires_all_pois;
+            if (Array.isArray(wildfireData) && wildfireData.length > 0) {
+              const incidents = wildfireData.slice(0, 3).map((fire: any) => 
+                `${fire.name || 'Unnamed'} (${fire.containment || 0}% contained)`
+              );
+              if (wildfireData.length > 3) {
+                incidents.push(`+${wildfireData.length - 3} more`);
+              }
+              value = `${value} (${incidents.join(', ')})`;
+            }
           } else {
             // Generic handling for complex data types
             value = formatCSVValue(value, key);

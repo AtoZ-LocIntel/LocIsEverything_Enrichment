@@ -541,6 +541,29 @@ const Header: React.FC = () => {
                         </p>
                       </div>
                     </div>
+
+                    {/* NEW: NIFC/Esri Current Wildfires */}
+                    <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-300 shadow-lg">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-2xl">🔥</span>
+                        <h4 className="font-bold text-orange-900 text-lg">NEW: Current Wildfire Incidents</h4>
+                        <span className="bg-orange-600 text-white text-xs px-2 py-1 rounded-full font-bold">LIVE</span>
+                      </div>
+                      <div className="text-sm text-orange-800 space-y-1">
+                        <div>• <strong>Provider:</strong> NIFC (National Interagency Fire Center) / Esri</div>
+                        <div>• <strong>Coverage:</strong> Current wildfire incidents and perimeters nationwide</div>
+                        <div>• <strong>Data Type:</strong> Active fire incidents with containment status</div>
+                        <div>• <strong>Updates:</strong> Frequently updated from IRWIN and NIFC sources</div>
+                        <div>• <strong>Details:</strong> Fire name, location, containment %, discovery date, size</div>
+                        <div>• <strong>Use Cases:</strong> Emergency planning, risk assessment, property evaluation</div>
+                      </div>
+                      <div className="mt-3 p-2 bg-orange-100 rounded border border-orange-200">
+                        <p className="text-xs text-orange-700 font-semibold">
+                          🔥 <strong>Real-time Data:</strong> Current wildfire incidents from authoritative sources
+                        </p>
+                      </div>
+                    </div>
+
                     <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
                       <h4 className="font-semibold text-teal-900 mb-2">Demographic & Census</h4>
                       <div className="text-sm text-teal-800 space-y-1">
@@ -698,7 +721,7 @@ const Header: React.FC = () => {
                         <div>• <strong>Vector Data:</strong> Points, lines, polygons from OSM</div>
                         <div>• <strong>Raster Data:</strong> Elevation, flood zones</div>
                         <div>• <strong>Tabular Data:</strong> Demographics, facility information</div>
-                                                   <div>• <strong>Real-time:</strong> Current weather conditions (default), weather alerts (default), air quality</div>
+                        <div>• <strong>Real-time:</strong> Current weather conditions (default), weather alerts (default), air quality</div>
                         <div>• <strong>Export Formats:</strong> CSV, GeoJSON, interactive maps</div>
                       </div>
                     </div>
@@ -718,8 +741,8 @@ const Header: React.FC = () => {
                         <div>• <strong>POI Data:</strong> 36+ categories via OpenStreetMap</div>
                         <div>• <strong>Transportation:</strong> 11 comprehensive transit layers</div>
                         <div>• <strong>Natural Resources:</strong> 4 geographic feature layers</div>
-                                                   <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes, flood reference points, NWS weather alerts + 9 EPA FRS layers + <strong>Animal-Vehicle Impact (AVI) data</strong></div>
-                           <div>• <strong>Weather:</strong> Open-Meteo real-time conditions + NWS alerts (both default)</div>
+                        <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes, flood reference points, NWS weather alerts + 9 EPA FRS layers + <strong>Animal-Vehicle Impact (AVI) data</strong></div>
+                        <div>• <strong>Weather:</strong> Open-Meteo real-time conditions + NWS alerts (both default)</div>
                         <div>• <strong>Local Food:</strong> 5 USDA categories for community data</div>
                       </div>
                     </div>

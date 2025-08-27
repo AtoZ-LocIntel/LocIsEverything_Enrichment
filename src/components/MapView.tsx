@@ -27,6 +27,7 @@ L.Icon.Default.mergeOptions({
 // POI Category Icons and Colors
 const POI_ICONS: Record<string, { icon: string; color: string; title: string }> = {
   'poi_animal_vehicle_collisions': { icon: '🦌', color: '#dc2626', title: 'Animal Vehicle Collisions' },
+  'poi_wildfires': { icon: '🔥', color: '#ff4500', title: 'Current Wildfires' },
   'poi_restaurants': { icon: '🍽️', color: '#ef4444', title: 'Restaurants' },
   'poi_hotels': { icon: '🏨', color: '#3b82f6', title: 'Hotels' },
   'poi_breweries': { icon: '🍺', color: '#f59e0b', title: 'Breweries' },
@@ -489,6 +490,42 @@ if (bounds.isValid() && results.length > 1) {
       }
     });
     
+          // Special handling for Wildfires data - draw all wildfire incidents within user radius
+      if (result.enrichments.poi_wildfires_elements && Array.isArray(result.enrichments.poi_wildfires_elements)) {
+        const wildfires = result.enrichments.poi_wildfires_elements;
+        console.log(`🔥 Found ${wildfires.length} wildfire incidents - drawing on map`);
+        const iconConfig = POI_ICONS.poi_wildfires;
+        
+        // Add to legend
+        currentLegendItems.push({
+          icon: iconConfig.icon,
+          color: iconConfig.color,
+          title: iconConfig.title,
+          count: wildfires.length
+        });
+        
+        // Create markers for each wildfire
+        wildfires.forEach((wildfire: any) => {
+          if (wildfire.lat && wildfire.lon) {
+            const marker = L.marker([wildfire.lat, wildfire.lon], {
+              icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color: ${iconConfig.color}; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${iconConfig.icon}</div>`,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+              })
+            });
+
+            // Create wildfire popup content
+            const popupContent = createWildfirePopupContent(wildfire);
+            marker.bindPopup(popupContent);
+            
+            marker.addTo(map);
+            markersRef.current.push(marker);
+          }
+        });
+      }
+
           // Special handling for AVI data - draw points within 2 miles for map display, CSV gets full user proximity data
       if (result.enrichments.poi_animal_vehicle_collisions_elements && Array.isArray(result.enrichments.poi_animal_vehicle_collisions_elements)) {
         const mapAVICollisions = result.enrichments.poi_animal_vehicle_collisions_elements;
@@ -553,6 +590,49 @@ if (bounds.isValid() && results.length > 1) {
     if (collision.lat && collision.lon) {
       content += `<div style="margin: 6px 0 4px 0; font-size: 11px; color: #9ca3af;">
         ${collision.lat.toFixed(6)}, ${collision.lon.toFixed(6)}
+      </div>`;
+    }
+
+    content += '</div>';
+    return content;
+  };
+
+  // Create popup content for Wildfire incidents
+  const createWildfirePopupContent = (wildfire: any): string => {
+    const name = wildfire.name || 'Unnamed Fire';
+    const state = wildfire.state || 'Unknown';
+    const containment = wildfire.containment || 0;
+    const discoveryDate = wildfire.discovery_date || 'Unknown';
+    const sizeAcres = wildfire.size_acres || 'Unknown';
+    const distance = wildfire.distance_miles || 'Unknown';
+    
+    let content = `
+      <div style="min-width: 250px; max-width: 350px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <img src="/assets/new-logo.png" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
+          <h3 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 14px;">Current Wildfire</h3>
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+          🔥 ${name} • ${distance} miles away
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #374151;">
+          <strong>State:</strong> ${state}
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #374151;">
+          <strong>Containment:</strong> ${containment}%
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #374151;">
+          <strong>Discovery Date:</strong> ${discoveryDate}
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #374151;">
+          <strong>Size:</strong> ${sizeAcres} acres
+        </div>`;
+
+    // Add coordinates if available
+    if (wildfire.lat && wildfire.lon) {
+      content += `
+      <div style="margin: 8px 0 4px 0; font-size: 11px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+        📍 Coordinates: ${wildfire.lat.toFixed(6)}, ${wildfire.lon.toFixed(6)}
       </div>`;
     }
 
@@ -760,7 +840,7 @@ if (bounds.isValid() && results.length > 1) {
          enrichmentCategories['Weather & Alerts'].push({ key, value });
        } else if (key.includes('elevation') || key.includes('fips') || key.includes('county') || key.includes('state') || key.includes('acs_')) {
          enrichmentCategories['Location & Demographics'].push({ key, value });
-       } else if (key.includes('poi_wetlands') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_fema_flood_zones')) {
+       } else if (key.includes('poi_wetlands') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_fema_flood_zones') || key.includes('poi_wildfires')) {
          enrichmentCategories['Hazards & Safety'].push({ key, value });
        } else if (key.includes('poi_bus') || key.includes('poi_train') || key.includes('poi_subway') || key.includes('poi_tram') || key.includes('poi_monorail') || key.includes('poi_aerialway') || key.includes('poi_ferry') || key.includes('poi_airport_air') || key.includes('poi_taxi') || key.includes('poi_bike_scooter_share') || key.includes('poi_dockless_hub') || key.includes('poi_electric_charging')) {
          enrichmentCategories['Transportation'].push({ key, value });
@@ -1094,6 +1174,7 @@ if (bounds.isValid() && results.length > 1) {
       // Hazards
       poi_animal_vehicle_collisions_count: 'Animal Vehicle Collisions',
       poi_animal_vehicle_collisions_source: 'AVI Data Source',
+      poi_wildfires_count: 'Current Wildfires',
       poi_wetlands_count: 'USGS Wetlands',
       poi_wetlands_point_in_wetland: 'Point in Wetland',
       poi_wetlands_summary: 'Wetlands Summary',

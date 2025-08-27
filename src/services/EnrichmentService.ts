@@ -1164,10 +1164,20 @@ export class EnrichmentService {
       console.log(`🔍 Filters found for ${enrichmentId}:`, filters);
       
       if (filters.length > 0) {
-        // Handle custom API calls (like Animal Vehicle Collisions)
+        // Handle custom API calls (like Animal Vehicle Collisions and Wildfires)
         if (filters.includes("custom_api")) {
           console.log(`🔍 Calling custom API for ${enrichmentId}...`);
-          const result = await this.getAnimalVehicleCollisions(lat, lon, radius);
+          
+          let result;
+          if (enrichmentId === "poi_animal_vehicle_collisions") {
+            result = await this.getAnimalVehicleCollisions(lat, lon, radius);
+          } else if (enrichmentId === "poi_wildfires") {
+            result = await this.getWildfires(lat, lon, radius);
+          } else {
+            console.warn(`Unknown custom API enrichment: ${enrichmentId}`);
+            result = { count: 0, elements: [], detailed_pois: [] };
+          }
+          
           console.log(`🔍 Custom API result for ${enrichmentId}:`, {
             count: result.count,
             elementsCount: result.elements?.length || 0,
@@ -1287,6 +1297,9 @@ export class EnrichmentService {
      
      // The Location Is Everything Company - Animal Vehicle Collisions
      if (id === "poi_animal_vehicle_collisions") return ["custom_api"];
+     
+     // NIFC/Esri Current Wildfires
+     if (id === "poi_wildfires") return ["custom_api"];
      
      // Fix missing POI types showing 0 counts
      if (id === "poi_tnm_airports") return ["aeroway=aerodrome", "aeroway=airport"];
@@ -2656,6 +2669,154 @@ export class EnrichmentService {
         all_pois: [],
         error: error instanceof Error ? error.message : 'Unknown error',
         api_source: 'https://api.locationfriend.com/vehicle_animal_collisions_api'
+      };
+    }
+  }
+
+  // NIFC/Esri Current Wildfires API
+  private async getWildfires(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔥 Current Wildfires query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // NIFC/Esri USA Wildfires service
+      const API_BASE = "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/USA_Wildfires_v1/FeatureServer/0/query";
+      
+      // Build query parameters for proximity search
+      const params = new URLSearchParams({
+        where: '1=1',
+        geometry: `${lon},${lat}`,
+        geometryType: 'esriGeometryPoint',
+        inSR: '4326',
+        spatialRel: 'esriSpatialRelIntersects',
+        distance: radiusMiles.toString(),
+        units: 'esriSRUnit_StatuteMile',
+        outFields: 'IncidentName,POOState,PercentContained,FireDiscoveryDateTime,IRWINID,ContainmentDateTime,IncidentSize,IncidentTypeCategory',
+        returnGeometry: 'true',
+        f: 'json'
+      });
+      
+      const queryUrl = `${API_BASE}?${params.toString()}`;
+      console.log(`🔗 NIFC Wildfires API URL: ${queryUrl}`);
+      
+      const response = await fetch(queryUrl, {
+        method: 'GET',
+        headers: { 
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`NIFC Wildfires API failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`📊 NIFC Wildfires response:`, data);
+      
+      // Handle the response data structure
+      const features = data.features || [];
+      console.log(`🔥 Received ${features.length} wildfire incidents from NIFC API`);
+      
+      // Process wildfire incidents
+      const wildfires: any[] = [];
+      const wildfireDetails: any[] = [];
+      
+      features.forEach((feature: any, index: number) => {
+        const attributes = feature.attributes || {};
+        const geometry = feature.geometry;
+        
+        // Extract coordinates (ArcGIS returns different geometry types)
+        let fireLat: number | null = null;
+        let fireLon: number | null = null;
+        
+        if (geometry) {
+          if (geometry.x && geometry.y) {
+            // Point geometry
+            fireLon = geometry.x;
+            fireLat = geometry.y;
+          } else if (geometry.rings && geometry.rings.length > 0) {
+            // Polygon geometry - use centroid of first ring
+            const ring = geometry.rings[0];
+            if (ring.length > 0) {
+              fireLon = ring[0][0];
+              fireLat = ring[0][1];
+            }
+          }
+        }
+        
+        if (!fireLat || !fireLon) {
+          console.warn(`🔥 Skipping wildfire with invalid coordinates:`, attributes);
+          return;
+        }
+        
+        // Calculate distance for display
+        const distanceKm = this.calculateDistance(lat, lon, fireLat, fireLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Format dates
+        const discoveryDate = attributes.FireDiscoveryDateTime ? 
+          new Date(attributes.FireDiscoveryDateTime).toLocaleDateString() : 'Unknown';
+        const containmentDate = attributes.ContainmentDateTime ? 
+          new Date(attributes.ContainmentDateTime).toLocaleDateString() : 'Ongoing';
+        
+        // Create wildfire record
+        const wildfire = {
+          id: attributes.IRWINID || `wildfire_${index}`,
+          name: attributes.IncidentName || 'Unnamed Fire',
+          state: attributes.POOState || 'Unknown',
+          containment: attributes.PercentContained || 0,
+          discovery_date: discoveryDate,
+          containment_date: containmentDate,
+          size_acres: attributes.IncidentSize || 'Unknown',
+          incident_type: attributes.IncidentTypeCategory || 'Wildfire',
+          lat: fireLat,
+          lon: fireLon,
+          distance_miles: distanceMiles.toFixed(2)
+        };
+        
+        wildfires.push(wildfire);
+        
+        // Create detailed POI data for mapping
+        wildfireDetails.push({
+          id: wildfire.id,
+          name: wildfire.name,
+          description: `${wildfire.incident_type} - ${wildfire.containment}% contained, discovered ${wildfire.discovery_date}`,
+          lat: fireLat,
+          lon: fireLon,
+          distance_miles: wildfire.distance_miles,
+          containment: wildfire.containment,
+          size_acres: wildfire.size_acres,
+          state: wildfire.state,
+          discovery_date: wildfire.discovery_date
+        });
+      });
+      
+      const totalWildfires = wildfires.length;
+      console.log(`📍 Found ${totalWildfires} wildfire incidents within ${radiusMiles} miles`);
+      
+      // Create result structure
+      const result = {
+        count: totalWildfires,
+        elements: wildfires,
+        detailed_pois: wildfireDetails,
+        all_pois: wildfires,
+        poi_wildfires_count: totalWildfires
+      };
+      
+      console.log(`🔥 Wildfire query completed:`, {
+        totalIncidents: totalWildfires,
+        sampleNames: wildfires.slice(0, 3).map(w => w.name)
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('🔥 NIFC Wildfires query failed:', error);
+      return { 
+        count: 0,
+        elements: [],
+        detailed_pois: [],
+        all_pois: [],
+        poi_wildfires_count: 0
       };
     }
   }

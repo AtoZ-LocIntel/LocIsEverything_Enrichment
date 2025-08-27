@@ -44,6 +44,19 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         }).join(' | ');
       }
       
+      // Special handling for Wildfire data
+      if (key.includes('poi_wildfires_all_pois') || key.includes('poi_wildfires_detailed') || key.includes('poi_wildfires_elements')) {
+        return value.map((item: any) => {
+          const parts = [];
+          if (item.name) parts.push(`Fire: ${item.name}`);
+          if (item.state) parts.push(`State: ${item.state}`);
+          if (item.containment !== undefined) parts.push(`${item.containment}% contained`);
+          if (item.size_acres) parts.push(`${item.size_acres} acres`);
+          if (item.distance_miles) parts.push(`${item.distance_miles} miles`);
+          return parts.join(', ');
+        }).join(' | ');
+      }
+      
       // Special handling for detailed POIs
       if (key.includes('_detailed') || key.includes('_elements')) {
         return value.map((item: any) => {
@@ -95,7 +108,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   };
 
   const getEnrichmentCategory = (key: string): string => {
-    if (key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions')) {
+    if (key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_wildfires')) {
       return 'Hazards & Safety';
     }
                 if (key.includes('open_meteo_weather')) {

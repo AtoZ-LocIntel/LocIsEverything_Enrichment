@@ -267,7 +267,7 @@ body {
   }
   
   .mobile-header-content {
-    padding: 12px !important;
+    padding: 8px !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
@@ -276,30 +276,30 @@ body {
   .mobile-content {
     width: 100% !important;
     max-width: 100% !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    padding-left: 8px !important;
+    padding-right: 4px !important;
     box-sizing: border-box !important;
   }
   
   .mobile-card {
-    width: calc(100% - 8px) !important;
-    max-width: calc(100% - 8px) !important;
-    margin: 0 4px !important;
+    width: calc(100% - 4px) !important;
+    max-width: calc(100% - 4px) !important;
+    margin: 0 2px 0 0 !important;
     box-sizing: border-box !important;
   }
   
   .mobile-card-header {
-    padding: 12px !important;
+    padding: 10px !important;
   }
   
   .mobile-card-body {
-    padding: 12px !important;
+    padding: 10px !important;
   }
   
   .mobile-buttons {
-    width: calc(100% - 8px) !important;
-    max-width: calc(100% - 8px) !important;
-    margin: 0 4px !important;
+    width: calc(100% - 4px) !important;
+    max-width: calc(100% - 4px) !important;
+    margin: 0 2px 0 0 !important;
     box-sizing: border-box !important;
   }
 }
