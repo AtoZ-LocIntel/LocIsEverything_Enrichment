@@ -322,7 +322,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         </div>
         
         <div className="card-body">
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4 w-full">
             {enrichmentCategories.map((category) => {
               const isExpanded = expandedCategories.has(category.id);
               const categoryEnrichments = category.enrichments;
@@ -334,7 +334,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
 
               return (
-                <div key={category.id} className={`border ${colors.border} rounded-lg overflow-hidden shadow-sm`} style={{width: 'calc(100% - 16px)', margin: '0 8px', boxSizing: 'border-box'}}>
+                <div key={category.id} className={`border ${colors.border} rounded-lg overflow-hidden shadow-sm w-full`}>
                   <button
                     onClick={() => toggleCategory(category.id)}
                     className={`w-full px-4 py-3 ${colors.header} ${colors.headerHover} transition-colors flex items-center justify-between`}
@@ -364,14 +364,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 
                   {isExpanded && (
                     <div className={`p-4 ${colors.bg} border-t ${colors.border}`}>
-                      <div className="grid gap-3">
+                      <div className="flex flex-col gap-3 w-full">
                         {categoryEnrichments.map((enrichment) => {
                           const isSelected = selectedEnrichments.includes(enrichment.id);
                           const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
 
                           return (
-                            <div key={enrichment.id} className={`flex items-center justify-between p-3 rounded-lg ${isSelected ? 'bg-white shadow-sm border border-gray-200' : 'bg-white/60 hover:bg-white/80'}`} style={{width: 'calc(100% - 16px)', margin: '0 8px', boxSizing: 'border-box'}}>
-                              <div className="flex items-center space-x-3">
+                            <div key={enrichment.id} className={`flex items-center justify-between p-3 rounded-lg w-full ${isSelected ? 'bg-white shadow-sm border border-gray-200' : 'bg-white/60 hover:bg-white/80'}`}>
+                              <div className="flex items-center space-x-3 flex-1 min-w-0">
                                 <input
                                   type="checkbox"
                                   id={enrichment.id}
@@ -379,11 +379,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   onChange={() => handleEnrichmentToggle(enrichment.id)}
                                   className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                 />
-                                <div>
-                                  <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer">
+                                <div className="flex-1 min-w-0">
+                                  <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer block truncate">
                                     {enrichment.label}
                                   </label>
-                                  <p className="text-sm text-gray-700">{enrichment.description}</p>
+                                  <p className="text-sm text-gray-700 truncate">{enrichment.description}</p>
                                 </div>
                               </div>
 
@@ -401,7 +401,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   </div>
                                   
                                   {/* Radius Input */}
-                                  <div className="flex items-center space-x-2">
+                                  <div className="flex items-center space-x-2 w-full">
                                     <span className="text-sm text-gray-900 font-medium">Radius:</span>
                                     <input
                                       type="number"
