@@ -142,10 +142,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   }, {} as Record<string, Array<{ key: string; value: any }>>);
 
   return (
-    <div className="min-h-screen bg-gray-50 md:hidden pt-28 overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 md:hidden pt-28 overflow-x-hidden w-full">
       {/* Header with Action Buttons */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-28 z-40">
-        <div className="flex items-center justify-between p-3 sm:p-4">
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-28 z-40 w-full">
+        <div className="flex items-center justify-between p-3 sm:p-4 max-w-full">
           <button
             onClick={onBackToSearch}
             className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -175,9 +175,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       </div>
 
       {/* Results Content */}
-      <div className="px-3 sm:px-4 py-4 space-y-4 max-w-full">
+      <div className="px-2 py-4 space-y-4 w-full max-w-full box-border">
         {/* Location Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 w-full overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 w-full max-w-full box-border mx-2">
           <div className="text-center">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words">{location.name}</h1>
             <div className="text-gray-600 space-y-1 text-sm sm:text-base">
@@ -190,12 +190,12 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
 
         {/* Enrichment Data */}
         {Object.entries(groupedEnrichments).map(([category, items]) => (
-          <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden w-full">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 sm:px-6 py-3 sm:py-4">
-              <h2 className="text-lg sm:text-xl font-bold text-white">{category}</h2>
+          <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-full box-border mx-2">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-3 rounded-t-xl">
+              <h2 className="text-lg font-bold text-white">{category}</h2>
             </div>
             
-            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+            <div className="p-3 space-y-3">
               {items.map(({ key, value }) => (
                 <div key={key} className="border-b border-gray-100 last:border-b-0 pb-3 sm:pb-4 last:pb-0">
                   <div className="flex flex-col space-y-2">
@@ -213,7 +213,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         ))}
 
         {/* Bottom Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pb-8 w-full">
+        <div className="flex flex-col gap-3 pb-8 w-full max-w-full box-border mx-2">
           <button
             onClick={onViewMap}
             className="flex-1 bg-blue-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
