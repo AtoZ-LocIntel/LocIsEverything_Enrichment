@@ -344,8 +344,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         {category.icon}
                       </div>
                       <div className="text-left flex-1 min-w-0">
-                        <h4 className="font-medium text-gray-900">{category.title}</h4>
-                        <p className="text-sm text-gray-700">{category.description}</p>
+                        <div className="flex items-center space-x-2">
+                          <h4 className="font-medium text-gray-900">{category.title}</h4>
+                          <p className="text-xs text-gray-600">{category.description}</p>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 min-w-0">
@@ -380,10 +382,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                 />
                                 <div className="flex-1 min-w-0">
-                                  <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer">
-                                    {enrichment.label}
-                                  </label>
-                                  <p className="text-sm text-gray-700">{enrichment.description}</p>
+                                  <div className="flex items-center space-x-2">
+                                    <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer">
+                                      {enrichment.label}
+                                    </label>
+                                    <p className="text-xs text-gray-600">{enrichment.description}</p>
+                                  </div>
                                 </div>
                               </div>
 
