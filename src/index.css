@@ -382,6 +382,8 @@ body {
     margin-left: 16px !important;
     margin-right: 16px !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
+    padding: 8px !important;
   }
   
   /* Ensure logos are visible on mobile */
@@ -463,6 +465,14 @@ body {
     flex-shrink: 0 !important;
   }
   
+  /* NUCLEAR FIX: ALL content inside white containers MUST be contained */
+  .bg-white * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  
   /* Fix ALL colored category containers inside white boxes */
   .bg-white .bg-gray-500,
   .bg-white .bg-gray-600, 
@@ -474,12 +484,13 @@ body {
   .bg-white .bg-yellow-600,
   .bg-white .bg-purple-600,
   .bg-white .bg-indigo-600 {
-    width: calc(100% - 24px) !important;
-    max-width: calc(100% - 24px) !important;
-    margin: 8px 12px !important;
-    padding: 8px !important;
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin: 4px 8px !important;
+    padding: 6px !important;
     box-sizing: border-box !important;
-    font-size: 11px !important;
+    font-size: 10px !important;
+    overflow: hidden !important;
   }
   
   /* Fix configuration panel content specifically */
@@ -503,11 +514,12 @@ body {
   
   /* Fix any grid containers inside white boxes */
   .bg-white .grid {
-    width: calc(100% - 24px) !important;
-    max-width: calc(100% - 24px) !important;
-    margin: 12px !important;
-    gap: 8px !important;
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin: 4px 8px !important;
+    gap: 4px !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
   }
   
   /* Fix any flex containers inside white boxes */
@@ -527,6 +539,14 @@ body {
     margin-left: 8px !important;
     margin-right: 8px !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  
+  /* Force ALL divs inside white containers to be contained */
+  .bg-white div {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
   }
   
   /* Fix specific configuration elements that overflow */
