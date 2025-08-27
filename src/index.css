@@ -454,10 +454,13 @@ body {
     gap: 8px !important;
   }
   
-  /* Make the logo smaller on mobile */
+  /* Make the logo smaller on mobile and ensure it's round */
   .bg-gradient-to-r.from-gray-600.to-gray-900 img {
     width: 60px !important;
     height: 60px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
   }
   
   /* Fix ALL colored category containers inside white boxes */
@@ -471,12 +474,31 @@ body {
   .bg-white .bg-yellow-600,
   .bg-white .bg-purple-600,
   .bg-white .bg-indigo-600 {
-    width: calc(100% - 16px) !important;
-    max-width: calc(100% - 16px) !important;
-    margin: 8px !important;
+    width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px) !important;
+    margin: 8px 12px !important;
     padding: 8px !important;
     box-sizing: border-box !important;
     font-size: 11px !important;
+  }
+  
+  /* Fix configuration panel content specifically */
+  .bg-white .space-y-3,
+  .bg-white .grid.gap-3,
+  .bg-white .flex.items-center.justify-between {
+    width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px) !important;
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix input fields and controls inside white containers */
+  .bg-white input,
+  .bg-white select,
+  .bg-white button {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   
   /* Fix any grid containers inside white boxes */
@@ -504,6 +526,35 @@ body {
     max-width: calc(100% - 16px) !important;
     margin-left: 8px !important;
     margin-right: 8px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix specific configuration elements that overflow */
+  .bg-white .rounded-lg.border,
+  .bg-white .bg-white.shadow-sm,
+  .bg-white .bg-white\/60 {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin: 4px 8px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix text content inside panels */
+  .bg-white p,
+  .bg-white ul,
+  .bg-white li {
+    width: 100% !important;
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix radius input containers */
+  .bg-white .flex.flex-col.space-y-2,
+  .bg-white .flex.items-center.space-x-2 {
+    width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box !important;
   }
   
