@@ -311,10 +311,10 @@ function App() {
                   <p className="text-blue-200">Configure your search to include any combination of these data sources</p>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div className="bg-gray-500 p-3 md:p-4 rounded-lg border border-gray-600 shadow-lg">
-                    <h3 className="font-semibold text-white mb-2 text-sm md:text-base">📍 Core Location Data</h3>
-                    <ul className="text-white space-y-1 text-xs md:text-sm">
+                <div className={`${isMobile ? 'flex flex-col space-y-3 px-2' : 'grid grid-cols-1 md:grid-cols-3 gap-4'} text-sm`}>
+                  <div className={`bg-gray-500 rounded-lg border border-gray-600 shadow-lg ${isMobile ? 'p-2 mx-1' : 'p-3 md:p-4'}`}>
+                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-xs' : 'text-sm md:text-base'}`}>📍 Core Location Data</h3>
+                    <ul className={`text-white space-y-1 ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>
                       <li>• Elevation & Air Quality</li>
                       <li>• Census FIPS Codes</li>
                       <li>• Demographics (Population, Income, Age)</li>
@@ -322,9 +322,9 @@ function App() {
                     </ul>
                   </div>
                   
-                  <div className="bg-gray-700 p-3 md:p-4 rounded-lg border border-gray-800 shadow-lg">
-                    <h3 className="font-semibold text-white mb-2 text-sm md:text-base">🏢 Points of Interest</h3>
-                    <ul className="text-white space-y-1 text-xs md:text-sm">
+                  <div className={`bg-gray-700 rounded-lg border border-gray-800 shadow-lg ${isMobile ? 'p-2 mx-1' : 'p-3 md:p-4'}`}>
+                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-xs' : 'text-sm md:text-base'}`}>🏢 Points of Interest</h3>
+                    <ul className={`text-white space-y-1 ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>
                       <li>• Schools, Hospitals, Parks, Police & Fire</li>
                       <li>• Retail & Restaurants</li>
                       <li>• Transportation & Infrastructure</li>
@@ -332,10 +332,10 @@ function App() {
                     </ul>
                   </div>
                   
-                  <div className="bg-gray-800 p-3 md:p-4 rounded-lg border border-gray-900 shadow-lg">
-                    <h3 className="font-semibold text-white mb-2 text-sm md:text-base">🌍 Specialized Data</h3>
-                    <ul className="text-white space-y-1 text-xs md:text-sm">
-                      <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span> <span className="text-blue-200 text-xs md:text-sm">(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</span></li>
+                  <div className={`bg-gray-800 rounded-lg border border-gray-900 shadow-lg ${isMobile ? 'p-2 mx-1' : 'p-3 md:p-4'}`}>
+                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-xs' : 'text-sm md:text-base'}`}>🌍 Specialized Data</h3>
+                    <ul className={`text-white space-y-1 ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>
+                      <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span> <span className={`text-blue-200 ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</span></li>
                       <li>• Environmental Hazards</li>
                       <li>• Power Plants & Cell Towers</li>
                       <li>• Breweries & Enhanced Wikipedia (haunted sites, oddities, museums)</li>
