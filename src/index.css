@@ -600,11 +600,30 @@ body {
 @media (max-width: 767px) {
   .enrichment-config .card-body {
     overflow-x: hidden !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
   }
   
   .enrichment-config .card-body * {
     max-width: 100% !important;
+  }
+  
+  /* Slide grey enrichment boxes to the left on mobile */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 {
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+    width: calc(100% + 16px) !important;
+    padding-left: 16px !important;
+    padding-right: 8px !important;
+  }
+  
+  /* Ensure the three category boxes fit by reducing their width slightly */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 .grid {
+    gap: 8px !important;
+  }
+  
+  .bg-gradient-to-r.from-gray-600.to-gray-900 .grid > div {
+    padding: 12px !important;
+    font-size: 11px !important;
   }
 }
