@@ -17,6 +17,13 @@ body {
   padding: 0;
 }
 
+/* Prevent scrolling when modal is open */
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
 #root {
   width: 100%;
   max-width: 100%;
@@ -599,9 +606,9 @@ body {
 /* Mobile containment fix */
 @media (max-width: 767px) {
   /* Fix squashed logo in app header */
-  .bg-gradient-to-r.from-gray-600.to-gray-900 img {
-    width: 64px !important;
-    height: 64px !important;
+  .bg-gradient-to-r.from-gray-600.to-gray-900 .w-20.h-20 {
+    width: 80px !important;
+    height: 80px !important;
     border-radius: 50% !important;
     object-fit: cover !important;
     flex-shrink: 0 !important;
@@ -616,8 +623,8 @@ body {
     max-width: 100% !important;
   }
   
-  /* Apply same method to all main sections that worked for Core Location Data */
-  .bg-gray-500, .bg-indigo-500, .bg-blue-500 {
+  /* Apply same method to all main sections - target the actual classes from App.tsx */
+  .bg-gray-500, .bg-gray-700, .bg-gray-800 {
     transform: translateX(-16px) !important;
     width: calc(100% + 16px) !important;
     padding-left: 20px !important;
@@ -626,17 +633,20 @@ body {
   
   /* Fix category labels in Enrichment Configuration - description to right of main label */
   .enrichment-config .flex.items-center.space-x-2 {
-    align-items: baseline !important;
+    align-items: center !important;
     flex-wrap: nowrap !important;
+    gap: 8px !important;
   }
   
   .enrichment-config .flex.items-center.space-x-2 h4 {
     flex-shrink: 0 !important;
-    margin-right: 8px !important;
+    white-space: nowrap !important;
   }
   
   .enrichment-config .flex.items-center.space-x-2 p {
     flex-shrink: 1 !important;
     min-width: 0 !important;
+    font-size: 10px !important;
+    line-height: 1.2 !important;
   }
 }

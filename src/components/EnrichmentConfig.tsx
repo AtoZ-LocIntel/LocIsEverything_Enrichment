@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, ChevronDown, ChevronRight, Users, Building2, Heart, Zap, TreePine, Mountain, Bus, Coffee } from 'lucide-react';
+import { Settings, TreePine } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
 interface EnrichmentConfigProps {
@@ -39,14 +39,16 @@ const CORE_ENRICHMENTS = [
 const SECTION_ICONS: Record<string, React.ReactNode> = {
   core: <Settings className="w-5 h-5" />,
   hazards: <span className="text-xl">🌊</span>,
-  community: <Users className="w-5 h-5" />,
-  retail: <Building2 className="w-5 h-5" />,
-  health: <Heart className="w-5 h-5" />,
-  transportation: <Bus className="w-5 h-5" />,
-  infrastructure: <Zap className="w-5 h-5" />,
+  community: <span className="text-xl">👥</span>,
+  retail: <span className="text-xl">🏢</span>,
+  health: <span className="text-xl">❤️</span>,
+  transportation: <span className="text-xl">🚌</span>,
+  infrastructure: <span className="text-xl">⚡</span>,
   environment: <TreePine className="w-5 h-5" />,
-  recreation: <Mountain className="w-5 h-5" />,
-  quirky: <Coffee className="w-5 h-5" />,
+  recreation: <span className="text-xl">🎯</span>,
+  natural_resources: <span className="text-xl">🏔️</span>,
+  public_lands: <span className="text-xl">🏞️</span>,
+  quirky: <span className="text-xl">☕</span>,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -127,8 +129,22 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   poiRadii, 
   onPoiRadiiChange 
 }) => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['core']));
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+
+  // Handle modal body scroll prevention
+  useEffect(() => {
+    if (activeModal) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [activeModal]);
 
   // Load dynamic POI configuration
   useEffect(() => {
@@ -152,7 +168,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         return {
           id: section.id,
           title: section.title,
-          icon: SECTION_ICONS[section.id] || <span>📁</span>,
+          icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
           description: section.description,
           enrichments: sectionEnrichments
         };
@@ -181,15 +197,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     };
   }, []);
 
-  const toggleCategory = (categoryId: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId);
-    } else {
-      newExpanded.add(categoryId);
-    }
-    setExpandedCategories(newExpanded);
-  };
+  // Removed toggleCategory - using modal-based UI now
 
   const handleEnrichmentToggle = (enrichmentId: string) => {
     const newSelected = selectedEnrichments.includes(enrichmentId)
@@ -322,138 +330,176 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         </div>
         
         <div className="card-body">
-          <div className="space-y-4">
+          {/* Category Button Grid */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
             {enrichmentCategories.map((category) => {
-              const isExpanded = expandedCategories.has(category.id);
               const categoryEnrichments = category.enrichments;
-              const hasSelectedEnrichments = categoryEnrichments.some(enrichment => 
-                selectedEnrichments.includes(enrichment.id)
-              );
-              
-              // Get color scheme for this category
+              const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
               const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
 
               return (
-                <div key={category.id} className={`border ${colors.border} rounded-lg overflow-hidden shadow-sm`}>
-                  <button
-                    onClick={() => toggleCategory(category.id)}
-                    className={`w-full px-4 py-3 ${colors.header} ${colors.headerHover} transition-colors flex items-center justify-between`}
-                  >
-                    <div className="flex items-center space-x-3 flex-1 min-w-0 max-w-full">
-                      <div className="text-gray-700">
-                        {category.icon}
+                <button
+                  key={category.id}
+                  onClick={() => setActiveModal(category.id)}
+                  className={`relative p-4 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border}`}
+                >
+                  <div className="text-center">
+                    <div className="text-3xl mb-2">{category.icon}</div>
+                    <h3 className="font-semibold text-gray-900 text-sm">{category.title}</h3>
+                    {selectedCount > 0 && (
+                      <div className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-medium">
+                        {selectedCount}
                       </div>
-                      <div className="text-left flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <h4 className="font-medium text-gray-900">{category.title}</h4>
-                          <p className="text-xs text-gray-600">{category.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2 min-w-0">
-                      {hasSelectedEnrichments && (
-                        <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
-                          {categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length} selected
-                        </span>
-                      )}
-                      {isExpanded ? (
-                        <ChevronDown className="w-5 h-5 text-gray-500" />
-                      ) : (
-                        <ChevronRight className="w-5 h-5 text-gray-500" />
-                      )}
-                    </div>
-                  </button>
-
-                  {isExpanded && (
-                    <div className={`p-4 ${colors.bg} border-t ${colors.border}`}>
-                      <div className="space-y-3">
-                        {categoryEnrichments.map((enrichment) => {
-                          const isSelected = selectedEnrichments.includes(enrichment.id);
-                          const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
-
-                          return (
-                            <div key={enrichment.id} className={`flex items-center justify-between p-3 rounded-lg ${isSelected ? 'bg-white shadow-sm border border-gray-200' : 'bg-white/60 hover:bg-white/80'}`}>
-                              <div className="flex items-center space-x-3 flex-1 min-w-0 max-w-full">
-                                <input
-                                  type="checkbox"
-                                  id={enrichment.id}
-                                  checked={isSelected}
-                                  onChange={() => handleEnrichmentToggle(enrichment.id)}
-                                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center space-x-2">
-                                    <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer">
-                                      {enrichment.label}
-                                    </label>
-                                    <p className="text-xs text-gray-600">{enrichment.description}</p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {enrichment.isPOI && isSelected && (
-                                <div className="flex flex-col space-y-2 shrink-0">
-                                  {/* Radius Note */}
-                                  <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200 whitespace-nowrap">
-                                    ⚠️ Max: {
-                                      enrichment.id === 'poi_earthquakes' ? '25mi' :
-                                      enrichment.id === 'poi_volcanoes' ? '50mi' :
-                                      enrichment.id === 'poi_wildfires' ? '50mi' :
-                                      enrichment.id === 'poi_flood_reference_points' ? '25mi' :
-                                      '5mi'
-                                    }
-                                  </div>
-                                  
-                                  {/* Radius Input */}
-                                  <div className="flex items-center space-x-1">
-                                    <span className="text-xs text-gray-900 font-medium">R:</span>
-                                    <input
-                                      type="number"
-                                      min="0.1"
-                                      max={
-                                        enrichment.id === 'poi_earthquakes' ? 25 :
-                                        enrichment.id === 'poi_volcanoes' ? 50 :
-                                        enrichment.id === 'poi_wildfires' ? 50 :
-                                        enrichment.id === 'poi_flood_reference_points' ? 25 :
-                                        5
-                                      }
-                                      step="0.1"
-                                      value={currentRadius}
-                                      onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                                      className="w-12 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
-                                    />
-                                    <span className="text-xs text-gray-900 font-medium">mi</span>
-                                  </div>
-                                    
-                                  {/* Show warning if user tries to exceed the limit */}
-                                  {currentRadius > (
-                                    enrichment.id === 'poi_earthquakes' ? 25 :
-                                    enrichment.id === 'poi_volcanoes' ? 50 :
-                                    enrichment.id === 'poi_flood_reference_points' ? 25 :
-                                    5
-                                  ) && (
-                                    <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
-                                      Capped at {
-                                        enrichment.id === 'poi_earthquakes' ? '25' :
-                                        enrichment.id === 'poi_volcanoes' ? '50' :
-                                        enrichment.id === 'poi_flood_reference_points' ? '25' :
-                                        '5'
-                                      } miles
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </button>
               );
             })}
           </div>
 
+          {/* Category Configuration Modal */}
+          {activeModal && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 z-[9999]" 
+              style={{paddingTop: '80px'}}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setActiveModal(null);
+                }
+              }}
+            >
+              <div className="bg-white rounded-xl max-w-2xl w-full max-h-[calc(100vh-100px)] overflow-y-auto">
+                {(() => {
+                  const category = enrichmentCategories.find(c => c.id === activeModal);
+                  if (!category) return null;
+                  
+                  const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
+                  const categoryEnrichments = category.enrichments;
+
+                  return (
+                    <>
+                      {/* Modal Header */}
+                      <div className={`p-6 ${colors.header} rounded-t-xl`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="text-2xl">{category.icon}</div>
+                            <div>
+                              <h2 className="text-xl font-bold text-gray-900">{category.title}</h2>
+                              <p className="text-sm text-gray-700">{category.description}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setActiveModal(null)}
+                            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Modal Body */}
+                      <div className="p-6">
+                        <div className="space-y-4">
+                          {categoryEnrichments.map((enrichment) => {
+                            const isSelected = selectedEnrichments.includes(enrichment.id);
+                            const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
+
+                            return (
+                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-4">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-start space-x-3 flex-1">
+                                    <input
+                                      type="checkbox"
+                                      id={enrichment.id}
+                                      checked={isSelected}
+                                      onChange={() => handleEnrichmentToggle(enrichment.id)}
+                                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 mt-0.5"
+                                    />
+                                    <div className="flex-1">
+                                      <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer block">
+                                        {enrichment.label}
+                                      </label>
+                                      <p className="text-sm text-gray-600 mt-1">{enrichment.description}</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {enrichment.isPOI && isSelected && (
+                                  <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+                                      <p className="text-xs text-amber-700">
+                                        ⚠️ Maximum radius: {
+                                          enrichment.id === 'poi_earthquakes' ? '25 miles (earthquakes)' :
+                                          enrichment.id === 'poi_volcanoes' ? '50 miles (volcanoes)' :
+                                          enrichment.id === 'poi_wildfires' ? '50 miles (wildfires)' :
+                                          enrichment.id === 'poi_flood_reference_points' ? '25 miles (flood reference points)' :
+                                          '5 miles'
+                                        } (for performance & accuracy)
+                                      </p>
+                                    </div>
+                                    
+                                    <div className="flex items-center space-x-3">
+                                      <label className="text-sm font-medium text-white">Search Radius:</label>
+                                      <input
+                                        type="number"
+                                        min="0.1"
+                                        max={
+                                          enrichment.id === 'poi_earthquakes' ? 25 :
+                                          enrichment.id === 'poi_volcanoes' ? 50 :
+                                          enrichment.id === 'poi_wildfires' ? 50 :
+                                          enrichment.id === 'poi_flood_reference_points' ? 25 :
+                                          5
+                                        }
+                                        step="0.1"
+                                        value={currentRadius}
+                                        onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
+                                        className="w-20 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900"
+                                      />
+                                      <span className="text-sm text-white">miles</span>
+                                    </div>
+
+                                    {currentRadius > (
+                                      enrichment.id === 'poi_earthquakes' ? 25 :
+                                      enrichment.id === 'poi_volcanoes' ? 50 :
+                                      enrichment.id === 'poi_flood_reference_points' ? 25 :
+                                      5
+                                    ) && (
+                                      <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                                        Capped at {
+                                          enrichment.id === 'poi_earthquakes' ? '25' :
+                                          enrichment.id === 'poi_volcanoes' ? '50' :
+                                          enrichment.id === 'poi_flood_reference_points' ? '25' :
+                                          '5'
+                                        } miles
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Modal Footer */}
+                      <div className="p-6 border-t border-gray-200 rounded-b-xl bg-gray-50">
+                        <div className="flex justify-end space-x-3">
+                          <button
+                            onClick={() => setActiveModal(null)}
+                            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                          >
+                            Done
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* Selected Enrichments Summary */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h4 className="text-sm font-medium text-blue-900 mb-2">📊 Selected Enrichments</h4>
             <div className="flex flex-wrap gap-2">
