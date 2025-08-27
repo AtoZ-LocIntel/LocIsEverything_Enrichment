@@ -1026,6 +1026,9 @@ if (bounds.isValid() && results.length > 1) {
           } else if (key === 'poi_flood_reference_points_count' && value > 0) {
             const proximityDistance = enrichments.poi_flood_reference_points_proximity_distance || 25;
             formattedValue = `${value} found within ${proximityDistance} mi`;
+          } else if (key === 'poi_wildfires_count' && value > 0) {
+            const proximityDistance = enrichments.poi_wildfires_proximity_distance || 50;
+            formattedValue = `${value} found within ${proximityDistance} mi`;
           } else if (key === 'open_meteo_weather_temperature_f') {
             formattedValue = `${value.toFixed(1)}°F`;
           } else if (key === 'open_meteo_weather_windspeed_mph') {

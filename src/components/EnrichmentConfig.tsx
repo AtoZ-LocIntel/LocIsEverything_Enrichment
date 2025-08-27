@@ -206,6 +206,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       maxRadius = 25; // Earthquakes can go up to 25 miles
     } else if (enrichmentId === 'poi_volcanoes') {
       maxRadius = 50; // Volcanoes can go up to 50 miles
+    } else if (enrichmentId === 'poi_wildfires') {
+      maxRadius = 50; // Wildfires can go up to 50 miles for risk assessment
     } else if (enrichmentId === 'poi_flood_reference_points') {
       maxRadius = 25; // Flood reference points can go up to 25 miles
     }
@@ -392,6 +394,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     ⚠️ Maximum radius: {
                                       enrichment.id === 'poi_earthquakes' ? '25 miles (earthquakes)' :
                                       enrichment.id === 'poi_volcanoes' ? '50 miles (volcanoes)' :
+                                      enrichment.id === 'poi_wildfires' ? '50 miles (wildfires)' :
                                       enrichment.id === 'poi_flood_reference_points' ? '25 miles (flood reference points)' :
                                       '5 miles'
                                     } (for performance & accuracy)

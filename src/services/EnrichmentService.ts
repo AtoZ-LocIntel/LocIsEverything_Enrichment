@@ -935,8 +935,13 @@ export class EnrichmentService {
     lon: number, 
     poiRadii: Record<string, number>
   ): Promise<Record<string, any>> {
-    // Cap all radii at 5 miles maximum for performance and accuracy
-    const radius = Math.min(poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId), 5);
+    // Cap radii for performance, but allow wildfires up to 50 miles
+    let maxRadius = 5; // Default 5 mile cap
+    if (enrichmentId === 'poi_wildfires') {
+      maxRadius = 50; // Wildfires can be up to 50 miles for risk assessment
+    }
+    
+    const radius = Math.min(poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId), maxRadius);
 
     switch (enrichmentId) {
       case 'elev':
@@ -2920,7 +2925,8 @@ export class EnrichmentService {
         elements: wildfires,
         detailed_pois: wildfireDetails,
         all_pois: wildfires,
-        poi_wildfires_count: totalWildfires
+        poi_wildfires_count: totalWildfires,
+        poi_wildfires_proximity_distance: radiusMiles
       };
       
       console.log(`🔥 Wildfire query completed:`, {

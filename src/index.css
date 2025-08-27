@@ -384,6 +384,13 @@ body {
     box-sizing: border-box !important;
   }
   
+  /* Ensure logos are visible on mobile */
+  img[src="/assets/new-logo.png"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
   /* Fix for enrichment options container */
   .bg-gradient-to-br.from-gray-800.to-gray-900 {
     width: calc(100vw - 32px) !important;
@@ -401,13 +408,14 @@ body {
     margin-right: 8px !important;
   }
   
-  /* Fix for the grid container itself */
+  /* Fix for the grid container itself - make it fit within the white container */
   .grid.grid-cols-1.md\\:grid-cols-3 {
-    width: calc(100vw - 32px) !important;
-    max-width: calc(100vw - 32px) !important;
-    margin-left: 16px !important;
-    margin-right: 16px !important;
-    gap: 12px !important;
+    width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px) !important;
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
   }
   
   /* Fix for the three enrichment category panels */
@@ -416,6 +424,86 @@ body {
     max-width: 100% !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
+    box-sizing: border-box !important;
+    padding: 8px !important;
+    font-size: 11px !important;
+  }
+  
+  /* Fix for content inside the panels */
+  .grid.grid-cols-1.md\\:grid-cols-3 > div ul {
+    padding-left: 12px !important;
+    margin: 0 !important;
+  }
+  
+  /* Fix for the main enrichment container padding */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 {
+    padding: 12px !important;
+  }
+  
+  /* Fix for the title section to prevent overflow */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 .text-center {
+    padding: 0 8px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  /* Fix for the title text to wrap properly */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 h2 {
+    font-size: 18px !important;
+    line-height: 1.3 !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  /* Make the logo smaller on mobile */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 img {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  
+  /* Fix ALL colored category containers inside white boxes */
+  .bg-white .bg-gray-500,
+  .bg-white .bg-gray-600, 
+  .bg-white .bg-gray-700,
+  .bg-white .bg-gray-800,
+  .bg-white .bg-blue-600,
+  .bg-white .bg-green-600,
+  .bg-white .bg-red-600,
+  .bg-white .bg-yellow-600,
+  .bg-white .bg-purple-600,
+  .bg-white .bg-indigo-600 {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin: 8px !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+    font-size: 11px !important;
+  }
+  
+  /* Fix any grid containers inside white boxes */
+  .bg-white .grid {
+    width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px) !important;
+    margin: 12px !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix any flex containers inside white boxes */
+  .bg-white .flex {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin: 8px !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+    flex-wrap: wrap !important;
+  }
+  
+  /* Ensure all content inside white containers is contained */
+  .bg-white > div {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
     box-sizing: border-box !important;
   }
   
