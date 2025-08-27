@@ -596,7 +596,7 @@ body {
   
 }
 
-/* Simple mobile containment fix */
+/* Mobile containment fix */
 @media (max-width: 767px) {
   .enrichment-config .card-body {
     overflow-x: hidden !important;
@@ -604,9 +604,7 @@ body {
     padding-right: 12px !important;
   }
   
-  .enrichment-config .card-body > div > div {
-    max-width: calc(100vw - 48px) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+  .enrichment-config .card-body * {
+    max-width: 100% !important;
   }
 }
