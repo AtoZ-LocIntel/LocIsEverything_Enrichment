@@ -595,3 +595,15 @@ body {
   }
   
 }
+
+/* Simple mobile containment fix - ONLY for mobile portrait */
+@media (max-width: 767px) and (orientation: portrait) {
+  .card-body {
+    overflow-x: hidden !important;
+  }
+  
+  .card-body > div {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}

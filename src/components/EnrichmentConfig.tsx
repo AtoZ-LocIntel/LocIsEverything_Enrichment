@@ -322,7 +322,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         </div>
         
         <div className="card-body">
-          <div className="flex flex-col gap-4 w-full overflow-x-hidden px-3">
+          <div className="flex flex-col gap-4 w-full">
             {enrichmentCategories.map((category) => {
               const isExpanded = expandedCategories.has(category.id);
               const categoryEnrichments = category.enrichments;
@@ -339,18 +339,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     onClick={() => toggleCategory(category.id)}
                     className={`w-full px-4 py-3 ${colors.header} ${colors.headerHover} transition-colors flex items-center justify-between`}
                   >
-                    <div className="flex items-center space-x-3 min-w-0">
-                      <div className="text-gray-700 shrink-0">
+                    <div className="flex items-center space-x-3">
+                      <div className="text-gray-700">
                         {category.icon}
                       </div>
-                      <div className="text-left min-w-0">
-                        <h4 className="font-medium text-gray-900 truncate">{category.title}</h4>
-                        <p className="text-sm text-gray-700 break-words">{category.description}</p>
+                      <div className="text-left">
+                        <h4 className="font-medium text-gray-900">{category.title}</h4>
+                        <p className="text-sm text-gray-700">{category.description}</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 shrink-0">
+                    <div className="flex items-center space-x-2">
                       {hasSelectedEnrichments && (
-                        <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full shrink-0">
+                        <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
                           {categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length} selected
                         </span>
                       )}
@@ -370,23 +370,25 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
 
                           return (
-                            <div key={enrichment.id} className={`flex items-start sm:items-center justify-between gap-3 p-3 rounded-lg w-full ${isSelected ? 'bg-white shadow-sm border border-gray-200' : 'bg-white/60 hover:bg-white/80'}`}>
-                              <div className="flex items-start sm:items-center space-x-3 flex-1 min-w-0">
+                            <div key={enrichment.id} className={`flex items-center justify-between p-3 rounded-lg w-full ${isSelected ? 'bg-white shadow-sm border border-gray-200' : 'bg-white/60 hover:bg-white/80'}`}>
+                              <div className="flex items-center space-x-3 flex-1 min-w-0">
                                 <input
                                   type="checkbox"
                                   id={enrichment.id}
                                   checked={isSelected}
                                   onChange={() => handleEnrichmentToggle(enrichment.id)}
-                                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 shrink-0"
+                                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                 />
-                                <div className="min-w-0 flex-1">
-                                  <div className="font-medium text-gray-900 truncate">{enrichment.label}</div>
-                                  <div className="text-sm text-gray-700 break-words">{enrichment.description}</div>
+                                <div className="flex-1 min-w-0">
+                                  <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer">
+                                    {enrichment.label}
+                                  </label>
+                                  <p className="text-sm text-gray-700">{enrichment.description}</p>
                                 </div>
                               </div>
 
                               {enrichment.isPOI && isSelected && (
-                                <div className="flex flex-col space-y-2 shrink-0 max-w-full">
+                                <div className="flex flex-col space-y-2">
                                   {/* Radius Note */}
                                   <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
                                     ⚠️ Maximum radius: {
@@ -399,7 +401,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   </div>
                                   
                                   {/* Radius Input */}
-                                  <div className="flex items-center gap-2 w-full flex-wrap min-w-0">
+                                  <div className="flex items-center space-x-2 w-full">
                                     <span className="text-sm text-gray-900 font-medium">Radius:</span>
                                     <input
                                       type="number"
