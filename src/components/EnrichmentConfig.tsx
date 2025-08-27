@@ -287,33 +287,33 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     <div className="enrichment-config">
       <div className="card">
         <div className="card-header">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-4">
             <div className="flex items-center space-x-3">
-              <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-20 h-20" />
-              <div>
-                <h3 className="text-lg font-semibold text-white">Enrichment Configuration</h3>
-                <p className="text-sm text-gray-300">Select data sources and configure search parameters</p>
+              <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base lg:text-lg font-semibold text-white">Enrichment Configuration</h3>
+                <p className="text-xs lg:text-sm text-gray-300">Select data sources and configure search parameters</p>
               </div>
             </div>
             
             {/* Reset All Filters Button */}
-            <div className="mt-6 flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
               <button
                 onClick={handleResetAllFilters}
-                className="btn btn-outline flex items-center space-x-2"
+                className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
                 title="Reset all selected enrichments and radii to defaults"
               >
                 <span className="w-4 h-4">🔄</span>
-                <span>Reset All Filters</span>
+                <span className="whitespace-nowrap">Reset All Filters</span>
               </button>
               
               <button
                 onClick={handleResetApp}
-                className="btn btn-outline flex items-center space-x-2"
+                className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
                 title="Clear browser cache and refresh application to ensure latest code"
               >
                 <span className="w-4 h-4">🔄</span>
-                <span>Reset App</span>
+                <span className="whitespace-nowrap">Reset App</span>
               </button>
             </div>
           </div>

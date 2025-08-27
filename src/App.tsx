@@ -218,9 +218,9 @@ function App() {
       <Header />
       
       {viewMode === 'config' ? (
-        <div className="pt-28 px-4 sm:px-6 lg:px-8">
+        <div className="pt-28 px-2 sm:px-4 md:px-6 lg:px-8">
           {/* Main Content */}
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto w-full">
             {/* Mobile Instructions */}
             {isMobile && (
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
@@ -244,7 +244,7 @@ function App() {
             </div>
 
             {/* Enrichment Options Preview */}
-            <div className="mb-8 p-4 md:p-6 bg-gradient-to-r from-gray-600 to-gray-900 rounded-xl border-2 border-white shadow-2xl">
+            <div className="mb-8 p-3 md:p-4 lg:p-6 bg-gradient-to-r from-gray-600 to-gray-900 rounded-xl border-2 border-white shadow-2xl overflow-hidden">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-bold text-white mb-2 flex items-center justify-center space-x-4 mx-auto">
                     <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-20 h-20" />
@@ -254,9 +254,9 @@ function App() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div className="bg-gray-500 p-4 rounded-lg border border-gray-600 shadow-lg">
-                    <h3 className="font-semibold text-white mb-2">📍 Core Location Data</h3>
-                    <ul className="text-white space-y-1">
+                  <div className="bg-gray-500 p-3 md:p-4 rounded-lg border border-gray-600 shadow-lg">
+                    <h3 className="font-semibold text-white mb-2 text-sm md:text-base">📍 Core Location Data</h3>
+                    <ul className="text-white space-y-1 text-xs md:text-sm">
                       <li>• Elevation & Air Quality</li>
                       <li>• Census FIPS Codes</li>
                       <li>• Demographics (Population, Income, Age)</li>
@@ -264,9 +264,9 @@ function App() {
                     </ul>
                   </div>
                   
-                  <div className="bg-gray-700 p-4 rounded-lg border border-gray-800 shadow-lg">
-                    <h3 className="font-semibold text-white mb-2">🏢 Points of Interest</h3>
-                    <ul className="text-white space-y-1">
+                  <div className="bg-gray-700 p-3 md:p-4 rounded-lg border border-gray-800 shadow-lg">
+                    <h3 className="font-semibold text-white mb-2 text-sm md:text-base">🏢 Points of Interest</h3>
+                    <ul className="text-white space-y-1 text-xs md:text-sm">
                       <li>• Schools, Hospitals, Parks, Police & Fire</li>
                       <li>• Retail & Restaurants</li>
                       <li>• Transportation & Infrastructure</li>
@@ -274,10 +274,10 @@ function App() {
                     </ul>
                   </div>
                   
-                  <div className="bg-gray-800 p-4 rounded-lg border border-gray-900 shadow-lg">
-                    <h3 className="font-semibold text-white mb-2">🌍 Specialized Data</h3>
-                    <ul className="text-white space-y-1">
-                      <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span> <span className="text-blue-200 text-sm">(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</span></li>
+                  <div className="bg-gray-800 p-3 md:p-4 rounded-lg border border-gray-900 shadow-lg">
+                    <h3 className="font-semibold text-white mb-2 text-sm md:text-base">🌍 Specialized Data</h3>
+                    <ul className="text-white space-y-1 text-xs md:text-sm">
+                      <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span> <span className="text-blue-200 text-xs md:text-sm">(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</span></li>
                       <li>• Environmental Hazards</li>
                       <li>• Power Plants & Cell Towers</li>
                       <li>• Breweries & Enhanced Wikipedia (haunted sites, oddities, museums)</li>
