@@ -129,8 +129,6 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
   const markersRef = useRef<L.Marker[]>([]);
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
-  const [activePopupTab, setActivePopupTab] = useState<string>('');
-  const popupRef = useRef<HTMLDivElement | null>(null);
   const tabContentBackup = useRef<Map<string, string>>(new Map());
   const weatherTabCache = useRef<Map<string, string>>(new Map());
 
@@ -960,7 +958,6 @@ if (bounds.isValid() && results.length > 1) {
   // Function to handle tab switching
   const handleTabSwitch = (tabName: string) => {
     console.log('🔄 handleTabSwitch called with:', tabName);
-    setActivePopupTab(tabName);
     
     // Find the popup content container dynamically
     const popup = document.querySelector('.leaflet-popup-content');

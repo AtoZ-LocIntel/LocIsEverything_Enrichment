@@ -39,7 +39,6 @@ async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: numb
         throw new Error(`HTTP ${res.status}`);
       }
       
-      const ct = res.headers.get("content-type") || "";
       const text = await res.text();
       
       // Check if response is HTML (error page) instead of JSON
