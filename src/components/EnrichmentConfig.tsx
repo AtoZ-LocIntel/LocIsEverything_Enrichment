@@ -360,15 +360,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           {/* Category Configuration Modal */}
           {activeModal && (
             <div 
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 z-[9999]" 
-              style={{paddingTop: '80px'}}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]" 
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setActiveModal(null);
                 }
               }}
             >
-              <div className="bg-white rounded-xl max-w-2xl w-full max-h-[calc(100vh-100px)] overflow-y-auto">
+              <div className="bg-white rounded-xl w-full max-w-2xl h-[90vh] max-h-[90vh] flex flex-col overflow-hidden">
                 {(() => {
                   const category = enrichmentCategories.find(c => c.id === activeModal);
                   if (!category) return null;
@@ -378,27 +377,28 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 
                   return (
                     <>
-                      {/* Modal Header */}
-                      <div className={`p-6 ${colors.header} rounded-t-xl`}>
+                      {/* Modal Header - Fixed */}
+                      <div className={`p-6 ${colors.header} rounded-t-xl flex-shrink-0`}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <div className="text-2xl">{category.icon}</div>
                             <div>
-                              <h2 className="text-xl font-bold text-gray-900">{category.title}</h2>
-                              <p className="text-sm text-gray-700">{category.description}</p>
+                              <h2 className="text-xl font-bold text-white">{category.title}</h2>
+                              <p className="text-sm text-white text-opacity-90">{category.description}</p>
                             </div>
                           </div>
                           <button
                             onClick={() => setActiveModal(null)}
-                            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                            className="text-white hover:text-gray-300 text-2xl font-bold"
                           >
                             ×
                           </button>
                         </div>
                       </div>
 
-                      {/* Modal Body */}
-                      <div className="p-6">
+                      {/* Modal Body - Scrollable */}
+                      <div className="flex-1 overflow-y-auto">
+                        <div className="p-6">
                         <div className="space-y-4">
                           {categoryEnrichments.map((enrichment) => {
                             const isSelected = selectedEnrichments.includes(enrichment.id);
@@ -479,10 +479,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             );
                           })}
                         </div>
+                        </div>
                       </div>
 
-                      {/* Modal Footer */}
-                      <div className="p-6 border-t border-gray-200 rounded-b-xl bg-gray-50">
+                      {/* Modal Footer - Fixed */}
+                      <div className="p-6 border-t border-gray-200 rounded-b-xl bg-gray-50 flex-shrink-0">
                         <div className="flex justify-end space-x-3">
                           <button
                             onClick={() => setActiveModal(null)}
