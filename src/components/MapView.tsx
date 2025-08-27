@@ -822,7 +822,9 @@ if (bounds.isValid() && results.length > 1) {
     // Group enrichments by category
     const enrichmentCategories: Record<string, Array<{key: string, value: any}>> = {
       'Weather & Alerts': [],
-      'Location & Demographics': [],
+      'Geographic Info': [],
+      'Political Districts': [],
+      'Demographics': [],
       'Hazards & Safety': [],
       'Transportation': [],
       'Natural Resources': [],
@@ -838,8 +840,12 @@ if (bounds.isValid() && results.length > 1) {
      const categorizeEnrichment = (key: string, value: any) => {
        if (key.includes('open_meteo_weather') || key.includes('nws_weather_alerts')) {
          enrichmentCategories['Weather & Alerts'].push({ key, value });
-       } else if (key.includes('elevation') || key.includes('fips') || key.includes('county') || key.includes('state') || key.includes('acs_')) {
-         enrichmentCategories['Location & Demographics'].push({ key, value });
+       } else if (key.includes('elevation') || key.includes('fips_') || key.includes('county_') || key.includes('state_') || key.includes('census_') || key.includes('city_') || key.includes('urban_area_') || key.includes('metro_area_') || key.includes('subdivision_')) {
+         enrichmentCategories['Geographic Info'].push({ key, value });
+       } else if (key.includes('congressional_') || key.includes('state_senate_') || key.includes('state_house_')) {
+         enrichmentCategories['Political Districts'].push({ key, value });
+       } else if (key.includes('acs_')) {
+         enrichmentCategories['Demographics'].push({ key, value });
        } else if (key.includes('poi_wetlands') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_fema_flood_zones') || key.includes('poi_wildfires')) {
          enrichmentCategories['Hazards & Safety'].push({ key, value });
        } else if (key.includes('poi_bus') || key.includes('poi_train') || key.includes('poi_subway') || key.includes('poi_tram') || key.includes('poi_monorail') || key.includes('poi_aerialway') || key.includes('poi_ferry') || key.includes('poi_airport_air') || key.includes('poi_taxi') || key.includes('poi_bike_scooter_share') || key.includes('poi_dockless_hub') || key.includes('poi_electric_charging')) {
@@ -929,11 +935,30 @@ if (bounds.isValid() && results.length > 1) {
         const isActive = index === 0; // First tab is active by default
         const tabClass = isActive ? 'tab active' : 'tab';
         const tabId = categoryName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+        
+        // Add icons to tab names for better visual organization
+        const getTabIcon = (name: string): string => {
+          if (name === 'Weather & Alerts') return '🌤️';
+          if (name === 'Geographic Info') return '🌍';
+          if (name === 'Political Districts') return '🏛️';
+          if (name === 'Demographics') return '📊';
+          if (name === 'Hazards & Safety') return '⚠️';
+          if (name === 'Transportation') return '🚌';
+          if (name === 'Natural Resources') return '🌲';
+          if (name === 'Public Lands') return '🏞️';
+          if (name === 'Environmental Hazards') return '☢️';
+          if (name === 'Community & Services') return '🏪';
+          if (name === 'Recreation & Leisure') return '🎯';
+          if (name === 'Local Food & Agriculture') return '🌾';
+          return '📍';
+        };
+        
+        const tabIcon = getTabIcon(categoryName);
         content += `<button 
           data-tab="${tabId}"
           class="${tabClass}"
           onclick="window.handleTabSwitch && window.handleTabSwitch('${tabId}')"
-        >${categoryName}</button>`;
+        >${tabIcon} ${categoryName}</button>`;
       });
       
       content += '</div>';
@@ -1154,6 +1179,26 @@ if (bounds.isValid() && results.length > 1) {
       county_name: 'County',
       state_code: 'State',
       fips_tract: 'Census Tract',
+      
+      // Rich Census/Geographic Data
+      state_name: 'State Name',
+      state_region: 'US Region',
+      state_division: 'US Division',
+      county_geoid: 'County GEOID',
+      census_tract_name: 'Census Tract Name',
+      census_tract_geoid: 'Census Tract GEOID',
+      census_block_name: 'Census Block Name',
+      census_block_geoid: 'Census Block GEOID',
+      census_block_urban_rural: 'Urban/Rural',
+      city_name: 'City/Place',
+      city_geoid: 'City GEOID',
+      urban_area_name: 'Urban Area',
+      metro_area_name: 'Metro Area (CSA)',
+      subdivision_name: 'County Subdivision',
+      congressional_district: 'Congressional District',
+      congressional_district_number: 'Congressional District #',
+      state_senate_district: 'State Senate District',
+      state_house_district: 'State House District',
       acs_population: 'Population',
       acs_median_hh_income: 'Median Income',
       acs_median_age: 'Median Age',
@@ -1331,44 +1376,92 @@ if (bounds.isValid() && results.length > 1) {
        if (key.includes('_detailed') && Array.isArray(value)) {
          // Handle detailed POI arrays (limited to 50 for map)
          value.forEach((poi: any) => {
-           rows.push([
-             result.location.name,
-             result.location.lat,
-             result.location.lon,
-             result.location.source,
-             result.location.confidence || 'N/A',
-             key.replace('_detailed', '').replace('poi_', '').toUpperCase(),
-             poi.name || poi.title || 'Unnamed',
-             poi.lat || poi.center?.lat || '',
-             poi.lon || poi.center?.lon || '',
-             poi.distance_miles || 'Unknown',
-             poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
-             poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
-             poi.tags?.phone || '',
-             poi.tags?.website || '',
-             poi.source || 'N/A'
-           ]);
+           // Special handling for AVI data
+           if (key.includes('animal_vehicle_collisions')) {
+             const aviName = `AVI-${poi.case_id || poi.id || 'Unknown'}`;
+             const aviType = `${poi.source || 'AVI'} ${poi.year || ''}`.trim();
+             rows.push([
+               result.location.name,
+               result.location.lat,
+               result.location.lon,
+               result.location.source,
+               result.location.confidence || 'N/A',
+               'ANIMAL_VEHICLE_COLLISION',
+               aviName,
+               poi.lat || '',
+               poi.lon || '',
+               poi.distance_miles || 'Unknown',
+               aviType,
+               poi.location || poi.address || '',
+               '',
+               '',
+               poi.source || 'N/A'
+             ]);
+           } else {
+             // Regular POI handling
+             rows.push([
+               result.location.name,
+               result.location.lat,
+               result.location.lon,
+               result.location.source,
+               result.location.confidence || 'N/A',
+               key.replace('_detailed', '').replace('poi_', '').toUpperCase(),
+               poi.name || poi.title || 'Unnamed',
+               poi.lat || poi.center?.lat || '',
+               poi.lon || poi.center?.lon || '',
+               poi.distance_miles || 'Unknown',
+               poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
+               poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
+               poi.tags?.phone || '',
+               poi.tags?.website || '',
+               poi.source || 'N/A'
+             ]);
+           }
          });
        } else if (key.includes('_all') && Array.isArray(value)) {
          // Handle ALL POI arrays (complete dataset for CSV)
          value.forEach((poi: any) => {
-           rows.push([
-             result.location.name,
-             result.location.lat,
-             result.location.lon,
-             result.location.source,
-             result.location.confidence || 'N/A',
-             key.replace('_all', '').replace('poi_', '').toUpperCase(),
-             poi.name || poi.title || 'Unnamed',
-             poi.lat || poi.center?.lat || '',
-             poi.lon || poi.center?.lon || '',
-             poi.distance_miles || 'Unknown',
-             poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
-             poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
-             poi.tags?.phone || '',
-             poi.tags?.website || '',
-             poi.source || 'N/A'
-           ]);
+           // Special handling for AVI data
+           if (key.includes('animal_vehicle_collisions')) {
+             const aviName = `AVI-${poi.case_id || poi.id || 'Unknown'}`;
+             const aviType = `${poi.source || 'AVI'} ${poi.year || ''}`.trim();
+             rows.push([
+               result.location.name,
+               result.location.lat,
+               result.location.lon,
+               result.location.source,
+               result.location.confidence || 'N/A',
+               'ANIMAL_VEHICLE_COLLISION',
+               aviName,
+               poi.lat || '',
+               poi.lon || '',
+               poi.distance_miles || 'Unknown',
+               aviType,
+               poi.location || poi.address || '',
+               '',
+               '',
+               poi.source || 'N/A'
+             ]);
+           } else {
+             // Regular POI handling
+             rows.push([
+               result.location.name,
+               result.location.lat,
+               result.location.lon,
+               result.location.source,
+               result.location.confidence || 'N/A',
+               key.replace('_all', '').replace('poi_', '').toUpperCase(),
+               poi.name || poi.title || 'Unnamed',
+               poi.lat || poi.center?.lat || '',
+               poi.lon || poi.center?.lon || '',
+               poi.distance_miles || 'Unknown',
+               poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
+               poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
+               poi.tags?.phone || '',
+               poi.tags?.website || '',
+               poi.source || 'N/A'
+             ]);
+           }
          });
        } else if (key === 'poi_wikipedia_articles' && Array.isArray(value)) {
         // Handle Wikipedia articles

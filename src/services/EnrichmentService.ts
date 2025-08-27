@@ -884,6 +884,36 @@ export class EnrichmentService {
       console.error('Default weather alert query failed:', error);
       enrichments.nws_weather_alerts_error = error instanceof Error ? error.message : 'Unknown error';
     }
+
+    // Always run elevation query by default
+    try {
+      console.log(`🏔️  Running default elevation query for coordinates [${lat}, ${lon}]`);
+      const elevationResult = await this.runSingleEnrichment('elev', lat, lon, poiRadii);
+      Object.assign(enrichments, elevationResult);
+    } catch (error) {
+      console.error('Default elevation query failed:', error);
+      enrichments.elevation_error = error instanceof Error ? error.message : 'Unknown error';
+    }
+
+    // Always run census/FIPS query by default
+    try {
+      console.log(`🏛️  Running default census/FIPS query for coordinates [${lat}, ${lon}]`);
+      const fipsResult = await this.runSingleEnrichment('fips', lat, lon, poiRadii);
+      Object.assign(enrichments, fipsResult);
+    } catch (error) {
+      console.error('Default census/FIPS query failed:', error);
+      enrichments.fips_error = error instanceof Error ? error.message : 'Unknown error';
+    }
+
+    // Always run ACS demographics query by default
+    try {
+      console.log(`📊 Running default ACS demographics query for coordinates [${lat}, ${lon}]`);
+      const acsResult = await this.runSingleEnrichment('acs', lat, lon, poiRadii);
+      Object.assign(enrichments, acsResult);
+    } catch (error) {
+      console.error('Default ACS demographics query failed:', error);
+      enrichments.acs_error = error instanceof Error ? error.message : 'Unknown error';
+    }
     
     // Run each selected enrichment
     for (const enrichmentId of selectedEnrichments) {
@@ -1058,57 +1088,146 @@ export class EnrichmentService {
 
   private async getFIPSCodes(lat: number, lon: number): Promise<Record<string, any>> {
     try {
-      console.log('🌐 Attempting to fetch FIPS codes from FCC API...');
+      console.log('🌐 Fetching rich census data from Census Geocoder API...');
       
-      const u = new URL("https://geo.fcc.gov/api/census/block/find");
-      u.searchParams.set("latitude", lat.toString());
-      u.searchParams.set("longitude", lon.toString());
-      u.searchParams.set("format", "json");
+      // Try direct API first, then CORS proxy if needed
+      const directUrl = `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x=${lon}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Current&format=json`;
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`;
       
-      console.log('🌐 FCC API URL:', u.toString());
+      console.log('🌐 Census Geocoder Direct URL:', directUrl);
       
-      const j = await fetchJSONSmart(u.toString());
+      let j;
+      try {
+        // Try direct first
+        j = await fetchJSONSmart(directUrl);
+      } catch (corsError) {
+        console.warn('⚠️ Direct Census API blocked by CORS, trying proxy...', corsError);
+        console.log('🌐 Census Geocoder Proxy URL:', proxyUrl);
+        j = await fetchJSONSmart(proxyUrl);
+      }
       
-      if (!j || typeof j !== 'object') {
-        console.warn('⚠️ FCC API returned invalid response format');
+      if (!j?.result?.geographies) {
+        console.warn('⚠️ Census Geocoder returned no geographic data');
         return {};
       }
       
-      const b = j?.Block?.FIPS || null;
-      const county = j?.County?.name || null;
-      const state = j?.State?.code || null;
+      const geo = j.result.geographies;
       
-      if (!b) {
-        console.warn('⚠️ No FIPS block data found in FCC API response');
-        return {};
+      // Extract all the rich geographic data
+      const state = geo.States?.[0];
+      const county = geo.Counties?.[0];
+      const tract = geo['Census Tracts']?.[0];
+      const block = geo['2020 Census Blocks']?.[0];
+      const place = geo['Incorporated Places']?.[0];
+      const urbanArea = geo['Urban Areas']?.[0];
+      const csa = geo['Combined Statistical Areas']?.[0];
+      const subdivision = geo['County Subdivisions']?.[0];
+      const congressionalDistrict = geo['119th Congressional Districts']?.[0];
+      const stateSenate = geo['2024 State Legislative Districts - Upper']?.[0];
+      const stateHouse = geo['2024 State Legislative Districts - Lower']?.[0];
+      
+      const result: Record<string, any> = {};
+      
+      // Basic FIPS codes (for compatibility)
+      if (block && tract && county && state) {
+        result.fips_block = block.GEOID;
+        result.fips_tract = tract.GEOID;
+        result.fips_state = state.STATE;
+        result.fips_county = county.COUNTY;
+        result.fips_tract6 = tract.TRACT;
       }
       
-      const tract = b.substring(0, 11);
-      const stateCode = b.substring(0, 2);
-      const countyCode = b.substring(2, 5);
-      const tractCode = tract.substring(5, 11);
+      // Rich State Information
+      if (state) {
+        result.state_name = state.NAME;
+        result.state_code = state.STUSAB;
+        result.state_geoid = state.GEOID;
+        result.state_region = state.REGION;
+        result.state_division = state.DIVISION;
+      }
       
-      const result = {
-        fips_block: b,
-        fips_tract: tract,
-        county_name: county,
-        state_code: state,
-        fips_state: stateCode,
-        fips_county: countyCode,
-        fips_tract6: tractCode
-      };
+      // Rich County Information
+      if (county) {
+        result.county_name = county.NAME;
+        result.county_geoid = county.GEOID;
+        result.county_basename = county.BASENAME;
+      }
       
-      console.log('✅ FIPS codes successfully retrieved:', result);
+      // Census Tract Information
+      if (tract) {
+        result.census_tract_name = tract.NAME;
+        result.census_tract_geoid = tract.GEOID;
+        result.census_tract_basename = tract.BASENAME;
+      }
+      
+      // Census Block Information
+      if (block) {
+        result.census_block_name = block.NAME;
+        result.census_block_geoid = block.GEOID;
+        result.census_block_basename = block.BASENAME;
+        result.census_block_urban_rural = block.UR === 'U' ? 'Urban' : 'Rural';
+      }
+      
+      // Incorporated Place (City/Town)
+      if (place) {
+        result.city_name = place.NAME;
+        result.city_geoid = place.GEOID;
+        result.city_basename = place.BASENAME;
+        result.city_functional_status = place.FUNCSTAT;
+      }
+      
+      // Urban Area
+      if (urbanArea) {
+        result.urban_area_name = urbanArea.NAME;
+        result.urban_area_geoid = urbanArea.GEOID;
+        result.urban_area_basename = urbanArea.BASENAME;
+      }
+      
+      // Combined Statistical Area (Metro Area)
+      if (csa) {
+        result.metro_area_name = csa.NAME;
+        result.metro_area_geoid = csa.GEOID;
+        result.metro_area_basename = csa.BASENAME;
+      }
+      
+      // County Subdivision
+      if (subdivision) {
+        result.subdivision_name = subdivision.NAME;
+        result.subdivision_geoid = subdivision.GEOID;
+        result.subdivision_basename = subdivision.BASENAME;
+      }
+      
+      // Congressional District
+      if (congressionalDistrict) {
+        result.congressional_district = congressionalDistrict.NAME;
+        result.congressional_district_geoid = congressionalDistrict.GEOID;
+        result.congressional_district_number = congressionalDistrict.CD119;
+      }
+      
+      // State Legislative Districts
+      if (stateSenate) {
+        result.state_senate_district = stateSenate.NAME;
+        result.state_senate_district_geoid = stateSenate.GEOID;
+      }
+      
+      if (stateHouse) {
+        result.state_house_district = stateHouse.NAME;
+        result.state_house_district_geoid = stateHouse.GEOID;
+      }
+      
+      console.log('✅ Rich census/geographic data successfully retrieved:', Object.keys(result).length, 'fields');
       return result;
       
     } catch (error) {
-      console.error('❌ FIPS API error:', error);
-      console.warn('⚠️ Census/FIPS data will be unavailable for this location');
+      console.error('❌ Census Geocoder API error:', error);
+      console.warn('⚠️ Census/geographic data will be unavailable for this location');
       
       // Return empty object but don't break the entire enrichment process
       return {};
     }
   }
+
+
 
   private async getACSDemographics(stateCode: string, countyCode: string, tractCode: string): Promise<Record<string, any>> {
     if (!stateCode || !countyCode || !tractCode) return {};
@@ -1140,10 +1259,12 @@ export class EnrichmentService {
       result.acs_name = row[header.indexOf('NAME')] || null;
       return result;
     } catch (error) {
-      console.error('ACS API error:', error);
+      console.error('❌ Census ACS API error:', error);
       return {};
     }
   }
+
+
 
   private async getNWSAlerts(lat: number, lon: number): Promise<number> {
     try {

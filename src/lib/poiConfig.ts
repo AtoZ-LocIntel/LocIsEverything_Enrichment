@@ -162,7 +162,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_wikipedia', label: 'Wikipedia Articles', description: 'Haunted sites, historic oddities, museums, and quirky landmarks with intelligent categorization', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' },
 
   // Hazards
-  { id: 'poi_animal_vehicle_collisions', label: 'Animal Vehicle Collisions', description: 'The Location Is Everything Company data - Live API from LocationFriend with animal vehicle collision records for IA, TX, CA, and FARS within specified radius', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
+  { id: 'poi_animal_vehicle_collisions', label: 'Animal Vehicle Collisions', description: 'The Location Is Everything Company data - Live API from LocationFriend with animal vehicle collision records for CA, TX, ID, IA, NH, and FARS within specified radius', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
   { id: 'poi_wildfires', label: 'Current Wildfires', description: 'NIFC/Esri USA Wildfires - current wildfire incidents and perimeters with incident names, containment status, and discovery dates', isPOI: true, defaultRadius: 50, category: 'hazards', section: 'hazards' },
   { id: 'poi_fema_flood_zones', label: 'FEMA Flood Zones', description: 'FEMA National Flood Hazard Layer - flood zone classification and risk assessment', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
             { id: 'poi_wetlands', label: 'USGS Wetlands', description: 'National Wetlands Inventory - wetland types, locations, and proximity analysis', isPOI: true, defaultRadius: 2, category: 'hazards', section: 'hazards' },

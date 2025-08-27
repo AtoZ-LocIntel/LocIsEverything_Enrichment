@@ -108,6 +108,21 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   };
 
   const getEnrichmentCategory = (key: string): string => {
+    // Geographic Information
+    if (key.includes('elevation') || key.includes('fips_') || key.includes('county_') || key.includes('state_') || key.includes('census_') || key.includes('city_') || key.includes('urban_area_') || key.includes('metro_area_') || key.includes('subdivision_')) {
+      return 'Geographic Info';
+    }
+    
+    // Political Districts
+    if (key.includes('congressional_') || key.includes('state_senate_') || key.includes('state_house_')) {
+      return 'Political Districts';
+    }
+    
+    // Demographics
+    if (key.includes('acs_')) {
+      return 'Demographics';
+    }
+    
     if (key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_wildfires')) {
       return 'Hazards & Safety';
     }
