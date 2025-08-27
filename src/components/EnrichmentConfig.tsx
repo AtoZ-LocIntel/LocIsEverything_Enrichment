@@ -337,15 +337,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 <div key={category.id} className={`border ${colors.border} rounded-lg overflow-hidden shadow-sm`}>
                   <button
                     onClick={() => toggleCategory(category.id)}
-                    className={`w-full px-4 py-3 ${colors.header} ${colors.headerHover} transition-colors flex items-center justify-between flex-wrap`}
+                    className={`w-full px-4 py-3 ${colors.header} ${colors.headerHover} transition-colors flex items-center justify-between`}
                   >
                     <div className="flex items-center space-x-3 flex-1 min-w-0 max-w-full">
                       <div className="text-gray-700">
                         {category.icon}
                       </div>
-                      <div className="text-left flex-1 min-w-0 max-w-full">
-                        <h4 className="font-medium text-gray-900 truncate">{category.title}</h4>
-                        <p className="text-sm text-gray-700 break-words">{category.description}</p>
+                      <div className="text-left flex-1 min-w-0">
+                        <h4 className="font-medium text-gray-900">{category.title}</h4>
+                        <p className="text-sm text-gray-700">{category.description}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 min-w-0">
@@ -370,7 +370,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
 
                           return (
-                            <div key={enrichment.id} className={`flex items-center justify-between flex-wrap p-3 rounded-lg ${isSelected ? 'bg-white shadow-sm border border-gray-200' : 'bg-white/60 hover:bg-white/80'}`}>
+                            <div key={enrichment.id} className={`flex items-center justify-between p-3 rounded-lg ${isSelected ? 'bg-white shadow-sm border border-gray-200' : 'bg-white/60 hover:bg-white/80'}`}>
                               <div className="flex items-center space-x-3 flex-1 min-w-0 max-w-full">
                                 <input
                                   type="checkbox"
@@ -379,30 +379,30 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   onChange={() => handleEnrichmentToggle(enrichment.id)}
                                   className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                 />
-                                <div className="flex-1 min-w-0 max-w-full">
-                                  <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer truncate">
+                                <div className="flex-1 min-w-0">
+                                  <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer">
                                     {enrichment.label}
                                   </label>
-                                  <p className="text-sm text-gray-700 break-words">{enrichment.description}</p>
+                                  <p className="text-sm text-gray-700">{enrichment.description}</p>
                                 </div>
                               </div>
 
                               {enrichment.isPOI && isSelected && (
-                                <div className="flex flex-col space-y-2 min-w-0 max-w-full">
+                                <div className="flex flex-col space-y-2 shrink-0">
                                   {/* Radius Note */}
-                                  <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200 break-words whitespace-normal">
-                                    ⚠️ Maximum radius: {
-                                      enrichment.id === 'poi_earthquakes' ? '25 miles (earthquakes)' :
-                                      enrichment.id === 'poi_volcanoes' ? '50 miles (volcanoes)' :
-                                      enrichment.id === 'poi_wildfires' ? '50 miles (wildfires)' :
-                                      enrichment.id === 'poi_flood_reference_points' ? '25 miles (flood reference points)' :
-                                      '5 miles'
-                                    } (for performance & accuracy)
+                                  <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200 whitespace-nowrap">
+                                    ⚠️ Max: {
+                                      enrichment.id === 'poi_earthquakes' ? '25mi' :
+                                      enrichment.id === 'poi_volcanoes' ? '50mi' :
+                                      enrichment.id === 'poi_wildfires' ? '50mi' :
+                                      enrichment.id === 'poi_flood_reference_points' ? '25mi' :
+                                      '5mi'
+                                    }
                                   </div>
                                   
                                   {/* Radius Input */}
-                                  <div className="flex items-center space-x-2 flex-wrap">
-                                    <span className="text-sm text-gray-900 font-medium">Radius:</span>
+                                  <div className="flex items-center space-x-1">
+                                    <span className="text-xs text-gray-900 font-medium">R:</span>
                                     <input
                                       type="number"
                                       min="0.1"
@@ -416,9 +416,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       step="0.1"
                                       value={currentRadius}
                                       onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                                      className="min-w-0 max-w-[4rem] px-2 py-1 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 text-gray-900 font-medium"
+                                      className="w-12 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
                                     />
-                                    <span className="text-sm text-gray-900 font-medium">miles</span>
+                                    <span className="text-xs text-gray-900 font-medium">mi</span>
                                   </div>
                                     
                                   {/* Show warning if user tries to exceed the limit */}
