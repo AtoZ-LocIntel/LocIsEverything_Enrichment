@@ -278,7 +278,7 @@ function App() {
       {viewMode === 'config' ? (
         <div className="pt-28 px-2 sm:px-4 md:px-6 lg:px-8">
           {/* Main Content */}
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="max-w-7xl mx-auto w-full" style={{ maxWidth: isMobile ? 'calc(100vw - 16px)' : '', margin: isMobile ? '0 8px' : 'auto' }}>
             {/* Mobile Instructions */}
             {isMobile && (
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
