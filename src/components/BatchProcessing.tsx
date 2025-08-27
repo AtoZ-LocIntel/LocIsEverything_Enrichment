@@ -118,8 +118,8 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
             <Upload className="w-5 h-5 text-primary-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Batch Address Processing</h3>
-            <p className="text-sm text-gray-700">Upload CSV and process multiple locations</p>
+            <h3 className="text-lg font-semibold text-white">Batch Address Processing</h3>
+            <p className="text-sm text-gray-200">Upload CSV and process multiple locations</p>
           </div>
         </div>
       </div>
@@ -165,8 +165,8 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
         <div className="space-y-4">
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-700 mb-2">Upload your CSV file</p>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-white mb-2">Upload your CSV file</p>
+            <p className="text-sm text-gray-300 mb-4">
               File should contain addresses in the first column
             </p>
             <button
@@ -185,16 +185,16 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
           </div>
 
           {/* Batch Size Guidelines */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+                      <div className="bg-gray-700 rounded-lg p-4">
+            <h4 className="font-semibold text-white mb-2 flex items-center space-x-2">
               <AlertTriangle className="w-4 h-4 text-yellow-600" />
               <span>Batch Size Guidelines</span>
             </h4>
-            <div className="text-sm text-gray-700 space-y-1">
+            <div className="text-sm text-gray-200 space-y-1">
               <div>• <strong>1-100 addresses:</strong> 1-2 minutes processing time</div>
               <div>• <strong>100-500 addresses:</strong> 2-8 minutes processing time</div>
               <div>• <strong>500+ addresses:</strong> 8+ minutes processing time</div>
-              <div className="text-xs text-gray-700 mt-2">
+              <div className="text-xs text-gray-300 mt-2">
                 💡 Large batches are supported but will take longer due to rate limiting
               </div>
             </div>
@@ -216,7 +216,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
         <div className="space-y-4">
           {/* Progress Bar */}
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-700">
+            <div className="flex justify-between text-sm text-gray-200">
               <span>Processing addresses...</span>
               <span>{Math.round(progress)}%</span>
             </div>
@@ -259,7 +259,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
           </div>
 
           {/* Processing Info */}
-          <div className="text-center text-sm text-gray-700">
+                      <div className="text-center text-sm text-gray-200">
             <p>⏳ Rate limiting is active to respect API limits</p>
             <p>📊 Progress is saved - you can safely leave this page</p>
           </div>

@@ -87,7 +87,7 @@ const Header: React.FC = () => {
                 {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
                   <img 
-                    src="/assets/new-logo.png?v=2.0"
+                    src="/assets/lociseverything.png"
                     alt="The Location Is Everything Co Logo" 
                     className="w-full h-full object-cover"
                   />
@@ -159,7 +159,7 @@ const Header: React.FC = () => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
-                  <BookOpen className="w-6 h-6 text-primary-600" />
+                  <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-8 h-8" />
                   <span>Platform Features & Documentation</span>
                 </h2>
                 <button
@@ -439,7 +439,7 @@ const Header: React.FC = () => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
-                  <Globe className="w-6 h-6 text-primary-600" />
+                  <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-8 h-8" />
                   <span>Data Sources & Usage Information</span>
                 </h2>
                 <button
@@ -517,6 +517,28 @@ const Header: React.FC = () => {
                         <div>• <strong>Flood Reference Points:</strong> USGS RTFI Real-time Flooding API</div>
                         <div>• <strong>EPA FRS:</strong> Brownfields, Superfund, RCRA, TRI, NPDES</div>
                         <div>• <strong>EPA FRS:</strong> Air facilities, radiation, power generation, oil spill</div>
+                      </div>
+                    </div>
+                    
+                    {/* NEW: The Location Is Everything Company AVI Data */}
+                    <div className="bg-red-50 p-4 rounded-lg border-2 border-red-300 shadow-lg">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-2xl">🦌</span>
+                        <h4 className="font-bold text-red-900 text-lg">NEW: Animal-Vehicle Impact (AVI) Data</h4>
+                        <span className="bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold">EXCLUSIVE</span>
+                      </div>
+                      <div className="text-sm text-red-800 space-y-1">
+                        <div>• <strong>Provider:</strong> The Location Is Everything Company</div>
+                        <div>• <strong>Coverage:</strong> Nationwide FARS + CA CROS, TXDOT, IADOT, ID Fish and Game, NHDOT</div>
+                        <div>• <strong>Data Type:</strong> Animal-vehicle collision records</div>
+                        <div>• <strong>Availability:</strong> First time ever available to the public</div>
+                        <div>• <strong>Expansion:</strong> More states coming in 2025</div>
+                        <div>• <strong>Use Cases:</strong> Safety analysis, risk assessment, insurance</div>
+                      </div>
+                      <div className="mt-3 p-2 bg-red-100 rounded border border-red-200">
+                        <p className="text-xs text-red-700 font-semibold">
+                          🎯 <strong>Industry First:</strong> The only platform offering comprehensive AVI data from official sources
+                        </p>
                       </div>
                     </div>
                     <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
@@ -633,15 +655,16 @@ const Header: React.FC = () => {
                         <div>• <strong>EPA FRS:</strong> Facility Registry Service REST API</div>
                         <div>• <strong>US Census:</strong> American Community Survey & TIGER/Line</div>
                         <div>• <strong>USDA:</strong> Local Food Portal API (5 categories)</div>
-                                                   <div>• <strong>Open-Meteo:</strong> Real-time weather conditions (default for all lookups)</div>
-                           <div>• <strong>NWS:</strong> National Weather Service alerts (default for all lookups)</div>
+                        <div>• <strong>Open-Meteo:</strong> Real-time weather conditions (default for all lookups)</div>
+                        <div>• <strong>NWS:</strong> National Weather Service alerts (default for all lookups)</div>
                         <div>• <strong>USGS:</strong> Geographic names & elevation data</div>
+                        <div>• <strong>LocationFriend:</strong> Animal-Vehicle Impact (AVI) data API</div>
                       </div>
                     </div>
                     <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                       <h4 className="font-semibold text-green-900 mb-2">Open Data & Community</h4>
                       <div className="text-sm text-green-800 space-y-1">
-                        <div>• <strong>OpenStreetMap:</strong> Overpass API for POI data</div>
+                        <div>• <strong>OpenStreetMap:</strong> Overpass API for POI data (including gas stations, transportation, natural resources)</div>
                         <div>• <strong>Wikipedia:</strong> MediaWiki Geosearch API</div>
                         <div>• <strong>Open-Meteo:</strong> Free elevation & weather APIs</div>
                         <div>• <strong>Nominatim:</strong> OSM geocoding service</div>
@@ -692,10 +715,10 @@ const Header: React.FC = () => {
                         <div>• <strong>Geocoding:</strong> 95%+ success rate for valid addresses</div>
                         <div>• <strong>Enrichment:</strong> 50+ data layers from official sources</div>
                         <div>• <strong>Coverage:</strong> Global with US specializations</div>
-                        <div>• <strong>POI Data:</strong> 35+ categories via OpenStreetMap</div>
+                        <div>• <strong>POI Data:</strong> 36+ categories via OpenStreetMap</div>
                         <div>• <strong>Transportation:</strong> 11 comprehensive transit layers</div>
                         <div>• <strong>Natural Resources:</strong> 4 geographic feature layers</div>
-                                                   <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes, flood reference points, NWS weather alerts + 9 EPA FRS layers</div>
+                                                   <div>• <strong>Hazards:</strong> FEMA flood zones, USGS wetlands, earthquakes, volcanoes, flood reference points, NWS weather alerts + 9 EPA FRS layers + <strong>Animal-Vehicle Impact (AVI) data</strong></div>
                            <div>• <strong>Weather:</strong> Open-Meteo real-time conditions + NWS alerts (both default)</div>
                         <div>• <strong>Local Food:</strong> 5 USDA categories for community data</div>
                       </div>

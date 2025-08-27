@@ -289,12 +289,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         <div className="card-header">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                <Settings className="w-5 h-5 text-primary-600" />
-              </div>
+              <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-20 h-20" />
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Enrichment Configuration</h3>
-                <p className="text-sm text-gray-700">Select data sources and configure search parameters</p>
+                <h3 className="text-lg font-semibold text-white">Enrichment Configuration</h3>
+                <p className="text-sm text-gray-300">Select data sources and configure search parameters</p>
               </div>
             </div>
             

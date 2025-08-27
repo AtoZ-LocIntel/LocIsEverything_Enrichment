@@ -36,8 +36,8 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             <MapPin className="w-5 h-5 text-primary-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Single Address Search</h3>
-            <p className="text-sm text-gray-700">Geocode and enrich a single location</p>
+            <h3 className="text-lg font-semibold text-white">Single Address Search</h3>
+            <p className="text-sm text-gray-200">Geocode and enrich a single location</p>
           </div>
         </div>
       </div>
@@ -45,7 +45,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
       <div className="card-body">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="address" className="form-label">
+            <label htmlFor="address" className="form-label text-white">
               Address or Location
             </label>
             <div className="relative">

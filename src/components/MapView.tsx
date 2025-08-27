@@ -26,6 +26,7 @@ L.Icon.Default.mergeOptions({
 
 // POI Category Icons and Colors
 const POI_ICONS: Record<string, { icon: string; color: string; title: string }> = {
+  'poi_animal_vehicle_collisions': { icon: '🦌', color: '#dc2626', title: 'Animal Vehicle Collisions' },
   'poi_restaurants': { icon: '🍽️', color: '#ef4444', title: 'Restaurants' },
   'poi_hotels': { icon: '🏨', color: '#3b82f6', title: 'Hotels' },
   'poi_breweries': { icon: '🍺', color: '#f59e0b', title: 'Breweries' },
@@ -38,8 +39,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_markets': { icon: '🛒', color: '#06b6d4', title: 'Markets' },
   'poi_cafes': { icon: '☕', color: '#a855f7', title: 'Cafes' },
   'poi_banks': { icon: '🏦', color: '#64748b', title: 'Banks' },
-  'poi_gas': { icon: '⛽', color: '#fbbf24', title: 'Gas Stations' },
-  'poi_airports': { icon: '✈️', color: '#6366f1', title: 'Airports' },
+     'poi_airports': { icon: '✈️', color: '#6366f1', title: 'Airports' },
   'poi_tnm_trails': { icon: '🥾', color: '#059669', title: 'Trails' },
   'poi_wikipedia': { icon: '📖', color: '#1d4ed8', title: 'Wikipedia Articles' },
   'poi_fema_flood_zones': { icon: '🌊', color: '#0891b2', title: 'FEMA Flood Zones' },
@@ -65,17 +65,17 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_powerlines': { icon: '⚡', color: '#f59e0b', title: 'Powerlines' },
   'poi_cell_towers': { icon: '📡', color: '#8b5cf6', title: 'Cell Towers' },
   
-  // Recreation and Leisure
-  'poi_theatres': { icon: '🎭', color: '#800080', title: 'Theatres' },
-  'poi_museums_historic': { icon: '🏛️', color: '#7c3aed', title: 'Museums, Historic Sites & Memorials' },
-  'poi_bars_nightlife': { icon: '🍻', color: '#f59e0b', title: 'Bars & Nightlife' },
-  
-  // USDA Local Food Portal - Farmers Markets & Local Food
-  'poi_usda_agritourism': { icon: '🚜', color: '#22c55e', title: 'Agritourism' },
-  'poi_usda_csa': { icon: '🧺', color: '#16a34a', title: 'CSA Programs' },
-  'poi_usda_farmers_market': { icon: '🍎', color: '#dc2626', title: 'Farmers Markets' },
-  'poi_usda_food_hub': { icon: '📦', color: '#f97316', title: 'Food Hubs' },
-  'poi_usda_onfarm_market': { icon: '🥕', color: '#eab308', title: 'On-Farm Markets' },
+     // Recreation and Leisure
+   'poi_theatres': { icon: '🎭', color: '#800080', title: 'Theatres' },
+   'poi_museums_historic': { icon: '🏛️', color: '#7c3aed', title: 'Museums, Historic Sites & Memorials' },
+   'poi_bars_nightlife': { icon: '🍻', color: '#f59e0b', title: 'Bars & Nightlife' },
+   
+   // USDA Local Food Portal - Farmers Markets & Local Food
+   'poi_usda_agritourism': { icon: '🚜', color: '#22c55e', title: 'Agritourism' },
+   'poi_usda_csa': { icon: '🧺', color: '#16a34a', title: 'CSA Programs' },
+   'poi_usda_farmers_market': { icon: '🍎', color: '#dc2626', title: 'Farmers Markets' },
+   'poi_usda_food_hub': { icon: '📦', color: '#f97316', title: 'Food Hubs' },
+   'poi_usda_onfarm_market': { icon: '🥕', color: '#eab308', title: 'On-Farm Markets' },
   
   // Transportation
   'poi_bus': { icon: '🚌', color: '#2563eb', title: 'Bus' },
@@ -89,6 +89,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_taxi': { icon: '🚕', color: '#fbbf24', title: 'Taxi' },
   'poi_bike_scooter_share': { icon: '🚲', color: '#10b981', title: 'Bike/Scooter Share' },
   'poi_dockless_hub': { icon: '🛴️', color: '#8b5cf6', title: 'Dockless Hub' },
+  'poi_electric_charging': { icon: '🔌', color: '#10b981', title: 'Electric Charging Stations' },
+  'poi_gas_stations': { icon: '⛽', color: '#f59e0b', title: 'Gas Stations' },
    
    // Natural Resources
    'poi_beaches': { icon: '🏖️', color: '#fbbf24', title: 'Beaches' },
@@ -127,6 +129,10 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
   const markersRef = useRef<L.Marker[]>([]);
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
+  const [activePopupTab, setActivePopupTab] = useState<string>('');
+  const popupRef = useRef<HTMLDivElement | null>(null);
+  const tabContentBackup = useRef<Map<string, string>>(new Map());
+  const weatherTabCache = useRef<Map<string, string>>(new Map());
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -202,6 +208,12 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
 
     mapInstanceRef.current = map;
 
+    // Add global tab switching function to window object
+    (window as any).handleTabSwitch = (tabName: string) => {
+      console.log('🔄 Tab switching called for:', tabName);
+      handleTabSwitch(tabName);
+    };
+
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -209,6 +221,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       }
       // Clean up resize event listener
       window.removeEventListener('resize', handleResize);
+      // Clean up global function
+      delete (window as any).handleTabSwitch;
     };
   }, []);
 
@@ -477,8 +491,75 @@ if (bounds.isValid() && results.length > 1) {
       }
     });
     
+          // Special handling for AVI data - draw points within 2 miles for map display, CSV gets full user proximity data
+      if (result.enrichments.poi_animal_vehicle_collisions_elements && Array.isArray(result.enrichments.poi_animal_vehicle_collisions_elements)) {
+        const mapAVICollisions = result.enrichments.poi_animal_vehicle_collisions_elements;
+        console.log(`🦌 Found ${mapAVICollisions.length} AVI collisions within 2 miles - drawing on map for pattern detection`);
+        const iconConfig = POI_ICONS.poi_animal_vehicle_collisions;
+        
+        // Add to legend
+        currentLegendItems.push({
+          icon: iconConfig.icon,
+          color: iconConfig.color,
+          title: `${iconConfig.title} (2 mi map view)`,
+          count: mapAVICollisions.length
+        });
+        
+        // Add markers for AVI collisions within 2 miles (map display only)
+        mapAVICollisions.forEach((collision: any) => {
+          if (collision.lat && collision.lon) {
+            console.log(`🦌 Adding AVI marker: Collision at [${collision.lat}, ${collision.lon}]`);
+            const aviMarker = L.marker([collision.lat, collision.lon], {
+              icon: createPOIIcon(iconConfig.icon, iconConfig.color)
+            })
+              .bindPopup(createAVIPopupContent(collision))
+              .addTo(map);
+            
+            markersRef.current.push(aviMarker);
+          }
+        });
+      }
+    
     // Update legend state
     setLegendItems(currentLegendItems);
+  };
+
+  // Create popup content for AVI collisions
+  const createAVIPopupContent = (collision: any): string => {
+    const source = collision.source || 'Unknown';
+    const crashYear = collision.crash_year || 'Unknown';
+    const stCase = collision.st_case || 'N/A';
+    const distance = collision.distance_miles || 'Unknown';
+    
+    let content = `
+      <div style="min-width: 250px; max-width: 350px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <img src="/assets/new-logo.png" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
+          <h3 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 14px;">Animal Vehicle Collision</h3>
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+          🦌 Collision Record • ${distance} miles away
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #374151;">
+          <strong>Source:</strong> ${source}
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #374151;">
+          <strong>Year:</strong> ${crashYear}
+        </div>
+        <div style="margin: 4px 0; font-size: 12px; color: #374151;">
+          <strong>Case ID:</strong> ${stCase}
+        </div>
+    `;
+
+    // Add coordinates
+    if (collision.lat && collision.lon) {
+      content += `<div style="margin: 6px 0 4px 0; font-size: 11px; color: #9ca3af;">
+        ${collision.lat.toFixed(6)}, ${collision.lon.toFixed(6)}
+      </div>`;
+    }
+
+    content += '</div>';
+    return content;
   };
 
   // Create popup content for EPA FRS facilities
@@ -575,7 +656,10 @@ if (bounds.isValid() && results.length > 1) {
     
     let content = `
       <div style="min-width: 250px; max-width: 350px;">
-        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <img src="/assets/new-logo.png" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
+          <h3 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
+        </div>
         <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
           📍 ${category} • ${distance} miles away
         </div>
@@ -652,259 +736,336 @@ if (bounds.isValid() && results.length > 1) {
     
     // Check if we're on mobile
     const isMobile = window.innerWidth <= 768;
-    const minWidth = isMobile ? '250px' : '300px';
-    const maxWidth = isMobile ? '350px' : '400px';
+    const minWidth = isMobile ? '300px' : '700px';
+    const maxWidth = isMobile ? '400px' : '800px';
     const fontSize = isMobile ? '11px' : '12px';
     const headerFontSize = isMobile ? '14px' : '16px';
     
+    // Group enrichments by category
+    const enrichmentCategories: Record<string, Array<{key: string, value: any}>> = {
+      'Weather & Alerts': [],
+      'Location & Demographics': [],
+      'Hazards & Safety': [],
+      'Transportation': [],
+      'Natural Resources': [],
+      'Public Lands': [],
+      'Environmental Hazards': [],
+      'Community & Services': [],
+      'Recreation & Leisure': [],
+      'Local Food & Agriculture': [],
+      'Other': []
+    };
+    
+         // Helper function to categorize enrichments
+     const categorizeEnrichment = (key: string, value: any) => {
+       if (key.includes('open_meteo_weather') || key.includes('nws_weather_alerts')) {
+         enrichmentCategories['Weather & Alerts'].push({ key, value });
+       } else if (key.includes('elevation') || key.includes('fips') || key.includes('county') || key.includes('state') || key.includes('acs_')) {
+         enrichmentCategories['Location & Demographics'].push({ key, value });
+       } else if (key.includes('poi_wetlands') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_fema_flood_zones')) {
+         enrichmentCategories['Hazards & Safety'].push({ key, value });
+       } else if (key.includes('poi_bus') || key.includes('poi_train') || key.includes('poi_subway') || key.includes('poi_tram') || key.includes('poi_monorail') || key.includes('poi_aerialway') || key.includes('poi_ferry') || key.includes('poi_airport_air') || key.includes('poi_taxi') || key.includes('poi_bike_scooter_share') || key.includes('poi_dockless_hub') || key.includes('poi_electric_charging')) {
+         enrichmentCategories['Transportation'].push({ key, value });
+       } else if (key.includes('poi_beaches') || key.includes('poi_lakes_ponds') || key.includes('poi_rivers_streams') || key.includes('poi_mountains_peaks')) {
+         enrichmentCategories['Natural Resources'].push({ key, value });
+       } else if (key.includes('padus_')) {
+         enrichmentCategories['Public Lands'].push({ key, value });
+       } else if (key.includes('poi_epa_')) {
+         enrichmentCategories['Environmental Hazards'].push({ key, value });
+       } else if (key.includes('poi_parks') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_bars_nightlife')) {
+         enrichmentCategories['Recreation & Leisure'].push({ key, value });
+       } else if (key.includes('poi_usda_')) {
+         enrichmentCategories['Local Food & Agriculture'].push({ key, value });
+       } else if (key.includes('poi_gas_stations') || key.includes('poi_community_centers') || key.includes('poi_restaurants') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_libraries') || key.includes('poi_markets') || key.includes('poi_cafes') || key.includes('poi_banks')) {
+         // Community & Services - put gas stations first
+         if (key.includes('poi_gas_stations')) {
+           enrichmentCategories['Community & Services'].unshift({ key, value });
+         } else {
+           enrichmentCategories['Community & Services'].push({ key, value });
+         }
+       } else {
+         enrichmentCategories['Other'].push({ key, value });
+       }
+     };
+    
+    // Categorize all enrichments
+    Object.entries(enrichments).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        // Skip detailed arrays and complex objects
+        if (key.includes('_detailed') || key.includes('_facilities') || key.includes('_nearby') || key.includes('_summary')) {
+          return;
+        }
+        if (typeof value === 'object' && value !== null) {
+          return;
+        }
+        categorizeEnrichment(key, value);
+      }
+    });
+    
+    // Add special enrichments that need custom handling
+    if (enrichments.poi_fema_flood_zones_current || enrichments.poi_fema_flood_zones_nearby) {
+      enrichmentCategories['Hazards & Safety'].push({ key: 'poi_fema_flood_zones', value: 'FEMA Flood Zones' });
+    }
+    
+    if (enrichments.poi_wikipedia_count) {
+      enrichmentCategories['Recreation & Leisure'].push({ key: 'poi_wikipedia_count', value: enrichments.poi_wikipedia_count });
+    }
+    
+    // Add EPA facilities to Environmental Hazards
+    Object.entries(enrichments).forEach(([key, value]) => {
+      if (key.includes('poi_epa_') && key.includes('_count') && value > 0) {
+        enrichmentCategories['Environmental Hazards'].push({ key, value });
+      }
+    });
+    
+    // AVI source field is now displayed automatically with the count field
+    // No need to add it separately to the category
+    
+    // Filter out empty categories
+    const nonEmptyCategories = Object.entries(enrichmentCategories).filter(([_, items]) => items.length > 0);
+    
+    // Debug: Log what's in Hazards & Safety category
+    console.log('🦌 Hazards & Safety category contents:', enrichmentCategories['Hazards & Safety']);
+    console.log('🦌 All enrichment categories:', enrichmentCategories);
+    
     let content = `
       <div style="min-width: ${minWidth}; max-width: ${maxWidth};">
-        <h3 style="margin: 0 0 12px 0; color: #1f2937; font-weight: 600; font-size: ${headerFontSize};">${location.name}</h3>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <img src="/assets/new-logo.png" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
+          <h3 style="margin: 0; color: #1f2937; font-weight: 600; font-size: ${headerFontSize};">${location.name}</h3>
+        </div>
         <p style="margin: 0 0 12px 0; color: #6b7280; font-size: ${fontSize};">
           📍 ${location.lat.toFixed(6)}, ${location.lon.toFixed(6)}<br>
           🔍 Source: ${location.source}
         </p>
     `;
 
-    if (Object.keys(enrichments).length > 0) {
+    if (nonEmptyCategories.length > 0) {
       content += '<hr style="margin: 12px 0; border-color: #e5e7eb;">';
-      content += `<h4 style="margin: 0 0 12px 0; color: #374151; font-size: ${isMobile ? '12px' : '14px'}; font-weight: 600;">Enrichment Data:</h4>`;
       
-      // Special handling for FEMA flood zones - show only two clean rows
-      if (enrichments.poi_fema_flood_zones_current || enrichments.poi_fema_flood_zones_nearby) {
-        content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-          <span style="color: #6b7280;">FEMA Flood Zone:</span>
-          <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_fema_flood_zones_current || 'None'}</span>
-        </div>`;
-        
-        if (enrichments.poi_fema_flood_zones_nearby && Array.isArray(enrichments.poi_fema_flood_zones_nearby) && enrichments.poi_fema_flood_zones_nearby.length > 0) {
-          const nearestZone = enrichments.poi_fema_flood_zones_nearby[0];
-          const zoneName = nearestZone.zone || 'Unknown Zone';
-          const distance = nearestZone.distance_miles || 5;
-          content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-            <span style="color: #6b7280;">FEMA Flood Zone within ${distance} mi:</span>
-            <span style="color: #1f2937; font-weight: 500;">${zoneName}</span>
-          </div>`;
-        }
-      }
+      // Create tabs
+      content += '<div style="margin-bottom: 16px;">';
+      content += '<div class="tab-container">';
       
-      // Special handling for USGS Wetlands - show two simple Yes/No fields with dynamic distance
-      if (enrichments.poi_wetlands_point_in_wetland !== undefined) {
-        // Get the actual proximity distance from the enrichment data or use default
-        const proximityDistance = enrichments.poi_wetlands_proximity_distance || 2; // Default to 2 miles if not specified
-        
-        content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-          <span style="color: #6b7280;">Point in Wetland:</span>
-          <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_wetlands_point_in_wetland ? 'Yes' : 'No'}</span>
-        </div>`;
-        content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-          <span style="color: #6b7280;">Wetlands Within ${proximityDistance} mi:</span>
-          <span style="color: #1f2937; font-weight: 500;">${(enrichments.poi_wetlands_count || 0) > 0 ? 'Yes' : 'No'}</span>
-        </div>`;
-      }
+      nonEmptyCategories.forEach(([categoryName], index) => {
+        const isActive = index === 0; // First tab is active by default
+        const tabClass = isActive ? 'tab active' : 'tab';
+        const tabId = categoryName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+        content += `<button 
+          data-tab="${tabId}"
+          class="${tabClass}"
+          onclick="window.handleTabSwitch && window.handleTabSwitch('${tabId}')"
+        >${categoryName}</button>`;
+      });
       
-             // Special handling for USGS Earthquakes - show count and largest magnitude with dynamic distance
-       if (enrichments.poi_earthquakes_count !== undefined) {
-         // Get the actual proximity distance from the enrichment data or use default
-         const proximityDistance = enrichments.poi_earthquakes_proximity_distance || 25; // Default to 25 miles if not specified
-         
-         content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-           <span style="color: #6b7280;">Earthquakes Within ${proximityDistance} mi:</span>
-           <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_earthquakes_count || 0} found</span>
-         </div>`;
-         
-         if (enrichments.poi_earthquakes_largest_magnitude > 0) {
-           content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-             <span style="color: #6b7280;">Largest Magnitude:</span>
-             <span style="color: #1f2937; font-weight: 500;">M${enrichments.poi_earthquakes_largest_magnitude.toFixed(1)}</span>
-           </div>`;
-         }
-       }
-       
-                  // Special handling for NOAA Volcanoes - show count and active status with dynamic distance
-       if (enrichments.poi_volcanoes_count !== undefined) {
-         // Get the actual proximity distance from the enrichment data or use default
-         const proximityDistance = enrichments.poi_volcanoes_proximity_distance || 50; // Default to 50 miles if not specified
-         
-         content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-           <span style="color: #6b7280;">Volcanoes Within ${proximityDistance} mi:</span>
-           <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_volcanoes_count || 0} found</span>
-         </div>`;
-         
-         if (enrichments.poi_volcanoes_active > 0) {
-           content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-             <span style="color: #6b7280;">Active Volcanoes:</span>
-             <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_volcanoes_active} active</span>
-           </div>`;
-         }
-       }
-       
-        // Special handling for USGS Flood Reference Points - show count and actively flooding status with dynamic distance
-        if (enrichments.poi_flood_reference_points_count !== undefined) {
-          // Get the actual proximity distance from the enrichment data or use default
-          const proximityDistance = enrichments.poi_flood_reference_points_proximity_distance || 25; // Default to 25 miles if not specified
-          
-          content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-            <span style="color: #6b7280;">Flood Reference Points Within ${proximityDistance} mi:</span>
-            <span style="color: #1f2937; font-weight: 500;">${enrichments.poi_flood_reference_points_count || 0} found</span>
-          </div>`;
-          
-          if (enrichments.poi_flood_reference_points_active_flooding > 0) {
-            content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-              <span style="color: #6b7280;">🚨 Actively Flooding:</span>
-              <span style="color: #dc2626; font-weight: 500;">${enrichments.poi_flood_reference_points_active_flooding} points</span>
-            </div>`;
-          }
-        }
+      content += '</div>';
+      
+      // Create tab content
+      nonEmptyCategories.forEach(([categoryName, items], index) => {
+        const isActive = index === 0;
+        const displayStyle = isActive ? 'block' : 'none';
+        const tabId = categoryName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
         
-                        // Special handling for Open-Meteo Weather - show current conditions
-                if (enrichments.open_meteo_weather_temperature_f !== undefined) {
-                  content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                    <span style="color: #6b7280;">🌡️ Current Weather:</span>
-                    <span style="color: #1f2937; font-weight: 500;">${enrichments.open_meteo_weather_temperature_f.toFixed(1)}°F</span>
-                  </div>`;
-                  if (enrichments.open_meteo_weather_weather_description) {
-                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                      <span style="color: #6b7280;">Condition:</span>
-                      <span style="color: #1f2937; font-weight: 500;">${enrichments.open_meteo_weather_weather_description}</span>
-                    </div>`;
-                  }
-                  if (enrichments.open_meteo_weather_windspeed_mph !== undefined) {
-                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                      <span style="color: #6b7280;">Wind:</span>
-                      <span style="color: #1f2937; font-weight: 500;">${enrichments.open_meteo_weather_windspeed_mph.toFixed(1)} mph</span>
-                    </div>`;
-                  }
-                }
-
-                // Special handling for PAD-US Public Access
-                if (enrichments.padus_public_access_inside !== undefined) {
-                  content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                    <span style="color: #6b7280;">🏞️ Public Land:</span>
-                    <span style="color: #1f2937; font-weight: 500;">${enrichments.padus_public_access_inside ? 'Yes' : 'No'}</span>
-                  </div>`;
-                  if (enrichments.padus_public_access_inside && enrichments.padus_public_access_inside_info) {
-                    const info = enrichments.padus_public_access_inside_info;
-                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                      <span style="color: #6b7280;">Unit Name:</span>
-                      <span style="color: #1f2937; font-weight: 500;">${info.unitName || 'N/A'}</span>
-                    </div>`;
-                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                      <span style="color: #6b7280;">Manager:</span>
-                      <span style="color: #1f2937; font-weight: 500;">${info.managerName || 'N/A'}</span>
-                    </div>`;
-                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                      <span style="color: #6b7280;">Access:</span>
-                      <span style="color: #1f2937; font-weight: 500;">${info.publicAccess || 'N/A'}</span>
-                    </div>`;
-                  }
-                  if (enrichments.padus_public_access_nearby_count !== undefined) {
-                    content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                      <span style="color: #6b7280;">Nearby Lands:</span>
-                      <span style="color: #1f2937; font-weight: 500;">${enrichments.padus_public_access_nearby_count}</span>
-                    </div>`;
-                  }
-                }
-
-                // Special handling for PAD-US Protection Status
-                if (enrichments.padus_protection_status_nearby_count !== undefined) {
-                  content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                    <span style="color: #6b7280;">🛡️ Protected Areas:</span>
-                    <span style="color: #1f2937; font-weight: 500;">${enrichments.padus_protection_status_nearby_count}</span>
-                  </div>`;
-                }
-
-                // Special handling for NWS Weather Alerts - show count and severity breakdown
-                if (enrichments.nws_weather_alerts_count !== undefined) {
-                  const alertRadius = enrichments.nws_weather_alerts_radius_miles || 25;
-                  content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                    <span style="color: #6b7280;">🌤️ Weather Alerts Within ${alertRadius} mi:</span>
-                    <span style="color: #1f2937; font-weight: 500;">${enrichments.nws_weather_alerts_count || 0} active</span>
-                  </div>`;
-
-                  if (enrichments.nws_weather_alerts_count > 0 && enrichments.nws_weather_alerts_severity_breakdown) {
-                    const severityBreakdown = enrichments.nws_weather_alerts_severity_breakdown;
-                    if (severityBreakdown.extreme) {
-                      content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                        <span style="color: #dc2626;">🚨 Extreme Alerts:</span>
-                        <span style="color: #dc2626; font-weight: 500;">${severityBreakdown.extreme}</span>
-                      </div>`;
-                    }
-                    if (severityBreakdown.severe) {
-                      content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between;">
-                        <span style="color: #ea580c;">⚠️ Severe Alerts:</span>
-                        <span style="color: #ea580c; font-weight: 500;">${severityBreakdown.severe}</span>
-                      </div>`;
-                    }
-                  }
-                }
-
-      // Display all other enrichments as simple name: count pairs
-      Object.entries(enrichments).forEach(([key, value]) => {
-        // Skip FEMA flood zone fields as they're handled above
-        if (key.includes('poi_fema_flood_zones')) {
-          return;
-        }
+        content += `<div id="tab_${tabId}" style="display: ${displayStyle}; padding: 8px 0;">`;
         
-        // Skip wetlands fields as they're handled above
-        if (key.includes('poi_wetlands')) {
-          return;
-        }
-        
-                 // Skip earthquake fields as they're handled above
-         if (key.includes('poi_earthquakes')) {
-           return;
-         }
-         
-         // Skip volcano fields as they're handled above
-         if (key.includes('poi_volcanoes')) {
-           return;
-         }
-         
-         // Skip flood reference points fields as they're handled above
-         if (key.includes('poi_flood_reference_points')) {
-           return;
-         }
-
-         
-
-        
-        // Skip Wikipedia summary fields (redundant with count)
-        if (key.includes('poi_wikipedia_summary')) {
-          return;
-        }
-        
-        // Skip EPA summary fields (redundant with count)
-        if (key.includes('_summary') && key.includes('poi_epa_')) {
-          return;
-        }
-        
-        if (value !== null && value !== undefined && value !== '') {
-          // Skip detailed POI arrays and complex objects
-          if (key.includes('_detailed') || key.includes('_facilities') || key.includes('_nearby')) {
-            return;
-          }
-          
-          // Skip complex objects, only show simple values
-          if (typeof value === 'object' && value !== null) {
-            return;
-          }
-          
+        items.forEach(({ key, value }) => {
+          console.log(`🦌 Processing item in ${categoryName}:`, { key, value });
           const label = formatEnrichmentLabel(key);
           const displayValue = formatEnrichmentValue(key, value);
           
+          console.log(`🦌 Formatted:`, { label, displayValue });
+          
+          // Special formatting for certain fields
+          let formattedValue = displayValue;
+          if (key === 'poi_fema_flood_zones') {
+            // Special handling for FEMA flood zones
+            if (enrichments.poi_fema_flood_zones_current) {
+              content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between; flex-wrap: wrap;">
+                <span style="color: #6b7280; margin-right: 8px;">FEMA Flood Zone:</span>
+                <span style="color: #1f2937; font-weight: 500; text-align: right;">${enrichments.poi_fema_flood_zones_current}</span>
+              </div>`;
+            }
+            if (enrichments.poi_fema_flood_zones_nearby && Array.isArray(enrichments.poi_fema_flood_zones_nearby) && enrichments.poi_fema_flood_zones_nearby.length > 0) {
+              const nearestZone = enrichments.poi_fema_flood_zones_nearby[0];
+              const zoneName = nearestZone.zone || 'Unknown Zone';
+              const distance = nearestZone.distance_miles || 5;
+              content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between; flex-wrap: wrap;">
+                <span style="color: #6b7280; margin-right: 8px;">FEMA Flood Zone within ${distance} mi:</span>
+                <span style="color: #1f2937; font-weight: 500; text-align: right;">${zoneName}</span>
+              </div>`;
+            }
+            return; // Skip the default display for this item
+          } else if (key === 'poi_wetlands_point_in_wetland') {
+            formattedValue = value ? 'Yes' : 'No';
+          } else if (key === 'poi_wetlands_count' && value > 0) {
+            const proximityDistance = enrichments.poi_wetlands_proximity_distance || 2;
+            formattedValue = `Yes (${value} found within ${proximityDistance} mi)`;
+          } else if (key === 'poi_earthquakes_count' && value > 0) {
+            const proximityDistance = enrichments.poi_earthquakes_proximity_distance || 25;
+            formattedValue = `${value} found within ${proximityDistance} mi (1900-2024)`;
+          } else if (key === 'poi_volcanoes_count' && value > 0) {
+            const proximityDistance = enrichments.poi_volcanoes_proximity_distance || 50;
+            formattedValue = `${value} found within ${proximityDistance} mi`;
+          } else if (key === 'poi_animal_vehicle_collisions_count') {
+            // Special handling for AVI count - add source field right after
+            const proximityDistance = enrichments.poi_animal_vehicle_collisions_proximity_distance || 5;
+            formattedValue = value > 0 ? `${value} found within ${proximityDistance} mi` : '0 found';
+            
+            console.log('🦌 Processing AVI count, checking for source field...');
+            console.log('🦌 Available enrichments:', Object.keys(enrichments).filter(k => k.includes('avi') || k.includes('animal')));
+            console.log('🦌 AVI source field value:', enrichments.poi_animal_vehicle_collisions_source);
+            
+            // ALWAYS add AVI source field immediately after count - even if empty
+            content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between; flex-wrap: wrap;">
+              <span style="color: #6b7280; margin-right: 8px;">AVI Source:</span>
+              <span style="color: #1f2937; font-weight: 500; text-align: right;">${enrichments.poi_animal_vehicle_collisions_source || 'No source data available'}</span>
+            </div>`;
+          } else if (key === 'poi_flood_reference_points_count' && value > 0) {
+            const proximityDistance = enrichments.poi_flood_reference_points_proximity_distance || 25;
+            formattedValue = `${value} found within ${proximityDistance} mi`;
+          } else if (key === 'open_meteo_weather_temperature_f') {
+            formattedValue = `${value.toFixed(1)}°F`;
+          } else if (key === 'open_meteo_weather_windspeed_mph') {
+            formattedValue = `${value.toFixed(1)} mph`;
+          }
+          
           content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between; flex-wrap: wrap;">
             <span style="color: #6b7280; margin-right: 8px;">${label}:</span>
-            <span style="color: #1f2937; font-weight: 500; text-align: right;">${displayValue}</span>
+            <span style="color: #1f2937; font-weight: 500; text-align: right;">${formattedValue}</span>
           </div>`;
-        }
+          
+          // If this was the AVI count field, always add the source field right after
+          if (key === 'poi_animal_vehicle_collisions_count' && enrichments.poi_animal_vehicle_collisions_source) {
+            content += `<div style="margin: 4px 0; font-size: ${fontSize}; display: flex; justify-content: space-between; flex-wrap: wrap;">
+              <span style="color: #6b7280; margin-right: 8px;">AVI Source:</span>
+              <span style="color: #1f2937; font-weight: 500; text-align: right;">${enrichments.poi_animal_vehicle_collisions_source}</span>
+            </div>`;
+          }
+        });
+        
+        content += '</div>';
       });
+      
+      content += '</div>';
+      
+      // Tab switching will be handled by the global handleTabSwitch function
     } else {
       content += '<p style="margin: 12px 0; color: #6b7280; font-style: italic; font-size: 13px;">No enrichments selected or available for this location.</p>';
     }
     
     content += '</div>';
     return content;
+  };
+
+  // Function to handle tab switching
+  const handleTabSwitch = (tabName: string) => {
+    console.log('🔄 handleTabSwitch called with:', tabName);
+    setActivePopupTab(tabName);
+    
+    // Find the popup content container dynamically
+    const popup = document.querySelector('.leaflet-popup-content');
+    console.log('🔍 Found popup:', popup);
+    
+    if (popup) {
+      // First, let's verify all tab contents exist and have their original content
+      const tabContents = popup.querySelectorAll('[id^="tab_"]');
+      console.log('🔍 Found tab contents:', tabContents.length);
+      
+      // CRITICAL: Backup content BEFORE hiding tabs!
+      console.log('💾 === BACKING UP CONTENT BEFORE HIDING ===');
+      tabContents.forEach((content: Element, index: number) => {
+        const tabId = content.id;
+        const currentContent = content.innerHTML;
+        const contentLength = currentContent.trim().length;
+        
+        console.log(`🔍 Tab ${index}: ${tabId}, content length: ${contentLength}`);
+        
+        // Cache weather tab content specifically
+        if (tabId.includes('Weather')) {
+          weatherTabCache.current.set(tabId, currentContent);
+          console.log(`🌤️ CACHED WEATHER: ${tabId} with ${contentLength} chars`);
+        }
+        
+        // Regular backup for all tabs
+        tabContentBackup.current.set(tabId, currentContent);
+        console.log(`💾 Backed up: ${tabId} with ${contentLength} chars`);
+      });
+      
+      // Now hide all tab contents
+      console.log('🙈 === HIDING ALL TABS ===');
+      tabContents.forEach((content: Element) => {
+        (content as HTMLElement).style.display = 'none';
+      });
+      
+      // Remove active state from all tabs
+      const tabButtons = popup.querySelectorAll('button[data-tab]');
+      console.log('🔍 Found tab buttons:', tabButtons.length);
+      tabButtons.forEach((tab: Element) => {
+        tab.classList.remove('active');
+      });
+      
+        // Show selected tab content
+        const selectedContent = popup.querySelector('#tab_' + tabName);
+        console.log('🔍 Selected content:', selectedContent);
+        if (selectedContent) {
+          (selectedContent as HTMLElement).style.display = 'block';
+          
+          // Verify the content is still there after showing
+          const contentAfterShow = selectedContent.innerHTML.trim().length;
+          console.log(`🔍 Content length after showing tab ${tabName}:`, contentAfterShow);
+          
+          // If content is missing, restore it from backup
+          if (contentAfterShow === 0) {
+            console.log(`⚠️ Tab ${tabName} is empty (${contentAfterShow} chars), attempting restoration...`);
+            
+            // Try weather cache first for weather tabs
+            if (tabName.includes('Weather')) {
+              const weatherContent = weatherTabCache.current.get('tab_' + tabName);
+              console.log(`🌤️ Weather cache check for tab_${tabName}:`, weatherContent ? `${weatherContent.length} chars` : 'NOT FOUND');
+              
+              if (weatherContent) {
+                selectedContent.innerHTML = weatherContent;
+                console.log(`🌤️ ✅ SUCCESS: Restored weather tab content from cache (${weatherContent.length} chars)`);
+                return;
+              } else {
+                console.log(`🌤️ ❌ FAILED: No weather cache found for tab_${tabName}`);
+              }
+            }
+            
+            // Fall back to regular backup
+            const backupContent = tabContentBackup.current.get('tab_' + tabName);
+            console.log(`💾 Regular backup check for tab_${tabName}:`, backupContent ? `${backupContent.length} chars` : 'NOT FOUND');
+            
+            if (backupContent) {
+              selectedContent.innerHTML = backupContent;
+              console.log(`✅ SUCCESS: Restored tab content from regular backup (${backupContent.length} chars)`);
+            } else {
+              console.log(`❌ FAILED: No backup content found for tab_${tabName}`);
+            }
+          } else {
+            console.log(`✅ Tab ${tabName} already has content (${contentAfterShow} chars), no restoration needed`);
+          }
+        }
+      
+      // Set active state for selected tab
+      const activeButton = popup.querySelector(`button[data-tab="${tabName}"]`);
+      console.log('🔍 Active button:', activeButton);
+      if (activeButton) {
+        activeButton.classList.add('active');
+      }
+      
+      // Final verification - check if the selected tab is visible and has content
+      setTimeout(() => {
+        const finalCheck = popup.querySelector('#tab_' + tabName);
+        if (finalCheck) {
+          const finalDisplay = (finalCheck as HTMLElement).style.display;
+          const finalContent = finalCheck.innerHTML.trim().length;
+          console.log(`🔍 Final check - Tab ${tabName}: display=${finalDisplay}, contentLength=${finalContent}`);
+        }
+      }, 100);
+    } else {
+      console.log('⚠️ No popup found');
+    }
   };
 
   const formatEnrichmentLabel = (key: string): string => {
@@ -934,6 +1095,8 @@ if (bounds.isValid() && results.length > 1) {
       poi_epa_oil_spill_count: 'EPA Oil Spill Response',
       
       // Hazards
+      poi_animal_vehicle_collisions_count: 'Animal Vehicle Collisions',
+      poi_animal_vehicle_collisions_source: 'AVI Data Source',
       poi_wetlands_count: 'USGS Wetlands',
       poi_wetlands_point_in_wetland: 'Point in Wetland',
       poi_wetlands_summary: 'Wetlands Summary',
@@ -959,6 +1122,8 @@ if (bounds.isValid() && results.length > 1) {
       poi_taxi_count: 'Taxi',
       poi_bike_scooter_share_count: 'Bike/Scooter Share',
       poi_dockless_hub_count: 'Dockless Hub',
+              poi_electric_charging_count: 'Electric Charging Stations',
+        poi_gas_stations_count: 'Gas Stations',
 
        // Natural Resources
        poi_beaches_count: 'Beaches',
@@ -1017,6 +1182,11 @@ if (bounds.isValid() && results.length > 1) {
      if (key === 'poi_flood_reference_points_summary') {
        return value || 'No data available';
      }
+     
+     // Handle AVI data source
+     if (key === 'poi_animal_vehicle_collisions_source') {
+       return value || 'No source data available';
+     }
 
      
 
@@ -1051,7 +1221,7 @@ if (bounds.isValid() && results.length > 1) {
 
     // Create comprehensive CSV with all POI details
     const headers = ['Address', 'Latitude', 'Longitude', 'Source', 'Confidence'];
-    const poiHeaders = ['POI_Type', 'POI_Name', 'POI_Latitude', 'POI_Longitude', 'Distance_Miles', 'POI_Category', 'POI_Address', 'POI_Phone', 'POI_Website'];
+    const poiHeaders = ['POI_Type', 'POI_Name', 'POI_Latitude', 'POI_Longitude', 'Distance_Miles', 'POI_Category', 'POI_Address', 'POI_Phone', 'POI_Website', 'POI_Source'];
     
     const allHeaders = [...headers, ...poiHeaders];
     
@@ -1097,7 +1267,8 @@ if (bounds.isValid() && results.length > 1) {
              poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
              poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
              poi.tags?.phone || '',
-             poi.tags?.website || ''
+             poi.tags?.website || '',
+             poi.source || 'N/A'
            ]);
          });
        } else if (key.includes('_all') && Array.isArray(value)) {
@@ -1117,7 +1288,8 @@ if (bounds.isValid() && results.length > 1) {
              poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
              poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
              poi.tags?.phone || '',
-             poi.tags?.website || ''
+             poi.tags?.website || '',
+             poi.source || 'N/A'
            ]);
          });
        } else if (key === 'poi_wikipedia_articles' && Array.isArray(value)) {
@@ -1163,6 +1335,31 @@ if (bounds.isValid() && results.length > 1) {
           ]);
         });
       }
+      
+             // Special handling for AVI data - include source field
+       if (key === 'poi_animal_vehicle_collisions_all_pois' && Array.isArray(value)) {
+         value.forEach((collision: any) => {
+           rows.push([
+             result.location.name,
+             result.location.lat,
+             result.location.lon,
+             result.location.source,
+             result.location.confidence || 'N/A',
+             'ANIMAL_VEHICLE_COLLISION',
+             'Collision Record',
+             collision.lat || '',
+             collision.lon || '',
+             collision.distance_miles || 'Unknown',
+             'Hazard Assessment',
+             `Source: ${collision.source || 'Unknown'}, Year: ${collision.crash_year || 'Unknown'}, Case: ${collision.st_case || 'N/A'}`,
+             '',
+             '',
+             collision.source || 'Unknown'
+           ]);
+         });
+       }
+       
+       
     });
 
     // Add FEMA flood zone data
@@ -1381,6 +1578,7 @@ if (bounds.isValid() && results.length > 1) {
 
                // Add PAD-US Public Access data
                if (result.enrichments.padus_public_access_inside !== undefined) {
+                 // Add point-in-polygon status
                  rows.push([
                    result.location.name,
                    result.location.lat,
@@ -1388,7 +1586,7 @@ if (bounds.isValid() && results.length > 1) {
                    result.location.source,
                    result.location.confidence || 'N/A',
                    'PADUS_PUBLIC_ACCESS',
-                   'Public Land Status',
+                   'Point-in-Polygon Status',
                    result.location.lat,
                    result.location.lon,
                    '0.0',
@@ -1398,44 +1596,50 @@ if (bounds.isValid() && results.length > 1) {
                    result.enrichments.padus_public_access_inside_info?.managerName || 'N/A'
                  ]);
                  
-                 if (result.enrichments.padus_public_access_nearby_count !== undefined) {
+                 
+                 // Add detailed nearby features
+                 if (result.enrichments.padus_public_access_nearby_features && Array.isArray(result.enrichments.padus_public_access_nearby_features)) {
+                   result.enrichments.padus_public_access_nearby_features.forEach((feature: any) => {
+                     rows.push([
+                       result.location.name,
+                       result.location.lat,
+                       result.location.lon,
+                       result.location.source,
+                       result.location.confidence || 'N/A',
+                       'PADUS_PUBLIC_ACCESS',
+                       feature.unitName || 'Unnamed Public Land',
+                       result.location.lat,
+                       result.location.lon,
+                       (result.enrichments.padus_public_access_proximity_distance || 5.0).toFixed(1),
+                       'Public Lands Feature',
+                       `${feature.managerName || 'Unknown'} - ${feature.publicAccess || 'Unknown'} access`,
+                       feature.category || 'Unknown',
+                       feature.acres ? `${feature.acres.toLocaleString()} acres` : 'Unknown'
+                     ]);
+                   });
+                 }
+               }
+
+                              // Add PAD-US Protection Status data
+               if (result.enrichments.padus_protection_status_nearby_features && Array.isArray(result.enrichments.padus_protection_status_nearby_features)) {
+                 result.enrichments.padus_protection_status_nearby_features.forEach((feature: any) => {
                    rows.push([
                      result.location.name,
                      result.location.lat,
                      result.location.lon,
                      result.location.source,
                      result.location.confidence || 'N/A',
-                     'PADUS_PUBLIC_ACCESS',
-                     'Nearby Public Lands',
+                     'PADUS_PROTECTION_STATUS',
+                     feature.unitName || 'Unnamed Protected Area',
                      result.location.lat,
                      result.location.lon,
-                     '5.0', // Default radius
-                     'Public Lands Proximity',
-                     `${result.enrichments.padus_public_access_nearby_count} found`,
-                     '',
-                     ''
+                     (result.enrichments.padus_protection_status_proximity_distance || 5.0).toFixed(1),
+                     'Protection Status Feature',
+                     `${feature.gapStatus || 'Unknown'} - ${feature.iucnCategory || 'Unknown'}`,
+                     feature.category || 'Unknown',
+                     feature.publicAccess || 'Unknown'
                    ]);
-                 }
-               }
-
-               // Add PAD-US Protection Status data
-               if (result.enrichments.padus_protection_status_nearby_count !== undefined) {
-                 rows.push([
-                   result.location.name,
-                   result.location.lat,
-                   result.location.lon,
-                   result.location.source,
-                   result.location.confidence || 'N/A',
-                   'PADUS_PROTECTION_STATUS',
-                   'Protected Areas',
-                   result.location.lat,
-                   result.location.lon,
-                   '5.0', // Default radius
-                   'Protection Status Assessment',
-                   `${result.enrichments.padus_protection_status_nearby_count} found`,
-                   '',
-                   ''
-                 ]);
+                 });
                }
 
                // Add NWS Weather Alerts data
@@ -1485,7 +1689,7 @@ if (bounds.isValid() && results.length > 1) {
      const transportationPOIs = [
        'poi_bus', 'poi_train', 'poi_subway_metro', 'poi_tram', 'poi_monorail',
        'poi_aerialway', 'poi_ferry', 'poi_airport_air', 'poi_taxi', 
-       'poi_bike_scooter_share', 'poi_dockless_hub'
+               'poi_bike_scooter_share', 'poi_dockless_hub', 'poi_electric_charging', 'poi_gas_stations'
      ];
      
      transportationPOIs.forEach(poiType => {
@@ -1722,56 +1926,7 @@ if (bounds.isValid() && results.length > 1) {
           </div>
         )}
         
-                         {/* Results Summary Panel */}
-        {!isMobile && results.length > 0 && (
-          <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-xl border border-gray-200 max-w-sm max-h-80 overflow-y-auto z-[9999]">
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
-              <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
-                <span className="w-4 h-4 text-primary-600">ℹ️</span>
-                <span>Results Summary</span>
-              </h3>
-            </div>
-            
-            <div className="p-4 space-y-3 max-h-64 overflow-y-auto">
-              {results.map((result, index) => (
-                <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-start space-x-2">
-                    <span className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0">📍</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 text-sm truncate">
-                        {result.location.name}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {result.location.lat.toFixed(4)}, {result.location.lon.toFixed(4)}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Source: {result.location.source}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {Object.keys(result.enrichments).length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <p className="text-xs text-gray-600 font-medium mb-1">Enrichments:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {Object.entries(result.enrichments).slice(0, 3).map(([key, value]) => (
-                          <span key={key} className="inline-block px-2 py-1 bg-primary-100 text-primary-700 text-xs rounded">
-                            {formatEnrichmentLabel(key)}: {formatEnrichmentValue(key, value)}
-                          </span>
-                        ))}
-                        {Object.keys(result.enrichments).length > 3 && (
-                          <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                            +{Object.keys(result.enrichments).length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                 
       </div>
     </div>
   );

@@ -24,6 +24,8 @@ async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: numb
   
   for (let i = 0; i < attempts.length; i++) {
     try {
+      console.log(`🌐 Attempt ${i + 1}: Fetching from ${attempts[i]}`);
+      
       const res = await fetch(attempts[i], { 
         ...opts, 
         headers: { 
@@ -32,16 +34,42 @@ async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: numb
         } 
       });
       
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        console.warn(`⚠️ HTTP ${res.status} from ${attempts[i]}`);
+        throw new Error(`HTTP ${res.status}`);
+      }
       
       const ct = res.headers.get("content-type") || "";
-      const body = ct.includes("application/json") ? await res.json() : JSON.parse(await res.text());
-      return body;
+      const text = await res.text();
+      
+      // Check if response is HTML (error page) instead of JSON
+      if (text.trim().startsWith('<html') || text.trim().startsWith('<!DOCTYPE')) {
+        console.warn(`⚠️ Received HTML instead of JSON from ${attempts[i]}:`, text.substring(0, 100));
+        throw new Error('Received HTML instead of JSON');
+      }
+      
+      // Try to parse as JSON
+      try {
+        const body = JSON.parse(text);
+        console.log(`✅ Successfully parsed JSON from ${attempts[i]}`);
+        return body;
+      } catch (parseError) {
+        console.warn(`⚠️ Failed to parse JSON from ${attempts[i]}:`, text.substring(0, 100));
+        throw new Error('Invalid JSON response');
+      }
+      
     } catch (e) { 
       err = e; 
-      if (i < attempts.length - 1) await new Promise(r => setTimeout(r, backoff)); 
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      console.warn(`❌ Attempt ${i + 1} failed:`, errorMessage);
+      if (i < attempts.length - 1) {
+        console.log(`⏳ Waiting ${backoff}ms before retry...`);
+        await new Promise(r => setTimeout(r, backoff)); 
+      }
     }
   }
+  
+  console.error(`❌ All attempts failed for ${url}`);
   throw err || new Error("fetchJSONSmart failed");
 }
 
@@ -365,9 +393,7 @@ export class EnrichmentService {
         poi_earthquakes_count: earthquakeCount,
         poi_earthquakes_largest_magnitude: largestMagnitude,
         poi_earthquakes_recent: recentEarthquakes,
-        poi_earthquakes_summary: summary,
-        poi_earthquakes_status: 'Data retrieved successfully',
-        poi_earthquakes_proximity_distance: radiusMiles
+        poi_earthquakes_summary: summary
       };
       
     } catch (error) {
@@ -376,9 +402,7 @@ export class EnrichmentService {
         poi_earthquakes_count: 0,
         poi_earthquakes_largest_magnitude: 0,
         poi_earthquakes_recent: [],
-        poi_earthquakes_summary: 'Error querying USGS Earthquake data',
-        poi_earthquakes_status: 'API query failed',
-        poi_earthquakes_proximity_distance: radiusMiles
+        poi_earthquakes_summary: 'Error querying USGS Earthquake data'
       };
     }
   }
@@ -983,6 +1007,12 @@ export class EnrichmentService {
         return await this.getUSDALocalFood(lat, lon, radius, 'foodhub');
       case 'poi_usda_onfarm_market':
         return await this.getUSDALocalFood(lat, lon, radius, 'onfarmmarket');
+      
+      // Electric Charging Stations via OpenChargeMap API
+              case 'poi_electric_charging':
+          return await this.getElectricChargingStations(lat, lon, radius);
+        case 'poi_gas_stations':
+          return await this.getGasStations(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('poi_')) {
@@ -1029,24 +1059,37 @@ export class EnrichmentService {
 
   private async getFIPSCodes(lat: number, lon: number): Promise<Record<string, any>> {
     try {
+      console.log('🌐 Attempting to fetch FIPS codes from FCC API...');
+      
       const u = new URL("https://geo.fcc.gov/api/census/block/find");
       u.searchParams.set("latitude", lat.toString());
       u.searchParams.set("longitude", lon.toString());
       u.searchParams.set("format", "json");
       
+      console.log('🌐 FCC API URL:', u.toString());
+      
       const j = await fetchJSONSmart(u.toString());
+      
+      if (!j || typeof j !== 'object') {
+        console.warn('⚠️ FCC API returned invalid response format');
+        return {};
+      }
+      
       const b = j?.Block?.FIPS || null;
       const county = j?.County?.name || null;
       const state = j?.State?.code || null;
       
-      if (!b) return {};
+      if (!b) {
+        console.warn('⚠️ No FIPS block data found in FCC API response');
+        return {};
+      }
       
       const tract = b.substring(0, 11);
       const stateCode = b.substring(0, 2);
       const countyCode = b.substring(2, 5);
       const tractCode = tract.substring(5, 11);
       
-      return {
+      const result = {
         fips_block: b,
         fips_tract: tract,
         county_name: county,
@@ -1055,8 +1098,15 @@ export class EnrichmentService {
         fips_county: countyCode,
         fips_tract6: tractCode
       };
+      
+      console.log('✅ FIPS codes successfully retrieved:', result);
+      return result;
+      
     } catch (error) {
-      console.error('FIPS API error:', error);
+      console.error('❌ FIPS API error:', error);
+      console.warn('⚠️ Census/FIPS data will be unavailable for this location');
+      
+      // Return empty object but don't break the entire enrichment process
       return {};
     }
   }
@@ -1115,6 +1165,41 @@ export class EnrichmentService {
       console.log(`🔍 Filters found for ${enrichmentId}:`, filters);
       
       if (filters.length > 0) {
+        // Handle custom API calls (like Animal Vehicle Collisions)
+        if (filters.includes("custom_api")) {
+          console.log(`🔍 Calling custom API for ${enrichmentId}...`);
+          const result = await this.getAnimalVehicleCollisions(lat, lon, radius);
+          console.log(`🔍 Custom API result for ${enrichmentId}:`, {
+            count: result.count,
+            elementsCount: result.elements?.length || 0,
+            hasDetailedPois: !!(result as any).detailed_pois,
+            detailedPoisCount: (result as any).detailed_pois?.length || 0
+          });
+          
+          const countKey = `${enrichmentId}_count_${radius}mi`;
+          const poiResult: Record<string, any> = { [countKey]: result.count };
+          
+          // Include detailed POI data for mapping (if available)
+          if ((result as any).detailed_pois && (result as any).detailed_pois.length > 0) {
+            poiResult[`${enrichmentId}_detailed`] = (result as any).detailed_pois;
+            console.log(`✅ Added ${(result as any).detailed_pois.length} detailed POIs for ${enrichmentId}`);
+          } else {
+            console.log(`⚠️  No detailed POIs found for ${enrichmentId}`);
+          }
+          
+          // Include ALL POI data for CSV export (complete dataset)
+          if ((result as any).all_pois && (result as any).all_pois.length > 0) {
+            poiResult[`${enrichmentId}_all`] = (result as any).all_pois;
+            console.log(`✅ Added ${(result as any).all_pois.length} ALL POIs for ${enrichmentId} CSV export`);
+          } else {
+            console.log(`⚠️  No all_pois found for ${enrichmentId}`);
+          }
+          
+          console.log(`🔍 Final poiResult for ${enrichmentId}:`, poiResult);
+          return poiResult;
+        }
+        
+        // Handle OSM-based POIs
         console.log(`🔍 Calling overpassCountMiles for ${enrichmentId}...`);
         const result = await this.overpassCountMiles(lat, lon, radius, filters);
         console.log(`🔍 overpassCountMiles result for ${enrichmentId}:`, {
@@ -1200,6 +1285,9 @@ export class EnrichmentService {
      if (id === "poi_power_plants") return ["power=plant", "power=generator"];
      if (id === "poi_railroads") return ["railway=rail"];
      if (id === "poi_gas") return ["amenity=fuel"];
+     
+     // The Location Is Everything Company - Animal Vehicle Collisions
+     if (id === "poi_animal_vehicle_collisions") return ["custom_api"];
      
      // Fix missing POI types showing 0 counts
      if (id === "poi_tnm_airports") return ["aeroway=aerodrome", "aeroway=airport"];
@@ -1314,50 +1402,45 @@ export class EnrichmentService {
       const elements = res.elements || [];
       console.log(`📊 Overpass API returned ${elements.length} elements within bbox`);
       
-             // Filter POIs by actual distance from center point (not just bbox)
-       const nearbyPOIs: any[] = [];
+      // Process POIs returned by bbox (server has already filtered spatially)
+      const nearbyPOIs: any[] = [];
       const seen = new Set();
       
       const norm = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
       
       for (const el of elements) {
-         // Handle different element types with out center format
-         let latc: number | null = null;
-         let lonc: number | null = null;
-         
-         if (el.type === 'node') {
-           // Nodes have direct lat/lon coordinates
-           latc = el.lat;
-           lonc = el.lon;
-         } else if (el.type === 'way' || el.type === 'relation') {
-           // Ways and relations use center coordinates with out center
-           latc = el.center?.lat;
-           lonc = el.center?.lon;
-         }
-         
+        // Handle different element types with out center format
+        let latc: number | null = null;
+        let lonc: number | null = null;
+        
+        if (el.type === 'node') {
+          // Nodes have direct lat/lon coordinates
+          latc = el.lat;
+          lonc = el.lon;
+        } else if (el.type === 'way' || el.type === 'relation') {
+          // Ways and relations use center coordinates with out center
+          latc = el.center?.lat;
+          lonc = el.center?.lon;
+        }
+        
         if (latc == null || lonc == null) continue;
         
-         // Calculate actual distance from center point
-         const distanceMiles = Math.round(this.calculateDistance(lat, lon, latc, lonc) * 0.621371 * 100) / 100;
-         
-                   // Only include POIs within the specified radius
-          if (distanceMiles <= radiusMiles) {
-            // Skip POIs with no name or "unnamed" names
-            const poiName = el.tags?.name;
-            if (!poiName || poiName.toLowerCase().includes('unnamed')) {
-              continue;
-            }
-            
-            const key = `${norm(poiName)}|${latc.toFixed(3)},${lonc.toFixed(3)}`;
+        // Skip POIs with no name or "unnamed" names
+        const poiName = el.tags?.name;
+        if (!poiName || poiName.toLowerCase().includes('unnamed')) {
+          continue;
+        }
+        
+        // Trust server's bbox filtering - no need to recalculate distance
+        const key = `${norm(poiName)}|${latc.toFixed(3)},${lonc.toFixed(3)}`;
         if (!seen.has(key)) {
           seen.add(key);
-              nearbyPOIs.push({
-                ...el,
-                distance_miles: distanceMiles
-              });
-            }
-          }
-       }
+          nearbyPOIs.push({
+            ...el,
+            distance_miles: 'Within bbox' // Server already filtered by distance
+          });
+        }
+      }
       
              console.log(`✅ Bbox query results: ${nearbyPOIs.length} unique POIs within ${radiusMiles} miles`);
        
@@ -2238,6 +2321,21 @@ export class EnrichmentService {
         padus_public_access_nearby_count: nearbyLands.length,
         padus_public_access_nearby_access_counts: accessCounts,
         padus_public_access_nearby_manager_counts: managerCounts,
+        padus_public_access_nearby_features: nearbyLands.map((feature: any) => ({
+          objectId: feature.attributes.OBJECTID,
+          category: feature.attributes.Category,
+          featureClass: feature.attributes.FeatClass,
+          unitName: feature.attributes.Unit_Nm,
+          publicAccess: feature.attributes.Pub_Access,
+          gapStatus: feature.attributes.GAP_Sts,
+          iucnCategory: feature.attributes.IUCN_Cat,
+          managerType: feature.attributes.MngTp_Desc,
+          managerName: feature.attributes.MngNm_Desc,
+          designationType: feature.attributes.DesTp_Desc,
+          boundaryName: feature.attributes.BndryName,
+          state: feature.attributes.ST_Name,
+          acres: feature.attributes.GIS_AcrsDb
+        })),
         padus_public_access_summary: isInsidePublicLand 
           ? `Location is inside ${insideLandInfo?.unitName || 'public land'} (${insideLandInfo?.managerName || 'Unknown Manager'}) - ${insideLandInfo?.publicAccess || 'Unknown'} access`
           : `No public lands at this location. Found ${nearbyLands.length} public lands within ${radiusMiles} miles.`
@@ -2295,12 +2393,271 @@ export class EnrichmentService {
         padus_protection_status_gap_counts: gapStatusCounts,
         padus_protection_status_iucn_counts: iucnCounts,
         padus_protection_status_category_counts: categoryCounts,
+        padus_protection_status_nearby_features: features.map((feature: any) => ({
+          objectId: feature.attributes.OBJECTID,
+          gapStatus: feature.attributes.GAP_Sts,
+          iucnCategory: feature.attributes.IUCN_Cat,
+          category: feature.attributes.Category,
+          unitName: feature.attributes.Unit_Nm,
+          publicAccess: feature.attributes.Pub_Access
+        })),
         padus_protection_status_summary: `Found ${features.length} protected areas within ${radiusMiles} miles with various protection levels and categories.`
       };
       
     } catch (error) {
       console.error('🛡️ PAD-US Protection Status query failed:', error);
       return { padus_protection_status_error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
+  // Electric Charging Stations via OpenChargeMap API
+  private async getElectricChargingStations(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔌 Electric Charging Stations query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const apiKey = '3b819866-3a12-4dac-8ab1-7648e0a6f533';
+      const queryUrl = `https://api.openchargemap.io/v3/poi/?output=json&countrycode=US&latitude=${lat}&longitude=${lon}&distance=${radiusMiles}&maxresults=50&key=${apiKey}`;
+      
+      console.log(`🔗 OpenChargeMap API URL: ${queryUrl}`);
+      const response = await fetch(queryUrl);
+      
+      if (!response.ok) {
+        throw new Error(`OpenChargeMap API failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`📊 OpenChargeMap response:`, data);
+      
+      const stations = data || [];
+      const totalStations = stations.length;
+      
+      // Count by connection type
+      const connectionCounts: Record<string, number> = {};
+      const levelCounts: Record<string, number> = {};
+      
+      stations.forEach((station: any) => {
+        // Count connection types
+        if (station.Connections && Array.isArray(station.Connections)) {
+          station.Connections.forEach((conn: any) => {
+            const connectionType = conn.ConnectionType?.Title || 'Unknown';
+            connectionCounts[connectionType] = (connectionCounts[connectionType] || 0) + 1;
+            
+            const level = conn.Level?.Title || 'Unknown';
+            levelCounts[level] = (levelCounts[level] || 0) + 1;
+          });
+        }
+      });
+      
+      // Get station details for mapping
+      const stationDetails = stations.slice(0, 10).map((station: any) => ({
+        id: station.ID,
+        name: station.AddressInfo?.Title || 'Unnamed Station',
+        address: station.AddressInfo?.AddressLine1 || 'No address',
+        city: station.AddressInfo?.Town || 'Unknown city',
+        state: station.AddressInfo?.StateOrProvince || 'Unknown state',
+        lat: station.AddressInfo?.Latitude,
+        lon: station.AddressInfo?.Longitude,
+        connections: station.Connections?.length || 0,
+        status: station.StatusType?.Title || 'Unknown'
+      }));
+      
+      return {
+        poi_electric_charging_count: totalStations,
+        poi_electric_charging_connection_types: connectionCounts,
+        poi_electric_charging_levels: levelCounts,
+        poi_electric_charging_detailed: stationDetails,
+        poi_electric_charging_proximity_distance: radiusMiles,
+        poi_electric_charging_summary: `Found ${totalStations} electric charging stations within ${radiusMiles} miles with various connection types and charging levels.`
+      };
+      
+    } catch (error) {
+      console.error('🔌 Electric Charging Stations query failed:', error);
+      return { 
+        poi_electric_charging_count: 0,
+        poi_electric_charging_error: error instanceof Error ? error.message : String(error) 
+      };
+    }
+  }
+
+
+  private async getGasStations(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛽ Gas Stations query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const radiusMeters = Math.round(radiusMiles * 1609.34);
+      const query = `[out:json];(node["amenity"="fuel"](around:${radiusMeters},${lat},${lon});way["amenity"="fuel"](around:${radiusMeters},${lat},${lon});relation["amenity"="fuel"](around:${radiusMeters},${lat},${lon}););out center;`;
+      const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      return { count: data.elements?.length || 0, features: data.elements || [] };
+    } catch (error) {
+      console.error('Gas Stations query failed:', error);
+      return { count: 0, features: [], error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  // The Location Is Everything Company - Animal Vehicle Collisions API
+  private async getAnimalVehicleCollisions(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🦌 Animal Vehicle Collisions query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // Use the working public endpoint with spatial filtering
+      const API_BASE = "https://api.locationfriend.com";
+      const queryUrl = `${API_BASE}/vehicle_animal_collisions_api`;
+      
+      // Use simple bounds filtering that your API supports
+      const params = new URLSearchParams();
+      params.append('select', '*');
+      params.append('limit', '1000');
+      
+      // Add simple lat/lon bounds (much more efficient than fetching all data)
+      const latRange = radiusMiles / 69; // Rough conversion: 1 degree ≈ 69 miles
+      params.append('lat', `gte.${lat - latRange}`);
+      params.append('lat', `lte.${lat + latRange}`);
+      params.append('lon', `gte.${lon - latRange}`);
+      params.append('lon', `lte.${lon + latRange}`);
+      
+      const fullUrl = `${queryUrl}?${params.toString()}`;
+      console.log(`🔗 Animal Vehicle Collisions API with bounds filter: ${fullUrl}`);
+      
+      // Use GET method with bounds filtering
+      const response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: { 
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Animal Vehicle Collisions API failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`📊 Animal Vehicle Collisions response:`, data);
+      console.log(`📊 First collision record structure:`, data[0]);
+      console.log(`📊 Available fields:`, data[0] ? Object.keys(data[0]) : 'No data');
+      
+      // Debug: Check what source values we're actually getting
+      if (Array.isArray(data) && data.length > 0) {
+        const allSources = data.map(c => c.source).filter(Boolean);
+        console.log(`🦌 ALL SOURCES IN RESPONSE:`, allSources);
+        console.log(`🦌 UNIQUE SOURCES:`, [...new Set(allSources)]);
+        console.log(`🦌 SAMPLE COLLISION WITH SOURCE:`, data.find(c => c.source));
+      }
+      
+      // Server now returns only spatially filtered data - much simpler processing
+      const allCollisions = Array.isArray(data) ? data : [];
+      console.log(`🦌 Received ${allCollisions.length} collisions from server-side spatial filtering`);
+      
+      // Process coordinates and track sources (no distance filtering needed)
+      const collisionsInUserRadius: any[] = [];
+      const collisionsIn2Miles: any[] = [];
+      const uniqueSources = new Set<string>();
+      
+      for (const collision of allCollisions) {
+        // Extract coordinates
+        let lat: number | null = null;
+        let lon: number | null = null;
+        
+        if (collision.geom && collision.geom.coordinates) {
+          // PostGIS geometry format: [lon, lat]
+          [lon, lat] = collision.geom.coordinates;
+        } else if (collision.lat && collision.lon) {
+          // Direct lat/lon format
+          lat = collision.lat;
+          lon = collision.lon;
+        }
+        
+        if (!lat || !lon) continue; // Skip invalid coordinates
+        
+        // Add to source tracking
+        if (collision.source) {
+          uniqueSources.add(collision.source);
+        }
+        
+        // Server already filtered by distance - just categorize by intended use
+        collisionsInUserRadius.push({
+          ...collision,
+          lat,
+          lon,
+          distance_miles: 'Server filtered'
+        });
+        
+        // For map display, use all data (server already filtered appropriately)
+        collisionsIn2Miles.push({
+          ...collision,
+          lat,
+          lon,
+          distance_miles: 'Server filtered'
+        });
+      }
+      
+      const totalCollisions = collisionsInUserRadius.length;
+      const mapCollisions = collisionsIn2Miles.length;
+      console.log(`📍 Found ${totalCollisions} collisions within ${radiusMiles} miles (user proximity) for CSV export`);
+      console.log(`📍 Found ${mapCollisions} collisions within 2 miles for map display (pattern detection)`);
+      
+      // Convert Set to array for display
+      const uniqueSourcesArray = Array.from(uniqueSources);
+      const sourceSummary = uniqueSourcesArray.length > 0 ? uniqueSourcesArray.join(', ') : 'No source data available';
+      
+      console.log(`🦌 Raw collisions in user radius:`, collisionsInUserRadius.length);
+      console.log(`🦌 Sources from collisions:`, collisionsInUserRadius.map(c => c.source));
+      console.log(`🦌 Unique sources found:`, uniqueSourcesArray);
+      console.log(`🦌 Source summary:`, sourceSummary);
+      
+      // Create individual source entries for each collision to ensure they appear in popup
+      const sourceEntries = collisionsInUserRadius.map((collision: any) => ({
+        key: 'poi_animal_vehicle_collisions_source',
+        value: collision.source || 'Unknown'
+      }));
+      
+      // Create detailed POI data for mapping (2-mile radius) - ALL POINTS, no limit!
+      const collisionDetails = collisionsIn2Miles.map((collision: any, index: number) => {
+        const distance = this.calculateDistance(lat, lon, collision.lat, collision.lon) * 0.621371;
+        
+        return {
+          id: `collision_${collision.id || index}`,
+          name: `Animal Vehicle Collision`,
+          description: `Collision record from ${collision.source || 'FARS'} database`,
+          lat: collision.lat,
+          lon: collision.lon,
+          crash_year: collision.crash_year,
+          source: collision.source,
+          st_case: collision.st_case,
+          distance_miles: distance.toFixed(2),
+          // Include all original fields
+          ...collision
+        };
+      });
+      
+      // Create a result structure that matches the expected POI format
+      const result = {
+        count: totalCollisions, // Total count for CSV export (user proximity) - KEEP ORIGINAL STRUCTURE
+        poi_animal_vehicle_collisions_count: totalCollisions, // ALSO ADD COUNT FIELD FOR DISPLAY
+        elements: collisionsIn2Miles, // Elements for map display (2-mile radius)
+        detailed_pois: collisionDetails, // Detailed POIs for map (2-mile radius)
+        all_pois: collisionsInUserRadius, // ALL POIs for CSV export (user proximity)
+        poi_animal_vehicle_collisions_source: sourceSummary, // ADD SOURCE FIELD WITHOUT BREAKING EXISTING CODE
+        source_entries: sourceEntries, // ADD INDIVIDUAL SOURCE ENTRIES FOR POPUP DISPLAY
+        summary: `Found ${totalCollisions} animal vehicle collision records within ${radiusMiles} miles from The Location Is Everything Company database.`,
+        api_source: 'https://api.locationfriend.com/vehicle_animal_collisions_api'
+      };
+      
+      console.log(`🦌 Returning AVI result:`, result);
+      console.log(`🦌 Source field value:`, result.poi_animal_vehicle_collisions_source);
+      
+      return result;
+      
+    } catch (error) {
+      console.error('🦌 Animal Vehicle Collisions query failed:', error);
+      return { 
+        count: 0, 
+        elements: [], 
+        detailed_pois: [], 
+        all_pois: [],
+        error: error instanceof Error ? error.message : 'Unknown error',
+        api_source: 'https://api.locationfriend.com/vehicle_animal_collisions_api'
+      };
     }
   }
 }
