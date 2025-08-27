@@ -126,6 +126,49 @@ function App() {
     }
   };
 
+  const formatCSVValue = (value: any, key: string): string => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'number') return value.toString();
+    if (typeof value === 'string') return value;
+    
+    if (Array.isArray(value)) {
+      if (value.length === 0) return '';
+      
+      // Special handling for detailed POI arrays
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements')) {
+        return value.map((item: any) => {
+          if (typeof item === 'object' && item !== null) {
+            const parts = [];
+            if (item.name) parts.push(item.name);
+            if (item.source) parts.push(`(${item.source})`);
+            if (item.distance_miles) parts.push(`${item.distance_miles}mi`);
+            return parts.join(' ');
+          }
+          return String(item);
+        }).join('; ');
+      }
+      
+      // Regular array handling
+      return value.map((item: any) => {
+        if (typeof item === 'object' && item !== null) {
+          return item.name || item.title || JSON.stringify(item);
+        }
+        return String(item);
+      }).join('; ');
+    }
+    
+    // Handle objects
+    if (typeof value === 'object') {
+      if (value.name) return String(value.name);
+      if (value.title) return String(value.title);
+      if (value.value) return String(value.value);
+      return JSON.stringify(value);
+    }
+    
+    return String(value);
+  };
+
   const downloadBatchResults = (results: EnrichmentResult[]) => {
     if (!results.length) return;
 
@@ -188,6 +231,9 @@ function App() {
           } else if (key === 'poi_animal_vehicle_collisions_source') {
             // Include AVI source field directly
             value = value || 'FARS, CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT';
+          } else {
+            // Generic handling for complex data types
+            value = formatCSVValue(value, key);
           }
           
           row.push(value);

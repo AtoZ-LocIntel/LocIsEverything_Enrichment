@@ -31,16 +31,71 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     if (Array.isArray(value)) {
       if (value.length === 0) return 'None found';
-      if (key.includes('poi_') && value.length > 3) {
-        return `${value.slice(0, 3).map((item: any) => item.name || item.title || item).join(', ')} +${value.length - 3} more`;
+      
+      // Special handling for AVI data
+      if (key.includes('poi_animal_vehicle_collisions_all_pois')) {
+        return value.map((item: any) => {
+          const parts = [];
+          if (item.source) parts.push(`Source: ${item.source}`);
+          if (item.crash_year) parts.push(`Year: ${item.crash_year}`);
+          if (item.st_case) parts.push(`Case: ${item.st_case}`);
+          if (item.distance_miles) parts.push(`${item.distance_miles} miles`);
+          return parts.join(', ');
+        }).join(' | ');
       }
-      return value.map((item: any) => item.name || item.title || item).join(', ');
+      
+      // Special handling for detailed POIs
+      if (key.includes('_detailed') || key.includes('_elements')) {
+        return value.map((item: any) => {
+          if (typeof item === 'object' && item !== null) {
+            const name = item.name || item.title || 'Unnamed';
+            const distance = item.distance_miles ? ` (${item.distance_miles} miles)` : '';
+            return `${name}${distance}`;
+          }
+          return String(item);
+        }).join(', ');
+      }
+      
+      // Regular POI handling
+      if (key.includes('poi_') && value.length > 3) {
+        const formatted = value.slice(0, 3).map((item: any) => {
+          if (typeof item === 'object' && item !== null) {
+            return item.name || item.title || String(item);
+          }
+          return String(item);
+        }).join(', ');
+        return `${formatted} +${value.length - 3} more`;
+      }
+      
+      return value.map((item: any) => {
+        if (typeof item === 'object' && item !== null) {
+          return item.name || item.title || JSON.stringify(item);
+        }
+        return String(item);
+      }).join(', ');
     }
+    
+    // Handle objects
+    if (typeof value === 'object' && value !== null) {
+      // Try to extract meaningful information from objects
+      if (value.name) return String(value.name);
+      if (value.title) return String(value.title);
+      if (value.value) return String(value.value);
+      
+      // For complex objects, show key-value pairs
+      const entries = Object.entries(value).slice(0, 3);
+      if (entries.length > 0) {
+        return entries.map(([k, v]) => `${k}: ${v}`).join(', ');
+      }
+      
+      return JSON.stringify(value);
+    }
+    
     return String(value);
   };
 
   const getEnrichmentCategory = (key: string): string => {
-    if (key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points')) {
+    if (key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions')) {
       return 'Hazards & Safety';
     }
                 if (key.includes('open_meteo_weather')) {
@@ -87,10 +142,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   }, {} as Record<string, Array<{ key: string; value: any }>>);
 
   return (
-    <div className="min-h-screen bg-gray-50 md:hidden pt-28">
+    <div className="min-h-screen bg-gray-50 md:hidden pt-28 overflow-x-hidden">
       {/* Header with Action Buttons */}
       <div className="bg-white shadow-sm border-b border-gray-200 sticky top-28 z-40">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-3 sm:p-4">
           <button
             onClick={onBackToSearch}
             className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -120,14 +175,14 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       </div>
 
       {/* Results Content */}
-      <div className="p-4 space-y-6">
+      <div className="px-3 sm:px-4 py-4 space-y-4 max-w-full">
         {/* Location Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 w-full overflow-hidden">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{location.name}</h1>
-            <div className="text-gray-600 space-y-1">
-              <p>Coordinates: {location.lat.toFixed(6)}, {location.lon.toFixed(6)}</p>
-              <p>Source: {location.source}</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words">{location.name}</h1>
+            <div className="text-gray-600 space-y-1 text-sm sm:text-base">
+              <p className="break-all">Coordinates: {location.lat.toFixed(6)}, {location.lon.toFixed(6)}</p>
+              <p className="break-words">Source: {location.source}</p>
               <p>Confidence: {location.confidence}%</p>
             </div>
           </div>
@@ -135,19 +190,19 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
 
         {/* Enrichment Data */}
         {Object.entries(groupedEnrichments).map(([category, items]) => (
-          <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
-              <h2 className="text-xl font-bold text-white">{category}</h2>
+          <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden w-full">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 sm:px-6 py-3 sm:py-4">
+              <h2 className="text-lg sm:text-xl font-bold text-white">{category}</h2>
             </div>
             
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
               {items.map(({ key, value }) => (
-                <div key={key} className="border-b border-gray-100 last:border-b-0 pb-4 last:pb-0">
+                <div key={key} className="border-b border-gray-100 last:border-b-0 pb-3 sm:pb-4 last:pb-0">
                   <div className="flex flex-col space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 capitalize">
+                    <label className="text-xs sm:text-sm font-semibold text-gray-700 capitalize break-words">
                       {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </label>
-                    <div className="text-gray-900 bg-gray-50 p-3 rounded-lg">
+                    <div className="text-gray-900 bg-gray-50 p-2 sm:p-3 rounded-lg text-sm sm:text-base break-words overflow-hidden">
                       {formatValue(value, key)}
                     </div>
                   </div>
@@ -158,20 +213,20 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         ))}
 
         {/* Bottom Action Buttons */}
-        <div className="flex space-x-4 pb-8">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pb-8 w-full">
           <button
             onClick={onViewMap}
-            className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+            className="flex-1 bg-blue-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
           >
-            <Map className="w-5 h-5" />
+            <Map className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>View in Map</span>
           </button>
           
           <button
             onClick={onDownloadCSV}
-            className="flex-1 bg-green-600 text-white py-4 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+            className="flex-1 bg-green-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
           >
-            <Download className="w-5 h-5" />
+            <Download className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>Download CSV</span>
           </button>
         </div>

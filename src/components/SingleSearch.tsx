@@ -55,27 +55,25 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                  value={address}
                  onChange={(e) => setAddress(e.target.value)}
                  placeholder="e.g., 123 Main St, Boston, MA 02108"
-                 className={`form-input text-base ${isMobile ? 'pl-12 pr-16' : 'pl-10'}`}
+                 className="form-input text-base pl-12 pr-16"
                  disabled={isLoading}
                />
                <Search className={`w-5 h-5 text-gray-400 absolute top-1/2 transform -translate-y-1/2 ${isMobile ? 'left-3' : 'left-3'}`} />
               
-              {/* Location Toggle - Mobile Only */}
-              {isMobile && (
-                <button
-                  type="button"
-                  onClick={() => setShowLocationButton(!showLocationButton)}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-primary-600 transition-colors"
-                  title="Toggle location search"
-                >
-                  <MapPin className="w-5 h-5" />
-                </button>
-              )}
+              {/* Location Toggle - Available on all screen sizes */}
+              <button
+                type="button"
+                onClick={() => setShowLocationButton(!showLocationButton)}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-primary-600 transition-colors"
+                title="Toggle location search"
+              >
+                <MapPin className="w-5 h-5" />
+              </button>
             </div>
           </div>
 
-          {/* Location Search Button - Shows when toggle is clicked */}
-          {isMobile && showLocationButton && onLocationSearch && (
+          {/* Location Search Button - Shows when toggle is clicked on all screen sizes */}
+          {showLocationButton && onLocationSearch && (
             <button
               type="button"
               onClick={async () => {
@@ -130,6 +128,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• Include city and state for better accuracy</li>
             <li>• Use ZIP codes when available</li>
+            <li>• Click the location pin icon to search from your current location</li>
             <li>• Results include coordinates, demographics, and nearby POIs</li>
             <li>• Try the pre-filled example: "1600 Pennsylvania Avenue NW, Washington, DC 20500"</li>
           </ul>
