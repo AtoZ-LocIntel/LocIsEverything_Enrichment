@@ -151,9 +151,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   }, {} as Record<string, Array<{ key: string; value: any }>>);
 
   return (
-    <div className="min-h-screen bg-gray-50 md:hidden pt-28 mobile-results-container">
+    <div className="min-h-screen bg-gray-50 md:hidden pt-4 mobile-results-container">
       {/* Header with Action Buttons */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-28 z-40 mobile-header">
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 mobile-header">
         <div className="flex items-center justify-between mobile-header-content">
           <button
             onClick={onBackToSearch}

@@ -2024,7 +2024,7 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white pt-28" style={{ height: '100vh', paddingTop: '7rem' }}>
+    <div className="h-full flex flex-col bg-white" style={{ height: '100vh', paddingTop: isMobile ? '0' : '7rem' }}>
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
         <button
@@ -2084,8 +2084,8 @@ if (bounds.isValid() && results.length > 1) {
        )}
 
       {/* Map Container */}
-      <div className="flex-1 relative map-view-container" style={{ minHeight: 'calc(100vh - 14rem)' }}>
-        <div ref={mapRef} className="w-full h-full map-container" style={{ minHeight: 'calc(100vh - 14rem)' }} />
+      <div className="flex-1 relative map-view-container" style={{ minHeight: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)' }}>
+        <div ref={mapRef} className="w-full h-full map-container" style={{ minHeight: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)' }} />
         
         {/* Batch Success Message */}
         {showBatchSuccess && (

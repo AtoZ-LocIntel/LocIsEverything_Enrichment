@@ -295,25 +295,29 @@ function App() {
         enrichmentCount={selectedEnrichments.length} 
       />
       
-      {/* Only show header when not in full-screen views */}
-      {!['data-sources', 'enrichment-category', 'desktop-results', 'mobile-results'].includes(viewMode) && (
+      {/* Only show header when not in full-screen views and not on mobile */}
+      {!['data-sources', 'enrichment-category', 'desktop-results', 'mobile-results'].includes(viewMode) && !isMobile && (
         <Header onViewDataSources={handleViewDataSources} />
       )}
       
       {viewMode === 'config' ? (
-        <div className="pt-28 px-2 sm:px-4 md:px-6 lg:px-8">
+        <div className={`${isMobile ? 'pt-4' : 'pt-28'} px-2 sm:px-4 md:px-6 lg:px-8`}>
           {/* Main Content */}
           <div className="max-w-7xl mx-auto w-full" style={{ maxWidth: isMobile ? 'calc(100vw - 16px)' : '', margin: isMobile ? '0 8px' : 'auto' }}>
-            {/* Mobile Instructions */}
-            {isMobile && (
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-                <p className="text-blue-800 font-medium">
-                  📱 <strong>Mobile Optimized:</strong> Enter an address below to get instant enrichment results
-                </p>
-              </div>
-            )}
+
             
             <div className="text-center mb-12 mt-16">
+              {/* Company Logo - moved from header */}
+              <div className="flex justify-center mb-6">
+                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
+                  <img 
+                    src="/assets/lociseverything.png"
+                    alt="The Location Is Everything Co Logo" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              
               <h1 className="text-4xl font-bold text-gradient mb-4">
                 Advanced Location Intelligence
               </h1>
@@ -329,9 +333,8 @@ function App() {
             {/* Enrichment Options Preview */}
             <div className="mb-8 p-3 md:p-4 lg:p-6 bg-gradient-to-r from-gray-600 to-gray-900 rounded-xl border-2 border-white shadow-2xl overflow-hidden">
                 <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold text-white mb-2 flex items-center justify-center space-x-4 mx-auto">
-                    <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-20 h-20 rounded-full object-cover flex-shrink-0" />
-                    <span>Available Enrichment Options</span>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    Available Enrichment Options
                   </h2>
                   <p className="text-blue-200">Configure your search to include any combination of these data sources</p>
                 </div>
