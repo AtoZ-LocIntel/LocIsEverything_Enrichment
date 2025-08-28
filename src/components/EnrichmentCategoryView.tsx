@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, CheckCircle, Settings } from 'lucide-react';
+import { ArrowLeft, Settings } from 'lucide-react';
 
 interface EnrichmentItem {
   id: string;
