@@ -588,7 +588,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         <div className="card-body">
           {/* Category Button Grid */}
-          <div className="grid grid-cols-2 gap-3 mb-6 w-full">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-6 w-full" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
             {enrichmentCategories.map((category) => {
               const categoryEnrichments = category.enrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -598,18 +598,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 <button
                   key={category.id}
                   onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
-                  className={`relative p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full h-full flex flex-col items-center justify-center`}
+                  className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full h-full flex flex-col items-center justify-center min-h-[100px] sm:min-h-[120px]`}
                 >
                   <div className="text-center relative">
-                    <div className="text-2xl mb-2 relative">
+                    <div className="text-xl sm:text-2xl mb-1 sm:mb-2 relative">
                       {category.icon}
                       {selectedCount > 0 && (
-                        <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                        <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
                           {selectedCount}
                         </div>
                       )}
                     </div>
-                    <h3 className="font-semibold text-gray-900 text-xs leading-tight">{category.title}</h3>
+                    <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight px-1">{category.title}</h3>
                   </div>
                 </button>
               );
