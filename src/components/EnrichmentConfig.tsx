@@ -588,17 +588,23 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         <div className="card-body">
           {/* Category Button Grid */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-6 w-full" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+          <div className="mb-6 w-full" style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(2, 1fr)', 
+            gap: '8px',
+            gridAutoRows: 'minmax(100px, auto)'
+          }}>
             {enrichmentCategories.map((category) => {
               const categoryEnrichments = category.enrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
               const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
 
               return (
-                <div key={category.id} className="flex justify-center">
+                <div key={category.id} className="flex justify-center" style={{ width: '100%', height: '100%' }}>
                   <button
                     onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
-                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-4/5 max-w-sm flex flex-col items-center justify-center min-h-[100px] sm:min-h-[120px]`}
+                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-4/5 max-w-sm flex flex-col items-center justify-center`}
+                    style={{ minHeight: '100px', width: '80%' }}
                   >
                     <div className="text-center relative">
                       <div className="text-xl sm:text-2xl mb-1 sm:mb-2 relative">
