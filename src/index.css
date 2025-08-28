@@ -1,40 +1,739 @@
-/* Global styles for Leads Nearby (Vite + React)
-   - Ensures the background image sits behind every page
-   - Works on mobile (avoids iOS background-attachment issues)
-*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-html, body, #root {
-  height: 100%;
+/* Global mobile viewport fixes */
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* Base body styling (text color mostly controlled by component classes) */
 body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   margin: 0;
-  color: #fff; /* safe default; components also set text colors */
-  background: #0a0f14; /* fallback color while image loads */
+  padding: 0;
 }
 
-/* Fixed pseudo-element so the image stays put and covers the viewport */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: url("/background.png") center / cover no-repeat;
-  opacity: 0.35;                 /* adjust to taste */
-  filter: saturate(0.95) contrast(1.05);
-  z-index: -1;                   /* ensures it's behind the app */
+/* Prevent scrolling when modal is open */
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
 }
 
-/* Optional translucent panels for readability on top of the image */
-.panel {
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* Utility for faint section separators over photo backgrounds */
-.divider {
-  border-color: rgba(255, 255, 255, 0.08);
+@layer base {
+  html {
+    font-family: 'Raleway', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  body {
+    @apply bg-black text-white;
+  }
+  
+  #root {
+    @apply bg-black min-h-screen;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-800 text-white border border-gray-600 hover:bg-gray-700 focus:ring-primary-500;
+  }
+  
+  .btn-outline {
+    @apply bg-transparent text-primary-400 border border-primary-400 hover:bg-primary-900 focus:ring-primary-500;
+  }
+  
+  .card {
+    @apply bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl border-2 border-white shadow-2xl transition-shadow duration-200;
+  }
+  
+  .card-header {
+    @apply px-6 py-4 border-b border-gray-600 bg-gray-700 rounded-t-xl;
+  }
+  
+  .card-body {
+    @apply px-6 py-4;
+  }
+  
+  .form-input {
+    @apply w-full px-3 py-2 bg-white border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-white mb-2;
+  }
+  
+  .enrichment-pill {
+    @apply inline-flex items-center gap-2 px-3 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-full text-sm cursor-pointer transition-all duration-200 hover:bg-primary-50 hover:border-primary-300;
+  }
+  
+  .enrichment-pill.selected {
+    @apply bg-primary-100 border-primary-500 text-primary-700;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent;
+  }
+  
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  }
+}
+
+/* Leaflet map customizations */
+.leaflet-container {
+  @apply rounded-lg border border-gray-200;
+}
+
+/* Map view layout fixes */
+.map-view-container {
+  @apply relative h-full overflow-hidden;
+}
+
+.map-container {
+  @apply w-full h-full relative;
+}
+
+.leaflet-popup-content {
+  @apply text-sm;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply rounded-lg;
+}
+
+/* Ensure popup content has adequate width for tabs */
+.leaflet-popup-content {
+  min-width: 700px !important;
+  max-width: 800px !important;
+}
+
+/* Ensure tabs don't wrap awkwardly */
+.leaflet-popup-content .tab-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.leaflet-popup-content .tab {
+  white-space: nowrap;
+  padding: 8px 16px;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.leaflet-popup-content .tab.active {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.leaflet-popup-content .tab:not(.active) {
+  background-color: #f3f4f6;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+.leaflet-popup-content .tab:not(.active):hover {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+/* Fix z-index conflicts between dropdowns and popups */
+.enrichment-config {
+  @apply relative z-10;
+}
+
+/* Mobile viewport fixes */
+@media (max-width: 767px) {
+  html, body {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+  }
+  
+  #root {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Ensure header fills full width on mobile */
+  header {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+  }
+  
+  /* Force all containers to full width */
+  .container, .container-fluid, .mx-auto {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  /* Ensure main content takes full width */
+  main, .main-content {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Mobile-specific full-width utility */
+  .mobile-full-width {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  /* Override any Tailwind max-width constraints on mobile */
+  .max-w-7xl, .max-w-6xl, .max-w-5xl, .max-w-4xl, .max-w-3xl, .max-w-2xl, .max-w-xl, .max-w-lg, .max-w-md, .max-w-sm {
+    max-width: 100vw !important;
+    width: 100vw !important;
+  }
+  
+  /* Override any auto margins that might center content on mobile */
+  .mx-auto, .ml-auto, .mr-auto {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  /* Ensure all flex containers take full width on mobile */
+  .flex, .inline-flex {
+    width: 100% !important;
+  }
+  
+  /* Override any grid constraints on mobile */
+  .grid {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  
+  /* Ensure the main config content area takes full width on mobile */
+  .pt-36 {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  /* Mobile Results View Specific Fixes */
+  .mobile-results-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+  }
+  
+  .mobile-header {
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  
+  .mobile-header-content {
+    padding: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .mobile-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 8px !important;
+    padding-right: 4px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .mobile-card {
+    width: calc(100% - 4px) !important;
+    max-width: calc(100% - 4px) !important;
+    margin: 0 2px 0 0 !important;
+    box-sizing: border-box !important;
+  }
+  
+  .mobile-card-header {
+    padding: 10px !important;
+  }
+  
+  .mobile-card-body {
+    padding: 10px !important;
+  }
+  
+  .mobile-buttons {
+    width: calc(100% - 4px) !important;
+    max-width: calc(100% - 4px) !important;
+    margin: 0 2px 0 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+
+.enrichment-config .dropdown-content {
+  @apply relative z-20;
+}
+
+/* Ensure popup forms are above dropdowns */
+.single-search,
+.batch-processing {
+  @apply relative z-30;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+  .enrichment-config {
+    @apply z-20;
+  }
+  
+  .single-search,
+  .batch-processing {
+    @apply z-30;
+  }
+  
+  /* Stack elements vertically on mobile */
+  .mobile-stack {
+    @apply flex-col space-y-4;
+  }
+  
+  /* Simplify mobile buttons */
+  .mobile-simplified {
+    @apply text-sm px-3 py-2;
+  }
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-800 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-full hover:bg-gray-500;
+}
+
+/* Loading animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Mobile container fixes - ensure white containers fit properly */
+@media (max-width: 767px) {
+  /* Fix for main landing page containers */
+  .bg-white.rounded-xl.shadow-sm.border {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    padding: 8px !important;
+  }
+  
+  /* Ensure logos are visible on mobile */
+  img[src="/assets/new-logo.png"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Fix for enrichment options container */
+  .bg-gradient-to-br.from-gray-800.to-gray-900 {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix for main content area on mobile */
+  .max-w-7xl {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+  }
+  
+  /* Fix for the grid container itself - make it fit within the white container */
+  .grid.grid-cols-1.md\\:grid-cols-3 {
+    width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px) !important;
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix for the three enrichment category panels */
+  .grid.grid-cols-1.md\\:grid-cols-3 > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+    padding: 8px !important;
+    font-size: 11px !important;
+  }
+  
+  /* Fix for content inside the panels */
+  .grid.grid-cols-1.md\\:grid-cols-3 > div ul {
+    padding-left: 12px !important;
+    margin: 0 !important;
+  }
+  
+  /* Fix for the main enrichment container padding */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 {
+    padding: 12px !important;
+  }
+  
+  /* Fix for the title section to prevent overflow */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 .text-center {
+    padding: 0 8px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  /* Fix for the title text to wrap properly */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 h2 {
+    font-size: 18px !important;
+    line-height: 1.3 !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  /* Make the logo smaller on mobile and ensure it's round */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 img {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Allow content to breathe but stay contained */
+  
+  /* Fix ALL colored category containers inside white boxes */
+  .bg-white .bg-gray-500,
+  .bg-white .bg-gray-600, 
+  .bg-white .bg-gray-700,
+  .bg-white .bg-gray-800,
+  .bg-white .bg-blue-600,
+  .bg-white .bg-green-600,
+  .bg-white .bg-red-600,
+  .bg-white .bg-yellow-600,
+  .bg-white .bg-purple-600,
+  .bg-white .bg-indigo-600 {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin: 4px 8px !important;
+    padding: 6px !important;
+    box-sizing: border-box !important;
+    font-size: 10px !important;
+    overflow: hidden !important;
+  }
+  
+  /* Fix configuration panel content specifically */
+  .bg-white .space-y-3,
+  .bg-white .grid.gap-3,
+  .bg-white .flex.items-center.justify-between {
+    width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px) !important;
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix input fields and controls inside white containers */
+  .bg-white input,
+  .bg-white select,
+  .bg-white button {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix any grid containers inside white boxes */
+  .bg-white .grid {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin: 4px 8px !important;
+    gap: 4px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  
+  /* Fix any flex containers inside white boxes */
+  .bg-white .flex {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin: 8px !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+    flex-wrap: wrap !important;
+  }
+  
+  /* Ensure all content inside white containers is contained */
+  .bg-white > div {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  
+  /* Force ALL divs inside white containers to be contained */
+  .bg-white div {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  
+  /* Fix specific configuration elements that overflow */
+  .bg-white .rounded-lg.border,
+  .bg-white .bg-white.shadow-sm,
+  .bg-white .bg-white\/60 {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin: 4px 8px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix text content inside panels */
+  .bg-white p,
+  .bg-white ul,
+  .bg-white li {
+    width: 100% !important;
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix radius input containers */
+  .bg-white .flex.flex-col.space-y-2,
+  .bg-white .flex.items-center.space-x-2 {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Ensure main content container doesn't overflow */
+  .min-h-screen.bg-black {
+    overflow-x: hidden !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  
+  /* Fix padding on main container */
+  .px-4.sm\\:px-6.lg\\:px-8 {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  
+  /* Ensure any card-like containers fit */
+  .card, .shadow-sm, .shadow-md, .shadow-lg {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+    box-sizing: border-box !important;
+  }
+  
+}
+
+/* Complete Mobile Layout Fix */
+@media (max-width: 767px) {
+  /* Global mobile reset */
+  * {
+    box-sizing: border-box !important;
+  }
+  
+  body {
+    padding-top: env(safe-area-inset-top) !important;
+    overflow-x: hidden !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  
+  .min-h-screen {
+    padding-top: 60px !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix header logo and alignment */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 {
+    width: calc(100vw - 24px) !important;
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+    border-radius: 12px !important;
+  }
+  
+  .bg-gradient-to-r.from-gray-600.to-gray-900 h2 {
+    align-items: center !important;
+    min-height: 100px !important;
+    padding: 16px 20px !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+  }
+  
+  /* Make logo bigger and perfectly circular */
+  .bg-gradient-to-r.from-gray-600.to-gray-900 img,
+  .bg-gradient-to-r.from-gray-600.to-gray-900 h2 img,
+  header img,
+  img[src*="new-logo"] {
+    width: 80px !important;
+    height: 80px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+    aspect-ratio: 1/1 !important;
+    display: block !important;
+    margin-right: 16px !important;
+  }
+  
+  /* Fix all white container cards to fit screen */
+  .bg-white.rounded-xl, .bg-white.rounded-lg {
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    overflow: hidden !important;
+    padding: 16px 12px !important;
+  }
+  
+  /* Fix button grid layout in EnrichmentConfig - TRULY Circular */
+  .grid.grid-cols-2 {
+    gap: 16px !important;
+    padding: 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-items: center !important;
+    display: grid !important;
+  }
+  
+  .grid.grid-cols-2 > button {
+    width: 140px !important;
+    height: 140px !important;
+    max-width: 140px !important;
+    min-width: 140px !important;
+    min-height: 140px !important;
+    max-height: 140px !important;
+    border-radius: 50% !important;
+    padding: 12px !important;
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    word-wrap: break-word !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    aspect-ratio: 1/1 !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Make icon and text spacing better in circular buttons */
+  .grid.grid-cols-2 > button .text-xl {
+    margin-bottom: 4px !important;
+    font-size: 20px !important;
+  }
+  
+  .grid.grid-cols-2 > button .w-5 {
+    margin-bottom: 4px !important;
+    width: 20px !important;
+    height: 20px !important;
+  }
+  
+  /* Ensure all containers respect viewport */
+  .px-4, .px-6, .px-8 {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  /* Fix any overflow issues */
+  .overflow-x-auto {
+    overflow-x: hidden !important;
+  }
+  
+  /* Ensure reset buttons are properly contained */
+  .space-y-3 > button, .space-y-4 > button {
+    width: 100% !important;
+    max-width: calc(100vw - 48px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  
+  /* Basic mobile modal fixes */
+  .fixed.inset-0.bg-black.bg-opacity-50 {
+    padding: 16px !important;
+  }
+  
+  .fixed.inset-0.bg-black.bg-opacity-50 .bg-white {
+    max-height: calc(100vh - 32px) !important;
+  }
 }

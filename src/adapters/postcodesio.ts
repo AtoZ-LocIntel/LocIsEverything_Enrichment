@@ -1,5 +1,5 @@
 // src/adapters/postcodesio.ts
-import { GeocodeQuery, GeocodingAdapter, GeocodeResult } from "../lib/types";
+import { GeocodingAdapter, GeocodeResult } from "../lib/types";
 
 export const PostcodesIOAdapter: GeocodingAdapter = {
   name: "Postcodes.io",

@@ -578,7 +578,7 @@
 
     /* ---------- Friendly labels ---------- */
     const FRIENDLY = {
-      elevation_m:"Elevation (m)", pm25:"PM2.5 (µg/m³)", nws_active_alerts:"NWS Active Alerts",
+      elevation_ft:"Elevation (ft)", pm25:"PM2.5 (µg/m³)", nws_active_alerts:"NWS Active Alerts",
       fips_block:"Census Block FIPS", fips_tract:"Census Tract FIPS", county_name:"County", state_code:"State",
       fips_state:"FIPS State Code", fips_county:"FIPS County Code", fips_tract6:"Tract (6-digit)",
       acs_population:"ACS Population", acs_median_hh_income:"ACS Median Household Income",
@@ -871,7 +871,10 @@
       const out={}; let fipsCache=null;
       for(const id of selectedIds){
         try{
-          if(id==="elev") out.elevation_m = await enrichElevation(lat,lon);
+          if(id==="elev") {
+  const elevationMeters = await enrichElevation(lat,lon);
+  out.elevation_ft = elevationMeters ? Math.round(elevationMeters * 3.28084) : null;
+}
           else if(id==="airq") out.pm25 = await enrichAirQuality(lat,lon);
           else if(id==="fips"){ fipsCache=await enrichFIPS(lat,lon); Object.assign(out,fipsCache); }
           else if(id==="acs"){ if(!fipsCache) fipsCache=await enrichFIPS(lat,lon); Object.assign(out, await enrichACS(fipsCache.fips_state,fipsCache.fips_county,fipsCache.fips_tract6)); }
@@ -1184,7 +1187,7 @@
 
       const outRows=[]; const total=Math.min(limit,csvRows.length); let done=0;
       const headersOut=[...csvHeaders,"lm_lat","lm_lon","lm_geosource"];
-      if(selectedEnrich.includes("elev")) headersOut.push("lm_elevation_m");
+      if(selectedEnrich.includes("elev")) headersOut.push("lm_elevation_ft");
       if(selectedEnrich.includes("airq")) headersOut.push("lm_pm25");
       if(selectedEnrich.includes("fips")) headersOut.push("lm_fips_block","lm_fips_tract","lm_county_name","lm_state_code","lm_fips_state","lm_fips_county","lm_fips_tract6");
       if(selectedEnrich.includes("acs"))  headersOut.push("lm_acs_population","lm_acs_median_hh_income","lm_acs_median_age","lm_acs_name");
@@ -1207,7 +1210,7 @@
             addPoint(lat,lon,`<div><div class="k">${addr}</div><div class="v">${lat.toFixed(5)}, ${lon.toFixed(5)} (${src})</div></div>`,{address:addr,...enrich});
           }
           const out={...row, lm_lat:lat, lm_lon:lon, lm_geosource:src};
-          if("elevation_m" in enrich) out["lm_elevation_m"]=enrich.elevation_m??"";
+          if("elevation_ft" in enrich) out["lm_elevation_ft"]=enrich.elevation_ft??"";
           if("pm25" in enrich) out["lm_pm25"]=enrich.pm25??"";
           if("fips_block" in enrich){
             out["lm_fips_block"]=enrich.fips_block??""; out["lm_fips_tract"]=enrich.fips_tract??"";
