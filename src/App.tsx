@@ -301,12 +301,12 @@ function App() {
       )}
       
       {viewMode === 'config' ? (
-        <div className={`${isMobile ? 'pt-4' : 'pt-28'} px-4 sm:px-6 md:px-8`}>
+        <div className={`${isMobile ? 'pt-8' : 'pt-28'} px-4 sm:px-6 md:px-8`}>
           {/* Main Content - Centered Column Layout */}
           <div className="max-w-2xl mx-auto w-full">
 
             
-            <div className="text-center mb-12 mt-16">
+            <div className="text-center mb-12 mt-8 sm:mt-16">
               {/* Company Logo - moved from header */}
               <div className="flex justify-center mb-6">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
@@ -407,14 +407,16 @@ function App() {
                   isMobile={isMobile}
                 />
               </div>
-              <div data-section="batch-processing">
-                <BatchProcessing 
-                  onComplete={handleBatchComplete} 
-                  selectedEnrichments={selectedEnrichments}
-                  poiRadii={poiRadii}
-                  onLoadingChange={setIsLoading}
-                />
-              </div>
+              {!isMobile && (
+                <div data-section="batch-processing">
+                  <BatchProcessing 
+                    onComplete={handleBatchComplete} 
+                    selectedEnrichments={selectedEnrichments}
+                    poiRadii={poiRadii}
+                    onLoadingChange={setIsLoading}
+                  />
+                </div>
+              )}
             </div>
 
             <EnrichmentConfig

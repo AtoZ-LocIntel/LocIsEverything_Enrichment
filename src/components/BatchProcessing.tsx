@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, AlertTriangle, Clock, Zap, Info } from 'lucide-react';
+import { Upload, AlertTriangle, Clock, Zap, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import Papa from 'papaparse';
 
 interface BatchProcessingProps {
@@ -16,6 +16,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
   const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState(0);
   const [totalAddresses, setTotalAddresses] = useState(0);
   const [showRateLimitInfo, setShowRateLimitInfo] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,17 +117,34 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
 
   return (
     <div className="batch-processing card">
-      <div className="card-header">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-            <Upload className="w-5 h-5 text-primary-600" />
+      {/* Collapsible Header */}
+      <div 
+        className="card-header cursor-pointer hover:bg-gray-700 transition-colors duration-200"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+              <Upload className="w-4 h-4 text-primary-600" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-white">Batch Address Processing</h3>
+              <p className="text-xs text-gray-200">Upload CSV and process multiple locations</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-white">Batch Address Processing</h3>
-            <p className="text-sm text-gray-200">Upload CSV and process multiple locations</p>
+          <div className="flex items-center space-x-2">
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-gray-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-400" />
+            )}
           </div>
         </div>
       </div>
+
+      {/* Collapsible Content */}
+      {isExpanded && (
+        <div className="card-content">
 
       {/* Rate Limit Information */}
       <div className="mb-4">
@@ -267,6 +285,8 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
             <p>⏳ Rate limiting is active to respect API limits</p>
             <p>📊 Progress is saved - you can safely leave this page</p>
           </div>
+        </div>
+      )}
         </div>
       )}
     </div>
