@@ -362,7 +362,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       id={enrichment.id}
                       checked={isSelected}
                       onChange={() => handleEnrichmentToggle(enrichment.id)}
-                      className="w-6 h-6 text-blue-600 border-2 border-gray-500 rounded focus:ring-blue-500 focus:ring-2 mt-0.5"
+                      className="w-6 h-6 text-blue-600 bg-white border-2 border-gray-500 rounded focus:ring-blue-500 focus:ring-2 mt-0.5"
+                      style={{
+                        accentColor: '#2563eb',
+                        WebkitAppearance: 'none',
+                        appearance: 'none',
+                        background: isSelected ? '#2563eb' : 'white',
+                        backgroundImage: isSelected ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z\'/%3e%3c/svg%3e")' : 'none',
+                        backgroundSize: 'contain',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'center'
+                      }}
                     />
                     <div className="flex-1">
                       <label htmlFor={enrichment.id} className="font-semibold text-black cursor-pointer block text-lg">
@@ -389,26 +399,71 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     
                     <div className="flex items-center space-x-3">
                       <label className="text-base font-semibold text-black">Search Radius:</label>
-                      <input
-                        type="number"
-                        min="0.1"
-                        max={
-                          enrichment.id === 'poi_earthquakes' ? 25 :
-                          enrichment.id === 'poi_volcanoes' ? 50 :
-                          enrichment.id === 'poi_wildfires' ? 50 :
-                          enrichment.id === 'poi_flood_reference_points' ? 25 :
-                          5
-                        }
-                        step="0.1"
+                      <select
                         value={currentRadius}
-                        onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                        className="w-24 px-4 py-3 text-base border-2 border-gray-500 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white text-black font-semibold appearance-none"
-                        style={{
-                          WebkitAppearance: 'textfield',
-                          MozAppearance: 'textfield'
+                        onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value))}
+                        className="px-4 py-3 text-base border-2 border-gray-500 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white text-black font-semibold appearance-none"
+                        style={{ 
+                          backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e\")", 
+                          backgroundPosition: "right 0.5rem center", 
+                          backgroundRepeat: "no-repeat", 
+                          backgroundSize: "1.5em 1.5em", 
+                          paddingRight: "2.5rem" 
                         }}
-                      />
-                      <span className="text-base text-black font-semibold">miles</span>
+                      >
+                        <option value={0.5}>0.5 miles</option>
+                        <option value={1}>1 mile</option>
+                        <option value={1.5}>1.5 miles</option>
+                        <option value={2}>2 miles</option>
+                        <option value={2.5}>2.5 miles</option>
+                        <option value={3}>3 miles</option>
+                        <option value={3.5}>3.5 miles</option>
+                        <option value={4}>4 miles</option>
+                        <option value={4.5}>4.5 miles</option>
+                        <option value={5}>5 miles</option>
+                        {enrichment.id === 'poi_earthquakes' && (
+                          <>
+                            <option value={10}>10 miles</option>
+                            <option value={15}>15 miles</option>
+                            <option value={20}>20 miles</option>
+                            <option value={25}>25 miles</option>
+                          </>
+                        )}
+                        {enrichment.id === 'poi_volcanoes' && (
+                          <>
+                            <option value={10}>10 miles</option>
+                            <option value={15}>15 miles</option>
+                            <option value={20}>20 miles</option>
+                            <option value={25}>25 miles</option>
+                            <option value={30}>30 miles</option>
+                            <option value={35}>35 miles</option>
+                            <option value={40}>40 miles</option>
+                            <option value={45}>45 miles</option>
+                            <option value={50}>50 miles</option>
+                          </>
+                        )}
+                        {enrichment.id === 'poi_wildfires' && (
+                          <>
+                            <option value={10}>10 miles</option>
+                            <option value={15}>15 miles</option>
+                            <option value={20}>20 miles</option>
+                            <option value={25}>25 miles</option>
+                            <option value={30}>30 miles</option>
+                            <option value={35}>35 miles</option>
+                            <option value={40}>40 miles</option>
+                            <option value={45}>45 miles</option>
+                            <option value={50}>50 miles</option>
+                          </>
+                        )}
+                        {enrichment.id === 'poi_flood_reference_points' && (
+                          <>
+                            <option value={10}>10 miles</option>
+                            <option value={15}>15 miles</option>
+                            <option value={20}>20 miles</option>
+                            <option value={25}>25 miles</option>
+                          </>
+                        )}
+                      </select>
                     </div>
 
                     {currentRadius > (
