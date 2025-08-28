@@ -329,7 +329,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     return (
       <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
         {/* Mobile Category Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center space-x-3">
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center space-x-3 w-full">
           <button
             onClick={handleMobileBackToLanding}
             className="p-2 hover:bg-gray-100 rounded-lg"
@@ -400,7 +400,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         step="0.1"
                         value={currentRadius}
                         onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                        className="w-20 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900"
+                        className="w-20 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 appearance-none"
+                        style={{
+                          WebkitAppearance: 'textfield',
+                          MozAppearance: 'textfield'
+                        }}
                       />
                       <span className="text-sm text-gray-600">miles</span>
                     </div>

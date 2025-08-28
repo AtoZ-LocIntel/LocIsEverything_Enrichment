@@ -280,6 +280,21 @@ body.modal-open {
     box-sizing: border-box !important;
   }
   
+  /* Fix number input arrows on mobile */
+  input[type="number"] {
+    -webkit-appearance: textfield !important;
+    -moz-appearance: textfield !important;
+  }
+  
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: inner-spin-button !important;
+    opacity: 1 !important;
+    height: 100% !important;
+    background: #f3f4f6 !important;
+    border-left: 1px solid #d1d5db !important;
+  }
+  
   .mobile-content {
     width: 100% !important;
     max-width: 100% !important;
