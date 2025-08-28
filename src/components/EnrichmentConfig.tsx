@@ -595,23 +595,24 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
 
               return (
-                <button
-                  key={category.id}
-                  onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
-                  className={`relative p-4 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border}`}
-                >
-                  <div className="text-center relative">
-                    <div className="text-3xl mb-2 relative">
-                      {category.icon}
-                      {selectedCount > 0 && (
-                        <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                          {selectedCount}
-                        </div>
-                      )}
+                <div key={category.id} className="flex justify-center">
+                  <button
+                    onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
+                    className={`relative p-4 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-4/5 max-w-sm`}
+                  >
+                    <div className="text-center relative">
+                      <div className="text-3xl mb-2 relative">
+                        {category.icon}
+                        {selectedCount > 0 && (
+                          <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                            {selectedCount}
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="font-semibold text-gray-900 text-sm">{category.title}</h3>
                     </div>
-                    <h3 className="font-semibold text-gray-900 text-sm">{category.title}</h3>
-                  </div>
-                </button>
+                  </button>
+                </div>
               );
             })}
           </div>

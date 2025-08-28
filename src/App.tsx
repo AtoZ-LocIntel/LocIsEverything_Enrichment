@@ -338,39 +338,45 @@ function App() {
                 </div>
                 
                 <div className="space-y-3 text-sm">
-                  <div className="bg-gray-500 rounded-lg border border-gray-600 shadow-lg p-3">
-                    <h3 className="font-semibold text-white mb-2 text-sm">📍 Core Location Data</h3>
-                    <ul className="text-white space-y-1 text-xs">
-                      <li>• Elevation & Air Quality</li>
-                      <li>• Census FIPS Codes</li>
-                      <li>• Demographics (Population, Income, Age)</li>
-                      <li>• Weather Alerts</li>
-                    </ul>
+                  <div className="flex justify-center">
+                    <div className="bg-gray-500 rounded-lg border border-gray-600 shadow-lg p-3 w-4/5 max-w-md">
+                      <h3 className="font-semibold text-white mb-2 text-sm">📍 Core Location Data</h3>
+                      <ul className="text-white space-y-1 text-xs">
+                        <li>• Elevation & Air Quality</li>
+                        <li>• Census FIPS Codes</li>
+                        <li>• Demographics (Population, Income, Age)</li>
+                        <li>• Weather Alerts</li>
+                      </ul>
+                    </div>
                   </div>
                   
-                  <div className="bg-gray-700 rounded-lg border border-gray-800 shadow-lg p-3">
-                    <h3 className="font-semibold text-white mb-2 text-sm">🏢 Points of Interest</h3>
-                    <ul className="text-white space-y-1 text-xs">
-                      <li>• Schools, Hospitals, Parks, Police & Fire</li>
-                      <li>• Retail & Restaurants</li>
-                      <li>• Transportation & Infrastructure</li>
-                      <li>• Health & Professional Services</li>
-                    </ul>
+                  <div className="flex justify-center">
+                    <div className="bg-gray-700 rounded-lg border border-gray-800 shadow-lg p-3 w-4/5 max-w-md">
+                      <h3 className="font-semibold text-white mb-2 text-sm">🏢 Points of Interest</h3>
+                      <ul className="text-white space-y-1 text-xs">
+                        <li>• Schools, Hospitals, Parks, Police & Fire</li>
+                        <li>• Retail & Restaurants</li>
+                        <li>• Transportation & Infrastructure</li>
+                        <li>• Health & Professional Services</li>
+                      </ul>
+                    </div>
                   </div>
                   
-                  <div className="bg-gray-800 rounded-lg border border-gray-900 shadow-lg p-3">
-                    <h3 className="font-semibold text-white mb-2 text-sm">🌍 Specialized Data</h3>
-                    <ul className="text-white space-y-1 text-xs">
-                      <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span></li>
-                      <li className="text-blue-200 text-xs ml-2">(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</li>
-                      <li>• Environmental Hazards</li>
-                      <li>• Power Plants & Cell Towers</li>
-                      <li>• Breweries & Enhanced Wikipedia</li>
-                      <li className="ml-2 text-xs">(haunted sites, oddities, museums)</li>
-                      <li>• Recreation & Entertainment</li>
-                      <li className="ml-2 text-xs">(Golf, Boating, Cinemas)</li>
-                      <li>• Public Lands & Protected Areas (PAD-US)</li>
-                    </ul>
+                  <div className="flex justify-center">
+                    <div className="bg-gray-800 rounded-lg border border-gray-900 shadow-lg p-3 w-4/5 max-w-md">
+                      <h3 className="font-semibold text-white mb-2 text-sm">🌍 Specialized Data</h3>
+                      <ul className="text-white space-y-1 text-xs">
+                        <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span></li>
+                        <li className="text-blue-200 text-xs ml-2">(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</li>
+                        <li>• Environmental Hazards</li>
+                        <li>• Power Plants & Cell Towers</li>
+                        <li>• Breweries & Enhanced Wikipedia</li>
+                        <li className="ml-2 text-xs">(haunted sites, oddities, museums)</li>
+                        <li>• Recreation & Entertainment</li>
+                        <li className="ml-2 text-xs">(Golf, Boating, Cinemas)</li>
+                        <li>• Public Lands & Protected Areas (PAD-US)</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
                 
