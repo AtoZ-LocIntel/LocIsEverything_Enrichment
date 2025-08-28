@@ -8,6 +8,7 @@ import DesktopResultsView from './components/DesktopResultsView';
 import DataSourcesView from './components/DataSourcesView';
 import EnrichmentCategoryView from './components/EnrichmentCategoryView';
 import EnrichmentConfig from './components/EnrichmentConfig';
+import LoadingModal from './components/LoadingModal';
 import { EnrichmentService } from './services/EnrichmentService';
 import { GeocodeResult } from './lib/types';
 
@@ -26,6 +27,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [activeCategory, setActiveCategory] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Detect mobile device
   useEffect(() => {
@@ -42,6 +44,7 @@ function App() {
   const handleSingleSearch = async (address: string) => {
     try {
       setError(null);
+      setIsLoading(true);
       const enrichmentService = new EnrichmentService();
       const result = await enrichmentService.enrichSingleLocation(address, selectedEnrichments, poiRadii);
       setEnrichmentResults([result]);
@@ -55,12 +58,15 @@ function App() {
     } catch (error) {
       console.error('Single search failed:', error);
       setError(error instanceof Error ? error.message : 'Search failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleLocationSearch = async () => {
     try {
       setError(null);
+      setIsLoading(true);
       
       // Check if geolocation is supported
       if (!navigator.geolocation) {
@@ -101,6 +107,8 @@ function App() {
       } else {
         setError(error instanceof Error ? error.message : 'Location search failed. Please try again or use manual address entry.');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -120,6 +128,7 @@ function App() {
 
   const handleBatchComplete = (results: EnrichmentResult[]) => {
     setEnrichmentResults(results);
+    setIsLoading(false); // Stop loading when batch completes
     
     // For batch processing, always show desktop results view (handles multiple results)
     // Mobile users can still use the desktop results view on mobile devices
@@ -133,145 +142,120 @@ function App() {
     }
   };
 
-  const formatCSVValue = (value: any, key: string): string => {
-    if (value === null || value === undefined) return '';
-    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-    if (typeof value === 'number') return value.toString();
-    if (typeof value === 'string') return value;
-    
-    if (Array.isArray(value)) {
-      if (value.length === 0) return '';
-      
-      // Special handling for detailed POI arrays - include ALL available data
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements')) {
-        return value.map((item: any) => {
-          if (typeof item === 'object' && item !== null) {
-            const parts = [];
-            if (item.name) parts.push(`Name: ${item.name}`);
-            if (item.source) parts.push(`Source: ${item.source}`);
-            if (item.distance_miles) parts.push(`Distance: ${item.distance_miles}mi`);
-            if (item.address) parts.push(`Address: ${item.address}`);
-            if (item.phone) parts.push(`Phone: ${item.phone}`);
-            if (item.website) parts.push(`Website: ${item.website}`);
-            if (item.category) parts.push(`Category: ${item.category}`);
-            if (item.rating) parts.push(`Rating: ${item.rating}`);
-            if (item.hours) parts.push(`Hours: ${item.hours}`);
-            // Include any other properties
-            Object.keys(item).forEach(key => {
-              if (!['name', 'source', 'distance_miles', 'address', 'phone', 'website', 'category', 'rating', 'hours'].includes(key)) {
-                parts.push(`${key}: ${item[key]}`);
-              }
-            });
-            return parts.join(' | ');
-          }
-          return String(item);
-        }).join('; ');
-      }
-      
-      // Regular array handling
-      return value.map((item: any) => {
-        if (typeof item === 'object' && item !== null) {
-          return item.name || item.title || JSON.stringify(item);
-        }
-        return String(item);
-      }).join('; ');
-    }
-    
-    // Handle objects
-    if (typeof value === 'object') {
-      if (value.name) return String(value.name);
-      if (value.title) return String(value.title);
-      if (value.value) return String(value.value);
-      return JSON.stringify(value);
-    }
-    
-    return String(value);
-  };
+
 
   const downloadBatchResults = (results: EnrichmentResult[]) => {
     if (!results.length) return;
 
-    // Convert results to CSV format
-    const headers = ['Address', 'Latitude', 'Longitude', 'Source', 'Confidence'];
-    const enrichmentKeys = new Set<string>();
+    // Create individual rows for each POI - similar to downloadSingleLookupResults
+    const headers = [
+      'Search Address', 'Search Lat', 'Search Lon', 'Search Source', 'Search Confidence',
+      'POI Type', 'POI Name', 'POI Lat', 'POI Lon', 'Distance (miles)', 
+      'POI Category', 'POI Address', 'POI Phone', 'POI Website', 'POI Source'
+    ];
+    
+    const rows: string[][] = [];
     
     results.forEach(result => {
-      Object.keys(result.enrichments).forEach(key => enrichmentKeys.add(key));
+      console.log(`🔍 Processing result for ${result.location.name}`);
+      
+      // Add summary row for the search location
+      rows.push([
+        result.location.name,
+        result.location.lat.toString(),
+        result.location.lon.toString(),
+        result.location.source,
+        (result.location.confidence || 'N/A').toString(),
+        'SEARCH_LOCATION',
+        result.location.name,
+        result.location.lat.toString(),
+        result.location.lon.toString(),
+        '0',
+        'SEARCH_LOCATION',
+        result.location.name,
+        '',
+        '',
+        result.location.source
+      ]);
+      
+      // Add all POI data as individual rows
+      Object.entries(result.enrichments).forEach(([key, value]) => {
+        console.log(`🔍 Processing enrichment key: ${key}`, value);
+        
+        if (key.includes('_all_pois') && Array.isArray(value)) {
+          // Handle ALL POI arrays (complete dataset for CSV)
+          value.forEach((poi: any) => {
+            // Special handling for AVI data
+            if (key.includes('animal_vehicle_collisions')) {
+              const aviName = `AVI-${poi.case_id || poi.id || 'Unknown'}`;
+              const aviType = `${poi.source || 'AVI'} ${poi.year || ''}`.trim();
+              rows.push([
+                result.location.name,
+                result.location.lat.toString(),
+                result.location.lon.toString(),
+                result.location.source,
+                (result.location.confidence || 'N/A').toString(),
+                'ANIMAL_VEHICLE_COLLISION',
+                aviName,
+                poi.lat || '',
+                poi.lon || '',
+                poi.distance_miles || 'Unknown',
+                aviType,
+                poi.location || poi.address || '',
+                '',
+                '',
+                poi.source || 'N/A'
+              ]);
+            } else {
+              // Regular POI handling
+              rows.push([
+                result.location.name,
+                result.location.lat.toString(),
+                result.location.lon.toString(),
+                result.location.source,
+                (result.location.confidence || 'N/A').toString(),
+                key.replace('_all_pois', '').replace('poi_', '').toUpperCase(),
+                poi.name || poi.title || 'Unnamed',
+                poi.lat || poi.center?.lat || '',
+                poi.lon || poi.center?.lon || '',
+                poi.distance_miles || 'Unknown',
+                poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
+                poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
+                poi.tags?.phone || '',
+                poi.tags?.website || '',
+                poi.source || 'N/A'
+              ]);
+            }
+          });
+        } else if (key === 'poi_wikipedia_articles' && Array.isArray(value)) {
+          // Handle Wikipedia articles
+          value.forEach((article: any) => {
+            rows.push([
+              result.location.name,
+              result.location.lat.toString(),
+              result.location.lon.toString(),
+              result.location.source,
+              (result.location.confidence || 'N/A').toString(),
+              'WIKIPEDIA_ARTICLE',
+              article.title || 'Unnamed Article',
+              result.location.lat.toString(),
+              result.location.lon.toString(),
+              '0',
+              'WIKIPEDIA',
+              '',
+              '',
+              article.url || '',
+              'Wikipedia'
+            ]);
+          });
+        }
+      });
     });
 
-    // Add special Wikipedia article columns
-    if (enrichmentKeys.has('poi_wikipedia_articles')) {
-      enrichmentKeys.add('poi_wikipedia_top_articles');
-      enrichmentKeys.add('poi_wikipedia_categories');
-    }
-
-    const allHeaders = [...headers, ...Array.from(enrichmentKeys)];
-    
+    // Create CSV content
     const csvContent = [
-      allHeaders.join(','),
-      ...results.map(result => {
-        const row = [
-          result.location.name,
-          result.location.lat,
-          result.location.lon,
-          result.location.source,
-          result.location.confidence
-        ];
-        
-        enrichmentKeys.forEach(key => {
-          let value = result.enrichments[key] || '';
-          
-          // Special handling for Wikipedia POI data
-          if (key === 'poi_wikipedia_top_articles') {
-            const articles = result.enrichments.poi_wikipedia_articles;
-            if (Array.isArray(articles) && articles.length > 0) {
-              const topArticles = articles.slice(0, 3).map((a: any) => a.title).join('; ');
-              value = topArticles;
-            }
-          } else if (key === 'poi_wikipedia_categories') {
-            const articles = result.enrichments.poi_wikipedia_articles;
-            if (Array.isArray(articles) && articles.length > 0) {
-              const allCategories = new Set<string>();
-              articles.forEach((a: any) => {
-                if (Array.isArray(a.categories)) {
-                  a.categories.forEach((c: string) => allCategories.add(c));
-                }
-              });
-              value = Array.from(allCategories).join('; ');
-            }
-          } else if (key === 'poi_animal_vehicle_collisions_count') {
-            // Special handling for AVI data - include source information
-            const aviData = result.enrichments.poi_animal_vehicle_collisions_all_pois;
-            if (Array.isArray(aviData) && aviData.length > 0) {
-              const sources = [...new Set(aviData.map((c: any) => c.source || 'Unknown'))];
-              const years = [...new Set(aviData.map((c: any) => c.crash_year || 'Unknown'))];
-              value = `${value} (Sources: ${sources.join(', ')}, Years: ${years.join(', ')})`;
-            }
-          } else if (key === 'poi_animal_vehicle_collisions_source') {
-            // Include AVI source field directly
-            value = value || 'FARS, CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT';
-          } else if (key === 'poi_wildfires_count') {
-            // Special handling for Wildfire data - include incident details
-            const wildfireData = result.enrichments.poi_wildfires_all_pois;
-            if (Array.isArray(wildfireData) && wildfireData.length > 0) {
-              const incidents = wildfireData.slice(0, 3).map((fire: any) => 
-                `${fire.name || 'Unnamed'} (${fire.containment || 0}% contained)`
-              );
-              if (wildfireData.length > 3) {
-                incidents.push(`+${wildfireData.length - 3} more`);
-              }
-              value = `${value} (${incidents.join(', ')})`;
-            }
-          } else {
-            // Generic handling for complex data types
-            value = formatCSVValue(value, key);
-          }
-          
-          row.push(value);
-        });
-        
-        return row.join(',');
-      })
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
     ].join('\n');
 
     // Create and download file with timestamp
@@ -280,7 +264,7 @@ function App() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `batch_${timestamp}.csv`;
+    a.download = `enrichment_results_${timestamp}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -305,6 +289,12 @@ function App() {
 
   return (
     <div className={`${viewMode === 'map' ? 'h-screen' : 'min-h-screen'} bg-black flex flex-col`}>
+      {/* Loading Modal with Jokes */}
+      <LoadingModal 
+        isVisible={isLoading} 
+        enrichmentCount={selectedEnrichments.length} 
+      />
+      
       {/* Only show header when not in full-screen views */}
       {!['data-sources', 'enrichment-category', 'desktop-results', 'mobile-results'].includes(viewMode) && (
         <Header onViewDataSources={handleViewDataSources} />
@@ -420,6 +410,7 @@ function App() {
                     onComplete={handleBatchComplete} 
                     selectedEnrichments={selectedEnrichments}
                     poiRadii={poiRadii}
+                    onLoadingChange={setIsLoading}
                   />
                 </div>
               )}

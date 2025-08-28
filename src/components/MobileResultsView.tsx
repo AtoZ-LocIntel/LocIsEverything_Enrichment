@@ -32,60 +32,28 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (Array.isArray(value)) {
       if (value.length === 0) return 'None found';
       
-      // Special handling for AVI data
+      // For detailed POI data, show count only in mobile form view
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements')) {
+        return `${value.length} found (see CSV for details)`;
+      }
+      
+      // Special handling for AVI data - show count only
       if (key.includes('poi_animal_vehicle_collisions_all_pois')) {
-        return value.map((item: any) => {
-          const parts = [];
-          if (item.source) parts.push(`Source: ${item.source}`);
-          if (item.crash_year) parts.push(`Year: ${item.crash_year}`);
-          if (item.st_case) parts.push(`Case: ${item.st_case}`);
-          if (item.distance_miles) parts.push(`${item.distance_miles} miles`);
-          return parts.join(', ');
-        }).join(' | ');
+        return `${value.length} incidents found (see CSV for details)`;
       }
       
-      // Special handling for Wildfire data
+      // Special handling for Wildfire data - show count only
       if (key.includes('poi_wildfires_all_pois') || key.includes('poi_wildfires_detailed') || key.includes('poi_wildfires_elements')) {
-        return value.map((item: any) => {
-          const parts = [];
-          if (item.name) parts.push(`Fire: ${item.name}`);
-          if (item.state) parts.push(`State: ${item.state}`);
-          if (item.containment !== undefined) parts.push(`${item.containment}% contained`);
-          if (item.size_acres) parts.push(`${item.size_acres} acres`);
-          if (item.distance_miles) parts.push(`${item.distance_miles} miles`);
-          return parts.join(', ');
-        }).join(' | ');
+        return `${value.length} fires found (see CSV for details)`;
       }
       
-      // Special handling for detailed POIs
-      if (key.includes('_detailed') || key.includes('_elements')) {
-        return value.map((item: any) => {
-          if (typeof item === 'object' && item !== null) {
-            const name = item.name || item.title || 'Unnamed';
-            const distance = item.distance_miles ? ` (${item.distance_miles} miles)` : '';
-            return `${name}${distance}`;
-          }
-          return String(item);
-        }).join(', ');
-      }
-      
-      // Regular POI handling
-      if (key.includes('poi_') && value.length > 3) {
-        const formatted = value.slice(0, 3).map((item: any) => {
-          if (typeof item === 'object' && item !== null) {
-            return item.name || item.title || String(item);
-          }
-          return String(item);
-        }).join(', ');
-        return `${formatted} +${value.length - 3} more`;
-      }
-      
+      // Regular array handling for non-POI data
       return value.map((item: any) => {
         if (typeof item === 'object' && item !== null) {
           return item.name || item.title || JSON.stringify(item);
         }
         return String(item);
-      }).join(', ');
+      }).join('; ');
     }
     
     // Handle objects
@@ -163,6 +131,19 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   };
 
   const groupedEnrichments = Object.entries(enrichments).reduce((acc, [key, value]) => {
+    // Filter out detailed POI data from mobile form display (same as desktop)
+    if (key.includes('_all_pois') ||
+        key.includes('_detailed') ||
+        key.includes('_elements') ||
+        key.endsWith('_all') ||
+        key.endsWith(' All') ||
+        key.includes('_all') ||
+        (key.includes('poi_') && key.includes('_all')) ||
+        (key.toLowerCase().includes('poi') && key.toLowerCase().includes('all')) ||
+        key.toLowerCase().endsWith('all')) {
+      return acc;
+    }
+    
     const category = getEnrichmentCategory(key);
     if (!acc[category]) acc[category] = [];
     acc[category].push({ key, value });

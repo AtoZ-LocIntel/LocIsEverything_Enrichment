@@ -1324,10 +1324,18 @@ export class EnrichmentService {
           
           // Include ALL POI data for CSV export (complete dataset)
           if ((result as any).all_pois && (result as any).all_pois.length > 0) {
-            poiResult[`${enrichmentId}_all`] = (result as any).all_pois;
+            poiResult[`${enrichmentId}_all_pois`] = (result as any).all_pois;
             console.log(`✅ Added ${(result as any).all_pois.length} ALL POIs for ${enrichmentId} CSV export`);
           } else {
             console.log(`⚠️  No all_pois found for ${enrichmentId}`);
+          }
+          
+          // Include elements data for map display (if available)
+          if ((result as any).elements && (result as any).elements.length > 0) {
+            poiResult[`${enrichmentId}_elements`] = (result as any).elements;
+            console.log(`✅ Added ${(result as any).elements.length} elements for ${enrichmentId} map display`);
+          } else {
+            console.log(`⚠️  No elements found for ${enrichmentId}`);
           }
           
           console.log(`🔍 Final poiResult for ${enrichmentId}:`, poiResult);
@@ -1357,10 +1365,18 @@ export class EnrichmentService {
         
         // Include ALL POI data for CSV export (complete dataset)
         if ((result as any).all_pois && (result as any).all_pois.length > 0) {
-          poiResult[`${enrichmentId}_all`] = (result as any).all_pois;
+          poiResult[`${enrichmentId}_all_pois`] = (result as any).all_pois;
           console.log(`✅ Added ${(result as any).all_pois.length} ALL POIs for ${enrichmentId} CSV export`);
         } else {
           console.log(`⚠️  No all_pois found for ${enrichmentId}`);
+        }
+        
+        // Include elements data for map display (if available)
+        if ((result as any).elements && (result as any).elements.length > 0) {
+          poiResult[`${enrichmentId}_elements`] = (result as any).elements;
+          console.log(`✅ Added ${(result as any).elements.length} elements for ${enrichmentId} map display`);
+        } else {
+          console.log(`⚠️  No elements found for ${enrichmentId}`);
         }
         
         console.log(`🔍 Final poiResult for ${enrichmentId}:`, poiResult);

@@ -6,9 +6,10 @@ interface BatchProcessingProps {
   onComplete: (results: any[]) => void;
   selectedEnrichments: string[];
   poiRadii: Record<string, number>;
+  onLoadingChange?: (isLoading: boolean) => void;
 }
 
-const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedEnrichments, poiRadii }) => {
+const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedEnrichments, poiRadii, onLoadingChange }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentAddress, setCurrentAddress] = useState('');
@@ -44,6 +45,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
 
   const processBatch = async (addresses: string[]) => {
     setIsProcessing(true);
+    onLoadingChange?.(true);
     setProgress(0);
     setTotalAddresses(addresses.length);
     setEstimatedTimeRemaining(0);
@@ -90,10 +92,12 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
 
       setProgress(100);
       setIsProcessing(false);
+      onLoadingChange?.(false);
       onComplete(results);
     } catch (error) {
       console.error('Batch processing failed:', error);
       setIsProcessing(false);
+      onLoadingChange?.(false);
       alert('Batch processing failed. Please try again.');
     }
   };
