@@ -100,19 +100,18 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-3">
-                        <button
-                          onClick={() => handleToggleEnrichment(enrichment.id)}
-                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                            isSelected 
-                              ? 'bg-blue-600 border-blue-600 text-white' 
-                              : 'border-gray-300 hover:border-blue-400'
-                          }`}
-                        >
-                          {isSelected && <CheckCircle className="w-4 h-4" />}
-                        </button>
+                        <input
+                          type="checkbox"
+                          id={`checkbox-${enrichment.id}`}
+                          checked={isSelected}
+                          onChange={() => handleToggleEnrichment(enrichment.id)}
+                          className="w-5 h-5 text-blue-600 border-2 border-gray-400 rounded focus:ring-blue-500 focus:ring-2"
+                        />
                         
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-black">{enrichment.label}</h3>
+                          <label htmlFor={`checkbox-${enrichment.id}`} className="text-lg font-semibold text-black cursor-pointer block">
+                            {enrichment.label}
+                          </label>
                           <p className="text-gray-800 mt-1">{enrichment.description}</p>
                         </div>
                       </div>
@@ -121,17 +120,23 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                       {enrichment.isPOI && isSelected && (
                         <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center space-x-2 mb-3">
-                            <Settings className="w-4 h-4 text-gray-800" />
-                            <span className="font-medium text-gray-900">Search Radius</span>
+                            <Settings className="w-4 h-4 text-black" />
+                            <span className="font-medium text-black">Search Radius</span>
                           </div>
                           
                           <div className="flex items-center space-x-4">
-                            <label className="text-sm text-gray-800">Radius:</label>
+                            <label className="text-sm text-black font-medium">Radius:</label>
                             <select
                               value={currentRadius}
                               onChange={(e) => handleRadiusChange(enrichment.id, parseInt(e.target.value))}
-                              className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 appearance-none"
-                              style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.5rem center", backgroundRepeat: "no-repeat", backgroundSize: "1.5em 1.5em", paddingRight: "2.5rem" }}
+                              className="px-3 py-2 border-2 border-gray-400 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black font-medium appearance-none"
+                              style={{ 
+                                backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e\")", 
+                                backgroundPosition: "right 0.5rem center", 
+                                backgroundRepeat: "no-repeat", 
+                                backgroundSize: "1.5em 1.5em", 
+                                paddingRight: "2.5rem" 
+                              }}
                             >
                               <option value={0.5}>0.5 miles</option>
                               <option value={1}>1 mile</option>
@@ -143,7 +148,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                               <option value={25}>25 miles</option>
                             </select>
                             
-                            <span className="text-sm text-gray-700">
+                            <span className="text-sm text-black font-medium">
                               {currentRadius === 1 ? 'mile' : 'miles'} radius
                             </span>
                           </div>
