@@ -354,7 +354,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
 
             return (
-              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={enrichment.id} className="bg-white border-2 border-gray-300 rounded-lg p-4 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
                     <input
@@ -362,13 +362,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       id={enrichment.id}
                       checked={isSelected}
                       onChange={() => handleEnrichmentToggle(enrichment.id)}
-                      className="w-5 h-5 text-blue-600 border-2 border-gray-400 rounded focus:ring-blue-500 focus:ring-2 mt-0.5"
+                      className="w-6 h-6 text-blue-600 border-2 border-gray-500 rounded focus:ring-blue-500 focus:ring-2 mt-0.5"
                     />
                     <div className="flex-1">
-                      <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer block">
+                      <label htmlFor={enrichment.id} className="font-semibold text-black cursor-pointer block text-lg">
                         {enrichment.label}
                       </label>
-                      <p className="text-sm text-gray-600 mt-1">{enrichment.description}</p>
+                      <p className="text-sm text-gray-700 mt-1">{enrichment.description}</p>
                     </div>
                   </div>
                 </div>
@@ -388,7 +388,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     </div>
                     
                     <div className="flex items-center space-x-3">
-                      <label className="text-sm font-medium text-black">Search Radius:</label>
+                      <label className="text-base font-semibold text-black">Search Radius:</label>
                       <input
                         type="number"
                         min="0.1"
@@ -402,13 +402,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         step="0.1"
                         value={currentRadius}
                         onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                        className="w-20 px-3 py-2 text-sm border-2 border-gray-400 rounded focus:ring-blue-500 focus:border-blue-500 bg-white text-black font-medium appearance-none"
+                        className="w-24 px-4 py-3 text-base border-2 border-gray-500 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white text-black font-semibold appearance-none"
                         style={{
                           WebkitAppearance: 'textfield',
                           MozAppearance: 'textfield'
                         }}
                       />
-                      <span className="text-sm text-black font-medium">miles</span>
+                      <span className="text-base text-black font-semibold">miles</span>
                     </div>
 
                     {currentRadius > (
@@ -602,7 +602,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               return (
                 <div key={category.id} className="flex justify-center" style={{ width: '100%', height: '100%' }}>
                   <button
-                    onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
+                    onClick={() => {
+                      if (isMobile) {
+                        setActiveCategory(category.id);
+                        setMobileView('category');
+                      } else if (onViewCategory) {
+                        onViewCategory(category);
+                      } else {
+                        setActiveModal(category.id);
+                      }
+                    }}
                     className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-4/5 max-w-sm flex items-center justify-start sm:flex-col sm:items-center sm:justify-center`}
                     style={{ minHeight: '100px', width: '80%' }}
                   >
