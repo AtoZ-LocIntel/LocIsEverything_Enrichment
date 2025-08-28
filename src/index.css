@@ -728,20 +728,12 @@ body.modal-open {
     margin-right: auto !important;
   }
   
-  /* Simple fullscreen modal */
-  .fixed.inset-0.bg-white {
-    width: 100vw !important;
-    height: 100vh !important;
+  /* Basic mobile modal fixes */
+  .fixed.inset-0.bg-black.bg-opacity-50 {
+    padding: 16px !important;
   }
   
-  /* Basic touch targets */
-  input[type="checkbox"] {
-    width: 20px !important;
-    height: 20px !important;
-  }
-  
-  input[type="number"] {
-    min-height: 44px !important;
-    font-size: 16px !important;
+  .fixed.inset-0.bg-black.bg-opacity-50 .bg-white {
+    max-height: calc(100vh - 32px) !important;
   }
 }

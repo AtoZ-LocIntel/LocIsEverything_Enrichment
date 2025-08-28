@@ -362,9 +362,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           {/* Category Configuration Modal */}
           {activeModal && (
             <div 
-              className="fixed inset-0 bg-white z-[9999]"
+              className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setActiveModal(null);
+                }
+              }}
             >
-              <div className="h-screen bg-white flex flex-col overflow-hidden">
+              <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 {(() => {
                   const category = enrichmentCategories.find(c => c.id === activeModal);
                   if (!category) return null;
@@ -374,27 +379,27 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 
                   return (
                     <>
-                      {/* Header */}
-                      <div className={`p-3 ${colors.header} flex-shrink-0`}>
+                      {/* Modal Header */}
+                      <div className={`p-6 ${colors.header} rounded-t-lg`}>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 flex-1 min-w-0">
-                            <div className="text-xl flex-shrink-0">{category.icon}</div>
-                            <div className="min-w-0 flex-1">
-                              <h2 className="text-lg font-bold text-white truncate">{category.title}</h2>
-                              <p className="text-xs text-white text-opacity-90 truncate">{category.description}</p>
+                          <div className="flex items-center space-x-3">
+                            <div className="text-2xl">{category.icon}</div>
+                            <div>
+                              <h2 className="text-xl font-bold text-white">{category.title}</h2>
+                              <p className="text-sm text-white text-opacity-90">{category.description}</p>
                             </div>
                           </div>
                           <button
                             onClick={() => setActiveModal(null)}
-                            className="text-white text-2xl font-bold p-2 flex-shrink-0"
+                            className="text-white hover:text-gray-300 text-2xl font-bold"
                           >
                             ×
                           </button>
                         </div>
                       </div>
 
-                      {/* Content - Scrollable */}
-                      <div className="flex-1 overflow-y-auto p-4">
+                      {/* Modal Body */}
+                      <div className="p-6">
                         <div className="space-y-4">
                           {categoryEnrichments.map((enrichment) => {
                             const isSelected = selectedEnrichments.includes(enrichment.id);
@@ -477,14 +482,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         </div>
                       </div>
 
-                      {/* Footer */}
-                      <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-                        <button
-                          onClick={() => setActiveModal(null)}
-                          className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg font-medium"
-                        >
-                          Done
-                        </button>
+                      {/* Modal Footer */}
+                      <div className="p-6 border-t border-gray-200 rounded-b-lg bg-gray-50">
+                        <div className="flex justify-end space-x-3">
+                          <button
+                            onClick={() => setActiveModal(null)}
+                            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                          >
+                            Done
+                          </button>
+                        </div>
                       </div>
                     </>
                   );
