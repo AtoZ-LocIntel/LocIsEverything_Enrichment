@@ -343,14 +343,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   onClick={() => setActiveModal(category.id)}
                   className={`relative p-4 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border}`}
                 >
-                  <div className="text-center">
-                    <div className="text-3xl mb-2">{category.icon}</div>
+                  <div className="text-center relative">
+                    <div className="text-3xl mb-2 relative">
+                      {category.icon}
+                      {selectedCount > 0 && (
+                        <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                          {selectedCount}
+                        </div>
+                      )}
+                    </div>
                     <h3 className="font-semibold text-gray-900 text-sm">{category.title}</h3>
-                    {selectedCount > 0 && (
-                      <div className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-medium">
-                        {selectedCount}
-                      </div>
-                    )}
                   </div>
                 </button>
               );
@@ -360,15 +362,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           {/* Category Configuration Modal */}
           {activeModal && (
             <div 
-              className="fixed inset-0 bg-black bg-opacity-50 z-[9999] overflow-y-auto" 
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  setActiveModal(null);
-                }
-              }}
+              className="fixed inset-0 bg-white z-[9999] overflow-y-auto" 
             >
-              <div className="min-h-screen flex items-center justify-center p-4">
-                <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+              <div className="min-h-screen flex flex-col">
+                <div className="bg-white w-full h-full flex flex-col overflow-hidden">
                 {(() => {
                   const category = enrichmentCategories.find(c => c.id === activeModal);
                   if (!category) return null;
@@ -379,19 +376,19 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   return (
                     <>
                       {/* Modal Header - Fixed */}
-                      <div className={`p-6 ${colors.header} rounded-t-xl flex-shrink-0`}>
+                      <div className={`p-4 ${colors.header} flex-shrink-0`}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <div className="text-2xl">{category.icon}</div>
                             <div>
-                              <h2 className="text-xl font-bold text-white">{category.title}</h2>
-                              <p className="text-sm text-white text-opacity-90">{category.description}</p>
+                              <h2 className="text-lg font-bold text-white">{category.title}</h2>
+                              <p className="text-xs text-white text-opacity-90">{category.description}</p>
                             </div>
                           </div>
                           <button
                             onClick={() => setActiveModal(null)}
-                            className="text-white hover:text-gray-300 text-3xl font-bold p-2 -m-2 flex-shrink-0"
-                            style={{minWidth: '44px', minHeight: '44px'}}
+                            className="text-white hover:text-gray-300 text-2xl font-bold p-3 rounded-full bg-black bg-opacity-20 flex-shrink-0"
+                            style={{minWidth: '48px', minHeight: '48px'}}
                           >
                             ×
                           </button>
@@ -485,11 +482,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       </div>
 
                       {/* Modal Footer - Fixed */}
-                      <div className="p-6 border-t border-gray-200 rounded-b-xl bg-gray-50 flex-shrink-0">
-                        <div className="flex justify-end space-x-3">
+                      <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+                        <div className="flex justify-center">
                           <button
                             onClick={() => setActiveModal(null)}
-                            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                            className="w-full max-w-xs px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium text-lg"
                           >
                             Done
                           </button>
