@@ -484,7 +484,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           
           <div className="card-body">
             {/* Mobile Category Button Grid - Full Width */}
-            <div className="grid grid-cols-1 gap-4 mb-6">
+            <div className="grid grid-cols-1 gap-4 mb-6 w-full">
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -586,7 +586,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         <div className="card-body">
           {/* Category Button Grid */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 w-full">
             {enrichmentCategories.map((category) => {
               const categoryEnrichments = category.enrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
