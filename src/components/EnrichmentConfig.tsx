@@ -595,23 +595,24 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
 
               return (
-                <button
-                  key={category.id}
-                  onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
-                  className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full h-full flex flex-col items-center justify-center min-h-[100px] sm:min-h-[120px]`}
-                >
-                  <div className="text-center relative">
-                    <div className="text-xl sm:text-2xl mb-1 sm:mb-2 relative">
-                      {category.icon}
-                      {selectedCount > 0 && (
-                        <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
-                          {selectedCount}
-                        </div>
-                      )}
+                <div key={category.id} className="flex justify-center">
+                  <button
+                    onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
+                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-4/5 max-w-sm flex flex-col items-center justify-center min-h-[100px] sm:min-h-[120px]`}
+                  >
+                    <div className="text-center relative">
+                      <div className="text-xl sm:text-2xl mb-1 sm:mb-2 relative">
+                        {category.icon}
+                        {selectedCount > 0 && (
+                          <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
+                            {selectedCount}
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight px-1">{category.title}</h3>
                     </div>
-                    <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight px-1">{category.title}</h3>
-                  </div>
-                </button>
+                  </button>
+                </div>
               );
             })}
           </div>
