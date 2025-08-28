@@ -451,7 +451,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                   <span>Data Sources & Usage Information</span>
                 </h2>
                 <button
-                  onClick={() => setShowDataSources(false)}
+                  onClick={() => {}}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <X className="w-6 h-6" />
