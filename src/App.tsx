@@ -309,7 +309,7 @@ function App() {
             <div className="text-center mb-12 mt-16">
               {/* Company Logo - moved from header */}
               <div className="flex justify-center mb-6">
-                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
                   <img 
                     src="/assets/lociseverything.png"
                     alt="The Location Is Everything Co Logo" 
@@ -318,10 +318,10 @@ function App() {
                 </div>
               </div>
               
-              <h1 className="text-4xl font-bold text-gradient mb-4">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-4">
                 Advanced Location Intelligence
               </h1>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className="text-lg sm:text-xl text-gray-300">
                 Professional geocoding and enrichment platform with multi-source data integration. 
                 Single address lookup or batch CSV processing with comprehensive location insights.
               </p>
@@ -330,19 +330,19 @@ function App() {
               </p>
             </div>
 
-            {/* Enrichment Options Preview */}
-            <div className="mb-8 p-3 md:p-4 lg:p-6 bg-gradient-to-r from-gray-600 to-gray-900 rounded-xl border-2 border-white shadow-2xl overflow-hidden">
+            {/* Enrichment Options Preview - Single Column Layout */}
+            <div className="mb-8 p-4 bg-gradient-to-r from-gray-600 to-gray-900 rounded-xl border-2 border-white shadow-2xl overflow-hidden">
                 <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold text-white mb-2">
+                  <h2 className="text-xl font-bold text-white mb-2">
                     Available Enrichment Options
                   </h2>
-                  <p className="text-blue-200">Configure your search to include any combination of these data sources</p>
+                  <p className="text-blue-200 text-sm">Configure your search to include any combination of these data sources</p>
                 </div>
                 
-                <div className={`${isMobile ? 'flex flex-col space-y-3 px-2' : 'grid grid-cols-1 md:grid-cols-3 gap-4'} text-sm`}>
-                  <div className={`bg-gray-500 rounded-lg border border-gray-600 shadow-lg ${isMobile ? 'p-2 mx-1' : 'p-3 md:p-4'}`}>
-                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-xs' : 'text-sm md:text-base'}`}>📍 Core Location Data</h3>
-                    <ul className={`text-white space-y-1 ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>
+                <div className="space-y-4 text-sm">
+                  <div className="bg-gray-500 rounded-lg border border-gray-600 shadow-lg p-4">
+                    <h3 className="font-semibold text-white mb-2 text-base">📍 Core Location Data</h3>
+                    <ul className="text-white space-y-1 text-sm">
                       <li>• Elevation & Air Quality</li>
                       <li>• Census FIPS Codes</li>
                       <li>• Demographics (Population, Income, Age)</li>
@@ -350,9 +350,9 @@ function App() {
                     </ul>
                   </div>
                   
-                  <div className={`bg-gray-700 rounded-lg border border-gray-800 shadow-lg ${isMobile ? 'p-2 mx-1' : 'p-3 md:p-4'}`}>
-                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-xs' : 'text-sm md:text-base'}`}>🏢 Points of Interest</h3>
-                    <ul className={`text-white space-y-1 ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>
+                  <div className="bg-gray-700 rounded-lg border border-gray-800 shadow-lg p-4">
+                    <h3 className="font-semibold text-white mb-2 text-base">🏢 Points of Interest</h3>
+                    <ul className="text-white space-y-1 text-sm">
                       <li>• Schools, Hospitals, Parks, Police & Fire</li>
                       <li>• Retail & Restaurants</li>
                       <li>• Transportation & Infrastructure</li>
@@ -360,10 +360,10 @@ function App() {
                     </ul>
                   </div>
                   
-                  <div className={`bg-gray-800 rounded-lg border border-gray-900 shadow-lg ${isMobile ? 'p-2 mx-1' : 'p-3 md:p-4'}`}>
-                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-xs' : 'text-sm md:text-base'}`}>🌍 Specialized Data</h3>
-                    <ul className={`text-white space-y-1 ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>
-                      <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span> <span className={`text-blue-200 ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</span></li>
+                  <div className="bg-gray-800 rounded-lg border border-gray-900 shadow-lg p-4">
+                    <h3 className="font-semibold text-white mb-2 text-base">🌍 Specialized Data</h3>
+                    <ul className="text-white space-y-1 text-sm">
+                      <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span> <span className="text-blue-200 text-xs">(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</span></li>
                       <li>• Environmental Hazards</li>
                       <li>• Power Plants & Cell Towers</li>
                       <li>• Breweries & Enhanced Wikipedia (haunted sites, oddities, museums)</li>
@@ -399,24 +399,22 @@ function App() {
               </div>
             )}
 
-            <div className="grid lg:grid-cols-2 gap-8 mb-8 mobile-stack">
-              <div data-section="single-search" className={isMobile ? "lg:col-span-2" : ""}>
+            <div className="space-y-8 mb-8">
+              <div data-section="single-search">
                 <SingleSearch 
                   onSearch={handleSingleSearch} 
                   onLocationSearch={handleLocationSearch}
                   isMobile={isMobile}
                 />
               </div>
-              {!isMobile && (
-                <div data-section="batch-processing">
-                  <BatchProcessing 
-                    onComplete={handleBatchComplete} 
-                    selectedEnrichments={selectedEnrichments}
-                    poiRadii={poiRadii}
-                    onLoadingChange={setIsLoading}
-                  />
-                </div>
-              )}
+              <div data-section="batch-processing">
+                <BatchProcessing 
+                  onComplete={handleBatchComplete} 
+                  selectedEnrichments={selectedEnrichments}
+                  poiRadii={poiRadii}
+                  onLoadingChange={setIsLoading}
+                />
+              </div>
             </div>
 
             <EnrichmentConfig
