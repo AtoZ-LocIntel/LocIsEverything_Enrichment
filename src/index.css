@@ -23,6 +23,17 @@ html {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  /* Better mobile viewport handling */
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Prevent zoom on input focus */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 body {
@@ -31,6 +42,11 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
+  /* Better mobile touch handling */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  /* Prevent pull-to-refresh on mobile */
+  overscroll-behavior: none;
 }
 
 /* Prevent scrolling when modal is open */
@@ -371,6 +387,64 @@ body.modal-open {
   /* Simplify mobile buttons */
   .mobile-simplified {
     @apply text-sm px-3 py-2;
+  }
+  
+  /* Fix mobile portrait mode issues */
+  .min-h-screen {
+    min-height: 100vh !important;
+    min-height: 100dvh !important; /* Dynamic viewport height for mobile */
+  }
+  
+  /* Better mobile input handling */
+  input, textarea, select {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+  
+  /* Better mobile button handling */
+  button, .btn {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  
+  /* Prevent mobile browser UI from interfering */
+  .fixed {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Ensure proper mobile viewport handling */
+  html {
+    height: 100% !important;
+    height: 100dvh !important;
+  }
+  
+  body {
+    height: 100% !important;
+    height: 100dvh !important;
+    overflow-x: hidden !important;
+  }
+  
+  #root {
+    height: 100% !important;
+    height: 100dvh !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+  }
+  
+  /* Fix mobile loading modal positioning */
+  .fixed.inset-0 {
+    height: 100vh !important;
+    height: 100dvh !important;
+  }
+  
+  /* Ensure mobile containers don't overflow */
+  .max-h-\[90vh\] {
+    max-height: 90vh !important;
+    max-height: 90dvh !important;
   }
 }
 

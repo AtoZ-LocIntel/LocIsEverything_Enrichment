@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Zap, Clock, Sparkles } from 'lucide-react';
+import { Zap, Clock, Sparkles } from 'lucide-react';
 import { additionalTriviaQuestions } from '../data/triviaQuestions';
 
 interface LoadingModalProps {
@@ -334,8 +334,8 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
   const currentContent = shuffledContent[currentContentIndex] || contentItems[0];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
-      <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-8 text-white relative overflow-hidden max-h-[90vh] sm:max-h-none">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4" style={{ height: '100dvh' }}>
+      <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-8 text-white relative overflow-hidden" style={{ maxHeight: '90dvh' }}>
         {/* Animated background elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
           <div className="absolute -top-4 -left-4 w-24 h-24 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
@@ -348,7 +348,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                      {showInitialMessage ? (
              <div className="text-center space-y-4 sm:space-y-6">
                <div className="flex justify-center space-x-3 sm:space-x-4">
-                 <MapPin className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce text-yellow-300" />
+                 <img src="/assets/lociseverything.png" alt="The Location Is Everything Co" className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce rounded-full object-cover" />
                  <Zap className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse text-yellow-300" />
                  <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce text-yellow-300" />
                </div>
@@ -375,7 +375,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
             <div className="text-center space-y-4 sm:space-y-6">
               <div className="flex justify-center">
                 <div className="bg-white bg-opacity-20 rounded-full p-2 sm:p-3 backdrop-blur-sm">
-                  <MapPin className="w-6 h-6 sm:w-8 sm:h-8 animate-pulse" />
+                  <img src="/assets/lociseverything.png" alt="The Location Is Everything Co" className="w-6 h-6 sm:w-8 sm:h-8 animate-pulse rounded-full object-cover" />
                 </div>
               </div>
 

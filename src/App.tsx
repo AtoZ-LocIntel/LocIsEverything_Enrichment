@@ -301,9 +301,9 @@ function App() {
       )}
       
       {viewMode === 'config' ? (
-        <div className={`${isMobile ? 'pt-4' : 'pt-28'} px-2 sm:px-4 md:px-6 lg:px-8`}>
-          {/* Main Content */}
-          <div className="max-w-7xl mx-auto w-full" style={{ maxWidth: isMobile ? 'calc(100vw - 16px)' : '', margin: isMobile ? '0 8px' : 'auto' }}>
+        <div className={`${isMobile ? 'pt-4' : 'pt-28'} px-4 sm:px-6 md:px-8`}>
+          {/* Main Content - Centered Column Layout */}
+          <div className="max-w-2xl mx-auto w-full">
 
             
             <div className="text-center mb-12 mt-16">
