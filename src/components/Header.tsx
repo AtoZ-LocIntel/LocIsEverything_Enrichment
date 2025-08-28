@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw, Bus } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onViewDataSources?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
   const [showDocs, setShowDocs] = useState(false);
-  const [showDataSources, setShowDataSources] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
 
   const handleResetApp = () => {
@@ -117,7 +120,7 @@ const Header: React.FC = () => {
                 Batch Processing
               </button>
               <button 
-                onClick={() => setShowDataSources(true)}
+                onClick={onViewDataSources}
                 className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
                 <Globe className="w-4 h-4 inline mr-2" />
@@ -432,8 +435,8 @@ const Header: React.FC = () => {
         </div>
       )}
 
-      {/* Data Sources Modal */}
-      {showDataSources && (
+      {/* Data Sources Modal - Now handled by full-screen view */}
+      {false && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">

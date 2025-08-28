@@ -7,6 +7,7 @@ interface EnrichmentConfigProps {
   onSelectionChange: (enrichments: string[]) => void;
   poiRadii: Record<string, number>;
   onPoiRadiiChange: (radii: Record<string, number>) => void;
+  onViewCategory?: (category: EnrichmentCategory) => void;
 }
 
 interface EnrichmentCategory {
@@ -127,7 +128,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   selectedEnrichments, 
   onSelectionChange, 
   poiRadii, 
-  onPoiRadiiChange 
+  onPoiRadiiChange,
+  onViewCategory
 }) => {
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -340,7 +342,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               return (
                 <button
                   key={category.id}
-                  onClick={() => setActiveModal(category.id)}
+                  onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
                   className={`relative p-4 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border}`}
                 >
                   <div className="text-center relative">

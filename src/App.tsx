@@ -4,11 +4,14 @@ import SingleSearch from './components/SingleSearch';
 import BatchProcessing from './components/BatchProcessing';
 import MapView from './components/MapView';
 import MobileResultsView from './components/MobileResultsView';
+import DesktopResultsView from './components/DesktopResultsView';
+import DataSourcesView from './components/DataSourcesView';
+import EnrichmentCategoryView from './components/EnrichmentCategoryView';
 import EnrichmentConfig from './components/EnrichmentConfig';
 import { EnrichmentService } from './services/EnrichmentService';
 import { GeocodeResult } from './lib/types';
 
-export type ViewMode = 'config' | 'map' | 'mobile-results';
+export type ViewMode = 'config' | 'map' | 'mobile-results' | 'desktop-results' | 'data-sources' | 'enrichment-category';
 
 export interface EnrichmentResult {
   location: GeocodeResult;
@@ -22,6 +25,7 @@ function App() {
   const [poiRadii, setPoiRadii] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<any>(null);
 
   // Detect mobile device
   useEffect(() => {
@@ -42,11 +46,11 @@ function App() {
       const result = await enrichmentService.enrichSingleLocation(address, selectedEnrichments, poiRadii);
       setEnrichmentResults([result]);
       
-      // On mobile, show mobile results view; on desktop, show map
+      // On mobile, show mobile results view; on desktop, show desktop results view
       if (isMobile) {
         setViewMode('mobile-results');
       } else {
-        setViewMode('map');
+        setViewMode('desktop-results');
       }
     } catch (error) {
       console.error('Single search failed:', error);
@@ -116,13 +120,16 @@ function App() {
 
   const handleBatchComplete = (results: EnrichmentResult[]) => {
     setEnrichmentResults(results);
-    setViewMode('map');
+    
+    // For batch processing, always show desktop results view (handles multiple results)
+    // Mobile users can still use the desktop results view on mobile devices
+    setViewMode('desktop-results');
     
     // Automatically download CSV after batch processing completes
     if (results.length > 0) {
       setTimeout(() => {
         downloadBatchResults(results);
-      }, 1000); // Small delay to ensure map is loaded
+      }, 1000); // Small delay to ensure results are loaded
     }
   };
 
@@ -135,15 +142,27 @@ function App() {
     if (Array.isArray(value)) {
       if (value.length === 0) return '';
       
-      // Special handling for detailed POI arrays
+      // Special handling for detailed POI arrays - include ALL available data
       if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements')) {
         return value.map((item: any) => {
           if (typeof item === 'object' && item !== null) {
             const parts = [];
-            if (item.name) parts.push(item.name);
-            if (item.source) parts.push(`(${item.source})`);
-            if (item.distance_miles) parts.push(`${item.distance_miles}mi`);
-            return parts.join(' ');
+            if (item.name) parts.push(`Name: ${item.name}`);
+            if (item.source) parts.push(`Source: ${item.source}`);
+            if (item.distance_miles) parts.push(`Distance: ${item.distance_miles}mi`);
+            if (item.address) parts.push(`Address: ${item.address}`);
+            if (item.phone) parts.push(`Phone: ${item.phone}`);
+            if (item.website) parts.push(`Website: ${item.website}`);
+            if (item.category) parts.push(`Category: ${item.category}`);
+            if (item.rating) parts.push(`Rating: ${item.rating}`);
+            if (item.hours) parts.push(`Hours: ${item.hours}`);
+            // Include any other properties
+            Object.keys(item).forEach(key => {
+              if (!['name', 'source', 'distance_miles', 'address', 'phone', 'website', 'category', 'rating', 'hours'].includes(key)) {
+                parts.push(`${key}: ${item[key]}`);
+              }
+            });
+            return parts.join(' | ');
           }
           return String(item);
         }).join('; ');
@@ -271,9 +290,25 @@ function App() {
     setError(null);
   };
 
+  const handleViewDataSources = () => {
+    setViewMode('data-sources');
+  };
+
+  const handleViewEnrichmentCategory = (category: any) => {
+    setActiveCategory(category);
+    setViewMode('enrichment-category');
+  };
+
+  const handleBackToMain = () => {
+    setViewMode('config');
+  };
+
   return (
     <div className={`${viewMode === 'map' ? 'h-screen' : 'min-h-screen'} bg-black flex flex-col`}>
-      <Header />
+      {/* Only show header when not in full-screen views */}
+      {!['data-sources', 'enrichment-category', 'desktop-results', 'mobile-results'].includes(viewMode) && (
+        <Header onViewDataSources={handleViewDataSources} />
+      )}
       
       {viewMode === 'config' ? (
         <div className="pt-28 px-2 sm:px-4 md:px-6 lg:px-8">
@@ -395,6 +430,7 @@ function App() {
               onSelectionChange={setSelectedEnrichments}
               poiRadii={poiRadii}
               onPoiRadiiChange={setPoiRadii}
+              onViewCategory={handleViewEnrichmentCategory}
             />
           </div>
         </div>
@@ -404,6 +440,26 @@ function App() {
           onViewMap={handleViewMap}
           onBackToSearch={handleBackToSearch}
           onDownloadCSV={handleDownloadCSV}
+        />
+      ) : viewMode === 'desktop-results' ? (
+        <DesktopResultsView
+          results={enrichmentResults}
+          onViewMap={handleViewMap}
+          onBackToSearch={handleBackToSearch}
+          onDownloadCSV={handleDownloadCSV}
+        />
+      ) : viewMode === 'data-sources' ? (
+        <DataSourcesView
+          onBackToMain={handleBackToMain}
+        />
+      ) : viewMode === 'enrichment-category' ? (
+        <EnrichmentCategoryView
+          category={activeCategory}
+          selectedEnrichments={selectedEnrichments}
+          poiRadii={poiRadii}
+          onSelectionChange={setSelectedEnrichments}
+          onPoiRadiiChange={setPoiRadii}
+          onBackToConfig={handleBackToConfig}
         />
       ) : (
         <div className="flex-1">
