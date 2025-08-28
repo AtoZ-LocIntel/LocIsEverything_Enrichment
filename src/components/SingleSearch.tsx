@@ -10,7 +10,7 @@ interface SingleSearchProps {
 const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, isMobile = false }) => {
   const [address, setAddress] = useState('1600 Pennsylvania Avenue NW, Washington, DC 20500');
   const [isLoading, setIsLoading] = useState(false);
-  const [showLocationButton, setShowLocationButton] = useState(false);
+  const [showLocationButton, setShowLocationButton] = useState(true); // Default to location search
   const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [isProTipsExpanded, setIsProTipsExpanded] = useState(false);
 
@@ -37,8 +37,8 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             <MapPin className="w-5 h-5 text-primary-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Single Address Search</h3>
-            <p className="text-sm text-gray-200">Geocode and enrich a single location</p>
+            <h3 className="text-lg font-semibold text-white">Single Location Search</h3>
+            <p className="text-sm text-gray-200">Search from your location or enter an address</p>
           </div>
         </div>
       </div>
@@ -47,7 +47,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="address" className="form-label text-white">
-              Address or Location
+              Enter Address (Optional)
             </label>
             <div className="relative">
                              <input
@@ -61,19 +61,19 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                />
                <Search className={`w-5 h-5 text-gray-400 absolute top-1/2 transform -translate-y-1/2 ${isMobile ? 'left-3' : 'left-3'}`} />
               
-              {/* Location Toggle - Available on all screen sizes */}
+              {/* Address Search Toggle - Available on all screen sizes */}
               <button
                 type="button"
                 onClick={() => setShowLocationButton(!showLocationButton)}
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-primary-600 transition-colors"
-                title="Toggle location search"
+                title="Search by address instead"
               >
-                <MapPin className="w-5 h-5" />
+                <Search className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Location Search Button - Shows when toggle is clicked on all screen sizes */}
+          {/* Location Search Button - Default search method */}
           {showLocationButton && onLocationSearch && (
             <button
               type="button"
@@ -88,7 +88,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                 }
               }}
               disabled={isLocationLoading}
-              className="btn btn-secondary w-full flex items-center justify-center space-x-2 py-4 text-lg font-semibold mb-3"
+              className="btn btn-primary w-full flex items-center justify-center space-x-2 py-4 text-lg font-semibold mb-3"
             >
               {isLocationLoading ? (
                 <>
@@ -104,23 +104,28 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             </button>
           )}
 
-          <button
-            type="submit"
-            disabled={!address.trim() || isLoading}
-            className="btn btn-primary w-full flex items-center justify-center space-x-2 py-4 text-lg font-semibold"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Searching...</span>
-              </>
-            ) : (
-              <>
-                <Search className="w-5 h-5" />
-                <span>Search & Enrich</span>
-              </>
-            )}
-          </button>
+          {/* Address Search Button - Shows when address search is selected */}
+          {!showLocationButton && (
+            <button
+              type="submit"
+              disabled={!address.trim() || isLoading}
+              className="btn btn-primary w-full flex items-center justify-center space-x-2 py-4 text-lg font-semibold mb-3"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Searching...</span>
+                </>
+              ) : (
+                <>
+                  <Search className="w-5 h-5" />
+                  <span>Search by Address</span>
+                </>
+              )}
+            </button>
+          )}
+
+
         </form>
 
         {/* Pro Tips - Collapsible */}

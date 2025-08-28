@@ -603,11 +603,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 <div key={category.id} className="flex justify-center" style={{ width: '100%', height: '100%' }}>
                   <button
                     onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
-                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-4/5 max-w-sm flex flex-col items-center justify-center`}
+                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-4/5 max-w-sm flex items-center justify-start sm:flex-col sm:items-center sm:justify-center`}
                     style={{ minHeight: '100px', width: '80%' }}
                   >
-                    <div className="text-center relative">
-                      <div className="text-xl sm:text-2xl mb-1 sm:mb-2 relative">
+                    <div className="flex items-center sm:flex-col sm:text-center relative w-full">
+                      {/* Mobile: No icon, text on left */}
+                      <div className="hidden sm:block text-xl sm:text-2xl mb-1 sm:mb-2 relative">
                         {category.icon}
                         {selectedCount > 0 && (
                           <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
@@ -615,7 +616,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           </div>
                         )}
                       </div>
-                      <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight px-1">{category.title}</h3>
+                      
+                      {/* Desktop: Icon and text centered */}
+                      <div className="sm:hidden text-xl sm:text-2xl mb-1 sm:mb-2 relative mr-2">
+                        {selectedCount > 0 && (
+                          <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
+                            {selectedCount}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight px-1 flex-1 text-left sm:text-center">{category.title}</h3>
                     </div>
                   </button>
                 </div>
