@@ -83,10 +83,10 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
   return (
     <>
       <header className="bg-black border-b border-gray-700 shadow-sm fixed top-0 left-0 right-0 w-full z-50" style={{ width: '100vw', maxWidth: '100vw' }}>
-        <div className="w-full px-0 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-28 px-4 sm:px-0">
+        <div className="w-full px-0 sm:px-6 lg:px-8" style={{ width: '100vw', maxWidth: '100vw' }}>
+          <div className="flex justify-between items-center h-28 px-4 sm:px-0" style={{ width: '100%' }}>
             <div className="flex items-center">
-              <div className="flex items-center">
+              <div className="flex items-center space-x-4">
                 {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
                   <img 
@@ -94,6 +94,11 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                     alt="The Location Is Everything Co Logo" 
                     className="w-full h-full object-cover"
                   />
+                </div>
+                {/* Enrichment Platform Text */}
+                <div className="hidden sm:block">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white">Enrichment Platform</h1>
+                  <p className="text-sm text-gray-300">Location Intelligence & Data Enrichment</p>
                 </div>
               </div>
             </div>

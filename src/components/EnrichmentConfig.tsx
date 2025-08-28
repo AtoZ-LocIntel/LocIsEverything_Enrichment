@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, TreePine } from 'lucide-react';
+import { Settings, TreePine, ArrowLeft } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
 interface EnrichmentConfigProps {
@@ -133,10 +133,25 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 }) => {
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  // Handle modal body scroll prevention
+  // Mobile detection
   useEffect(() => {
-    if (activeModal) {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Handle modal body scroll prevention (desktop only)
+  useEffect(() => {
+    if (activeModal && !isMobile) {
       document.body.classList.add('modal-open');
     } else {
       document.body.classList.remove('modal-open');
@@ -146,7 +161,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     return () => {
       document.body.classList.remove('modal-open');
     };
-  }, [activeModal]);
+  }, [activeModal, isMobile]);
 
   // Load dynamic POI configuration
   useEffect(() => {
@@ -199,7 +214,20 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     };
   }, []);
 
-  // Removed toggleCategory - using modal-based UI now
+  // Mobile navigation functions
+  const handleMobileCategoryOpen = (categoryId: string) => {
+    if (isMobile) {
+      setActiveCategory(categoryId);
+      setMobileView('category');
+    } else {
+      setActiveModal(categoryId);
+    }
+  };
+
+  const handleMobileBackToLanding = () => {
+    setMobileView('landing');
+    setActiveCategory(null);
+  };
 
   const handleEnrichmentToggle = (enrichmentId: string) => {
     const newSelected = selectedEnrichments.includes(enrichmentId)
@@ -295,6 +323,233 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     window.location.href = currentUrl.toString();
   };
 
+  // Mobile full-page view for portrait mode
+  if (isMobile && mobileView === 'category' && activeCategory) {
+    const category = enrichmentCategories.find(c => c.id === activeCategory);
+    if (!category) return null;
+
+    return (
+      <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
+        {/* Mobile Category Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center space-x-3 w-full">
+          <button
+            onClick={handleMobileBackToLanding}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <div className="flex items-center space-x-3">
+            {SECTION_ICONS[category.id]}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">{category.title}</h2>
+              <p className="text-sm text-gray-600">{category.description}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Category Content */}
+        <div className="p-4 space-y-4">
+          {category.enrichments.map((enrichment) => {
+            const isSelected = selectedEnrichments.includes(enrichment.id);
+            const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
+
+            return (
+              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-3 flex-1">
+                    <input
+                      type="checkbox"
+                      id={enrichment.id}
+                      checked={isSelected}
+                      onChange={() => handleEnrichmentToggle(enrichment.id)}
+                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 mt-0.5"
+                    />
+                    <div className="flex-1">
+                      <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer block">
+                        {enrichment.label}
+                      </label>
+                      <p className="text-sm text-gray-600 mt-1">{enrichment.description}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {enrichment.isPOI && isSelected && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+                      <p className="text-xs text-amber-700">
+                        ⚠️ Maximum radius: {
+                          enrichment.id === 'poi_earthquakes' ? '25 miles (earthquakes)' :
+                          enrichment.id === 'poi_volcanoes' ? '50 miles (volcanoes)' :
+                          enrichment.id === 'poi_wildfires' ? '50 miles (wildfires)' :
+                          enrichment.id === 'poi_flood_reference_points' ? '25 miles (flood reference points)' :
+                          '5 miles'
+                        } (for performance & accuracy)
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <label className="text-sm font-medium text-gray-900">Search Radius:</label>
+                      <input
+                        type="number"
+                        min="0.1"
+                        max={
+                          enrichment.id === 'poi_earthquakes' ? 25 :
+                          enrichment.id === 'poi_volcanoes' ? 50 :
+                          enrichment.id === 'poi_wildfires' ? 50 :
+                          enrichment.id === 'poi_flood_reference_points' ? 25 :
+                          5
+                        }
+                        step="0.1"
+                        value={currentRadius}
+                        onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
+                        className="w-20 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 appearance-none"
+                        style={{
+                          WebkitAppearance: 'textfield',
+                          MozAppearance: 'textfield'
+                        }}
+                      />
+                      <span className="text-sm text-gray-600">miles</span>
+                    </div>
+
+                    {currentRadius > (
+                      enrichment.id === 'poi_earthquakes' ? 25 :
+                      enrichment.id === 'poi_volcanoes' ? 50 :
+                      enrichment.id === 'poi_flood_reference_points' ? 25 :
+                      5
+                    ) && (
+                      <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                        Capped at {
+                          enrichment.id === 'poi_earthquakes' ? '25' :
+                          enrichment.id === 'poi_volcanoes' ? '50' :
+                          enrichment.id === 'poi_flood_reference_points' ? '25' :
+                          '5'
+                        } miles
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Mobile Category Footer */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
+          <button
+            onClick={handleMobileBackToLanding}
+            className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg font-medium"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Mobile landing page for portrait mode
+  if (isMobile && mobileView === 'landing') {
+    return (
+      <div className="enrichment-config">
+        <div className="card">
+          <div className="card-header">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-3">
+                <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base lg:text-lg font-semibold text-white">Enrichment Configuration</h3>
+                  <p className="text-xs lg:text-sm text-gray-300">Select data sources and configure search parameters</p>
+                </div>
+              </div>
+              
+              {/* Reset All Filters Button */}
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
+                <button
+                  onClick={handleResetAllFilters}
+                  className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
+                  title="Reset all selected enrichments and radii to defaults"
+                >
+                  <span className="w-4 h-4">🔄</span>
+                  <span className="whitespace-nowrap">Reset All Filters</span>
+                </button>
+                
+                <button
+                  onClick={handleResetApp}
+                  className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
+                  title="Clear browser cache and refresh application to ensure latest code"
+                >
+                  <span className="w-4 h-4">🔄</span>
+                  <span className="whitespace-nowrap">Reset App</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="card-body">
+            {/* Mobile Category Button Grid - Full Width */}
+            <div className="grid grid-cols-1 gap-4 mb-6 w-full">
+              {enrichmentCategories.map((category) => {
+                const categoryEnrichments = category.enrichments;
+                const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+                const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
+
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => handleMobileCategoryOpen(category.id)}
+                    className={`relative p-6 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="text-3xl">{category.icon}</div>
+                      <div className="flex-1 text-left">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">{category.title}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{category.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">
+                            {categoryEnrichments.length} data sources
+                          </span>
+                          {selectedCount > 0 && (
+                            <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
+                              {selectedCount} selected
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Selected Enrichments Summary */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h4 className="text-sm font-medium text-blue-900 mb-2">📊 Selected Enrichments</h4>
+              <div className="flex flex-wrap gap-2">
+                {selectedEnrichments.length === 0 ? (
+                  <span className="text-sm text-blue-700">No enrichments selected</span>
+                ) : (
+                  selectedEnrichments.map(id => {
+                    const enrichment = enrichmentCategories
+                      .flatMap(c => c.enrichments)
+                      .find(e => e.id === id);
+                    return (
+                      <span key={id} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        {enrichment?.label || id}
+                        {enrichment?.isPOI && poiRadii[id] && (
+                          <span className="ml-1 text-blue-600">({poiRadii[id]}mi)</span>
+                        )}
+                      </span>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop view (existing modal-based approach)
   return (
     <div className="enrichment-config">
       <div className="card">
@@ -333,7 +588,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         <div className="card-body">
           {/* Category Button Grid */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 w-full">
             {enrichmentCategories.map((category) => {
               const categoryEnrichments = category.enrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -364,14 +619,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           {/* Category Configuration Modal */}
           {activeModal && (
             <div 
-              className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  setActiveModal(null);
-                }
-              }}
+              className="fixed inset-0 bg-white z-[9999]"
             >
-              <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="h-screen bg-white flex flex-col overflow-hidden">
                 {(() => {
                   const category = enrichmentCategories.find(c => c.id === activeModal);
                   if (!category) return null;
@@ -381,27 +631,27 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 
                   return (
                     <>
-                      {/* Modal Header */}
-                      <div className={`p-6 ${colors.header} rounded-t-lg`}>
+                      {/* Header */}
+                      <div className={`p-3 ${colors.header} flex-shrink-0`}>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="text-2xl">{category.icon}</div>
-                            <div>
-                              <h2 className="text-xl font-bold text-white">{category.title}</h2>
-                              <p className="text-sm text-white text-opacity-90">{category.description}</p>
+                          <div className="flex items-center space-x-2 flex-1 min-w-0">
+                            <div className="text-xl flex-shrink-0">{category.icon}</div>
+                            <div className="min-w-0 flex-1">
+                              <h2 className="text-lg font-bold text-white truncate">{category.title}</h2>
+                              <p className="text-xs text-white text-opacity-90 truncate">{category.description}</p>
                             </div>
                           </div>
                           <button
                             onClick={() => setActiveModal(null)}
-                            className="text-white hover:text-gray-300 text-2xl font-bold"
+                            className="text-white text-2xl font-bold p-2 flex-shrink-0"
                           >
                             ×
                           </button>
                         </div>
                       </div>
 
-                      {/* Modal Body */}
-                      <div className="p-6">
+                      {/* Content - Scrollable */}
+                      <div className="flex-1 overflow-y-auto p-4">
                         <div className="space-y-4">
                           {categoryEnrichments.map((enrichment) => {
                             const isSelected = selectedEnrichments.includes(enrichment.id);
@@ -484,16 +734,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         </div>
                       </div>
 
-                      {/* Modal Footer */}
-                      <div className="p-6 border-t border-gray-200 rounded-b-lg bg-gray-50">
-                        <div className="flex justify-end space-x-3">
-                          <button
-                            onClick={() => setActiveModal(null)}
-                            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
-                          >
-                            Done
-                          </button>
-                        </div>
+                      {/* Footer */}
+                      <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+                        <button
+                          onClick={() => setActiveModal(null)}
+                          className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg font-medium"
+                        >
+                          Done
+                        </button>
                       </div>
                     </>
                   );
