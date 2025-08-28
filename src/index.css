@@ -728,44 +728,48 @@ body.modal-open {
     margin-right: auto !important;
   }
   
-  /* Mobile modal fixes - ensure interactivity */
-  .fixed.inset-0.bg-black.bg-opacity-50 {
-    padding: 8px !important;
+  /* Fullscreen modal on mobile */
+  .fixed.inset-0.bg-white {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
   }
   
-  .fixed.inset-0.bg-black.bg-opacity-50 .bg-white {
-    width: calc(100vw - 16px) !important;
-    max-width: calc(100vw - 16px) !important;
-    height: calc(100vh - 16px) !important;
-    max-height: calc(100vh - 16px) !important;
+  .fixed.inset-0.bg-white .min-h-screen {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
   }
   
-  /* Ensure all interactive elements work */
-  .fixed.inset-0.bg-black.bg-opacity-50 input,
-  .fixed.inset-0.bg-black.bg-opacity-50 button,
-  .fixed.inset-0.bg-black.bg-opacity-50 label {
-    pointer-events: auto !important;
-    touch-action: manipulation !important;
+  /* Make all elements touch-friendly */
+  .fixed.inset-0.bg-white input[type="checkbox"] {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
   }
   
-  /* Make checkboxes and inputs touch-friendly */
-  .fixed.inset-0.bg-black.bg-opacity-50 input[type="checkbox"] {
-    width: 20px !important;
-    height: 20px !important;
-    min-width: 20px !important;
-    min-height: 20px !important;
-  }
-  
-  .fixed.inset-0.bg-black.bg-opacity-50 input[type="number"] {
-    min-height: 44px !important;
+  .fixed.inset-0.bg-white input[type="number"] {
+    min-height: 48px !important;
     font-size: 16px !important;
+    padding: 12px !important;
   }
   
-  /* Ensure labels are tappable */
-  .fixed.inset-0.bg-black.bg-opacity-50 label {
-    min-height: 44px !important;
+  .fixed.inset-0.bg-white label {
+    min-height: 48px !important;
     display: flex !important;
     align-items: center !important;
     cursor: pointer !important;
+    font-size: 16px !important;
+  }
+  
+  .fixed.inset-0.bg-white button {
+    min-height: 48px !important;
+    font-size: 16px !important;
   }
 }
