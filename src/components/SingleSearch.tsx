@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, MapPin, Loader2 } from 'lucide-react';
+import { Search, MapPin, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
@@ -12,6 +12,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
   const [isLoading, setIsLoading] = useState(false);
   const [showLocationButton, setShowLocationButton] = useState(false);
   const [isLocationLoading, setIsLocationLoading] = useState(false);
+  const [isProTipsExpanded, setIsProTipsExpanded] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,21 +123,38 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
           </button>
         </form>
 
-        {/* Pro Tips - Hidden on Mobile for cleaner experience */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 hidden md:block">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">💡 Pro Tips</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Include city and state for better accuracy</li>
-            <li>• Use ZIP codes when available</li>
-            <li>• Click the location pin icon to search from your current location</li>
-            <li>• Results include coordinates, demographics, and nearby POIs</li>
-            <li>• Try the pre-filled example: "1600 Pennsylvania Avenue NW, Washington, DC 20500"</li>
-          </ul>
-          <div className="mt-3 pt-3 border-t border-blue-200">
-            <p className="text-xs text-blue-700">
-              🔧 <strong>Customize your search:</strong> Scroll down to configure which enrichment data to include and set search radii for points of interest
-            </p>
-          </div>
+        {/* Pro Tips - Collapsible */}
+        <div className="mt-6 hidden md:block">
+          <button
+            onClick={() => setIsProTipsExpanded(!isProTipsExpanded)}
+            className="w-full flex items-center justify-between p-3 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300 transition-colors"
+          >
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-700">💡 Pro Tips</span>
+            </div>
+            {isProTipsExpanded ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+          </button>
+          
+          {isProTipsExpanded && (
+            <div className="mt-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Include city and state for better accuracy</li>
+                <li>• Use ZIP codes when available</li>
+                <li>• Click the location pin icon to search from your current location</li>
+                <li>• Results include coordinates, demographics, and nearby POIs</li>
+                <li>• Try the pre-filled example: "1600 Pennsylvania Avenue NW, Washington, DC 20500"</li>
+              </ul>
+              <div className="mt-3 pt-3 border-t border-blue-200">
+                <p className="text-xs text-blue-700">
+                  🔧 <strong>Customize your search:</strong> Scroll down to configure which enrichment data to include and set search radii for points of interest
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

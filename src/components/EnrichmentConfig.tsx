@@ -588,7 +588,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         <div className="card-body">
           {/* Category Button Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 w-full">
+          <div className="grid grid-cols-2 gap-3 mb-6 w-full">
             {enrichmentCategories.map((category) => {
               const categoryEnrichments = category.enrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -598,7 +598,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 <div key={category.id} className="flex justify-center">
                   <button
                     onClick={() => onViewCategory ? onViewCategory(category) : setActiveModal(category.id)}
-                    className={`relative p-4 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-4/5 max-w-sm`}
+                    className={`relative p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full max-w-none`}
                   >
                     <div className="text-center relative">
                       <div className="text-3xl mb-2 relative">
@@ -609,7 +609,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           </div>
                         )}
                       </div>
-                      <h3 className="font-semibold text-gray-900 text-sm">{category.title}</h3>
+                      <h3 className="font-semibold text-gray-900 text-xs">{category.title}</h3>
                     </div>
                   </button>
                 </div>

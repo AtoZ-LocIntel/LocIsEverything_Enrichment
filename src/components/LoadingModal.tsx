@@ -357,11 +357,13 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                  Please be patient (it's free!)
                </h2>
                
-               <div className="bg-white bg-opacity-20 rounded-xl p-3 sm:p-6 backdrop-blur-sm">
-                 <p className="text-sm sm:text-lg leading-relaxed">
-                   It's simple physics! The more enrichment options you choose, 
-                   the longer the real-time queries take!
-                 </p>
+               <div className="flex justify-center">
+                 <div className="bg-white bg-opacity-20 rounded-xl p-3 sm:p-6 backdrop-blur-sm w-4/5 max-w-md">
+                   <p className="text-sm sm:text-lg leading-relaxed">
+                     It's simple physics! The more enrichment options you choose, 
+                     the longer the real-time queries take!
+                   </p>
+                 </div>
                </div>
 
                <div className="flex items-center justify-center space-x-2 text-yellow-300">
@@ -379,32 +381,34 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                 </div>
               </div>
 
-                             <div className="bg-white bg-opacity-20 rounded-xl p-3 sm:p-6 backdrop-blur-sm min-h-[140px] sm:min-h-[200px] flex flex-col justify-center">
-                 <div className="mb-4">
-                   <span className="inline-block bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-medium">
-                     {currentContent.category}
-                   </span>
-                 </div>
-                 
-                 <h3 className="text-sm sm:text-xl font-semibold mb-2 sm:mb-4 leading-relaxed">
-                   {currentContent.type === 'fact' && "Did you know?"}
-                   {currentContent.type === 'trivia' && "Fun fact:"}
-                   {currentContent.type === 'tip' && "Pro tip:"}
-                   {currentContent.type === 'joke' && ""}
-                   <br />
-                   {currentContent.question}
-                 </h3>
-                 
-                 {showAnswer && (
-                   <div className="animate-fadeIn">
-                     <div className="border-t border-white border-opacity-30 pt-3 sm:pt-4">
-                       <p className="text-sm sm:text-lg font-medium text-yellow-200">
-                         {currentContent.answer}
-                       </p>
-                     </div>
-                   </div>
-                 )}
-               </div>
+              <div className="flex justify-center">
+                <div className="bg-white bg-opacity-20 rounded-xl p-3 sm:p-6 backdrop-blur-sm min-h-[140px] sm:min-h-[200px] flex flex-col justify-center w-4/5 max-w-md">
+                  <div className="mb-4">
+                    <span className="inline-block bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-medium">
+                      {currentContent.category}
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-sm sm:text-xl font-semibold mb-2 sm:mb-4 leading-relaxed">
+                    {currentContent.type === 'fact' && "Did you know?"}
+                    {currentContent.type === 'trivia' && "Fun fact:"}
+                    {currentContent.type === 'tip' && "Pro tip:"}
+                    {currentContent.type === 'joke' && ""}
+                    <br />
+                    {currentContent.question}
+                  </h3>
+                  
+                  {showAnswer && (
+                    <div className="animate-fadeIn">
+                      <div className="border-t border-white border-opacity-30 pt-3 sm:pt-4">
+                        <p className="text-sm sm:text-lg font-medium text-yellow-200">
+                          {currentContent.answer}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
                <div className="flex justify-center space-x-2">
                  {shuffledContent.map((_, index) => (
