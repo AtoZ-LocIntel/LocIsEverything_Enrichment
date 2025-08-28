@@ -309,13 +309,11 @@ function App() {
             <div className="text-center mb-12 mt-8 sm:mt-16">
               {/* Company Logo - moved from header */}
               <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
-                  <img 
-                    src="/assets/lociseverything.png"
-                    alt="The Location Is Everything Co Logo" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                <img 
+                  src="/assets/lociseverything.png"
+                  alt="The Location Is Everything Co Logo" 
+                  className="w-24 h-24 sm:w-32 sm:h-32 object-contain"
+                />
               </div>
               
               <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-4">
@@ -331,7 +329,7 @@ function App() {
             </div>
 
             {/* Enrichment Options Preview - Single Column Layout */}
-            <div className="mb-8 p-4 bg-gradient-to-r from-gray-600 to-gray-900 rounded-xl border-2 border-white shadow-2xl overflow-hidden">
+            <div className="mb-8 p-3 sm:p-4 bg-gradient-to-r from-gray-600 to-gray-900 rounded-xl border-2 border-white shadow-2xl overflow-hidden">
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-bold text-white mb-2">
                     Available Enrichment Options
@@ -339,10 +337,10 @@ function App() {
                   <p className="text-blue-200 text-sm">Configure your search to include any combination of these data sources</p>
                 </div>
                 
-                <div className="space-y-4 text-sm">
-                  <div className="bg-gray-500 rounded-lg border border-gray-600 shadow-lg p-4">
-                    <h3 className="font-semibold text-white mb-2 text-base">📍 Core Location Data</h3>
-                    <ul className="text-white space-y-1 text-sm">
+                <div className="space-y-3 text-sm">
+                  <div className="bg-gray-500 rounded-lg border border-gray-600 shadow-lg p-3">
+                    <h3 className="font-semibold text-white mb-2 text-sm">📍 Core Location Data</h3>
+                    <ul className="text-white space-y-1 text-xs">
                       <li>• Elevation & Air Quality</li>
                       <li>• Census FIPS Codes</li>
                       <li>• Demographics (Population, Income, Age)</li>
@@ -350,9 +348,9 @@ function App() {
                     </ul>
                   </div>
                   
-                  <div className="bg-gray-700 rounded-lg border border-gray-800 shadow-lg p-4">
-                    <h3 className="font-semibold text-white mb-2 text-base">🏢 Points of Interest</h3>
-                    <ul className="text-white space-y-1 text-sm">
+                  <div className="bg-gray-700 rounded-lg border border-gray-800 shadow-lg p-3">
+                    <h3 className="font-semibold text-white mb-2 text-sm">🏢 Points of Interest</h3>
+                    <ul className="text-white space-y-1 text-xs">
                       <li>• Schools, Hospitals, Parks, Police & Fire</li>
                       <li>• Retail & Restaurants</li>
                       <li>• Transportation & Infrastructure</li>
@@ -360,14 +358,17 @@ function App() {
                     </ul>
                   </div>
                   
-                  <div className="bg-gray-800 rounded-lg border border-gray-900 shadow-lg p-4">
-                    <h3 className="font-semibold text-white mb-2 text-base">🌍 Specialized Data</h3>
-                    <ul className="text-white space-y-1 text-sm">
-                      <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span> <span className="text-blue-200 text-xs">(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</span></li>
+                  <div className="bg-gray-800 rounded-lg border border-gray-900 shadow-lg p-3">
+                    <h3 className="font-semibold text-white mb-2 text-sm">🌍 Specialized Data</h3>
+                    <ul className="text-white space-y-1 text-xs">
+                      <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span></li>
+                      <li className="text-blue-200 text-xs ml-2">(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</li>
                       <li>• Environmental Hazards</li>
                       <li>• Power Plants & Cell Towers</li>
-                      <li>• Breweries & Enhanced Wikipedia (haunted sites, oddities, museums)</li>
-                      <li>• Recreation & Entertainment (Golf, Boating, Cinemas)</li>
+                      <li>• Breweries & Enhanced Wikipedia</li>
+                      <li className="ml-2 text-xs">(haunted sites, oddities, museums)</li>
+                      <li>• Recreation & Entertainment</li>
+                      <li className="ml-2 text-xs">(Golf, Boating, Cinemas)</li>
                       <li>• Public Lands & Protected Areas (PAD-US)</li>
                     </ul>
                   </div>
