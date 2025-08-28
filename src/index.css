@@ -728,48 +728,20 @@ body.modal-open {
     margin-right: auto !important;
   }
   
-  /* Fullscreen modal on mobile */
+  /* Simple fullscreen modal */
   .fixed.inset-0.bg-white {
     width: 100vw !important;
     height: 100vh !important;
-    max-width: 100vw !important;
-    max-height: 100vh !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
   }
   
-  .fixed.inset-0.bg-white .min-h-screen {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
+  /* Basic touch targets */
+  input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px !important;
   }
   
-  /* Make all elements touch-friendly */
-  .fixed.inset-0.bg-white input[type="checkbox"] {
-    width: 24px !important;
-    height: 24px !important;
-    min-width: 24px !important;
-    min-height: 24px !important;
-  }
-  
-  .fixed.inset-0.bg-white input[type="number"] {
-    min-height: 48px !important;
-    font-size: 16px !important;
-    padding: 12px !important;
-  }
-  
-  .fixed.inset-0.bg-white label {
-    min-height: 48px !important;
-    display: flex !important;
-    align-items: center !important;
-    cursor: pointer !important;
-    font-size: 16px !important;
-  }
-  
-  .fixed.inset-0.bg-white button {
-    min-height: 48px !important;
+  input[type="number"] {
+    min-height: 44px !important;
     font-size: 16px !important;
   }
 }
