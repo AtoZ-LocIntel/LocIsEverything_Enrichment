@@ -367,7 +367,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         accentColor: '#2563eb',
                         WebkitAppearance: 'none',
                         appearance: 'none',
-                        background: isSelected ? '#2563eb' : 'white',
+                        background: isSelected ? '#1f2937' : 'white',
                         backgroundImage: isSelected ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z\'/%3e%3c/svg%3e")' : 'none',
                         backgroundSize: 'contain',
                         backgroundRepeat: 'no-repeat',
@@ -402,14 +402,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       <select
                         value={currentRadius}
                         onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value))}
-                        className="px-4 py-3 text-base border-2 border-gray-500 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white text-black font-semibold appearance-none"
-                        style={{ 
-                          backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e\")", 
-                          backgroundPosition: "right 0.5rem center", 
-                          backgroundRepeat: "no-repeat", 
-                          backgroundSize: "1.5em 1.5em", 
-                          paddingRight: "2.5rem" 
-                        }}
+                        className="px-4 py-3 text-base border-2 border-gray-500 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white text-black font-semibold"
                       >
                         <option value={0.5}>0.5 miles</option>
                         <option value={1}>1 mile</option>
@@ -658,7 +651,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 <div key={category.id} className="flex justify-center" style={{ width: '100%', height: '100%' }}>
                   <button
                     onClick={() => {
+                      console.log('Category clicked:', category.id, 'isMobile:', isMobile);
                       if (isMobile) {
+                        console.log('Setting mobile view for category:', category.id);
                         setActiveCategory(category.id);
                         setMobileView('category');
                       } else if (onViewCategory) {
