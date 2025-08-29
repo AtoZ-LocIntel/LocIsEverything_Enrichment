@@ -708,6 +708,22 @@ body.modal-open {
     box-sizing: border-box !important;
   }
   
+  /* Fix checkbox positioning on mobile */
+  .flex.items-start.space-x-3 {
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  
+  .flex.items-start.space-x-3 button {
+    flex-shrink: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+  }
+  
 }
 
 /* Complete Mobile Layout Fix */

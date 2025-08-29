@@ -139,7 +139,15 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                               ? 'bg-black border-black' 
                               : 'bg-white border-gray-400'
                           }`}
-                          style={{ marginTop: '2px' }}
+                          style={{ 
+                            marginTop: '2px',
+                            minWidth: '20px',
+                            minHeight: '20px',
+                            maxWidth: '20px',
+                            maxHeight: '20px',
+                            position: 'relative',
+                            zIndex: 1
+                          }}
                         >
                           {isSelected && (
                             <Check className="w-3 h-3 text-white" />
