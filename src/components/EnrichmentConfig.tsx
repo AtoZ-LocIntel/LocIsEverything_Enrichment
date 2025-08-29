@@ -140,7 +140,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   // Mobile detection
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      const isMobileDevice = window.innerWidth < 768;
+      console.log('Mobile detection:', isMobileDevice, 'width:', window.innerWidth);
+      setIsMobile(isMobileDevice);
     };
     
     checkMobile();
@@ -637,18 +639,19 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         <div className="card-body">
           {/* Category Button Grid */}
           <div className="mb-6 w-full px-2" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(2, 1fr)', 
+            display: 'flex',
+            flexWrap: 'wrap',
             gap: '6px',
-            gridAutoRows: 'minmax(90px, auto)'
+            justifyContent: 'center'
           }}>
+            {console.log('Rendering grid, isMobile:', isMobile, 'width:', window.innerWidth)}
             {enrichmentCategories.map((category) => {
               const categoryEnrichments = category.enrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
               const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
 
               return (
-                <div key={category.id} className="flex justify-center" style={{ width: '100%', height: '100%' }}>
+                <div key={category.id} style={{ width: 'calc(50% - 3px)', minHeight: '90px' }}>
                   <button
                     onClick={() => {
                       console.log('Category clicked:', category.id, 'isMobile:', isMobile);
@@ -662,7 +665,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setActiveModal(category.id);
                       }
                     }}
-                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full flex items-center justify-start sm:flex-col sm:items-center sm:justify-center`}
+                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full h-full flex items-center justify-start sm:flex-col sm:items-center sm:justify-center`}
                     style={{ minHeight: '90px' }}
                   >
                     <div className="flex items-center sm:flex-col sm:text-center relative w-full">
