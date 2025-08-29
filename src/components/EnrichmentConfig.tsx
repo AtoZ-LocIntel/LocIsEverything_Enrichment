@@ -636,11 +636,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         <div className="card-body">
           {/* Category Button Grid */}
-          <div className="mb-6 w-full" style={{ 
+          <div className="mb-6 w-full px-2" style={{ 
             display: 'grid', 
             gridTemplateColumns: 'repeat(2, 1fr)', 
-            gap: '8px',
-            gridAutoRows: 'minmax(100px, auto)'
+            gap: '6px',
+            gridAutoRows: 'minmax(90px, auto)'
           }}>
             {enrichmentCategories.map((category) => {
               const categoryEnrichments = category.enrichments;
@@ -662,8 +662,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setActiveModal(category.id);
                       }
                     }}
-                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-4/5 max-w-sm flex items-center justify-start sm:flex-col sm:items-center sm:justify-center`}
-                    style={{ minHeight: '100px', width: '80%' }}
+                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full flex items-center justify-start sm:flex-col sm:items-center sm:justify-center`}
+                    style={{ minHeight: '90px' }}
                   >
                     <div className="flex items-center sm:flex-col sm:text-center relative w-full">
                       {/* Mobile: No icon, text on left */}
@@ -685,7 +685,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         )}
                       </div>
                       
-                      <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight px-1 flex-1 text-left sm:text-center">{category.title}</h3>
+                      <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight px-1 flex-1 text-left sm:text-center break-words">{category.title}</h3>
                     </div>
                   </button>
                 </div>
