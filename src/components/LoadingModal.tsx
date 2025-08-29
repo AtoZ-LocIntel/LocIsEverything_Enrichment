@@ -335,13 +335,13 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4" style={{ height: '100dvh' }}>
-      <div className="bg-gradient-to-br from-slate-800 via-gray-800 to-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 p-3 sm:p-8 text-white relative overflow-hidden border border-gray-700" style={{ maxHeight: '90dvh' }}>
+      <div className="bg-gradient-to-br from-orange-200 via-orange-300 to-orange-400 rounded-2xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 p-3 sm:p-8 text-orange-900 relative overflow-hidden border border-orange-500" style={{ maxHeight: '90dvh' }}>
         {/* Animated background elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className="absolute -top-4 -left-4 w-24 h-24 bg-blue-500 bg-opacity-20 rounded-full animate-pulse"></div>
-          <div className="absolute top-1/4 -right-8 w-32 h-32 bg-slate-500 bg-opacity-15 rounded-full animate-bounce"></div>
-          <div className="absolute bottom-1/4 -left-6 w-20 h-20 bg-gray-500 bg-opacity-20 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-0 right-0 w-28 h-28 bg-blue-600 bg-opacity-15 rounded-full animate-bounce"></div>
+          <div className="absolute -top-4 -left-4 w-24 h-24 bg-orange-500 bg-opacity-30 rounded-full animate-pulse"></div>
+          <div className="absolute top-1/4 -right-8 w-32 h-32 bg-orange-600 bg-opacity-25 rounded-full animate-bounce"></div>
+          <div className="absolute bottom-1/4 -left-6 w-20 h-20 bg-orange-400 bg-opacity-30 rounded-full animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-28 h-28 bg-orange-700 bg-opacity-25 rounded-full animate-bounce"></div>
         </div>
 
         <div className="relative z-10">
@@ -349,8 +349,8 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
              <div className="text-center space-y-4 sm:space-y-6">
                <div className="flex justify-center space-x-3 sm:space-x-4">
                  <img src="/assets/lociseverything.webp" alt="The Location Is Everything Co" className="w-20 h-20 sm:w-24 sm:h-24 animate-bounce rounded-full object-cover" />
-                 <Zap className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse text-blue-400" />
-                 <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce text-blue-400" />
+                 <Zap className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse text-orange-600" />
+                 <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce text-orange-600" />
                </div>
                
                <h2 className="text-xl sm:text-3xl font-bold text-center mb-2 sm:mb-4">
@@ -358,15 +358,15 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                </h2>
                
                <div className="flex justify-center">
-                 <div className="bg-white bg-opacity-20 rounded-xl p-3 sm:p-6 backdrop-blur-sm w-4/5 max-w-md">
-                   <p className="text-sm sm:text-lg leading-relaxed">
+                 <div className="bg-orange-100 bg-opacity-80 rounded-xl p-3 sm:p-6 backdrop-blur-sm w-4/5 max-w-md">
+                   <p className="text-sm sm:text-lg leading-relaxed text-orange-800">
                      It's simple physics! The more enrichment options you choose, 
                      the longer the real-time queries take!
                    </p>
                  </div>
                </div>
 
-               <div className="flex items-center justify-center space-x-2 text-blue-400">
+               <div className="flex items-center justify-center space-x-2 text-orange-700">
                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                  <span className="text-xs sm:text-sm">
                    Processing {enrichmentCount} enrichment{enrichmentCount !== 1 ? 's' : ''}...
@@ -376,20 +376,20 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
           ) : (
             <div className="text-center space-y-4 sm:space-y-6">
               <div className="flex justify-center">
-                <div className="bg-white bg-opacity-20 rounded-full p-3 sm:p-4 backdrop-blur-sm">
+                <div className="bg-orange-100 bg-opacity-80 rounded-full p-3 sm:p-4 backdrop-blur-sm">
                   <img src="/assets/lociseverything.webp" alt="The Location Is Everything Co" className="w-12 h-12 sm:w-16 sm:h-16 animate-pulse rounded-full object-cover" />
                 </div>
               </div>
 
               <div className="flex justify-center">
-                <div className="bg-white bg-opacity-20 rounded-xl p-3 sm:p-6 backdrop-blur-sm min-h-[140px] sm:min-h-[200px] flex flex-col justify-center w-4/5 max-w-md">
+                <div className="bg-orange-100 bg-opacity-80 rounded-xl p-3 sm:p-6 backdrop-blur-sm min-h-[140px] sm:min-h-[200px] flex flex-col justify-center w-4/5 max-w-md">
                   <div className="mb-4">
-                    <span className="inline-block bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-medium">
+                    <span className="inline-block bg-orange-200 bg-opacity-80 px-3 py-1 rounded-full text-sm font-medium text-orange-800">
                       {currentContent.category}
                     </span>
                   </div>
                   
-                  <h3 className="text-sm sm:text-xl font-semibold mb-2 sm:mb-4 leading-relaxed">
+                  <h3 className="text-sm sm:text-xl font-semibold mb-2 sm:mb-4 leading-relaxed text-orange-800">
                     {currentContent.type === 'fact' && "Did you know?"}
                     {currentContent.type === 'trivia' && "Fun fact:"}
                     {currentContent.type === 'tip' && "Pro tip:"}
@@ -400,8 +400,8 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                   
                   {showAnswer && (
                     <div className="animate-fadeIn">
-                      <div className="border-t border-white border-opacity-30 pt-3 sm:pt-4">
-                        <p className="text-sm sm:text-lg font-medium text-blue-300">
+                      <div className="border-t border-orange-300 border-opacity-60 pt-3 sm:pt-4">
+                        <p className="text-sm sm:text-lg font-medium text-orange-700">
                           {currentContent.answer}
                         </p>
                       </div>
@@ -416,8 +416,8 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                      key={index}
                      className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                        index === currentContentIndex 
-                         ? 'bg-blue-400' 
-                         : 'bg-white bg-opacity-30'
+                         ? 'bg-orange-600' 
+                         : 'bg-orange-300 bg-opacity-60'
                      }`}
                    />
                  ))}
