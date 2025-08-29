@@ -132,7 +132,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({ onComplete, selectedE
               />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-white">Batch Address Processing</h3>
+              <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Batch Address Processing</h3>
               <p className="text-xs text-gray-200">Upload CSV and process multiple locations</p>
             </div>
           </div>

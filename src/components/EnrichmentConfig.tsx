@@ -300,7 +300,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               <div className="flex items-center space-x-3">
                 <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base lg:text-lg font-semibold text-white">Enrichment Configuration</h3>
+                  <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Enrichment Layers</h3>
                   <p className="text-xs lg:text-sm text-gray-300">Select data sources and configure search parameters</p>
                 </div>
               </div>
@@ -432,7 +432,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             <div className="flex items-center space-x-3">
               <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
               <div className="flex-1 min-w-0">
-                <h3 className="text-base lg:text-lg font-semibold text-white">Enrichment Configuration</h3>
+                <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Enrichment Layers</h3>
                 <p className="text-xs lg:text-sm text-gray-300">Select data sources and configure search parameters</p>
               </div>
             </div>
@@ -653,7 +653,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       id={enrichment.id}
                                       checked={isSelected}
                                       onChange={() => handleEnrichmentToggle(enrichment.id)}
-                                      className="w-5 h-5 border-gray-300 rounded focus:ring-blue-500 mt-0.5 bg-white accent-blue-600"
+                                      className="w-5 h-5 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
+                                      style={{ 
+                                        backgroundColor: 'black',
+                                        accentColor: 'white'
+                                      }}
                                     />
                                     <div className="flex-1">
                                       <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer block">

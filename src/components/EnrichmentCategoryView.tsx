@@ -136,7 +136,11 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                           id={`checkbox-${enrichment.id}`}
                           checked={isSelected}
                           onChange={() => handleToggleEnrichment(enrichment.id)}
-                          className="w-5 h-5 border-2 border-gray-400 rounded focus:ring-blue-500 focus:ring-2 bg-white accent-blue-600"
+                          className="w-5 h-5 border-2 border-gray-400 rounded focus:ring-blue-500 focus:ring-2"
+                          style={{ 
+                            backgroundColor: 'black',
+                            accentColor: 'white'
+                          }}
                         />
                         
                         <div className="flex-1">

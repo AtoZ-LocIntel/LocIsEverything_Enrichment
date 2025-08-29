@@ -43,7 +43,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                 />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Single Location Search</h3>
+                <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Single Location Search</h3>
                 <p className="text-sm text-gray-200">Search from your location or enter an address</p>
               </div>
             </div>
