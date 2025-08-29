@@ -360,64 +360,42 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           </div>
           
           <div className="card-body">
-            {/* Mobile Category Button Grid - 2 Column Layout */}
-            <div className="mb-6 w-full px-4" style={{ 
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '8px',
-              justifyContent: 'center'
-            }}>
+            {/* Mobile Category Button Grid - Conservative 2 Column Layout */}
+            <div className="mb-6 w-full px-2">
+              <div className="grid grid-cols-2 gap-2 max-w-sm mx-auto">
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
                 const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
 
                 return (
-                  <div key={category.id} style={{ width: 'calc(50% - 4px)', minHeight: '90px' }}>
-                    <button
-                      onClick={() => {
-                        // Always use modal view for consistency
-                        if (onViewCategory) {
-                          onViewCategory(category);
-                        } else {
-                          setActiveModal(category.id);
-                        }
-                      }}
-                      className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full h-full flex items-center justify-start sm:flex-col sm:items-center sm:justify-center`}
-                      style={{ minHeight: '90px' }}
-                    >
-                      <div className="flex items-center sm:flex-col sm:text-center relative w-full">
-                        {/* Mobile: No icon, text on left */}
-                        <div className="hidden sm:block text-xl sm:text-2xl mb-1 sm:mb-2 relative">
-                          {category.icon}
-                          {selectedCount > 0 && (
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
-                              {selectedCount}
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex-1 sm:text-center">
-                          <h3 className="text-left sm:text-center font-semibold text-gray-900 text-sm sm:text-base mb-1 break-words">
-                            {category.title}
-                          </h3>
-                          <p className="text-left sm:text-center text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">
-                            {category.description}
-                          </p>
-                          <div className="flex items-center justify-between sm:justify-center">
-                            <span className="text-xs text-gray-500">{categoryEnrichments.length} sources</span>
-                            {selectedCount > 0 && (
-                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full sm:hidden">
-                                {selectedCount}
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      // Always use modal view for consistency
+                      if (onViewCategory) {
+                        onViewCategory(category);
+                      } else {
+                        setActiveModal(category.id);
+                      }
+                    }}
+                    className={`relative p-2 rounded-lg ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-sm hover:shadow-md border ${colors.border} w-full h-20 flex flex-col items-center justify-center text-center`}
+                  >
+                    <h3 className="text-xs font-semibold text-gray-900 mb-1 leading-tight">
+                      {category.title}
+                    </h3>
+                    <p className="text-xs text-gray-600 leading-tight">
+                      {categoryEnrichments.length} sources
+                    </p>
+                    {selectedCount > 0 && (
+                      <div className="absolute top-1 right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
+                        {selectedCount}
                       </div>
-                    </button>
-                  </div>
+                    )}
+                  </button>
                 );
               })}
+              </div>
             </div>
 
             {/* Selected Enrichments Summary */}
