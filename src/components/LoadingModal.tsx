@@ -335,13 +335,13 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4" style={{ height: '100dvh' }}>
-      <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 p-3 sm:p-8 text-white relative overflow-hidden" style={{ maxHeight: '90dvh' }}>
+      <div className="bg-gradient-to-br from-slate-800 via-gray-800 to-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 p-3 sm:p-8 text-white relative overflow-hidden border border-gray-700" style={{ maxHeight: '90dvh' }}>
         {/* Animated background elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className="absolute -top-4 -left-4 w-24 h-24 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
-          <div className="absolute top-1/4 -right-8 w-32 h-32 bg-white bg-opacity-5 rounded-full animate-bounce"></div>
-          <div className="absolute bottom-1/4 -left-6 w-20 h-20 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-0 right-0 w-28 h-28 bg-white bg-opacity-5 rounded-full animate-bounce"></div>
+          <div className="absolute -top-4 -left-4 w-24 h-24 bg-blue-500 bg-opacity-20 rounded-full animate-pulse"></div>
+          <div className="absolute top-1/4 -right-8 w-32 h-32 bg-slate-500 bg-opacity-15 rounded-full animate-bounce"></div>
+          <div className="absolute bottom-1/4 -left-6 w-20 h-20 bg-gray-500 bg-opacity-20 rounded-full animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-28 h-28 bg-blue-600 bg-opacity-15 rounded-full animate-bounce"></div>
         </div>
 
         <div className="relative z-10">
@@ -349,8 +349,8 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
              <div className="text-center space-y-4 sm:space-y-6">
                <div className="flex justify-center space-x-3 sm:space-x-4">
                  <img src="/assets/lociseverything.png" alt="The Location Is Everything Co" className="w-20 h-20 sm:w-24 sm:h-24 animate-bounce rounded-full object-cover" />
-                 <Zap className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse text-yellow-300" />
-                 <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce text-yellow-300" />
+                 <Zap className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse text-blue-400" />
+                 <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce text-blue-400" />
                </div>
                
                <h2 className="text-xl sm:text-3xl font-bold text-center mb-2 sm:mb-4">
@@ -366,7 +366,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                  </div>
                </div>
 
-               <div className="flex items-center justify-center space-x-2 text-yellow-300">
+               <div className="flex items-center justify-center space-x-2 text-blue-400">
                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                  <span className="text-xs sm:text-sm">
                    Processing {enrichmentCount} enrichment{enrichmentCount !== 1 ? 's' : ''}...
@@ -401,7 +401,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                   {showAnswer && (
                     <div className="animate-fadeIn">
                       <div className="border-t border-white border-opacity-30 pt-3 sm:pt-4">
-                        <p className="text-sm sm:text-lg font-medium text-yellow-200">
+                        <p className="text-sm sm:text-lg font-medium text-blue-300">
                           {currentContent.answer}
                         </p>
                       </div>
@@ -416,7 +416,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                      key={index}
                      className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                        index === currentContentIndex 
-                         ? 'bg-yellow-300' 
+                         ? 'bg-blue-400' 
                          : 'bg-white bg-opacity-30'
                      }`}
                    />

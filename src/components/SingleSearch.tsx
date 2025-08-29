@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, MapPin, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
