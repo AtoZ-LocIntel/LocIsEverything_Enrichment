@@ -141,7 +141,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   useEffect(() => {
     const checkMobile = () => {
       const isMobileDevice = window.innerWidth < 768;
-      console.log('Mobile detection:', isMobileDevice, 'width:', window.innerWidth);
       setIsMobile(isMobileDevice);
     };
     
@@ -325,8 +324,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     window.location.href = currentUrl.toString();
   };
 
-  // Mobile full-page view for portrait mode
-  if (isMobile && mobileView === 'category' && activeCategory) {
+  // Mobile full-page view for portrait mode - DISABLED to show grid instead
+  if (false && isMobile && mobileView === 'category' && activeCategory) {
     const category = enrichmentCategories.find(c => c.id === activeCategory);
     if (!category) return null;
 
@@ -644,7 +643,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             gap: '6px',
             justifyContent: 'center'
           }}>
-            {console.log('Rendering grid, isMobile:', isMobile, 'width:', window.innerWidth)}
+
             {enrichmentCategories.map((category) => {
               const categoryEnrichments = category.enrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -654,12 +653,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 <div key={category.id} style={{ width: 'calc(50% - 3px)', minHeight: '90px' }}>
                   <button
                     onClick={() => {
-                      console.log('Category clicked:', category.id, 'isMobile:', isMobile);
-                      if (isMobile) {
-                        console.log('Setting mobile view for category:', category.id);
-                        setActiveCategory(category.id);
-                        setMobileView('category');
-                      } else if (onViewCategory) {
+                      // Always use modal view for consistency
+                      if (onViewCategory) {
                         onViewCategory(category);
                       } else {
                         setActiveModal(category.id);
