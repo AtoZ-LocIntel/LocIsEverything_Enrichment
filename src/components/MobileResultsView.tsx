@@ -197,35 +197,35 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
             
             {/* Key Summary Values */}
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="grid grid-cols-2 gap-3 text-xs sm:text-sm">
+              <div className="grid grid-cols-2 gap-3 text-sm sm:text-base">
                 {enrichments.elevation_ft && (
                   <div className="text-center">
-                    <div className="font-semibold text-gray-700">Elevation</div>
-                    <div className="text-gray-900">{enrichments.elevation_ft} ft</div>
+                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Elevation</div>
+                    <div className="text-gray-900 font-bold text-sm sm:text-base">{enrichments.elevation_ft} ft</div>
                   </div>
                 )}
                 {enrichments.open_meteo_weather_description && (
                   <div className="text-center">
-                    <div className="font-semibold text-gray-700">Weather</div>
-                    <div className="text-gray-900 text-xs">{enrichments.open_meteo_weather_description}</div>
+                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Weather</div>
+                    <div className="text-gray-900 font-bold text-xs sm:text-sm">{enrichments.open_meteo_weather_description}</div>
                   </div>
                 )}
                 {enrichments.nws_alerts_summary && (
                   <div className="text-center">
-                    <div className="font-semibold text-gray-700">Alerts</div>
-                    <div className="text-gray-900 text-xs">{enrichments.nws_alerts_summary}</div>
+                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Alerts</div>
+                    <div className="text-gray-900 font-bold text-xs sm:text-sm">{enrichments.nws_alerts_summary}</div>
                   </div>
                 )}
                 {enrichments.acs_population && (
                   <div className="text-center">
-                    <div className="font-semibold text-gray-700">Population</div>
-                    <div className="text-gray-900">{enrichments.acs_population.toLocaleString()}</div>
+                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Population</div>
+                    <div className="text-gray-900 font-bold text-sm sm:text-base">{enrichments.acs_population.toLocaleString()}</div>
                   </div>
                 )}
                 {enrichments.acs_name && (
                   <div className="text-center col-span-2">
-                    <div className="font-semibold text-gray-700">Area</div>
-                    <div className="text-gray-900 text-xs">{enrichments.acs_name}</div>
+                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Area</div>
+                    <div className="text-gray-900 font-bold text-xs sm:text-sm">{enrichments.acs_name}</div>
                   </div>
                 )}
               </div>
@@ -244,10 +244,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
               {items.map(({ key, value }) => (
                 <div key={key} className="border-b border-gray-100 last:border-b-0 pb-3 sm:pb-4 last:pb-0">
                   <div className="flex flex-col space-y-2">
-                    <label className="text-xs sm:text-sm font-semibold text-gray-700 capitalize break-words">
+                    <label className="text-sm sm:text-base font-bold text-gray-700 capitalize break-words">
                       {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </label>
-                    <div className="text-gray-900 bg-gray-50 p-2 sm:p-3 rounded-lg text-sm sm:text-base break-words overflow-hidden">
+                    <div className="text-gray-900 bg-gray-50 p-2 sm:p-3 rounded-lg text-base sm:text-lg font-bold break-words overflow-hidden">
                       {formatValue(value, key)}
                     </div>
                   </div>

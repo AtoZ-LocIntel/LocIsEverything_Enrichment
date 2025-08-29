@@ -175,35 +175,35 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                       
                       {/* Key Summary Values */}
                       <div className="mt-4 pt-4 border-t border-gray-200">
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-base">
                           {enrichments.elevation_ft && (
                             <div className="text-center">
-                              <div className="font-semibold text-gray-700">Elevation</div>
-                              <div className="text-gray-900">{enrichments.elevation_ft} ft</div>
+                              <div className="font-bold text-gray-700 text-sm">Elevation</div>
+                              <div className="text-gray-900 font-bold text-lg">{enrichments.elevation_ft} ft</div>
                             </div>
                           )}
                           {enrichments.open_meteo_weather_description && (
                             <div className="text-center">
-                              <div className="font-semibold text-gray-700">Weather</div>
-                              <div className="text-gray-900">{enrichments.open_meteo_weather_description}</div>
+                              <div className="font-bold text-gray-700 text-sm">Weather</div>
+                              <div className="text-gray-900 font-bold text-lg">{enrichments.open_meteo_weather_description}</div>
                             </div>
                           )}
                           {enrichments.nws_alerts_summary && (
                             <div className="text-center">
-                              <div className="font-semibold text-gray-700">Alerts</div>
-                              <div className="text-gray-900">{enrichments.nws_alerts_summary}</div>
+                              <div className="font-bold text-gray-700 text-sm">Alerts</div>
+                              <div className="text-gray-900 font-bold text-lg">{enrichments.nws_alerts_summary}</div>
                             </div>
                           )}
                           {enrichments.acs_population && (
                             <div className="text-center">
-                              <div className="font-semibold text-gray-700">Population</div>
-                              <div className="text-gray-900">{enrichments.acs_population.toLocaleString()}</div>
+                              <div className="font-bold text-gray-700 text-sm">Population</div>
+                              <div className="text-gray-900 font-bold text-lg">{enrichments.acs_population.toLocaleString()}</div>
                             </div>
                           )}
                           {enrichments.acs_name && (
                             <div className="text-center">
-                              <div className="font-semibold text-gray-700">Area</div>
-                              <div className="text-gray-900">{enrichments.acs_name}</div>
+                              <div className="font-bold text-gray-700 text-sm">Area</div>
+                              <div className="text-gray-900 font-bold text-lg">{enrichments.acs_name}</div>
                             </div>
                           )}
                         </div>
@@ -223,10 +223,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                       {items.map(({ key, value }) => (
                         <div key={key} className="border-b border-gray-100 last:border-b-0 pb-4 last:pb-0">
                           <div className="flex flex-col space-y-2">
-                            <label className="text-sm font-semibold text-gray-700 capitalize">
+                            <label className="text-base font-bold text-gray-700 capitalize">
                               {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                             </label>
-                            <div className="text-gray-900 bg-gray-50 p-3 rounded-lg break-words">
+                            <div className="text-gray-900 bg-gray-50 p-3 rounded-lg text-base font-bold break-words">
                               {formatValue(value, key)}
                             </div>
                           </div>
