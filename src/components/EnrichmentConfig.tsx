@@ -526,6 +526,60 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             </div>
           </div>
 
+          {/* Selection Summary Panel */}
+          {selectedEnrichments.length > 0 && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-lg font-bold text-blue-900 flex items-center space-x-2">
+                  <span>📊</span>
+                  <span>Selection Summary</span>
+                </h4>
+                <span className="text-sm font-semibold text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
+                  {selectedEnrichments.length} total
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {enrichmentCategories.map((category) => {
+                  const categorySelected = category.enrichments.filter(e => selectedEnrichments.includes(e.id));
+                  if (categorySelected.length === 0) return null;
+                  
+                  return (
+                    <div key={category.id} className="bg-white rounded-lg p-3 border border-blue-100">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <img 
+                          src={`/assets/${getIconFileName(category.id)}.png`}
+                          alt={category.title}
+                          className="w-6 h-6 object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                        <span className="text-sm font-semibold text-gray-800">{category.title}</span>
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        {categorySelected.length} of {category.enrichments.length} selected
+                      </div>
+                      <div className="mt-1 text-xs text-blue-600 font-medium">
+                        {categorySelected.map(e => e.label).slice(0, 2).join(', ')}
+                        {categorySelected.length > 2 && ` +${categorySelected.length - 2} more`}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {selectedEnrichments.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-blue-200">
+                  <div className="text-sm text-blue-800">
+                    <strong>Ready to search!</strong> Your selected enrichments will provide comprehensive location insights.
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Category Configuration Modal */}
           {activeModal && (
             <div 
