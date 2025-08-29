@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ArrowLeft, Settings } from 'lucide-react';
 
 interface EnrichmentItem {
@@ -53,15 +53,36 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
 
   const selectedCount = category.enrichments.filter(e => selectedEnrichments.includes(e.id)).length;
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header with Back Button */}
-      <div className="bg-white shadow-lg border-b border-gray-300 sticky top-0 z-50">
+      <div 
+        className="shadow-lg border-b border-gray-300 sticky top-0 z-50"
+        style={{
+          backgroundColor: category.id === 'hazards' ? '#991b1b' :
+                          category.id === 'community' ? '#1e40af' :
+                          category.id === 'retail' ? '#6b21a8' :
+                          category.id === 'health' ? '#9d174d' :
+                          category.id === 'transportation' ? '#3730a3' :
+                          category.id === 'infrastructure' ? '#92400e' :
+                          category.id === 'environment' ? '#166534' :
+                          category.id === 'recreation' ? '#065f46' :
+                          category.id === 'natural_resources' ? '#115e59' :
+                          category.id === 'public_lands' ? '#365314' :
+                          category.id === 'quirky' ? '#9a3412' :
+                          category.id === 'core' ? '#1e293b' : '#1f2937'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
               onClick={onBackToConfig}
-              className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors font-semibold"
+              className="flex items-center space-x-2 text-white hover:text-gray-200 transition-colors font-semibold"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Back to Configuration</span>
@@ -69,10 +90,10 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
             
             <div className="flex items-center space-x-3">
               <div className="text-2xl">{category.icon}</div>
-                             <div>
-                 <h1 className="text-xl font-bold text-black">{category.title}</h1>
-                 <p className="text-sm text-gray-800">{selectedCount} of {category.enrichments.length} selected</p>
-               </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">{category.title}</h1>
+                <p className="text-sm text-white text-opacity-90">{selectedCount} of {category.enrichments.length} selected</p>
+              </div>
             </div>
           </div>
         </div>

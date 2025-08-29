@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Settings, TreePine } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
@@ -53,75 +53,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   custom: <span className="text-xl">🔧</span>
 };
 
-// Color scheme for each category section
-const SECTION_COLORS: Record<string, { bg: string; border: string; header: string; headerHover: string }> = {
-  core: { 
-    bg: 'bg-slate-50', 
-    border: 'border-slate-200', 
-    header: 'bg-slate-800 text-white', 
-    headerHover: 'hover:bg-slate-700' 
-  },
-  hazards: { 
-    bg: 'bg-red-50', 
-    border: 'border-red-200', 
-    header: 'bg-red-800 text-white', 
-    headerHover: 'hover:bg-red-700' 
-  },
-  community: { 
-    bg: 'bg-blue-50', 
-    border: 'border-blue-200', 
-    header: 'bg-blue-800 text-white', 
-    headerHover: 'hover:bg-blue-700' 
-  },
-  retail: { 
-    bg: 'bg-purple-50', 
-    border: 'border-purple-200', 
-    header: 'bg-purple-800 text-white', 
-    headerHover: 'hover:bg-purple-700' 
-  },
-  health: { 
-    bg: 'bg-pink-50', 
-    border: 'border-pink-200', 
-    header: 'bg-pink-800 text-white', 
-    headerHover: 'hover:bg-pink-700' 
-  },
-  transportation: { 
-    bg: 'bg-indigo-50', 
-    border: 'border-indigo-200', 
-    header: 'bg-indigo-800 text-white', 
-    headerHover: 'hover:bg-indigo-700' 
-  },
-  infrastructure: { 
-    bg: 'bg-amber-50', 
-    border: 'border-amber-200', 
-    header: 'bg-amber-800 text-white', 
-    headerHover: 'hover:bg-amber-700' 
-  },
-  environment: { 
-    bg: 'bg-green-50', 
-    border: 'border-green-200', 
-    header: 'bg-green-800 text-white', 
-    headerHover: 'hover:bg-green-700' 
-  },
-  recreation: { 
-    bg: 'bg-emerald-50', 
-    border: 'border-emerald-200', 
-    header: 'bg-emerald-800 text-white', 
-    headerHover: 'hover:bg-emerald-700' 
-  },
-  quirky: { 
-    bg: 'bg-orange-50', 
-    border: 'border-orange-200', 
-    header: 'bg-orange-800 text-white', 
-    headerHover: 'hover:bg-orange-700' 
-  },
-  custom: { 
-    bg: 'bg-gray-50', 
-    border: 'border-gray-200', 
-    header: 'bg-gray-800 text-white', 
-    headerHover: 'hover:bg-gray-700' 
-  }
-};
+
 
 
 const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({ 
@@ -134,6 +66,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const modalContentRef = useRef<HTMLDivElement>(null);
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
   // const [activeCategory, setActiveCategory] = useState<string | null>(null); // Unused after removing mobile view
 
@@ -167,13 +100,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   // Scroll to top when modal opens
   useEffect(() => {
     if (activeModal) {
+      console.log('Modal opened:', activeModal);
       // Small delay to ensure modal is rendered
       setTimeout(() => {
-        const modalContent = document.querySelector('.flex-1.overflow-y-auto.p-4');
-        if (modalContent) {
-          modalContent.scrollTop = 0;
+        if (modalContentRef.current) {
+          console.log('Scrolling modal content to top');
+          modalContentRef.current.scrollTop = 0;
         }
-      }, 100);
+        // Also try to scroll the window to top
+        window.scrollTo(0, 0);
+      }, 50);
     }
   }, [activeModal]);
 
@@ -597,13 +533,33 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   const category = enrichmentCategories.find(c => c.id === activeModal);
                   if (!category) return null;
                   
-                  const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
                   const categoryEnrichments = category.enrichments;
+                  
+                  const headerColor = category.id === 'hazards' ? '#991b1b' :
+                                    category.id === 'community' ? '#1e40af' :
+                                    category.id === 'retail' ? '#6b21a8' :
+                                    category.id === 'health' ? '#9d174d' :
+                                    category.id === 'transportation' ? '#3730a3' :
+                                    category.id === 'infrastructure' ? '#92400e' :
+                                    category.id === 'environment' ? '#166534' :
+                                    category.id === 'recreation' ? '#065f46' :
+                                    category.id === 'natural_resources' ? '#115e59' :
+                                    category.id === 'public_lands' ? '#365314' :
+                                    category.id === 'quirky' ? '#9a3412' :
+                                    category.id === 'core' ? '#1e293b' : '#1f2937';
+                  
+                  console.log('Category:', category.id, 'Header color:', headerColor);
 
                   return (
                     <>
                       {/* Header */}
-                      <div className={`p-3 ${colors.header} flex-shrink-0`}>
+                      <div 
+                        className="p-3 flex-shrink-0"
+                        style={{
+                          backgroundColor: headerColor,
+                          color: 'white'
+                        }}
+                      >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2 flex-1 min-w-0">
                             <div className="text-xl flex-shrink-0">{category.icon}</div>
@@ -622,7 +578,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       </div>
 
                       {/* Content - Scrollable */}
-                      <div className="flex-1 overflow-y-auto p-4" style={{ scrollBehavior: 'smooth' }}>
+                      <div 
+                        ref={modalContentRef}
+                        className="flex-1 overflow-y-auto p-4" 
+                        style={{ scrollBehavior: 'smooth' }}
+                      >
                         <div className="space-y-4">
                           {categoryEnrichments.map((enrichment) => {
                             const isSelected = selectedEnrichments.includes(enrichment.id);

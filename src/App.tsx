@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+
 import Header from './components/Header';
 import SingleSearch from './components/SingleSearch';
 import BatchProcessing from './components/BatchProcessing';
@@ -29,11 +29,7 @@ function App() {
   const [isMobile, setIsMobile] = useState(false);
   const [activeCategory, setActiveCategory] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({
-    core: false,
-    poi: false,
-    specialized: false
-  });
+
 
   // Detect mobile device
   useEffect(() => {
@@ -280,12 +276,7 @@ function App() {
     setError(null);
   };
 
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
+
 
   const handleViewDataSources = () => {
     setViewMode('data-sources');
@@ -333,114 +324,15 @@ function App() {
                 Advanced Location Intelligence
               </h1>
               <p className="text-lg sm:text-xl text-gray-300">
-                Professional geocoding and enrichment platform with multi-source data integration. 
-                Single address lookup or batch CSV processing with comprehensive location insights.
+                Professional geocoding and enrichment platform with comprehensive location insights. 
+                Search by address or current location with customizable data sources.
               </p>
               <p className="text-lg text-primary-400 font-medium mt-4">
                 Powered by The Location Is Everything Co
               </p>
             </div>
 
-            {/* Enrichment Options Preview - Single Column Layout */}
-            <div className="mb-8 p-3 sm:p-4 bg-gradient-to-r from-gray-600 to-gray-900 rounded-xl border-2 border-white shadow-2xl overflow-hidden">
-                <div className="text-center mb-6">
-                  <h2 className="text-xl font-bold text-white mb-2">
-                    Available Enrichment Options
-                  </h2>
-                  <p className="text-blue-200 text-sm">Configure your search to include any combination of these data sources</p>
-                </div>
-                
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-center">
-                    <div className="bg-gray-500 rounded-lg border border-gray-600 shadow-lg w-4/5 max-w-md">
-                      <button
-                        onClick={() => toggleSection('core')}
-                        className="w-full flex items-center justify-between p-3 hover:bg-gray-400 transition-colors rounded-lg"
-                      >
-                        <h3 className="font-semibold text-white text-sm">📍 Core Location Data</h3>
-                        {expandedSections.core ? (
-                          <ChevronUp className="w-4 h-4 text-white" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-white" />
-                        )}
-                      </button>
-                      {expandedSections.core && (
-                        <div className="px-3 pb-3">
-                          <ul className="text-white space-y-1 text-xs">
-                            <li>• Elevation & Air Quality</li>
-                            <li>• Census FIPS Codes</li>
-                            <li>• Demographics (Population, Income, Age)</li>
-                            <li>• Weather Alerts</li>
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-center">
-                    <div className="bg-gray-700 rounded-lg border border-gray-800 shadow-lg w-4/5 max-w-md">
-                      <button
-                        onClick={() => toggleSection('poi')}
-                        className="w-full flex items-center justify-between p-3 hover:bg-gray-600 transition-colors rounded-lg"
-                      >
-                        <h3 className="font-semibold text-white text-sm">🏢 Points of Interest</h3>
-                        {expandedSections.poi ? (
-                          <ChevronUp className="w-4 h-4 text-white" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-white" />
-                        )}
-                      </button>
-                      {expandedSections.poi && (
-                        <div className="px-3 pb-3">
-                          <ul className="text-white space-y-1 text-xs">
-                            <li>• Schools, Hospitals, Parks, Police & Fire</li>
-                            <li>• Retail & Restaurants</li>
-                            <li>• Transportation & Infrastructure</li>
-                            <li>• Health & Professional Services</li>
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-center">
-                    <div className="bg-gray-800 rounded-lg border border-gray-900 shadow-lg w-4/5 max-w-md">
-                      <button
-                        onClick={() => toggleSection('specialized')}
-                        className="w-full flex items-center justify-between p-3 hover:bg-gray-700 transition-colors rounded-lg"
-                      >
-                        <h3 className="font-semibold text-white text-sm">🌍 Specialized Data</h3>
-                        {expandedSections.specialized ? (
-                          <ChevronUp className="w-4 h-4 text-white" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-white" />
-                        )}
-                      </button>
-                      {expandedSections.specialized && (
-                        <div className="px-3 pb-3">
-                          <ul className="text-white space-y-1 text-xs">
-                            <li>• <span className="text-yellow-300 font-bold">🦌 NEW: Animal-Vehicle Impact (AVI) Data</span></li>
-                            <li className="text-blue-200 text-xs ml-2">(FARS + CA CROS, TXDOT, IADOT, ID Fish & Game, NHDOT)</li>
-                            <li>• Environmental Hazards</li>
-                            <li>• Power Plants & Cell Towers</li>
-                            <li>• Breweries & Enhanced Wikipedia</li>
-                            <li className="ml-2 text-xs">(haunted sites, oddities, museums)</li>
-                            <li>• Recreation & Entertainment</li>
-                            <li className="ml-2 text-xs">(Golf, Boating, Cinemas)</li>
-                            <li>• Public Lands & Protected Areas (PAD-US)</li>
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="text-center mt-4">
-                  <p className="text-white text-sm">
-                    💡 <strong>Scroll down</strong> to see the full configuration panel with all options and customizable search radii
-                  </p>
-                </div>
-              </div>
+
 
             {/* Error Display */}
             {error && (

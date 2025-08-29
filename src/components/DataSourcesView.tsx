@@ -82,25 +82,39 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       category: "Points of Interest (POI)",
       sources: [
         {
-          name: "OpenStreetMap POIs",
+          name: "OpenStreetMap Overpass API",
           description: "Community-contributed points of interest including businesses, amenities, and landmarks",
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free"
         },
         {
-          name: "Google Places API",
-          description: "Comprehensive business listings and place information",
-          coverage: "Global",
-          accuracy: "Very High",
-          cost: "Paid"
+          name: "USDA Local Food Portal",
+          description: "Farmers markets, CSA programs, agritourism, food hubs, and on-farm markets",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
         },
         {
-          name: "Foursquare Places",
-          description: "Detailed venue information with categories and ratings",
+          name: "OpenChargeMap API",
+          description: "Electric vehicle charging stations and infrastructure",
           coverage: "Global",
           accuracy: "High",
-          cost: "Paid"
+          cost: "Free"
+        },
+        {
+          name: "USGS Trail and National Map",
+          description: "Hiking trailheads, trails, and outdoor recreation data",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "Wikipedia API",
+          description: "Haunted sites, historic oddities, museums, and quirky landmarks",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free"
         }
       ]
     },
@@ -129,11 +143,32 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           cost: "Free"
         },
         {
-          name: "Wildfire Data",
-          description: "Current wildfire incidents and fire perimeters",
+          name: "NIFC/Esri Wildfires",
+          description: "Current wildfire incidents and fire perimeters with incident names and containment status",
           coverage: "United States",
           accuracy: "High",
           cost: "Free"
+        },
+        {
+          name: "USGS Wetlands",
+          description: "National Wetlands Inventory - wetland types and locations",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "USGS Flood Reference Points",
+          description: "Real-time flooding reference points and actively flooding locations",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "Animal Vehicle Collisions (AVI)",
+          description: "The Location Is Everything Company data - Live API from LocationFriend with collision records for CA, TX, ID, IA, NH, and FARS",
+          coverage: "United States (CA, TX, ID, IA, NH)",
+          accuracy: "High",
+          cost: "Paid"
         }
       ]
     },
@@ -164,6 +199,108 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         {
           name: "EPA Air Facilities",
           description: "Air Facility System - stationary sources of air pollution",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "EPA RCRA Facilities",
+          description: "Resource Conservation and Recovery Act - hazardous waste generators, treaters, storers, transporters, and disposers",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "EPA NPDES Permits",
+          description: "National Pollutant Discharge Elimination System - permitted wastewater discharge facilities",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "EPA Radiation Facilities",
+          description: "RADINFO - facilities dealing with radioactivity or radiation",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "EPA Power Generation",
+          description: "EGRID/EIA-860 - power plant and generation facilities",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "EPA Oil Spill Response",
+          description: "SPCC/FRP - countermeasure and facility response plan subject facilities",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Infrastructure & Utilities",
+      sources: [
+        {
+          name: "OpenEI Power Plants",
+          description: "Electric power generation facilities and energy infrastructure",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "OpenStreetMap Infrastructure",
+          description: "Electrical substations, powerlines, and cellular communication towers",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Recreation & Entertainment",
+      sources: [
+        {
+          name: "OpenStreetMap Recreation",
+          description: "Cinemas, theatres, museums, historic sites, hotels, golf courses, boat ramps, and nightlife venues",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Natural Resources & Geography",
+      sources: [
+        {
+          name: "OpenStreetMap Natural Features",
+          description: "Beaches, lakes, ponds, rivers, streams, mountains, and peaks",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Public Lands & Protected Areas",
+      sources: [
+        {
+          name: "USGS PAD-US Database",
+          description: "Protected Areas Database - public land boundaries, manager info, access status, and protection levels",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Specialized & Quirky Data",
+      sources: [
+        {
+          name: "Craft Brewery Database",
+          description: "Craft breweries with names, types, addresses, and contact information",
           coverage: "United States",
           accuracy: "High",
           cost: "Free"
