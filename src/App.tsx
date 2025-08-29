@@ -320,6 +320,10 @@ function App() {
                 />
               </div>
               
+              <h2 className="text-2xl sm:text-3xl font-bold text-gradient mb-2">
+                NEARBY PLATFORM
+              </h2>
+              
               <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-4">
                 Advanced Location Intelligence
               </h1>
