@@ -96,7 +96,8 @@ body.modal-open {
   }
   
   .card {
-    @apply bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl border-2 border-white shadow-2xl transition-shadow duration-200;
+    @apply bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl border-8 border-white shadow-2xl transition-shadow duration-200;
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.4), 0 0 0 12px rgba(255, 255, 255, 0.2), 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 255, 255, 0.15);
   }
   
   .card-header {
