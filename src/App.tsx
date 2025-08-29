@@ -305,9 +305,9 @@ function App() {
       )}
       
       {viewMode === 'config' ? (
-        <div className={`${isMobile ? 'pt-8' : 'pt-28'} px-4 sm:px-6 md:px-8`}>
+        <div className={`${isMobile ? 'pt-8' : 'pt-28'} px-2 sm:px-4 md:px-6 main-container`}>
           {/* Main Content - Centered Column Layout */}
-          <div className="max-w-2xl mx-auto w-full">
+          <div className="max-w-2xl mx-auto w-full main-content">
 
             
             <div className="text-center mb-12 mt-8 sm:mt-16">
@@ -316,7 +316,7 @@ function App() {
                 <img 
                   src="/assets/lociseverything.png"
                   alt="The Location Is Everything Co Logo" 
-                  className="w-24 h-24 sm:w-32 sm:h-32 object-contain"
+                  className="w-44 h-44 sm:w-48 sm:h-48 object-contain"
                 />
               </div>
               

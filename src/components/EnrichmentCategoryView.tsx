@@ -130,23 +130,28 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                 <div className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-3">
+                      <div className="flex items-start space-x-3 mb-3">
                         <button
                           type="button"
                           onClick={() => handleToggleEnrichment(enrichment.id)}
-                          className={`w-5 h-5 border-2 border-gray-400 rounded flex items-center justify-center transition-all duration-200 ${
+                          className={`w-5 h-5 border-2 border-gray-400 rounded flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
                             isSelected 
                               ? 'bg-black border-black' 
                               : 'bg-white border-gray-400'
                           }`}
+                          style={{ marginTop: '2px' }}
                         >
                           {isSelected && (
                             <Check className="w-3 h-3 text-white" />
                           )}
                         </button>
                         
-                        <div className="flex-1">
-                          <label htmlFor={`checkbox-${enrichment.id}`} className="text-lg font-semibold text-black cursor-pointer block">
+                        <div className="flex-1 min-w-0">
+                          <label 
+                            htmlFor={`checkbox-${enrichment.id}`} 
+                            className="text-lg font-semibold text-black cursor-pointer block"
+                            onClick={() => handleToggleEnrichment(enrichment.id)}
+                          >
                             {enrichment.label}
                           </label>
                           <p className="text-gray-800 mt-1">{enrichment.description}</p>

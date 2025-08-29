@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,8 +63,6 @@ body.modal-open {
   max-width: 100%;
   overflow-x: hidden;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   html {
@@ -266,8 +266,8 @@ body.modal-open {
     width: 100vw !important;
   }
   
-  /* Override any auto margins that might center content on mobile */
-  .mx-auto, .ml-auto, .mr-auto {
+  /* Override any auto margins that might center content on mobile - but allow centering for main content */
+  .mx-auto:not(.main-content), .ml-auto:not(.main-content), .mr-auto:not(.main-content) {
     margin-left: 0 !important;
     margin-right: 0 !important;
   }
@@ -694,7 +694,7 @@ body.modal-open {
   }
   
   /* Fix padding on main container */
-  .px-4.sm\\:px-6.lg\\:px-8 {
+  .px-4.sm\\:px-6.lg\\:px-8:not(.main-container) {
     padding-left: 8px !important;
     padding-right: 8px !important;
   }
