@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Loader2, Lightbulb } from 'lucide-react';
+import { Search, Loader2, Lightbulb, X } from 'lucide-react';
 
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
@@ -66,18 +66,28 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                 Enter Address (Optional)
               </label>
               <div className="relative">
-                               <input
-                   id="address"
-                   type="text"
-                   value={address}
-                   onChange={(e) => setAddress(e.target.value)}
-                   placeholder="e.g., 123 Main St, Boston, MA 02108"
-                   className="form-input text-base pl-12 pr-16"
-                   disabled={isLoading}
-                 />
-                 <Search className={`w-5 h-5 text-gray-400 absolute top-1/2 transform -translate-y-1/2 ${isMobile ? 'left-3' : 'left-3'}`} />
+                <input
+                  id="address"
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="e.g., 123 Main St, Boston, MA 02108"
+                  className="form-input text-base pl-12 pr-12"
+                  disabled={isLoading}
+                />
+                <Search className="w-5 h-5 text-gray-400 absolute top-1/2 transform -translate-y-1/2 left-3" />
                 
-
+                {/* Clear button - only show when there's text */}
+                {address.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setAddress('')}
+                    className="absolute top-1/2 transform -translate-y-1/2 right-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Clear address"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
 
