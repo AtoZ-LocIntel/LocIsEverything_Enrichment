@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { ArrowLeft, Settings, Check } from 'lucide-react';
 
 interface EnrichmentItem {
   id: string;
@@ -131,17 +131,19 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-3">
-                        <input
-                          type="checkbox"
-                          id={`checkbox-${enrichment.id}`}
-                          checked={isSelected}
-                          onChange={() => handleToggleEnrichment(enrichment.id)}
-                          className="w-5 h-5 border-2 border-gray-400 rounded focus:ring-blue-500 focus:ring-2"
-                          style={{ 
-                            backgroundColor: 'black',
-                            accentColor: 'white'
-                          }}
-                        />
+                        <button
+                          type="button"
+                          onClick={() => handleToggleEnrichment(enrichment.id)}
+                          className={`w-5 h-5 border-2 border-gray-400 rounded flex items-center justify-center transition-all duration-200 ${
+                            isSelected 
+                              ? 'bg-black border-black' 
+                              : 'bg-white border-gray-400'
+                          }`}
+                        >
+                          {isSelected && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </button>
                         
                         <div className="flex-1">
                           <label htmlFor={`checkbox-${enrichment.id}`} className="text-lg font-semibold text-black cursor-pointer block">
