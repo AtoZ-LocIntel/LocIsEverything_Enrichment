@@ -101,11 +101,6 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                 </>
               ) : (
                 <>
-                  <img 
-                    src="/assets/new-logo.png"
-                    alt="Location Logo" 
-                    className="w-5 h-5 object-contain"
-                  />
                   <span>Search from my location</span>
                 </>
               )}

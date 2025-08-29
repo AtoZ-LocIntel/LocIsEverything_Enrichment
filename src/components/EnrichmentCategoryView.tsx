@@ -101,8 +101,8 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
             <div className="flex items-center space-x-3">
 
               <div>
-                <h1 className="text-lg font-bold text-white">{category.title}</h1>
-                <p className="text-sm text-white text-opacity-90">{selectedCount} of {category.enrichments.length} selected</p>
+                <h1 className="text-base font-bold text-white">{category.title}</h1>
+                <p className="text-xs text-white text-opacity-90">{selectedCount} of {category.enrichments.length} selected</p>
               </div>
             </div>
           </div>
