@@ -379,7 +379,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           <div className="card-body">
             {/* Custom Icon Category Button Grid - 2 Column Layout */}
             <div className="mb-6 w-full px-4">
-              <div className="grid grid-cols-2 gap-4 max-w-md ml-2 sm:ml-8">
+              <div className="grid grid-cols-2 gap-4 sm:gap-8 max-w-md ml-2 sm:ml-16">
                 {enrichmentCategories.map((category) => {
                   const categoryEnrichments = category.enrichments;
                   const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -511,7 +511,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         <div className="card-body">
           {/* Custom Icon Category Button Grid - Desktop */}
           <div className="mb-6 w-full px-4">
-            <div className="grid grid-cols-2 gap-4 max-w-md ml-2 sm:ml-8">
+            <div className="grid grid-cols-2 gap-4 sm:gap-8 max-w-md ml-2 sm:ml-16">
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
