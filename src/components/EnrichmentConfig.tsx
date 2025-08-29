@@ -222,6 +222,23 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   //   setActiveCategory(null);
   // }; // Unused after removing mobile view
 
+  // Map category IDs to icon file names
+  const getIconFileName = (categoryId: string): string => {
+    const iconMap: { [key: string]: string } = {
+      'hazards': 'hazards_risk',
+      'community': 'community_services',
+      'retail': 'retail_commerce',
+      'health': 'health_wellness',
+      'transportation': 'transportation',
+      'infrastructure': 'power_inf',
+      'recreation': 'recreation_leisure',
+      'natural_resources': 'natural_resources',
+      'public_lands': 'public_lands',
+      'quirky': 'quirky_and_fun'
+    };
+    return iconMap[categoryId] || categoryId;
+  };
+
   const handleEnrichmentToggle = (enrichmentId: string) => {
     const newSelected = selectedEnrichments.includes(enrichmentId)
       ? selectedEnrichments.filter(id => id !== enrichmentId)
@@ -360,41 +377,68 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           </div>
           
           <div className="card-body">
-            {/* Mobile Category Button Grid - Conservative 2 Column Layout */}
-            <div className="mb-6 w-full px-2">
-              <div className="grid grid-cols-2 gap-2 max-w-sm mx-auto">
-              {enrichmentCategories.map((category) => {
-                const categoryEnrichments = category.enrichments;
-                const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
-                const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
+            {/* Custom Icon Category Button Grid - 2 Column Layout */}
+            <div className="mb-6 w-full px-4">
+              <div className="grid grid-cols-2 gap-4 max-w-md ml-8">
+                {enrichmentCategories.map((category) => {
+                  const categoryEnrichments = category.enrichments;
+                  const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+                  
+                  // Determine ring brightness based on selection count
+                  const getRingOpacity = () => {
+                    if (selectedCount === 0) return 0;
+                    if (selectedCount <= 2) return 0.3;
+                    if (selectedCount <= 4) return 0.6;
+                    return 0.9;
+                  };
 
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      // Always use modal view for consistency
-                      if (onViewCategory) {
-                        onViewCategory(category);
-                      } else {
-                        setActiveModal(category.id);
-                      }
-                    }}
-                    className={`relative p-2 rounded-lg ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-sm hover:shadow-md border ${colors.border} w-full h-20 flex flex-col items-center justify-center text-center`}
-                  >
-                    <h3 className="text-xs font-semibold text-gray-900 mb-1 leading-tight">
-                      {category.title}
-                    </h3>
-                    <p className="text-xs text-gray-600 leading-tight">
-                      {categoryEnrichments.length} sources
-                    </p>
-                    {selectedCount > 0 && (
-                      <div className="absolute top-1 right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
-                        {selectedCount}
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => {
+                        // Always use modal view for consistency
+                        if (onViewCategory) {
+                          onViewCategory(category);
+                        } else {
+                          setActiveModal(category.id);
+                        }
+                      }}
+                      className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
+                      }}
+                    >
+                      {/* Custom Icon */}
+                      <img
+                        src={`/assets/${getIconFileName(category.id)}.png`}
+                        alt={category.title}
+                        className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
+                        onError={(e) => {
+                          // Fallback to category name if icon fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = target.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                      
+                      {/* Fallback Text */}
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-800 font-semibold text-sm text-center p-2 hidden"
+                        style={{ display: 'none' }}
+                      >
+                        {category.title}
                       </div>
-                    )}
-                  </button>
-                );
-              })}
+                      
+                      {/* Selection Counter Badge */}
+                      {selectedCount > 0 && (
+                        <div className="absolute top-2 right-2 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold">
+                          {selectedCount}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -465,22 +509,24 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         </div>
         
         <div className="card-body">
-          {/* Category Button Grid */}
-          <div className="mb-6 w-full px-2" style={{ 
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '6px',
-            justifyContent: 'center'
-          }}>
+          {/* Custom Icon Category Button Grid - Desktop */}
+          <div className="mb-6 w-full px-4">
+            <div className="grid grid-cols-2 gap-4 max-w-md ml-8">
+              {enrichmentCategories.map((category) => {
+                const categoryEnrichments = category.enrichments;
+                const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+                
+                // Determine ring brightness based on selection count
+                const getRingOpacity = () => {
+                  if (selectedCount === 0) return 0;
+                  if (selectedCount <= 2) return 0.3;
+                  if (selectedCount <= 4) return 0.6;
+                  return 0.9;
+                };
 
-            {enrichmentCategories.map((category) => {
-              const categoryEnrichments = category.enrichments;
-              const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
-              const colors = SECTION_COLORS[category.id] || SECTION_COLORS.custom;
-
-              return (
-                <div key={category.id} style={{ width: 'calc(50% - 3px)', minHeight: '90px' }}>
+                return (
                   <button
+                    key={category.id}
                     onClick={() => {
                       // Always use modal view for consistency
                       if (onViewCategory) {
@@ -489,35 +535,43 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setActiveModal(category.id);
                       }
                     }}
-                    className={`relative p-2 sm:p-3 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full h-full flex items-center justify-start sm:flex-col sm:items-center sm:justify-center`}
-                    style={{ minHeight: '90px' }}
+                    className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{
+                      boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
+                    }}
                   >
-                    <div className="flex items-center sm:flex-col sm:text-center relative w-full">
-                      {/* Mobile: No icon, text on left */}
-                      <div className="hidden sm:block text-xl sm:text-2xl mb-1 sm:mb-2 relative">
-                        {category.icon}
-                        {selectedCount > 0 && (
-                          <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
-                            {selectedCount}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Desktop: Icon and text centered */}
-                      <div className="sm:hidden text-xl sm:text-2xl mb-1 sm:mb-2 relative mr-2">
-                        {selectedCount > 0 && (
-                          <div className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
-                            {selectedCount}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight px-1 flex-1 text-left sm:text-center break-words">{category.title}</h3>
+                    {/* Custom Icon */}
+                    <img
+                      src={`/assets/${getIconFileName(category.id)}.png`}
+                      alt={category.title}
+                      className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
+                      onError={(e) => {
+                        // Fallback to category name if icon fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                    
+                    {/* Fallback Text */}
+                    <div 
+                      className="absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-800 font-semibold text-sm text-center p-2 hidden"
+                      style={{ display: 'none' }}
+                    >
+                      {category.title}
                     </div>
+                    
+                    {/* Selection Counter Badge */}
+                    {selectedCount > 0 && (
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold">
+                        {selectedCount}
+                      </div>
+                    )}
                   </button>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           {/* Category Configuration Modal */}
