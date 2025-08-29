@@ -58,68 +58,68 @@ const SECTION_COLORS: Record<string, { bg: string; border: string; header: strin
   core: { 
     bg: 'bg-slate-50', 
     border: 'border-slate-200', 
-    header: 'bg-slate-100', 
-    headerHover: 'hover:bg-slate-200' 
+    header: 'bg-slate-800 text-white', 
+    headerHover: 'hover:bg-slate-700' 
   },
   hazards: { 
     bg: 'bg-red-50', 
     border: 'border-red-200', 
-    header: 'bg-red-100', 
-    headerHover: 'hover:bg-red-200' 
+    header: 'bg-red-800 text-white', 
+    headerHover: 'hover:bg-red-700' 
   },
   community: { 
     bg: 'bg-blue-50', 
     border: 'border-blue-200', 
-    header: 'bg-blue-100', 
-    headerHover: 'hover:bg-blue-200' 
+    header: 'bg-blue-800 text-white', 
+    headerHover: 'hover:bg-blue-700' 
   },
   retail: { 
     bg: 'bg-purple-50', 
     border: 'border-purple-200', 
-    header: 'bg-purple-100', 
-    headerHover: 'hover:bg-purple-200' 
+    header: 'bg-purple-800 text-white', 
+    headerHover: 'hover:bg-purple-700' 
   },
   health: { 
     bg: 'bg-pink-50', 
     border: 'border-pink-200', 
-    header: 'bg-pink-100', 
-    headerHover: 'hover:bg-pink-200' 
+    header: 'bg-pink-800 text-white', 
+    headerHover: 'hover:bg-pink-700' 
   },
   transportation: { 
     bg: 'bg-indigo-50', 
     border: 'border-indigo-200', 
-    header: 'bg-indigo-100', 
-    headerHover: 'hover:bg-indigo-200' 
+    header: 'bg-indigo-800 text-white', 
+    headerHover: 'hover:bg-indigo-700' 
   },
   infrastructure: { 
     bg: 'bg-amber-50', 
     border: 'border-amber-200', 
-    header: 'bg-amber-100', 
-    headerHover: 'hover:bg-amber-200' 
+    header: 'bg-amber-800 text-white', 
+    headerHover: 'hover:bg-amber-700' 
   },
   environment: { 
     bg: 'bg-green-50', 
     border: 'border-green-200', 
-    header: 'bg-green-100', 
-    headerHover: 'hover:bg-green-200' 
+    header: 'bg-green-800 text-white', 
+    headerHover: 'hover:bg-green-700' 
   },
   recreation: { 
     bg: 'bg-emerald-50', 
     border: 'border-emerald-200', 
-    header: 'bg-emerald-100', 
-    headerHover: 'hover:bg-emerald-200' 
+    header: 'bg-emerald-800 text-white', 
+    headerHover: 'hover:bg-emerald-700' 
   },
   quirky: { 
     bg: 'bg-orange-50', 
     border: 'border-orange-200', 
-    header: 'bg-orange-100', 
-    headerHover: 'hover:bg-orange-200' 
+    header: 'bg-orange-800 text-white', 
+    headerHover: 'hover:bg-orange-700' 
   },
   custom: { 
     bg: 'bg-gray-50', 
     border: 'border-gray-200', 
-    header: 'bg-gray-100', 
-    headerHover: 'hover:bg-gray-200' 
+    header: 'bg-gray-800 text-white', 
+    headerHover: 'hover:bg-gray-700' 
   }
 };
 
@@ -163,6 +163,19 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       document.body.classList.remove('modal-open');
     };
   }, [activeModal, isMobile]);
+
+  // Scroll to top when modal opens
+  useEffect(() => {
+    if (activeModal) {
+      // Small delay to ensure modal is rendered
+      setTimeout(() => {
+        const modalContent = document.querySelector('.flex-1.overflow-y-auto.p-4');
+        if (modalContent) {
+          modalContent.scrollTop = 0;
+        }
+      }, 100);
+    }
+  }, [activeModal]);
 
   // Load dynamic POI configuration
   useEffect(() => {
@@ -379,7 +392,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           <div className="card-body">
             {/* Custom Icon Category Button Grid - 2 Column Layout */}
             <div className="mb-6 w-full px-4">
-              <div className="grid grid-cols-2 gap-4 sm:gap-8 max-w-md ml-2 sm:ml-16">
+              <div className="grid grid-cols-2 gap-4 sm:gap-12 max-w-lg ml-2 sm:ml-8">
                 {enrichmentCategories.map((category) => {
                   const categoryEnrichments = category.enrichments;
                   const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -511,7 +524,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         <div className="card-body">
           {/* Custom Icon Category Button Grid - Desktop */}
           <div className="mb-6 w-full px-4">
-            <div className="grid grid-cols-2 gap-4 sm:gap-8 max-w-md ml-2 sm:ml-16">
+            <div className="grid grid-cols-2 gap-4 sm:gap-12 max-w-lg ml-2 sm:ml-8">
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -609,7 +622,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       </div>
 
                       {/* Content - Scrollable */}
-                      <div className="flex-1 overflow-y-auto p-4">
+                      <div className="flex-1 overflow-y-auto p-4" style={{ scrollBehavior: 'smooth' }}>
                         <div className="space-y-4">
                           {categoryEnrichments.map((enrichment) => {
                             const isSelected = selectedEnrichments.includes(enrichment.id);
@@ -650,7 +663,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     </div>
                                     
                                     <div className="flex items-center space-x-3">
-                                      <label className="text-sm font-medium text-white">Search Radius:</label>
+                                      <label className="text-sm font-medium text-black">Search Radius:</label>
                                       <input
                                         type="number"
                                         min="0.1"
@@ -666,7 +679,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                         onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
                                         className="w-20 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900"
                                       />
-                                      <span className="text-sm text-white">miles</span>
+                                      <span className="text-sm text-black">miles</span>
                                     </div>
 
                                     {currentRadius > (
