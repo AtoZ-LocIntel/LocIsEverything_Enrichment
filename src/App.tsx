@@ -314,7 +314,7 @@ function App() {
               {/* Company Logo - moved from header */}
               <div className="flex justify-center mb-6">
                 <img 
-                  src="/assets/lociseverything.png"
+                  src="/assets/lociseverything.webp"
                   alt="The Location Is Everything Co Logo" 
                   className="w-44 h-44 sm:w-48 sm:h-48 object-contain"
                 />

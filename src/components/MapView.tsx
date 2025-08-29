@@ -569,7 +569,7 @@ if (bounds.isValid() && results.length > 1) {
     let content = `
       <div style="min-width: 250px; max-width: 350px;">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <img src="/assets/new-logo.png" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
+          <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
           <h3 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 14px;">Animal Vehicle Collision</h3>
         </div>
         <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
@@ -609,7 +609,7 @@ if (bounds.isValid() && results.length > 1) {
     let content = `
       <div style="min-width: 250px; max-width: 350px;">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <img src="/assets/new-logo.png" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
+          <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
           <h3 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 14px;">Current Wildfire</h3>
         </div>
         <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
@@ -735,7 +735,7 @@ if (bounds.isValid() && results.length > 1) {
     let content = `
       <div style="min-width: 250px; max-width: 350px;">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <img src="/assets/new-logo.png" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
+          <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
           <h3 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
         </div>
         <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
@@ -915,7 +915,7 @@ if (bounds.isValid() && results.length > 1) {
     let content = `
       <div style="min-width: ${minWidth}; max-width: ${maxWidth};">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-          <img src="/assets/new-logo.png" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
+          <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
           <h3 style="margin: 0; color: #1f2937; font-weight: 600; font-size: ${headerFontSize};">${location.name}</h3>
         </div>
         <p style="margin: 0 0 12px 0; color: #6b7280; font-size: ${fontSize};">

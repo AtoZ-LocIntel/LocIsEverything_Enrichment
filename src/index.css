@@ -501,7 +501,7 @@ body.modal-open {
   }
   
   /* Ensure logos are visible on mobile */
-  img[src="/assets/new-logo.png"] {
+  img[src="/assets/new-logo.webp"] {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;

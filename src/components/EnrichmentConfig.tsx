@@ -298,7 +298,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           <div className="card-header">
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-3">
-                <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+                <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
                 <div className="flex-1 min-w-0">
                   <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Enrichment Layers</h3>
                   <p className="text-xs lg:text-sm text-gray-300">Select data sources and configure search parameters</p>
@@ -362,7 +362,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     >
                       {/* Custom Icon */}
                       <img
-                        src={`/assets/${getIconFileName(category.id)}.png`}
+                        src={`/assets/${getIconFileName(category.id)}.webp`}
                         alt={category.title}
                         className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
                         onError={(e) => {
@@ -430,7 +430,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         <div className="card-header">
           <div className="flex flex-col space-y-4">
             <div className="flex items-center space-x-3">
-              <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+              <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
               <div className="flex-1 min-w-0">
                 <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Enrichment Layers</h3>
                 <p className="text-xs lg:text-sm text-gray-300">Select data sources and configure search parameters</p>
@@ -494,7 +494,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   >
                     {/* Custom Icon */}
                     <img
-                      src={`/assets/${getIconFileName(category.id)}.png`}
+                                                src={`/assets/${getIconFileName(category.id)}.webp`}
                       alt={category.title}
                       className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
                       onError={(e) => {
@@ -548,7 +548,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     <div key={category.id} className="bg-white rounded-lg p-2 sm:p-3 border border-blue-100">
                       <div className="flex items-center space-x-2 mb-1 sm:mb-2">
                         <img 
-                          src={`/assets/${getIconFileName(category.id)}.png`}
+                          src={`/assets/${getIconFileName(category.id)}.webp`}
                           alt={category.title}
                           className="w-5 h-5 sm:w-6 sm:h-6 object-contain flex-shrink-0"
                           onError={(e) => {

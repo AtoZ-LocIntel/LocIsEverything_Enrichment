@@ -90,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                 {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
                   <img 
-                    src="/assets/lociseverything.png"
+                    src="/assets/lociseverything.webp"
                     alt="The Location Is Everything Co Logo" 
                     className="w-full h-full object-cover"
                   />
@@ -167,7 +167,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
-                  <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-8 h-8" />
+                  <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-8 h-8" />
                   <span>Platform Features & Documentation</span>
                 </h2>
                 <button
@@ -447,7 +447,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
-                  <img src="/assets/new-logo.png" alt="The Location Is Everything Co" className="w-8 h-8" />
+                  <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-8 h-8" />
                   <span>Data Sources & Usage Information</span>
                 </h2>
                 <button

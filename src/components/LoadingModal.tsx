@@ -348,7 +348,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                      {showInitialMessage ? (
              <div className="text-center space-y-4 sm:space-y-6">
                <div className="flex justify-center space-x-3 sm:space-x-4">
-                 <img src="/assets/lociseverything.png" alt="The Location Is Everything Co" className="w-20 h-20 sm:w-24 sm:h-24 animate-bounce rounded-full object-cover" />
+                 <img src="/assets/lociseverything.webp" alt="The Location Is Everything Co" className="w-20 h-20 sm:w-24 sm:h-24 animate-bounce rounded-full object-cover" />
                  <Zap className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse text-blue-400" />
                  <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce text-blue-400" />
                </div>
@@ -377,7 +377,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
             <div className="text-center space-y-4 sm:space-y-6">
               <div className="flex justify-center">
                 <div className="bg-white bg-opacity-20 rounded-full p-3 sm:p-4 backdrop-blur-sm">
-                  <img src="/assets/lociseverything.png" alt="The Location Is Everything Co" className="w-12 h-12 sm:w-16 sm:h-16 animate-pulse rounded-full object-cover" />
+                  <img src="/assets/lociseverything.webp" alt="The Location Is Everything Co" className="w-12 h-12 sm:w-16 sm:h-16 animate-pulse rounded-full object-cover" />
                 </div>
               </div>
 

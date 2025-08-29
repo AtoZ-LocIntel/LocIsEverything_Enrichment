@@ -37,7 +37,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             <div className="flex items-center space-x-3">
               <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg flex items-center justify-center">
                 <img 
-                  src="/assets/new-logo.png"
+                  src="/assets/new-logo.webp"
                   alt="The Location Is Everything Co Logo" 
                   className="w-16 h-16 lg:w-20 lg:h-20 object-contain"
                 />
