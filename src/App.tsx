@@ -320,16 +320,15 @@ function App() {
                 />
               </div>
               
-              <h2 className="text-2xl sm:text-3xl font-bold text-gradient mb-2">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">
                 NEARBY PLATFORM
-              </h2>
-              
-              <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-4">
-                Advanced Location Intelligence
               </h1>
+              
+              <h2 className="text-2xl sm:text-3xl font-bold text-gradient mb-4">
+                Open & Advanced Location Intelligence
+              </h2>
               <p className="text-lg sm:text-xl text-gray-300">
-                Professional geocoding and enrichment platform with comprehensive location insights. 
-                Search by address or current location with customizable data sources.
+                Comprehensive location and address enrichment platform using open data sources in real-time and on-demand.
               </p>
               <p className="text-lg text-primary-400 font-medium mt-4">
                 Powered by The Location Is Everything Co

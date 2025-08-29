@@ -172,6 +172,42 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                         <p>Source: {location.source}</p>
                         <p>Confidence: {location.confidence}%</p>
                       </div>
+                      
+                      {/* Key Summary Values */}
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+                          {enrichments.elevation_ft && (
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-700">Elevation</div>
+                              <div className="text-gray-900">{enrichments.elevation_ft} ft</div>
+                            </div>
+                          )}
+                          {enrichments.open_meteo_weather_description && (
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-700">Weather</div>
+                              <div className="text-gray-900">{enrichments.open_meteo_weather_description}</div>
+                            </div>
+                          )}
+                          {enrichments.nws_alerts_summary && (
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-700">Alerts</div>
+                              <div className="text-gray-900">{enrichments.nws_alerts_summary}</div>
+                            </div>
+                          )}
+                          {enrichments.acs_population && (
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-700">Population</div>
+                              <div className="text-gray-900">{enrichments.acs_population.toLocaleString()}</div>
+                            </div>
+                          )}
+                          {enrichments.acs_name && (
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-700">Area</div>
+                              <div className="text-gray-900">{enrichments.acs_name}</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
