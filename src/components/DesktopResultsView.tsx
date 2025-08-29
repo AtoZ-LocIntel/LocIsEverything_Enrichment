@@ -188,6 +188,12 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                               <div className="text-gray-900 font-bold text-lg">{enrichments.open_meteo_weather_description}</div>
                             </div>
                           )}
+                          {enrichments.open_meteo_weather_summary && (
+                            <div className="text-center">
+                              <div className="font-bold text-gray-700 text-sm">Weather Summary</div>
+                              <div className="text-gray-900 font-bold text-lg">{enrichments.open_meteo_weather_summary}</div>
+                            </div>
+                          )}
                           {enrichments.nws_alerts_summary && (
                             <div className="text-center">
                               <div className="font-bold text-gray-700 text-sm">Alerts</div>

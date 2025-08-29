@@ -210,6 +210,12 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
                     <div className="text-gray-900 font-bold text-xs sm:text-sm">{enrichments.open_meteo_weather_description}</div>
                   </div>
                 )}
+                {enrichments.open_meteo_weather_summary && (
+                  <div className="text-center">
+                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Weather Summary</div>
+                    <div className="text-gray-900 font-bold text-xs sm:text-sm">{enrichments.open_meteo_weather_summary}</div>
+                  </div>
+                )}
                 {enrichments.nws_alerts_summary && (
                   <div className="text-center">
                     <div className="font-bold text-gray-700 text-xs sm:text-sm">Alerts</div>

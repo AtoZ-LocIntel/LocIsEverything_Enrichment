@@ -922,6 +922,70 @@ if (bounds.isValid() && results.length > 1) {
           📍 ${location.lat.toFixed(6)}, ${location.lon.toFixed(6)}<br>
           🔍 Source: ${location.source}
         </p>
+        
+        <!-- Key Summary Values -->
+        <div style="margin: 12px 0; padding: 12px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: ${fontSize};">
+    `;
+    
+    // Add summary values if they exist
+    if (enrichments.elevation_ft) {
+      content += `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #374151; font-size: 10px;">Elevation</div>
+          <div style="color: #1f2937; font-weight: 600;">${enrichments.elevation_ft} ft</div>
+        </div>
+      `;
+    }
+    
+    if (enrichments.open_meteo_weather_description) {
+      content += `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #374151; font-size: 10px;">Weather</div>
+          <div style="color: #1f2937; font-weight: 600;">${enrichments.open_meteo_weather_description}</div>
+        </div>
+      `;
+    }
+    
+    if (enrichments.open_meteo_weather_summary) {
+      content += `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #374151; font-size: 10px;">Weather Summary</div>
+          <div style="color: #1f2937; font-weight: 600; font-size: 10px;">${enrichments.open_meteo_weather_summary}</div>
+        </div>
+      `;
+    }
+    
+    if (enrichments.nws_alerts_summary) {
+      content += `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #374151; font-size: 10px;">Alerts</div>
+          <div style="color: #1f2937; font-weight: 600; font-size: 10px;">${enrichments.nws_alerts_summary}</div>
+        </div>
+      `;
+    }
+    
+    if (enrichments.acs_population) {
+      content += `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #374151; font-size: 10px;">Population</div>
+          <div style="color: #1f2937; font-weight: 600;">${enrichments.acs_population.toLocaleString()}</div>
+        </div>
+      `;
+    }
+    
+    if (enrichments.acs_name) {
+      content += `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #374151; font-size: 10px;">Area</div>
+          <div style="color: #1f2937; font-weight: 600; font-size: 10px;">${enrichments.acs_name}</div>
+        </div>
+      `;
+    }
+    
+    content += `
+          </div>
+        </div>
     `;
 
     if (nonEmptyCategories.length > 0) {
