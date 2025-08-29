@@ -109,7 +109,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         // Also try to scroll the window to top
         window.scrollTo(0, 0);
-      }, 50);
+        // Force scroll to top of the modal content
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }, 100);
     }
   }, [activeModal]);
 
@@ -328,7 +331,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           <div className="card-body">
             {/* Custom Icon Category Button Grid - 2 Column Layout */}
             <div className="mb-6 w-full px-4">
-              <div className="grid grid-cols-2 gap-4 sm:gap-12 max-w-lg ml-2 sm:ml-8">
+              <div className="grid grid-cols-2 gap-4 sm:gap-12 max-w-lg mx-auto">
                 {enrichmentCategories.map((category) => {
                   const categoryEnrichments = category.enrichments;
                   const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -460,7 +463,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         <div className="card-body">
           {/* Custom Icon Category Button Grid - Desktop */}
           <div className="mb-6 w-full px-4">
-            <div className="grid grid-cols-2 gap-4 sm:gap-12 max-w-lg ml-2 sm:ml-8">
+            <div className="grid grid-cols-2 gap-4 sm:gap-12 max-w-lg mx-auto">
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -562,9 +565,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2 flex-1 min-w-0">
-                            <div className="text-xl flex-shrink-0">{category.icon}</div>
                             <div className="min-w-0 flex-1">
-                              <h2 className="text-lg font-bold text-white truncate">{category.title}</h2>
+                              <h2 className="text-base font-bold text-white truncate">{category.title}</h2>
                               <p className="text-xs text-white text-opacity-90 truncate">{category.description}</p>
                             </div>
                           </div>

@@ -55,7 +55,17 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
 
   // Scroll to top when component mounts
   useEffect(() => {
+    // Force scroll to top immediately
     window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    // Also try after a small delay to ensure DOM is ready
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 100);
   }, []);
 
   return (
@@ -89,9 +99,9 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
             </button>
             
             <div className="flex items-center space-x-3">
-              <div className="text-2xl">{category.icon}</div>
+
               <div>
-                <h1 className="text-xl font-bold text-white">{category.title}</h1>
+                <h1 className="text-lg font-bold text-white">{category.title}</h1>
                 <p className="text-sm text-white text-opacity-90">{selectedCount} of {category.enrichments.length} selected</p>
               </div>
             </div>
