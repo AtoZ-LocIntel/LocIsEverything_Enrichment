@@ -528,40 +528,40 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 
           {/* Selection Summary Panel */}
           {selectedEnrichments.length > 0 && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-lg font-bold text-blue-900 flex items-center space-x-2">
+            <div className="mt-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+                <h4 className="text-base sm:text-lg font-bold text-blue-900 flex items-center space-x-2">
                   <span>📊</span>
                   <span>Selection Summary</span>
                 </h4>
-                <span className="text-sm font-semibold text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
+                <span className="text-xs sm:text-sm font-semibold text-blue-700 bg-blue-100 px-2 sm:px-3 py-1 rounded-full self-start sm:self-auto">
                   {selectedEnrichments.length} total
                 </span>
               </div>
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 {enrichmentCategories.map((category) => {
                   const categorySelected = category.enrichments.filter(e => selectedEnrichments.includes(e.id));
                   if (categorySelected.length === 0) return null;
                   
                   return (
-                    <div key={category.id} className="bg-white rounded-lg p-3 border border-blue-100">
-                      <div className="flex items-center space-x-2 mb-2">
+                    <div key={category.id} className="bg-white rounded-lg p-2 sm:p-3 border border-blue-100">
+                      <div className="flex items-center space-x-2 mb-1 sm:mb-2">
                         <img 
                           src={`/assets/${getIconFileName(category.id)}.png`}
                           alt={category.title}
-                          className="w-6 h-6 object-contain"
+                          className="w-5 h-5 sm:w-6 sm:h-6 object-contain flex-shrink-0"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
                           }}
                         />
-                        <span className="text-sm font-semibold text-gray-800">{category.title}</span>
+                        <span className="text-xs sm:text-sm font-semibold text-gray-800 truncate">{category.title}</span>
                       </div>
                       <div className="text-xs text-gray-600">
                         {categorySelected.length} of {category.enrichments.length} selected
                       </div>
-                      <div className="mt-1 text-xs text-blue-600 font-medium">
+                      <div className="mt-1 text-xs text-blue-600 font-medium truncate">
                         {categorySelected.map(e => e.label).slice(0, 2).join(', ')}
                         {categorySelected.length > 2 && ` +${categorySelected.length - 2} more`}
                       </div>
