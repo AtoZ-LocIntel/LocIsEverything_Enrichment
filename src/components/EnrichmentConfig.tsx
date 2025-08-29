@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, TreePine, ArrowLeft } from 'lucide-react';
+import { Settings, TreePine } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
 interface EnrichmentConfigProps {
@@ -134,8 +134,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
+  // const [activeCategory, setActiveCategory] = useState<string | null>(null); // Unused after removing mobile view
 
   // Mobile detection
   useEffect(() => {
@@ -215,20 +215,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     };
   }, []);
 
-  // Mobile navigation functions
-  const handleMobileCategoryOpen = (categoryId: string) => {
-    if (isMobile) {
-      setActiveCategory(categoryId);
-      setMobileView('category');
-    } else {
-      setActiveModal(categoryId);
-    }
-  };
+  // Mobile navigation functions - removed since mobile view is disabled
 
-  const handleMobileBackToLanding = () => {
-    setMobileView('landing');
-    setActiveCategory(null);
-  };
+  // const handleMobileBackToLanding = () => {
+  //   setMobileView('landing');
+  //   setActiveCategory(null);
+  // }; // Unused after removing mobile view
 
   const handleEnrichmentToggle = (enrichmentId: string) => {
     const newSelected = selectedEnrichments.includes(enrichmentId)
@@ -325,178 +317,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   };
 
   // Mobile full-page view for portrait mode - DISABLED to show grid instead
-  if (false && isMobile && mobileView === 'category' && activeCategory) {
-    const category = enrichmentCategories.find(c => c.id === activeCategory);
-    if (!category) return null;
+  // This section has been removed to fix TypeScript compilation errors
 
-    return (
-      <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
-        {/* Mobile Category Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center space-x-3 w-full">
-          <button
-            onClick={handleMobileBackToLanding}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <div className="flex items-center space-x-3">
-            {SECTION_ICONS[category.id]}
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">{category.title}</h2>
-              <p className="text-sm text-gray-600">{category.description}</p>
-            </div>
-          </div>
-        </div>
 
-        {/* Mobile Category Content */}
-        <div className="p-4 space-y-4">
-          {category.enrichments.map((enrichment) => {
-            const isSelected = selectedEnrichments.includes(enrichment.id);
-            const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
 
-            return (
-              <div key={enrichment.id} className="bg-white border-2 border-gray-300 rounded-lg p-4 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3 flex-1">
-                    <input
-                      type="checkbox"
-                      id={enrichment.id}
-                      checked={isSelected}
-                      onChange={() => handleEnrichmentToggle(enrichment.id)}
-                      className="w-6 h-6 text-blue-600 bg-white border-2 border-gray-500 rounded focus:ring-blue-500 focus:ring-2 mt-0.5"
-                      style={{
-                        accentColor: '#2563eb',
-                        WebkitAppearance: 'none',
-                        appearance: 'none',
-                        background: isSelected ? '#1f2937' : 'white',
-                        backgroundImage: isSelected ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z\'/%3e%3c/svg%3e")' : 'none',
-                        backgroundSize: 'contain',
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'center'
-                      }}
-                    />
-                    <div className="flex-1">
-                      <label htmlFor={enrichment.id} className="font-semibold text-black cursor-pointer block text-lg">
-                        {enrichment.label}
-                      </label>
-                      <p className="text-sm text-gray-700 mt-1">{enrichment.description}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {enrichment.isPOI && isSelected && (
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-                      <p className="text-xs text-amber-700">
-                        ⚠️ Maximum radius: {
-                          enrichment.id === 'poi_earthquakes' ? '25 miles (earthquakes)' :
-                          enrichment.id === 'poi_volcanoes' ? '50 miles (volcanoes)' :
-                          enrichment.id === 'poi_wildfires' ? '50 miles (wildfires)' :
-                          enrichment.id === 'poi_flood_reference_points' ? '25 miles (flood reference points)' :
-                          '5 miles'
-                        } (for performance & accuracy)
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <label className="text-base font-semibold text-black">Search Radius:</label>
-                      <select
-                        value={currentRadius}
-                        onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value))}
-                        className="px-4 py-3 text-base border-2 border-gray-500 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white text-black font-semibold"
-                      >
-                        <option value={0.5}>0.5 miles</option>
-                        <option value={1}>1 mile</option>
-                        <option value={1.5}>1.5 miles</option>
-                        <option value={2}>2 miles</option>
-                        <option value={2.5}>2.5 miles</option>
-                        <option value={3}>3 miles</option>
-                        <option value={3.5}>3.5 miles</option>
-                        <option value={4}>4 miles</option>
-                        <option value={4.5}>4.5 miles</option>
-                        <option value={5}>5 miles</option>
-                        {enrichment.id === 'poi_earthquakes' && (
-                          <>
-                            <option value={10}>10 miles</option>
-                            <option value={15}>15 miles</option>
-                            <option value={20}>20 miles</option>
-                            <option value={25}>25 miles</option>
-                          </>
-                        )}
-                        {enrichment.id === 'poi_volcanoes' && (
-                          <>
-                            <option value={10}>10 miles</option>
-                            <option value={15}>15 miles</option>
-                            <option value={20}>20 miles</option>
-                            <option value={25}>25 miles</option>
-                            <option value={30}>30 miles</option>
-                            <option value={35}>35 miles</option>
-                            <option value={40}>40 miles</option>
-                            <option value={45}>45 miles</option>
-                            <option value={50}>50 miles</option>
-                          </>
-                        )}
-                        {enrichment.id === 'poi_wildfires' && (
-                          <>
-                            <option value={10}>10 miles</option>
-                            <option value={15}>15 miles</option>
-                            <option value={20}>20 miles</option>
-                            <option value={25}>25 miles</option>
-                            <option value={30}>30 miles</option>
-                            <option value={35}>35 miles</option>
-                            <option value={40}>40 miles</option>
-                            <option value={45}>45 miles</option>
-                            <option value={50}>50 miles</option>
-                          </>
-                        )}
-                        {enrichment.id === 'poi_flood_reference_points' && (
-                          <>
-                            <option value={10}>10 miles</option>
-                            <option value={15}>15 miles</option>
-                            <option value={20}>20 miles</option>
-                            <option value={25}>25 miles</option>
-                          </>
-                        )}
-                      </select>
-                    </div>
-
-                    {currentRadius > (
-                      enrichment.id === 'poi_earthquakes' ? 25 :
-                      enrichment.id === 'poi_volcanoes' ? 50 :
-                      enrichment.id === 'poi_flood_reference_points' ? 25 :
-                      5
-                    ) && (
-                      <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
-                        Capped at {
-                          enrichment.id === 'poi_earthquakes' ? '25' :
-                          enrichment.id === 'poi_volcanoes' ? '50' :
-                          enrichment.id === 'poi_flood_reference_points' ? '25' :
-                          '5'
-                        } miles
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Mobile Category Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
-          <button
-            onClick={handleMobileBackToLanding}
-            className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg font-medium"
-          >
-            Done
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Mobile landing page for portrait mode
-  if (isMobile && mobileView === 'landing') {
+  // Mobile landing page for portrait mode - DISABLED to use consistent grid layout
+  if (false) { // Disabled mobile landing view
     return (
       <div className="enrichment-config">
         <div className="card">
@@ -544,7 +370,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 return (
                   <button
                     key={category.id}
-                    onClick={() => handleMobileCategoryOpen(category.id)}
+                    onClick={() => {
+                      // Always use modal view for consistency
+                      if (onViewCategory) {
+                        onViewCategory(category);
+                      } else {
+                        setActiveModal(category.id);
+                      }
+                    }}
                     className={`relative p-6 rounded-xl ${colors.header} ${colors.headerHover} transition-all duration-200 shadow-md hover:shadow-lg border-2 ${colors.border} w-full`}
                   >
                     <div className="flex items-center space-x-4">
