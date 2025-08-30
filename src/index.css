@@ -138,6 +138,10 @@ body.modal-open {
 /* Leaflet map customizations */
 .leaflet-container {
   @apply rounded-lg border border-gray-200;
+  /* Ensure proper map rendering on mobile */
+  height: 100% !important;
+  width: 100% !important;
+  min-height: 300px;
 }
 
 /* Map view layout fixes */
@@ -147,6 +151,10 @@ body.modal-open {
 
 .map-container {
   @apply w-full h-full relative;
+  /* Ensure proper map rendering on mobile */
+  min-height: 300px;
+  height: 100% !important;
+  width: 100% !important;
 }
 
 .leaflet-popup-content {

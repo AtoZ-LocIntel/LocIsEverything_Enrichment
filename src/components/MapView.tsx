@@ -136,84 +136,93 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Initialize map with mobile-appropriate settings
-    const isMobileView = window.innerWidth <= 768;
-    const initialZoom = isMobileView ? 15 : 4; // Lower zoom for mobile to show more area
-    
-    const map = L.map(mapRef.current, {
-      center: [39.8283, -98.5795], // Center of USA
-      zoom: initialZoom,
-      zoomControl: true,
-      // Mobile-specific settings
-      maxBounds: isMobileView ? undefined : undefined, // Allow full movement on mobile
-      minZoom: isMobileView ? 10 : 2, // Lower minimum zoom for mobile
-      maxZoom: 19,
-    });
+    // Small delay to ensure container is properly sized
+    const initMap = () => {
+      if (!mapRef.current) return;
 
-    // Add OpenStreetMap tiles as default
-    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19,
-    }).addTo(map);
+      // Initialize map with mobile-appropriate settings
+      const isMobileView = window.innerWidth <= 768;
+      const initialZoom = isMobileView ? 15 : 4; // Lower zoom for mobile to show more area
+      
+      const map = L.map(mapRef.current, {
+        center: [39.8283, -98.5795], // Center of USA
+        zoom: initialZoom,
+        zoomControl: true,
+        // Mobile-specific settings
+        maxBounds: isMobileView ? undefined : undefined, // Allow full movement on mobile
+        minZoom: isMobileView ? 10 : 2, // Lower minimum zoom for mobile
+        maxZoom: 19,
+      });
 
-    // Add MapTiler basemap options
-    const maptilerKey = 'Ts9pNkQtWsmoz4BHQIxF'; // Your MapTiler key
-    const maptilerLayers = {
-      'Streets': L.tileLayer(`https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${maptilerKey}`, {
-        attribution: '© MapTiler & OSM',
+      // Add OpenStreetMap tiles as default
+      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
         maxZoom: 19,
-      }),
-      'Satellite': L.tileLayer(`https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=${maptilerKey}`, {
-        attribution: '© MapTiler & OSM',
-        maxZoom: 19,
-      }),
-      'Topo': L.tileLayer(`https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=${maptilerKey}`, {
-        attribution: '© MapTiler & OSM',
-        maxZoom: 19,
-      }),
-      'OpenStreetMap': osmLayer
-    };
+      }).addTo(map);
 
-    // Add layer control to map (hidden on mobile for better UX)
-    const layerControl = L.control.layers(maptilerLayers, {}, {
-      position: 'topright',
-      collapsed: false
-    });
-    
-    let layerControlAdded = false;
-    
-    // Only add layer control on larger screens (hide on mobile)
-    if (window.innerWidth > 768) {
-      layerControl.addTo(map);
-      layerControlAdded = true;
-    }
-    
-    // Listen for window resize to show/hide layer control
-    const handleResize = () => {
+      // Add MapTiler basemap options
+      const maptilerKey = 'Ts9pNkQtWsmoz4BHQIxF'; // Your MapTiler key
+      const maptilerLayers = {
+        'Streets': L.tileLayer(`https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${maptilerKey}`, {
+          attribution: '© MapTiler & OSM',
+          maxZoom: 19,
+        }),
+        'Satellite': L.tileLayer(`https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=${maptilerKey}`, {
+          attribution: '© MapTiler & OSM',
+          maxZoom: 19,
+        }),
+        'Topo': L.tileLayer(`https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=${maptilerKey}`, {
+          attribution: '© MapTiler & OSM',
+          maxZoom: 19,
+        }),
+        'OpenStreetMap': osmLayer
+      };
+
+      // Add layer control to map (hidden on mobile for better UX)
+      const layerControl = L.control.layers(maptilerLayers, {}, {
+        position: 'topright',
+        collapsed: false
+      });
+      
+      let layerControlAdded = false;
+      
+      // Only add layer control on larger screens (hide on mobile)
       if (window.innerWidth > 768) {
-        if (!layerControlAdded) {
-          layerControl.addTo(map);
-          layerControlAdded = true;
-        }
-      } else {
-        if (layerControlAdded) {
-          map.removeControl(layerControl);
-          layerControlAdded = false;
-        }
+        layerControl.addTo(map);
+        layerControlAdded = true;
       }
-    };
-    
-    window.addEventListener('resize', handleResize);
+      
+      // Listen for window resize to show/hide layer control
+      const handleResize = () => {
+        if (window.innerWidth > 768) {
+          if (!layerControlAdded) {
+            layerControl.addTo(map);
+            layerControlAdded = true;
+          }
+        } else {
+          if (layerControlAdded) {
+            map.removeControl(layerControl);
+            layerControlAdded = false;
+          }
+        }
+      };
+      
+      window.addEventListener('resize', handleResize);
 
-    mapInstanceRef.current = map;
+      mapInstanceRef.current = map;
 
-    // Add global tab switching function to window object
-    (window as any).handleTabSwitch = (tabName: string) => {
-      console.log('🔄 Tab switching called for:', tabName);
-      handleTabSwitch(tabName);
+      // Add global tab switching function to window object
+      (window as any).handleTabSwitch = (tabName: string) => {
+        console.log('🔄 Tab switching called for:', tabName);
+        handleTabSwitch(tabName);
+      };
     };
+
+    // Initialize map with a small delay to ensure proper container sizing
+    const timeoutId = setTimeout(initMap, 100);
 
     return () => {
+      clearTimeout(timeoutId);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -2148,8 +2157,8 @@ if (bounds.isValid() && results.length > 1) {
        )}
 
       {/* Map Container */}
-      <div className="flex-1 relative map-view-container" style={{ minHeight: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)' }}>
-        <div ref={mapRef} className="w-full h-full map-container" style={{ minHeight: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)' }} />
+      <div className="flex-1 relative map-view-container" style={{ height: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)' }}>
+        <div ref={mapRef} className="w-full h-full map-container" style={{ height: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)' }} />
         
         {/* Batch Success Message */}
         {showBatchSuccess && (
