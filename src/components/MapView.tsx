@@ -2167,8 +2167,8 @@ if (bounds.isValid() && results.length > 1) {
        )}
 
       {/* Map Container */}
-      <div className="flex-1 relative map-view-container" style={{ height: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)' }}>
-        <div ref={mapRef} className="w-full h-full map-container" style={{ height: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)' }} />
+      <div className="flex-1 relative map-view-container" style={{ height: isMobile ? 'calc(100vh - 5rem)' : 'calc(100vh - 14rem)' }}>
+        <div ref={mapRef} className="w-full h-full map-container" style={{ height: isMobile ? 'calc(100vh - 5rem)' : 'calc(100vh - 14rem)' }} />
         
         {/* Batch Success Message */}
         {showBatchSuccess && (
