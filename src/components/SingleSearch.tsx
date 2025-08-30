@@ -7,7 +7,7 @@ interface SingleSearchProps {
   isMobile?: boolean;
 }
 
-const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, isMobile = false }) => {
+const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch }) => {
   const [address, setAddress] = useState('1600 Pennsylvania Avenue NW, Washington, DC 20500');
   const [isLoading, setIsLoading] = useState(false);
 

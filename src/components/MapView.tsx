@@ -136,6 +136,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
+    let handleResize: (() => void) | null = null;
+
     // Small delay to ensure container is properly sized
     const initMap = () => {
       if (!mapRef.current) return;
@@ -193,7 +195,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       }
       
       // Listen for window resize to show/hide layer control
-      const handleResize = () => {
+      handleResize = () => {
         if (window.innerWidth > 768) {
           if (!layerControlAdded) {
             layerControl.addTo(map);
@@ -228,7 +230,9 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         mapInstanceRef.current = null;
       }
       // Clean up resize event listener
-      window.removeEventListener('resize', handleResize);
+      if (handleResize) {
+        window.removeEventListener('resize', handleResize);
+      }
       // Clean up global function
       delete (window as any).handleTabSwitch;
     };
