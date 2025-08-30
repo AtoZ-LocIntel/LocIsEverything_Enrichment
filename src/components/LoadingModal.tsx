@@ -360,7 +360,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                <div className="flex justify-center">
                  <div className="bg-orange-100 bg-opacity-80 rounded-xl p-3 sm:p-6 backdrop-blur-sm w-4/5 max-w-md">
                    <p className="text-sm sm:text-lg leading-relaxed text-orange-800">
-                     It's simple physics! The more enrichment options you choose, 
+                     The more enrichment options you choose, 
                      the longer the real-time queries take!
                    </p>
                  </div>

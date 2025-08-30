@@ -213,6 +213,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
 
       mapInstanceRef.current = map;
 
+
+
       // Add global tab switching function to window object
       (window as any).handleTabSwitch = (tabName: string) => {
         console.log('🔄 Tab switching called for:', tabName);
@@ -220,11 +222,10 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       };
     };
 
-    // Initialize map with a small delay to ensure proper container sizing
-    const timeoutId = setTimeout(initMap, 100);
+    // Initialize map immediately - the delay was causing marker issues
+    initMap();
 
     return () => {
-      clearTimeout(timeoutId);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -256,6 +257,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       
       if (lat && lon) {
         // Add main location marker (larger, blue)
+        console.log(`📍 Creating main marker at [${lat}, ${lon}]`);
         const mainMarker = L.marker([lat, lon], {
           icon: L.divIcon({
             html: `<div style="
@@ -281,6 +283,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
           .bindPopup(createPopupContent(result))
           .addTo(map);
         
+        console.log(`✅ Main marker added to map:`, mainMarker);
+        
         markersRef.current.push(mainMarker);
         
         // Only extend bounds for batch results, not single results
@@ -300,6 +304,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
           // Set the initial view with appropriate zoom for mobile vs desktop
           const targetZoom = isMobile ? 16 : 18; // Lower zoom on mobile to show more area
           map.setView([lat, lon], targetZoom, { animate: true });
+          
+
           
           // Add POI markers
           addPOIMarkers(map, result);

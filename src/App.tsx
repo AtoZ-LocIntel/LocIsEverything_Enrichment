@@ -29,6 +29,7 @@ function App() {
   const [isMobile, setIsMobile] = useState(false);
   const [activeCategory, setActiveCategory] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [savedScrollPosition, setSavedScrollPosition] = useState<number>(0);
 
 
   // Detect mobile device
@@ -120,6 +121,10 @@ function App() {
 
   const handleBackToSearch = () => {
     setViewMode('config');
+    // Restore scroll position after a brief delay to ensure the view has rendered
+    setTimeout(() => {
+      window.scrollTo(0, savedScrollPosition);
+    }, 100);
   };
 
   const handleDownloadCSV = () => {
@@ -274,6 +279,10 @@ function App() {
   const handleBackToConfig = () => {
     setViewMode('config');
     setError(null);
+    // Restore scroll position after a brief delay to ensure the view has rendered
+    setTimeout(() => {
+      window.scrollTo(0, savedScrollPosition);
+    }, 100);
   };
 
 
@@ -283,12 +292,18 @@ function App() {
   };
 
   const handleViewEnrichmentCategory = (category: any) => {
+    // Save current scroll position before navigating to category view
+    setSavedScrollPosition(window.pageYOffset || document.documentElement.scrollTop);
     setActiveCategory(category);
     setViewMode('enrichment-category');
   };
 
   const handleBackToMain = () => {
     setViewMode('config');
+    // Restore scroll position after a brief delay to ensure the view has rendered
+    setTimeout(() => {
+      window.scrollTo(0, savedScrollPosition);
+    }, 100);
   };
 
   return (
@@ -311,15 +326,6 @@ function App() {
 
             
             <div className="text-center mb-12 mt-8 sm:mt-16">
-              {/* Company Logo - moved from header */}
-              <div className="flex justify-center mb-6">
-                <img 
-                  src="/assets/lociseverything.webp"
-                  alt="The Location Is Everything Co Logo" 
-                  className="w-44 h-44 sm:w-48 sm:h-48 object-contain"
-                />
-              </div>
-              
               <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">
                 NEARBY PLATFORM
               </h1>
