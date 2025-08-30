@@ -56,6 +56,38 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       }).join('; ');
     }
     
+    // Handle USDA Wildfire Risk data
+    if (key === 'usda_wildfire_hazard_potential') {
+      return `Class ${value} of 5`;
+    }
+    if (key === 'usda_wildfire_hazard_potential_label') {
+      return value || 'Unknown Risk Level';
+    }
+    if (key === 'usda_burn_probability') {
+      return value ? value.toFixed(6) : '0.000000';
+    }
+    if (key === 'usda_burn_probability_percentage') {
+      return value ? `${value.toFixed(3)}%` : '0.000%';
+    }
+    if (key === 'usda_conditional_flame_length') {
+      return value ? `${value.toFixed(1)} feet` : 'N/A';
+    }
+    if (key === 'usda_conditional_flame_length_label') {
+      return value || 'Unknown Flame Category';
+    }
+    if (key === 'usda_risk_to_structures' || key === 'usda_conditional_risk_to_structures') {
+      return value ? `Risk Score: ${value}` : 'N/A';
+    }
+    if (key === 'usda_exposure_type') {
+      return `Type ${value}`;
+    }
+    if (key === 'usda_exposure_type_label') {
+      return value || 'Unknown Exposure';
+    }
+    if (key === 'usda_wildfire_risk_source') {
+      return value || 'USDA Forest Service';
+    }
+    
     // Handle objects
     if (typeof value === 'object' && value !== null) {
       // Try to extract meaningful information from objects

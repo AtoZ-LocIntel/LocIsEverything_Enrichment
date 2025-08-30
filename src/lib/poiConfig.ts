@@ -21,9 +21,15 @@ export interface POISection {
 export const DEFAULT_POI_SECTIONS: POISection[] = [
   {
     id: 'hazards',
-    title: 'Hazards & Risk Assessment',
-    description: 'Natural and man-made hazard assessments',
+    title: 'Human Caused Hazards',
+    description: 'Man-made environmental hazards and pollution sources',
     icon: '🌊'
+  },
+  {
+    id: 'wildfire',
+    title: 'Natural Hazards',
+    description: 'Natural hazard assessments including wildfire, flood, volcano, and earthquake risk',
+    icon: 'natural_hazards.webp'
   },
   {
     id: 'community',
@@ -161,14 +167,10 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_breweries', label: 'Breweries', description: 'Craft breweries with names, types, addresses, contact info', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' },
   { id: 'poi_wikipedia', label: 'Wikipedia Articles', description: 'Haunted sites, historic oddities, museums, and quirky landmarks with intelligent categorization', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' },
 
-  // Hazards
+  // Human Caused Hazards (man-made environmental hazards)
   { id: 'poi_animal_vehicle_collisions', label: 'Animal Vehicle Collisions', description: 'The Location Is Everything Company data - Live API from LocationFriend with animal vehicle collision records for CA, TX, ID, IA, NH, and FARS within specified radius', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
-  { id: 'poi_wildfires', label: 'Current Wildfires', description: 'NIFC/Esri USA Wildfires - current wildfire incidents and perimeters with incident names, containment status, and discovery dates', isPOI: true, defaultRadius: 50, category: 'hazards', section: 'hazards' },
-  { id: 'poi_fema_flood_zones', label: 'FEMA Flood Zones', description: 'FEMA National Flood Hazard Layer - flood zone classification and risk assessment', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
-            { id: 'poi_wetlands', label: 'USGS Wetlands', description: 'National Wetlands Inventory - wetland types, locations, and proximity analysis', isPOI: true, defaultRadius: 2, category: 'hazards', section: 'hazards' },
-          { id: 'poi_earthquakes', label: 'USGS Earthquakes', description: 'Historical earthquake events - frequency, magnitude, and proximity analysis for risk assessment', isPOI: true, defaultRadius: 25, category: 'hazards', section: 'hazards' },
-          { id: 'poi_volcanoes', label: 'USGS Volcanoes', description: 'Active and dormant volcanoes - status, location, and proximity analysis for volcanic risk assessment', isPOI: true, defaultRadius: 50, category: 'hazards', section: 'hazards' },
-          { id: 'poi_flood_reference_points', label: 'USGS Flood Reference Points', description: 'Real-time flooding reference points - actively flooding locations within proximity', isPOI: true, defaultRadius: 25, category: 'hazards', section: 'hazards' },
+  
+
     
   
   // EPA FRS Environmental Hazards
@@ -185,7 +187,25 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   // Public Lands & Protected Areas
   { id: 'poi_padus_public_access', label: 'PAD-US Public Access', description: 'USGS Protected Areas Database - public land boundaries, manager info, and access status', isPOI: true, defaultRadius: 5, category: 'public_lands', section: 'public_lands' },
   { id: 'poi_padus_protection_status', label: 'PAD-US Protection Status', description: 'GAP status codes and IUCN categories for protected areas', isPOI: true, defaultRadius: 5, category: 'public_lands', section: 'public_lands' },
-  { id: 'poi_community_centers', label: 'Community Centers', description: 'Community centers and gathering places via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' }
+  { id: 'poi_community_centers', label: 'Community Centers', description: 'Community centers and gathering places via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  
+  // Natural Hazards - Wildfire Risk & Monitoring (grouped at top)
+  { id: 'poi_wildfires', label: 'Current Wildfires', description: 'NIFC/Esri USA Wildfires - current wildfire incidents and perimeters with incident names, containment status, and discovery dates', isPOI: true, defaultRadius: 50, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_wildfire_hazard_potential', label: 'Wildfire Hazard Potential', description: 'USDA Forest Service - Composite wildfire risk index (1-5: Very Low to Very High)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_burn_probability', label: 'Burn Probability', description: 'USDA Forest Service - Annual probability of wildfire occurrence (0-1 scale)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_conditional_flame_length', label: 'Conditional Flame Length', description: 'USDA Forest Service - Expected flame length if fire occurs (feet)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_risk_to_structures', label: 'Risk to Potential Structures', description: 'USDA Forest Service - Structure exposure risk assessment (integer score)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_conditional_risk_to_structures', label: 'Conditional Risk to Structures', description: 'USDA Forest Service - Refined structure risk with probability factors (integer score)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_exposure_type', label: 'Wildfire Exposure Type', description: 'USDA Forest Service - Direct, Indirect, or No Exposure classification', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  
+  // Natural Hazards - Flood & Water Risk
+  { id: 'poi_fema_flood_zones', label: 'FEMA Flood Zones', description: 'FEMA National Flood Hazard Layer - flood zone classification and risk assessment', isPOI: true, defaultRadius: 5, category: 'wildfire', section: 'wildfire' },
+  { id: 'poi_flood_reference_points', label: 'USGS Flood Reference Points', description: 'Real-time flooding reference points - actively flooding locations within proximity', isPOI: true, defaultRadius: 25, category: 'wildfire', section: 'wildfire' },
+  { id: 'poi_wetlands', label: 'USGS Wetlands', description: 'National Wetlands Inventory - wetland types, locations, and proximity analysis', isPOI: true, defaultRadius: 2, category: 'wildfire', section: 'wildfire' },
+  
+  // Natural Hazards - Geological Risk
+  { id: 'poi_earthquakes', label: 'USGS Earthquakes', description: 'Historical earthquake events - frequency, magnitude, and proximity analysis for risk assessment', isPOI: true, defaultRadius: 25, category: 'wildfire', section: 'wildfire' },
+  { id: 'poi_volcanoes', label: 'USGS Volcanoes', description: 'Active and dormant volcanoes - status, location, and proximity analysis for volcanic risk assessment', isPOI: true, defaultRadius: 50, category: 'wildfire', section: 'wildfire' }
 ];
 
 class POIConfigManager {

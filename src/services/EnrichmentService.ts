@@ -1,5 +1,6 @@
 import { GeocodeResult } from '../lib/types';
 import { EnrichmentResult } from '../App';
+import { getUSDAWildfireRiskData } from '../adapters/usdaWildfireRisk';
 // import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
 
 // CORS proxy helpers from original geocoder.html
@@ -1047,6 +1048,16 @@ export class EnrichmentService {
           return await this.getElectricChargingStations(lat, lon, radius);
         case 'poi_gas_stations':
           return await this.getGasStations(lat, lon, radius);
+      
+      // USDA Wildfire Risk to Communities (WRC) - Point-based risk assessment
+      case 'usda_wildfire_hazard_potential':
+      case 'usda_burn_probability':
+      case 'usda_conditional_flame_length':
+      case 'usda_risk_to_structures':
+      case 'usda_conditional_risk_to_structures':
+      case 'usda_exposure_type':
+        // All USDA wildfire risk layers are handled together for efficiency
+        return await this.getUSDAWildfireRisk(lat, lon);
     
     default:
       if (enrichmentId.startsWith('poi_')) {
@@ -1088,6 +1099,75 @@ export class EnrichmentService {
     } catch (error) {
       console.error('Air quality API error:', error);
       return null;
+    }
+  }
+
+  private async getUSDAWildfireRisk(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔥 Fetching USDA Wildfire Risk data for [${lat}, ${lon}]`);
+      
+      const wildfireData = await getUSDAWildfireRiskData(lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      // Wildfire Hazard Potential (WHP)
+      if (wildfireData.whp !== null) {
+        result.usda_wildfire_hazard_potential = wildfireData.whp;
+        result.usda_wildfire_hazard_potential_label = wildfireData.whp_label;
+      }
+      
+      // Burn Probability (BP)
+      if (wildfireData.bp !== null) {
+        result.usda_burn_probability = wildfireData.bp;
+        result.usda_burn_probability_percentage = wildfireData.bp_percentage;
+      }
+      
+      // Conditional Flame Length (CFL)
+      if (wildfireData.cfl !== null) {
+        result.usda_conditional_flame_length = wildfireData.cfl;
+        result.usda_conditional_flame_length_label = wildfireData.cfl_label;
+      }
+      
+      // Risk to Potential Structures (RPS)
+      if (wildfireData.rps !== null) {
+        result.usda_risk_to_structures = wildfireData.rps;
+      }
+      
+      // Conditional Risk to Potential Structures (cRPS)
+      if (wildfireData.cRPS !== null) {
+        result.usda_conditional_risk_to_structures = wildfireData.cRPS;
+      }
+      
+      // Exposure Type
+      if (wildfireData.exposure_type !== null) {
+        result.usda_exposure_type = wildfireData.exposure_type;
+        result.usda_exposure_type_label = wildfireData.exposure_label;
+      }
+      
+      // Source attribution
+      result.usda_wildfire_risk_source = wildfireData.source;
+      
+      // Handle errors
+      if (wildfireData.error) {
+        result.usda_wildfire_risk_error = wildfireData.error;
+        console.warn(`⚠️ USDA Wildfire Risk API had errors:`, wildfireData.error);
+      }
+      
+      console.log(`✅ USDA Wildfire Risk data processed:`, {
+        whp: result.usda_wildfire_hazard_potential_label,
+        bp: result.usda_burn_probability_percentage ? `${result.usda_burn_probability_percentage.toFixed(3)}%` : 'N/A',
+        cfl: result.usda_conditional_flame_length_label,
+        exposure: result.usda_exposure_type_label
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error(`❌ Error fetching USDA Wildfire Risk data:`, error);
+      return {
+        usda_wildfire_risk_error: error instanceof Error ? error.message : 'Unknown error',
+        usda_wildfire_risk_source: 'USDA Forest Service - Wildfire Risk to Communities'
+      };
     }
   }
 

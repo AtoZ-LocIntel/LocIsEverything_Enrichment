@@ -142,6 +142,34 @@ body.modal-open {
   height: 100% !important;
   width: 100% !important;
   min-height: 300px;
+  /* Force proper rendering on mobile */
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Mobile-specific map fixes */
+@media (max-width: 768px) {
+  .leaflet-container {
+    height: calc(100vh - 8rem) !important;
+    min-height: 400px !important;
+    width: 100% !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  
+  .map-container {
+    height: calc(100vh - 8rem) !important;
+    min-height: 400px !important;
+    width: 100% !important;
+    position: relative !important;
+  }
+  
+  .map-view-container {
+    height: calc(100vh - 8rem) !important;
+    min-height: 400px !important;
+    width: 100% !important;
+    position: relative !important;
+  }
 }
 
 /* Map view layout fixes */

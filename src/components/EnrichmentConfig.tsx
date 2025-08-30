@@ -50,6 +50,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   natural_resources: <span className="text-xl">🏔️</span>,
   public_lands: <span className="text-xl">🏞️</span>,
   quirky: <span className="text-xl">☕</span>,
+  wildfire: <img src="/assets/wildfire.webp" alt="Natural Hazards" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -331,7 +332,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           <div className="card-body">
             {/* Custom Icon Category Button Grid - 2 Column Layout */}
             <div className="mb-6 w-full px-4">
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto">
                 {enrichmentCategories.map((category) => {
                   const categoryEnrichments = category.enrichments;
                   const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -463,7 +464,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         <div className="card-body">
           {/* Custom Icon Category Button Grid - Desktop */}
           <div className="mb-6 w-full px-4">
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto">
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -603,6 +604,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     category.id === 'natural_resources' ? '#115e59' :
                                     category.id === 'public_lands' ? '#365314' :
                                     category.id === 'quirky' ? '#9a3412' :
+                                    category.id === 'wildfire' ? '#dc2626' :
                                     category.id === 'core' ? '#1e293b' : '#1f2937';
                   
                   console.log('Category:', category.id, 'Header color:', headerColor);

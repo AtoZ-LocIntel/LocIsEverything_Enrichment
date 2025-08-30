@@ -139,44 +139,73 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
 
     let handleResize: (() => void) | null = null;
 
-    // Small delay to ensure container is properly sized
     const initMap = () => {
       if (!mapRef.current) return;
 
+      console.log('🗺️ Initializing map...');
+      console.log('📱 Is mobile:', isMobile);
+      console.log('📏 Container dimensions:', {
+        width: mapRef.current.offsetWidth,
+        height: mapRef.current.offsetHeight,
+        clientWidth: mapRef.current.clientWidth,
+        clientHeight: mapRef.current.clientHeight
+      });
+
+      // Force container to have proper dimensions
+      const container = mapRef.current;
+      if (isMobile) {
+        // For mobile, ensure the container has proper height
+        container.style.height = 'calc(100vh - 8rem)';
+        container.style.width = '100%';
+        container.style.minHeight = '400px';
+      }
+
       // Initialize map with mobile-appropriate settings
       const isMobileView = window.innerWidth <= 768;
-      const initialZoom = isMobileView ? 15 : 4; // Lower zoom for mobile to show more area
+      const initialZoom = isMobileView ? 15 : 4;
       
-      const map = L.map(mapRef.current, {
+      const map = L.map(container, {
         center: [39.8283, -98.5795], // Center of USA
         zoom: initialZoom,
         zoomControl: true,
         // Mobile-specific settings
-        maxBounds: isMobileView ? undefined : undefined, // Allow full movement on mobile
-        minZoom: isMobileView ? 10 : 2, // Lower minimum zoom for mobile
+        maxBounds: isMobileView ? undefined : undefined,
+        minZoom: isMobileView ? 10 : 2,
         maxZoom: 19,
+        // Force proper rendering
+        preferCanvas: false,
+        renderer: L.svg()
       });
 
-      // Add OpenStreetMap tiles as default
+      // Add OpenStreetMap tiles as default with better mobile support
       const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19,
+        // Better mobile tile loading
+        subdomains: ['a', 'b', 'c'],
+        crossOrigin: true
       }).addTo(map);
 
       // Add MapTiler basemap options
-      const maptilerKey = 'Ts9pNkQtWsmoz4BHQIxF'; // Your MapTiler key
+      const maptilerKey = 'Ts9pNkQtWsmoz4BHQIxF';
       const maptilerLayers = {
         'Streets': L.tileLayer(`https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${maptilerKey}`, {
           attribution: '© MapTiler & OSM',
           maxZoom: 19,
+          subdomains: ['a', 'b', 'c'],
+          crossOrigin: true
         }),
         'Satellite': L.tileLayer(`https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=${maptilerKey}`, {
           attribution: '© MapTiler & OSM',
           maxZoom: 19,
+          subdomains: ['a', 'b', 'c'],
+          crossOrigin: true
         }),
         'Topo': L.tileLayer(`https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=${maptilerKey}`, {
           attribution: '© MapTiler & OSM',
           maxZoom: 19,
+          subdomains: ['a', 'b', 'c'],
+          crossOrigin: true
         }),
         'OpenStreetMap': osmLayer
       };
@@ -208,13 +237,27 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
             layerControlAdded = false;
           }
         }
+        
+        // Force map to resize on orientation change
+        setTimeout(() => {
+          if (map) {
+            map.invalidateSize();
+          }
+        }, 100);
       };
       
       window.addEventListener('resize', handleResize);
+      window.addEventListener('orientationchange', handleResize);
 
       mapInstanceRef.current = map;
 
-
+      // Force map to render properly after a short delay
+      setTimeout(() => {
+        if (map) {
+          console.log('🔄 Forcing map invalidateSize...');
+          map.invalidateSize();
+        }
+      }, 100);
 
       // Add global tab switching function to window object
       (window as any).handleTabSwitch = (tabName: string) => {
@@ -223,7 +266,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       };
     };
 
-    // Initialize map immediately - the delay was causing marker issues
+    // Initialize map immediately
     initMap();
 
     return () => {
@@ -234,11 +277,12 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       // Clean up resize event listener
       if (handleResize) {
         window.removeEventListener('resize', handleResize);
+        window.removeEventListener('orientationchange', handleResize);
       }
       // Clean up global function
       delete (window as any).handleTabSwitch;
     };
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !results.length) return;
@@ -1342,7 +1386,20 @@ if (bounds.isValid() && results.length > 1) {
        poi_mountains_peaks_count: 'Mountains & Peaks',
        
        // Recreation and Leisure
-      poi_museums_historic_count: 'Museums, Historic Sites & Memorials'
+      poi_museums_historic_count: 'Museums, Historic Sites & Memorials',
+      
+      // USDA Wildfire Risk to Communities (WRC)
+      usda_wildfire_hazard_potential: 'Wildfire Hazard Potential',
+      usda_wildfire_hazard_potential_label: 'Wildfire Hazard Level',
+      usda_burn_probability: 'Burn Probability',
+      usda_burn_probability_percentage: 'Annual Burn Probability',
+      usda_conditional_flame_length: 'Conditional Flame Length',
+      usda_conditional_flame_length_label: 'Flame Length Category',
+      usda_risk_to_structures: 'Risk to Potential Structures',
+      usda_conditional_risk_to_structures: 'Conditional Risk to Structures',
+      usda_exposure_type: 'Exposure Type',
+      usda_exposure_type_label: 'Wildfire Exposure Classification',
+      usda_wildfire_risk_source: 'Wildfire Risk Data Source'
     };
 
     // Handle POI counts
@@ -1397,8 +1454,38 @@ if (bounds.isValid() && results.length > 1) {
      if (key === 'poi_animal_vehicle_collisions_source') {
        return value || 'No source data available';
      }
-
      
+     // Handle USDA Wildfire Risk data
+     if (key === 'usda_wildfire_hazard_potential') {
+       return `Class ${value} of 5`;
+     }
+     if (key === 'usda_wildfire_hazard_potential_label') {
+       return value || 'Unknown Risk Level';
+     }
+     if (key === 'usda_burn_probability') {
+       return value ? value.toFixed(6) : '0.000000';
+     }
+     if (key === 'usda_burn_probability_percentage') {
+       return value ? `${value.toFixed(3)}%` : '0.000%';
+     }
+     if (key === 'usda_conditional_flame_length') {
+       return value ? `${value.toFixed(1)} feet` : 'N/A';
+     }
+     if (key === 'usda_conditional_flame_length_label') {
+       return value || 'Unknown Flame Category';
+     }
+     if (key === 'usda_risk_to_structures' || key === 'usda_conditional_risk_to_structures') {
+       return value ? `Risk Score: ${value}` : 'N/A';
+     }
+     if (key === 'usda_exposure_type') {
+       return `Type ${value}`;
+     }
+     if (key === 'usda_exposure_type_label') {
+       return value || 'Unknown Exposure';
+     }
+     if (key === 'usda_wildfire_risk_source') {
+       return value || 'USDA Forest Service';
+     }
 
     
     // Handle POI counts specifically
@@ -2172,8 +2259,22 @@ if (bounds.isValid() && results.length > 1) {
        )}
 
       {/* Map Container */}
-      <div className="flex-1 relative map-view-container" style={{ height: isMobile ? 'calc(100vh - 4rem)' : 'calc(100vh - 14rem)' }}>
-        <div ref={mapRef} className="w-full h-full map-container" style={{ height: isMobile ? 'calc(100vh - 4rem)' : 'calc(100vh - 14rem)' }} />
+      <div 
+        className="flex-1 relative map-view-container" 
+        style={{ 
+          height: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)',
+          minHeight: isMobile ? '400px' : '400px'
+        }}
+      >
+        <div 
+          ref={mapRef} 
+          className="w-full h-full map-container" 
+          style={{ 
+            height: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)',
+            minHeight: isMobile ? '400px' : '400px',
+            width: '100%'
+          }} 
+        />
         
         {/* Batch Success Message */}
         {showBatchSuccess && (
