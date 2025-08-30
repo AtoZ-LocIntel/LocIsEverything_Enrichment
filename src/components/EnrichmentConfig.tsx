@@ -39,7 +39,7 @@ const CORE_ENRICHMENTS = [
 // Icon mapping for sections
 const SECTION_ICONS: Record<string, React.ReactNode> = {
   core: <Settings className="w-5 h-5" />,
-  hazards: <span className="text-xl">🌊</span>,
+  hazards: <img src="/assets/hazards_risk.webp" alt="Human Caused Hazards" className="w-8 h-8" />,
   community: <span className="text-xl">👥</span>,
   retail: <span className="text-xl">🏢</span>,
   health: <span className="text-xl">❤️</span>,
