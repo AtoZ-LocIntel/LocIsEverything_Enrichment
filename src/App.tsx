@@ -338,7 +338,7 @@ function App() {
               </h1>
               
               <h2 className="text-2xl sm:text-3xl font-bold text-gradient mb-4">
-                Open Location Intelligence built on OpenData
+                Open Location Intelligence built on Open Data
               </h2>
               <p className="text-lg sm:text-xl text-gray-300">
                 Comprehensive location and address enrichment platform using open data sources in real-time and on-demand.
