@@ -52,19 +52,6 @@ export async function getUSDAWildfireRiskData(lat: number, lon: number): Promise
       source: 'USDA Forest Service - Wildfire Risk to Communities (ImageServer)'
     };
     
-    // Fetch from comprehensive Wildfire Hazard Potential service (2024 version)
-    // This service contains multiple wildfire risk datasets accessible via raster functions
-    const wildfireLayers = [
-      { name: 'WHP', key: 'whp', label: 'Wildfire Hazard Potential' },
-      { name: 'RPS', key: 'rps', label: 'Risk to Potential Structures' },
-      { name: 'cRPS', key: 'cRPS', label: 'Conditional Risk to Potential Structures' },
-      { name: 'ExposureType', key: 'exposure_type', label: 'Exposure Type' },
-      { name: 'BP', key: 'bp', label: 'Burn Probability' },
-      { name: 'CFL', key: 'cfl', label: 'Conditional Flame Length' },
-      { name: 'FLEP4', key: 'flep4', label: 'Flame Length Exceedance Probability - 4 ft' },
-      { name: 'FLEP8', key: 'flep8', label: 'Flame Length Exceedance Probability - 8 ft' }
-    ];
-    
     // Fetch Wildfire Hazard Potential data (default layer)
     try {
       const params = new URLSearchParams({
@@ -195,19 +182,4 @@ function getHazardPotentialLabel(whp: number): string {
   return 'Very Low';
 }
 
-function getFlameLengthLabel(cfl: number): string {
-  if (cfl >= 11) return 'Extreme';
-  if (cfl >= 8) return 'Very High';
-  if (cfl >= 6) return 'High';
-  if (cfl >= 4) return 'Moderate';
-  return 'Low';
-}
 
-function getExposureTypeLabel(exposureType: number): string {
-  switch (exposureType) {
-    case 1: return 'Direct Exposure';
-    case 2: return 'Indirect Exposure';
-    case 3: return 'No Exposure';
-    default: return 'Unknown';
-  }
-}
