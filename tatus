@@ -397,4 +397,8 @@
            const displayValue = formatEnrichmentValue(key, value);[m
            [m
 [31m-          content += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">[m
-[31m-            <span style="color: #6b7280;">${label}
+[31m-            <span style="color: #6b7280;">${label}[33mfe1677f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m udpates
+[33m5e01512[m udpates
+[33m971705d[m udpates
+[33me9bc7a0[m udpates
+[33m29b2809[m udpates

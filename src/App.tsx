@@ -346,6 +346,9 @@ function App() {
               <p className="text-lg text-primary-400 font-medium mt-4">
                 Powered by The Location Is Everything Co
               </p>
+              <p className="text-sm text-gray-400 mt-2 max-w-md mx-auto">
+                📱 Mobile optimized for location intelligence reports • 💻 Full analytical capabilities with interactive maps and batch processing available on desktop
+              </p>
             </div>
 
 
@@ -401,7 +404,6 @@ function App() {
       ) : viewMode === 'mobile-results' ? (
         <MobileResultsView
           result={enrichmentResults[0]}
-          onViewMap={handleViewMap}
           onBackToSearch={handleBackToSearch}
           onDownloadCSV={handleDownloadCSV}
         />

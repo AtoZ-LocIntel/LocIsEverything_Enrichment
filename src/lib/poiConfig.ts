@@ -191,12 +191,12 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   
   // Natural Hazards - Wildfire Risk & Monitoring (grouped at top)
   { id: 'poi_wildfires', label: 'Current Wildfires', description: 'NIFC/Esri USA Wildfires - current wildfire incidents and perimeters with incident names, containment status, and discovery dates', isPOI: true, defaultRadius: 50, category: 'wildfire', section: 'wildfire' },
-  { id: 'usda_wildfire_hazard_potential', label: 'Wildfire Hazard Potential', description: 'USDA Forest Service - Composite wildfire risk index (1-5: Very Low to Very High)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
-  { id: 'usda_burn_probability', label: 'Burn Probability', description: 'USDA Forest Service - Annual probability of wildfire occurrence (0-1 scale)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
-  { id: 'usda_conditional_flame_length', label: 'Conditional Flame Length', description: 'USDA Forest Service - Expected flame length if fire occurs (feet)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
-  { id: 'usda_risk_to_structures', label: 'Risk to Potential Structures', description: 'USDA Forest Service - Structure exposure risk assessment (integer score)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
-  { id: 'usda_conditional_risk_to_structures', label: 'Conditional Risk to Structures', description: 'USDA Forest Service - Refined structure risk with probability factors (integer score)', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
-  { id: 'usda_exposure_type', label: 'Wildfire Exposure Type', description: 'USDA Forest Service - Direct, Indirect, or No Exposure classification', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_wildfire_hazard_potential', label: 'Wildfire Hazard Potential', description: 'USDA Forest Service - Composite wildfire risk index (1-5: Very Low to Very High) with automatic proximity search', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_burn_probability', label: 'Burn Probability', description: 'USDA Forest Service - Annual probability of wildfire occurrence (0-1 scale) with automatic proximity search', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_conditional_flame_length', label: 'Conditional Flame Length', description: 'USDA Forest Service - Expected flame length if fire occurs (feet) with automatic proximity search', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_risk_to_structures', label: 'Risk to Potential Structures', description: 'USDA Forest Service - Structure exposure risk assessment (integer score) with automatic proximity search', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_conditional_risk_to_structures', label: 'Conditional Risk to Structures', description: 'USDA Forest Service - Refined structure risk with probability factors (integer score) with automatic proximity search', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
+  { id: 'usda_exposure_type', label: 'Wildfire Exposure Type', description: 'USDA Forest Service - Direct, Indirect, or No Exposure classification with automatic proximity search', isPOI: false, defaultRadius: 0, category: 'wildfire', section: 'wildfire' },
   
   // Natural Hazards - Flood & Water Risk
   { id: 'poi_fema_flood_zones', label: 'FEMA Flood Zones', description: 'FEMA National Flood Hazard Layer - flood zone classification and risk assessment', isPOI: true, defaultRadius: 5, category: 'wildfire', section: 'wildfire' },

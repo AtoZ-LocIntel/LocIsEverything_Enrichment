@@ -19,7 +19,7 @@ function proxied(url: string, which: number = 0): string {
   return p.type === "prefix" ? (p.value + url) : (p.value + encodeURIComponent(url));
 }
 
-async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: number = 500): Promise<any> {
+export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: number = 500): Promise<any> {
   const attempts = USE_CORS_PROXY ? [url, proxied(url, 0), proxied(url, 1)] : [url, proxied(url, 0), proxied(url, 1)];
   let err: any;
   
@@ -2900,8 +2900,8 @@ export class EnrichmentService {
     try {
       console.log(`🔥 Current Wildfires query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
       
-      // NIFC/Esri USA Wildfires service
-      const API_BASE = "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/USA_Wildfires_v1/FeatureServer/0/query";
+      // WFIGS Current Wildfire Incidents service (working service)
+      const API_BASE = "https://services3.arcgis.com/T4QMspbfLg3qTGWY/ArcGIS/rest/services/WFIGS_Incident_Locations_Current/FeatureServer/0/query";
       
       // Build query parameters for proximity search
       const params = new URLSearchParams({
@@ -2918,7 +2918,7 @@ export class EnrichmentService {
       });
       
       const queryUrl = `${API_BASE}?${params.toString()}`;
-      console.log(`🔗 NIFC Wildfires API URL: ${queryUrl}`);
+      console.log(`🔗 WFIGS Wildfires API URL: ${queryUrl}`);
       
       const response = await fetch(queryUrl, {
         method: 'GET',
@@ -2928,15 +2928,15 @@ export class EnrichmentService {
       });
       
       if (!response.ok) {
-        throw new Error(`NIFC Wildfires API failed: ${response.status} ${response.statusText}`);
+        throw new Error(`WFIGS Wildfires API failed: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
-      console.log(`📊 NIFC Wildfires response:`, data);
+      console.log(`📊 WFIGS Wildfires response:`, data);
       
       // Handle the response data structure
       const features = data.features || [];
-      console.log(`🔥 Received ${features.length} wildfire incidents from NIFC API`);
+      console.log(`🔥 Received ${features.length} wildfire incidents from WFIGS API`);
       
       // Process wildfire incidents
       const wildfires: any[] = [];
