@@ -7,6 +7,7 @@ interface MapViewProps {
   results: EnrichmentResult[];
   onBackToConfig: () => void;
   isMobile?: boolean;
+  previousViewMode?: string | null;
 }
 
 interface LegendItem {
@@ -124,7 +125,7 @@ const createPOIIcon = (emoji: string, color: string) => {
   });
 };
 
-const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = false }) => {
+const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = false, previousViewMode = null }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
@@ -2107,7 +2108,7 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white" style={{ height: '100vh', paddingTop: isMobile ? '0' : '7rem' }}>
+    <div className="h-full flex flex-col bg-white" style={{ height: isMobile ? '100vh' : '100vh', paddingTop: isMobile ? '0' : '7rem' }}>
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
         <button
@@ -2115,7 +2116,11 @@ if (bounds.isValid() && results.length > 1) {
           className="btn btn-outline flex items-center space-x-2 text-sm sm:text-base"
         >
           <span className="w-4 h-4">←</span>
-          <span className="hidden sm:inline">Back to Configuration</span>
+          <span className="hidden sm:inline">
+            {previousViewMode === 'mobile-results' || previousViewMode === 'desktop-results' 
+              ? 'Back to Results' 
+              : 'Back to Configuration'}
+          </span>
           <span className="sm:hidden">Back</span>
         </button>
 
@@ -2167,8 +2172,8 @@ if (bounds.isValid() && results.length > 1) {
        )}
 
       {/* Map Container */}
-      <div className="flex-1 relative map-view-container" style={{ height: isMobile ? 'calc(100vh - 3rem)' : 'calc(100vh - 14rem)' }}>
-        <div ref={mapRef} className="w-full h-full map-container" style={{ height: isMobile ? 'calc(100vh - 3rem)' : 'calc(100vh - 14rem)' }} />
+      <div className="flex-1 relative map-view-container" style={{ height: isMobile ? 'calc(100vh - 4rem)' : 'calc(100vh - 14rem)' }}>
+        <div ref={mapRef} className="w-full h-full map-container" style={{ height: isMobile ? 'calc(100vh - 4rem)' : 'calc(100vh - 14rem)' }} />
         
         {/* Batch Success Message */}
         {showBatchSuccess && (

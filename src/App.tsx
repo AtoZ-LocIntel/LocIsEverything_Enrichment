@@ -30,6 +30,7 @@ function App() {
   const [activeCategory, setActiveCategory] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [savedScrollPosition, setSavedScrollPosition] = useState<number>(0);
+  const [previousViewMode, setPreviousViewMode] = useState<ViewMode | null>(null);
 
 
   // Detect mobile device
@@ -116,6 +117,8 @@ function App() {
   };
 
   const handleViewMap = () => {
+    // Save the current view mode before switching to map
+    setPreviousViewMode(viewMode);
     setViewMode('map');
   };
 
@@ -277,7 +280,11 @@ function App() {
   };
 
   const handleBackToConfig = () => {
-    setViewMode('config');
+    // If we have a previous view mode (came from results), go back to it
+    // Otherwise, go to config (home)
+    const targetViewMode = previousViewMode || 'config';
+    setViewMode(targetViewMode);
+    setPreviousViewMode(null); // Clear the previous view mode
     setError(null);
     // Restore scroll position after a brief delay to ensure the view has rendered
     setTimeout(() => {
@@ -424,6 +431,7 @@ function App() {
             results={enrichmentResults}
             onBackToConfig={handleBackToConfig}
             isMobile={isMobile}
+            previousViewMode={previousViewMode}
           />
         </div>
       )}
