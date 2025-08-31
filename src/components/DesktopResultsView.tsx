@@ -163,60 +163,71 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
             return (
               <div key={index} className="space-y-6">
                 {/* Location Header */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div className="bg-black rounded-xl shadow-sm border border-gray-200">
                   <div className="p-6">
-                    <div className="text-center">
-                      <h1 className="text-2xl font-bold text-gray-900 mb-3">{location.name}</h1>
-                      <div className="text-gray-600 space-y-1">
-                        <p>Coordinates: {location.lat.toFixed(6)}, {location.lon.toFixed(6)}</p>
-                        <p>Source: {location.source}</p>
-                        <p>Confidence: {location.confidence}%</p>
+                    <div className="flex items-center space-x-6">
+                      {/* Logo */}
+                      <div className="flex-shrink-0">
+                        <img 
+                          src="/assets/lociseverything.webp"
+                          alt="The Location Is Everything Co Logo" 
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
                       </div>
+                      {/* Location Info */}
+                      <div className="flex-1 text-center">
+                        <h1 className="text-2xl font-bold text-white mb-3">{location.name}</h1>
+                        <div className="text-gray-300 space-y-1">
+                          <p>Coordinates: {location.lat.toFixed(6)}, {location.lon.toFixed(6)}</p>
+                          <p>Source: {location.source}</p>
+                          <p>Confidence: {location.confidence}%</p>
+                        </div>
+                      </div>
+                    </div>
                       
                       {/* Key Summary Values */}
-                      <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="mt-4 pt-4 border-t border-gray-600">
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-base">
                           {enrichments.elevation_ft && (
                             <div className="text-center">
-                              <div className="font-bold text-gray-700 text-sm">Elevation</div>
-                              <div className="text-gray-900 font-bold text-lg">{enrichments.elevation_ft} ft</div>
+                              <div className="font-bold text-gray-300 text-sm">Elevation</div>
+                              <div className="text-white font-bold text-lg">{enrichments.elevation_ft} ft</div>
                             </div>
                           )}
                           {enrichments.open_meteo_weather_description && (
                             <div className="text-center">
-                              <div className="font-bold text-gray-700 text-sm">Weather</div>
-                              <div className="text-gray-900 font-bold text-lg">{enrichments.open_meteo_weather_description}</div>
+                              <div className="font-bold text-gray-300 text-sm">Weather</div>
+                              <div className="text-white font-bold text-lg">{enrichments.open_meteo_weather_description}</div>
                             </div>
                           )}
                           {enrichments.open_meteo_weather_summary && (
                             <div className="text-center">
-                              <div className="font-bold text-gray-700 text-sm">Weather Summary</div>
-                              <div className="text-gray-900 font-bold text-lg">{enrichments.open_meteo_weather_summary}</div>
+                              <div className="font-bold text-gray-300 text-sm">Weather Summary</div>
+                              <div className="text-white font-bold text-lg">{enrichments.open_meteo_weather_summary}</div>
                             </div>
                           )}
                           {enrichments.nws_alerts_summary && (
                             <div className="text-center">
-                              <div className="font-bold text-gray-700 text-sm">Alerts</div>
-                              <div className="text-gray-900 font-bold text-lg">{enrichments.nws_alerts_summary}</div>
+                              <div className="font-bold text-gray-300 text-sm">Alerts</div>
+                              <div className="text-white font-bold text-lg">{enrichments.nws_alerts_summary}</div>
                             </div>
                           )}
                           {enrichments.acs_population && (
                             <div className="text-center">
-                              <div className="font-bold text-gray-700 text-sm">Population</div>
-                              <div className="text-gray-900 font-bold text-lg">{enrichments.acs_population.toLocaleString()}</div>
+                              <div className="font-bold text-gray-300 text-sm">Population</div>
+                              <div className="text-white font-bold text-lg">{enrichments.acs_population.toLocaleString()}</div>
                             </div>
                           )}
                           {enrichments.acs_name && (
                             <div className="text-center">
-                              <div className="font-bold text-gray-700 text-sm">Area</div>
-                              <div className="text-gray-900 font-bold text-lg">{enrichments.acs_name}</div>
+                              <div className="font-bold text-gray-300 text-sm">Area</div>
+                              <div className="text-white font-bold text-lg">{enrichments.acs_name}</div>
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
                 {/* Enrichment Data */}
                 {Object.entries(groupedEnrichments).map(([category, items]) => (

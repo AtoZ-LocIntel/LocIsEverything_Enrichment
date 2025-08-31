@@ -209,52 +209,65 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       {/* Results Content */}
       <div className="py-4 space-y-4 mobile-content">
         {/* Location Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mobile-card">
-          <div className="text-center">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words">{location.name}</h1>
-            <div className="text-gray-600 space-y-1 text-sm sm:text-base">
-              <p className="break-all">Coordinates: {location.lat.toFixed(6)}, {location.lon.toFixed(6)}</p>
-              <p className="break-words">Source: {location.source}</p>
-              <p>Confidence: {location.confidence}%</p>
+        <div className="bg-black rounded-xl shadow-sm border border-gray-200 mobile-card">
+          <div className="p-4">
+            <div className="flex items-center space-x-4 mb-3">
+              {/* Logo */}
+              <div className="flex-shrink-0">
+                <img 
+                  src="/assets/lociseverything.webp"
+                  alt="The Location Is Everything Co Logo" 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              </div>
+              {/* Location Info */}
+              <div className="flex-1 text-center">
+                <h1 className="text-xl sm:text-2xl font-bold text-white mb-2 break-words">{location.name}</h1>
+                <div className="text-gray-300 space-y-1 text-sm sm:text-base">
+                  <p className="break-all">Coordinates: {location.lat.toFixed(6)}, {location.lon.toFixed(6)}</p>
+                  <p className="break-words">Source: {location.source}</p>
+                  <p>Confidence: {location.confidence}%</p>
+                </div>
+              </div>
             </div>
             
             {/* Key Summary Values */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="mt-4 pt-4 border-t border-gray-600">
               <div className="grid grid-cols-2 gap-3 text-sm sm:text-base">
                 {enrichments.elevation_ft && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Elevation</div>
-                    <div className="text-gray-900 font-bold text-sm sm:text-base">{enrichments.elevation_ft} ft</div>
+                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Elevation</div>
+                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.elevation_ft} ft</div>
                   </div>
                 )}
                 {enrichments.open_meteo_weather_description && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Weather</div>
-                    <div className="text-gray-900 font-bold text-xs sm:text-sm">{enrichments.open_meteo_weather_description}</div>
+                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Weather</div>
+                    <div className="text-white font-bold text-xs sm:text-sm">{enrichments.open_meteo_weather_description}</div>
                   </div>
                 )}
                 {enrichments.open_meteo_weather_summary && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Weather Summary</div>
-                    <div className="text-gray-900 font-bold text-xs sm:text-sm">{enrichments.open_meteo_weather_summary}</div>
+                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Weather Summary</div>
+                    <div className="text-white font-bold text-xs sm:text-sm">{enrichments.open_meteo_weather_summary}</div>
                   </div>
                 )}
                 {enrichments.nws_alerts_summary && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Alerts</div>
-                    <div className="text-gray-900 font-bold text-xs sm:text-sm">{enrichments.nws_alerts_summary}</div>
+                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Alerts</div>
+                    <div className="text-white font-bold text-xs sm:text-sm">{enrichments.nws_alerts_summary}</div>
                   </div>
                 )}
                 {enrichments.acs_population && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Population</div>
-                    <div className="text-gray-900 font-bold text-sm sm:text-base">{enrichments.acs_population.toLocaleString()}</div>
+                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Population</div>
+                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.acs_population.toLocaleString()}</div>
                   </div>
                 )}
                 {enrichments.acs_name && (
                   <div className="text-center col-span-2">
-                    <div className="font-bold text-gray-700 text-xs sm:text-sm">Area</div>
-                    <div className="text-gray-900 font-bold text-xs sm:text-sm">{enrichments.acs_name}</div>
+                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Area</div>
+                    <div className="text-white font-bold text-xs sm:text-sm">{enrichments.acs_name}</div>
                   </div>
                 )}
               </div>

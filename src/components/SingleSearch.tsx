@@ -63,7 +63,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="address" className="form-label text-white">
-                Enter Address (Optional)
+                Search by Address or Lat/Long
               </label>
               <div className="relative">
                 <input
@@ -105,7 +105,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch 
               ) : (
                 <>
                   <Search className="w-5 h-5" />
-                  <span>Search by Address</span>
+                  <span>Search by Address or Lat/Long</span>
                 </>
               )}
             </button>
@@ -134,7 +134,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch 
                   </>
                 ) : (
                   <>
-                    <span>Search from my location</span>
+                    <span>Search From My Location</span>
                   </>
                 )}
               </button>

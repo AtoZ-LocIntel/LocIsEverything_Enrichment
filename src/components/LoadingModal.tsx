@@ -335,7 +335,19 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4" style={{ height: '100dvh' }}>
-      <div className="bg-gradient-to-br from-orange-200 via-orange-300 to-orange-400 rounded-2xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 p-3 sm:p-8 text-orange-900 relative overflow-hidden border border-orange-500" style={{ maxHeight: '90dvh' }}>
+      <div 
+        className="rounded-2xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 p-3 sm:p-8 text-white relative overflow-hidden border border-gray-300" 
+        style={{ 
+          maxHeight: '90dvh',
+          backgroundImage: `url(/assets/topo.webp?v=${Date.now()})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-40 rounded-2xl"></div>
+        <div className="relative z-10">
         {/* Animated background elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
           <div className="absolute -top-4 -left-4 w-24 h-24 bg-orange-500 bg-opacity-30 rounded-full animate-pulse"></div>
@@ -382,14 +394,14 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
               </div>
 
               <div className="flex justify-center">
-                <div className="bg-orange-100 bg-opacity-80 rounded-xl p-3 sm:p-6 backdrop-blur-sm min-h-[140px] sm:min-h-[200px] flex flex-col justify-center w-4/5 max-w-md">
+                <div className="bg-white bg-opacity-20 rounded-xl p-3 sm:p-6 backdrop-blur-sm min-h-[140px] sm:min-h-[200px] flex flex-col justify-center w-4/5 max-w-md">
                   <div className="mb-4">
-                    <span className="inline-block bg-orange-200 bg-opacity-80 px-3 py-1 rounded-full text-sm font-medium text-orange-800">
+                    <span className="inline-block bg-white bg-opacity-90 px-3 py-1 rounded-full text-sm font-medium text-gray-800">
                       {currentContent.category}
                     </span>
                   </div>
                   
-                  <h3 className="text-sm sm:text-xl font-semibold mb-2 sm:mb-4 leading-relaxed text-orange-800">
+                  <h3 className="text-sm sm:text-xl font-semibold mb-2 sm:mb-4 leading-relaxed text-white">
                     {currentContent.type === 'fact' && "Did you know?"}
                     {currentContent.type === 'trivia' && "Fun fact:"}
                     {currentContent.type === 'tip' && "Pro tip:"}
@@ -400,8 +412,8 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                   
                   {showAnswer && (
                     <div className="animate-fadeIn">
-                      <div className="border-t border-orange-300 border-opacity-60 pt-3 sm:pt-4">
-                        <p className="text-sm sm:text-lg font-medium text-orange-700">
+                      <div className="border-t border-white border-opacity-60 pt-3 sm:pt-4">
+                        <p className="text-sm sm:text-lg font-medium text-white">
                           {currentContent.answer}
                         </p>
                       </div>
@@ -416,14 +428,15 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
                      key={index}
                      className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                        index === currentContentIndex 
-                         ? 'bg-orange-600' 
-                         : 'bg-orange-300 bg-opacity-60'
+                         ? 'bg-white' 
+                         : 'bg-white bg-opacity-60'
                      }`}
                    />
                  ))}
                </div>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>

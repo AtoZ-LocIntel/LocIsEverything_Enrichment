@@ -18,11 +18,25 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           cost: "Free"
         },
         {
+          name: "US Census Bureau Geocoding",
+          description: "Official US address validation and geocoding with high precision",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
           name: "GeoNames",
           description: "Geographic database covering all countries with administrative divisions",
           coverage: "Global",
           accuracy: "High",
           cost: "Free (with limits)"
+        },
+        {
+          name: "NYC PLUTO",
+          description: "NYC parcel-level precision geocoding for New York City addresses",
+          coverage: "New York City",
+          accuracy: "Very High",
+          cost: "Free"
         },
         {
           name: "Postcodes.io",
@@ -37,9 +51,16 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       category: "Environmental Data",
       sources: [
         {
-          name: "USGS Elevation Data",
-          description: "Digital elevation models and terrain data for elevation analysis",
-          coverage: "United States",
+          name: "Open-Meteo Elevation API",
+          description: "Global elevation data with high precision, converted to feet for US users",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free"
+        },
+        {
+          name: "Open-Meteo Weather API",
+          description: "Current weather conditions, forecasts, and historical weather data",
+          coverage: "Global",
           accuracy: "High",
           cost: "Free"
         },
@@ -51,8 +72,8 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           cost: "Free"
         },
         {
-          name: "Weather Alerts",
-          description: "National Weather Service alerts and warnings",
+          name: "National Weather Service Alerts",
+          description: "Active weather alerts, warnings, and advisories",
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free"
@@ -119,8 +140,57 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
-      category: "Hazards & Safety",
+      category: "Natural Hazards",
       sources: [
+        {
+          name: "WFIGS Current Wildfires",
+          description: "Wildland Fire Interagency Geospatial Services - current wildfire incidents, perimeters, and containment status",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "USDA Wildfire Hazard Potential",
+          description: "USDA Forest Service - Composite wildfire risk index (1-5: Very Low to Very High) with automatic proximity search",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "USDA Burn Probability",
+          description: "USDA Forest Service - Annual probability of wildfire occurrence (0-1 scale) with automatic proximity search",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "USDA Conditional Flame Length",
+          description: "USDA Forest Service - Expected flame length if fire occurs (feet) with automatic proximity search",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "USDA Risk to Potential Structures",
+          description: "USDA Forest Service - Structure exposure risk assessment with automatic proximity search",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "USDA Housing Unit Risk",
+          description: "USDA Forest Service - Housing unit count, density, exposure, impact, and risk assessments",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "USDA Population Count",
+          description: "USDA Forest Service - Population count and density data for wildfire risk assessment",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
+        },
         {
           name: "FEMA Flood Zones",
           description: "National Flood Hazard Layer with flood zone classifications",
@@ -143,13 +213,6 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           cost: "Free"
         },
         {
-          name: "NIFC/Esri Wildfires",
-          description: "Current wildfire incidents and fire perimeters with incident names and containment status",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free"
-        },
-        {
           name: "USGS Wetlands",
           description: "National Wetlands Inventory - wetland types and locations",
           coverage: "United States",
@@ -162,19 +225,19 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "High",
           cost: "Free"
-        },
+        }
+      ]
+    },
+    {
+      category: "Human Caused Hazards",
+      sources: [
         {
           name: "Animal Vehicle Collisions (AVI)",
           description: "The Location Is Everything Company data - Live API from LocationFriend with collision records for CA, TX, ID, IA, NH, and FARS",
           coverage: "United States (CA, TX, ID, IA, NH)",
           accuracy: "High",
           cost: "Paid"
-        }
-      ]
-    },
-    {
-      category: "Environmental Hazards",
-      sources: [
+        },
         {
           name: "EPA Superfund Sites",
           description: "Hazardous waste sites including National Priorities List locations",
