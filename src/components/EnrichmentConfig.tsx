@@ -102,18 +102,36 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   useEffect(() => {
     if (activeModal) {
       console.log('Modal opened:', activeModal);
-      // Small delay to ensure modal is rendered
-      setTimeout(() => {
+      // Multiple attempts to ensure scroll to top works
+      const scrollToTop = () => {
+        // Scroll the modal content to top
         if (modalContentRef.current) {
           console.log('Scrolling modal content to top');
           modalContentRef.current.scrollTop = 0;
+          modalContentRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
-        // Also try to scroll the window to top
-        window.scrollTo(0, 0);
-        // Force scroll to top of the modal content
+        
+        // Scroll the main window to top
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        
+        // Force scroll all possible scroll containers
         document.documentElement.scrollTop = 0;
         document.body.scrollTop = 0;
-      }, 100);
+        
+        // Try to scroll any parent containers
+        const modalContainer = document.querySelector('.fixed.inset-0.bg-white');
+        if (modalContainer) {
+          modalContainer.scrollTop = 0;
+        }
+      };
+      
+      // Immediate scroll
+      scrollToTop();
+      
+      // Delayed scroll to ensure DOM is fully rendered
+      setTimeout(scrollToTop, 50);
+      setTimeout(scrollToTop, 100);
+      setTimeout(scrollToTop, 200);
     }
   }, [activeModal]);
 
