@@ -91,8 +91,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Air Quality';
       } else if (key.includes('fips') || key.includes('census') || key.includes('demographic')) {
         category = 'Demographics & Census';
-      } else if (key.includes('poi_') && key.includes('count')) {
-        category = 'Points of Interest';
+      } else if (key.includes('poi_') && key.includes('count') && !key.includes('wildfire')) {
+        category = 'Points of Interest Nearby';
       } else if (key.includes('weather') || key.includes('climate')) {
         category = 'Weather & Climate';
       } else if (key.includes('school') || key.includes('education')) {
@@ -103,10 +103,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Safety & Crime';
       } else if (key.includes('transport') || key.includes('transit')) {
         category = 'Transportation';
-      } else if (key.includes('wildfire') || key.includes('natural_disaster')) {
-        category = 'Natural Disasters';
-      } else if (key.includes('animal') || key.includes('collision')) {
-        category = 'Wildlife & Accidents';
+      } else if (key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire'))) {
+        category = 'Natural Risks & Hazards';
+      } else if (key.includes('poi_epa_') || key.includes('animal') || key.includes('collision')) {
+        category = 'Human-Made Hazards';
       }
 
       if (!acc[category]) {

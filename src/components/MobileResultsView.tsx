@@ -121,8 +121,12 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Demographics';
     }
     
-    if (key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_wildfires')) {
-      return 'Hazards & Safety';
+    if (key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_wildfires') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire'))) {
+      return 'Natural Risks & Hazards';
+    }
+    
+    if (key.includes('poi_epa_') || key.includes('poi_animal_vehicle_collisions')) {
+      return 'Human-Made Hazards';
     }
                 if (key.includes('open_meteo_weather')) {
               return 'Weather & Alerts';
@@ -150,6 +154,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     if (key.includes('poi_wikipedia')) {
       return 'Local Knowledge';
+    }
+    
+    // Catch-all for POI counts that don't fit other categories
+    if (key.includes('poi_') && key.includes('count')) {
+      return 'Points of Interest Nearby';
     }
     if (key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
       return 'Public Lands';
