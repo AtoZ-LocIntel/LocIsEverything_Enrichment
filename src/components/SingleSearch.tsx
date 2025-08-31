@@ -8,7 +8,7 @@ interface SingleSearchProps {
 }
 
 const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch }) => {
-  const [address, setAddress] = useState('1600 Pennsylvania Avenue NW, Washington, DC 20500');
+  const [address, setAddress] = useState('3050 Coast Rd, Santa Cruz, CA 95060');
   const [isLoading, setIsLoading] = useState(false);
 
   const [isLocationLoading, setIsLocationLoading] = useState(false);
