@@ -301,6 +301,13 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
 
         {/* Bottom Action Buttons */}
         <div className="flex flex-col gap-3 pb-8 mobile-buttons">
+          <button
+            onClick={onBackToSearch}
+            className="flex-1 bg-gray-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>Back to Search</span>
+          </button>
           
           <button
             onClick={onDownloadCSV}

@@ -256,6 +256,37 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
             );
           })}
         </div>
+        
+        {/* Bottom Action Buttons */}
+        <div className="bg-white border-t border-gray-200 sticky bottom-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={onBackToSearch}
+                className="flex items-center space-x-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold shadow-md"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back to Search</span>
+              </button>
+              
+              <button
+                onClick={onViewMap}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md"
+              >
+                <Map className="w-5 h-5" />
+                <span>View in Map</span>
+              </button>
+              
+              <button
+                onClick={onDownloadCSV}
+                className="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md"
+              >
+                <Download className="w-5 h-5" />
+                <span>Download CSV</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

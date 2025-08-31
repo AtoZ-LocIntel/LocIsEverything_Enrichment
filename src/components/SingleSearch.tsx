@@ -71,7 +71,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch 
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="e.g., 123 Main St, Boston, MA 02108"
+                  placeholder="e.g., 3050 Coast Rd, Santa Cruz, CA 95060"
                   className="form-input text-base pl-12 pr-12"
                   disabled={isLoading}
                 />

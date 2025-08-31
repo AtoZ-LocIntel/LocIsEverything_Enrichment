@@ -332,14 +332,17 @@ function App() {
           <div className="max-w-2xl mx-auto w-full main-content">
 
             
-            <div className="text-center mb-12 mt-8 sm:mt-16">
+            <div className="text-center mb-12 mt-4 sm:mt-8">
               <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">
-                NEARBY PLATFORM
+                KNOW YOUR LOCATION.
               </h1>
               
-              <h2 className="text-2xl sm:text-3xl font-bold text-gradient mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gradient mb-2">
                 Open Location Intelligence built on Open Data
               </h2>
+              <h3 className="text-xl sm:text-2xl font-bold text-gradient mb-4">
+                NEARBY PLATFORM
+              </h3>
               <p className="text-lg sm:text-xl text-gray-300">
                 Comprehensive location and address enrichment platform using open data sources in real-time and on-demand.
               </p>
