@@ -93,7 +93,6 @@ export function calculateSlope(elevations: number[][]): number {
   const z2 = elevations[0][1];
   const z3 = elevations[0][2];
   const z4 = elevations[1][0];
-  const z5 = elevations[1][1];
   const z6 = elevations[1][2];
   const z7 = elevations[2][0];
   const z8 = elevations[2][1];
@@ -121,7 +120,6 @@ export function calculateAspect(elevations: number[][]): number {
   const z2 = elevations[0][1];
   const z3 = elevations[0][2];
   const z4 = elevations[1][0];
-  const z5 = elevations[1][1];
   const z6 = elevations[1][2];
   const z7 = elevations[2][0];
   const z8 = elevations[2][1];
