@@ -388,8 +388,8 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ isVisible, enrichmentCount 
           ) : (
             <div className="text-center space-y-4 sm:space-y-6">
               <div className="flex justify-center">
-                <div className="bg-orange-100 bg-opacity-80 rounded-full p-3 sm:p-4 backdrop-blur-sm">
-                  <img src="/assets/lociseverything.webp" alt="The Location Is Everything Co" className="w-12 h-12 sm:w-16 sm:h-16 animate-pulse rounded-full object-cover" />
+                <div className="bg-orange-100 bg-opacity-80 rounded-full p-0.5 sm:p-1 backdrop-blur-sm">
+                  <img src="/assets/lociseverything.webp" alt="The Location Is Everything Co" className="w-24 h-24 sm:w-28 sm:h-28 animate-pulse rounded-full object-cover" />
                 </div>
               </div>
 

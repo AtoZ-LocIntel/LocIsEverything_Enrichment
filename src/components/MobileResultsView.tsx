@@ -279,6 +279,18 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
                     <div className="text-white font-bold text-xs sm:text-sm">{enrichments.acs_name}</div>
                   </div>
                 )}
+                {enrichments.terrain_slope && (
+                  <div className="text-center">
+                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Slope</div>
+                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.terrain_slope}°</div>
+                  </div>
+                )}
+                {enrichments.terrain_slope_direction && (
+                  <div className="text-center">
+                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Aspect</div>
+                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.terrain_slope_direction}</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

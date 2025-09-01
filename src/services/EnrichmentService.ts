@@ -1,6 +1,7 @@
 import { GeocodeResult } from '../lib/types';
 import { EnrichmentResult } from '../App';
 import { getUSDAWildfireRiskData } from '../adapters/usdaWildfireRisk';
+import { getTerrainAnalysis } from './ElevationService';
 // import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
 
 // CORS proxy helpers from original geocoder.html
@@ -19,7 +20,7 @@ function proxied(url: string, which: number = 0): string {
   return p.type === "prefix" ? (p.value + url) : (p.value + encodeURIComponent(url));
 }
 
-export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: number = 500): Promise<any> {
+export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: number = 200): Promise<any> {
   const attempts = USE_CORS_PROXY ? [url, proxied(url, 0), proxied(url, 1)] : [url, proxied(url, 0), proxied(url, 1)];
   let err: any;
   
@@ -79,9 +80,33 @@ function sleep(ms: number): Promise<void> {
 }
 
 export class EnrichmentService {
+  private performanceMetrics: {
+    totalQueries: number;
+    totalTime: number;
+    averageTime: number;
+    parallelQueries: number;
+  } = {
+    totalQueries: 0,
+    totalTime: 0,
+    averageTime: 0,
+    parallelQueries: 0
+  };
   
   constructor() {
     // Using your proven working geocoding approach instead of CompositeGeocoder
+  }
+  
+  getPerformanceMetrics() {
+    return { ...this.performanceMetrics };
+  }
+  
+  logPerformanceSummary() {
+    console.log('📊 === PERFORMANCE SUMMARY ===');
+    console.log(`Total Queries: ${this.performanceMetrics.totalQueries}`);
+    console.log(`Total Time: ${this.performanceMetrics.totalTime}ms`);
+    console.log(`Average Time: ${this.performanceMetrics.averageTime}ms`);
+    console.log(`Parallel Queries: ${this.performanceMetrics.parallelQueries}`);
+    console.log('=============================');
   }
 
   // Utility methods for coordinate calculations
@@ -866,67 +891,89 @@ export class EnrichmentService {
     poiRadii: Record<string, number>
   ): Promise<Record<string, any>> {
     const enrichments: Record<string, any> = {};
+    const startTime = performance.now();
     
-    // Always run weather queries by default (no need to select them)
-    try {
-      console.log(`🌡️  Running default Open-Meteo weather query for coordinates [${lat}, ${lon}]`);
-      const openMeteoWeather = await this.getOpenMeteoWeather(lat, lon);
-      Object.assign(enrichments, openMeteoWeather);
-    } catch (error) {
-      console.error('Default Open-Meteo weather query failed:', error);
-      enrichments.open_meteo_weather_error = error instanceof Error ? error.message : 'Unknown error';
-    }
-
-    try {
-      console.log(`🌤️  Running default weather alert query for coordinates [${lat}, ${lon}]`);
-      const weatherAlerts = await this.getNWSWeatherAlerts(lat, lon, 25); // Default 25 mile radius
-      Object.assign(enrichments, weatherAlerts);
-    } catch (error) {
-      console.error('Default weather alert query failed:', error);
-      enrichments.nws_weather_alerts_error = error instanceof Error ? error.message : 'Unknown error';
-    }
-
-    // Always run elevation query by default
-    try {
-      console.log(`🏔️  Running default elevation query for coordinates [${lat}, ${lon}]`);
-      const elevationResult = await this.runSingleEnrichment('elev', lat, lon, poiRadii);
-      Object.assign(enrichments, elevationResult);
-    } catch (error) {
-      console.error('Default elevation query failed:', error);
-      enrichments.elevation_error = error instanceof Error ? error.message : 'Unknown error';
-    }
-
-    // Always run census/FIPS query by default
-    try {
-      console.log(`🏛️  Running default census/FIPS query for coordinates [${lat}, ${lon}]`);
-      const fipsResult = await this.runSingleEnrichment('fips', lat, lon, poiRadii);
-      Object.assign(enrichments, fipsResult);
-    } catch (error) {
-      console.error('Default census/FIPS query failed:', error);
-      enrichments.fips_error = error instanceof Error ? error.message : 'Unknown error';
-    }
-
-    // Always run ACS demographics query by default
-    try {
-      console.log(`📊 Running default ACS demographics query for coordinates [${lat}, ${lon}]`);
-      const acsResult = await this.runSingleEnrichment('acs', lat, lon, poiRadii);
-      Object.assign(enrichments, acsResult);
-    } catch (error) {
-      console.error('Default ACS demographics query failed:', error);
-      enrichments.acs_error = error instanceof Error ? error.message : 'Unknown error';
-    }
+    console.log(`🚀 Starting parallel enrichment queries for coordinates [${lat}, ${lon}]`);
     
-    // Run each selected enrichment
-    for (const enrichmentId of selectedEnrichments) {
-      try {
-        const result = await this.runSingleEnrichment(enrichmentId, lat, lon, poiRadii);
-        Object.assign(enrichments, result);
-      } catch (error) {
+    // Create parallel promises for all default enrichments
+    const defaultEnrichmentPromises = [
+      // Weather queries (can run in parallel)
+      this.getOpenMeteoWeather(lat, lon).catch(error => {
+        console.error('Open-Meteo weather query failed:', error);
+        return { open_meteo_weather_error: error instanceof Error ? error.message : 'Unknown error' };
+      }),
+      
+      this.getNWSWeatherAlerts(lat, lon, 25).catch(error => {
+        console.error('NWS weather alerts query failed:', error);
+        return { nws_weather_alerts_error: error instanceof Error ? error.message : 'Unknown error' };
+      }),
+      
+      // Terrain analysis (includes elevation, so we don't need separate elevation query)
+      getTerrainAnalysis(lat, lon).then(terrainAnalysis => {
+        console.log(`✅ Terrain analysis complete: ${terrainAnalysis.elevation}m elevation, ${terrainAnalysis.slope.toFixed(1)}° slope, ${terrainAnalysis.aspect.toFixed(0)}° aspect (${terrainAnalysis.slopeDirection})`);
+        return {
+          terrain_elevation: terrainAnalysis.elevation,
+          terrain_slope: Math.round(terrainAnalysis.slope * 10) / 10,
+          terrain_aspect: Math.round(terrainAnalysis.aspect),
+          terrain_slope_direction: terrainAnalysis.slopeDirection,
+          // Also provide elevation_ft for compatibility
+          elevation_ft: Math.round(terrainAnalysis.elevation * 3.28084)
+        };
+      }).catch(error => {
+        console.error('Terrain analysis failed:', error);
+        return { terrain_analysis_error: error instanceof Error ? error.message : 'Unknown error' };
+      }),
+      
+      // Census/FIPS query
+      this.runSingleEnrichment('fips', lat, lon, poiRadii).catch(error => {
+        console.error('Census/FIPS query failed:', error);
+        return { fips_error: error instanceof Error ? error.message : 'Unknown error' };
+      }),
+      
+      // ACS demographics query
+      this.runSingleEnrichment('acs', lat, lon, poiRadii).catch(error => {
+        console.error('ACS demographics query failed:', error);
+        return { acs_error: error instanceof Error ? error.message : 'Unknown error' };
+      })
+    ];
+    
+    // Create parallel promises for selected enrichments
+    const selectedEnrichmentPromises = selectedEnrichments.map(enrichmentId => 
+      this.runSingleEnrichment(enrichmentId, lat, lon, poiRadii).catch(error => {
         console.error(`Enrichment ${enrichmentId} failed:`, error);
-        enrichments[`${enrichmentId}_error`] = error instanceof Error ? error.message : 'Unknown error';
+        return { [`${enrichmentId}_error`]: error instanceof Error ? error.message : 'Unknown error' };
+      })
+    );
+    
+    // Wait for all enrichments to complete in parallel
+    console.log(`⏱️  Running ${defaultEnrichmentPromises.length + selectedEnrichmentPromises.length} enrichment queries in parallel...`);
+    
+    const allResults = await Promise.allSettled([
+      ...defaultEnrichmentPromises,
+      ...selectedEnrichmentPromises
+    ]);
+    
+    // Process results
+    allResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        Object.assign(enrichments, result.value);
+      } else {
+        console.error(`Enrichment promise ${index} rejected:`, result.reason);
       }
-    }
-
+    });
+    
+    const endTime = performance.now();
+    const totalTime = Math.round(endTime - startTime);
+    
+    // Update performance metrics
+    this.performanceMetrics.totalQueries += 1;
+    this.performanceMetrics.totalTime += totalTime;
+    this.performanceMetrics.averageTime = Math.round(this.performanceMetrics.totalTime / this.performanceMetrics.totalQueries);
+    this.performanceMetrics.parallelQueries += defaultEnrichmentPromises.length + selectedEnrichmentPromises.length;
+    
+    console.log(`🎯 All enrichments completed in ${totalTime}ms (parallel execution)`);
+    console.log(`📊 Performance Stats: ${this.performanceMetrics.totalQueries} total queries, ${this.performanceMetrics.averageTime}ms average`);
+    
     return enrichments;
   }
 

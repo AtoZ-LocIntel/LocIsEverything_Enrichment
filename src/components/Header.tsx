@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                 </div>
                 {/* Enrichment Platform Text */}
                 <div className="hidden sm:block">
-                  <h1 className="text-xl sm:text-2xl font-bold text-white">Enrichment Platform</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold text-white">Location Enrichment Platform</h1>
                   <p className="text-sm text-gray-300">Location Intelligence & Data Enrichment</p>
                 </div>
               </div>

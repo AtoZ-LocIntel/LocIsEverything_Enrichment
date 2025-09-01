@@ -224,6 +224,18 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                               <div className="text-white font-bold text-lg">{enrichments.acs_name}</div>
                             </div>
                           )}
+                          {enrichments.terrain_slope && (
+                            <div className="text-center">
+                              <div className="font-bold text-gray-300 text-sm">Slope</div>
+                              <div className="text-white font-bold text-lg">{enrichments.terrain_slope}°</div>
+                            </div>
+                          )}
+                          {enrichments.terrain_slope_direction && (
+                            <div className="text-center">
+                              <div className="font-bold text-gray-300 text-sm">Aspect</div>
+                              <div className="text-white font-bold text-lg">{enrichments.terrain_slope_direction}</div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

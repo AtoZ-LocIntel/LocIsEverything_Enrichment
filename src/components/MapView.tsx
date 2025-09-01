@@ -885,11 +885,11 @@ if (bounds.isValid() && results.length > 1) {
     
     // Group enrichments by category
     const enrichmentCategories: Record<string, Array<{key: string, value: any}>> = {
+      'Hazards & Safety': [],
       'Weather & Alerts': [],
       'Geographic Info': [],
       'Political Districts': [],
       'Demographics': [],
-      'Hazards & Safety': [],
       'Transportation': [],
       'Natural Resources': [],
       'Public Lands': [],
@@ -910,7 +910,7 @@ if (bounds.isValid() && results.length > 1) {
          enrichmentCategories['Political Districts'].push({ key, value });
        } else if (key.includes('acs_')) {
          enrichmentCategories['Demographics'].push({ key, value });
-       } else if (key.includes('poi_wetlands') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_fema_flood_zones') || key.includes('poi_wildfires')) {
+       } else if (key.includes('wildfire') || key.includes('usda_wildfire') || key.includes('usda_burn') || key.includes('usda_conditional') || key.includes('usda_risk') || key.includes('usda_exposure') || key.includes('poi_wetlands') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_fema_flood_zones') || key.includes('poi_wildfires') || key.includes('terrain_')) {
          enrichmentCategories['Hazards & Safety'].push({ key, value });
        } else if (key.includes('poi_bus') || key.includes('poi_train') || key.includes('poi_subway') || key.includes('poi_tram') || key.includes('poi_monorail') || key.includes('poi_aerialway') || key.includes('poi_ferry') || key.includes('poi_airport_air') || key.includes('poi_taxi') || key.includes('poi_bike_scooter_share') || key.includes('poi_dockless_hub') || key.includes('poi_electric_charging')) {
          enrichmentCategories['Transportation'].push({ key, value });
