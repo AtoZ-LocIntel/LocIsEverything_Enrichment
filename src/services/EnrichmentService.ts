@@ -2443,8 +2443,8 @@ export class EnrichmentService {
     try {
       console.log(`🌡️  Open-Meteo Weather query for coordinates [${lat}, ${lon}]`);
 
-      // Open-Meteo API endpoint for current weather
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+      // Open-Meteo API endpoint for current weather with timezone
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`;
 
       console.log(`🔗 Open-Meteo Weather API URL: ${url}`);
 
@@ -2515,6 +2515,9 @@ export class EnrichmentService {
         open_meteo_weather_weathercode: currentWeather.weathercode,
         open_meteo_weather_weather_description: weatherDescription,
         open_meteo_weather_time: currentWeather.time,
+        open_meteo_weather_timezone: data.timezone || 'Unknown',
+        open_meteo_weather_timezone_abbreviation: data.timezone_abbreviation || 'Unknown',
+        open_meteo_weather_utc_offset_seconds: data.utc_offset_seconds || 0,
         open_meteo_weather_summary: `Current weather: ${weatherDescription}, ${temperatureF.toFixed(1)}°F, ${windspeedMph.toFixed(1)} mph wind`
       };
 

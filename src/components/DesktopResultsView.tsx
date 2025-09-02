@@ -236,6 +236,12 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                               <div className="text-white font-bold text-lg">{enrichments.terrain_slope_direction}</div>
                             </div>
                           )}
+                          {enrichments.open_meteo_weather_timezone_abbreviation && (
+                            <div className="text-center">
+                              <div className="font-bold text-gray-300 text-sm">Timezone</div>
+                              <div className="text-white font-bold text-lg">{enrichments.open_meteo_weather_timezone_abbreviation}</div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

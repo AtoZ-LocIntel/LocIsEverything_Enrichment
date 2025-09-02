@@ -334,7 +334,7 @@ function App() {
             
             <div className="text-center mb-8 mt-4 sm:mt-8">
               <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">
-                KNOW YOUR LOCATION.
+                KNOW YOUR LOCATION
               </h1>
               
               <h2 className="text-2xl sm:text-3xl font-bold text-gradient mb-3">

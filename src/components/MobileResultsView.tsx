@@ -291,6 +291,12 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
                     <div className="text-white font-bold text-sm sm:text-base">{enrichments.terrain_slope_direction}</div>
                   </div>
                 )}
+                {enrichments.open_meteo_weather_timezone_abbreviation && (
+                  <div className="text-center">
+                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Timezone</div>
+                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.open_meteo_weather_timezone_abbreviation}</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
