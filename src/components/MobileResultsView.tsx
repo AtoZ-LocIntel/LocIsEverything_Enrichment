@@ -4,16 +4,26 @@ import { EnrichmentResult } from '../App';
 
 interface MobileResultsViewProps {
   result: EnrichmentResult;
+  selectedEnrichments: string[];
   onBackToSearch: () => void;
   onDownloadCSV: () => void;
 }
 
 const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   result,
+  selectedEnrichments,
   onBackToSearch,
   onDownloadCSV
 }) => {
   const { location, enrichments } = result;
+
+  const formatFieldName = (key: string): string => {
+    return key
+      .replace(/^poi_/g, 'POI ')
+      .replace(/^at_/g, 'AT ')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase());
+  };
 
   const formatValue = (value: any, key: string): string => {
     if (value === null || value === undefined) return 'N/A';
@@ -31,7 +41,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       if (value.length === 0) return 'None found';
       
       // For detailed POI data, show count only in mobile form view
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements')) {
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features')) {
         return `${value.length} found (see CSV for details)`;
       }
       
@@ -121,12 +131,12 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Demographics';
     }
     
-    if (key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_wildfires') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire'))) {
-      return 'Natural Risks & Hazards';
+    if (key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_wildfires') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire'))) {
+      return 'Natural Hazards';
     }
     
-    if (key.includes('poi_epa_') || key.includes('poi_animal_vehicle_collisions')) {
-      return 'Human-Made Hazards';
+    if (key.includes('poi_epa_')) {
+      return 'Human Caused Hazards';
     }
                 if (key.includes('open_meteo_weather')) {
               return 'Weather & Alerts';
@@ -140,20 +150,26 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_beaches') || key.includes('poi_lakes_ponds') || key.includes('poi_rivers_streams') || key.includes('poi_mountains_peaks')) {
       return 'Natural Resources';
     }
-    if (key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_parks') || key.includes('poi_grocery') || key.includes('poi_restaurants') || key.includes('poi_banks') || key.includes('poi_pharmacies') || key.includes('poi_worship') || key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_gyms') || key.includes('poi_cinemas') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_gas_stations')) {
+    if (key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_parks') || key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_town_halls') || key.includes('poi_courthouses') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_colleges') || key.includes('poi_childcare')) {
       return 'Community & Services';
     }
-    if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_urgent_care')) {
-      return 'Emergency Services';
+    if (key.includes('poi_grocery') || key.includes('poi_restaurants') || key.includes('poi_banks') || key.includes('poi_pharmacies') || key.includes('poi_convenience') || key.includes('poi_hardware') || key.includes('poi_liquor') || key.includes('poi_bakery') || key.includes('poi_butcher') || key.includes('poi_seafood') || key.includes('poi_sporting') || key.includes('poi_bookstore') || key.includes('poi_clothing') || key.includes('poi_shoes') || key.includes('poi_thrift') || key.includes('poi_pet') || key.includes('poi_florist') || key.includes('poi_variety') || key.includes('poi_gas_stations') || key.includes('poi_car_wash') || key.includes('poi_auto_repair') || key.includes('poi_auto_parts') || key.includes('poi_auto_dealers')) {
+      return 'Retail & Commerce';
     }
-    if (key.includes('poi_airports') || key.includes('poi_substations') || key.includes('poi_powerlines') || key.includes('poi_power_plants') || key.includes('poi_railroads') || key.includes('poi_gas') || key.includes('poi_cell_towers')) {
-      return 'Infrastructure';
+    if (key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_gyms') || key.includes('poi_chiropractor') || key.includes('poi_optometry') || key.includes('poi_veterinary') || key.includes('poi_hospitals') || key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_urgent_care')) {
+      return 'Health & Wellness';
     }
-    if (key.includes('poi_epa_') || key.includes('poi_usda_')) {
-      return 'Environmental & Regulatory';
+    if (key.includes('poi_cinemas') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_bowling') || key.includes('poi_arcade') || key.includes('poi_rv_park') || key.includes('poi_campground') || key.includes('poi_wikipedia')) {
+      return 'Recreation & Leisure';
     }
-    if (key.includes('poi_wikipedia')) {
-      return 'Local Knowledge';
+    if (key.includes('poi_substations') || key.includes('poi_powerlines') || key.includes('poi_power_plants') || key.includes('poi_cell_towers') || key.includes('poi_grid')) {
+      return 'Power & Infrastructure';
+    }
+    if (key.includes('poi_airports') || key.includes('poi_railroads') || key.includes('poi_gas')) {
+      return 'Transportation';
+    }
+    if (key.includes('at_')) {
+      return 'Appalachian Trail';
     }
     
     // Catch-all for POI counts that don't fit other categories
@@ -174,6 +190,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('_all_pois') ||
         key.includes('_detailed') ||
         key.includes('_elements') ||
+        key.includes('_features') ||
         key.endsWith('_all') ||
         key.endsWith(' All') ||
         key.includes('_all') ||
@@ -188,6 +205,28 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     acc[category].push({ key, value });
     return acc;
   }, {} as Record<string, Array<{ key: string; value: any }>>);
+
+  // Sort categories to prioritize those containing selected enrichments
+  const sortedCategories = Object.entries(groupedEnrichments).sort(([categoryA, itemsA], [categoryB, itemsB]) => {
+    // Check if category contains any selected enrichments
+    const hasSelectedA = itemsA.some(item => 
+      selectedEnrichments.some(selected => 
+        item.key.includes(selected) || item.key.startsWith(selected + '_')
+      )
+    );
+    const hasSelectedB = itemsB.some(item => 
+      selectedEnrichments.some(selected => 
+        item.key.includes(selected) || item.key.startsWith(selected + '_')
+      )
+    );
+    
+    // Categories with selected enrichments come first
+    if (hasSelectedA && !hasSelectedB) return -1;
+    if (!hasSelectedA && hasSelectedB) return 1;
+    
+    // Within each group, maintain alphabetical order
+    return categoryA.localeCompare(categoryB);
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 md:hidden pt-4 mobile-results-container">
@@ -242,59 +281,59 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
             
             {/* Key Summary Values */}
             <div className="mt-4 pt-4 border-t border-gray-600">
-              <div className="grid grid-cols-2 gap-3 text-sm sm:text-base">
+              <div className="grid grid-cols-2 gap-3 text-base sm:text-base">
                 {enrichments.elevation_ft && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Elevation</div>
-                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.elevation_ft} ft</div>
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Elevation</div>
+                    <div className="text-white font-bold text-base sm:text-base">{enrichments.elevation_ft} ft</div>
                   </div>
                 )}
                 {enrichments.open_meteo_weather_description && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Weather</div>
-                    <div className="text-white font-bold text-xs sm:text-sm">{enrichments.open_meteo_weather_description}</div>
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Weather</div>
+                    <div className="text-white font-bold text-sm sm:text-sm">{enrichments.open_meteo_weather_description}</div>
                   </div>
                 )}
                 {enrichments.open_meteo_weather_summary && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Weather Summary</div>
-                    <div className="text-white font-bold text-xs sm:text-sm">{enrichments.open_meteo_weather_summary}</div>
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Weather Summary</div>
+                    <div className="text-white font-bold text-sm sm:text-sm">{enrichments.open_meteo_weather_summary}</div>
                   </div>
                 )}
                 {enrichments.nws_alerts_summary && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Alerts</div>
-                    <div className="text-white font-bold text-xs sm:text-sm">{enrichments.nws_alerts_summary}</div>
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Alerts</div>
+                    <div className="text-white font-bold text-sm sm:text-sm">{enrichments.nws_alerts_summary}</div>
                   </div>
                 )}
                 {enrichments.acs_population && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Population</div>
-                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.acs_population.toLocaleString()}</div>
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Population</div>
+                    <div className="text-white font-bold text-base sm:text-base">{enrichments.acs_population.toLocaleString()}</div>
                   </div>
                 )}
                 {enrichments.acs_name && (
                   <div className="text-center col-span-2">
-                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Area</div>
-                    <div className="text-white font-bold text-xs sm:text-sm">{enrichments.acs_name}</div>
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Area</div>
+                    <div className="text-white font-bold text-sm sm:text-sm">{enrichments.acs_name}</div>
                   </div>
                 )}
                 {enrichments.terrain_slope && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Slope</div>
-                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.terrain_slope}°</div>
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Slope</div>
+                    <div className="text-white font-bold text-base sm:text-base">{enrichments.terrain_slope}°</div>
                   </div>
                 )}
                 {enrichments.terrain_slope_direction && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Aspect</div>
-                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.terrain_slope_direction}</div>
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Aspect</div>
+                    <div className="text-white font-bold text-base sm:text-base">{enrichments.terrain_slope_direction}</div>
                   </div>
                 )}
                 {enrichments.open_meteo_weather_timezone_abbreviation && (
                   <div className="text-center">
-                    <div className="font-bold text-gray-300 text-xs sm:text-sm">Timezone</div>
-                    <div className="text-white font-bold text-sm sm:text-base">{enrichments.open_meteo_weather_timezone_abbreviation}</div>
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Timezone</div>
+                    <div className="text-white font-bold text-base sm:text-base">{enrichments.open_meteo_weather_timezone_abbreviation}</div>
                   </div>
                 )}
               </div>
@@ -303,7 +342,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         </div>
 
         {/* Enrichment Data */}
-        {Object.entries(groupedEnrichments).map(([category, items]) => (
+        {sortedCategories.map(([category, items]) => (
           <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 mobile-card">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl mobile-card-header">
               <h2 className="text-lg font-bold text-white">{category}</h2>
@@ -313,10 +352,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
               {items.map(({ key, value }) => (
                 <div key={key} className="border-b border-gray-100 last:border-b-0 pb-3 sm:pb-4 last:pb-0">
                   <div className="flex flex-col space-y-2">
-                    <label className="text-sm sm:text-base font-bold text-gray-700 capitalize break-words">
-                      {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    <label className="text-base sm:text-base font-bold text-gray-700 capitalize break-words">
+                      {formatFieldName(key)}
                     </label>
-                    <div className="text-gray-900 bg-gray-50 p-2 sm:p-3 rounded-lg text-base sm:text-lg font-bold break-words overflow-hidden">
+                    <div className="text-gray-900 bg-gray-50 p-2 sm:p-3 rounded-lg text-lg sm:text-lg font-bold break-words overflow-hidden">
                       {formatValue(value, key)}
                     </div>
                   </div>

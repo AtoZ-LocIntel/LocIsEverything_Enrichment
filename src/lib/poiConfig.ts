@@ -84,6 +84,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'Quirky & Fun',
     description: 'Interesting and unique nearby places',
     icon: '☕'
+  },
+  {
+    id: 'at',
+    title: 'Appalachian Trail',
+    description: 'Appalachian Trail facilities, infrastructure, and trail features',
+    icon: 'at.webp'
   }
 ];
 
@@ -168,7 +174,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_wikipedia', label: 'Wikipedia Articles', description: 'Haunted sites, historic oddities, museums, and quirky landmarks with intelligent categorization', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' },
 
   // Human Caused Hazards (man-made environmental hazards)
-  { id: 'poi_animal_vehicle_collisions', label: 'Animal Vehicle Collisions', description: 'The Location Is Everything Company data - Live API from LocationFriend with animal vehicle collision records for CA, TX, ID, IA, NH, and FARS within specified radius', isPOI: true, defaultRadius: 5, category: 'hazards', section: 'hazards' },
+  { id: 'poi_animal_vehicle_collisions', label: 'Animal-Vehicle Impacts (AVIs)', description: 'The Location Is Everything Company data - Live API from LocationFriend with animal vehicle collision records for CA, TX, ID, IA, NH, and FARS within specified radius', isPOI: true, defaultRadius: 5, category: 'wildfire', section: 'wildfire' },
   
 
     
@@ -205,7 +211,22 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   
   // Natural Hazards - Geological Risk
   { id: 'poi_earthquakes', label: 'USGS Earthquakes', description: 'Historical earthquake events - frequency, magnitude, and proximity analysis for risk assessment', isPOI: true, defaultRadius: 25, category: 'wildfire', section: 'wildfire' },
-  { id: 'poi_volcanoes', label: 'USGS Volcanoes', description: 'Active and dormant volcanoes - status, location, and proximity analysis for volcanic risk assessment', isPOI: true, defaultRadius: 50, category: 'wildfire', section: 'wildfire' }
+  { id: 'poi_volcanoes', label: 'USGS Volcanoes', description: 'Active and dormant volcanoes - status, location, and proximity analysis for volcanic risk assessment', isPOI: true, defaultRadius: 50, category: 'wildfire', section: 'wildfire' },
+
+  // Appalachian Trail Facilities and Infrastructure
+  { id: 'at_bridges', label: 'AT Bridges', description: 'Appalachian Trail bridges and crossings', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_campsites', label: 'AT Campsites', description: 'Appalachian Trail campsites and camping areas', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_parking', label: 'AT Parking', description: 'Appalachian Trail parking areas and trailheads', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_privies', label: 'AT Privies', description: 'Appalachian Trail privies and restroom facilities', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_shelters', label: 'AT Shelters', description: 'Appalachian Trail shelters and lean-tos', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_vistas', label: 'AT Vistas', description: 'Appalachian Trail scenic viewpoints and overlooks', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_side_trails', label: 'AT Side Trails', description: 'Appalachian Trail side trails and connector trails', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_treadway', label: 'AT Treadway', description: 'Appalachian Trail main treadway and trail segments', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_assets_bridges', label: 'AT Bridge Assets', description: 'Appalachian Trail bridge infrastructure and maintenance records', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_assets_structures', label: 'AT Structure Assets', description: 'Appalachian Trail structure assets and maintenance records', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_assets_trail', label: 'AT Trail Assets', description: 'Appalachian Trail trail assets and maintenance records', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_centerline', label: 'AT Centerline', description: 'Appalachian Trail main centerline and trail segments', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  { id: 'at_osm_features', label: 'AT OSM Features', description: 'OpenStreetMap Appalachian Trail features (trail segments, shelters, POIs, crossings)', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' }
 ];
 
 class POIConfigManager {

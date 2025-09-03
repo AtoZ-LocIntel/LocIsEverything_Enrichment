@@ -51,6 +51,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   public_lands: <span className="text-xl">🏞️</span>,
   quirky: <span className="text-xl">☕</span>,
   wildfire: <img src="/assets/wildfire.webp" alt="Natural Hazards" className="w-5 h-5" />,
+  at: <img src="/assets/at.webp" alt="Appalachian Trail" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -205,7 +206,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'recreation': 'recreation_leisure',
       'natural_resources': 'natural_resources',
       'public_lands': 'public_lands',
-      'quirky': 'quirky_and_fun'
+      'quirky': 'quirky_and_fun',
+      'at': 'at'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -383,7 +385,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       <img
                         src={`/assets/${getIconFileName(category.id)}.webp`}
                         alt={category.title}
-                        className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
+                        className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-24 h-24' : 'w-full h-full'}`}
                         onError={(e) => {
                           // Fallback to category name if icon fails to load
                           const target = e.target as HTMLImageElement;
@@ -506,7 +508,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setActiveModal(category.id);
                       }
                     }}
-                    className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          className={`relative overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 ${category.id === 'at' ? 'w-24 h-24 rounded-lg mx-auto mt-6' : 'w-full aspect-square rounded-full'}`}
                     style={{
                       boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
                     }}
@@ -515,7 +517,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     <img
                                                 src={`/assets/${getIconFileName(category.id)}.webp`}
                       alt={category.title}
-                      className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
+                      className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-24 h-24' : 'w-full h-full'}`}
                       onError={(e) => {
                         // Fallback to category name if icon fails to load
                         const target = e.target as HTMLImageElement;

@@ -405,12 +405,14 @@ function App() {
       ) : viewMode === 'mobile-results' ? (
         <MobileResultsView
           result={enrichmentResults[0]}
+          selectedEnrichments={selectedEnrichments}
           onBackToSearch={handleBackToSearch}
           onDownloadCSV={handleDownloadCSV}
         />
       ) : viewMode === 'desktop-results' ? (
         <DesktopResultsView
           results={enrichmentResults}
+          selectedEnrichments={selectedEnrichments}
           onViewMap={handleViewMap}
           onBackToSearch={handleBackToSearch}
           onDownloadCSV={handleDownloadCSV}

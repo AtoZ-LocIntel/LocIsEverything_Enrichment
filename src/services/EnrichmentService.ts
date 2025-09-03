@@ -2,10 +2,11 @@ import { GeocodeResult } from '../lib/types';
 import { EnrichmentResult } from '../App';
 import { getUSDAWildfireRiskData } from '../adapters/usdaWildfireRisk';
 import { getTerrainAnalysis } from './ElevationService';
+import { queryATFeatures } from '../adapters/appalachianTrail';
 // import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
 
 // CORS proxy helpers from original geocoder.html
-const USE_CORS_PROXY = true;
+const USE_CORS_PROXY = false;
 const CORS_PROXIES = [
   { type: "prefix", value: "https://cors.isomorphic-git.org/" },
   { type: "wrap", value: "https://api.allorigins.win/raw?url=" }
@@ -21,7 +22,8 @@ function proxied(url: string, which: number = 0): string {
 }
 
 export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: number = 200): Promise<any> {
-  const attempts = USE_CORS_PROXY ? [url, proxied(url, 0), proxied(url, 1)] : [url, proxied(url, 0), proxied(url, 1)];
+  // When CORS proxy is disabled, only try direct URL
+  const attempts = USE_CORS_PROXY ? [url, proxied(url, 0), proxied(url, 1)] : [url];
   let err: any;
   
   for (let i = 0; i < attempts.length; i++) {
@@ -63,6 +65,17 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
       err = e; 
       const errorMessage = e instanceof Error ? e.message : String(e);
       console.warn(`❌ Attempt ${i + 1} failed:`, errorMessage);
+      
+      // Don't retry if CORS proxy is disabled and we get certain errors
+      if (!USE_CORS_PROXY && (
+        errorMessage.includes('403') || 
+        errorMessage.includes('CORS') || 
+        errorMessage.includes('network')
+      )) {
+        console.warn(`🚫 Skipping retries due to CORS/network error with proxy disabled`);
+        break;
+      }
+      
       if (i < attempts.length - 1) {
         console.log(`⏳ Waiting ${backoff}ms before retry...`);
         await new Promise(r => setTimeout(r, backoff)); 
@@ -1107,7 +1120,14 @@ export class EnrichmentService {
         return await this.getUSDAWildfireRisk(lat, lon);
     
     default:
-      if (enrichmentId.startsWith('poi_')) {
+      if (enrichmentId.startsWith('at_')) {
+        // Handle Appalachian Trail queries
+        if (enrichmentId === 'at_osm_features') {
+          // Special handling for OSM AT features
+          return await this.getOSMATFeatures(lat, lon, radius);
+        }
+        return await this.getATFeatures(enrichmentId, lat, lon, radius);
+      } else if (enrichmentId.startsWith('poi_')) {
         // Check if this is a custom POI type
         const customPOI = this.getCustomPOIData(enrichmentId);
         if (customPOI) {
@@ -2772,10 +2792,36 @@ export class EnrichmentService {
       const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      return { count: data.elements?.length || 0, features: data.elements || [] };
+      
+      const elements = data.elements || [];
+      const count = elements.length;
+      
+      // Process gas station details for mapping
+      const stationDetails = elements.slice(0, 10).map((element: any) => ({
+        id: element.id,
+        name: element.tags?.name || element.tags?.brand || 'Unnamed Gas Station',
+        brand: element.tags?.brand || 'Unknown',
+        address: element.tags?.['addr:street'] || 'No address',
+        city: element.tags?.['addr:city'] || 'Unknown city',
+        state: element.tags?.['addr:state'] || 'Unknown state',
+        lat: element.lat || element.center?.lat,
+        lon: element.lon || element.center?.lon,
+        type: element.type,
+        phone: element.tags?.phone,
+        website: element.tags?.website,
+        self_service: element.tags?.self_service
+      }));
+      
+      return {
+        poi_gas_stations_summary: `Found ${count} gas stations within ${radiusMiles} miles.`,
+        poi_gas_stations_detailed: stationDetails
+      };
     } catch (error) {
       console.error('Gas Stations query failed:', error);
-      return { count: 0, features: [], error: error instanceof Error ? error.message : 'Unknown error' };
+      return { 
+        poi_gas_stations_summary: 'No gas stations found due to error.',
+        poi_gas_stations_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
     }
   }
 
@@ -3090,6 +3136,232 @@ export class EnrichmentService {
         detailed_pois: [],
         all_pois: [],
         poi_wildfires_count: 0
+      };
+    }
+  }
+
+  /**
+   * Query OpenStreetMap Appalachian Trail features using Overpass API
+   */
+  private async getOSMATFeatures(
+    lat: number,
+    lon: number,
+    radiusMiles: number
+  ): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Querying OSM AT features within ${radiusMiles} miles of ${lat}, ${lon}`);
+
+      // Limit radius to prevent timeout - max 2 miles for OSM queries
+      const maxRadiusMiles = Math.min(radiusMiles, 2);
+      const radiusMeters = Math.round(maxRadiusMiles * 1609.34);
+      
+      // Simplified Overpass API query - more efficient, shorter timeout
+      const overpassQuery = `[out:json][timeout:15];
+(
+  // AT nodes only - most efficient query
+  node["name"="Appalachian Trail"](around:${radiusMeters},${lat},${lon});
+  node["amenity"="shelter"]["name"~"Appalachian Trail"](around:${radiusMeters},${lat},${lon});
+);
+out;`;
+
+      console.log(`🗺️ OSM query: ${overpassQuery}`);
+
+      // Try Overpass API with shorter timeout and retry logic
+      let response;
+      try {
+        response = await fetchJSONSmart('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: overpassQuery,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+      } catch (overpassError) {
+        console.warn(`🗺️ Primary Overpass API failed, trying alternative server:`, overpassError);
+        // Try alternative Overpass server
+        try {
+          response = await fetchJSONSmart('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: overpassQuery,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+        } catch (altError) {
+          console.warn(`🗺️ Alternative Overpass API also failed:`, altError);
+          throw new Error('All Overpass API servers unavailable');
+        }
+      }
+
+      if (!response || !response.elements) {
+        console.log('🗺️ No OSM AT features found');
+        return {
+          'at_osm_features_count_5mi': 0,
+          'at_osm_features_all_pois': [],
+          'at_osm_features_detailed': []
+        };
+      }
+
+      // Process OSM elements into POI format (simplified for nodes only)
+      const osmPOIs = response.elements.map((element: any, index: number) => {
+        // Only process nodes (simplified query)
+        if (element.type !== 'node' || !element.lat || !element.lon) {
+          console.warn('🗺️ Skipping invalid OSM element:', element);
+          return null;
+        }
+
+        const poiLat = element.lat;
+        const poiLon = element.lon;
+        
+        // Extract name from tags
+        let name = 'AT Feature';
+        if (element.tags) {
+          name = element.tags.name || element.tags['name:en'] || element.tags.ref || 'AT Feature';
+        }
+
+        // Calculate distance
+        const distanceMiles = this.calculateDistance(lat, lon, poiLat, poiLon);
+
+        return {
+          id: `osm_at_${element.type}_${element.id}`,
+          name: name,
+          lat: poiLat,
+          lon: poiLon,
+          distance_miles: distanceMiles,
+          type: element.type.toUpperCase(),
+          source: 'OpenStreetMap',
+          osm_id: element.id,
+          osm_type: element.type,
+          tags: element.tags || {}
+        };
+      }).filter(poi => poi !== null);
+
+      const count = osmPOIs.length;
+      console.log(`🗺️ Found ${count} OSM AT features`);
+
+      // Create result structure
+      const result = {
+        [`at_osm_features_count_${radiusMiles}mi`]: count,
+        [`at_osm_features_all_pois`]: osmPOIs,
+        [`at_osm_features_detailed`]: osmPOIs,
+        [`at_osm_features_elements`]: osmPOIs
+      };
+
+      console.log(`🗺️ OSM AT query completed:`, {
+        count,
+        sampleNames: osmPOIs.slice(0, 3).map(p => p.name),
+        resultKeys: Object.keys(result)
+      });
+
+      return result;
+
+    } catch (error) {
+      console.error(`🗺️ OSM AT query failed:`, error);
+      
+      // If Overpass API fails, try alternative approach or return empty results gracefully
+      console.log(`🗺️ Falling back to empty OSM AT results due to API error`);
+      return {
+        [`at_osm_features_count_${radiusMiles}mi`]: 0,
+        [`at_osm_features_all_pois`]: [],
+        [`at_osm_features_detailed`]: [],
+        [`at_osm_features_error`]: 'OSM API temporarily unavailable'
+      };
+    }
+  }
+
+  /**
+   * Query Appalachian Trail features
+   */
+  private async getATFeatures(
+    enrichmentId: string,
+    lat: number,
+    lon: number,
+    radiusMiles: number
+  ): Promise<Record<string, any>> {
+    try {
+      console.log(`🏔️ Querying AT features for ${enrichmentId} within ${radiusMiles} miles of ${lat}, ${lon}`);
+      
+      const features = await queryATFeatures(enrichmentId, lat, lon, radiusMiles);
+      
+      if (!features || features.length === 0) {
+        console.log(`🏔️ No AT features found for ${enrichmentId}`);
+        return {
+          [`${enrichmentId}_count_${radiusMiles}mi`]: 0,
+          [`${enrichmentId}_all_pois`]: [],
+          [`${enrichmentId}_detailed`]: []
+        };
+      }
+
+      // Process features into POI format
+      const atPOIs = features.map((feature, index) => {
+        const attributes = feature.attributes;
+        const geometry = feature.geometry;
+        
+        // Extract coordinates
+        let poiLat: number | null = null;
+        let poiLon: number | null = null;
+        
+        if (geometry) {
+          if (geometry.x && geometry.y) {
+            // Point geometry (facilities)
+            poiLon = geometry.x;
+            poiLat = geometry.y;
+          } else if (geometry.paths && geometry.paths.length > 0) {
+            // Polyline geometry (centerline) - use first point of first path
+            const firstPath = geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const [lon, lat] = firstPath[0];
+              poiLon = lon;
+              poiLat = lat;
+            }
+          }
+        }
+        
+        if (!poiLat || !poiLon) {
+          console.warn(`🏔️ Skipping AT feature with invalid coordinates:`, attributes);
+          return null;
+        }
+        
+        // Create POI record
+        const poi = {
+          id: attributes.OBJECTID || attributes.FID || `at_${enrichmentId}_${index}`,
+          name: attributes.NAME || attributes.FACILITY_NAME || attributes.TRAIL_NAME || `AT ${enrichmentId.replace('at_', '').replace('_', ' ')}`,
+          lat: poiLat,
+          lon: poiLon,
+          distance_miles: feature.distance_miles || 0,
+          type: enrichmentId.replace('at_', '').replace('_', ' ').toUpperCase(),
+          source: 'Appalachian Trail Conservancy',
+          ...attributes // Include all original attributes
+        };
+        
+        return poi;
+      }).filter(poi => poi !== null);
+
+      const count = atPOIs.length;
+      console.log(`🏔️ Found ${count} AT features for ${enrichmentId}`);
+      
+      // Create result structure
+      const result = {
+        [`${enrichmentId}_count_${radiusMiles}mi`]: count,
+        [`${enrichmentId}_all_pois`]: atPOIs,
+        [`${enrichmentId}_detailed`]: atPOIs,
+        [`${enrichmentId}_elements`]: atPOIs
+      };
+      
+      console.log(`🏔️ AT query completed for ${enrichmentId}:`, {
+        count,
+        sampleNames: atPOIs.slice(0, 3).map(p => p.name),
+        resultKeys: Object.keys(result)
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error(`🏔️ AT query failed for ${enrichmentId}:`, error);
+      return {
+        [`${enrichmentId}_count_${radiusMiles}mi`]: 0,
+        [`${enrichmentId}_all_pois`]: [],
+        [`${enrichmentId}_detailed`]: []
       };
     }
   }

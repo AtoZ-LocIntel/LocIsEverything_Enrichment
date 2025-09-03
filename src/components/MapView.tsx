@@ -50,7 +50,19 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
              'poi_volcanoes': { icon: '🌋', color: '#ea580c', title: 'USGS Volcanoes' },
   'poi_flood_reference_points': { icon: '🚨', color: '#dc2626', title: 'USGS Flood Reference Points' },
   
-  
+  // Appalachian Trail Features
+  'at_bridges': { icon: '🌉', color: '#8b5cf6', title: 'AT Bridges' },
+  'at_campsites': { icon: '🏕️', color: '#059669', title: 'AT Campsites' },
+  'at_parking': { icon: '🅿️', color: '#1f2937', title: 'AT Parking' },
+  'at_privies': { icon: '🚻', color: '#7c2d12', title: 'AT Privies' },
+  'at_shelters': { icon: '🏠', color: '#dc2626', title: 'AT Shelters' },
+  'at_vistas': { icon: '🏔️', color: '#0891b2', title: 'AT Vistas' },
+  'at_side_trails': { icon: '🥾', color: '#059669', title: 'AT Side Trails' },
+  'at_treadway': { icon: '🛤️', color: '#7c3aed', title: 'AT Treadway' },
+  'at_assets_trail': { icon: '🔧', color: '#f59e0b', title: 'AT Trail Assets' },
+  'at_assets_structures': { icon: '🏗️', color: '#6b7280', title: 'AT Structure Assets' },
+  'at_assets_bridges': { icon: '🌉', color: '#8b5cf6', title: 'AT Bridge Assets' },
+  'at_centerline': { icon: '🗺️', color: '#dc2626', title: 'AT Centerline' },
   
   // EPA FRS Environmental Hazards
   'poi_epa_brownfields': { icon: '🏭', color: '#8b4513', title: 'EPA Brownfields' },
@@ -393,8 +405,8 @@ if (bounds.isValid() && results.length > 1) {
     // Extract POI data from enrichment results
     console.log(`📍 Processing enrichments:`, Object.keys(result.enrichments));
     Object.entries(result.enrichments).forEach(([key, value]) => {
-      // Look for POI arrays that contain detailed location data
-      if (key.includes('poi_') && Array.isArray(value)) {
+      // Look for POI arrays that contain detailed location data (including AT features)
+      if ((key.includes('poi_') || key.includes('at_')) && Array.isArray(value)) {
         console.log(`📍 Found POI array for ${key} with ${value.length} items`);
         const poiType = key.replace('_detailed', '');
         const iconConfig = POI_ICONS[poiType] || POI_ICONS.default;
@@ -897,6 +909,7 @@ if (bounds.isValid() && results.length > 1) {
       'Community & Services': [],
       'Recreation & Leisure': [],
       'Local Food & Agriculture': [],
+      'Retail & Commerce': [],
       'Other': []
     };
     
@@ -920,17 +933,14 @@ if (bounds.isValid() && results.length > 1) {
          enrichmentCategories['Public Lands'].push({ key, value });
        } else if (key.includes('poi_epa_')) {
          enrichmentCategories['Environmental Hazards'].push({ key, value });
-       } else if (key.includes('poi_parks') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_bars_nightlife')) {
+       } else if (key.includes('poi_parks') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_bars_nightlife') || key.includes('at_')) {
          enrichmentCategories['Recreation & Leisure'].push({ key, value });
        } else if (key.includes('poi_usda_')) {
          enrichmentCategories['Local Food & Agriculture'].push({ key, value });
-       } else if (key.includes('poi_gas_stations') || key.includes('poi_community_centers') || key.includes('poi_restaurants') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_libraries') || key.includes('poi_markets') || key.includes('poi_cafes') || key.includes('poi_banks')) {
-         // Community & Services - put gas stations first
-         if (key.includes('poi_gas_stations')) {
-           enrichmentCategories['Community & Services'].unshift({ key, value });
-         } else {
-           enrichmentCategories['Community & Services'].push({ key, value });
-         }
+       } else if (key.includes('poi_grocery') || key.includes('poi_restaurants') || key.includes('poi_banks') || key.includes('poi_pharmacies') || key.includes('poi_convenience') || key.includes('poi_hardware') || key.includes('poi_liquor') || key.includes('poi_bakery') || key.includes('poi_butcher') || key.includes('poi_seafood') || key.includes('poi_sporting') || key.includes('poi_bookstore') || key.includes('poi_clothing') || key.includes('poi_shoes') || key.includes('poi_thrift') || key.includes('poi_pet') || key.includes('poi_florist') || key.includes('poi_variety') || key.includes('poi_gas_stations') || key.includes('poi_car_wash') || key.includes('poi_auto_repair') || key.includes('poi_auto_parts') || key.includes('poi_auto_dealers')) {
+         enrichmentCategories['Retail & Commerce'].push({ key, value });
+       } else if (key.includes('poi_community_centers') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_libraries') || key.includes('poi_markets') || key.includes('poi_cafes')) {
+         enrichmentCategories['Community & Services'].push({ key, value });
        } else {
          enrichmentCategories['Other'].push({ key, value });
        }
@@ -1489,7 +1499,7 @@ if (bounds.isValid() && results.length > 1) {
 
     
     // Handle POI counts specifically
-    if (key.includes('_count') || key.includes('poi_')) {
+    if (key.includes('_count') || key.includes('poi_') || key.includes('at_')) {
       if (typeof value === 'number') {
         return `${value} found`;
       } else if (typeof value === 'string' && value.includes('found')) {

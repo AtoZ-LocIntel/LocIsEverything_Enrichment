@@ -39,6 +39,25 @@ export async function getUSDAWildfireRiskData(lat: number, lon: number): Promise
   try {
     console.log(`🔥🔥🔥 USDA WILDFIRE RISK FUNCTION CALLED - coordinates: [${lat}, ${lon}]`);
     
+    // Prevent automatic/test calls - require valid coordinates
+    if (!lat || !lon || isNaN(lat) || isNaN(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+      console.warn('⚠️ Invalid coordinates provided to wildfire function');
+      return {
+        whp: null,
+        whp_label: null,
+        bp: null,
+        bp_percentage: null,
+        cfl: null,
+        cfl_label: null,
+        rps: null,
+        cRPS: null,
+        exposure_type: null,
+        exposure_label: null,
+        source: 'USDA Forest Service - Wildfire Risk to Communities',
+        error: 'Invalid coordinates provided'
+      };
+    }
+    
     // Define the ImageServer endpoints we have available
     const endpoints = {
       // Comprehensive Fire Behavior Risk (2024 version - contains all core datasets)
@@ -63,16 +82,7 @@ export async function getUSDAWildfireRiskData(lat: number, lon: number): Promise
       result.whp_label = getHazardPotentialLabel(value);
       console.log(`🔥 Exact location - Wildfire Hazard Potential: ${value} (${result.whp_label})`);
     } else {
-      console.log('🔥 No data at exact location, checking proximity...');
-      
-      // If no data at exact location, check nearby points in a grid pattern
-      const proximityData = await checkProximityForWildfireRisk(endpoints.wildfireHazardPotential, lat, lon);
-      if (proximityData) {
-        result.whp = proximityData.value;
-        result.whp_label = getHazardPotentialLabel(proximityData.value);
-        result.proximity_note = `Data found ${proximityData.distance.toFixed(1)} miles away`;
-        console.log(`🔥 Proximity data found - Wildfire Hazard Potential: ${proximityData.value} (${result.whp_label}) at ${proximityData.distance.toFixed(1)} miles`);
-      }
+      console.log('🔥 No data at exact location');
     }
     
 
@@ -172,62 +182,7 @@ async function fetchWildfireData(endpoint: string, lat: number, lon: number): Pr
   }
 }
 
-// Helper function to check proximity for wildfire risk data
-async function checkProximityForWildfireRisk(endpoint: string, centerLat: number, centerLon: number): Promise<{value: number, distance: number} | null> {
-  console.log('🔍🔍🔍 PROXIMITY SEARCH STARTED - Checking proximity for wildfire risk data...');
-  
-  // Optimized proximity search - fewer, smarter API calls
-  const searchRadii = [2, 5, 10, 20]; // Reduced from 6 to 4 radii
-  const degreesPerMile = 0.0145;
-  
-  for (const radiusMiles of searchRadii) {
-    const radiusDegrees = radiusMiles * degreesPerMile;
-    
-    // Create a smaller, smarter grid - only check cardinal and diagonal directions
-    const directions = [
-      { lat: radiusDegrees, lon: 0 },           // North
-      { lat: -radiusDegrees, lon: 0 },          // South  
-      { lat: 0, lon: radiusDegrees },           // East
-      { lat: 0, lon: -radiusDegrees },          // West
-      { lat: radiusDegrees * 0.7, lon: radiusDegrees * 0.7 },   // Northeast
-      { lat: radiusDegrees * 0.7, lon: -radiusDegrees * 0.7 },  // Northwest
-      { lat: -radiusDegrees * 0.7, lon: radiusDegrees * 0.7 },  // Southeast
-      { lat: -radiusDegrees * 0.7, lon: -radiusDegrees * 0.7 }  // Southwest
-    ];
-    
-    console.log(`🔍 Checking 8 directions within ${radiusMiles} miles...`);
-    
-    // Check all directions in parallel for this radius
-    const promises = directions.map(async (dir) => {
-      const testLat = centerLat + dir.lat;
-      const testLon = centerLon + dir.lon;
-      
-      console.log(`🎯 Testing coordinates: [${testLat.toFixed(6)}, ${testLon.toFixed(6)}] (${radiusMiles} miles)`);
-      
-      const data = await fetchWildfireData(endpoint, testLat, testLon);
-      if (data && data.value && data.value !== 'NoData') {
-        const value = parseFloat(data.value);
-        const distance = calculateDistance(centerLat, centerLon, testLat, testLon);
-        console.log(`✅ Found data at [${testLat.toFixed(6)}, ${testLon.toFixed(6)}]: ${value}`);
-        return { value, distance };
-      }
-      return null;
-    });
-    
-    const results = await Promise.allSettled(promises);
-    
-    // Find the first valid result
-    for (const result of results) {
-      if (result.status === 'fulfilled' && result.value) {
-        console.log(`🔥 Found wildfire data at ${result.value.distance.toFixed(1)} miles: ${result.value.value} (${getHazardPotentialLabel(result.value.value)})`);
-        return result.value;
-      }
-    }
-  }
-  
-  console.log('🔍 No wildfire risk data found within 25 miles');
-  return null;
-}
+
 
 // Helper function to calculate distance between two points in miles
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {

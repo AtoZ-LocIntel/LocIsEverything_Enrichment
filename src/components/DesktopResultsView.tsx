@@ -4,6 +4,7 @@ import { EnrichmentResult } from '../App';
 
 interface DesktopResultsViewProps {
   results: EnrichmentResult[];
+  selectedEnrichments: string[];
   onViewMap: () => void;
   onBackToSearch: () => void;
   onDownloadCSV: () => void;
@@ -11,10 +12,19 @@ interface DesktopResultsViewProps {
 
 const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
   results,
+  selectedEnrichments,
   onViewMap,
   onBackToSearch,
   onDownloadCSV
 }) => {
+  const formatFieldName = (key: string): string => {
+    return key
+      .replace(/^poi_/g, 'POI ')
+      .replace(/^at_/g, 'AT ')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase());
+  };
+
   const formatValue = (value: any, key: string): string => {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
@@ -31,7 +41,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (value.length === 0) return 'None found';
       
       // For detailed POI data, show count only in form view
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements')) {
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features')) {
         return `${value.length} found (see CSV for details)`;
       }
       
@@ -66,12 +76,13 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
   };
 
   const groupEnrichments = (enrichments: Record<string, any>) => {
-    return Object.entries(enrichments).reduce((acc, [key, value]) => {
+    const grouped = Object.entries(enrichments).reduce((acc, [key, value]) => {
       // Skip POI "All" fields completely - they should not appear in the form
       // This includes any field that contains detailed POI data
       if (key.includes('_all_pois') || 
           key.includes('_detailed') || 
           key.includes('_elements') ||
+          key.includes('_features') ||
           key.endsWith('_all') ||
           key.endsWith(' All') ||
           key.includes('_all') ||
@@ -103,10 +114,26 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Safety & Crime';
       } else if (key.includes('transport') || key.includes('transit')) {
         category = 'Transportation';
-      } else if (key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire'))) {
-        category = 'Natural Risks & Hazards';
-      } else if (key.includes('poi_epa_') || key.includes('animal') || key.includes('collision')) {
-        category = 'Human-Made Hazards';
+      } else if (key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire'))) {
+        category = 'Natural Hazards';
+      } else if (key.includes('poi_epa_')) {
+        category = 'Human Caused Hazards';
+      } else if (key.includes('at_')) {
+        category = 'Appalachian Trail';
+      } else if (key.includes('poi_') && (key.includes('grocery') || key.includes('restaurant') || key.includes('bank') || key.includes('pharmacy') || key.includes('convenience') || key.includes('hardware') || key.includes('liquor') || key.includes('bakery') || key.includes('butcher') || key.includes('seafood') || key.includes('sporting') || key.includes('bookstore') || key.includes('clothing') || key.includes('shoes') || key.includes('thrift') || key.includes('pet') || key.includes('florist') || key.includes('variety') || key.includes('gas_stations') || key.includes('car_wash') || key.includes('auto_repair') || key.includes('auto_parts') || key.includes('auto_dealers'))) {
+        category = 'Retail & Commerce';
+      } else if (key.includes('poi_') && (key.includes('gym') || key.includes('dentist') || key.includes('doctor') || key.includes('chiropractor') || key.includes('optometry') || key.includes('veterinary') || key.includes('hospital') || key.includes('police_stations') || key.includes('fire_stations') || key.includes('urgent_care'))) {
+        category = 'Health & Wellness';
+      } else if (key.includes('poi_') && (key.includes('park') || key.includes('trail') || key.includes('recreation') || key.includes('bowling') || key.includes('arcade') || key.includes('cinema') || key.includes('theatre') || key.includes('hotel') || key.includes('rv_park') || key.includes('campground') || key.includes('wikipedia') || key.includes('brewery'))) {
+        category = 'Recreation & Leisure';
+      } else if (key.includes('poi_') && (key.includes('power') || key.includes('substation') || key.includes('grid') || key.includes('cell_tower'))) {
+        category = 'Power & Infrastructure';
+      } else if (key.includes('poi_') && (key.includes('beach') || key.includes('mountain') || key.includes('lake') || key.includes('water'))) {
+        category = 'Natural Resources';
+      } else if (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station'))) {
+        category = 'Public Lands & Protected Areas';
+      } else if (key.includes('poi_') && (key.includes('school') || key.includes('college') || key.includes('childcare') || key.includes('community_centre') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('worship'))) {
+        category = 'Community & Services';
       }
 
       if (!acc[category]) {
@@ -116,6 +143,31 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       acc[category].push({ key, value });
       return acc;
     }, {} as Record<string, Array<{ key: string; value: any }>>);
+
+    // Sort categories to prioritize those containing selected enrichments
+    const sortedEntries = Object.entries(grouped).sort(([categoryA, itemsA], [categoryB, itemsB]) => {
+      // Check if category contains any selected enrichments
+      const hasSelectedA = itemsA.some(item => 
+        selectedEnrichments.some(selected => 
+          item.key.includes(selected) || item.key.startsWith(selected + '_')
+        )
+      );
+      const hasSelectedB = itemsB.some(item => 
+        selectedEnrichments.some(selected => 
+          item.key.includes(selected) || item.key.startsWith(selected + '_')
+        )
+      );
+      
+      // Categories with selected enrichments come first
+      if (hasSelectedA && !hasSelectedB) return -1;
+      if (!hasSelectedA && hasSelectedB) return 1;
+      
+      // Within each group, maintain alphabetical order
+      return categoryA.localeCompare(categoryB);
+    });
+
+    // Convert back to object with sorted order
+    return Object.fromEntries(sortedEntries);
   };
 
   return (
@@ -259,7 +311,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                         <div key={key} className="border-b border-gray-100 last:border-b-0 pb-4 last:pb-0">
                           <div className="flex flex-col space-y-2">
                             <label className="text-base font-bold text-gray-700 capitalize">
-                              {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              {formatFieldName(key)}
                             </label>
                             <div className="text-gray-900 bg-gray-50 p-3 rounded-lg text-base font-bold break-words">
                               {formatValue(value, key)}
