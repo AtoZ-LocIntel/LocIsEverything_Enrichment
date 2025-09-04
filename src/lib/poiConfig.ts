@@ -174,7 +174,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_wikipedia', label: 'Wikipedia Articles', description: 'Haunted sites, historic oddities, museums, and quirky landmarks with intelligent categorization', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' },
 
   // Human Caused Hazards (man-made environmental hazards)
-  { id: 'poi_animal_vehicle_collisions', label: 'Animal-Vehicle Impacts (AVIs)', description: 'The Location Is Everything Company data - Live API from LocationFriend with animal vehicle collision records for CA, TX, ID, IA, NH, and FARS within specified radius', isPOI: true, defaultRadius: 5, category: 'wildfire', section: 'wildfire' },
+  { id: 'poi_animal_vehicle_collisions', label: 'Animal-Vehicle Impacts (AVIs)', description: 'The Location Is Everything Company preview data for CA (CA CROS), TX (DOT), ID (Fish&Wildlife), IA (DOT), NH (DOT), and FARS.', isPOI: true, defaultRadius: 5, category: 'wildfire', section: 'wildfire' },
   
 
     
