@@ -105,6 +105,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_dockless_hub': { icon: '🛴️', color: '#8b5cf6', title: 'Dockless Hub' },
   'poi_electric_charging': { icon: '🔌', color: '#10b981', title: 'Electric Charging Stations' },
   'poi_gas_stations': { icon: '⛽', color: '#f59e0b', title: 'Gas Stations' },
+  'poi_mail_shipping': { icon: '📮', color: '#3b82f6', title: 'Mail & Shipping' },
    
    // Natural Resources
    'poi_beaches': { icon: '🏖️', color: '#fbbf24', title: 'Beaches' },
@@ -939,7 +940,7 @@ if (bounds.isValid() && results.length > 1) {
          enrichmentCategories['Local Food & Agriculture'].push({ key, value });
        } else if (key.includes('poi_grocery') || key.includes('poi_restaurants') || key.includes('poi_banks') || key.includes('poi_pharmacies') || key.includes('poi_convenience') || key.includes('poi_hardware') || key.includes('poi_liquor') || key.includes('poi_bakery') || key.includes('poi_butcher') || key.includes('poi_seafood') || key.includes('poi_sporting') || key.includes('poi_bookstore') || key.includes('poi_clothing') || key.includes('poi_shoes') || key.includes('poi_thrift') || key.includes('poi_pet') || key.includes('poi_florist') || key.includes('poi_variety') || key.includes('poi_gas_stations') || key.includes('poi_car_wash') || key.includes('poi_auto_repair') || key.includes('poi_auto_parts') || key.includes('poi_auto_dealers')) {
          enrichmentCategories['Retail & Commerce'].push({ key, value });
-       } else if (key.includes('poi_community_centers') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_libraries') || key.includes('poi_markets') || key.includes('poi_cafes')) {
+       } else if (key.includes('poi_community_centers') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_libraries') || key.includes('poi_markets') || key.includes('poi_cafes') || key.includes('poi_mail_shipping')) {
          enrichmentCategories['Community & Services'].push({ key, value });
        } else {
          enrichmentCategories['Other'].push({ key, value });

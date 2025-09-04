@@ -1108,6 +1108,9 @@ export class EnrichmentService {
           return await this.getElectricChargingStations(lat, lon, radius);
         case 'poi_gas_stations':
           return await this.getGasStations(lat, lon, radius);
+        
+        case 'poi_mail_shipping':
+          return await this.getMailShipping(lat, lon, radius);
       
       // USDA Wildfire Risk to Communities (WRC) - Point-based risk assessment
       case 'usda_wildfire_hazard_potential':
@@ -2821,6 +2824,57 @@ export class EnrichmentService {
       return { 
         poi_gas_stations_summary: 'No gas stations found due to error.',
         poi_gas_stations_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getMailShipping(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📮 Mail & Shipping query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const radiusMeters = Math.round(radiusMiles * 1609.34);
+      
+      // Simplified query - focus on most common mail/shipping amenities to avoid timeout
+      const query = `[out:json];(node["amenity"="post_office"](around:${radiusMeters},${lat},${lon});way["amenity"="post_office"](around:${radiusMeters},${lat},${lon});relation["amenity"="post_office"](around:${radiusMeters},${lat},${lon});node["amenity"="parcel_locker"](around:${radiusMeters},${lat},${lon});way["amenity"="parcel_locker"](around:${radiusMeters},${lat},${lon});relation["amenity"="parcel_locker"](around:${radiusMeters},${lat},${lon}););out center;`;
+      
+      let response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      
+      // Fallback to alternative server if first fails
+      if (!response.ok) {
+        console.log(`📮 Primary server failed, trying fallback...`);
+        response = await fetch(`https://lz4.overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      }
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      
+      const elements = data.elements || [];
+      const count = elements.length;
+      
+      // Process mail & shipping details for mapping
+      const shippingDetails = elements.slice(0, 10).map((element: any) => ({
+        id: element.id,
+        name: element.tags?.name || element.tags?.brand || 'Unnamed Shipping Location',
+        type: element.tags?.amenity || element.tags?.shop || element.tags?.office || 'shipping',
+        brand: element.tags?.brand || element.tags?.operator || 'Unknown',
+        address: element.tags?.['addr:street'] || 'No address',
+        city: element.tags?.['addr:city'] || 'Unknown city',
+        state: element.tags?.['addr:state'] || 'Unknown state',
+        lat: element.lat || element.center?.lat,
+        lon: element.lon || element.center?.lon,
+        phone: element.tags?.phone,
+        website: element.tags?.website,
+        opening_hours: element.tags?.opening_hours
+      }));
+      
+      return {
+        poi_mail_shipping_summary: `Found ${count} mail & shipping locations within ${radiusMiles} miles.`,
+        poi_mail_shipping_detailed: shippingDetails
+      };
+    } catch (error) {
+      console.error('Mail & Shipping query failed:', error);
+      return { 
+        poi_mail_shipping_summary: 'No mail & shipping locations found due to error.',
+        poi_mail_shipping_error: error instanceof Error ? error.message : 'Unknown error' 
       };
     }
   }
