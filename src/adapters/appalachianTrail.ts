@@ -17,6 +17,9 @@ export interface ATResponse {
   spatialReference?: {
     wkid: number;
   };
+  error?: {
+    message?: string;
+  };
 }
 
 // Layer mappings for the AT services
@@ -39,7 +42,7 @@ export const AT_LAYER_MAPPINGS = {
 };
 
 // Base service URLs
-const AT_SERVICE_URLS = {
+const AT_SERVICE_URLS: Record<string, string> = {
   facilities: 'https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Facilities/FeatureServer',
   centerline: 'https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Centerline/FeatureServer'
 };

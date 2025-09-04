@@ -3203,7 +3203,7 @@ out;`;
       }
 
       // Process OSM elements into POI format (simplified for nodes only)
-      const osmPOIs = response.elements.map((element: any, index: number) => {
+      const osmPOIs = response.elements.map((element: any) => {
         // Only process nodes (simplified query)
         if (element.type !== 'node' || !element.lat || !element.lon) {
           console.warn('🗺️ Skipping invalid OSM element:', element);
@@ -3234,7 +3234,7 @@ out;`;
           osm_type: element.type,
           tags: element.tags || {}
         };
-      }).filter(poi => poi !== null);
+      }).filter((poi: any) => poi !== null);
 
       const count = osmPOIs.length;
       console.log(`🗺️ Found ${count} OSM AT features`);
@@ -3249,7 +3249,7 @@ out;`;
 
       console.log(`🗺️ OSM AT query completed:`, {
         count,
-        sampleNames: osmPOIs.slice(0, 3).map(p => p.name),
+        sampleNames: osmPOIs.slice(0, 3).map((p: any) => p.name),
         resultKeys: Object.keys(result)
       });
 

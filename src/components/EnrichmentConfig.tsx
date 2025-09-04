@@ -385,7 +385,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       <img
                         src={`/assets/${getIconFileName(category.id)}.webp`}
                         alt={category.title}
-                        className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-24 h-24' : 'w-full h-full'}`}
+                        className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-full h-full' : 'w-full h-full'}`}
                         onError={(e) => {
                           // Fallback to category name if icon fails to load
                           const target = e.target as HTMLImageElement;
@@ -508,7 +508,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setActiveModal(category.id);
                       }
                     }}
-                                          className={`relative overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 ${category.id === 'at' ? 'w-24 h-24 rounded-lg mx-auto mt-6' : 'w-full aspect-square rounded-full'}`}
+                                          className={`relative overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 ${category.id === 'at' ? 'w-full aspect-square rounded-full' : 'w-full aspect-square rounded-full'}`}
                     style={{
                       boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
                     }}
@@ -517,7 +517,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     <img
                                                 src={`/assets/${getIconFileName(category.id)}.webp`}
                       alt={category.title}
-                      className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-24 h-24' : 'w-full h-full'}`}
+                      className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-full h-full' : 'w-full h-full'}`}
                       onError={(e) => {
                         // Fallback to category name if icon fails to load
                         const target = e.target as HTMLImageElement;
