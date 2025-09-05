@@ -173,33 +173,16 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         clientHeight: mapRef.current.clientHeight
       });
 
-      // Force container to have proper dimensions
+      // Simple map initialization - let Leaflet handle sizing
       const container = mapRef.current;
-      if (isMobile) {
-        // For mobile, ensure the container has proper height
-        container.style.height = 'calc(100vh - 4rem)';
-        container.style.width = '100%';
-        container.style.minHeight = 'calc(100vh - 4rem)';
-        container.style.position = 'relative';
-        container.style.overflow = 'hidden';
-        container.style.display = 'block';
-      }
-
-      // Initialize map with mobile-appropriate settings
-      const isMobileView = window.innerWidth <= 768;
-      const initialZoom = isMobileView ? 15 : 4;
       
+      // Initialize map with simple settings
       const map = L.map(container, {
         center: [39.8283, -98.5795], // Center of USA
-        zoom: initialZoom,
+        zoom: 4,
         zoomControl: true,
-        // Mobile-specific settings
-        maxBounds: isMobileView ? undefined : undefined,
-        minZoom: isMobileView ? 10 : 2,
-        maxZoom: 19,
-        // Force proper rendering
-        preferCanvas: false,
-        renderer: L.svg()
+        minZoom: 2,
+        maxZoom: 19
       });
 
       // Add OpenStreetMap tiles as default with better mobile support
@@ -268,12 +251,6 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
           if (map) {
             console.log('🔄 Resizing map after orientation change...');
             map.invalidateSize();
-            // Force a second resize after a longer delay for mobile
-            setTimeout(() => {
-              if (map) {
-                map.invalidateSize();
-              }
-            }, 300);
           }
         }, 100);
       };
@@ -288,22 +265,6 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         if (map) {
           console.log('🔄 Forcing map invalidateSize...');
           map.invalidateSize();
-          // Additional resize for mobile
-          if (isMobile) {
-            setTimeout(() => {
-              if (map) {
-                console.log('🔄 Mobile map invalidateSize...');
-                map.invalidateSize();
-                // Force a third resize for mobile reliability
-                setTimeout(() => {
-                  if (map) {
-                    map.invalidateSize();
-                    console.log('🗺️ Map ready for markers');
-                  }
-                }, 300);
-              }
-            }, 200);
-          }
         }
       }, 100);
 
@@ -436,7 +397,7 @@ if (bounds.isValid() && results.length > 1) {
     };
     
     // Call renderMarkers with a delay to ensure map is ready
-    setTimeout(renderMarkers, isMobile ? 500 : 100);
+    setTimeout(renderMarkers, 200);
   }, [results]);
 
     // Add POI markers to the map for single search results (SIMPLIFIED - NO MAP INTERFERENCE)
@@ -2365,44 +2326,66 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   return (
-    <div className={`${isMobile ? 'fixed inset-0 z-50' : 'h-full flex flex-col'} bg-white`} style={{ height: isMobile ? '100vh' : '100vh', paddingTop: isMobile ? '0' : '7rem' }}>
-      {/* Results Header */}
-      <div className={`bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between ${isMobile ? 'sticky top-0 z-10' : ''}`}>
-        <button
-          onClick={onBackToConfig}
-          className={`${isMobile ? 'bg-white border-2 border-gray-300 rounded-full p-2 shadow-lg' : 'btn btn-outline'} flex items-center space-x-2 text-sm sm:text-base`}
-        >
-          <span className="w-4 h-4">←</span>
-          <span className={`${isMobile ? 'hidden' : 'hidden sm:inline'}`}>
-            {previousViewMode === 'mobile-results' || previousViewMode === 'desktop-results' 
-              ? 'Back to Results' 
-              : 'Back to Configuration'}
-          </span>
-          <span className={`${isMobile ? 'hidden' : 'sm:hidden'}`}>Back</span>
-        </button>
-
-        <div className="flex items-center space-x-4">
-          <div className="text-center">
-            <h2 className="text-lg font-semibold text-gray-900">Location Results</h2>
-            <p className="text-sm text-gray-600">{results.length} location{results.length !== 1 ? 's' : ''} processed</p>
-          </div>
+    <div className="h-screen flex flex-col bg-white">
+      {/* Mobile: Minimal floating buttons */}
+      {isMobile ? (
+        <div className="absolute top-0 left-0 right-0 z-10 flex justify-between items-center p-4 bg-white/90 backdrop-blur-sm">
+          <button
+            onClick={onBackToConfig}
+            className="bg-white/90 border-2 border-gray-300 rounded-full p-3 shadow-lg backdrop-blur-sm"
+          >
+            <span className="w-5 h-5">←</span>
+          </button>
           
-          {/* Prominent Download Button for Single Lookup */}
           {results.length === 1 && (
             <button
               onClick={() => downloadSingleLookupResults(results[0])}
-              className="btn btn-primary flex items-center space-x-2 px-4 py-2"
-              title="Download all proximity layers and distances for this location"
+              className="bg-blue-600 text-white rounded-full p-3 shadow-lg backdrop-blur-sm"
+              title="Download CSV"
             >
-              <span className="w-4 h-4">⬇️</span>
-              <span>Download Results</span>
+              <span className="w-5 h-5">📥</span>
             </button>
           )}
         </div>
-      </div>
+      ) : (
+        /* Desktop: Full header */
+        <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
+          <button
+            onClick={onBackToConfig}
+            className="btn btn-outline flex items-center space-x-2 text-sm sm:text-base"
+          >
+            <span className="w-4 h-4">←</span>
+            <span className="hidden sm:inline">
+              {previousViewMode === 'mobile-results' || previousViewMode === 'desktop-results' 
+                ? 'Back to Results' 
+                : 'Back to Configuration'}
+            </span>
+            <span className="sm:hidden">Back</span>
+          </button>
 
-             {/* Dynamic Legend for Single Location Results */}
-       {results.length === 1 && legendItems.length > 0 && (
+          <div className="flex items-center space-x-4">
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-gray-900">Location Results</h2>
+              <p className="text-sm text-gray-600">{results.length} location{results.length !== 1 ? 's' : ''} processed</p>
+            </div>
+            
+            {/* Prominent Download Button for Single Lookup */}
+            {results.length === 1 && (
+              <button
+                onClick={() => downloadSingleLookupResults(results[0])}
+                className="btn btn-primary flex items-center space-x-2 px-4 py-2"
+                title="Download all proximity layers and distances for this location"
+              >
+                <span className="w-4 h-4">⬇️</span>
+                <span>Download Results</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+             {/* Dynamic Legend for Single Location Results - Hidden on mobile */}
+       {results.length === 1 && legendItems.length > 0 && !isMobile && (
          <div className="bg-white border-b border-gray-200 p-3">
                        <div className="flex items-center mb-2">
               <div className="flex items-center gap-2">
@@ -2429,25 +2412,18 @@ if (bounds.isValid() && results.length > 1) {
        )}
 
       {/* Map Container */}
-      <div 
-        className={`${isMobile ? 'flex-1 relative' : 'flex-1 relative'} map-view-container`}
-        style={{ 
-          height: isMobile ? 'calc(100vh - 4rem)' : 'calc(100vh - 12rem)',
-          minHeight: isMobile ? 'calc(100vh - 4rem)' : '400px'
-        }}
-      >
+      <div className="flex-1 relative">
         <div 
           ref={mapRef} 
-          className="w-full h-full map-container" 
+          className="w-full h-full" 
           style={{ 
             height: '100%',
-            minHeight: isMobile ? 'calc(100vh - 4rem)' : '400px',
             width: '100%'
           }} 
         />
         
-        {/* Batch Success Message */}
-        {showBatchSuccess && (
+        {/* Batch Success Message - Hidden on mobile */}
+        {showBatchSuccess && !isMobile && (
           <div className="absolute top-4 left-4 bg-green-50 border border-green-200 rounded-lg shadow-lg max-w-sm">
             <div className="p-4 flex items-center space-x-3">
               <span className="w-5 h-5 text-green-600">✅</span>

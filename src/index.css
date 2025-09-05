@@ -38,51 +38,12 @@ html {
   user-select: none;
 }
 
-/* Mobile map view fixes - Aggressive mobile optimization */
+/* Simple mobile map fixes */
 @media (max-width: 768px) {
-  .map-view-container {
-    height: calc(100vh - 4rem) !important;
-    min-height: calc(100vh - 4rem) !important;
-    position: relative !important;
-    overflow: hidden !important;
-  }
-  
-  .map-container {
+  /* Ensure map takes full available space */
+  .leaflet-container {
     height: 100% !important;
-    min-height: calc(100vh - 4rem) !important;
     width: 100% !important;
-    position: relative !important;
-  }
-  
-  /* Force full screen map on mobile */
-  .map-view-container .leaflet-container {
-    height: 100% !important;
-    min-height: calc(100vh - 4rem) !important;
-    width: 100% !important;
-  }
-  
-  /* Ensure map is visible in portrait mode */
-  @media (orientation: portrait) {
-    .map-view-container {
-      height: calc(100vh - 4rem) !important;
-      min-height: calc(100vh - 4rem) !important;
-    }
-    
-    .map-container {
-      min-height: calc(100vh - 4rem) !important;
-    }
-  }
-  
-  /* Ensure map is visible in landscape mode */
-  @media (orientation: landscape) {
-    .map-view-container {
-      height: calc(100vh - 3rem) !important;
-      min-height: calc(100vh - 3rem) !important;
-    }
-    
-    .map-container {
-      min-height: calc(100vh - 3rem) !important;
-    }
   }
 }
 
