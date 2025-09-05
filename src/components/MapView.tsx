@@ -176,21 +176,13 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       // Simple map initialization - let Leaflet handle sizing
       const container = mapRef.current;
       
-      // Initialize map with mobile-appropriate settings
-      const isMobileInit = window.innerWidth <= 768;
+      // Simple map initialization
       const map = L.map(container, {
         center: [39.8283, -98.5795], // Center of USA
-        zoom: isMobileInit ? 15 : 4,
+        zoom: 4,
         zoomControl: true,
-        minZoom: isMobileInit ? 10 : 2,
-        maxZoom: 19,
-        // Mobile-specific settings for better performance
-        preferCanvas: isMobileInit,
-        renderer: isMobileInit ? L.canvas() : L.svg(),
-        // Ensure proper touch handling
-        touchZoom: true,
-        doubleClickZoom: true,
-        scrollWheelZoom: true
+        minZoom: 2,
+        maxZoom: 19
       });
 
       // Add OpenStreetMap tiles as default with better mobile support
@@ -314,14 +306,6 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       
       // Force map to be ready
       map.invalidateSize();
-      
-      // Additional check for mobile
-      if (isMobile) {
-        setTimeout(() => {
-          map.invalidateSize();
-          console.log('🔄 Additional mobile map invalidateSize');
-        }, 500);
-      }
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
@@ -380,11 +364,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         if (results.length === 1) {
           console.log(`🎯 Setting initial map view to geocoded location: [${lat}, ${lon}]`);
           
-          // Set the initial view with appropriate zoom for mobile vs desktop
-          const targetZoom = isMobile ? 16 : 18; // Lower zoom on mobile to show more area
-          map.setView([lat, lon], targetZoom, { animate: true });
-          
-
+          // Set the initial view
+          map.setView([lat, lon], 16, { animate: true });
           
           // Add POI markers
           addPOIMarkers(map, result);
@@ -418,22 +399,8 @@ if (bounds.isValid() && results.length > 1) {
     }
     };
     
-    // Call renderMarkers with a delay to ensure map is ready
-    // Use a longer delay for mobile to ensure map is fully rendered
-    const delay = isMobile ? 2000 : 200;
-    console.log(`⏰ Rendering markers in ${delay}ms for ${isMobile ? 'mobile' : 'desktop'}`);
-    console.log(`📱 Mobile status: ${isMobile}, Container ready: ${!!mapRef.current}`);
-    
-    // For mobile, also try to render immediately after a short delay
-    if (isMobile) {
-      setTimeout(() => {
-        console.log('🔄 Mobile immediate render attempt');
-        map.invalidateSize();
-        renderMarkers();
-      }, 500);
-    }
-    
-    setTimeout(renderMarkers, delay);
+    // Call renderMarkers with a simple delay to ensure map is ready
+    setTimeout(renderMarkers, 200);
   }, [results]);
 
     // Add POI markers to the map for single search results (SIMPLIFIED - NO MAP INTERFERENCE)
@@ -2364,7 +2331,7 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   return (
-    <div className={`${isMobile ? 'h-screen' : 'h-screen'} flex flex-col bg-white`}>
+    <div className="h-screen flex flex-col bg-white">
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
         <button
@@ -2428,14 +2395,13 @@ if (bounds.isValid() && results.length > 1) {
        )}
 
       {/* Map Container */}
-      <div className="flex-1 relative" style={{ minHeight: isMobile ? 'calc(100vh - 8rem)' : '400px' }}>
+      <div className="flex-1 relative">
         <div 
           ref={mapRef} 
           className="w-full h-full" 
           style={{ 
             height: '100%',
-            width: '100%',
-            minHeight: isMobile ? 'calc(100vh - 8rem)' : '400px'
+            width: '100%'
           }} 
         />
         

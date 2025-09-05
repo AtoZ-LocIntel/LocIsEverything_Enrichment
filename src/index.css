@@ -38,39 +38,11 @@ html {
   user-select: none;
 }
 
-/* Mobile map fixes for portrait and landscape */
+/* Simple mobile map fixes */
 @media (max-width: 768px) {
-  /* Ensure map takes full available space */
   .leaflet-container {
     height: 100% !important;
     width: 100% !important;
-    min-height: calc(100vh - 8rem) !important;
-  }
-  
-  /* Fix for portrait mode */
-  @media (orientation: portrait) {
-    .leaflet-container {
-      height: calc(100vh - 8rem) !important;
-      min-height: calc(100vh - 8rem) !important;
-    }
-  }
-  
-  /* Fix for landscape mode */
-  @media (orientation: landscape) {
-    .leaflet-container {
-      height: calc(100vh - 6rem) !important;
-      min-height: calc(100vh - 6rem) !important;
-    }
-  }
-  
-  /* Ensure map tiles load properly */
-  .leaflet-tile-container {
-    transform: none !important;
-  }
-  
-  /* Fix marker positioning */
-  .leaflet-marker-icon {
-    transform: none !important;
   }
 }
 
