@@ -323,7 +323,7 @@ function App() {
       />
       
       {/* Only show header when not in full-screen views and not on mobile */}
-      {!['data-sources', 'enrichment-category', 'desktop-results', 'mobile-results'].includes(viewMode) && !isMobile && (
+      {!['data-sources', 'enrichment-category', 'desktop-results', 'mobile-results', 'map'].includes(viewMode) && !isMobile && (
         <Header onViewDataSources={handleViewDataSources} />
       )}
       

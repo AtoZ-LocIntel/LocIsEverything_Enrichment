@@ -176,13 +176,17 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       // Simple map initialization - let Leaflet handle sizing
       const container = mapRef.current;
       
-      // Initialize map with simple settings
+      // Initialize map with mobile-appropriate settings
+      const isMobileInit = window.innerWidth <= 768;
       const map = L.map(container, {
         center: [39.8283, -98.5795], // Center of USA
-        zoom: 4,
+        zoom: isMobileInit ? 15 : 4,
         zoomControl: true,
-        minZoom: 2,
-        maxZoom: 19
+        minZoom: isMobileInit ? 10 : 2,
+        maxZoom: 19,
+        // Mobile-specific settings
+        preferCanvas: isMobileInit,
+        renderer: isMobileInit ? L.canvas() : L.svg()
       });
 
       // Add OpenStreetMap tiles as default with better mobile support
@@ -306,6 +310,14 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       
       // Force map to be ready
       map.invalidateSize();
+      
+      // Additional check for mobile
+      if (isMobile) {
+        setTimeout(() => {
+          map.invalidateSize();
+          console.log('🔄 Additional mobile map invalidateSize');
+        }, 500);
+      }
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
@@ -404,8 +416,8 @@ if (bounds.isValid() && results.length > 1) {
     
     // Call renderMarkers with a delay to ensure map is ready
     // Use a longer delay for mobile to ensure map is fully rendered
-    const delay = (isMobile || window.innerWidth <= 768) ? 1000 : 200;
-    console.log(`⏰ Rendering markers in ${delay}ms`);
+    const delay = isMobile ? 1500 : 200;
+    console.log(`⏰ Rendering markers in ${delay}ms for ${isMobile ? 'mobile' : 'desktop'}`);
     setTimeout(renderMarkers, delay);
   }, [results]);
 
@@ -2336,65 +2348,43 @@ if (bounds.isValid() && results.length > 1) {
 
   return (
     <div className="h-screen flex flex-col bg-white">
-      {/* Mobile: Minimal floating buttons */}
-      {isMobile || window.innerWidth <= 768 ? (
-        <div className="absolute top-0 left-0 right-0 z-50 flex justify-between items-center p-2 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-          <button
-            onClick={onBackToConfig}
-            className="bg-white border-2 border-gray-400 rounded-full p-4 shadow-xl text-gray-700 hover:bg-gray-50"
-          >
-            <span className="w-6 h-6 text-lg">←</span>
-          </button>
+      {/* Results Header */}
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
+        <button
+          onClick={onBackToConfig}
+          className="btn btn-outline flex items-center space-x-2 text-sm sm:text-base"
+        >
+          <span className="w-4 h-4">←</span>
+          <span className="hidden sm:inline">
+            {previousViewMode === 'mobile-results' || previousViewMode === 'desktop-results' 
+              ? 'Back to Results' 
+              : 'Back to Configuration'}
+          </span>
+          <span className="sm:hidden">Back</span>
+        </button>
+
+        <div className="flex items-center space-x-4">
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-gray-900">Location Results</h2>
+            <p className="text-sm text-gray-600">{results.length} location{results.length !== 1 ? 's' : ''} processed</p>
+          </div>
           
+          {/* Prominent Download Button for Single Lookup */}
           {results.length === 1 && (
             <button
               onClick={() => downloadSingleLookupResults(results[0])}
-              className="bg-blue-600 text-white rounded-full p-4 shadow-xl hover:bg-blue-700"
-              title="Download CSV"
+              className="btn btn-primary flex items-center space-x-2 px-4 py-2"
+              title="Download all proximity layers and distances for this location"
             >
-              <span className="w-6 h-6 text-lg">📥</span>
+              <span className="w-4 h-4">⬇️</span>
+              <span>Download Results</span>
             </button>
           )}
         </div>
-      ) : (
-        /* Desktop: Full header */
-        <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
-          <button
-            onClick={onBackToConfig}
-            className="btn btn-outline flex items-center space-x-2 text-sm sm:text-base"
-          >
-            <span className="w-4 h-4">←</span>
-            <span className="hidden sm:inline">
-              {previousViewMode === 'mobile-results' || previousViewMode === 'desktop-results' 
-                ? 'Back to Results' 
-                : 'Back to Configuration'}
-            </span>
-            <span className="sm:hidden">Back</span>
-          </button>
-
-          <div className="flex items-center space-x-4">
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-gray-900">Location Results</h2>
-              <p className="text-sm text-gray-600">{results.length} location{results.length !== 1 ? 's' : ''} processed</p>
-            </div>
-            
-            {/* Prominent Download Button for Single Lookup */}
-            {results.length === 1 && (
-              <button
-                onClick={() => downloadSingleLookupResults(results[0])}
-                className="btn btn-primary flex items-center space-x-2 px-4 py-2"
-                title="Download all proximity layers and distances for this location"
-              >
-                <span className="w-4 h-4">⬇️</span>
-                <span>Download Results</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+      </div>
 
              {/* Dynamic Legend for Single Location Results - Hidden on mobile */}
-       {results.length === 1 && legendItems.length > 0 && !isMobile && window.innerWidth > 768 && (
+       {results.length === 1 && legendItems.length > 0 && !isMobile && (
          <div className="bg-white border-b border-gray-200 p-3">
                        <div className="flex items-center mb-2">
               <div className="flex items-center gap-2">
@@ -2432,7 +2422,7 @@ if (bounds.isValid() && results.length > 1) {
         />
         
         {/* Batch Success Message - Hidden on mobile */}
-        {showBatchSuccess && !isMobile && window.innerWidth > 768 && (
+        {showBatchSuccess && !isMobile && (
           <div className="absolute top-4 left-4 bg-green-50 border border-green-200 rounded-lg shadow-lg max-w-sm">
             <div className="p-4 flex items-center space-x-3">
               <span className="w-5 h-5 text-green-600">✅</span>
