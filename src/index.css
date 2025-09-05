@@ -38,6 +38,33 @@ html {
   user-select: none;
 }
 
+/* Mobile map view fixes */
+@media (max-width: 768px) {
+  .map-view-container {
+    height: calc(100vh - 6rem) !important;
+    min-height: 300px !important;
+  }
+  
+  .map-container {
+    height: 100% !important;
+    min-height: 300px !important;
+  }
+  
+  /* Ensure map is visible in portrait mode */
+  @media (orientation: portrait) {
+    .map-view-container {
+      height: calc(100vh - 6rem) !important;
+    }
+  }
+  
+  /* Ensure map is visible in landscape mode */
+  @media (orientation: landscape) {
+    .map-view-container {
+      height: calc(100vh - 4rem) !important;
+    }
+  }
+}
+
 body {
   width: 100%;
   max-width: 100%;

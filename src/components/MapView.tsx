@@ -177,9 +177,11 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       const container = mapRef.current;
       if (isMobile) {
         // For mobile, ensure the container has proper height
-        container.style.height = 'calc(100vh - 8rem)';
+        container.style.height = 'calc(100vh - 6rem)';
         container.style.width = '100%';
-        container.style.minHeight = '400px';
+        container.style.minHeight = '300px';
+        container.style.position = 'relative';
+        container.style.overflow = 'hidden';
       }
 
       // Initialize map with mobile-appropriate settings
@@ -263,7 +265,14 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         // Force map to resize on orientation change
         setTimeout(() => {
           if (map) {
+            console.log('🔄 Resizing map after orientation change...');
             map.invalidateSize();
+            // Force a second resize after a longer delay for mobile
+            setTimeout(() => {
+              if (map) {
+                map.invalidateSize();
+              }
+            }, 300);
           }
         }, 100);
       };
@@ -278,6 +287,14 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         if (map) {
           console.log('🔄 Forcing map invalidateSize...');
           map.invalidateSize();
+          // Additional resize for mobile
+          if (isMobile) {
+            setTimeout(() => {
+              if (map) {
+                map.invalidateSize();
+              }
+            }, 200);
+          }
         }
       }, 100);
 
@@ -2332,7 +2349,7 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white" style={{ height: isMobile ? '100vh' : '100vh', paddingTop: isMobile ? '0' : '7rem' }}>
+    <div className="h-full flex flex-col bg-white" style={{ height: '100vh', paddingTop: isMobile ? '0' : '7rem' }}>
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
         <button
@@ -2399,16 +2416,16 @@ if (bounds.isValid() && results.length > 1) {
       <div 
         className="flex-1 relative map-view-container" 
         style={{ 
-          height: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)',
-          minHeight: isMobile ? '400px' : '400px'
+          height: isMobile ? 'calc(100vh - 6rem)' : 'calc(100vh - 12rem)',
+          minHeight: '300px'
         }}
       >
         <div 
           ref={mapRef} 
           className="w-full h-full map-container" 
           style={{ 
-            height: isMobile ? 'calc(100vh - 8rem)' : 'calc(100vh - 14rem)',
-            minHeight: isMobile ? '400px' : '400px',
+            height: '100%',
+            minHeight: '300px',
             width: '100%'
           }} 
         />

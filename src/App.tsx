@@ -432,7 +432,7 @@ function App() {
           onBackToConfig={handleBackToConfig}
         />
       ) : (
-        <div className="flex-1">
+        <div className="flex-1 h-full">
           <MapView
             results={enrichmentResults}
             onBackToConfig={handleBackToConfig}
