@@ -300,6 +300,12 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     
     // Add a small delay to ensure map is fully rendered
     const renderMarkers = () => {
+      console.log('🎯 renderMarkers called, map ready:', !!map);
+      console.log('🎯 Map container size:', map.getContainer().offsetWidth, 'x', map.getContainer().offsetHeight);
+      console.log('🎯 Results to render:', results.length);
+      
+      // Force map to be ready
+      map.invalidateSize();
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
@@ -397,7 +403,10 @@ if (bounds.isValid() && results.length > 1) {
     };
     
     // Call renderMarkers with a delay to ensure map is ready
-    setTimeout(renderMarkers, 200);
+    // Use a longer delay for mobile to ensure map is fully rendered
+    const delay = (isMobile || window.innerWidth <= 768) ? 1000 : 200;
+    console.log(`⏰ Rendering markers in ${delay}ms`);
+    setTimeout(renderMarkers, delay);
   }, [results]);
 
     // Add POI markers to the map for single search results (SIMPLIFIED - NO MAP INTERFERENCE)
@@ -2328,22 +2337,22 @@ if (bounds.isValid() && results.length > 1) {
   return (
     <div className="h-screen flex flex-col bg-white">
       {/* Mobile: Minimal floating buttons */}
-      {isMobile ? (
-        <div className="absolute top-0 left-0 right-0 z-10 flex justify-between items-center p-4 bg-white/90 backdrop-blur-sm">
+      {isMobile || window.innerWidth <= 768 ? (
+        <div className="absolute top-0 left-0 right-0 z-50 flex justify-between items-center p-2 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <button
             onClick={onBackToConfig}
-            className="bg-white/90 border-2 border-gray-300 rounded-full p-3 shadow-lg backdrop-blur-sm"
+            className="bg-white border-2 border-gray-400 rounded-full p-4 shadow-xl text-gray-700 hover:bg-gray-50"
           >
-            <span className="w-5 h-5">←</span>
+            <span className="w-6 h-6 text-lg">←</span>
           </button>
           
           {results.length === 1 && (
             <button
               onClick={() => downloadSingleLookupResults(results[0])}
-              className="bg-blue-600 text-white rounded-full p-3 shadow-lg backdrop-blur-sm"
+              className="bg-blue-600 text-white rounded-full p-4 shadow-xl hover:bg-blue-700"
               title="Download CSV"
             >
-              <span className="w-5 h-5">📥</span>
+              <span className="w-6 h-6 text-lg">📥</span>
             </button>
           )}
         </div>
@@ -2385,7 +2394,7 @@ if (bounds.isValid() && results.length > 1) {
       )}
 
              {/* Dynamic Legend for Single Location Results - Hidden on mobile */}
-       {results.length === 1 && legendItems.length > 0 && !isMobile && (
+       {results.length === 1 && legendItems.length > 0 && !isMobile && window.innerWidth > 768 && (
          <div className="bg-white border-b border-gray-200 p-3">
                        <div className="flex items-center mb-2">
               <div className="flex items-center gap-2">
@@ -2423,7 +2432,7 @@ if (bounds.isValid() && results.length > 1) {
         />
         
         {/* Batch Success Message - Hidden on mobile */}
-        {showBatchSuccess && !isMobile && (
+        {showBatchSuccess && !isMobile && window.innerWidth > 768 && (
           <div className="absolute top-4 left-4 bg-green-50 border border-green-200 rounded-lg shadow-lg max-w-sm">
             <div className="p-4 flex items-center space-x-3">
               <span className="w-5 h-5 text-green-600">✅</span>
