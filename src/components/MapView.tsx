@@ -184,9 +184,14 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         zoomControl: true,
         minZoom: isMobileInit ? 10 : 2,
         maxZoom: 19,
-        // Mobile-specific settings
+        // Mobile-specific settings for better performance
         preferCanvas: isMobileInit,
-        renderer: isMobileInit ? L.canvas() : L.svg()
+        renderer: isMobileInit ? L.canvas() : L.svg(),
+        // Ensure proper touch handling
+        tap: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        scrollWheelZoom: true
       });
 
       // Add OpenStreetMap tiles as default with better mobile support
@@ -416,8 +421,19 @@ if (bounds.isValid() && results.length > 1) {
     
     // Call renderMarkers with a delay to ensure map is ready
     // Use a longer delay for mobile to ensure map is fully rendered
-    const delay = isMobile ? 1500 : 200;
+    const delay = isMobile ? 2000 : 200;
     console.log(`⏰ Rendering markers in ${delay}ms for ${isMobile ? 'mobile' : 'desktop'}`);
+    console.log(`📱 Mobile status: ${isMobile}, Container ready: ${!!mapRef.current}`);
+    
+    // For mobile, also try to render immediately after a short delay
+    if (isMobile) {
+      setTimeout(() => {
+        console.log('🔄 Mobile immediate render attempt');
+        map.invalidateSize();
+        renderMarkers();
+      }, 500);
+    }
+    
     setTimeout(renderMarkers, delay);
   }, [results]);
 
@@ -447,12 +463,12 @@ if (bounds.isValid() && results.length > 1) {
         }
         
         // Add markers for each POI
-        value.forEach((poi: any) => {
+        value.forEach((poi: any, poiIndex: number) => {
           // Check for either name or title (for Wikipedia articles)
           const poiName = poi.name || poi.title;
           
           if (poi.lat && poi.lon && poiName) {
-            console.log(`📍 Adding POI marker: ${poiName} at [${poi.lat}, ${poi.lon}]`);
+            console.log(`📍 Adding POI marker ${poiIndex + 1}/${value.length}: ${poiName} at [${poi.lat}, ${poi.lon}]`);
             const poiMarker = L.marker([poi.lat, poi.lon], {
               icon: createPOIIcon(iconConfig.icon, iconConfig.color)
             })
@@ -460,11 +476,13 @@ if (bounds.isValid() && results.length > 1) {
               .addTo(map);
             
             markersRef.current.push(poiMarker);
+            console.log(`✅ POI marker ${poiIndex + 1} added successfully`);
           } else {
-            console.log(`❌ Skipping POI - missing required data for ${key}:`, {
+            console.log(`❌ Skipping POI ${poiIndex + 1} - missing required data for ${key}:`, {
               name: poiName,
               lat: poi.lat,
-              lon: poi.lon
+              lon: poi.lon,
+              poi: poi
             });
           }
         });
@@ -2347,7 +2365,7 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white">
+    <div className={`${isMobile ? 'h-screen' : 'h-screen'} flex flex-col bg-white`}>
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
         <button
@@ -2411,13 +2429,14 @@ if (bounds.isValid() && results.length > 1) {
        )}
 
       {/* Map Container */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative" style={{ minHeight: isMobile ? 'calc(100vh - 8rem)' : '400px' }}>
         <div 
           ref={mapRef} 
           className="w-full h-full" 
           style={{ 
             height: '100%',
-            width: '100%'
+            width: '100%',
+            minHeight: isMobile ? 'calc(100vh - 8rem)' : '400px'
           }} 
         />
         
