@@ -177,11 +177,12 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       const container = mapRef.current;
       if (isMobile) {
         // For mobile, ensure the container has proper height
-        container.style.height = 'calc(100vh - 6rem)';
+        container.style.height = 'calc(100vh - 4rem)';
         container.style.width = '100%';
-        container.style.minHeight = '300px';
+        container.style.minHeight = 'calc(100vh - 4rem)';
         container.style.position = 'relative';
         container.style.overflow = 'hidden';
+        container.style.display = 'block';
       }
 
       // Initialize map with mobile-appropriate settings
@@ -291,7 +292,15 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
           if (isMobile) {
             setTimeout(() => {
               if (map) {
+                console.log('🔄 Mobile map invalidateSize...');
                 map.invalidateSize();
+                // Force a third resize for mobile reliability
+                setTimeout(() => {
+                  if (map) {
+                    map.invalidateSize();
+                    console.log('🗺️ Map ready for markers');
+                  }
+                }, 300);
               }
             }, 200);
           }
@@ -327,6 +336,9 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     if (!mapInstanceRef.current || !results.length) return;
 
     const map = mapInstanceRef.current;
+    
+    // Add a small delay to ensure map is fully rendered
+    const renderMarkers = () => {
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
@@ -421,6 +433,10 @@ if (bounds.isValid() && results.length > 1) {
         setShowBatchSuccess(false);
       }, 5000); // Hide after 5 seconds
     }
+    };
+    
+    // Call renderMarkers with a delay to ensure map is ready
+    setTimeout(renderMarkers, isMobile ? 500 : 100);
   }, [results]);
 
     // Add POI markers to the map for single search results (SIMPLIFIED - NO MAP INTERFERENCE)
@@ -2349,20 +2365,20 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white" style={{ height: '100vh', paddingTop: isMobile ? '0' : '7rem' }}>
+    <div className={`${isMobile ? 'fixed inset-0 z-50' : 'h-full flex flex-col'} bg-white`} style={{ height: isMobile ? '100vh' : '100vh', paddingTop: isMobile ? '0' : '7rem' }}>
       {/* Results Header */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
+      <div className={`bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between ${isMobile ? 'sticky top-0 z-10' : ''}`}>
         <button
           onClick={onBackToConfig}
-          className="btn btn-outline flex items-center space-x-2 text-sm sm:text-base"
+          className={`${isMobile ? 'bg-white border-2 border-gray-300 rounded-full p-2 shadow-lg' : 'btn btn-outline'} flex items-center space-x-2 text-sm sm:text-base`}
         >
           <span className="w-4 h-4">←</span>
-          <span className="hidden sm:inline">
+          <span className={`${isMobile ? 'hidden' : 'hidden sm:inline'}`}>
             {previousViewMode === 'mobile-results' || previousViewMode === 'desktop-results' 
               ? 'Back to Results' 
               : 'Back to Configuration'}
           </span>
-          <span className="sm:hidden">Back</span>
+          <span className={`${isMobile ? 'hidden' : 'sm:hidden'}`}>Back</span>
         </button>
 
         <div className="flex items-center space-x-4">
@@ -2414,10 +2430,10 @@ if (bounds.isValid() && results.length > 1) {
 
       {/* Map Container */}
       <div 
-        className="flex-1 relative map-view-container" 
+        className={`${isMobile ? 'flex-1 relative' : 'flex-1 relative'} map-view-container`}
         style={{ 
-          height: isMobile ? 'calc(100vh - 6rem)' : 'calc(100vh - 12rem)',
-          minHeight: '300px'
+          height: isMobile ? 'calc(100vh - 4rem)' : 'calc(100vh - 12rem)',
+          minHeight: isMobile ? 'calc(100vh - 4rem)' : '400px'
         }}
       >
         <div 
@@ -2425,7 +2441,7 @@ if (bounds.isValid() && results.length > 1) {
           className="w-full h-full map-container" 
           style={{ 
             height: '100%',
-            minHeight: '300px',
+            minHeight: isMobile ? 'calc(100vh - 4rem)' : '400px',
             width: '100%'
           }} 
         />
