@@ -188,7 +188,6 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         preferCanvas: isMobileInit,
         renderer: isMobileInit ? L.canvas() : L.svg(),
         // Ensure proper touch handling
-        tap: true,
         touchZoom: true,
         doubleClickZoom: true,
         scrollWheelZoom: true
