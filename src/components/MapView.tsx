@@ -64,6 +64,15 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'at_assets_bridges': { icon: '🌉', color: '#8b5cf6', title: 'AT Bridge Assets' },
   'at_centerline': { icon: '🗺️', color: '#dc2626', title: 'AT Centerline' },
   
+  // Pacific Crest Trail (PCT)
+  'pct_centerline': { icon: '🥾', color: '#dc2626', title: 'PCT Centerline' },
+  'pct_sheriff_offices': { icon: '👮', color: '#1e40af', title: 'PCT Sheriff Offices' },
+  'pct_side_trails': { icon: '🛤️', color: '#7c2d12', title: 'PCT Side Trails' },
+  'pct_mile_markers_2024': { icon: '📍', color: '#dc2626', title: 'PCT 2024 Mile Markers' },
+  'pct_tenth_mile_markers_2024': { icon: '📍', color: '#dc2626', title: 'PCT 2025 Tenth/Mile Markers' },
+  'pct_resupply_towns': { icon: '🏘️', color: '#059669', title: 'PCT Resupply Towns' },
+  'pct_osm_features': { icon: '🏔️', color: '#dc2626', title: 'PCT OSM Features' },
+  
   // EPA FRS Environmental Hazards
   'poi_epa_brownfields': { icon: '🏭', color: '#8b4513', title: 'EPA Brownfields' },
   'poi_epa_superfund': { icon: '⚠️', color: '#dc2626', title: 'EPA Superfund Sites' },
@@ -407,7 +416,7 @@ if (bounds.isValid() && results.length > 1) {
     console.log(`📍 Processing enrichments:`, Object.keys(result.enrichments));
     Object.entries(result.enrichments).forEach(([key, value]) => {
       // Look for POI arrays that contain detailed location data (including AT features)
-      if ((key.includes('poi_') || key.includes('at_')) && Array.isArray(value)) {
+      if ((key.includes('poi_') || key.includes('at_') || key.includes('pct_')) && Array.isArray(value)) {
         console.log(`📍 Found POI array for ${key} with ${value.length} items`);
         const poiType = key.replace('_detailed', '');
         const iconConfig = POI_ICONS[poiType] || POI_ICONS.default;
@@ -663,11 +672,50 @@ if (bounds.isValid() && results.length > 1) {
         </div>
     `;
 
-    // Add coordinates
+    // Add coordinates and deep links
     if (collision.lat && collision.lon) {
       content += `<div style="margin: 6px 0 4px 0; font-size: 11px; color: #9ca3af;">
         ${collision.lat.toFixed(6)}, ${collision.lon.toFixed(6)}
       </div>`;
+      
+      // Add deep link buttons
+      const appleMapsUrl = `https://maps.apple.com/?q=${collision.lat},${collision.lon}&ll=${collision.lat},${collision.lon}`;
+      const googleMapsUrl = `https://www.google.com/maps?q=${collision.lat},${collision.lon}`;
+      
+      content += `
+        <div style="margin: 8px 0; display: flex; gap: 8px; flex-wrap: wrap;">
+          <a href="${appleMapsUrl}" target="_blank" style="
+            display: inline-flex; 
+            align-items: center; 
+            gap: 4px; 
+            padding: 6px 12px; 
+            background: #007AFF; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 500;
+            transition: background-color 0.2s;
+          " onmouseover="this.style.backgroundColor='#0056CC'" onmouseout="this.style.backgroundColor='#007AFF'">
+            🍎 Apple Maps
+          </a>
+          <a href="${googleMapsUrl}" target="_blank" style="
+            display: inline-flex; 
+            align-items: center; 
+            gap: 4px; 
+            padding: 6px 12px; 
+            background: #34A853; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 500;
+            transition: background-color 0.2s;
+          " onmouseover="this.style.backgroundColor='#2D8F47'" onmouseout="this.style.backgroundColor='#34A853'">
+            🗺️ Google Maps
+          </a>
+        </div>
+      `;
     }
 
     content += '</div>';
@@ -705,12 +753,51 @@ if (bounds.isValid() && results.length > 1) {
           <strong>Size:</strong> ${sizeAcres} acres
         </div>`;
 
-    // Add coordinates if available
+    // Add coordinates and deep links if available
     if (wildfire.lat && wildfire.lon) {
       content += `
       <div style="margin: 8px 0 4px 0; font-size: 11px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 8px;">
         📍 Coordinates: ${wildfire.lat.toFixed(6)}, ${wildfire.lon.toFixed(6)}
       </div>`;
+      
+      // Add deep link buttons
+      const appleMapsUrl = `https://maps.apple.com/?q=${wildfire.lat},${wildfire.lon}&ll=${wildfire.lat},${wildfire.lon}`;
+      const googleMapsUrl = `https://www.google.com/maps?q=${wildfire.lat},${wildfire.lon}`;
+      
+      content += `
+        <div style="margin: 8px 0; display: flex; gap: 8px; flex-wrap: wrap;">
+          <a href="${appleMapsUrl}" target="_blank" style="
+            display: inline-flex; 
+            align-items: center; 
+            gap: 4px; 
+            padding: 6px 12px; 
+            background: #007AFF; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 500;
+            transition: background-color 0.2s;
+          " onmouseover="this.style.backgroundColor='#0056CC'" onmouseout="this.style.backgroundColor='#007AFF'">
+            🍎 Apple Maps
+          </a>
+          <a href="${googleMapsUrl}" target="_blank" style="
+            display: inline-flex; 
+            align-items: center; 
+            gap: 4px; 
+            padding: 6px 12px; 
+            background: #34A853; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 500;
+            transition: background-color 0.2s;
+          " onmouseover="this.style.backgroundColor='#2D8F47'" onmouseout="this.style.backgroundColor='#34A853'">
+            🗺️ Google Maps
+          </a>
+        </div>
+      `;
     }
 
     content += '</div>';
@@ -841,13 +928,52 @@ if (bounds.isValid() && results.length > 1) {
       </div>`;
     }
 
-    // Add coordinates
+    // Add coordinates and deep links
     const lat = poi.lat || poi.center?.lat;
     const lon = poi.lon || poi.center?.lon;
     if (lat && lon) {
       content += `<div style="margin: 6px 0 4px 0; font-size: 11px; color: #9ca3af;">
         ${lat.toFixed(6)}, ${lon.toFixed(6)}
       </div>`;
+      
+      // Add deep link buttons
+      const appleMapsUrl = `https://maps.apple.com/?q=${lat},${lon}&ll=${lat},${lon}`;
+      const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+      
+      content += `
+        <div style="margin: 8px 0; display: flex; gap: 8px; flex-wrap: wrap;">
+          <a href="${appleMapsUrl}" target="_blank" style="
+            display: inline-flex; 
+            align-items: center; 
+            gap: 4px; 
+            padding: 6px 12px; 
+            background: #007AFF; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 500;
+            transition: background-color 0.2s;
+          " onmouseover="this.style.backgroundColor='#0056CC'" onmouseout="this.style.backgroundColor='#007AFF'">
+            🍎 Apple Maps
+          </a>
+          <a href="${googleMapsUrl}" target="_blank" style="
+            display: inline-flex; 
+            align-items: center; 
+            gap: 4px; 
+            padding: 6px 12px; 
+            background: #34A853; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 500;
+            transition: background-color 0.2s;
+          " onmouseover="this.style.backgroundColor='#2D8F47'" onmouseout="this.style.backgroundColor='#34A853'">
+            🗺️ Google Maps
+          </a>
+        </div>
+      `;
     }
 
     // Add OSM ID for reference
@@ -934,7 +1060,7 @@ if (bounds.isValid() && results.length > 1) {
          enrichmentCategories['Public Lands'].push({ key, value });
        } else if (key.includes('poi_epa_')) {
          enrichmentCategories['Environmental Hazards'].push({ key, value });
-       } else if (key.includes('poi_parks') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_bars_nightlife') || key.includes('at_')) {
+       } else if (key.includes('poi_parks') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_bars_nightlife') || key.includes('at_') || key.includes('pct_')) {
          enrichmentCategories['Recreation & Leisure'].push({ key, value });
        } else if (key.includes('poi_usda_')) {
          enrichmentCategories['Local Food & Agriculture'].push({ key, value });
@@ -1500,7 +1626,7 @@ if (bounds.isValid() && results.length > 1) {
 
     
     // Handle POI counts specifically
-    if (key.includes('_count') || key.includes('poi_') || key.includes('at_')) {
+    if (key.includes('_count') || key.includes('poi_') || key.includes('at_') || key.includes('pct_')) {
       if (typeof value === 'number') {
         return `${value} found`;
       } else if (typeof value === 'string' && value.includes('found')) {

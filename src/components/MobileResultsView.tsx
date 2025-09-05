@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, ArrowLeft } from 'lucide-react';
+import { Download, ArrowLeft, Map } from 'lucide-react';
 import { EnrichmentResult } from '../App';
 
 interface MobileResultsViewProps {
@@ -7,13 +7,15 @@ interface MobileResultsViewProps {
   selectedEnrichments: string[];
   onBackToSearch: () => void;
   onDownloadCSV: () => void;
+  onViewMap: () => void;
 }
 
 const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   result,
   selectedEnrichments,
   onBackToSearch,
-  onDownloadCSV
+  onDownloadCSV,
+  onViewMap
 }) => {
   const { location, enrichments } = result;
 
@@ -21,6 +23,8 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     return key
       .replace(/^poi_/g, 'POI ')
       .replace(/^at_/g, 'AT ')
+      .replace(/^pct_/g, 'PCT ')
+      .replace(/nws/g, 'NWS')
       .replace(/_/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -171,6 +175,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('at_')) {
       return 'Appalachian Trail';
     }
+    if (key.includes('pct_')) {
+      return 'Pacific Crest Trail';
+    }
     
     // Catch-all for POI counts that don't fit other categories
     if (key.includes('poi_') && key.includes('count')) {
@@ -242,6 +249,13 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
           </button>
           
           <div className="flex items-center space-x-3">
+            <button
+              onClick={onViewMap}
+              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Map className="w-4 h-4" />
+              <span className="font-medium">Map View</span>
+            </button>
             
             <button
               onClick={onDownloadCSV}

@@ -52,6 +52,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   quirky: <span className="text-xl">☕</span>,
   wildfire: <img src="/assets/wildfire.webp" alt="Natural Hazards" className="w-5 h-5" />,
   at: <img src="/assets/at.webp" alt="Appalachian Trail" className="w-5 h-5" />,
+  pct: <img src="/assets/pct.webp" alt="Pacific Crest Trail" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -207,7 +208,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'natural_resources': 'natural_resources',
       'public_lands': 'public_lands',
       'quirky': 'quirky_and_fun',
-      'at': 'at'
+      'at': 'at',
+      'pct': 'PCT'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -385,7 +387,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       <img
                         src={`/assets/${getIconFileName(category.id)}.webp`}
                         alt={category.title}
-                        className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-full h-full' : 'w-full h-full'}`}
+                        className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-full h-full' : 'w-full h-full'}`} 
                         onError={(e) => {
                           // Fallback to category name if icon fails to load
                           const target = e.target as HTMLImageElement;

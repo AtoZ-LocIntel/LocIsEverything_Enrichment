@@ -21,6 +21,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
     return key
       .replace(/^poi_/g, 'POI ')
       .replace(/^at_/g, 'AT ')
+      .replace(/^pct_/g, 'PCT ')
+      .replace(/nws/g, 'NWS')
       .replace(/_/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -120,6 +122,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Human Caused Hazards';
       } else if (key.includes('at_')) {
         category = 'Appalachian Trail';
+      } else if (key.includes('pct_')) {
+        category = 'Pacific Crest Trail';
       } else if (key.includes('poi_') && (key.includes('grocery') || key.includes('restaurant') || key.includes('bank') || key.includes('pharmacy') || key.includes('convenience') || key.includes('hardware') || key.includes('liquor') || key.includes('bakery') || key.includes('butcher') || key.includes('seafood') || key.includes('sporting') || key.includes('bookstore') || key.includes('clothing') || key.includes('shoes') || key.includes('thrift') || key.includes('pet') || key.includes('florist') || key.includes('variety') || key.includes('gas_stations') || key.includes('car_wash') || key.includes('auto_repair') || key.includes('auto_parts') || key.includes('auto_dealers'))) {
         category = 'Retail & Commerce';
       } else if (key.includes('poi_') && (key.includes('gym') || key.includes('dentist') || key.includes('doctor') || key.includes('chiropractor') || key.includes('optometry') || key.includes('veterinary') || key.includes('hospital') || key.includes('police_stations') || key.includes('fire_stations') || key.includes('urgent_care'))) {

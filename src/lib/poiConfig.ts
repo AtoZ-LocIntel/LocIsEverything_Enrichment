@@ -90,6 +90,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'Appalachian Trail',
     description: 'Appalachian Trail facilities, infrastructure, and trail features',
     icon: 'at.webp'
+  },
+  {
+    id: 'pct',
+    title: 'Pacific Crest Trail',
+    description: 'Pacific Crest Trail facilities, infrastructure, and trail features',
+    icon: 'pct.webp'
   }
 ];
 
@@ -227,7 +233,16 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'at_assets_structures', label: 'AT Structure Assets', description: 'Appalachian Trail structure assets and maintenance records', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
   { id: 'at_assets_trail', label: 'AT Trail Assets', description: 'Appalachian Trail trail assets and maintenance records', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
   { id: 'at_centerline', label: 'AT Centerline', description: 'Appalachian Trail main centerline and trail segments', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
-  { id: 'at_osm_features', label: 'AT OSM Features', description: 'OpenStreetMap Appalachian Trail features (trail segments, shelters, POIs, crossings)', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' }
+  { id: 'at_osm_features', label: 'AT OSM Features', description: 'OpenStreetMap Appalachian Trail features (trail segments, shelters, POIs, crossings)', isPOI: true, defaultRadius: 5, category: 'at', section: 'at' },
+  
+  // Pacific Crest Trail (PCT)
+  { id: 'pct_centerline', label: 'PCT Centerline', description: 'Pacific Crest Trail centerline and main trail segments', isPOI: true, defaultRadius: 5, category: 'pct', section: 'pct' },
+  { id: 'pct_sheriff_offices', label: 'PCT Sheriff Offices', description: 'Sheriff offices along the Pacific Crest Trail', isPOI: true, defaultRadius: 5, category: 'pct', section: 'pct' },
+  { id: 'pct_side_trails', label: 'PCT Side Trails', description: 'Side trails and connecting routes to the Pacific Crest Trail', isPOI: true, defaultRadius: 5, category: 'pct', section: 'pct' },
+  { id: 'pct_mile_markers_2024', label: 'PCT 2024 Mile Markers', description: 'Pacific Crest Trail mile markers for 2024', isPOI: true, defaultRadius: 5, category: 'pct', section: 'pct' },
+  { id: 'pct_tenth_mile_markers_2024', label: 'PCT 2025 Tenth/Mile Markers', description: 'Pacific Crest Trail tenth-mile markers for 2024', isPOI: true, defaultRadius: 5, category: 'pct', section: 'pct' },
+  { id: 'pct_resupply_towns', label: 'PCT Resupply Towns', description: 'Resupply towns and services along the Pacific Crest Trail', isPOI: true, defaultRadius: 5, category: 'pct', section: 'pct' },
+  { id: 'pct_osm_features', label: 'PCT OSM Features', description: 'OpenStreetMap Pacific Crest Trail features (trail segments, shelters, POIs, crossings)', isPOI: true, defaultRadius: 5, category: 'pct', section: 'pct' }
 ];
 
 class POIConfigManager {

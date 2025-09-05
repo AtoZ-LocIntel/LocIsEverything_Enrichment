@@ -3,6 +3,7 @@ import { EnrichmentResult } from '../App';
 import { getUSDAWildfireRiskData } from '../adapters/usdaWildfireRisk';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
+import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
 // import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
 
 // CORS proxy helpers from original geocoder.html
@@ -1111,6 +1112,14 @@ export class EnrichmentService {
         
         case 'poi_mail_shipping':
           return await this.getMailShipping(lat, lon, radius);
+        
+        case 'pct_centerline':
+        case 'pct_sheriff_offices':
+        case 'pct_side_trails':
+        case 'pct_mile_markers_2024':
+        case 'pct_tenth_mile_markers_2024':
+        case 'pct_resupply_towns':
+          return await this.getPCTFeatures(enrichmentId, lat, lon, radius);
       
       // USDA Wildfire Risk to Communities (WRC) - Point-based risk assessment
       case 'usda_wildfire_hazard_potential':
@@ -1130,6 +1139,14 @@ export class EnrichmentService {
           return await this.getOSMATFeatures(lat, lon, radius);
         }
         return await this.getATFeatures(enrichmentId, lat, lon, radius);
+      } else if (enrichmentId.startsWith('pct_')) {
+        // Handle Pacific Crest Trail queries
+        if (enrichmentId === 'pct_osm_features') {
+          // Special handling for OSM PCT features
+          console.log(`🏔️ ===== PCT OSM ROUTING HIT =====`);
+          return await this.getOSMPCTFeatures(lat, lon, radius);
+        }
+        return await this.getPCTFeatures(enrichmentId, lat, lon, radius);
       } else if (enrichmentId.startsWith('poi_')) {
         // Check if this is a custom POI type
         const customPOI = this.getCustomPOIData(enrichmentId);
@@ -2876,6 +2893,187 @@ export class EnrichmentService {
         poi_mail_shipping_summary: 'No mail & shipping locations found due to error.',
         poi_mail_shipping_error: error instanceof Error ? error.message : 'Unknown error' 
       };
+    }
+  }
+
+  private async getPCTFeatures(enrichmentId: string, lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏔️ PCT ${enrichmentId} query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      // Extract layer type from enrichment ID (e.g., 'pct_centerline' -> 'centerline')
+      const layerType = enrichmentId.replace('pct_', '');
+      
+      const response = await queryPCTFeatures(layerType, lat, lon, radiusMiles);
+      
+      if (response.error) {
+        return {
+          [`${enrichmentId}_error`]: response.error.message || 'Unknown error'
+        };
+      }
+      
+      const features = response.features || [];
+      const count = features.length;
+      
+      // Process features into standardized POI format
+      const poiFeatures = features.map((feature, index) => {
+        let poiLat = lat;
+        let poiLon = lon;
+        
+        // Extract coordinates from geometry
+        const geometry = feature.geometry;
+        if (geometry) {
+          if (geometry.x && geometry.y) {
+            // Point geometry
+            poiLon = geometry.x;
+            poiLat = geometry.y;
+          } else if (geometry.paths && geometry.paths.length > 0) {
+            // Polyline geometry - use first point of first path
+            const firstPath = geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const [lon, lat] = firstPath[0];
+              poiLon = lon;
+              poiLat = lat;
+            }
+          }
+        }
+        
+        return {
+          id: feature.attributes.OBJECTID || feature.attributes.FID || index,
+          name: feature.attributes.NAME || feature.attributes.TRAIL_NAME || feature.attributes.TOWN_NAME || `PCT ${layerType} ${index + 1}`,
+          type: layerType,
+          lat: poiLat,
+          lon: poiLon,
+          distance_miles: feature.distance_miles || 0,
+          attributes: feature.attributes
+        };
+      });
+      
+      return {
+        [`${enrichmentId}_count`]: count,
+        [`${enrichmentId}_features`]: poiFeatures,
+        [`${enrichmentId}_summary`]: `Found ${count} PCT ${layerType} features within ${radiusMiles} miles.`
+      };
+      
+    } catch (error) {
+      console.error(`PCT ${enrichmentId} query failed:`, error);
+      return {
+        [`${enrichmentId}_error`]: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  private async getOSMPCTFeatures(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏔️ ===== PCT OSM QUERY STARTED =====`);
+      console.log(`🗺️ Querying OSM PCT features within ${radiusMiles} miles of ${lat}, ${lon}`);
+
+      // Increase radius and expand search terms for PCT
+      const maxRadiusMiles = Math.min(radiusMiles, 10); // Increased from 2 to 10 miles
+      const radiusMeters = Math.round(maxRadiusMiles * 1609.34);
+      
+      // Comprehensive PCT search with multiple variations
+      const overpassQuery = `[out:json][timeout:25];
+(
+  // PCT name variations
+  node["name"="Pacific Crest Trail"](around:${radiusMeters},${lat},${lon});
+  node["name"~"Pacific Crest", i](around:${radiusMeters},${lat},${lon});
+  node["name"~"PCT", i](around:${radiusMeters},${lat},${lon});
+  node["name"~"Pacific Crest Trail", i](around:${radiusMeters},${lat},${lon});
+  
+  // Trail-related features
+  node["highway"="path"](around:${radiusMeters},${lat},${lon});
+  node["highway"="footway"](around:${radiusMeters},${lat},${lon});
+  node["highway"="track"](around:${radiusMeters},${lat},${lon});
+  
+  // Amenities that might be PCT-related
+  node["amenity"="shelter"](around:${radiusMeters},${lat},${lon});
+  node["amenity"="camp_site"](around:${radiusMeters},${lat},${lon});
+  node["amenity"="drinking_water"](around:${radiusMeters},${lat},${lon});
+  node["trailhead"="yes"](around:${radiusMeters},${lat},${lon});
+  node["camp_site"="yes"](around:${radiusMeters},${lat},${lon});
+  node["natural"="spring"](around:${radiusMeters},${lat},${lon});
+  
+  // Tourism features
+  node["tourism"="camp_site"](around:${radiusMeters},${lat},${lon});
+  node["tourism"="wilderness_hut"](around:${radiusMeters},${lat},${lon});
+);
+out;`;
+
+      console.log(`🗺️ PCT OSM query: ${overpassQuery}`);
+      console.log(`🗺️ PCT OSM query length: ${overpassQuery.length}`);
+      console.log(`🗺️ PCT OSM query bytes:`, new TextEncoder().encode(overpassQuery));
+
+      // Try Overpass API with shorter timeout and retry logic (same as AT)
+      let response;
+      try {
+        console.log(`🗺️ Sending PCT OSM query to primary server...`);
+        response = await fetchJSONSmart('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: overpassQuery,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        console.log(`🗺️ PCT OSM primary server response received:`, response);
+      } catch (error) {
+        console.log(`🗺️ Primary server failed, trying fallback...`, error);
+        response = await fetchJSONSmart('https://lz4.overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: overpassQuery,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        console.log(`🗺️ PCT OSM fallback server response received:`, response);
+      }
+      
+      const data = response;
+      console.log(`🗺️ PCT OSM data processing:`, data);
+      
+      console.log(`🔍 PCT OSM response:`, {
+        elementCount: data.elements?.length || 0,
+        elements: data.elements?.slice(0, 3) // Show first 3 elements for debugging
+      });
+      
+      const elements = data.elements || [];
+      const count = elements.length;
+      
+      // Process OSM PCT features (same as AT processing)
+      const osmPOIs = elements.map((element: any) => {
+        if (!element.lat || !element.lon) return null;
+        
+        return {
+          id: element.id,
+          name: element.tags?.name || 'Unnamed PCT Feature',
+          type: element.tags?.amenity || element.tags?.highway || 'pct_feature',
+          lat: element.lat,
+          lon: element.lon,
+          tags: element.tags,
+          distance_miles: this.calculateDistance(lat, lon, element.lat, element.lon)
+        };
+      }).filter((poi: any) => poi !== null);
+      
+      // Sort by distance
+      osmPOIs.sort((a: any, b: any) => a.distance_miles - b.distance_miles);
+      
+      const result = {
+        pct_osm_features_count: count,
+        pct_osm_features_features: osmPOIs,
+        pct_osm_features_summary: `Found ${count} PCT OSM features within ${maxRadiusMiles} miles.`,
+        sampleNames: osmPOIs.slice(0, 3).map((p: any) => p.name)
+      };
+      
+      console.log(`🏔️ PCT OSM final result:`, result);
+      return result;
+      
+    } catch (error) {
+      console.error('🏔️ ===== PCT OSM QUERY FAILED =====', error);
+      const errorResult = {
+        pct_osm_features_error: error instanceof Error ? error.message : 'Unknown error',
+        pct_osm_features_summary: 'No PCT OSM features found due to error.'
+      };
+      console.log(`🏔️ PCT OSM error result:`, errorResult);
+      return errorResult;
     }
   }
 
