@@ -96,6 +96,44 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return acc;
       }
       
+      // Only show fields for selected enrichments (plus core fields that are always shown)
+      const coreFields = ['elevation', 'air_quality', 'fips_state', 'fips_county', 'fips_tract', 'acs_population', 'acs_median_income', 'weather_summary', 'weather_current', 'nws_alerts'];
+      const isCoreField = coreFields.some(core => key.toLowerCase().includes(core.toLowerCase()));
+      
+      // Check if this field should be shown based on selected enrichments
+      const isSelectedEnrichment = selectedEnrichments.some(selected => {
+        // Exact match
+        if (key.includes(selected)) return true;
+        
+        // POI fields - only show if the specific POI type is selected
+        if (selected.includes('poi_') && key.includes('poi_')) {
+          // Extract the POI type from selected (e.g., 'poi_restaurants' from 'poi_restaurants')
+          const selectedPoiType = selected.replace('poi_', '');
+          return key.includes(`poi_${selectedPoiType}`);
+        }
+        
+        // AT fields - only show if AT is selected
+        if (selected.includes('at_') && key.includes('at_')) {
+          return selectedEnrichments.includes('at_centerline') || selectedEnrichments.some(s => s.startsWith('at_'));
+        }
+        
+        // PCT fields - only show if PCT is selected
+        if (selected.includes('pct_') && key.includes('pct_')) {
+          return selectedEnrichments.includes('pct_centerline') || selectedEnrichments.some(s => s.startsWith('pct_'));
+        }
+        
+        // USDA wildfire fields - only show if specific USDA wildfire enrichment is selected
+        if (key.includes('usda_') && key.includes('wildfire')) {
+          return selectedEnrichments.includes('usda_wildfire_hazard_potential');
+        }
+        
+        return false;
+      });
+      
+      if (!isCoreField && !isSelectedEnrichment) {
+        return acc;
+      }
+      
       let category = 'Other';
       
       if (key.includes('elev') || key.includes('elevation')) {

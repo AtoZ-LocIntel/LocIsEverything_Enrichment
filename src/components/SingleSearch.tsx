@@ -5,10 +5,11 @@ interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
   onLocationSearch?: () => Promise<void>;
   isMobile?: boolean;
+  searchInput: string;
+  onSearchInputChange: (value: string) => void;
 }
 
-const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch }) => {
-  const [address, setAddress] = useState('3050 Coast Rd, Santa Cruz, CA 95060');
+const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, searchInput, onSearchInputChange }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [isLocationLoading, setIsLocationLoading] = useState(false);
@@ -16,11 +17,11 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!address.trim()) return;
+    if (!searchInput.trim()) return;
 
     setIsLoading(true);
     try {
-      await onSearch(address.trim());
+      await onSearch(searchInput.trim());
     } catch (error) {
       console.error('Search failed:', error);
       // Don't show alert here - let the parent handle it
@@ -69,8 +70,8 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch 
                 <input
                   id="address"
                   type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => onSearchInputChange(e.target.value)}
                   placeholder="e.g., 3050 Coast Rd, Santa Cruz, CA 95060"
                   className="form-input text-base pl-12 pr-12"
                   disabled={isLoading}
@@ -78,10 +79,10 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch 
                 <Search className="w-5 h-5 text-gray-400 absolute top-1/2 transform -translate-y-1/2 left-3" />
                 
                 {/* Clear button - only show when there's text */}
-                {address.trim() && (
+                {searchInput.trim() && (
                   <button
                     type="button"
-                    onClick={() => setAddress('')}
+                    onClick={() => onSearchInputChange('')}
                     className="absolute top-1/2 transform -translate-y-1/2 right-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
                     title="Clear address"
                   >
@@ -94,7 +95,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch 
             {/* Search by Address Button */}
             <button
               type="submit"
-              disabled={!address.trim() || isLoading}
+              disabled={!searchInput.trim() || isLoading}
               className="btn btn-primary w-full flex items-center justify-center space-x-2 py-4 text-lg font-semibold mb-3"
             >
               {isLoading ? (

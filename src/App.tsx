@@ -32,6 +32,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [savedScrollPosition, setSavedScrollPosition] = useState<number>(0);
   const [previousViewMode, setPreviousViewMode] = useState<ViewMode | null>(null);
+  const [searchInput, setSearchInput] = useState<string>('3050 Coast Rd, Santa Cruz, CA 95060');
 
 
   // Detect mobile device
@@ -379,6 +380,8 @@ function App() {
                   onSearch={handleSingleSearch} 
                   onLocationSearch={handleLocationSearch}
                   isMobile={isMobile}
+                  searchInput={searchInput}
+                  onSearchInputChange={setSearchInput}
                 />
               </div>
               {!isMobile && (

@@ -1626,7 +1626,7 @@ if (bounds.isValid() && results.length > 1) {
      
      // Handle USDA Wildfire Risk data
      if (key === 'usda_wildfire_hazard_potential') {
-       return `Class ${value} of 5`;
+       return `${value}/5`;
      }
      if (key === 'usda_wildfire_hazard_potential_label') {
        return value || 'Unknown Risk Level';

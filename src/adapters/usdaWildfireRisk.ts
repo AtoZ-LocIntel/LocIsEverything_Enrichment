@@ -77,10 +77,12 @@ export async function getUSDAWildfireRiskData(lat: number, lon: number): Promise
     // First try the exact coordinates
     let exactData = await fetchWildfireData(endpoints.wildfireHazardPotential, lat, lon);
     if (exactData && exactData.value && exactData.value !== 'NoData') {
-      const value = parseFloat(exactData.value);
-      result.whp = value;
-      result.whp_label = getHazardPotentialLabel(value);
-      console.log(`🔥 Exact location - Wildfire Hazard Potential: ${value} (${result.whp_label})`);
+      const rawValue = parseFloat(exactData.value);
+      // Convert raw value to 1-5 scale for display
+      const scaledValue = Math.min(5, Math.max(1, Math.round(rawValue / 100 * 5)));
+      result.whp = scaledValue;
+      result.whp_label = getHazardPotentialLabel(scaledValue);
+      console.log(`🔥 Exact location - Wildfire Hazard Potential: ${rawValue} raw -> ${scaledValue}/5 (${result.whp_label})`);
     } else {
       console.log('🔥 No data at exact location');
     }
