@@ -158,25 +158,55 @@ body.modal-open {
 /* Mobile-specific map fixes */
 @media (max-width: 768px) {
   .leaflet-container {
-    height: calc(100vh - 8rem) !important;
+    height: calc(100vh - 120px) !important;
     min-height: 400px !important;
     width: 100% !important;
     position: relative !important;
     z-index: 1 !important;
+    /* Force proper rendering on mobile */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    /* Better touch handling */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
   
   .map-container {
-    height: calc(100vh - 8rem) !important;
+    height: calc(100vh - 120px) !important;
     min-height: 400px !important;
     width: 100% !important;
     position: relative !important;
+    /* Force hardware acceleration */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
   
   .map-view-container {
-    height: calc(100vh - 8rem) !important;
+    height: calc(100vh - 120px) !important;
     min-height: 400px !important;
     width: 100% !important;
     position: relative !important;
+    /* Force hardware acceleration */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+  
+  /* Ensure map tiles load properly on mobile */
+  .leaflet-tile {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+  
+  /* Better mobile popup handling */
+  .leaflet-popup {
+    max-width: 90vw !important;
+  }
+  
+  .leaflet-popup-content {
+    min-width: 300px !important;
+    max-width: 90vw !important;
   }
 }
 

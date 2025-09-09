@@ -166,23 +166,51 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
 
       console.log('🗺️ Initializing map...');
       console.log('📱 Is mobile:', isMobile);
-      console.log('📏 Container dimensions:', {
-        width: mapRef.current.offsetWidth,
-        height: mapRef.current.offsetHeight,
-        clientWidth: mapRef.current.clientWidth,
-        clientHeight: mapRef.current.clientHeight
+      console.log('📏 Window dimensions:', {
+        width: window.innerWidth,
+        height: window.innerHeight
       });
-
-      // Simple map initialization - let Leaflet handle sizing
-      const container = mapRef.current;
       
-      // Simple map initialization
+      // Force container to have proper dimensions
+      const container = mapRef.current;
+      if (isMobile) {
+        // For mobile, ensure the container has proper height
+        container.style.height = 'calc(100vh - 120px)';
+        container.style.width = '100%';
+        container.style.minHeight = '400px';
+        container.style.position = 'relative';
+        container.style.zIndex = '1';
+      } else {
+        // For desktop, ensure proper dimensions
+        container.style.height = '100%';
+        container.style.width = '100%';
+        container.style.minHeight = '400px';
+      }
+
+      // Initialize map with mobile-appropriate settings
+      const isMobileView = window.innerWidth <= 768;
+      const initialZoom = isMobileView ? 15 : 4;
+      
       const map = L.map(container, {
         center: [39.8283, -98.5795], // Center of USA
-        zoom: 4,
+        zoom: initialZoom,
         zoomControl: true,
-        minZoom: 2,
-        maxZoom: 19
+        // Mobile-specific settings
+        maxBounds: isMobileView ? undefined : undefined,
+        minZoom: isMobileView ? 10 : 2,
+        maxZoom: 19,
+        // Force proper rendering
+        preferCanvas: false,
+        renderer: L.svg(),
+        // Ensure proper touch handling on mobile
+        tap: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        scrollWheelZoom: true,
+        // Better mobile performance
+        zoomAnimation: true,
+        fadeAnimation: true,
+        markerZoomAnimation: true
       });
 
       // Add OpenStreetMap tiles as default with better mobile support
@@ -246,17 +274,27 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
           }
         }
         
-        // Force map to resize on orientation change
+        // Force map to resize
         setTimeout(() => {
           if (map) {
-            console.log('🔄 Resizing map after orientation change...');
+            console.log('🔄 Resizing map...');
             map.invalidateSize();
           }
         }, 100);
       };
       
+      // Handle orientation change with longer delay
+      const handleOrientationChange = () => {
+        setTimeout(() => {
+          if (map) {
+            console.log('🔄 Resizing map after orientation change...');
+            map.invalidateSize();
+          }
+        }, 500); // Longer delay for orientation change
+      };
+      
       window.addEventListener('resize', handleResize);
-      window.addEventListener('orientationchange', handleResize);
+      window.addEventListener('orientationchange', handleOrientationChange);
 
       mapInstanceRef.current = map;
 
@@ -267,6 +305,32 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
           map.invalidateSize();
         }
       }, 100);
+      
+      // Additional size invalidation after map loads (key for mobile)
+      setTimeout(() => {
+        if (map) {
+          console.log('🔄 Initial size invalidation after map load...');
+          map.invalidateSize();
+          
+          // Force multiple invalidations for mobile to ensure proper rendering
+          if (isMobile) {
+            setTimeout(() => {
+              console.log('🔄 Second size invalidation for mobile...');
+              map.invalidateSize();
+            }, 200);
+            
+            setTimeout(() => {
+              console.log('🔄 Third size invalidation for mobile...');
+              map.invalidateSize();
+            }, 500);
+            
+            setTimeout(() => {
+              console.log('🔄 Final size invalidation for mobile...');
+              map.invalidateSize();
+            }, 1000);
+          }
+        }
+      }, 250);
 
       // Add global tab switching function to window object
       (window as any).handleTabSwitch = (tabName: string) => {
@@ -275,24 +339,31 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       };
     };
 
-    // Initialize map immediately
-    initMap();
+    // Initialize map with a small delay on mobile to ensure container is properly sized
+    if (isMobile) {
+      setTimeout(() => {
+        initMap();
+      }, 100);
+    } else {
+      initMap();
+    }
 
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
-      // Clean up resize event listener
+      // Clean up resize event listeners
       if (handleResize) {
         window.removeEventListener('resize', handleResize);
-        window.removeEventListener('orientationchange', handleResize);
       }
+      window.removeEventListener('orientationchange', handleOrientationChange);
       // Clean up global function
       delete (window as any).handleTabSwitch;
     };
   }, [isMobile]);
 
+  // Add markers to map
   useEffect(() => {
     if (!mapInstanceRef.current || !results.length) return;
 
@@ -300,103 +371,111 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     
     // Add a small delay to ensure map is fully rendered
     const renderMarkers = () => {
-      console.log('🎯 renderMarkers called, map ready:', !!map);
-      console.log('🎯 Map container size:', map.getContainer().offsetWidth, 'x', map.getContainer().offsetHeight);
-      console.log('🎯 Results to render:', results.length);
+      console.log('📍 Starting to render markers...');
       
-      // Force map to be ready
-      map.invalidateSize();
+      // Clear existing markers
+      markersRef.current.forEach(marker => {
+        if (map.hasLayer(marker)) {
+          map.removeLayer(marker);
+        }
+      });
+      markersRef.current = [];
 
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
-
-    // Add main location markers and POI markers for each result
-    const bounds = L.latLngBounds([]);
-    let firstMarker: L.Marker | null = null;
-    
-    results.forEach((result, index) => {
-      const { lat, lon } = result.location;
+      // Add main location markers and POI markers for each result
+      const bounds = L.latLngBounds([]);
+      let firstMarker: L.Marker | null = null;
       
-      if (lat && lon) {
-        // Add main location marker (larger, blue)
-        console.log(`📍 Creating main marker at [${lat}, ${lon}]`);
-        const mainMarker = L.marker([lat, lon], {
-          icon: L.divIcon({
-            html: `<div style="
-              background-color: #2563eb;
-              border: 3px solid white;
-              border-radius: 50%;
-              width: 40px;
-              height: 40px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 20px;
-              color: white;
-              box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-              z-index: 1000;
-            ">📍</div>`,
-            className: 'main-location-marker',
-            iconSize: [40, 40],
-            iconAnchor: [20, 20],
-            popupAnchor: [0, -20]
+      results.forEach((result, index) => {
+        const { lat, lon } = result.location;
+        
+        if (lat && lon) {
+          // Add main location marker (larger, blue)
+          console.log(`📍 Creating main marker at [${lat}, ${lon}]`);
+          const mainMarker = L.marker([lat, lon], {
+            icon: L.divIcon({
+              html: `<div style="
+                background-color: #2563eb;
+                border: 3px solid white;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                color: white;
+                box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+                z-index: 1000;
+              ">📍</div>`,
+              className: 'main-location-marker',
+              iconSize: [40, 40],
+              iconAnchor: [20, 20],
+              popupAnchor: [0, -20]
+            })
           })
-        })
-          .bindPopup(createPopupContent(result))
-          .addTo(map);
-        
-        console.log(`✅ Main marker added to map:`, mainMarker);
-        
-        markersRef.current.push(mainMarker);
-        
-        // Only extend bounds for batch results, not single results
-        if (results.length > 1) {
-          bounds.extend([lat, lon]);
-        }
-        
-        // Store reference to first marker to auto-open its popup
-        if (index === 0) {
-          firstMarker = mainMarker;
-        }
-
-        // For single search results, set initial map view to the geocoded location
-        if (results.length === 1) {
-          console.log(`🎯 Setting initial map view to geocoded location: [${lat}, ${lon}]`);
+            .bindPopup(createPopupContent(result))
+            .addTo(map);
           
-          // Set the initial view
-          map.setView([lat, lon], 16, { animate: true });
+          console.log(`✅ Main marker added to map:`, mainMarker);
           
-          // Add POI markers
-          addPOIMarkers(map, result);
+          markersRef.current.push(mainMarker);
+          
+          // Only extend bounds for batch results, not single results
+          if (results.length > 1) {
+            bounds.extend([lat, lon]);
+          }
+          
+          // Store reference to first marker to auto-open its popup
+          if (index === 0) {
+            firstMarker = mainMarker;
+          }
+
+          // For single search results, set initial map view to the geocoded location
+          if (results.length === 1) {
+            console.log(`🎯 Setting initial map view to geocoded location: [${lat}, ${lon}]`);
+            
+            // Set the initial view with appropriate zoom for mobile vs desktop
+            const targetZoom = isMobile ? 16 : 18; // Lower zoom on mobile to show more area
+            map.setView([lat, lon], targetZoom, { animate: true });
+            
+            // Force a size check after setting the view on mobile
+            if (isMobile) {
+              setTimeout(() => {
+                console.log('🔄 Mobile: Invalidating size after setting view...');
+                map.invalidateSize();
+              }, 100);
+            }
+            
+            // Add POI markers
+            addPOIMarkers(map, result);
+          }
         }
-  }
-});
+      });
 
-// Fit map to show all markers with padding (only for batch results now)
-if (bounds.isValid() && results.length > 1) {
-  // For batch results, fit bounds as before
-  map.fitBounds(bounds, { 
-    padding: [20, 20],
-    maxZoom: 16
-  });
-}
+      // Fit map to show all markers with padding (only for batch results now)
+      if (bounds.isValid() && results.length > 1) {
+        // For batch results, fit bounds as before
+        map.fitBounds(bounds, { 
+          padding: [20, 20],
+          maxZoom: 16
+        });
+      }
 
-    // Auto-open popup for first marker after a short delay to ensure map is ready (only on desktop)
-    if (firstMarker && !isMobile) {
-      setTimeout(() => {
-        // Simply open the popup - let the map handle positioning naturally
-        firstMarker?.openPopup();
-      }, 500);
-    }
+      // Auto-open popup for first marker after a short delay to ensure map is ready (only on desktop)
+      if (firstMarker && !isMobile) {
+        setTimeout(() => {
+          // Simply open the popup - let the map handle positioning naturally
+          firstMarker?.openPopup();
+        }, 500);
+      }
 
-    // Show batch success message if multiple results
-    if (results.length > 1) {
-      setShowBatchSuccess(true);
-      setTimeout(() => {
-        setShowBatchSuccess(false);
-      }, 5000); // Hide after 5 seconds
-    }
+      // Show batch success message if multiple results
+      if (results.length > 1) {
+        setShowBatchSuccess(true);
+        setTimeout(() => {
+          setShowBatchSuccess(false);
+        }, 5000); // Hide after 5 seconds
+      }
     };
     
     // Call renderMarkers with a simple delay to ensure map is ready
@@ -2331,7 +2410,7 @@ if (bounds.isValid() && results.length > 1) {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white">
+    <div className={`${isMobile ? 'h-screen' : 'h-screen'} flex flex-col bg-white`}>
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
         <button
@@ -2395,13 +2474,16 @@ if (bounds.isValid() && results.length > 1) {
        )}
 
       {/* Map Container */}
-      <div className="flex-1 relative">
+      <div className={`flex-1 relative ${isMobile ? 'min-h-0' : ''}`}>
         <div 
           ref={mapRef} 
           className="w-full h-full" 
           style={{ 
-            height: '100%',
-            width: '100%'
+            height: isMobile ? 'calc(100vh - 120px)' : '100%',
+            width: '100%',
+            minHeight: isMobile ? '400px' : '300px',
+            position: 'relative',
+            zIndex: 1
           }} 
         />
         
