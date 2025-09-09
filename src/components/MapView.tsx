@@ -155,6 +155,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
   const tabContentBackup = useRef<Map<string, string>>(new Map());
   const weatherTabCache = useRef<Map<string, string>>(new Map());
+  const orientationChangeHandlerRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -203,7 +204,6 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         preferCanvas: false,
         renderer: L.svg(),
         // Ensure proper touch handling on mobile
-        tap: true,
         touchZoom: true,
         doubleClickZoom: true,
         scrollWheelZoom: true,
@@ -293,6 +293,9 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         }, 500); // Longer delay for orientation change
       };
       
+      // Store the handler in ref for cleanup
+      orientationChangeHandlerRef.current = handleOrientationChange;
+      
       window.addEventListener('resize', handleResize);
       window.addEventListener('orientationchange', handleOrientationChange);
 
@@ -357,7 +360,10 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       if (handleResize) {
         window.removeEventListener('resize', handleResize);
       }
-      window.removeEventListener('orientationchange', handleOrientationChange);
+      // Clean up orientation change listener
+      if (orientationChangeHandlerRef.current) {
+        window.removeEventListener('orientationchange', orientationChangeHandlerRef.current);
+      }
       // Clean up global function
       delete (window as any).handleTabSwitch;
     };
