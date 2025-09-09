@@ -1,0 +1,307 @@
+warning: in the working copy of 'src/components/MapView.tsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/src/components/MapView.tsx b/src/components/MapView.tsx[m
+[1mindex 0b61da3..a4c3bb8 100644[m
+[1m--- a/src/components/MapView.tsx[m
+[1m+++ b/src/components/MapView.tsx[m
+[36m@@ -165,24 +165,31 @@[m [mconst MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f[m
+       if (!mapRef.current) return;[m
+ [m
+       console.log('🗺️ Initializing map...');[m
+[31m-      console.log('📱 Is mobile:', isMobile);[m
+[31m-      console.log('📏 Container dimensions:', {[m
+[31m-        width: mapRef.current.offsetWidth,[m
+[31m-        height: mapRef.current.offsetHeight,[m
+[31m-        clientWidth: mapRef.current.clientWidth,[m
+[31m-        clientHeight: mapRef.current.clientHeight[m
+[31m-      });[m
+[31m-[m
+[31m-      // Simple map initialization - let Leaflet handle sizing[m
+[32m+[m[41m      [m
+[32m+[m[32m      // Force container to have proper dimensions[m
+       const container = mapRef.current;[m
+[32m+[m[32m      if (isMobile) {[m
+[32m+[m[32m        // For mobile, ensure the container has proper height[m
+[32m+[m[32m        container.style.height = 'calc(100vh - 8rem)';[m
+[32m+[m[32m        container.style.width = '100%';[m
+[32m+[m[32m        container.style.minHeight = '400px';[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m[32m      // Initialize map with mobile-appropriate settings[m
+[32m+[m[32m      const isMobileView = window.innerWidth <= 768;[m
+[32m+[m[32m      const initialZoom = isMobileView ? 15 : 4;[m
+       [m
+[31m-      // Simple map initialization[m
+       const map = L.map(container, {[m
+         center: [39.8283, -98.5795], // Center of USA[m
+[31m-        zoom: 4,[m
+[32m+[m[32m        zoom: initialZoom,[m
+         zoomControl: true,[m
+[31m-        minZoom: 2,[m
+[31m-        maxZoom: 19[m
+[32m+[m[32m        // Mobile-specific settings[m
+[32m+[m[32m        maxBounds: isMobileView ? undefined : undefined,[m
+[32m+[m[32m        minZoom: isMobileView ? 10 : 2,[m
+[32m+[m[32m        maxZoom: 19,[m
+[32m+[m[32m        // Force proper rendering[m
+[32m+[m[32m        preferCanvas: false,[m
+[32m+[m[32m        renderer: L.svg()[m
+       });[m
+ [m
+       // Add OpenStreetMap tiles as default with better mobile support[m
+[36m@@ -246,17 +253,27 @@[m [mconst MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f[m
+           }[m
+         }[m
+         [m
+[31m-        // Force map to resize on orientation change[m
+[32m+[m[32m        // Force map to resize[m
+         setTimeout(() => {[m
+           if (map) {[m
+[31m-            console.log('🔄 Resizing map after orientation change...');[m
+[32m+[m[32m            console.log('🔄 Resizing map...');[m
+             map.invalidateSize();[m
+           }[m
+         }, 100);[m
+       };[m
+       [m
+[32m+[m[32m      // Handle orientation change with longer delay[m
+[32m+[m[32m      const handleOrientationChange = () => {[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m          if (map) {[m
+[32m+[m[32m            console.log('🔄 Resizing map after orientation change...');[m
+[32m+[m[32m            map.invalidateSize();[m
+[32m+[m[32m          }[m
+[32m+[m[32m        }, 500); // Longer delay for orientation change[m
+[32m+[m[32m      };[m
+[32m+[m[41m      [m
+       window.addEventListener('resize', handleResize);[m
+[31m-      window.addEventListener('orientationchange', handleResize);[m
+[32m+[m[32m      window.addEventListener('orientationchange', handleOrientationChange);[m
+ [m
+       mapInstanceRef.current = map;[m
+ [m
+[36m@@ -267,6 +284,14 @@[m [mconst MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f[m
+           map.invalidateSize();[m
+         }[m
+       }, 100);[m
+[32m+[m[41m      [m
+[32m+[m[32m      // Additional size invalidation after map loads (key for mobile)[m
+[32m+[m[32m      setTimeout(() => {[m
+[32m+[m[32m        if (map) {[m
+[32m+[m[32m          console.log('🔄 Initial size invalidation after map load...');[m
+[32m+[m[32m          map.invalidateSize();[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }, 250);[m
+ [m
+       // Add global tab switching function to window object[m
+       (window as any).handleTabSwitch = (tabName: string) => {[m
+[36m@@ -283,16 +308,17 @@[m [mconst MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f[m
+         mapInstanceRef.current.remove();[m
+         mapInstanceRef.current = null;[m
+       }[m
+[31m-      // Clean up resize event listener[m
+[32m+[m[32m      // Clean up resize event listeners[m
+       if (handleResize) {[m
+         window.removeEventListener('resize', handleResize);[m
+[31m-        window.removeEventListener('orientationchange', handleResize);[m
+       }[m
+[32m+[m[32m      window.removeEventListener('orientationchange', handleOrientationChange);[m
+       // Clean up global function[m
+       delete (window as any).handleTabSwitch;[m
+     };[m
+   }, [isMobile]);[m
+ [m
+[32m+[m[32m  // Add markers to map[m
+   useEffect(() => {[m
+     if (!mapInstanceRef.current || !results.length) return;[m
+ [m
+[36m@@ -300,103 +326,103 @@[m [mconst MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f[m
+     [m
+     // Add a small delay to ensure map is fully rendered[m
+     const renderMarkers = () => {[m
+[31m-      console.log('🎯 renderMarkers called, map ready:', !!map);[m
+[31m-      console.log('🎯 Map container size:', map.getContainer().offsetWidth, 'x', map.getContainer().offsetHeight);[m
+[31m-      console.log('🎯 Results to render:', results.length);[m
+[32m+[m[32m      console.log('📍 Starting to render markers...');[m
+       [m
+[31m-      // Force map to be ready[m
+[31m-      map.invalidateSize();[m
+[31m-[m
+[31m-    // Clear existing markers[m
+[31m-    markersRef.current.forEach(marker => marker.remove());[m
+[31m-    markersRef.current = [];[m
+[32m+[m[32m      // Clear existing markers[m
+[32m+[m[32m      markersRef.current.forEach(marker => {[m
+[32m+[m[32m        if (map.hasLayer(marker)) {[m
+[32m+[m[32m          map.removeLayer(marker);[m
+[32m+[m[32m        }[m
+[32m+[m[32m      });[m
+[32m+[m[32m      markersRef.current = [];[m
+ [m
+[31m-    // Add main location markers and POI markers for each result[m
+[31m-    const bounds = L.latLngBounds([]);[m
+[31m-    let firstMarker: L.Marker | null = null;[m
+[31m-    [m
+[31m-    results.forEach((result, index) => {[m
+[31m-      const { lat, lon } = result.location;[m
+[32m+[m[32m      // Add main location markers and POI markers for each result[m
+[32m+[m[32m      const bounds = L.latLngBounds([]);[m
+[32m+[m[32m      let firstMarker: L.Marker | null = null;[m
+       [m
+[31m-      if (lat && lon) {[m
+[31m-        // Add main location marker (larger, blue)[m
+[31m-        console.log(`📍 Creating main marker at [${lat}, ${lon}]`);[m
+[31m-        const mainMarker = L.marker([lat, lon], {[m
+[31m-          icon: L.divIcon({[m
+[31m-            html: `<div style="[m
+[31m-              background-color: #2563eb;[m
+[31m-              border: 3px solid white;[m
+[31m-              border-radius: 50%;[m
+[31m-              width: 40px;[m
+[31m-              height: 40px;[m
+[31m-              display: flex;[m
+[31m-              align-items: center;[m
+[31m-              justify-content: center;[m
+[31m-              font-size: 20px;[m
+[31m-              color: white;[m
+[31m-              box-shadow: 0 3px 6px rgba(0,0,0,0.4);[m
+[31m-              z-index: 1000;[m
+[31m-            ">📍</div>`,[m
+[31m-            className: 'main-location-marker',[m
+[31m-            iconSize: [40, 40],[m
+[31m-            iconAnchor: [20, 20],[m
+[31m-            popupAnchor: [0, -20][m
+[31m-          })[m
+[31m-        })[m
+[31m-          .bindPopup(createPopupContent(result))[m
+[31m-          .addTo(map);[m
+[31m-        [m
+[31m-        console.log(`✅ Main marker added to map:`, mainMarker);[m
+[31m-        [m
+[31m-        markersRef.current.push(mainMarker);[m
+[31m-        [m
+[31m-        // Only extend bounds for batch results, not single results[m
+[31m-        if (results.length > 1) {[m
+[31m-          bounds.extend([lat, lon]);[m
+[31m-        }[m
+[32m+[m[32m      results.forEach((result, index) => {[m
+[32m+[m[32m        const { lat, lon } = result.location;[m
+         [m
+[31m-        // Store reference to first marker to auto-open its popup[m
+[31m-        if (index === 0) {[m
+[31m-          firstMarker = mainMarker;[m
+[31m-        }[m
+[31m-[m
+[31m-        // For single search results, set initial map view to the geocoded location[m
+[31m-        if (results.length === 1) {[m
+[31m-          console.log(`🎯 Setting initial map view to geocoded location: [${lat}, ${lon}]`);[m
+[32m+[m[32m        if (lat && lon) {[m
+[32m+[m[32m          // Add main location marker (larger, blue)[m
+[32m+[m[32m          console.log(`📍 Creating main marker at [${lat}, ${lon}]`);[m
+[32m+[m[32m          const mainMarker = L.marker([lat, lon], {[m
+[32m+[m[32m            icon: L.divIcon({[m
+[32m+[m[32m              html: `<div style="[m
+[32m+[m[32m                background-color: #2563eb;[m
+[32m+[m[32m                border: 3px solid white;[m
+[32m+[m[32m                border-radius: 50%;[m
+[32m+[m[32m                width: 40px;[m
+[32m+[m[32m                height: 40px;[m
+[32m+[m[32m                display: flex;[m
+[32m+[m[32m                align-items: center;[m
+[32m+[m[32m                justify-content: center;[m
+[32m+[m[32m                font-size: 20px;[m
+[32m+[m[32m                color: white;[m
+[32m+[m[32m                box-shadow: 0 3px 6px rgba(0,0,0,0.4);[m
+[32m+[m[32m                z-index: 1000;[m
+[32m+[m[32m              ">📍</div>`,[m
+[32m+[m[32m              className: 'main-location-marker',[m
+[32m+[m[32m              iconSize: [40, 40],[m
+[32m+[m[32m              iconAnchor: [20, 20],[m
+[32m+[m[32m              popupAnchor: [0, -20][m
+[32m+[m[32m            })[m
+[32m+[m[32m          })[m
+[32m+[m[32m            .bindPopup(createPopupContent(result))[m
+[32m+[m[32m            .addTo(map);[m
+[32m+[m[41m          [m
+[32m+[m[32m          console.log(`✅ Main marker added to map:`, mainMarker);[m
+[32m+[m[41m          [m
+[32m+[m[32m          markersRef.current.push(mainMarker);[m
+           [m
+[31m-          // Set the initial view[m
+[31m-          map.setView([lat, lon], 16, { animate: true });[m
+[32m+[m[32m          // Only extend bounds for batch results, not single results[m
+[32m+[m[32m          if (results.length > 1) {[m
+[32m+[m[32m            bounds.extend([lat, lon]);[m
+[32m+[m[32m          }[m
+           [m
+[31m-          // Add POI markers[m
+[31m-          addPOIMarkers(map, result);[m
+[32m+[m[32m          // Store reference to first marker to auto-open its popup[m
+[32m+[m[32m          if (index === 0) {[m
+[32m+[m[32m            firstMarker = mainMarker;[m
+[32m+[m[32m          }[m
+[32m+[m
+[32m+[m[32m          // For single search results, set initial map view to the geocoded location[m
+[32m+[m[32m          if (results.length === 1) {[m
+[32m+[m[32m            console.log(`🎯 Setting initial map view to geocoded location: [${lat}, ${lon}]`);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Set the initial view with appropriate zoom for mobile vs desktop[m
+[32m+[m[32m            const targetZoom = isMobile ? 16 : 18; // Lower zoom on mobile to show more area[m
+[32m+[m[32m            map.setView([lat, lon], targetZoom, { animate: true });[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Add POI markers[m
+[32m+[m[32m            addPOIMarkers(map, result);[m
+[32m+[m[32m          }[m
+         }[m
+[31m-  }[m
+[31m-});[m
+[32m+[m[32m      });[m
+ [m
+[31m-// Fit map to show all markers with padding (only for batch results now)[m
+[31m-if (bounds.isValid() && results.length > 1) {[m
+[31m-  // For batch results, fit bounds as before[m
+[31m-  map.fitBounds(bounds, { [m
+[31m-    padding: [20, 20],[m
+[31m-    maxZoom: 16[m
+[31m-  });[m
+[31m-}[m
+[32m+[m[32m      // Fit map to show all markers with padding (only for batch results now)[m
+[32m+[m[32m      if (bounds.isValid() && results.length > 1) {[m
+[32m+[m[32m        // For batch results, fit bounds as before[m
+[32m+[m[32m        map.fitBounds(bounds, {[m[41m [m
+[32m+[m[32m          padding: [20, 20],[m
+[32m+[m[32m          maxZoom: 16[m
+[32m+[m[32m        });[m
+[32m+[m[32m      }[m
+ [m
+[31m-    // Auto-open popup for first marker after a short delay to ensure map is ready (only on desktop)[m
+[31m-    if (firstMarker && !isMobile) {[m
+[31m-      setTimeout(() => {[m
+[31m-        // Simply open the popup - let the map handle positioning naturally[m
+[31m-        firstMarker?.openPopup();[m
+[31m-      }, 500);[m
+[31m-    }[m
+[32m+[m[32m      // Auto-open popup for first marker after a short delay to ensure map is ready (only on desktop)[m
+[32m+[m[32m      if (firstMarker && !isMobile) {[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m          // Simply open the popup - let the map handle positioning naturally[m
+[32m+[m[32m          firstMarker?.openPopup();[m
+[32m+[m[32m        }, 500);[m
+[32m+[m[32m      }[m
+ [m
+[31m-    // Show batch success message if multiple results[m
+[31m-    if (results.length > 1) {[m
+[31m-      setShowBatchSuccess(true);[m
+[31m-      setTimeout(() => {[m
+[31m-        setShowBatchSuccess(false);[m
+[31m-      }, 5000); // Hide after 5 seconds[m
+[31m-    }[m
+[32m+[m[32m      // Show batch success message if multiple results[m
+[32m+[m[32m      if (results.length > 1) {[m
+[32m+[m[32m        setShowBatchSuccess(true);[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m          setShowBatchSuccess(false);[m
+[32m+[m[32m        }, 5000); // Hide after 5 seconds[m
+[32m+[m[32m      }[m
+     };[m
+     [m
+     // Call renderMarkers with a simple delay to ensure map is ready[m

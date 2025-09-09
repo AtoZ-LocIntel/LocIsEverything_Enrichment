@@ -4,6 +4,7 @@ import { getUSDAWildfireRiskData } from '../adapters/usdaWildfireRisk';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
+import { EPATRIService } from '../adapters/epaTRI';
 // import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
 
 // CORS proxy helpers from original geocoder.html
@@ -1073,8 +1074,24 @@ export class EnrichmentService {
         return await this.getEPAFRSFacilities(lat, lon, radius, 'SEMS/CERCLIS');
       case 'poi_epa_rcra':
         return await this.getEPAFRSFacilities(lat, lon, radius, 'RCRAInfo');
-      case 'poi_epa_tri':
-        return await this.getEPAFRSFacilities(lat, lon, radius, 'TRI');
+      // EPA TRI (Toxics Release Inventory) - Comprehensive facility data
+      case 'tri_facilities':
+      case 'tri_facilities_tribal':
+      case 'tri_all_facilities':
+      case 'tri_manufacturing':
+      case 'tri_metal_mining':
+      case 'tri_electric_utility':
+      case 'tri_wood_products':
+      case 'tri_automotive':
+      case 'tri_pfas':
+      case 'tri_lead':
+      case 'tri_dioxins':
+      case 'tri_ethylene_oxide':
+      case 'tri_carcinogens':
+      case 'tri_mercury':
+      case 'tri_federal':
+        const triService = new EPATRIService();
+        return await triService.enrichLocation(lat, lon, [enrichmentId], poiRadii);
       case 'poi_epa_npdes':
         return await this.getEPAFRSFacilities(lat, lon, radius, 'NPDES');
       case 'poi_epa_air':

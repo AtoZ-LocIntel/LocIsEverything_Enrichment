@@ -98,11 +98,11 @@ function App() {
       const result = await enrichmentService.enrichSingleLocation(locationString, selectedEnrichments, poiRadii);
       setEnrichmentResults([result]);
       
-      // On mobile, show mobile results view; on desktop, show map
+      // On mobile, show mobile results view; on desktop, show desktop results view
       if (isMobile) {
         setViewMode('mobile-results');
       } else {
-        setViewMode('map');
+        setViewMode('desktop-results');
       }
     } catch (error) {
       console.error('Location search failed:', error);
