@@ -388,6 +388,18 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
                     <div className="text-white font-bold text-base sm:text-base">{enrichments.open_meteo_weather_timezone_abbreviation}</div>
                   </div>
                 )}
+                {enrichments.walkability_index && (
+                  <div className="text-center">
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Walkability Index</div>
+                    <div className="text-white font-bold text-base sm:text-base">{Number(enrichments.walkability_index).toFixed(2)}</div>
+                  </div>
+                )}
+                {enrichments.walkability_category && (
+                  <div className="text-center">
+                    <div className="font-bold text-gray-300 text-sm sm:text-sm">Walkability Category</div>
+                    <div className="text-white font-bold text-sm sm:text-sm">{enrichments.walkability_category}</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

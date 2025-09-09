@@ -216,6 +216,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_padus_protection_status', label: 'PAD-US Protection Status', description: 'GAP status codes and IUCN categories for protected areas', isPOI: true, defaultRadius: 5, category: 'public_lands', section: 'public_lands' },
   { id: 'poi_community_centers', label: 'Community Centers', description: 'Community centers and gathering places via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   { id: 'poi_mail_shipping', label: 'Mail & Shipping', description: 'Post offices, parcel lockers, UPS/FedEx/DHL stores, shipping centers, and courier services', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_walkability_index', label: 'Walkability Index', description: 'EPA Walkability Index - measures how walkable a neighborhood is based on street connectivity, transit access, and land use diversity', isPOI: false, defaultRadius: 0, category: 'community', section: 'community' },
   
   // Natural Hazards - Wildfire Risk & Monitoring (grouped at top)
   { id: 'poi_wildfires', label: 'Current Wildfires', description: 'NIFC/Esri USA Wildfires - current wildfire incidents and perimeters with incident names, containment status, and discovery dates', isPOI: true, defaultRadius: 50, category: 'wildfire', section: 'wildfire' },

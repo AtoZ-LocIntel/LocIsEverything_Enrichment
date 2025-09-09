@@ -336,6 +336,18 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                               <div className="text-white font-bold text-lg">{enrichments.open_meteo_weather_timezone_abbreviation}</div>
                             </div>
                           )}
+                          {enrichments.walkability_index && (
+                            <div className="text-center">
+                              <div className="font-bold text-gray-300 text-sm">Walkability Index</div>
+                              <div className="text-white font-bold text-lg">{Number(enrichments.walkability_index).toFixed(2)}</div>
+                            </div>
+                          )}
+                          {enrichments.walkability_category && (
+                            <div className="text-center">
+                              <div className="font-bold text-gray-300 text-sm">Walkability Category</div>
+                              <div className="text-white font-bold text-lg">{enrichments.walkability_category}</div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

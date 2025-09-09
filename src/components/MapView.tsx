@@ -131,6 +131,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_electric_charging': { icon: '🔌', color: '#10b981', title: 'Electric Charging Stations' },
   'poi_gas_stations': { icon: '⛽', color: '#f59e0b', title: 'Gas Stations' },
   'poi_mail_shipping': { icon: '📮', color: '#3b82f6', title: 'Mail & Shipping' },
+  'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
    
    // Natural Resources
    'poi_beaches': { icon: '🏖️', color: '#fbbf24', title: 'Beaches' },
@@ -1144,7 +1145,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
      const categorizeEnrichment = (key: string, value: any) => {
        if (key.includes('open_meteo_weather') || key.includes('nws_weather_alerts')) {
          enrichmentCategories['Weather & Alerts'].push({ key, value });
-       } else if (key.includes('elevation') || key.includes('fips_') || key.includes('county_') || key.includes('state_') || key.includes('census_') || key.includes('city_') || key.includes('urban_area_') || key.includes('metro_area_') || key.includes('subdivision_')) {
+       } else if ((key.includes('elevation') || key.includes('fips_') || key.includes('county_') || key.includes('state_') || key.includes('census_') || key.includes('city_') || key.includes('urban_area_') || key.includes('metro_area_') || key.includes('subdivision_')) && !key.includes('walkability')) {
          enrichmentCategories['Geographic Info'].push({ key, value });
        } else if (key.includes('congressional_') || key.includes('state_senate_') || key.includes('state_house_')) {
          enrichmentCategories['Political Districts'].push({ key, value });
@@ -1166,8 +1167,10 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
          enrichmentCategories['Local Food & Agriculture'].push({ key, value });
        } else if (key.includes('poi_grocery') || key.includes('poi_restaurants') || key.includes('poi_banks') || key.includes('poi_pharmacies') || key.includes('poi_convenience') || key.includes('poi_hardware') || key.includes('poi_liquor') || key.includes('poi_bakery') || key.includes('poi_butcher') || key.includes('poi_seafood') || key.includes('poi_sporting') || key.includes('poi_bookstore') || key.includes('poi_clothing') || key.includes('poi_shoes') || key.includes('poi_thrift') || key.includes('poi_pet') || key.includes('poi_florist') || key.includes('poi_variety') || key.includes('poi_gas_stations') || key.includes('poi_car_wash') || key.includes('poi_auto_repair') || key.includes('poi_auto_parts') || key.includes('poi_auto_dealers')) {
          enrichmentCategories['Retail & Commerce'].push({ key, value });
-       } else if (key.includes('poi_community_centers') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_libraries') || key.includes('poi_markets') || key.includes('poi_cafes') || key.includes('poi_mail_shipping')) {
-         enrichmentCategories['Community & Services'].push({ key, value });
+      } else if (key.includes('poi_community_centers') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_libraries') || key.includes('poi_markets') || key.includes('poi_cafes') || key.includes('poi_mail_shipping')) {
+        enrichmentCategories['Community & Services'].push({ key, value });
+      } else if (key.includes('walkability') && (key === 'walkability_index' || key === 'walkability_category')) {
+        enrichmentCategories['Community & Services'].push({ key, value });
        } else {
          enrichmentCategories['Other'].push({ key, value });
        }
@@ -1785,6 +1788,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
        
        // Check for both detailed_pois (map display) and all_pois (complete dataset)
        if (key.includes('_detailed') && Array.isArray(value)) {
+         console.log(`🔍 Processing detailed POI: ${key} with ${value.length} items`);
          // Handle detailed POI arrays (limited to 50 for map)
          value.forEach((poi: any) => {
            // Special handling for AVI data
@@ -1807,6 +1811,25 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
                '',
                '',
                poi.source || 'N/A'
+             ]);
+           } else if (key.includes('gas_stations')) {
+             // Special handling for gas stations
+             rows.push([
+               result.location.name,
+               result.location.lat,
+               result.location.lon,
+               result.location.source,
+               result.location.confidence || 'N/A',
+               'GAS_STATION',
+               poi.name || 'Unnamed Gas Station',
+               poi.lat || '',
+               poi.lon || '',
+               poi.distance_miles || 'Unknown',
+               poi.brand || 'Gas Station',
+               poi.address || '',
+               poi.phone || '',
+               poi.website || '',
+               'OpenStreetMap'
              ]);
            } else {
              // Regular POI handling
@@ -1852,6 +1875,25 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
                '',
                '',
                poi.source || 'N/A'
+             ]);
+           } else if (key.includes('gas_stations')) {
+             // Special handling for gas stations
+             rows.push([
+               result.location.name,
+               result.location.lat,
+               result.location.lon,
+               result.location.source,
+               result.location.confidence || 'N/A',
+               'GAS_STATION',
+               poi.name || 'Unnamed Gas Station',
+               poi.lat || '',
+               poi.lon || '',
+               poi.distance_miles || 'Unknown',
+               poi.brand || 'Gas Station',
+               poi.address || '',
+               poi.phone || '',
+               poi.website || '',
+               'OpenStreetMap'
              ]);
            } else {
              // Regular POI handling
@@ -2019,6 +2061,70 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
          '',
          ''
        ]);
+    }
+    
+    // Add Walkability Index data
+    if (result.enrichments.walkability_index !== undefined) {
+      rows.push([
+        result.location.name,
+        result.location.lat,
+        result.location.lon,
+        result.location.source,
+        result.location.confidence || 'N/A',
+        'WALKABILITY_INDEX',
+        'Walkability Index',
+        result.location.lat,
+        result.location.lon,
+        '0.0',
+        'Community Assessment',
+        `${Number(result.enrichments.walkability_index).toFixed(2)}`,
+        '',
+        ''
+      ]);
+      
+      if (result.enrichments.walkability_category) {
+        rows.push([
+          result.location.name,
+          result.location.lat,
+          result.location.lon,
+          result.location.source,
+          result.location.confidence || 'N/A',
+          'WALKABILITY_CATEGORY',
+          'Walkability Category',
+          result.location.lat,
+          result.location.lon,
+          '0.0',
+          'Community Assessment',
+          result.enrichments.walkability_category,
+          '',
+          ''
+        ]);
+      }
+      
+      // Add all walkability attributes if available
+      if (result.enrichments.walkability_all_attributes) {
+        const walkabilityData = result.enrichments.walkability_all_attributes;
+        Object.entries(walkabilityData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            rows.push([
+              result.location.name,
+              result.location.lat,
+              result.location.lon,
+              result.location.source,
+              result.location.confidence || 'N/A',
+              'WALKABILITY_DATA',
+              key.replace(/_/g, ' ').toUpperCase(),
+              result.location.lat,
+              result.location.lon,
+              '0.0',
+              'Community Assessment',
+              String(value),
+              '',
+              ''
+            ]);
+          }
+        });
+      }
     }
     
          // Add USGS Earthquake data

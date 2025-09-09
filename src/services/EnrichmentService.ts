@@ -5,6 +5,7 @@ import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
 import { EPATRIService } from '../adapters/epaTRI';
+import { EPAWalkabilityService } from '../adapters/epaWalkability';
 // import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
 
 // CORS proxy helpers from original geocoder.html
@@ -1092,6 +1093,14 @@ export class EnrichmentService {
       case 'tri_federal':
         const triService = new EPATRIService();
         return await triService.enrichLocation(lat, lon, [enrichmentId], poiRadii);
+      
+      // EPA Walkability Index
+      case 'poi_walkability_index':
+        console.log('Calling EPA Walkability Service for:', lat, lon);
+        const walkabilityService = new EPAWalkabilityService();
+        const result = await walkabilityService.enrichLocation(lat, lon, [enrichmentId], poiRadii);
+        console.log('Walkability service result:', result);
+        return result;
       case 'poi_epa_npdes':
         return await this.getEPAFRSFacilities(lat, lon, radius, 'NPDES');
       case 'poi_epa_air':

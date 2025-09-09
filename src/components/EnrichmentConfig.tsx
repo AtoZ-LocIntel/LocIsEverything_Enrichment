@@ -387,7 +387,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       <img
                         src={`/assets/${getIconFileName(category.id)}.webp`}
                         alt={category.title}
-                        className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-full h-full' : 'w-full h-full'}`} 
+                        className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-full h-full' : 'w-full h-full'}`}
                         onError={(e) => {
                           // Fallback to category name if icon fails to load
                           const target = e.target as HTMLImageElement;
@@ -405,9 +405,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         {category.title}
                       </div>
                       
-                      {/* Selection Counter Badge */}
+                      {/* Selection Count Badge */}
                       {selectedCount > 0 && (
-                        <div className="absolute top-2 right-2 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold">
+                        <div className="absolute top-1 right-1 bg-blue-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
                           {selectedCount}
                         </div>
                       )}
