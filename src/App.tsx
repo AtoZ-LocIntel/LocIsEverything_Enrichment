@@ -10,6 +10,7 @@ import DesktopResultsView from './components/DesktopResultsView';
 import DataSourcesView from './components/DataSourcesView';
 import EnrichmentCategoryView from './components/EnrichmentCategoryView';
 import EnrichmentConfig from './components/EnrichmentConfig';
+import { exportEnrichmentResultsToCSV } from './utils/csvExport';
 import LoadingModal from './components/LoadingModal';
 import { EnrichmentService } from './services/EnrichmentService';
 import { GeocodeResult } from './lib/types';
@@ -134,7 +135,7 @@ function App() {
 
   const handleDownloadCSV = () => {
     if (enrichmentResults.length > 0) {
-      downloadBatchResults(enrichmentResults);
+      exportEnrichmentResultsToCSV(enrichmentResults);
     }
   };
 
@@ -149,137 +150,13 @@ function App() {
     // Automatically download CSV after batch processing completes
     if (results.length > 0) {
       setTimeout(() => {
-        downloadBatchResults(results);
+        exportEnrichmentResultsToCSV(results);
       }, 1000); // Small delay to ensure results are loaded
     }
   };
 
 
 
-  const downloadBatchResults = (results: EnrichmentResult[]) => {
-    if (!results.length) return;
-
-    // Create individual rows for each POI - similar to downloadSingleLookupResults
-    const headers = [
-      'Search Address', 'Search Lat', 'Search Lon', 'Search Source', 'Search Confidence',
-      'POI Type', 'POI Name', 'POI Lat', 'POI Lon', 'Distance (miles)', 
-      'POI Category', 'POI Address', 'POI Phone', 'POI Website', 'POI Source'
-    ];
-    
-    const rows: string[][] = [];
-    
-    results.forEach(result => {
-      console.log(`🔍 Processing result for ${result.location.name}`);
-      
-      // Add summary row for the search location
-      rows.push([
-        result.location.name,
-        result.location.lat.toString(),
-        result.location.lon.toString(),
-        result.location.source,
-        (result.location.confidence || 'N/A').toString(),
-        'SEARCH_LOCATION',
-        result.location.name,
-        result.location.lat.toString(),
-        result.location.lon.toString(),
-        '0',
-        'SEARCH_LOCATION',
-        result.location.name,
-        '',
-        '',
-        result.location.source
-      ]);
-      
-      // Add all POI data as individual rows
-      Object.entries(result.enrichments).forEach(([key, value]) => {
-        console.log(`🔍 Processing enrichment key: ${key}`, value);
-        
-        if (key.includes('_all_pois') && Array.isArray(value)) {
-          // Handle ALL POI arrays (complete dataset for CSV)
-          value.forEach((poi: any) => {
-            // Special handling for AVI data
-            if (key.includes('animal_vehicle_collisions')) {
-              const aviName = `AVI-${poi.case_id || poi.id || 'Unknown'}`;
-              const aviType = `${poi.source || 'AVI'} ${poi.year || ''}`.trim();
-              rows.push([
-                result.location.name,
-                result.location.lat.toString(),
-                result.location.lon.toString(),
-                result.location.source,
-                (result.location.confidence || 'N/A').toString(),
-                'ANIMAL_VEHICLE_COLLISION',
-                aviName,
-                poi.lat || '',
-                poi.lon || '',
-                poi.distance_miles || 'Unknown',
-                aviType,
-                poi.location || poi.address || '',
-                '',
-                '',
-                poi.source || 'N/A'
-              ]);
-            } else {
-              // Regular POI handling
-              rows.push([
-                result.location.name,
-                result.location.lat.toString(),
-                result.location.lon.toString(),
-                result.location.source,
-                (result.location.confidence || 'N/A').toString(),
-                key.replace('_all_pois', '').replace('poi_', '').toUpperCase(),
-                poi.name || poi.title || 'Unnamed',
-                poi.lat || poi.center?.lat || '',
-                poi.lon || poi.center?.lon || '',
-                poi.distance_miles || 'Unknown',
-                poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
-                poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
-                poi.tags?.phone || '',
-                poi.tags?.website || '',
-                poi.source || 'N/A'
-              ]);
-            }
-          });
-        } else if (key === 'poi_wikipedia_articles' && Array.isArray(value)) {
-          // Handle Wikipedia articles
-          value.forEach((article: any) => {
-            rows.push([
-              result.location.name,
-              result.location.lat.toString(),
-              result.location.lon.toString(),
-              result.location.source,
-              (result.location.confidence || 'N/A').toString(),
-              'WIKIPEDIA_ARTICLE',
-              article.title || 'Unnamed Article',
-              result.location.lat.toString(),
-              result.location.lon.toString(),
-              '0',
-              'WIKIPEDIA',
-              '',
-              '',
-              article.url || '',
-              'Wikipedia'
-            ]);
-          });
-        }
-      });
-    });
-
-    // Create CSV content
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    // Create and download file with timestamp
-    const timestamp = new Date().toISOString().slice(0, 10); // Just YYYY-MM-DD
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `enrichment_results_${timestamp}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
 
   const handleBackToConfig = () => {
     // If we have a previous view mode (came from results), go back to it

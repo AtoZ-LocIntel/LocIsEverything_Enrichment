@@ -25,6 +25,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       .replace(/^at_/g, 'AT ')
       .replace(/^pct_/g, 'PCT ')
       .replace(/nws/g, 'NWS')
+      .replace(/fws/g, 'FWS')
       .replace(/_/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -135,6 +136,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Demographics';
     }
     
+    // FWS Species & Wildlife
+    if (key.includes('fws_')) {
+      return 'FWS Species & Wildlife';
+    }
+    
     if (key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_wildfires') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire'))) {
       return 'Natural Hazards';
     }
@@ -236,6 +242,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // USDA wildfire fields - only show if specific USDA wildfire enrichment is selected
       if (key.includes('usda_') && key.includes('wildfire')) {
         return selectedEnrichments.includes('usda_wildfire_hazard_potential');
+      }
+      
+      // FWS fields - only show if FWS species enrichment is selected
+      if (key.includes('fws_')) {
+        return selectedEnrichments.includes('poi_fws_species');
       }
       
       return false;

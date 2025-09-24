@@ -221,20 +221,29 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     onSelectionChange(newSelected);
   };
 
-  const handleRadiusChange = (enrichmentId: string, radius: number) => {
-    // Cap radius based on POI type: different hazards have different maximums
-    let maxRadius = 5; // Default for most POI types
-
-    if (enrichmentId === 'poi_earthquakes') {
-      maxRadius = 25; // Earthquakes can go up to 25 miles
-    } else if (enrichmentId === 'poi_volcanoes') {
-      maxRadius = 50; // Volcanoes can go up to 50 miles
-    } else if (enrichmentId === 'poi_wildfires') {
-      maxRadius = 50; // Wildfires can go up to 50 miles for risk assessment
-    } else if (enrichmentId === 'poi_flood_reference_points') {
-      maxRadius = 25; // Flood reference points can go up to 25 miles
+  const getMaxRadius = (enrichmentId: string): number => {
+    // Get max radius from POI config, with fallback to hardcoded values for special cases
+    const poiConfig = poiConfigManager.getPOIType(enrichmentId);
+    if (poiConfig?.maxRadius) {
+      return poiConfig.maxRadius;
     }
+    
+    // Fallback to hardcoded values for special cases not in POI config
+    if (enrichmentId === 'poi_earthquakes') {
+      return 25; // Earthquakes can go up to 25 miles
+    } else if (enrichmentId === 'poi_volcanoes') {
+      return 50; // Volcanoes can go up to 50 miles
+    } else if (enrichmentId === 'poi_wildfires') {
+      return 50; // Wildfires can go up to 50 miles for risk assessment
+    } else if (enrichmentId === 'poi_flood_reference_points') {
+      return 25; // Flood reference points can go up to 25 miles
+    }
+    
+    return 5; // Default for most POI types
+  };
 
+  const handleRadiusChange = (enrichmentId: string, radius: number) => {
+    const maxRadius = getMaxRadius(enrichmentId);
     const cappedRadius = Math.min(radius, maxRadius);
     onPoiRadiiChange({
       ...poiRadii,
@@ -713,13 +722,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       <input
                                         type="number"
                                         min="0.1"
-                                        max={
-                                          enrichment.id === 'poi_earthquakes' ? 25 :
-                                          enrichment.id === 'poi_volcanoes' ? 50 :
-                                          enrichment.id === 'poi_wildfires' ? 50 :
-                                          enrichment.id === 'poi_flood_reference_points' ? 25 :
-                                          5
-                                        }
+                                        max={getMaxRadius(enrichment.id)}
                                         step="0.1"
                                         value={currentRadius}
                                         onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}

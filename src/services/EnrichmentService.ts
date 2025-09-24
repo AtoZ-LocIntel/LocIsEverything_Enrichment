@@ -6,10 +6,11 @@ import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
 import { EPATRIService } from '../adapters/epaTRI';
 import { EPAWalkabilityService } from '../adapters/epaWalkability';
+import { FWSSpeciesService } from '../adapters/fwsSpecies';
 // import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
 
 // CORS proxy helpers from original geocoder.html
-const USE_CORS_PROXY = false;
+const USE_CORS_PROXY = true;
 const CORS_PROXIES = [
   { type: "prefix", value: "https://cors.isomorphic-git.org/" },
   { type: "wrap", value: "https://api.allorigins.win/raw?url=" }
@@ -1101,6 +1102,14 @@ export class EnrichmentService {
         const result = await walkabilityService.enrichLocation(lat, lon, [enrichmentId], poiRadii);
         console.log('Walkability service result:', result);
         return result;
+      
+      // FWS Species & Critical Habitat
+      case 'poi_fws_species':
+        console.log('Calling FWS Species Service for:', lat, lon);
+        const fwsService = new FWSSpeciesService();
+        const fwsResult = await fwsService.enrichLocation(lat, lon, [enrichmentId], poiRadii);
+        console.log('FWS Species service result:', fwsResult);
+        return fwsResult;
       case 'poi_epa_npdes':
         return await this.getEPAFRSFacilities(lat, lon, radius, 'NPDES');
       case 'poi_epa_air':

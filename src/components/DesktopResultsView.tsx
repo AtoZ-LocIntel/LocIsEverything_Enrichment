@@ -23,6 +23,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       .replace(/^at_/g, 'AT ')
       .replace(/^pct_/g, 'PCT ')
       .replace(/nws/g, 'NWS')
+      .replace(/fws/g, 'FWS')
       .replace(/_/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -127,6 +128,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('usda_wildfire_hazard_potential');
         }
         
+        // FWS fields - only show if FWS species enrichment is selected
+        if (key.includes('fws_')) {
+          return selectedEnrichments.includes('poi_fws_species');
+        }
+        
         return false;
       });
       
@@ -142,6 +148,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Air Quality';
       } else if (key.includes('fips') || key.includes('census') || key.includes('demographic')) {
         category = 'Demographics & Census';
+      } else if (key.includes('fws_')) {
+        category = 'FWS Species & Wildlife';
       } else if (key.includes('poi_') && key.includes('count') && !key.includes('wildfire')) {
         category = 'Points of Interest Nearby';
       } else if (key.includes('weather') || key.includes('climate')) {
