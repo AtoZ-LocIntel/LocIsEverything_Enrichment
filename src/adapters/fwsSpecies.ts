@@ -298,7 +298,7 @@ export class FWSSpeciesService {
            (lat > 35 && lat < 45 && lon > -120 && lon < -110); // Great Basin
   }
 
-  private getLocationBasedSpecies(lat: number, lon: number, isCoastal: boolean, isMountainous: boolean, isDesert: boolean): any {
+  private getLocationBasedSpecies(_lat: number, _lon: number, isCoastal: boolean, isMountainous: boolean, isDesert: boolean): any {
     // Provide basic species information based on location characteristics
     const species: any = {};
     const criticalHabitats: any[] = [];
@@ -416,7 +416,7 @@ export class FWSSpeciesService {
     };
   }
 
-  private processFWSResponse(fwsData: FWSResponse, lat: number, lon: number, bufferDistanceMiles: number): Record<string, any> {
+  private processFWSResponse(fwsData: FWSResponse, _lat: number, _lon: number, bufferDistanceMiles: number): Record<string, any> {
     // Process FWS response data and create individual enrichment fields
     const enrichments: Record<string, any> = {};
 

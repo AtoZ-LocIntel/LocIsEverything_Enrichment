@@ -165,7 +165,7 @@ const createPOIIcon = (emoji: string, color: string) => {
   });
 };
 
-const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = false, previousViewMode = null }) => {
+const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = false }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
