@@ -202,11 +202,24 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
 
     // Force map resize on mobile after initialization
     if (isMobile) {
+      // Multiple resize attempts for mobile
       setTimeout(() => {
         if (mapInstanceRef.current) {
           mapInstanceRef.current.invalidateSize();
         }
       }, 100);
+      
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 500);
+      
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 1000);
     }
 
     return () => {
@@ -214,6 +227,27 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+    };
+  }, [isMobile]);
+
+  // Add mobile resize listener
+  useEffect(() => {
+    if (!isMobile || !mapInstanceRef.current) return;
+
+    const handleResize = () => {
+      if (mapInstanceRef.current) {
+        setTimeout(() => {
+          mapInstanceRef.current?.invalidateSize();
+        }, 100);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
     };
   }, [isMobile]);
 
