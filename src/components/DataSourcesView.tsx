@@ -77,6 +77,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "EPA Walkability Index",
+          description: "Neighborhood walkability scores based on street connectivity, population density, and land use mix",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free"
         }
       ]
     },
@@ -343,6 +350,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free"
+        },
+        {
+          name: "US Fish and Wildlife Service (FWS)",
+          description: "Endangered/threatened species, critical habitat, wildlife refuges, wetlands, marine mammals, migratory birds, and fish hatcheries within proximity",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
@@ -366,6 +380,25 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Craft breweries with names, types, addresses, and contact information",
           coverage: "United States",
           accuracy: "High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Trail & Recreation Data",
+      sources: [
+        {
+          name: "Appalachian Trail (AT) Features",
+          description: "AT facilities including bridges, campsites, parking, shelters, water sources, and trail features via ArcGIS services",
+          coverage: "Appalachian Trail Corridor",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "Pacific Crest Trail (PCT) Features",
+          description: "PCT centerline, sheriff offices, side trails, mile markers, and resupply towns via ArcGIS services",
+          coverage: "Pacific Crest Trail Corridor",
+          accuracy: "Very High",
           cost: "Free"
         }
       ]

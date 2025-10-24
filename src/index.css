@@ -281,8 +281,8 @@ body.modal-open {
 /* Mobile viewport fixes */
 @media (max-width: 767px) {
   html, body {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     overflow-x: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -290,8 +290,8 @@ body.modal-open {
   }
   
   #root {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     overflow-x: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -309,18 +309,18 @@ body.modal-open {
   
   /* Force all containers to full width */
   .container, .container-fluid, .mx-auto {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
   }
   
   /* Ensure main content takes full width */
   main, .main-content {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -337,8 +337,8 @@ body.modal-open {
   
   /* Override any Tailwind max-width constraints on mobile */
   .max-w-7xl, .max-w-6xl, .max-w-5xl, .max-w-4xl, .max-w-3xl, .max-w-2xl, .max-w-xl, .max-w-lg, .max-w-md, .max-w-sm {
-    max-width: 100vw !important;
-    width: 100vw !important;
+    max-width: 100% !important;
+    width: 100% !important;
   }
   
   /* Override any auto margins that might center content on mobile - but allow centering for main content */
@@ -354,17 +354,17 @@ body.modal-open {
   
   /* Override any grid constraints on mobile */
   .grid {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   
   /* Ensure the main config content area takes full width on mobile */
   .pt-36 {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     margin: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
   }
   
   /* Mobile Results View Specific Fixes */
@@ -566,13 +566,13 @@ body.modal-open {
 @media (max-width: 767px) {
   /* Fix for main landing page containers */
   .bg-white.rounded-xl.shadow-sm.border {
-    width: calc(100vw - 32px) !important;
-    max-width: calc(100vw - 32px) !important;
-    margin-left: 16px !important;
-    margin-right: 16px !important;
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
-    padding: 8px !important;
+    padding: 12px !important;
   }
   
   /* Ensure logos are visible on mobile */
@@ -584,27 +584,27 @@ body.modal-open {
   
   /* Fix for enrichment options container */
   .bg-gradient-to-br.from-gray-800.to-gray-900 {
-    width: calc(100vw - 32px) !important;
-    max-width: calc(100vw - 32px) !important;
-    margin-left: 16px !important;
-    margin-right: 16px !important;
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
     box-sizing: border-box !important;
   }
   
   /* Fix for main content area on mobile */
   .max-w-7xl {
-    width: calc(100vw - 16px) !important;
-    max-width: calc(100vw - 16px) !important;
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
     margin-left: 8px !important;
     margin-right: 8px !important;
   }
   
   /* Fix for the grid container itself - make it fit within the white container */
   .grid.grid-cols-1.md\\:grid-cols-3 {
-    width: calc(100% - 24px) !important;
-    max-width: calc(100% - 24px) !important;
-    margin-left: 12px !important;
-    margin-right: 12px !important;
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
     gap: 8px !important;
     box-sizing: border-box !important;
   }
@@ -764,8 +764,8 @@ body.modal-open {
   /* Ensure main content container doesn't overflow */
   .min-h-screen.bg-black {
     overflow-x: hidden !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   
   /* Fix padding on main container */
@@ -776,10 +776,10 @@ body.modal-open {
   
   /* Ensure any card-like containers fit */
   .card, .shadow-sm, .shadow-md, .shadow-lg {
-    width: calc(100vw - 32px) !important;
-    max-width: calc(100vw - 32px) !important;
-    margin-left: 16px !important;
-    margin-right: 16px !important;
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
     box-sizing: border-box !important;
   }
   
@@ -817,16 +817,16 @@ body.modal-open {
   
   .min-h-screen {
     padding-top: 60px !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     overflow-x: hidden !important;
   }
   
   /* Fix header logo and alignment */
   .bg-gradient-to-r.from-gray-600.to-gray-900 {
-    width: calc(100vw - 24px) !important;
-    margin-left: 12px !important;
-    margin-right: 12px !important;
+    width: calc(100% - 16px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
     border-radius: 12px !important;
   }
   
@@ -855,34 +855,35 @@ body.modal-open {
   
   /* Fix all white container cards to fit screen */
   .bg-white.rounded-xl, .bg-white.rounded-lg {
-    margin-left: 12px !important;
-    margin-right: 12px !important;
-    width: calc(100vw - 24px) !important;
-    max-width: calc(100vw - 24px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
     overflow: hidden !important;
-    padding: 16px 12px !important;
+    padding: 12px 8px !important;
   }
   
-  /* Fix button grid layout in EnrichmentConfig - TRULY Circular */
+  /* Fix button grid layout in EnrichmentConfig - Responsive Circular */
   .grid.grid-cols-2 {
-    gap: 16px !important;
-    padding: 20px !important;
+    gap: 8px !important;
+    padding: 12px !important;
     width: 100% !important;
     max-width: 100% !important;
     justify-items: center !important;
     display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
   }
   
   .grid.grid-cols-2 > button {
-    width: 140px !important;
-    height: 140px !important;
-    max-width: 140px !important;
-    min-width: 140px !important;
-    min-height: 140px !important;
-    max-height: 140px !important;
+    width: calc(50% - 4px) !important;
+    height: calc(50% - 4px) !important;
+    max-width: calc(50% - 4px) !important;
+    min-width: calc(50% - 4px) !important;
+    min-height: calc(50% - 4px) !important;
+    max-height: calc(50% - 4px) !important;
     border-radius: 50% !important;
-    padding: 12px !important;
-    font-size: 11px !important;
+    padding: 6px !important;
+    font-size: 9px !important;
     line-height: 1.1 !important;
     text-align: center !important;
     overflow: hidden !important;
@@ -897,20 +898,52 @@ body.modal-open {
   
   /* Make icon and text spacing better in circular buttons */
   .grid.grid-cols-2 > button .text-xl {
-    margin-bottom: 4px !important;
-    font-size: 20px !important;
+    margin-bottom: 2px !important;
+    font-size: 16px !important;
   }
   
   .grid.grid-cols-2 > button .w-5 {
-    margin-bottom: 4px !important;
-    width: 20px !important;
-    height: 20px !important;
+    margin-bottom: 2px !important;
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  /* Ensure text in buttons doesn't overflow */
+  .grid.grid-cols-2 > button img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+  }
+  
+  /* Add text wrapping for button content */
+  .grid.grid-cols-2 > button span {
+    word-break: break-word !important;
+    hyphens: auto !important;
+    text-align: center !important;
+    line-height: 1.1 !important;
+    font-size: 8px !important;
+    padding: 2px !important;
   }
   
   /* Ensure all containers respect viewport */
   .px-4, .px-6, .px-8 {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  
+  /* Mobile text overflow prevention */
+  * {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+  }
+  
+  /* Ensure all text elements respect container bounds */
+  p, h1, h2, h3, h4, h5, h6, span, div {
+    max-width: 100% !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
   }
   
   /* Fix any overflow issues */

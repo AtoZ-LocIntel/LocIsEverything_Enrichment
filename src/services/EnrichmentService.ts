@@ -1000,10 +1000,12 @@ export class EnrichmentService {
     lon: number, 
     poiRadii: Record<string, number>
   ): Promise<Record<string, any>> {
-    // Cap radii for performance, but allow wildfires up to 50 miles
+    // Cap radii for performance, but allow wildfires and power plants larger radii
     let maxRadius = 5; // Default 5 mile cap
     if (enrichmentId === 'poi_wildfires') {
       maxRadius = 50; // Wildfires can be up to 50 miles for risk assessment
+    } else if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_epa_power') {
+      maxRadius = 25; // Power plants and EPA power generation can be up to 25 miles
     }
     
     const radius = Math.min(poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId), maxRadius);
@@ -1635,7 +1637,7 @@ export class EnrichmentService {
      if (id === "poi_airports") return ["aeroway=aerodrome", "aeroway=airport"];
      if (id === "poi_substations") return ["power=substation"];
      if (id === "poi_powerlines") return ["power=line"];
-     if (id === "poi_power_plants") return ["power=plant", "power=generator"];
+     if (id === "poi_power_plants_openei") return ["power=plant", "power=generator"];
      if (id === "poi_railroads") return ["railway=rail"];
      if (id === "poi_gas") return ["amenity=fuel"];
      
@@ -1948,7 +1950,7 @@ export class EnrichmentService {
       'poi_gas': 3,
       'poi_hotels': 5,
       'poi_airports': 5,
-      'poi_power_plants': 5,
+      'poi_power_plants_openei': 25,
       'poi_substations': 5,
       'poi_powerlines': 5,
       'poi_cell_towers': 5,
@@ -1974,7 +1976,7 @@ export class EnrichmentService {
        'poi_epa_npdes': 5,
        'poi_epa_air': 5,
        'poi_epa_radiation': 5,
-       'poi_epa_power': 5,
+       'poi_epa_power': 25,
        'poi_epa_oil_spill': 5,
        
        // USDA Local Food Portal - Farmers Markets & Local Food
@@ -1985,8 +1987,15 @@ export class EnrichmentService {
        'poi_usda_onfarm_market': 5
     };
     
-    // Cap all radii at 5 miles maximum
+    // Get the default radius, with special handling for power plants and other large-radius POIs
     const radius = defaultRadii[enrichmentId] || 5;
+    
+    // Allow power plants and other infrastructure to use larger radii
+    if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_electric_charging' || enrichmentId === 'poi_epa_power') {
+      return radius; // No cap for power plants, charging stations, and EPA power generation
+    }
+    
+    // Cap other POI types at 5 miles maximum
     return Math.min(radius, 5);
   }
 
@@ -2084,11 +2093,39 @@ export class EnrichmentService {
     console.log(`🔗 EPA FRS API URL: ${url.toString()}`);
     
     try {
+      console.log(`🔍 EPA FRS API Debug Info:`);
+      console.log(`📍 Location: [${lat}, ${lon}]`);
+      console.log(`📏 Radius: ${radiusMiles} miles`);
+      console.log(`🏭 Program Type: ${programType}`);
+      console.log(`🔗 Full API URL: ${url.toString()}`);
+      
       const response = await fetchJSONSmart(url.toString());
       console.log(`📊 EPA FRS API response:`, response);
     
       if (!response || !response.Results || !response.Results.FRSFacility || !Array.isArray(response.Results.FRSFacility)) {
         console.log(`⚠️  No EPA FRS facilities found for ${programType}`);
+        console.log(`🔄 Attempting fallback to OpenEI power plants...`);
+        
+        // Fallback to OpenEI power plants if EPA FRS returns no results
+        if (programType === 'EGRID') {
+          try {
+            const openEIResult = await this.getPOICount('poi_power_plants_openei', lat, lon, radiusMiles);
+            console.log(`🔄 OpenEI fallback result:`, openEIResult);
+            
+            // Map OpenEI results to EPA power format
+            const openEICount = openEIResult[`poi_power_plants_openei_count_${radiusMiles}mi`] || 0;
+            const openEIFacilities = openEIResult[`poi_power_plants_openei_detailed`] || [];
+            
+            return {
+              [`poi_epa_${this.getEPAProgramId(programType)}_count`]: openEICount,
+              [`poi_epa_${this.getEPAProgramId(programType)}_facilities`]: openEIFacilities,
+              [`poi_epa_${this.getEPAProgramId(programType)}_summary`]: `Found ${openEICount} Power Generation facilities within ${radiusMiles} miles (via OpenEI fallback)`
+            };
+          } catch (fallbackError) {
+            console.error(`❌ OpenEI fallback also failed:`, fallbackError);
+          }
+        }
+        
         return {
           [`poi_epa_${this.getEPAProgramId(programType)}_count`]: 0,
           [`poi_epa_${this.getEPAProgramId(programType)}_facilities`]: [],
@@ -2159,6 +2196,27 @@ export class EnrichmentService {
       if (isCORSError) {
         console.log(`🌐 CORS policy blocked EPA FRS API access - this is expected in browser environments`);
         console.log(`💡 EPA FRS data may be available through the ArcGIS fallback service`);
+      }
+      
+      // Try fallback to OpenEI power plants if EPA FRS fails (e.g., CORS error)
+      if (programType === 'EGRID') {
+        console.log(`🔄 EPA FRS failed, attempting fallback to OpenEI power plants...`);
+        try {
+          const openEIResult = await this.getPOICount('poi_power_plants_openei', lat, lon, radiusMiles);
+          console.log(`🔄 OpenEI fallback result:`, openEIResult);
+          
+          // Map OpenEI results to EPA power format
+          const openEICount = openEIResult[`poi_power_plants_openei_count_${radiusMiles}mi`] || 0;
+          const openEIFacilities = openEIResult[`poi_power_plants_openei_detailed`] || [];
+          
+          return {
+            [`poi_epa_${this.getEPAProgramId(programType)}_count`]: openEICount,
+            [`poi_epa_${this.getEPAProgramId(programType)}_facilities`]: openEIFacilities,
+            [`poi_epa_${this.getEPAProgramId(programType)}_summary`]: `Found ${openEICount} Power Generation facilities within ${radiusMiles} miles (via OpenEI fallback)`
+          };
+        } catch (fallbackError) {
+          console.error(`❌ OpenEI fallback also failed:`, fallbackError);
+        }
       }
       
       const programId = this.getEPAProgramId(programType);

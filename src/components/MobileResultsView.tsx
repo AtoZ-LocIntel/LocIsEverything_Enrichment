@@ -172,7 +172,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_cinemas') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_bowling') || key.includes('poi_arcade') || key.includes('poi_rv_park') || key.includes('poi_campground') || key.includes('poi_wikipedia')) {
       return 'Recreation & Leisure';
     }
-    if (key.includes('poi_substations') || key.includes('poi_powerlines') || key.includes('poi_power_plants') || key.includes('poi_cell_towers') || key.includes('poi_grid')) {
+    if (key.includes('poi_substations') || key.includes('poi_powerlines') || key.includes('poi_power_plants_openei') || key.includes('poi_cell_towers') || key.includes('poi_grid')) {
       return 'Power & Infrastructure';
     }
     if (key.includes('poi_airports') || key.includes('poi_railroads') || key.includes('poi_gas')) {
