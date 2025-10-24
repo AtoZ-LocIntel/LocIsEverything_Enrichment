@@ -158,8 +158,8 @@ body.modal-open {
 /* Mobile-specific map fixes */
 @media (max-width: 768px) {
   .leaflet-container {
-    height: calc(100vh - 120px) !important;
-    min-height: 400px !important;
+    height: calc(100vh - 80px) !important;
+    min-height: 300px !important;
     width: 100% !important;
     position: relative !important;
     z-index: 1 !important;
@@ -171,26 +171,50 @@ body.modal-open {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+    /* Ensure map tiles load */
+    background-color: #f0f0f0;
   }
   
   .map-container {
-    height: calc(100vh - 120px) !important;
-    min-height: 400px !important;
+    height: calc(100vh - 80px) !important;
+    min-height: 300px !important;
     width: 100% !important;
     position: relative !important;
     /* Force hardware acceleration */
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
+    overflow: hidden;
   }
   
   .map-view-container {
-    height: calc(100vh - 120px) !important;
-    min-height: 400px !important;
+    height: calc(100vh - 80px) !important;
+    min-height: 300px !important;
     width: 100% !important;
     position: relative !important;
-    /* Force hardware acceleration */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
+    overflow: hidden;
+  }
+  
+  /* Fix for map not showing on mobile */
+  .flex-1.relative {
+    height: calc(100vh - 80px) !important;
+    min-height: 300px !important;
+    overflow: hidden;
+  }
+  
+  /* Ensure map div has proper height */
+  .flex-1.relative > div {
+    height: 100% !important;
+    min-height: 300px !important;
+    width: 100% !important;
+  }
+  
+  /* Mobile map specific fixes */
+  .mobile-map {
+    height: 100% !important;
+    min-height: 300px !important;
+    width: 100% !important;
+    position: relative !important;
+    background-color: #f0f0f0;
   }
   
   /* Ensure map tiles load properly on mobile */
@@ -865,8 +889,8 @@ body.modal-open {
   
   /* Fix button grid layout in EnrichmentConfig - Responsive Circular */
   .grid.grid-cols-2 {
-    gap: 8px !important;
-    padding: 12px !important;
+    gap: 12px !important;
+    padding: 16px !important;
     width: 100% !important;
     max-width: 100% !important;
     justify-items: center !important;
@@ -875,15 +899,15 @@ body.modal-open {
   }
   
   .grid.grid-cols-2 > button {
-    width: calc(50% - 4px) !important;
-    height: calc(50% - 4px) !important;
-    max-width: calc(50% - 4px) !important;
-    min-width: calc(50% - 4px) !important;
-    min-height: calc(50% - 4px) !important;
-    max-height: calc(50% - 4px) !important;
+    width: 120px !important;
+    height: 120px !important;
+    max-width: 120px !important;
+    min-width: 120px !important;
+    min-height: 120px !important;
+    max-height: 120px !important;
     border-radius: 50% !important;
-    padding: 6px !important;
-    font-size: 9px !important;
+    padding: 8px !important;
+    font-size: 10px !important;
     line-height: 1.1 !important;
     text-align: center !important;
     overflow: hidden !important;

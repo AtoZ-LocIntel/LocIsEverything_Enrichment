@@ -200,13 +200,22 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
 
     initMap();
 
+    // Force map resize on mobile after initialization
+    if (isMobile) {
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 100);
+    }
+
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [isMobile]);
 
   // Add markers to map
   useEffect(() => {
@@ -445,8 +454,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       </div>
 
       {/* Map Container */}
-      <div className="flex-1 relative">
-        <div ref={mapRef} className="w-full h-full" />
+      <div className={`flex-1 relative ${isMobile ? 'map-container' : ''}`}>
+        <div ref={mapRef} className={`w-full h-full ${isMobile ? 'mobile-map' : ''}`} />
         
         {/* Dynamic Legend for Single Location Results */}
         {results.length === 1 && legendItems.length > 0 && !isMobile && (
