@@ -3190,7 +3190,7 @@ out;`;
       // Use simple bounds filtering that your API supports
       const params = new URLSearchParams();
       params.append('select', '*');
-      params.append('limit', '1000');
+      params.append('limit', '5000');
       
       // Add simple lat/lon bounds (much more efficient than fetching all data)
       const latRange = radiusMiles / 69; // Rough conversion: 1 degree ≈ 69 miles
