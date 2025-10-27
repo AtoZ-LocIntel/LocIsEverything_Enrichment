@@ -12,8 +12,9 @@ import { FWSSpeciesService } from '../adapters/fwsSpecies';
 // CORS proxy helpers from original geocoder.html
 const USE_CORS_PROXY = true;
 const CORS_PROXIES = [
-  { type: "prefix", value: "https://cors.isomorphic-git.org/" },
-  { type: "wrap", value: "https://api.allorigins.win/raw?url=" }
+  { type: "prefix", value: "https://corsproxy.io/?" },
+  { type: "wrap", value: "https://api.allorigins.win/raw?url=" },
+  { type: "prefix", value: "https://cors-anywhere.herokuapp.com/" }
 ];
 
 // Rate limiting constants
@@ -27,7 +28,7 @@ function proxied(url: string, which: number = 0): string {
 
 export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: number = 200): Promise<any> {
   // When CORS proxy is disabled, only try direct URL
-  const attempts = USE_CORS_PROXY ? [url, proxied(url, 0), proxied(url, 1)] : [url];
+  const attempts = USE_CORS_PROXY ? [url, proxied(url, 0), proxied(url, 1), proxied(url, 2)] : [url];
   let err: any;
   
   for (let i = 0; i < attempts.length; i++) {
@@ -51,7 +52,7 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
       
       // Check if response is HTML (error page) instead of JSON
       if (text.trim().startsWith('<html') || text.trim().startsWith('<!DOCTYPE')) {
-        console.warn(`⚠️ Received HTML instead of JSON from ${attempts[i]}:`, text.substring(0, 100));
+        console.warn(`⚠️ Received HTML instead of JSON from ${attempts[i]}:`, text.substring(0, 200));
         throw new Error('Received HTML instead of JSON');
       }
       
@@ -61,7 +62,8 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
         console.log(`✅ Successfully parsed JSON from ${attempts[i]}`);
         return body;
       } catch (parseError) {
-        console.warn(`⚠️ Failed to parse JSON from ${attempts[i]}:`, text.substring(0, 100));
+        console.warn(`⚠️ Failed to parse JSON from ${attempts[i]}:`, text.substring(0, 200));
+        console.warn(`⚠️ Full response length:`, text.length);
         throw new Error('Invalid JSON response');
       }
       
@@ -1000,12 +1002,12 @@ export class EnrichmentService {
     lon: number, 
     poiRadii: Record<string, number>
   ): Promise<Record<string, any>> {
-    // Cap radii for performance, but allow wildfires and power plants larger radii
+    // Cap radii for performance, but allow wildfires, power plants, and animal collisions larger radii
     let maxRadius = 5; // Default 5 mile cap
     if (enrichmentId === 'poi_wildfires') {
       maxRadius = 50; // Wildfires can be up to 50 miles for risk assessment
-    } else if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_epa_power') {
-      maxRadius = 25; // Power plants and EPA power generation can be up to 25 miles
+    } else if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_epa_power' || enrichmentId === 'poi_animal_vehicle_collisions') {
+      maxRadius = 25; // Power plants, EPA power generation, and animal collisions can be up to 25 miles
     }
     
     const radius = Math.min(poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId), maxRadius);
@@ -1990,9 +1992,9 @@ export class EnrichmentService {
     // Get the default radius, with special handling for power plants and other large-radius POIs
     const radius = defaultRadii[enrichmentId] || 5;
     
-    // Allow power plants and other infrastructure to use larger radii
-    if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_electric_charging' || enrichmentId === 'poi_epa_power') {
-      return radius; // No cap for power plants, charging stations, and EPA power generation
+    // Allow power plants, animal collisions, and other infrastructure to use larger radii
+    if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_electric_charging' || enrichmentId === 'poi_epa_power' || enrichmentId === 'poi_animal_vehicle_collisions') {
+      return radius; // No cap for power plants, charging stations, EPA power generation, and animal collisions
     }
     
     // Cap other POI types at 5 miles maximum
@@ -3176,7 +3178,13 @@ out;`;
       console.log(`🦌 Animal Vehicle Collisions query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
       
       // Use the working public endpoint with spatial filtering
-      const API_BASE = "https://api.locationfriend.com";
+      // Use local Docker container for development (localhost:8080)
+      // In production, it will use api.locationfriend.com
+      // IMPORTANT: You need to configure the DNS target for api.locationfriend.com to point to your PostgREST server
+      const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+      const API_BASE = isLocalhost ? "http://localhost:8080" : "https://api.locationfriend.com";
+      
+      console.log(`🦌 Using API_BASE: ${API_BASE}`);
       const queryUrl = `${API_BASE}/vehicle_animal_collisions_api`;
       
       // Use simple bounds filtering that your API supports
@@ -3194,19 +3202,33 @@ out;`;
       const fullUrl = `${queryUrl}?${params.toString()}`;
       console.log(`🔗 Animal Vehicle Collisions API with bounds filter: ${fullUrl}`);
       
-      // Use GET method with bounds filtering
-      const response = await fetch(fullUrl, {
-        method: 'GET',
-        headers: { 
-          'Accept': 'application/json'
+      // Try direct fetch first, then fall back to CORS proxies if needed
+      let data;
+      try {
+        const response = await fetch(fullUrl, {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-cache',
+          headers: { 
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Animal Vehicle Collisions API failed: ${response.status} ${response.statusText}`);
+        
+        data = await response.json();
+      } catch (directError) {
+        // If direct fetch fails due to CORS, try with fetchJSONSmart proxy
+        console.log('⚠️ Direct fetch failed, trying CORS proxy...', directError);
+        data = await fetchJSONSmart(fullUrl, {
+          method: 'GET',
+          headers: { 
+            'Accept': 'application/json'
+          }
+        });
       }
-      
-      const data = await response.json();
       console.log(`📊 Animal Vehicle Collisions response:`, data);
       console.log(`📊 First collision record structure:`, data[0]);
       console.log(`📊 Available fields:`, data[0] ? Object.keys(data[0]) : 'No data');
