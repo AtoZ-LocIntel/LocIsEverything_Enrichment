@@ -218,7 +218,7 @@ body.modal-open {
   
   /* Mobile map specific fixes */
   .mobile-map {
-    height: 100% !important;
+    height: calc(100vh - 60px) !important;
     min-height: 400px !important;
     width: 100% !important;
     position: relative !important;
@@ -226,6 +226,26 @@ body.modal-open {
     will-change: transform;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
+    z-index: 1 !important;
+  }
+  
+  /* Ensure map container parent also has proper sizing */
+  .map-container {
+    height: calc(100vh - 60px) !important;
+    min-height: 400px !important;
+  }
+  
+  /* Fix map view container on mobile */
+  .h-screen.flex.flex-col.bg-white {
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  
+  .h-screen.flex.flex-col.bg-white > .flex-1.relative {
+    height: calc(100vh - 60px) !important;
+    min-height: 400px !important;
+    overflow: hidden !important;
   }
   
   /* Ensure map tiles load properly on mobile */
@@ -834,6 +854,38 @@ body.modal-open {
     max-height: 20px !important;
   }
   
+  /* Improve modal text layout on mobile - less vertical, more horizontal */
+  .fixed.inset-0.bg-white .flex-1.overflow-y-auto {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  .fixed.inset-0.bg-white .flex-1.overflow-y-auto .border.border-gray-200 {
+    padding: 12px !important;
+  }
+  
+  /* Make modal labels and descriptions more readable on mobile */
+  .fixed.inset-0.bg-white label,
+  .fixed.inset-0.bg-white .font-medium {
+    line-height: 1.4 !important;
+    word-spacing: 0.1em !important;
+    letter-spacing: 0.01em !important;
+  }
+  
+  .fixed.inset-0.bg-white .text-sm,
+  .fixed.inset-0.bg-white .text-xs {
+    line-height: 1.5 !important;
+    word-spacing: 0.05em !important;
+  }
+  
+  /* Ensure text containers use full width on mobile */
+  .fixed.inset-0.bg-white .flex-1.min-w-0 {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: calc(100vw - 80px) !important;
+  }
+  
 }
 
 /* Complete Mobile Layout Fix */
@@ -900,8 +952,8 @@ body.modal-open {
   
   /* Fix button grid layout in EnrichmentConfig - Responsive Circular */
   .grid.grid-cols-2 {
-    gap: 16px !important;
-    padding: 20px !important;
+    gap: 8px !important;
+    padding: 12px 8px !important;
     width: 100% !important;
     max-width: 100% !important;
     justify-items: center !important;
@@ -909,17 +961,30 @@ body.modal-open {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     place-items: center !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  
+  /* Ensure grid container doesn't overflow */
+  .card-body > .mb-6 {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
   }
   
   .grid.grid-cols-2 > button {
-    width: 120px !important;
-    height: 120px !important;
-    max-width: 120px !important;
-    min-width: 120px !important;
-    min-height: 120px !important;
-    max-height: 120px !important;
+    width: calc((100% - 16px) / 2) !important;
+    max-width: 150px !important;
+    height: auto !important;
+    aspect-ratio: 1/1 !important;
     border-radius: 50% !important;
-    padding: 6px !important;
+    padding: 0 !important;
     font-size: 9px !important;
     line-height: 1.1 !important;
     text-align: center !important;
@@ -929,9 +994,8 @@ body.modal-open {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    aspect-ratio: 1/1 !important;
     box-sizing: border-box !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
   }
   
   /* Make icon and text spacing better in circular buttons */

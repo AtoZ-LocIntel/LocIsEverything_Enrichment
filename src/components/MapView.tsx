@@ -179,14 +179,20 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     const initMap = () => {
       if (!mapRef.current) return;
 
-      console.log('🗺️ Initializing map...');
+      console.log('🗺️ Initializing map...', { isMobile, containerHeight: mapRef.current.offsetHeight, containerWidth: mapRef.current.offsetWidth });
       
       const map = L.map(mapRef.current, {
         center: [39.8283, -98.5795], // Center of USA
         zoom: 4,
         zoomControl: true,
         minZoom: 2,
-        maxZoom: 19
+        maxZoom: 19,
+        // Better mobile touch handling
+        tap: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        boxZoom: false,
+        keyboard: true
       });
 
       // Add OpenStreetMap tiles
@@ -196,30 +202,59 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       }).addTo(map);
 
       mapInstanceRef.current = map;
+
+      // Force immediate invalidate size on mobile
+      if (isMobile) {
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(() => {
+          if (mapInstanceRef.current && mapRef.current) {
+            mapInstanceRef.current.invalidateSize(true);
+            console.log('🗺️ Map size invalidated (mobile)', { 
+              containerHeight: mapRef.current.offsetHeight, 
+              containerWidth: mapRef.current.offsetWidth 
+            });
+          }
+        });
+      }
     };
 
-    initMap();
+    // For mobile, delay initialization slightly to ensure container is sized
+    if (isMobile) {
+      setTimeout(initMap, 100);
+    } else {
+      initMap();
+    }
 
     // Force map resize on mobile after initialization
     if (isMobile) {
       // Multiple resize attempts for mobile
-      setTimeout(() => {
+      const timeout1 = setTimeout(() => {
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
+          mapInstanceRef.current.invalidateSize(true);
         }
-      }, 100);
+      }, 300);
       
-      setTimeout(() => {
+      const timeout2 = setTimeout(() => {
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
+          mapInstanceRef.current.invalidateSize(true);
         }
-      }, 500);
+      }, 800);
       
-      setTimeout(() => {
+      const timeout3 = setTimeout(() => {
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
+          mapInstanceRef.current.invalidateSize(true);
         }
-      }, 1000);
+      }, 1500);
+
+      return () => {
+        clearTimeout(timeout1);
+        clearTimeout(timeout2);
+        clearTimeout(timeout3);
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        }
+      };
     }
 
     return () => {
@@ -488,8 +523,8 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       </div>
 
       {/* Map Container */}
-      <div className={`flex-1 relative ${isMobile ? 'map-container' : ''}`}>
-        <div ref={mapRef} className={`w-full h-full ${isMobile ? 'mobile-map' : ''}`} />
+      <div className={`flex-1 relative ${isMobile ? 'map-container' : ''} ${isMobile ? 'h-screen' : ''}`}>
+        <div ref={mapRef} className={`w-full h-full ${isMobile ? 'mobile-map' : ''}`} style={isMobile ? { height: '100%', width: '100%', minHeight: '400px' } : {}} />
         
         {/* Dynamic Legend for Single Location Results */}
         {results.length === 1 && legendItems.length > 0 && !isMobile && (

@@ -252,7 +252,7 @@ function App() {
             )}
 
             <div className="space-y-8 mb-8">
-              <div data-section="single-search">
+              <div id="single-search-section" data-section="single-search">
                 <SingleSearch 
                   onSearch={handleSingleSearch} 
                   onLocationSearch={handleLocationSearch}

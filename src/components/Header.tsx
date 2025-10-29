@@ -424,11 +424,35 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                     Upload a CSV file or search for a single address to experience the power of location enrichment.
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    <button className="btn btn-primary">
+                    <button 
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setShowDocs(false);
+                        // Scroll to single search section
+                        setTimeout(() => {
+                          const singleSearchSection = document.querySelector('#single-search-section');
+                          if (singleSearchSection) {
+                            singleSearchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }, 100);
+                      }}
+                    >
                       <Search className="w-4 h-4 mr-2" />
                       Try Single Search
                     </button>
-                    <button className="btn btn-outline">
+                    <button 
+                      className="btn btn-outline"
+                      onClick={() => {
+                        setShowDocs(false);
+                        // Scroll to batch processing section
+                        setTimeout(() => {
+                          const batchSection = document.querySelector('#batch-processing-section');
+                          if (batchSection) {
+                            batchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }, 100);
+                      }}
+                    >
                       <FileText className="w-4 h-4 mr-2" />
                       Upload CSV
                     </button>
