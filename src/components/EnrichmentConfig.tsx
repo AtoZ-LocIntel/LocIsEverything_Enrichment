@@ -680,7 +680,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             return (
                               <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
                                 <div className="flex items-start justify-between gap-2 sm:gap-0">
-                                  <div className="flex items-start space-x-2 sm:space-x-3 flex-1 min-w-0">
+                                  <div className="flex items-start space-x-2 sm:space-x-3 flex-1 min-w-0 w-full">
                                     <button
                                       type="button"
                                       onClick={() => handleEnrichmentToggle(enrichment.id)}
@@ -694,11 +694,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                         <Check className="w-3 h-3 text-white" />
                                       )}
                                     </button>
-                                    <div className="flex-1 min-w-0">
-                                      <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer block text-sm sm:text-base break-words leading-tight">
+                                    <div className="flex-1 min-w-0 max-w-full">
+                                      <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer block text-sm sm:text-base break-words leading-snug">
                                         {enrichment.label}
                                       </label>
-                                      <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words leading-relaxed">{enrichment.description}</p>
+                                      <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words leading-normal">{enrichment.description}</p>
                                     </div>
                                   </div>
                                 </div>
@@ -717,18 +717,20 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       </p>
                                     </div>
                                     
-                                    <div className="flex items-center space-x-3">
-                                      <label className="text-sm font-medium text-black">Search Radius:</label>
-                                      <input
-                                        type="number"
-                                        min="0.1"
-                                        max={getMaxRadius(enrichment.id)}
-                                        step="0.1"
-                                        value={currentRadius}
-                                        onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                                        className="w-20 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900"
-                                      />
-                                      <span className="text-sm text-black">miles</span>
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 sm:space-x-3">
+                                      <label className="text-sm font-medium text-black whitespace-nowrap">Search Radius:</label>
+                                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                                        <input
+                                          type="number"
+                                          min="0.1"
+                                          max={getMaxRadius(enrichment.id)}
+                                          step="0.1"
+                                          value={currentRadius}
+                                          onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
+                                          className="w-20 sm:w-20 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900"
+                                        />
+                                        <span className="text-sm text-black whitespace-nowrap">miles</span>
+                                      </div>
                                     </div>
 
                                     {currentRadius > (
