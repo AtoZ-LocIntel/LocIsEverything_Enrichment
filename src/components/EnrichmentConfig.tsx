@@ -669,7 +669,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       {/* Content - Scrollable */}
                       <div 
                         ref={modalContentRef}
-                        className="flex-1 overflow-y-auto p-3 sm:p-4" 
+                        className="flex-1 overflow-y-auto p-4 sm:p-4" 
                         style={{ scrollBehavior: 'smooth' }}
                       >
                         <div className="space-y-3 sm:space-y-4 max-w-full">
@@ -678,28 +678,26 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
 
                             return (
-                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
-                                <div className="flex items-start justify-between gap-2 sm:gap-0">
-                                  <div className="flex items-start space-x-2 sm:space-x-3 flex-1 min-w-0 w-full">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleEnrichmentToggle(enrichment.id)}
-                                      className={`w-5 h-5 sm:w-5 sm:h-5 flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 mt-0.5 ${
-                                        isSelected 
-                                          ? 'bg-black border-black' 
-                                          : 'bg-white border-gray-300'
-                                      }`}
-                                    >
-                                      {isSelected && (
-                                        <Check className="w-3 h-3 text-white" />
-                                      )}
-                                    </button>
-                                    <div className="flex-1 min-w-0 max-w-full">
-                                      <label htmlFor={enrichment.id} className="font-medium text-gray-900 cursor-pointer block text-sm sm:text-base break-words leading-snug">
-                                        {enrichment.label}
-                                      </label>
-                                      <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words leading-normal">{enrichment.description}</p>
-                                    </div>
+                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-4 sm:p-4">
+                                <div className="flex items-start gap-3 sm:gap-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEnrichmentToggle(enrichment.id)}
+                                    className={`w-6 h-6 sm:w-5 sm:h-5 flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 mt-0.5 ${
+                                      isSelected 
+                                        ? 'bg-black border-black' 
+                                        : 'bg-white border-gray-300'
+                                    }`}
+                                  >
+                                    {isSelected && (
+                                      <Check className="w-4 h-4 sm:w-3 sm:h-3 text-white" />
+                                    )}
+                                  </button>
+                                  <div className="flex-1 min-w-0" style={{ maxWidth: 'calc(100vw - 80px)' }}>
+                                    <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed mb-1">
+                                      {enrichment.label}
+                                    </label>
+                                    <p className="text-sm sm:text-sm text-gray-600 break-words leading-relaxed whitespace-normal">{enrichment.description}</p>
                                   </div>
                                 </div>
 
