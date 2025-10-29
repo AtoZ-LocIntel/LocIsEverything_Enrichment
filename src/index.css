@@ -995,7 +995,7 @@ body.modal-open {
   
   /* Fix button grid layout in EnrichmentConfig - Responsive Circular */
   .grid.grid-cols-2 {
-    gap: 8px !important;
+    gap: 12px !important;
     padding: 12px 8px !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -1021,11 +1021,12 @@ body.modal-open {
     overflow: hidden !important;
   }
   
-  .grid.grid-cols-2 > button {
-    width: calc((100% - 16px) / 2) !important;
-    max-width: 165px !important;
-    min-width: 135px !important;
-    height: auto !important;
+  .card-body .grid.grid-cols-2 > button,
+  .enrichment-config .grid.grid-cols-2 > button {
+    width: 140px !important;
+    max-width: 140px !important;
+    min-width: 115px !important;
+    height: 140px !important;
     aspect-ratio: 1/1 !important;
     border-radius: 50% !important;
     padding: 0 !important;
@@ -1040,6 +1041,7 @@ body.modal-open {
     justify-content: center !important;
     box-sizing: border-box !important;
     margin: 0 auto !important;
+    justify-self: center !important;
   }
   
   /* Make icon and text spacing better in circular buttons */
