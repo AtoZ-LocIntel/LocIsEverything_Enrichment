@@ -188,7 +188,6 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         minZoom: 2,
         maxZoom: 19,
         // Better mobile touch handling
-        tap: true,
         touchZoom: true,
         doubleClickZoom: true,
         boxZoom: false,
