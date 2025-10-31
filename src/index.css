@@ -909,29 +909,48 @@ body.modal-open {
     flex-shrink: 0 !important;
   }
   
-  /* Center mileage/distance filter on mobile */
-  .fixed.inset-0.bg-white .flex.flex-col {
-    align-items: center !important;
-    text-align: center !important;
-  }
-  
-  .fixed.inset-0.bg-white .flex.flex-col .flex.items-center {
-    justify-content: center !important;
+  /* Fix Search Radius section on mobile - ensure full width and no overflow */
+  .fixed.inset-0.bg-white .border-t.border-gray-100 {
     width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
   
-  /* Fix mileage filter overflow on mobile */
-  .fixed.inset-0.bg-white .flex.items-center.space-x-3,
-  .fixed.inset-0.bg-white .flex.flex-col.sm\\:flex-row {
+  .fixed.inset-0.bg-white .flex.flex-col.gap-3 {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
   
+  /* Ensure Search Radius label uses full width */
+  .fixed.inset-0.bg-white .border-t.border-gray-100 label,
+  .fixed.inset-0.bg-white .mt-4 label {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+  
+  .fixed.inset-0.bg-white .flex.items-center.gap-3 {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    flex-wrap: wrap !important;
+  }
+  
+  /* Fix mileage filter input on mobile */
   .fixed.inset-0.bg-white input[type="number"] {
-    max-width: 100px !important;
+    max-width: 120px !important;
+    min-width: 80px !important;
     box-sizing: border-box !important;
     text-align: center !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .fixed.inset-0.bg-white input[type="number"] + span {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
   }
   
   /* Prevent excessive word breaking in modal text */

@@ -720,9 +720,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       </p>
                                     </div>
                                     
-                                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 sm:gap-3 sm:space-x-3 mt-4">
-                                      <label className="text-sm font-medium text-black whitespace-nowrap">Search Radius:</label>
-                                      <div className="flex items-center gap-2 justify-center">
+                                    <div className="flex flex-col gap-3 mt-4 w-full">
+                                      <label className="text-sm font-medium text-black">Search Radius:</label>
+                                      <div className="flex items-center gap-3 w-full justify-start">
                                         <input
                                           type="number"
                                           min="0.1"
@@ -730,9 +730,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                           step="0.1"
                                           value={currentRadius}
                                           onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                                          className="w-20 sm:w-20 flex-shrink-0 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center"
+                                          className="w-24 sm:w-20 flex-shrink-0 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center"
                                         />
-                                        <span className="text-sm text-black whitespace-nowrap">miles</span>
+                                        <span className="text-sm text-black whitespace-nowrap flex-shrink-0">miles</span>
                                       </div>
                                     </div>
 
