@@ -681,21 +681,19 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               <div key={enrichment.id} className="border border-gray-200 rounded-lg p-4 sm:p-4">
                                 {/* On mobile, stack checkbox above the text to give the text full width */}
                                 <div className="flex flex-col sm:flex-row sm:items-start gap-3">
-                                  <div className="flex items-center sm:items-start justify-start sm:justify-start">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleEnrichmentToggle(enrichment.id)}
-                                      className={`w-6 h-6 sm:w-5 sm:h-5 flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 ${
-                                        isSelected 
-                                          ? 'bg-black border-black' 
-                                          : 'bg-white border-gray-300'
-                                      }`}
-                                    >
-                                      {isSelected && (
-                                        <Check className="w-4 h-4 sm:w-3 sm:h-3 text-white" />
-                                      )}
-                                    </button>
-                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEnrichmentToggle(enrichment.id)}
+                                    className={`w-6 h-6 sm:w-5 sm:h-5 flex-shrink-0 self-start border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 ${
+                                      isSelected 
+                                        ? 'bg-black border-black' 
+                                        : 'bg-white border-gray-300'
+                                    }`}
+                                  >
+                                    {isSelected && (
+                                      <Check className="w-4 h-4 sm:w-3 sm:h-3 text-white" />
+                                    )}
+                                  </button>
                                   <div className="flex-1 min-w-0 w-full" style={{ maxWidth: '100%' }}>
                                     <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed mb-1">
                                       {enrichment.label}

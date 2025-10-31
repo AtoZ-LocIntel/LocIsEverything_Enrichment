@@ -896,10 +896,35 @@ body.modal-open {
   }
   
   /* Widen the text column in modal - reduce vertical stacking */
-  .fixed.inset-0.bg-white .flex.items-start {
+  .fixed.inset-0.bg-white .flex.items-start,
+  .fixed.inset-0.bg-white .flex.flex-col {
     width: 100% !important;
     max-width: 100% !important;
     gap: 12px !important;
+  }
+  
+  /* Ensure checkbox is on top, text below on mobile */
+  .fixed.inset-0.bg-white .flex.flex-col > button,
+  .fixed.inset-0.bg-white .flex.flex-col.sm\\:flex-row > button {
+    order: 1 !important;
+    align-self: flex-start !important;
+  }
+  
+  .fixed.inset-0.bg-white .flex.flex-col > div,
+  .fixed.inset-0.bg-white .flex.flex-col.sm\\:flex-row > div {
+    order: 2 !important;
+    width: 100% !important;
+  }
+  
+  /* On desktop, reset order for horizontal layout */
+  @media (min-width: 640px) {
+    .fixed.inset-0.bg-white .flex.sm\\:flex-row > button {
+      order: initial !important;
+    }
+    
+    .fixed.inset-0.bg-white .flex.sm\\:flex-row > div {
+      order: initial !important;
+    }
   }
   
   /* Make checkbox smaller on mobile to give more space to text */
@@ -914,8 +939,14 @@ body.modal-open {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .fixed.inset-0.bg-white .mt-4.pt-4.border-t {
+    display: block !important;
+    visibility: visible !important;
   }
   
   .fixed.inset-0.bg-white .flex.flex-col.gap-3 {
