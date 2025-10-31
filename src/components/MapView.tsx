@@ -3,6 +3,7 @@ import { EnrichmentResult } from '../App';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
+import { poiConfigManager } from '../lib/poiConfig';
 
 interface MapViewProps {
   results: EnrichmentResult[];
@@ -381,36 +382,103 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     console.log('📍 Adding POI markers');
     
     const currentLegendItems: LegendItem[] = [];
+    const legendAccumulator: Record<string, { icon: string; color: string; poiSet: Set<string> }> = {};
     
-    // Extract POI data from enrichment results
-    Object.entries(result.enrichments).forEach(([key, value]) => {
-      if ((key.includes('poi_') || key.includes('at_') || key.includes('pct_')) && Array.isArray(value)) {
-        const poiType = key.replace('_detailed', '');
-        const iconConfig = POI_ICONS[poiType] || POI_ICONS.default;
-        
-        // Add to legend if we have POIs
-        if (value.length > 0) {
-          currentLegendItems.push({
-            icon: iconConfig.icon,
-            color: iconConfig.color,
-            title: iconConfig.title,
-            count: value.length
-          });
+    // First, collect all POI keys and prioritize the most detailed version
+    const poiKeys: string[] = [];
+    Object.keys(result.enrichments).forEach(key => {
+      if ((key.includes('poi_') || key.includes('at_') || key.includes('pct_')) && 
+          Array.isArray(result.enrichments[key]) && 
+          result.enrichments[key].length > 0) {
+        poiKeys.push(key);
+      }
+    });
+    
+    // Sort to prioritize detailed versions (process _detailed first, then _all_pois, etc.)
+    poiKeys.sort((a, b) => {
+      const aPriority = a.includes('_detailed') ? 0 : a.includes('_all_pois') ? 1 : 2;
+      const bPriority = b.includes('_detailed') ? 0 : b.includes('_all_pois') ? 1 : 2;
+      return aPriority - bPriority;
+    });
+    
+    // Extract POI data from enrichment results, using deduplication
+    poiKeys.forEach(key => {
+      const value = result.enrichments[key];
+      if (!Array.isArray(value)) return;
+      
+      // Extract base POI type by removing common suffixes
+      let poiType = key
+        .replace('_detailed', '')
+        .replace('_all_pois', '')
+        .replace('_elements', '')
+        .replace('_features', '')
+        .replace('_all', '')
+        .replace(/_count$/,'');
+
+      // Fallback: try to find a POI_ICONS key that prefixes the actual key
+      if (!POI_ICONS[poiType]) {
+        const prefixKey = Object.keys(POI_ICONS).find(k => key.startsWith(k));
+        if (prefixKey) {
+          poiType = prefixKey;
         }
+      }
+
+      // Get icon config from POI_ICONS (final fallback to default)
+      const iconConfig = POI_ICONS[poiType] || POI_ICONS.default;
+      
+      // Get actual label from POI config manager, fallback to iconConfig title
+      let legendTitle = iconConfig.title;
+      try {
+        const poiConfig = poiConfigManager.getPOIType(poiType);
+        if (poiConfig && poiConfig.label) {
+          legendTitle = poiConfig.label;
+        }
+      } catch (e) {
+        // If getPOIType fails, use the iconConfig title
+        console.log('Could not find POI config for:', poiType);
+      }
+      
+      // Initialize legend accumulator for this title if needed
+      if (!legendAccumulator[legendTitle]) {
+        legendAccumulator[legendTitle] = {
+          icon: iconConfig.icon,
+          color: iconConfig.color,
+          poiSet: new Set<string>()
+        };
+      }
+      
+      // Add markers for each POI, using lat/lon as unique identifier to avoid duplicates
+      value.forEach((poi: any) => {
+        const poiName = poi.name || poi.title;
         
-        // Add markers for each POI
-        value.forEach((poi: any) => {
-          const poiName = poi.name || poi.title;
+        if (poi.lat && poi.lon && poiName) {
+          // Create unique key from coordinates (rounded to avoid floating point issues)
+          const poiKey = `${legendTitle}_${poi.lat.toFixed(6)}_${poi.lon.toFixed(6)}`;
           
-          if (poi.lat && poi.lon && poiName) {
+          // Only add if we haven't seen this POI before
+          if (!legendAccumulator[legendTitle].poiSet.has(poiKey)) {
+            legendAccumulator[legendTitle].poiSet.add(poiKey);
+            
             const poiMarker = L.marker([poi.lat, poi.lon], {
               icon: createPOIIcon(iconConfig.icon, iconConfig.color)
             })
-              .bindPopup(createPOIPopupContent(poi, iconConfig.title))
+              .bindPopup(createPOIPopupContent(poi, legendTitle))
               .addTo(map);
             
             markersRef.current.push(poiMarker);
           }
+        }
+      });
+    });
+
+    // Convert accumulated POI sets to counts for legend
+    Object.entries(legendAccumulator).forEach(([title, data]) => {
+      if (data.poiSet.size > 0) {
+        currentLegendItems.push({ 
+          icon: data.icon, 
+          color: data.color, 
+          title, 
+          count: data.poiSet.size 
         });
       }
     });
