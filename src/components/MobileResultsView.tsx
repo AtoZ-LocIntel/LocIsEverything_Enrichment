@@ -69,6 +69,38 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       }).join('; ');
     }
     
+    // Handle objects
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      if (value.name) return String(value.name);
+      if (value.title) return String(value.title);
+      if (value.value) return String(value.value);
+      
+      // Format PADUS count objects nicely
+      if (key.includes('padus_') && (key.includes('_counts') || key.includes('_count'))) {
+        const entries = Object.entries(value).map(([k, v]) => {
+          // Format GAP status codes
+          if (key.includes('gap')) {
+            const gapLabels: Record<string, string> = {
+              '1': 'GAP 1 (Strict Nature Reserve)',
+              '2': 'GAP 2 (Wilderness)',
+              '3': 'GAP 3 (Protected Habitat)',
+              '4': 'GAP 4 (Managed Resource)'
+            };
+            return `${gapLabels[k] || `GAP ${k}`}: ${v}`;
+          }
+          // Format IUCN categories
+          if (key.includes('iucn')) {
+            return `${k}: ${v}`;
+          }
+          // Format other counts
+          return `${k}: ${v}`;
+        });
+        return entries.join(', ');
+      }
+      
+      return JSON.stringify(value);
+    }
+    
     // Handle USDA Wildfire Risk data
     if (key === 'usda_wildfire_hazard_potential') {
       return `${value}/5`;
@@ -189,7 +221,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_') && key.includes('count')) {
       return 'Points of Interest Nearby';
     }
-    if (key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
+    if (key.includes('padus_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
       return 'Public Lands';
     }
     if (key.includes('poi_epa_power') || key.includes('poi_epa_oil_spill')) {
@@ -221,6 +253,14 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     const isSelectedEnrichment = selectedEnrichments.some(selected => {
       // Exact match
       if (key.includes(selected)) return true;
+      
+      // PADUS public lands fields - handle padus_ prefix keys
+      if (selected === 'poi_padus_public_access' && key.includes('padus_public_access')) {
+        return true;
+      }
+      if (selected === 'poi_padus_protection_status' && key.includes('padus_protection_status')) {
+        return true;
+      }
       
       // POI fields - only show if the specific POI type is selected
       if (selected.includes('poi_') && key.includes('poi_')) {

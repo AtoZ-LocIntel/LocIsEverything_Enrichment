@@ -72,6 +72,30 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (value.name) return String(value.name);
       if (value.title) return String(value.title);
       if (value.value) return String(value.value);
+      
+      // Format PADUS count objects nicely
+      if (key.includes('padus_') && (key.includes('_counts') || key.includes('_count'))) {
+        const entries = Object.entries(value).map(([k, v]) => {
+          // Format GAP status codes
+          if (key.includes('gap')) {
+            const gapLabels: Record<string, string> = {
+              '1': 'GAP 1 (Strict Nature Reserve)',
+              '2': 'GAP 2 (Wilderness)',
+              '3': 'GAP 3 (Protected Habitat)',
+              '4': 'GAP 4 (Managed Resource)'
+            };
+            return `${gapLabels[k] || `GAP ${k}`}: ${v}`;
+          }
+          // Format IUCN categories
+          if (key.includes('iucn')) {
+            return `${k}: ${v}`;
+          }
+          // Format other counts
+          return `${k}: ${v}`;
+        });
+        return entries.join(', ');
+      }
+      
       return JSON.stringify(value);
     }
     
@@ -105,6 +129,14 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       const isSelectedEnrichment = selectedEnrichments.some(selected => {
         // Exact match
         if (key.includes(selected)) return true;
+        
+        // PADUS public lands fields - handle padus_ prefix keys
+        if (selected === 'poi_padus_public_access' && key.includes('padus_public_access')) {
+          return true;
+        }
+        if (selected === 'poi_padus_protection_status' && key.includes('padus_protection_status')) {
+          return true;
+        }
         
         // POI fields - only show if the specific POI type is selected
         if (selected.includes('poi_') && key.includes('poi_')) {
@@ -180,7 +212,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Power & Infrastructure';
       } else if (key.includes('poi_') && (key.includes('beach') || key.includes('mountain') || key.includes('lake') || key.includes('water'))) {
         category = 'Natural Resources';
-      } else if (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station'))) {
+      } else if (key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';
       } else if (key.includes('poi_') && (key.includes('school') || key.includes('college') || key.includes('childcare') || key.includes('community_centre') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('worship') || key.includes('mail_shipping'))) {
         category = 'Community & Services';

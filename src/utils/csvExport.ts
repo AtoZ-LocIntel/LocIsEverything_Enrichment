@@ -8,14 +8,16 @@ export const exportEnrichmentResultsToCSV = (results: EnrichmentResult[]): void 
   console.log('📍 Results count:', results.length);
 
   // Create comprehensive CSV with all data
-  const headers = ['Address', 'Latitude', 'Longitude', 'Source', 'Confidence'];
-  const poiHeaders = ['POI_Type', 'POI_Name', 'POI_Latitude', 'POI_Longitude', 'Distance_Miles', 'POI_Category', 'POI_Address', 'POI_Phone', 'POI_Website', 'POI_Source'];
-  const allHeaders = [...headers, ...poiHeaders];
+  const headers = ['Address', 'Latitude', 'Longitude', 'Source', 'Confidence', 'POI_Type', 'POI_Name', 'POI_Latitude', 'POI_Longitude', 'Distance_Miles', 'POI_Category', 'POI_Address', 'POI_Phone', 'POI_Website', 'POI_Source'];
+  const allHeaders = headers;
   
   const rows: string[][] = [];
 
   results.forEach(result => {
     console.log(`🔍 Processing result for ${result.location.name}`);
+    
+    // Add ALL enrichment data as rows (not just POIs)
+    addAllEnrichmentDataRows(result, rows);
     
     // Add summary data rows (like FWS species counts, etc.)
     addSummaryDataRows(result, rows);
@@ -168,7 +170,153 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
+  // Add PADUS Public Lands data
+  if (enrichments.padus_public_access_nearby_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      location.source,
+      (location.confidence || 'N/A').toString(),
+      'PADUS_PUBLIC_ACCESS',
+      `Nearby Count: ${enrichments.padus_public_access_nearby_count || 0}`,
+      '', '', '', '', '', '', '', ''
+    ]);
+  }
+  if (enrichments.padus_public_access_summary) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      location.source,
+      (location.confidence || 'N/A').toString(),
+      'PADUS_PUBLIC_ACCESS',
+      enrichments.padus_public_access_summary,
+      '', '', '', '', '', '', '', ''
+    ]);
+  }
+  if (enrichments.padus_protection_status_nearby_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      location.source,
+      (location.confidence || 'N/A').toString(),
+      'PADUS_PROTECTION_STATUS',
+      `Nearby Count: ${enrichments.padus_protection_status_nearby_count || 0}`,
+      '', '', '', '', '', '', '', ''
+    ]);
+  }
+  if (enrichments.padus_protection_status_summary) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      location.source,
+      (location.confidence || 'N/A').toString(),
+      'PADUS_PROTECTION_STATUS',
+      enrichments.padus_protection_status_summary,
+      '', '', '', '', '', '', '', ''
+    ]);
+  }
+
   // Add more summary data as needed...
+};
+
+const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): void => {
+  const { location, enrichments } = result;
+
+  // Add ALL enrichment fields as rows (excluding arrays and detailed POI data)
+  Object.entries(enrichments).forEach(([key, value]) => {
+    // Skip detailed POI arrays (handled separately)
+    if (key.includes('_all_pois') || 
+        key.includes('_detailed') || 
+        key.includes('_elements') || 
+        key.includes('_features') ||
+        key.includes('_nearby_features')) {
+      return;
+    }
+    
+    // Skip already handled fields
+    if (key === 'fws_species_count' || 
+        key === 'poi_earthquakes_count' || 
+        key === 'poi_volcanoes_count' ||
+        key === 'poi_wildfires_count' ||
+        key === 'poi_wetlands_count' ||
+        key === 'padus_public_access_nearby_count' ||
+        key === 'padus_public_access_summary' ||
+        key === 'padus_protection_status_nearby_count' ||
+        key === 'padus_protection_status_summary') {
+      return;
+    }
+
+    // Format the value
+    let formattedValue = '';
+    if (value === null || value === undefined) {
+      formattedValue = 'N/A';
+    } else if (typeof value === 'boolean') {
+      formattedValue = value ? 'Yes' : 'No';
+    } else if (typeof value === 'number') {
+      formattedValue = value.toString();
+    } else if (Array.isArray(value)) {
+      formattedValue = `${value.length} items`;
+    } else if (typeof value === 'object') {
+      // Format objects as readable strings
+      if (value.name) {
+        formattedValue = String(value.name);
+      } else if (value.title) {
+        formattedValue = String(value.title);
+      } else {
+        // For count objects, format nicely
+        if (key.includes('_counts') || (key.includes('_count') && !key.includes('nearby_count') && !key.includes('summary'))) {
+          // Format PADUS count objects with labels
+          if (key.includes('padus_')) {
+            const entries = Object.entries(value).map(([k, v]) => {
+              // Format GAP status codes
+              if (key.includes('gap')) {
+                const gapLabels: Record<string, string> = {
+                  '1': 'GAP 1 (Strict Nature Reserve)',
+                  '2': 'GAP 2 (Wilderness)',
+                  '3': 'GAP 3 (Protected Habitat)',
+                  '4': 'GAP 4 (Managed Resource)'
+                };
+                return `${gapLabels[k] || `GAP ${k}`}: ${v}`;
+              }
+              // Format other counts
+              return `${k}: ${v}`;
+            });
+            formattedValue = entries.join(', ');
+          } else {
+            formattedValue = Object.entries(value)
+              .map(([k, v]) => `${k}: ${v}`)
+              .join(', ');
+          }
+        } else {
+          formattedValue = JSON.stringify(value);
+        }
+      }
+    } else {
+      formattedValue = String(value);
+    }
+
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      location.source,
+      (location.confidence || 'N/A').toString(),
+      key, // POI_Type
+      formattedValue, // POI_Name
+      '', // POI_Latitude
+      '', // POI_Longitude
+      '', // Distance_Miles
+      '', // POI_Category
+      '', // POI_Address
+      '', // POI_Phone
+      '', // POI_Website
+      '' // POI_Source
+    ]);
+  });
 };
 
 const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
@@ -176,6 +324,31 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
 
   // Add all POI data as individual rows
   Object.entries(enrichments).forEach(([key, value]) => {
+    // Handle PADUS nearby features arrays
+    if ((key.includes('padus_public_access_nearby_features') || key.includes('padus_protection_status_nearby_features')) && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureName = feature.Unit_Nm || feature.BndryName || feature.name || 'Unnamed Public Land';
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          key.includes('public_access') ? 'PADUS_PUBLIC_ACCESS' : 'PADUS_PROTECTION_STATUS',
+          featureName,
+          '', // POI_Latitude
+          '', // POI_Longitude
+          '', // Distance_Miles
+          feature.Category || feature.GAP_Sts || feature.IUCN_Cat || 'Public Land',
+          feature.MngNm_Desc || feature.MngTp_Desc || '',
+          '', // POI_Phone
+          '', // POI_Website
+          'PAD-US'
+        ]);
+      });
+      return;
+    }
+    
     if (key.includes('_all_pois') && Array.isArray(value)) {
       // Handle ALL POI arrays (complete dataset for CSV)
       value.forEach((poi: any) => {
