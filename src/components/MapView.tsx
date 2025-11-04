@@ -141,6 +141,10 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_rivers_streams': { icon: '🌊', color: '#1d4ed8', title: 'Rivers & Streams' },
   'poi_mountains_peaks': { icon: '🏔️', color: '#7c2d12', title: 'Mountains & Peaks' },
   
+  // Public Lands & Protected Areas
+  'poi_padus_public_access': { icon: '🏞️', color: '#22c55e', title: 'Public Lands' },
+  'poi_padus_protection_status': { icon: '🛡️', color: '#059669', title: 'Protected Areas' },
+  
   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
 
@@ -387,7 +391,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     // First, collect all POI keys and prioritize the most detailed version
     const poiKeys: string[] = [];
     Object.keys(result.enrichments).forEach(key => {
-      if ((key.includes('poi_') || key.includes('at_') || key.includes('pct_')) && 
+      if ((key.includes('poi_') || key.includes('at_') || key.includes('pct_') || key.includes('padus_')) && 
           Array.isArray(result.enrichments[key]) && 
           result.enrichments[key].length > 0) {
         poiKeys.push(key);
@@ -411,9 +415,17 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         .replace('_detailed', '')
         .replace('_all_pois', '')
         .replace('_elements', '')
+        .replace('_nearby_features', '')
         .replace('_features', '')
         .replace('_all', '')
         .replace(/_count$/,'');
+      
+      // Handle PADUS keys specially
+      if (key.includes('padus_public_access_nearby_features')) {
+        poiType = 'poi_padus_public_access';
+      } else if (key.includes('padus_protection_status_nearby_features')) {
+        poiType = 'poi_padus_protection_status';
+      }
 
       // Fallback: try to find a POI_ICONS key that prefixes the actual key
       if (!POI_ICONS[poiType]) {
@@ -449,20 +461,46 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       
       // Add markers for each POI, using lat/lon as unique identifier to avoid duplicates
       value.forEach((poi: any) => {
-        const poiName = poi.name || poi.title;
+        let poiName = poi.name || poi.title || poi.unitName || poi.boundaryName;
+        let lat = poi.lat || poi.latitude;
+        let lon = poi.lon || poi.longitude;
         
-        if (poi.lat && poi.lon && poiName) {
+        // Handle PADUS features - they don't have lat/lon, need to calculate centroid
+        if (key.includes('padus_') && (!lat || !lon)) {
+          // Check if we have geometry data
+          if (poi.geometry) {
+            console.log('PADUS feature has geometry, calculating centroid:', poiName, poi.geometry);
+            // Calculate centroid from polygon geometry
+            const centroid = calculatePolygonCentroid(poi.geometry);
+            if (centroid) {
+              lat = centroid.lat;
+              lon = centroid.lon;
+              console.log('PADUS centroid calculated:', lat, lon, 'for', poiName);
+            } else {
+              console.log('Failed to calculate centroid for PADUS feature:', poiName);
+            }
+          } else {
+            console.log('PADUS feature has no geometry:', poiName, poi);
+          }
+          // If still no coordinates, skip this feature
+          if (!lat || !lon) {
+            console.log('Skipping PADUS feature without coordinates:', poiName);
+            return;
+          }
+        }
+        
+        if (lat && lon && poiName) {
           // Create unique key from coordinates (rounded to avoid floating point issues)
-          const poiKey = `${legendTitle}_${poi.lat.toFixed(6)}_${poi.lon.toFixed(6)}`;
+          const poiKey = `${legendTitle}_${lat.toFixed(6)}_${lon.toFixed(6)}`;
           
           // Only add if we haven't seen this POI before
           if (!legendAccumulator[legendTitle].poiSet.has(poiKey)) {
             legendAccumulator[legendTitle].poiSet.add(poiKey);
             
-            const poiMarker = L.marker([poi.lat, poi.lon], {
+            const poiMarker = L.marker([lat, lon], {
               icon: createPOIIcon(iconConfig.icon, iconConfig.color)
             })
-              .bindPopup(createPOIPopupContent(poi, legendTitle))
+              .bindPopup(createPOIPopupContent(poi, legendTitle, key))
               .addTo(map);
             
             markersRef.current.push(poiMarker);
@@ -487,8 +525,118 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     setLegendItems(currentLegendItems);
   };
 
+  // Convert Web Mercator (EPSG:3857) to WGS84 (EPSG:4326) lat/lon
+  const webMercatorToWGS84 = (x: number, y: number): { lat: number; lon: number } => {
+    const lon = (x / 20037508.34) * 180;
+    let lat = (y / 20037508.34) * 180;
+    lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
+    return { lat, lon };
+  };
+
+  // Calculate centroid from polygon geometry (for PADUS features)
+  const calculatePolygonCentroid = (geometry: any): { lat: number; lon: number } | null => {
+    if (!geometry) {
+      console.log('No geometry provided for centroid calculation');
+      return null;
+    }
+    
+    // Check spatial reference - ArcGIS might return Web Mercator or WGS84
+    const spatialRef = geometry.spatialReference;
+    const isWebMercator = spatialRef && (
+      spatialRef.wkid === 3857 || 
+      spatialRef.wkid === 102100 || 
+      spatialRef.latestWkid === 3857 ||
+      spatialRef.latestWkid === 102100
+    );
+    
+    // Handle ArcGIS polygon geometry
+    if (geometry.rings && Array.isArray(geometry.rings) && geometry.rings.length > 0) {
+      // Get first ring (outer boundary)
+      const ring = geometry.rings[0];
+      if (ring && ring.length > 0) {
+        // Calculate centroid by averaging all points
+        let sumX = 0;
+        let sumY = 0;
+        ring.forEach((point: number[]) => {
+          if (point && point.length >= 2) {
+            sumX += point[0]; // x coordinate
+            sumY += point[1]; // y coordinate
+          }
+        });
+        
+        const avgX = sumX / ring.length;
+        const avgY = sumY / ring.length;
+        
+        // Check if coordinates need conversion (Web Mercator has large values)
+        if (isWebMercator || Math.abs(avgX) > 180 || Math.abs(avgY) > 90) {
+          // Convert from Web Mercator to WGS84
+          const converted = webMercatorToWGS84(avgX, avgY);
+          console.log('Converted PADUS centroid from Web Mercator to WGS84:', converted, 'from', { x: avgX, y: avgY });
+          return converted;
+        } else {
+          // Already in WGS84 (lat/lon)
+          const centroid = {
+            lat: avgY, // y is latitude in WGS84
+            lon: avgX  // x is longitude in WGS84
+          };
+          console.log('Calculated PADUS centroid from ArcGIS rings (WGS84):', centroid);
+          return centroid;
+        }
+      }
+    }
+    
+    // Handle GeoJSON polygon
+    if (geometry.type === 'Polygon' && geometry.coordinates && geometry.coordinates.length > 0) {
+      const ring = geometry.coordinates[0];
+      if (ring && ring.length > 0) {
+        let sumLat = 0;
+        let sumLon = 0;
+        ring.forEach((point: number[]) => {
+          if (point && point.length >= 2) {
+            sumLon += point[0]; // GeoJSON is [lon, lat]
+            sumLat += point[1];
+          }
+        });
+        const centroid = {
+          lat: sumLat / ring.length,
+          lon: sumLon / ring.length
+        };
+        console.log('Calculated PADUS centroid from GeoJSON:', centroid);
+        return centroid;
+      }
+    }
+    
+    console.log('Could not calculate centroid - geometry format not recognized:', geometry);
+    return null;
+  };
+
   // Create popup content for POI markers
-  const createPOIPopupContent = (poi: any, category: string): string => {
+  const createPOIPopupContent = (poi: any, category: string, key?: string): string => {
+    // Handle PADUS features specially
+    if (key && key.includes('padus_')) {
+      const name = poi.unitName || poi.boundaryName || poi.name || 'Unnamed Public Land';
+      const categoryInfo = poi.category || poi.featureClass || '';
+      const manager = poi.managerName || poi.managerType || 'Unknown';
+      const access = poi.publicAccess || 'Unknown';
+      const acres = poi.acres ? `${poi.acres.toLocaleString()} acres` : '';
+      const state = poi.state || '';
+      
+      return `
+        <div style="min-width: 250px; max-width: 350px;">
+          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
+          <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+            <div><strong>Category:</strong> ${categoryInfo}</div>
+            ${manager ? `<div><strong>Manager:</strong> ${manager}</div>` : ''}
+            ${access ? `<div><strong>Access:</strong> ${access}</div>` : ''}
+            ${acres ? `<div><strong>Size:</strong> ${acres}</div>` : ''}
+            ${state ? `<div><strong>State:</strong> ${state}</div>` : ''}
+            ${poi.gapStatus ? `<div><strong>GAP Status:</strong> ${poi.gapStatus}</div>` : ''}
+            ${poi.iucnCategory ? `<div><strong>IUCN Category:</strong> ${poi.iucnCategory}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
     const name = poi.tags?.name || poi.name || poi.title || 'Unnamed POI';
     const amenity = poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI';
     const distance = poi.distance_miles || 'Unknown';
@@ -518,7 +666,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
         </div>
         <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 12px;">
           📍 ${location.lat.toFixed(6)}, ${location.lon.toFixed(6)}<br>
-          🔍 Source: ${location.source}
+          🔍 Source: ${location.source}${location.confidence ? ` • Confidence: ${location.confidence}%` : ''}
         </p>
         
         <!-- Key Summary Values -->
@@ -531,7 +679,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       content += `
         <div style="text-align: center;">
           <div style="font-weight: 600; color: #374151; font-size: 10px;">Elevation</div>
-          <div style="color: #1f2937; font-weight: 600;">${enrichments.elevation_ft} ft</div>
+          <div style="color: #1f2937; font-weight: 600;">${enrichments.elevation_ft.toLocaleString()} ft</div>
         </div>
       `;
     }
@@ -545,9 +693,118 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       `;
     }
     
+    if (enrichments.acs_median_income) {
+      content += `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #374151; font-size: 10px;">Median Income</div>
+          <div style="color: #1f2937; font-weight: 600;">$${enrichments.acs_median_income.toLocaleString()}</div>
+        </div>
+      `;
+    }
+    
+    if (enrichments.fips_state) {
+      content += `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #374151; font-size: 10px;">State</div>
+          <div style="color: #1f2937; font-weight: 600;">${enrichments.fips_state}</div>
+        </div>
+      `;
+    }
+    
+    if (enrichments.fips_county) {
+      content += `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #374151; font-size: 10px;">County</div>
+          <div style="color: #1f2937; font-weight: 600;">${enrichments.fips_county}</div>
+        </div>
+      `;
+    }
+    
     content += `
           </div>
         </div>
+    `;
+    
+    // Add summary/attribution information from enrichments
+    const summaryFields: string[] = [];
+    
+    // PADUS summaries
+    if (enrichments.padus_public_access_summary) {
+      summaryFields.push(enrichments.padus_public_access_summary);
+    }
+    if (enrichments.padus_protection_status_summary) {
+      summaryFields.push(enrichments.padus_protection_status_summary);
+    }
+    
+    // FWS summary
+    if (enrichments.fws_species_count !== undefined) {
+      summaryFields.push(`FWS Species: ${enrichments.fws_species_count} species found within ${enrichments.fws_search_radius_miles || 5} miles`);
+    }
+    
+    // Weather summary
+    if (enrichments.weather_summary) {
+      summaryFields.push(`Weather: ${enrichments.weather_summary}`);
+    }
+    
+    // Wildfire summary
+    if (enrichments.poi_wildfires_count !== undefined) {
+      summaryFields.push(`Wildfires: ${enrichments.poi_wildfires_count} active fires within ${enrichments.poi_wildfires_proximity_distance || 50} miles`);
+    }
+    
+    // USDA Wildfire Risk
+    if (enrichments.usda_wildfire_hazard_potential !== undefined) {
+      const riskLevel = enrichments.usda_wildfire_hazard_potential_label || `Level ${enrichments.usda_wildfire_hazard_potential}/5`;
+      summaryFields.push(`USDA Wildfire Risk: ${riskLevel}`);
+    }
+    
+    // Add summary section if we have any summaries
+    if (summaryFields.length > 0) {
+      content += `
+        <div style="margin: 12px 0; padding: 12px; background-color: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe;">
+          <h4 style="margin: 0 0 8px 0; color: #1e40af; font-weight: 600; font-size: 12px;">📍 Location Summary</h4>
+          <div style="font-size: 11px; color: #1e3a8a; line-height: 1.6;">
+      `;
+      summaryFields.forEach(summary => {
+        content += `<div style="margin-bottom: 6px;">• ${summary}</div>`;
+      });
+      content += `
+          </div>
+        </div>
+      `;
+    }
+    
+    // Add data source attribution
+    const dataSources: string[] = [];
+    if (enrichments.padus_public_access_summary || enrichments.padus_protection_status_summary) {
+      dataSources.push('PAD-US (Protected Areas Database)');
+    }
+    if (enrichments.fws_species_count !== undefined) {
+      dataSources.push('USFWS (U.S. Fish & Wildlife Service)');
+    }
+    if (enrichments.poi_wildfires_count !== undefined) {
+      dataSources.push('USGS (U.S. Geological Survey)');
+    }
+    if (enrichments.usda_wildfire_hazard_potential !== undefined) {
+      dataSources.push('USDA (U.S. Department of Agriculture)');
+    }
+    if (enrichments.weather_summary || enrichments.weather_current) {
+      dataSources.push('Open-Meteo Weather API');
+    }
+    if (enrichments.acs_population || enrichments.acs_median_income) {
+      dataSources.push('U.S. Census Bureau (ACS)');
+    }
+    
+    if (dataSources.length > 0) {
+      content += `
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+          <p style="margin: 0; color: #6b7280; font-size: 10px; font-style: italic;">
+            Data Sources: ${dataSources.join(', ')}
+          </p>
+        </div>
+      `;
+    }
+    
+    content += `
       </div>
     `;
     

@@ -1002,12 +1002,12 @@ export class EnrichmentService {
     lon: number, 
     poiRadii: Record<string, number>
   ): Promise<Record<string, any>> {
-    // Cap radii for performance, but allow wildfires, power plants, and animal collisions larger radii
+    // Cap radii for performance, but allow wildfires, power plants, animal collisions, and PADUS larger radii
     let maxRadius = 5; // Default 5 mile cap
     if (enrichmentId === 'poi_wildfires') {
       maxRadius = 50; // Wildfires can be up to 50 miles for risk assessment
-    } else if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_epa_power' || enrichmentId === 'poi_animal_vehicle_collisions') {
-      maxRadius = 25; // Power plants, EPA power generation, and animal collisions can be up to 25 miles
+    } else if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_epa_power' || enrichmentId === 'poi_animal_vehicle_collisions' || enrichmentId === 'poi_padus_public_access' || enrichmentId === 'poi_padus_protection_status') {
+      maxRadius = 25; // Power plants, EPA power generation, animal collisions, and PADUS can be up to 25 miles
     }
     
     const radius = Math.min(poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId), maxRadius);
@@ -2706,7 +2706,7 @@ export class EnrichmentService {
       
       // Now query for nearby public lands within radius
       const radiusKm = radiusMiles * 1.60934;
-      const nearbyQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=false&maxRecordCount=1000`;
+      const nearbyQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=true&maxRecordCount=1000`;
       
       console.log(`🔗 PAD-US Nearby Query URL: ${nearbyQueryUrl}`);
       const nearbyResponse = await fetch(nearbyQueryUrl);
@@ -2753,11 +2753,14 @@ export class EnrichmentService {
           designationType: feature.attributes.DesTp_Desc,
           boundaryName: feature.attributes.BndryName,
           state: feature.attributes.ST_Name,
-          acres: feature.attributes.GIS_AcrsDb
+          acres: feature.attributes.GIS_AcrsDb,
+          geometry: feature.geometry // Include geometry for centroid calculation
         })),
         padus_public_access_summary: isInsidePublicLand 
           ? `Location is inside ${insideLandInfo?.unitName || 'public land'} (${insideLandInfo?.managerName || 'Unknown Manager'}) - ${insideLandInfo?.publicAccess || 'Unknown'} access`
-          : `No public lands at this location. Found ${nearbyLands.length} public lands within ${radiusMiles} miles.`
+          : nearbyLands.length > 0
+            ? `Location is not within any public land. Found ${nearbyLands.length} public lands within ${radiusMiles} miles.`
+            : `No public lands found within ${radiusMiles} miles of this location.`
       };
       
     } catch (error) {
@@ -2772,7 +2775,7 @@ export class EnrichmentService {
       console.log(`🛡️ PAD-US Protection Status query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
       
       const radiusKm = radiusMiles * 1.60934;
-      const queryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,GAP_Sts,IUCN_Cat,Category,Unit_Nm,Pub_Access&f=json&returnGeometry=false&maxRecordCount=1000`;
+      const queryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,GAP_Sts,IUCN_Cat,Category,Unit_Nm,Pub_Access&f=json&returnGeometry=true&maxRecordCount=1000`;
       
       console.log(`🔗 PAD-US Protection Status Query URL: ${queryUrl}`);
       const response = await fetch(queryUrl);
@@ -2818,7 +2821,8 @@ export class EnrichmentService {
           iucnCategory: feature.attributes.IUCN_Cat,
           category: feature.attributes.Category,
           unitName: feature.attributes.Unit_Nm,
-          publicAccess: feature.attributes.Pub_Access
+          publicAccess: feature.attributes.Pub_Access,
+          geometry: feature.geometry // Include geometry for centroid calculation
         })),
         padus_protection_status_summary: `Found ${features.length} protected areas within ${radiusMiles} miles with various protection levels and categories.`
       };
