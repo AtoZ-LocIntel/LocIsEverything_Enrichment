@@ -159,6 +159,7 @@ body.modal-open {
 @media (max-width: 768px) {
   .leaflet-container {
     height: calc(100vh - 60px) !important;
+    height: calc(100dvh - 60px) !important; /* Use dynamic viewport height for mobile */
     min-height: 400px !important;
     width: 100% !important;
     position: relative !important;
@@ -171,12 +172,28 @@ body.modal-open {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    /* Ensure map tiles load */
-    background-color: #f0f0f0;
+    /* Ensure map tiles load - use transparent to see if tiles are loading */
+    background-color: transparent !important;
     /* Force hardware acceleration */
     will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    /* Ensure tiles are visible */
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  /* Ensure Leaflet tiles are visible */
+  .leaflet-tile-container {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  .leaflet-tile {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
   
   .map-container {
@@ -219,14 +236,18 @@ body.modal-open {
   /* Mobile map specific fixes */
   .mobile-map {
     height: calc(100vh - 60px) !important;
+    height: calc(100dvh - 60px) !important; /* Dynamic viewport height for mobile */
     min-height: 400px !important;
     width: 100% !important;
     position: relative !important;
-    background-color: #f0f0f0;
+    background-color: transparent !important; /* Don't hide tiles with background */
     will-change: transform;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     z-index: 1 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   
   /* Ensure map container parent also has proper sizing */

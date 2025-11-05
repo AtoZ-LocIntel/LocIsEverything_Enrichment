@@ -1002,12 +1002,25 @@ export class EnrichmentService {
     lon: number, 
     poiRadii: Record<string, number>
   ): Promise<Record<string, any>> {
-    // Cap radii for performance, but allow wildfires, power plants, animal collisions, and PADUS larger radii
-    let maxRadius = 5; // Default 5 mile cap
-    if (enrichmentId === 'poi_wildfires') {
+    // Check POI config for maxRadius, otherwise use default caps
+    let maxRadius = 25; // Default 25 mile cap for all POIs (user can select up to this)
+    
+    // Import POI config manager to check for maxRadius
+    const { poiConfigManager } = await import('../lib/poiConfig');
+    const poiConfig = poiConfigManager.getPOIType(enrichmentId);
+    
+    if (poiConfig?.maxRadius) {
+      // Use maxRadius from POI config if specified
+      maxRadius = poiConfig.maxRadius;
+    } else if (enrichmentId === 'poi_wildfires') {
       maxRadius = 50; // Wildfires can be up to 50 miles for risk assessment
-    } else if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_epa_power' || enrichmentId === 'poi_animal_vehicle_collisions' || enrichmentId === 'poi_padus_public_access' || enrichmentId === 'poi_padus_protection_status') {
-      maxRadius = 25; // Power plants, EPA power generation, animal collisions, and PADUS can be up to 25 miles
+    } else if (enrichmentId === 'poi_volcanoes') {
+      maxRadius = 50; // Volcanoes can be up to 50 miles
+    } else if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_epa_power' || enrichmentId === 'poi_animal_vehicle_collisions' || enrichmentId === 'poi_padus_public_access' || enrichmentId === 'poi_padus_protection_status' || enrichmentId === 'poi_earthquakes' || enrichmentId === 'poi_flood_reference_points') {
+      maxRadius = 25; // These can be up to 25 miles
+    } else if (enrichmentId.startsWith('poi_')) {
+      // For all other POI types, allow up to 25 miles (user's selection)
+      maxRadius = 25;
     }
     
     const radius = Math.min(poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId), maxRadius);

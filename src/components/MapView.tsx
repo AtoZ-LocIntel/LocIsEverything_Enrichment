@@ -184,33 +184,108 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     const initMap = () => {
       if (!mapRef.current) return;
 
-      console.log('🗺️ Initializing map...', { isMobile, containerHeight: mapRef.current.offsetHeight, containerWidth: mapRef.current.offsetWidth });
+      const container = mapRef.current;
+      
+      // CRITICAL: Force explicit dimensions BEFORE Leaflet initialization (mobile fix)
+      if (isMobile) {
+        const vh = window.innerHeight || window.screen.height;
+        const headerHeight = 60; // Approximate header height
+        const calculatedHeight = Math.max(vh - headerHeight, 400);
+        const calculatedWidth = window.innerWidth || window.screen.width;
+        
+        // Set explicit pixel dimensions
+        container.style.height = `${calculatedHeight}px`;
+        container.style.width = `${calculatedWidth}px`;
+        container.style.minHeight = '400px';
+        container.style.position = 'relative';
+        container.style.display = 'block';
+        container.style.overflow = 'hidden';
+        
+        console.log('🗺️ Forced container dimensions:', {
+          height: calculatedHeight,
+          width: calculatedWidth,
+          vh,
+          headerHeight,
+          offsetHeight: container.offsetHeight,
+          offsetWidth: container.offsetWidth
+        });
+        
+        // Wait for styles to apply
+        requestAnimationFrame(() => {
+          if (!mapRef.current) return;
+          
+          const finalRect = mapRef.current.getBoundingClientRect();
+          console.log('🗺️ Final container dimensions:', {
+            height: finalRect.height,
+            width: finalRect.width,
+            offsetHeight: mapRef.current.offsetHeight,
+            offsetWidth: mapRef.current.offsetWidth
+          });
+          
+          // Only proceed if dimensions are valid
+          if (finalRect.height > 0 && finalRect.width > 0) {
+            initializeLeafletMap();
+          } else {
+            console.error('🗺️ Container still has zero dimensions, using fallback');
+            mapRef.current.style.height = `${window.innerHeight - 60}px`;
+            mapRef.current.style.width = `${window.innerWidth}px`;
+            setTimeout(() => initializeLeafletMap(), 100);
+          }
+        });
+      } else {
+        initializeLeafletMap();
+      }
+    };
+    
+    const initializeLeafletMap = () => {
+      if (!mapRef.current) return;
+      
+      console.log('🗺️ Initializing Leaflet map...', { 
+        isMobile, 
+        containerHeight: mapRef.current.offsetHeight, 
+        containerWidth: mapRef.current.offsetWidth 
+      });
       
       const map = L.map(mapRef.current, {
         center: [39.8283, -98.5795], // Center of USA
         zoom: 4,
-        zoomControl: true,
+        zoomControl: !isMobile, // Hide zoom controls on mobile
         minZoom: 2,
         maxZoom: 19,
-        // Better mobile touch handling
+        // Mobile-optimized settings
         touchZoom: true,
-        doubleClickZoom: true,
+        doubleClickZoom: !isMobile,
         boxZoom: false,
-        keyboard: true
+        keyboard: !isMobile,
+        scrollWheelZoom: !isMobile,
+        // Better mobile performance
+        dragging: true,
+        inertia: true,
+        inertiaDeceleration: 3000,
+        inertiaMaxSpeed: 1500,
+        preferCanvas: false
       });
 
-      // Add OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      // Add OpenStreetMap tiles with better mobile compatibility
+      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
+        maxZoom: 19,
+        // Better mobile tile loading
+        crossOrigin: true,
+        // Retry failed tiles
+        errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
       }).addTo(map);
+      
+      // Add error handling for tile loading
+      map.on('tileerror', (error: any) => {
+        console.warn('🗺️ Tile loading error:', error);
+      });
 
       mapInstanceRef.current = map;
 
-      // Force immediate invalidate size on mobile
+      // Force multiple invalidateSize calls on mobile
       if (isMobile) {
-        // Use requestAnimationFrame to ensure DOM is ready
-        requestAnimationFrame(() => {
+        const invalidateSize = () => {
           if (mapInstanceRef.current && mapRef.current) {
             mapInstanceRef.current.invalidateSize(true);
             console.log('🗺️ Map size invalidated (mobile)', { 
@@ -218,49 +293,44 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
               containerWidth: mapRef.current.offsetWidth 
             });
           }
-        });
+        };
+        
+        // Multiple invalidate calls with different delays
+        requestAnimationFrame(invalidateSize);
+        setTimeout(invalidateSize, 50);
+        setTimeout(invalidateSize, 200);
+        setTimeout(invalidateSize, 500);
       }
     };
 
-    // For mobile, delay initialization slightly to ensure container is sized
+    // For mobile, delay initialization to ensure container is sized and visible
     if (isMobile) {
-      setTimeout(initMap, 100);
+      // Wait for DOM to be fully ready and container to be visible
+      const checkAndInit = () => {
+        if (mapRef.current) {
+          const rect = mapRef.current.getBoundingClientRect();
+          const isVisible = rect.width > 0 && rect.height > 0 && 
+                           mapRef.current.offsetParent !== null;
+          
+          if (isVisible) {
+            console.log('🗺️ Container is visible, initializing map');
+            initMap();
+          } else {
+            console.log('🗺️ Container not yet visible, retrying...', rect);
+            setTimeout(checkAndInit, 100);
+          }
+        }
+      };
+      
+      // Initial delay, then check visibility
+      setTimeout(() => {
+        checkAndInit();
+      }, 200);
     } else {
       initMap();
     }
 
-    // Force map resize on mobile after initialization
-    if (isMobile) {
-      // Multiple resize attempts for mobile
-      const timeout1 = setTimeout(() => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize(true);
-        }
-      }, 300);
-      
-      const timeout2 = setTimeout(() => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize(true);
-        }
-      }, 800);
-      
-      const timeout3 = setTimeout(() => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize(true);
-        }
-      }, 1500);
-
-      return () => {
-        clearTimeout(timeout1);
-        clearTimeout(timeout2);
-        clearTimeout(timeout3);
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.remove();
-          mapInstanceRef.current = null;
-        }
-      };
-    }
-
+    // Cleanup function
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -847,8 +917,27 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       </div>
 
       {/* Map Container */}
-      <div className={`flex-1 relative ${isMobile ? 'map-container' : ''} ${isMobile ? 'h-screen' : ''}`}>
-        <div ref={mapRef} className={`w-full h-full ${isMobile ? 'mobile-map' : ''}`} style={isMobile ? { height: '100%', width: '100%', minHeight: '400px' } : {}} />
+      <div 
+        className={`flex-1 relative ${isMobile ? 'map-container' : ''}`}
+        style={isMobile ? { 
+          height: 'calc(100vh - 60px)', 
+          minHeight: '400px',
+          width: '100%',
+          position: 'relative',
+          overflow: 'hidden'
+        } : {}}
+      >
+        <div 
+          ref={mapRef} 
+          className={`w-full h-full ${isMobile ? 'mobile-map' : ''}`}
+          style={isMobile ? { 
+            height: '100%', 
+            width: '100%', 
+            minHeight: '400px',
+            position: 'relative',
+            display: 'block'
+          } : { height: '100%', width: '100%' }}
+        />
         
         {/* Dynamic Legend for Single Location Results */}
         {results.length === 1 && legendItems.length > 0 && !isMobile && (
