@@ -267,7 +267,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       });
 
       // Add OpenStreetMap tiles with better mobile compatibility
-      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19,
         // Better mobile tile loading
