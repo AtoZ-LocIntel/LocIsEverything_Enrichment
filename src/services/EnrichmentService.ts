@@ -1509,7 +1509,7 @@ export class EnrichmentService {
       console.log(`🔍 Filters found for ${enrichmentId}:`, filters);
       
       if (filters.length > 0) {
-        // Handle custom API calls (like Animal Vehicle Collisions and Wildfires)
+        // Handle custom API calls (like Animal-Vehicle Impact (AVI) and Wildfires)
         if (filters.includes("custom_api")) {
           console.log(`🔍 Calling custom API for ${enrichmentId}...`);
           
@@ -1656,7 +1656,7 @@ export class EnrichmentService {
      if (id === "poi_railroads") return ["railway=rail"];
      if (id === "poi_gas") return ["amenity=fuel"];
      
-     // The Location Is Everything Company - Animal Vehicle Collisions
+     // The Location Is Everything Company - Animal-Vehicle Impact (AVI) API
      if (id === "poi_animal_vehicle_collisions") return ["custom_api"];
      
      // NIFC/Esri Current Wildfires
@@ -3189,10 +3189,10 @@ out;`;
     }
   }
 
-  // The Location Is Everything Company - Animal Vehicle Collisions API
+  // The Location Is Everything Company - Animal-Vehicle Impact (AVI) API
   private async getAnimalVehicleCollisions(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
-      console.log(`🦌 Animal Vehicle Collisions query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      console.log(`🦌 Animal-Vehicle Impact (AVI) query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
       
       // Use the working public endpoint with spatial filtering
       // Use local Docker container for development (localhost:8080)
@@ -3217,7 +3217,7 @@ out;`;
       params.append('lon', `lte.${lon + latRange}`);
       
       const fullUrl = `${queryUrl}?${params.toString()}`;
-      console.log(`🔗 Animal Vehicle Collisions API with bounds filter: ${fullUrl}`);
+      console.log(`🔗 Animal-Vehicle Impact (AVI) API with bounds filter: ${fullUrl}`);
       
       // Try direct fetch first, then fall back to CORS proxies if needed
       let data;
@@ -3246,7 +3246,7 @@ out;`;
           }
         });
       }
-      console.log(`📊 Animal Vehicle Collisions response:`, data);
+      console.log(`📊 Animal-Vehicle Impact (AVI) response:`, data);
       console.log(`📊 First collision record structure:`, data[0]);
       console.log(`📊 Available fields:`, data[0] ? Object.keys(data[0]) : 'No data');
       
@@ -3331,7 +3331,7 @@ out;`;
         
         return {
           id: `collision_${collision.id || index}`,
-          name: `Animal Vehicle Collision`,
+          name: `Animal-Vehicle Impact (AVI)`,
           description: `Collision record from ${collision.source || 'FARS'} database`,
           lat: collision.lat,
           lon: collision.lon,
@@ -3353,7 +3353,7 @@ out;`;
         all_pois: collisionsInUserRadius, // ALL POIs for CSV export (user proximity)
         poi_animal_vehicle_collisions_source: sourceSummary, // ADD SOURCE FIELD WITHOUT BREAKING EXISTING CODE
         source_entries: sourceEntries, // ADD INDIVIDUAL SOURCE ENTRIES FOR POPUP DISPLAY
-        summary: `Found ${totalCollisions} animal vehicle collision records within ${radiusMiles} miles from The Location Is Everything Company database.`,
+        summary: `Found ${totalCollisions} animal-vehicle impact (AVI) records within ${radiusMiles} miles from The Location Is Everything Company database.`,
         api_source: 'https://api.locationfriend.com/vehicle_animal_collisions_api'
       };
       
@@ -3363,7 +3363,7 @@ out;`;
       return result;
       
     } catch (error) {
-      console.error('🦌 Animal Vehicle Collisions query failed:', error);
+      console.error('🦌 Animal-Vehicle Impact (AVI) query failed:', error);
       return { 
         count: 0, 
         elements: [], 

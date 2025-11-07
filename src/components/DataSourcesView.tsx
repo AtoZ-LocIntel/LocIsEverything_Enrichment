@@ -239,7 +239,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       category: "Human Caused Hazards",
       sources: [
         {
-          name: "Animal Vehicle Collisions (AVI)",
+          name: "Animal-Vehicle Impact (AVI)",
           description: "The Location Is Everything Company data - Live API from LocationFriend with collision records for CA, TX, ID, IA, NH, and FARS",
           coverage: "United States (CA, TX, ID, IA, NH)",
           accuracy: "High",

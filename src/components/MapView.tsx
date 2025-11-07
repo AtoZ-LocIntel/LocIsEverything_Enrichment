@@ -29,7 +29,7 @@ L.Icon.Default.mergeOptions({
 
 // POI Category Icons and Colors
 const POI_ICONS: Record<string, { icon: string; color: string; title: string }> = {
-  'poi_animal_vehicle_collisions': { icon: '🦌', color: '#dc2626', title: 'Animal Vehicle Collisions' },
+  'poi_animal_vehicle_collisions': { icon: '🦌', color: '#dc2626', title: 'Animal-Vehicle Impact (AVI)' },
   'poi_wildfires': { icon: '🔥', color: '#ff4500', title: 'Current Wildfires' },
   'poi_restaurants': { icon: '🍽️', color: '#ef4444', title: 'Restaurants' },
   'poi_hotels': { icon: '🏨', color: '#3b82f6', title: 'Hotels' },
