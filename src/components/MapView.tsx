@@ -545,10 +545,54 @@ const MapView: React.FC<MapViewProps> = ({
   }, []);
 
   useEffect(() => {
-    if (mapInstanceRef.current) {
-      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150);
+    if (!mapInstanceRef.current) {
+      return;
     }
+
+    const invalidate = () => mapInstanceRef.current?.invalidateSize();
+
+    // Run immediately and schedule a follow-up once layout stabilizes
+    invalidate();
+    const frameId = requestAnimationFrame(invalidate);
+    const timeoutId = window.setTimeout(invalidate, 300);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+    };
   }, [isMobile, results.length]);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapInstanceRef.current || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {
+      mapInstanceRef.current?.invalidateSize();
+    });
+
+    observer.observe(mapRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current) {
+      return;
+    }
+
+    const handleViewportChange = () => {
+      mapInstanceRef.current?.invalidateSize();
+    };
+
+    window.addEventListener('orientationchange', handleViewportChange);
+    window.addEventListener('resize', handleViewportChange);
+
+    return () => {
+      window.removeEventListener('orientationchange', handleViewportChange);
+      window.removeEventListener('resize', handleViewportChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !layerGroupsRef.current) {
