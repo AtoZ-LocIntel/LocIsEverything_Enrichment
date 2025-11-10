@@ -5,6 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
 import { poiConfigManager } from '../lib/poiConfig';
 
+const HEADER_HEIGHT = 60;
+
 interface MapViewProps {
   results: EnrichmentResult[];
   onBackToConfig: () => void;
@@ -508,6 +510,9 @@ const MapView: React.FC<MapViewProps> = ({
   const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState<number>(() => (
+    typeof window !== 'undefined' ? window.innerHeight : 0
+  ));
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -542,6 +547,29 @@ const MapView: React.FC<MapViewProps> = ({
       mapInstanceRef.current = null;
       layerGroupsRef.current = null;
     };
+  }, [isMobile, results.length, viewportHeight]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const updateViewportHeight = () => {
+      setViewportHeight(window.innerHeight);
+      if (mapInstanceRef.current) {
+        requestAnimationFrame(() => mapInstanceRef.current?.invalidateSize());
+      }
+    };
+
+    updateViewportHeight();
+
+    window.addEventListener('resize', updateViewportHeight);
+    window.addEventListener('orientationchange', updateViewportHeight);
+
+    return () => {
+      window.removeEventListener('resize', updateViewportHeight);
+      window.removeEventListener('orientationchange', updateViewportHeight);
+    };
   }, []);
 
   useEffect(() => {
@@ -574,24 +602,6 @@ const MapView: React.FC<MapViewProps> = ({
     observer.observe(mapRef.current);
 
     return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!mapInstanceRef.current) {
-      return;
-    }
-
-    const handleViewportChange = () => {
-      mapInstanceRef.current?.invalidateSize();
-    };
-
-    window.addEventListener('orientationchange', handleViewportChange);
-    window.addEventListener('resize', handleViewportChange);
-
-    return () => {
-      window.removeEventListener('orientationchange', handleViewportChange);
-      window.removeEventListener('resize', handleViewportChange);
-    };
   }, []);
 
   useEffect(() => {
@@ -699,6 +709,8 @@ const MapView: React.FC<MapViewProps> = ({
 
   // CSV export now handled by shared utility function
 
+  const mobileMapHeight = Math.max(viewportHeight - HEADER_HEIGHT, 320);
+
   return (
     <div className={`${isMobile ? 'h-screen' : 'h-screen'} flex flex-col bg-white`}>
       {/* Results Header */}
@@ -736,11 +748,13 @@ const MapView: React.FC<MapViewProps> = ({
       <div 
         className={`flex-1 relative ${isMobile ? 'map-container' : ''}`}
         style={isMobile ? { 
-          height: 'calc(100vh - 60px)', 
-          minHeight: '400px',
-          width: '100%',
+          height: `${mobileMapHeight}px`,
+          minHeight: '320px',
+          width: '100vw',
+          maxWidth: '100vw',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          flex: '1 1 auto'
         } : {}}
       >
         <div 
@@ -748,10 +762,11 @@ const MapView: React.FC<MapViewProps> = ({
           className={`w-full h-full ${isMobile ? 'mobile-map' : ''}`}
           style={isMobile ? { 
             height: '100%', 
-            width: '100%', 
-            minHeight: '400px',
+            width: '100%',
+            minHeight: '320px',
             position: 'relative',
-            display: 'block'
+            display: 'block',
+            maxWidth: '100vw'
           } : { height: '100%', width: '100%' }}
         />
         
