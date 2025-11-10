@@ -170,518 +170,7 @@ const createPOIIcon = (emoji: string, color: string) => {
   });
 };
 
-const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = false }) => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
-  const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
-  const [showBatchSuccess, setShowBatchSuccess] = useState(false);
-
-  // Initialize map
-  useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
-
-    const initMap = () => {
-      if (!mapRef.current) return;
-
-      const container = mapRef.current;
-      
-      // CRITICAL: Force explicit dimensions BEFORE Leaflet initialization (mobile fix)
-      if (isMobile) {
-        const vh = window.innerHeight || window.screen.height;
-        const headerHeight = 60; // Approximate header height
-        const calculatedHeight = Math.max(vh - headerHeight, 400);
-        const calculatedWidth = window.innerWidth || window.screen.width;
-        
-        // Set explicit pixel dimensions
-        container.style.height = `${calculatedHeight}px`;
-        container.style.width = `${calculatedWidth}px`;
-        container.style.minHeight = '400px';
-        container.style.position = 'relative';
-        container.style.display = 'block';
-        container.style.overflow = 'hidden';
-        
-        console.log('🗺️ Forced container dimensions:', {
-          height: calculatedHeight,
-          width: calculatedWidth,
-          vh,
-          headerHeight,
-          offsetHeight: container.offsetHeight,
-          offsetWidth: container.offsetWidth
-        });
-        
-        // Wait for styles to apply
-        requestAnimationFrame(() => {
-          if (!mapRef.current) return;
-          
-          const finalRect = mapRef.current.getBoundingClientRect();
-          console.log('🗺️ Final container dimensions:', {
-            height: finalRect.height,
-            width: finalRect.width,
-            offsetHeight: mapRef.current.offsetHeight,
-            offsetWidth: mapRef.current.offsetWidth
-          });
-          
-          // Only proceed if dimensions are valid
-          if (finalRect.height > 0 && finalRect.width > 0) {
-            initializeLeafletMap();
-          } else {
-            console.error('🗺️ Container still has zero dimensions, using fallback');
-            mapRef.current.style.height = `${window.innerHeight - 60}px`;
-            mapRef.current.style.width = `${window.innerWidth}px`;
-            setTimeout(() => initializeLeafletMap(), 100);
-          }
-        });
-      } else {
-        initializeLeafletMap();
-      }
-    };
-    
-    const initializeLeafletMap = () => {
-      if (!mapRef.current) return;
-      
-      console.log('🗺️ Initializing Leaflet map...', { 
-        isMobile, 
-        containerHeight: mapRef.current.offsetHeight, 
-        containerWidth: mapRef.current.offsetWidth 
-      });
-      
-      const map = L.map(mapRef.current, {
-        center: [39.8283, -98.5795], // Center of USA
-        zoom: 4,
-        zoomControl: !isMobile, // Hide zoom controls on mobile
-        minZoom: 2,
-        maxZoom: 19,
-        // Mobile-optimized settings
-        touchZoom: true,
-        doubleClickZoom: !isMobile,
-        boxZoom: false,
-        keyboard: !isMobile,
-        scrollWheelZoom: !isMobile,
-        // Better mobile performance
-        dragging: true,
-        inertia: true,
-        inertiaDeceleration: 3000,
-        inertiaMaxSpeed: 1500,
-        preferCanvas: false
-      });
-
-      // Add OpenStreetMap tiles with better mobile compatibility
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-        // Better mobile tile loading
-        crossOrigin: true,
-        // Retry failed tiles
-        errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
-      }).addTo(map);
-      
-      // Add error handling for tile loading
-      map.on('tileerror', (error: any) => {
-        console.warn('🗺️ Tile loading error:', error);
-      });
-
-      mapInstanceRef.current = map;
-
-      // Force multiple invalidateSize calls on mobile
-      if (isMobile) {
-        const invalidateSize = () => {
-          if (mapInstanceRef.current && mapRef.current) {
-            mapInstanceRef.current.invalidateSize(true);
-            console.log('🗺️ Map size invalidated (mobile)', { 
-              containerHeight: mapRef.current.offsetHeight, 
-              containerWidth: mapRef.current.offsetWidth 
-            });
-          }
-        };
-        
-        // Multiple invalidate calls with different delays
-        requestAnimationFrame(invalidateSize);
-        setTimeout(invalidateSize, 50);
-        setTimeout(invalidateSize, 200);
-        setTimeout(invalidateSize, 500);
-      }
-    };
-
-    // For mobile, delay initialization to ensure container is sized and visible
-    if (isMobile) {
-      // Wait for DOM to be fully ready and container to be visible
-      const checkAndInit = () => {
-        if (mapRef.current) {
-          const rect = mapRef.current.getBoundingClientRect();
-          const isVisible = rect.width > 0 && rect.height > 0 && 
-                           mapRef.current.offsetParent !== null;
-          
-          if (isVisible) {
-            console.log('🗺️ Container is visible, initializing map');
-            initMap();
-          } else {
-            console.log('🗺️ Container not yet visible, retrying...', rect);
-            setTimeout(checkAndInit, 100);
-          }
-        }
-      };
-      
-      // Initial delay, then check visibility
-      setTimeout(() => {
-        checkAndInit();
-      }, 200);
-    } else {
-      initMap();
-    }
-
-    // Cleanup function
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, [isMobile]);
-
-  // Add mobile resize listener
-  useEffect(() => {
-    if (!isMobile || !mapInstanceRef.current) return;
-
-    const handleResize = () => {
-      if (mapInstanceRef.current) {
-        setTimeout(() => {
-          mapInstanceRef.current?.invalidateSize();
-        }, 100);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
-  }, [isMobile]);
-
-  // Add markers to map
-  useEffect(() => {
-    if (!mapInstanceRef.current || !results.length) return;
-
-    const map = mapInstanceRef.current;
-    
-    // Clear existing markers
-    markersRef.current.forEach(marker => {
-      if (map.hasLayer(marker)) {
-        map.removeLayer(marker);
-      }
-    });
-    markersRef.current = [];
-
-    // Add main location markers
-    const bounds = L.latLngBounds([]);
-    let firstMarker: L.Marker | null = null;
-    
-    results.forEach((result, index) => {
-      const { lat, lon } = result.location;
-      
-      if (lat && lon) {
-        // Add main location marker
-        const mainMarker = L.marker([lat, lon], {
-          icon: L.divIcon({
-            html: `<div style="
-              background-color: #2563eb;
-              border: 3px solid white;
-              border-radius: 50%;
-              width: 40px;
-              height: 40px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 20px;
-              color: white;
-              box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-            ">📍</div>`,
-            className: 'main-location-marker',
-            iconSize: [40, 40],
-            iconAnchor: [20, 20],
-            popupAnchor: [0, -20]
-          })
-        })
-          .bindPopup(createPopupContent(result))
-          .addTo(map);
-        
-        markersRef.current.push(mainMarker);
-        
-        // Extend bounds for batch results
-        if (results.length > 1) {
-          bounds.extend([lat, lon]);
-        }
-        
-        // Store reference to first marker
-        if (index === 0) {
-          firstMarker = mainMarker;
-        }
-
-        // For single search results, set initial map view
-        if (results.length === 1) {
-          map.setView([lat, lon], 16, { animate: true });
-          addPOIMarkers(map, result);
-        }
-      }
-    });
-
-    // Fit map to show all markers for batch results
-    if (bounds.isValid() && results.length > 1) {
-      map.fitBounds(bounds, { 
-        padding: [20, 20],
-        maxZoom: 16
-      });
-    }
-
-    // Auto-open popup for first marker
-    if (firstMarker) {
-      setTimeout(() => {
-        firstMarker?.openPopup();
-      }, 500);
-    }
-
-    // Show batch success message if multiple results
-    if (results.length > 1) {
-      setShowBatchSuccess(true);
-      setTimeout(() => {
-        setShowBatchSuccess(false);
-      }, 5000);
-    }
-  }, [results]);
-
-  // Add POI markers to the map
-  const addPOIMarkers = (map: L.Map, result: EnrichmentResult) => {
-    console.log('📍 Adding POI markers');
-    
-    const currentLegendItems: LegendItem[] = [];
-    const legendAccumulator: Record<string, { icon: string; color: string; poiSet: Set<string> }> = {};
-    
-    // First, collect all POI keys and prioritize the most detailed version
-    const poiKeys: string[] = [];
-    Object.keys(result.enrichments).forEach(key => {
-      if ((key.includes('poi_') || key.includes('at_') || key.includes('pct_') || key.includes('padus_')) && 
-          Array.isArray(result.enrichments[key]) && 
-          result.enrichments[key].length > 0) {
-        poiKeys.push(key);
-      }
-    });
-    
-    // Sort to prioritize detailed versions (process _detailed first, then _all_pois, etc.)
-    poiKeys.sort((a, b) => {
-      const aPriority = a.includes('_detailed') ? 0 : a.includes('_all_pois') ? 1 : 2;
-      const bPriority = b.includes('_detailed') ? 0 : b.includes('_all_pois') ? 1 : 2;
-      return aPriority - bPriority;
-    });
-    
-    // Extract POI data from enrichment results, using deduplication
-    poiKeys.forEach(key => {
-      const value = result.enrichments[key];
-      if (!Array.isArray(value)) return;
-      
-      // Extract base POI type by removing common suffixes
-      let poiType = key
-        .replace('_detailed', '')
-        .replace('_all_pois', '')
-        .replace('_elements', '')
-        .replace('_nearby_features', '')
-        .replace('_features', '')
-        .replace('_all', '')
-        .replace(/_count$/,'');
-      
-      // Handle PADUS keys specially
-      if (key.includes('padus_public_access_nearby_features')) {
-        poiType = 'poi_padus_public_access';
-      } else if (key.includes('padus_protection_status_nearby_features')) {
-        poiType = 'poi_padus_protection_status';
-      }
-
-      // Fallback: try to find a POI_ICONS key that prefixes the actual key
-      if (!POI_ICONS[poiType]) {
-        const prefixKey = Object.keys(POI_ICONS).find(k => key.startsWith(k));
-        if (prefixKey) {
-          poiType = prefixKey;
-        }
-      }
-
-      // Get icon config from POI_ICONS (final fallback to default)
-      const iconConfig = POI_ICONS[poiType] || POI_ICONS.default;
-      
-      // Get actual label from POI config manager, fallback to iconConfig title
-      let legendTitle = iconConfig.title;
-      try {
-        const poiConfig = poiConfigManager.getPOIType(poiType);
-        if (poiConfig && poiConfig.label) {
-          legendTitle = poiConfig.label;
-        }
-      } catch (e) {
-        // If getPOIType fails, use the iconConfig title
-        console.log('Could not find POI config for:', poiType);
-      }
-      
-      // Initialize legend accumulator for this title if needed
-      if (!legendAccumulator[legendTitle]) {
-        legendAccumulator[legendTitle] = {
-          icon: iconConfig.icon,
-          color: iconConfig.color,
-          poiSet: new Set<string>()
-        };
-      }
-      
-      // Add markers for each POI, using lat/lon as unique identifier to avoid duplicates
-      value.forEach((poi: any) => {
-        let poiName = poi.name || poi.title || poi.unitName || poi.boundaryName;
-        let lat = poi.lat || poi.latitude;
-        let lon = poi.lon || poi.longitude;
-        
-        // Handle PADUS features - they don't have lat/lon, need to calculate centroid
-        if (key.includes('padus_') && (!lat || !lon)) {
-          // Check if we have geometry data
-          if (poi.geometry) {
-            console.log('PADUS feature has geometry, calculating centroid:', poiName, poi.geometry);
-            // Calculate centroid from polygon geometry
-            const centroid = calculatePolygonCentroid(poi.geometry);
-            if (centroid) {
-              lat = centroid.lat;
-              lon = centroid.lon;
-              console.log('PADUS centroid calculated:', lat, lon, 'for', poiName);
-            } else {
-              console.log('Failed to calculate centroid for PADUS feature:', poiName);
-            }
-          } else {
-            console.log('PADUS feature has no geometry:', poiName, poi);
-          }
-          // If still no coordinates, skip this feature
-          if (!lat || !lon) {
-            console.log('Skipping PADUS feature without coordinates:', poiName);
-            return;
-          }
-        }
-        
-        if (lat && lon && poiName) {
-          // Create unique key from coordinates (rounded to avoid floating point issues)
-          const poiKey = `${legendTitle}_${lat.toFixed(6)}_${lon.toFixed(6)}`;
-          
-          // Only add if we haven't seen this POI before
-          if (!legendAccumulator[legendTitle].poiSet.has(poiKey)) {
-            legendAccumulator[legendTitle].poiSet.add(poiKey);
-            
-            const poiMarker = L.marker([lat, lon], {
-              icon: createPOIIcon(iconConfig.icon, iconConfig.color)
-            })
-              .bindPopup(createPOIPopupContent(poi, legendTitle, key))
-              .addTo(map);
-            
-            markersRef.current.push(poiMarker);
-          }
-        }
-      });
-    });
-
-    // Convert accumulated POI sets to counts for legend
-    Object.entries(legendAccumulator).forEach(([title, data]) => {
-      if (data.poiSet.size > 0) {
-        currentLegendItems.push({ 
-          icon: data.icon, 
-          color: data.color, 
-          title, 
-          count: data.poiSet.size 
-        });
-      }
-    });
-
-    // Update legend state
-    setLegendItems(currentLegendItems);
-  };
-
-  // Convert Web Mercator (EPSG:3857) to WGS84 (EPSG:4326) lat/lon
-  const webMercatorToWGS84 = (x: number, y: number): { lat: number; lon: number } => {
-    const lon = (x / 20037508.34) * 180;
-    let lat = (y / 20037508.34) * 180;
-    lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
-    return { lat, lon };
-  };
-
-  // Calculate centroid from polygon geometry (for PADUS features)
-  const calculatePolygonCentroid = (geometry: any): { lat: number; lon: number } | null => {
-    if (!geometry) {
-      console.log('No geometry provided for centroid calculation');
-      return null;
-    }
-    
-    // Check spatial reference - ArcGIS might return Web Mercator or WGS84
-    const spatialRef = geometry.spatialReference;
-    const isWebMercator = spatialRef && (
-      spatialRef.wkid === 3857 || 
-      spatialRef.wkid === 102100 || 
-      spatialRef.latestWkid === 3857 ||
-      spatialRef.latestWkid === 102100
-    );
-    
-    // Handle ArcGIS polygon geometry
-    if (geometry.rings && Array.isArray(geometry.rings) && geometry.rings.length > 0) {
-      // Get first ring (outer boundary)
-      const ring = geometry.rings[0];
-      if (ring && ring.length > 0) {
-        // Calculate centroid by averaging all points
-        let sumX = 0;
-        let sumY = 0;
-        ring.forEach((point: number[]) => {
-          if (point && point.length >= 2) {
-            sumX += point[0]; // x coordinate
-            sumY += point[1]; // y coordinate
-          }
-        });
-        
-        const avgX = sumX / ring.length;
-        const avgY = sumY / ring.length;
-        
-        // Check if coordinates need conversion (Web Mercator has large values)
-        if (isWebMercator || Math.abs(avgX) > 180 || Math.abs(avgY) > 90) {
-          // Convert from Web Mercator to WGS84
-          const converted = webMercatorToWGS84(avgX, avgY);
-          console.log('Converted PADUS centroid from Web Mercator to WGS84:', converted, 'from', { x: avgX, y: avgY });
-          return converted;
-        } else {
-          // Already in WGS84 (lat/lon)
-          const centroid = {
-            lat: avgY, // y is latitude in WGS84
-            lon: avgX  // x is longitude in WGS84
-          };
-          console.log('Calculated PADUS centroid from ArcGIS rings (WGS84):', centroid);
-          return centroid;
-        }
-      }
-    }
-    
-    // Handle GeoJSON polygon
-    if (geometry.type === 'Polygon' && geometry.coordinates && geometry.coordinates.length > 0) {
-      const ring = geometry.coordinates[0];
-      if (ring && ring.length > 0) {
-        let sumLat = 0;
-        let sumLon = 0;
-        ring.forEach((point: number[]) => {
-          if (point && point.length >= 2) {
-            sumLon += point[0]; // GeoJSON is [lon, lat]
-            sumLat += point[1];
-          }
-        });
-        const centroid = {
-          lat: sumLat / ring.length,
-          lon: sumLon / ring.length
-        };
-        console.log('Calculated PADUS centroid from GeoJSON:', centroid);
-        return centroid;
-      }
-    }
-    
-    console.log('Could not calculate centroid - geometry format not recognized:', geometry);
-    return null;
-  };
-
-  // Create popup content for POI markers
-  const createPOIPopupContent = (poi: any, category: string, key?: string): string => {
+const createPOIPopupContent = (poi: any, legendTitle: string, key: string): string => {
     // Handle PADUS features specially
     if (key && key.includes('padus_')) {
       const name = poi.unitName || poi.boundaryName || poi.name || 'Unnamed Public Land';
@@ -715,7 +204,7 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       <div style="min-width: 250px; max-width: 350px;">
         <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
         <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
-          📍 ${category} • ${distance} miles away
+          📍 ${legendTitle} • ${distance} miles away
         </div>
         <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
           🏷️ Type: ${amenity}
@@ -724,8 +213,111 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     `;
   };
 
-  // Create popup content for main location
-  const createPopupContent = (result: EnrichmentResult): string => {
+const formatPopupFieldName = (key: string): string => {
+  return key
+    .replace(/^poi_/g, 'POI ')
+    .replace(/^at_/g, 'AT ')
+    .replace(/^pct_/g, 'PCT ')
+    .replace(/nws/g, 'NWS')
+    .replace(/fws/g, 'FWS')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase());
+};
+
+const formatPopupValue = (value: any, key: string): string => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (typeof value === 'number') {
+    if (key.includes('elevation') || key.includes('elev')) {
+      return `${value.toLocaleString()} ft`;
+    }
+    if (key.includes('radius') || key.includes('miles')) {
+      return `${value} miles`;
+    }
+    if (key.includes('income') || key.includes('median_income')) {
+      return `$${value.toLocaleString()}`;
+    }
+    return value.toLocaleString();
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return 'None found';
+    if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features')) {
+      return `${value.length} found (see map/CSV for details)`;
+    }
+    return `${value.length} items`;
+  }
+  if (typeof value === 'object') {
+    if (value.name) return String(value.name);
+    if (value.title) return String(value.title);
+    if (value.value) return String(value.value);
+
+    if (key.includes('padus_') && (key.includes('_counts') || key.includes('_count'))) {
+      const entries = Object.entries(value).map(([k, v]) => `${k}: ${v}`);
+      return entries.join(', ');
+    }
+
+    return JSON.stringify(value);
+  }
+  return String(value);
+};
+
+const buildPopupSections = (enrichments: Record<string, any>): Array<{ category: string; items: { label: string; value: string }[] }> => {
+  const sections: Record<string, { label: string; value: string }[]> = {};
+
+  const shouldSkipField = (key: string) => (
+    key.includes('_all_pois') ||
+    key.includes('_detailed') ||
+    key.includes('_elements') ||
+    key.includes('_features') ||
+    key.endsWith('_all') ||
+    key.toLowerCase().includes('all_pois') ||
+    key.toLowerCase().includes('_geometry') ||
+    key.toLowerCase().includes('_raw') ||
+    key.toLowerCase().includes('_geojson')
+  );
+
+  const categorizeField = (key: string) => {
+    if (key.includes('elev')) return 'Elevation & Terrain';
+    if (key.includes('airq') || key.includes('air_quality')) return 'Air Quality';
+    if (key.includes('fips') || key.includes('census') || key.includes('demographic') || key.includes('acs_')) return 'Demographics & Census';
+    if (key.includes('fws_')) return 'FWS Species & Wildlife';
+    if (key.includes('weather') || key.includes('climate')) return 'Weather & Climate';
+    if (key.includes('school') || key.includes('education')) return 'Education';
+    if (key.includes('hospital') || key.includes('healthcare') || key.includes('clinic') || key.includes('health')) return 'Healthcare';
+    if (key.includes('crime') || key.includes('safety')) return 'Safety & Crime';
+    if (key.includes('transport') || key.includes('transit')) return 'Transportation';
+    if (key.includes('poi_') && key.includes('count') && !key.includes('wildfire')) return 'Points of Interest Nearby';
+    if (key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions')) return 'Natural Hazards';
+    if (key.includes('poi_epa_') || key.includes('epa_') || key.includes('tri_')) return 'Human Caused Hazards';
+    if (key.includes('padus_')) return 'Public Lands & Protected Areas';
+    if (key.includes('walkability')) return 'Livability & Walkability';
+    if (key.includes('poi_usda_')) return 'Local Food & Agriculture';
+    return 'Other';
+  };
+
+  Object.entries(enrichments).forEach(([key, value]) => {
+    if (shouldSkipField(key)) return;
+
+    const formattedValue = formatPopupValue(value, key);
+    if (!formattedValue) return;
+
+    const label = formatPopupFieldName(key);
+    const category = categorizeField(key);
+
+    if (!sections[category]) {
+      sections[category] = [];
+    }
+
+    sections[category].push({ label, value: formattedValue });
+  });
+
+  return Object.entries(sections)
+    .map(([category, items]) => ({ category, items }))
+    .filter(section => section.items.length > 0);
+};
+
+// Create popup content for main location
+const createPopupContent = (result: EnrichmentResult): string => {
     const { location, enrichments } = result;
     
     let content = `
@@ -843,6 +435,31 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
       `;
     }
     
+    // Add detailed enrichment sections similar to summary form
+    const enrichmentSections = buildPopupSections(enrichments);
+
+    enrichmentSections.forEach(section => {
+      content += `
+        <div style="margin: 12px 0; padding: 12px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <h4 style="margin: 0 0 8px 0; color: #111827; font-weight: 600; font-size: 12px;">${section.category}</h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; font-size: 11px; color: #1f2937;">
+      `;
+
+      section.items.forEach(item => {
+        content += `
+            <div>
+              <div style="font-weight: 600; color: #374151; font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em;">${item.label}</div>
+              <div style="color: #111827; font-size: 11px;">${item.value}</div>
+            </div>
+        `;
+      });
+
+      content += `
+          </div>
+        </div>
+      `;
+    });
+
     // Add data source attribution
     const dataSources: string[] = [];
     if (enrichments.padus_public_access_summary || enrichments.padus_protection_status_summary) {
@@ -880,6 +497,161 @@ const MapView: React.FC<MapViewProps> = ({ results, onBackToConfig, isMobile = f
     
     return content;
   };
+
+const MapView: React.FC<MapViewProps> = ({
+  results,
+  onBackToConfig,
+  isMobile = false,
+}) => {
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
+  const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
+  const [showBatchSuccess, setShowBatchSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      return;
+    }
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.invalidateSize();
+      return;
+    }
+
+    const map = L.map(mapRef.current, {
+      center: [37.0902, -95.7129],
+      zoom: 4,
+      zoomControl: true,
+      attributionControl: true,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    const primary = L.layerGroup().addTo(map);
+    const poi = L.layerGroup().addTo(map);
+
+    mapInstanceRef.current = map;
+    layerGroupsRef.current = { primary, poi };
+
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+      layerGroupsRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150);
+    }
+  }, [isMobile, results.length]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupsRef.current) {
+      return;
+    }
+
+    const map = mapInstanceRef.current;
+    const { primary, poi } = layerGroupsRef.current;
+
+    primary.clearLayers();
+    poi.clearLayers();
+
+    if (!results || results.length === 0) {
+      setLegendItems([]);
+      setShowBatchSuccess(false);
+      return;
+    }
+
+    const bounds = L.latLngBounds([]);
+    const legendAccumulator: Record<string, LegendItem> = {};
+
+    results.forEach((result) => {
+      const { location, enrichments } = result;
+      if (!location) {
+        return;
+      }
+
+      const latLng = L.latLng(location.lat, location.lon);
+      bounds.extend(latLng);
+
+      const locationMarker = L.marker(latLng, {
+        title: location.name,
+      });
+
+      locationMarker.bindPopup(createPopupContent(result), { maxWidth: 540 });
+      locationMarker.addTo(primary);
+
+      Object.entries(enrichments).forEach(([key, value]) => {
+        if (!Array.isArray(value)) {
+          return;
+        }
+
+        if (!/_detailed$|_elements$|_features$/i.test(key)) {
+          return;
+        }
+
+        const baseKey = key.replace(/_(detailed|elements|features)$/i, '');
+        const poiInfo = POI_ICONS[baseKey] || POI_ICONS['default'];
+        const poiMeta = poiConfigManager.getPOIType(baseKey);
+        const iconEmoji = poiInfo.icon || '📍';
+        const iconColor = poiInfo.color || '#2563eb';
+        const legendTitle = poiMeta?.label || poiInfo.title || formatPopupFieldName(baseKey);
+
+        if (!legendAccumulator[baseKey]) {
+          legendAccumulator[baseKey] = {
+            icon: iconEmoji,
+            color: iconColor,
+            title: legendTitle,
+            count: 0,
+          };
+        }
+
+        const itemsArray = value as Array<any>;
+        legendAccumulator[baseKey].count += itemsArray.length;
+
+        const leafletIcon = createPOIIcon(iconEmoji, iconColor);
+
+        itemsArray.slice(0, 100).forEach((item) => {
+          const poiLat =
+            item.lat ??
+            item.latitude ??
+            item.location?.lat ??
+            item.center?.lat ??
+            item.geometry?.coordinates?.[1];
+          const poiLon =
+            item.lon ??
+            item.longitude ??
+            item.location?.lon ??
+            item.center?.lon ??
+            item.geometry?.coordinates?.[0];
+
+          if (typeof poiLat !== 'number' || typeof poiLon !== 'number') {
+            return;
+          }
+
+          const poiMarker = L.marker([poiLat, poiLon], { icon: leafletIcon });
+          poiMarker.bindPopup(createPOIPopupContent(item, legendTitle, baseKey), { maxWidth: 360 });
+          poiMarker.addTo(poi);
+        });
+      });
+    });
+
+    if (bounds.isValid()) {
+      map.fitBounds(bounds.pad(0.2));
+    } else if (results[0]?.location) {
+      map.setView([results[0].location.lat, results[0].location.lon], 12);
+    }
+
+    setLegendItems(
+      Object.values(legendAccumulator).sort((a, b) => b.count - a.count)
+    );
+    setShowBatchSuccess(results.length > 1);
+  }, [results]);
 
   // CSV export now handled by shared utility function
 
