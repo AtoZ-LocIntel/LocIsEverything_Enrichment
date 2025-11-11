@@ -1712,7 +1712,7 @@ export class EnrichmentService {
     if (id === "poi_markets") return ["shop=marketplace", "amenity=marketplace"];
     
          // Add missing POI types that were showing up in your results
-     if (id === "poi_airports") return ["aeroway=aerodrome", "aeroway=airport"];
+    if (id === "poi_airports") return ["aeroway=aerodrome", "aeroway=airstrip", "aeroway=heliport", "aeroway=landing_strip"];
      if (id === "poi_substations") return ["power=substation"];
      if (id === "poi_powerlines") return ["power=line"];
      if (id === "poi_power_plants_openei") return ["power=plant", "power=generator"];
@@ -1738,7 +1738,7 @@ export class EnrichmentService {
      if (id === "poi_monorail") return ["railway=monorail", "public_transport=platform"];
      if (id === "poi_aerialway") return ["aerialway=gondola", "aerialway=cable_car", "aerialway=chair_lift", "aerialway=station"];
      if (id === "poi_ferry") return ["amenity=ferry_terminal", "route=ferry"];
-     if (id === "poi_airport_air") return ["aeroway=terminal", "aeroway=gate", "public_transport=platform"];
+    if (id === "poi_airport_air") return ["aeroway=terminal", "aeroway=gate", "aeroway=boarding_area"];
      if (id === "poi_taxi") return ["amenity=taxi"];
      if (id === "poi_bike_scooter_share") return ["amenity=bicycle_rental", "amenity=scooter_rental"];
      if (id === "poi_dockless_hub") return ["amenity=bicycle_rental", "amenity=scooter_rental"];
