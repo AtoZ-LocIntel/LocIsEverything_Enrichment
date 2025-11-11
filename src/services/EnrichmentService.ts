@@ -8,7 +8,8 @@ import { EPATRIService } from '../adapters/epaTRI';
 import { EPAWalkabilityService } from '../adapters/epaWalkability';
 import { FWSSpeciesService } from '../adapters/fwsSpecies';
 import { AURORA_VIEWING_LOCATIONS } from '../data/auroraLocations';
-// import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
+import { fetchEBirdHotspots, fetchEBirdRecentObservations } from '../utils/eBird';
+import { poiConfigManager } from '../lib/poiConfig';
 
 // CORS proxy helpers from original geocoder.html
 const USE_CORS_PROXY = true;
@@ -1006,8 +1007,6 @@ export class EnrichmentService {
     // Check POI config for maxRadius, otherwise use default caps
     let maxRadius = 25; // Default 25 mile cap for all POIs (user can select up to this)
     
-    // Import POI config manager to check for maxRadius
-    const { poiConfigManager } = await import('../lib/poiConfig');
     const poiConfig = poiConfigManager.getPOIType(enrichmentId);
     
     if (poiConfig?.maxRadius) {
@@ -1066,6 +1065,15 @@ export class EnrichmentService {
         return await this.getWikipediaPOIs(lat, lon, radius);
       case 'poi_aurora_viewing_sites':
         return await this.getAuroraViewingSites(lat, lon, radius);
+      case 'poi_ebird_hotspots': {
+        const requestedRadiusMiles = radius;
+        const distKm = Math.min(requestedRadiusMiles * 1.60934, 50); // eBird max 50km
+        return await this.getEBirdHotspots(lat, lon, distKm, requestedRadiusMiles);
+      }
+      case 'ebird_recent_observations': {
+        const distKm = Math.min(radius * 1.60934, 50);
+        return await this.getEBirdRecentObservations(lat, lon, distKm, 7);
+      }
       
       case 'poi_museums_historic':
         return await this.getPOICount('poi_museums_historic', lat, lon, radius);
@@ -1731,13 +1739,47 @@ export class EnrichmentService {
      if (id === "poi_tnm_trails") return ["route=hiking", "route=foot", "leisure=park"];
      
      // Comprehensive transportation POI types
-     if (id === "poi_bus") return ["highway=bus_stop", "amenity=bus_station"];
-     if (id === "poi_train") return ["railway=station", "railway=halt", "public_transport=platform"];
-     if (id === "poi_subway_metro") return ["railway=station", "railway=subway_entrance", "public_transport=platform"];
-     if (id === "poi_tram") return ["railway=tram_stop", "public_transport=platform"];
-     if (id === "poi_monorail") return ["railway=monorail", "public_transport=platform"];
-     if (id === "poi_aerialway") return ["aerialway=gondola", "aerialway=cable_car", "aerialway=chair_lift", "aerialway=station"];
-     if (id === "poi_ferry") return ["amenity=ferry_terminal", "route=ferry"];
+    if (id === "poi_bus") return [
+      "highway=bus_stop",
+      "amenity=bus_station",
+      "public_transport=platform|bus=yes",
+      "public_transport=platform|bus=designated"
+    ];
+    if (id === "poi_train") return [
+      "railway=station",
+      "railway=halt",
+      "railway=stop",
+      "railway=platform",
+      "public_transport=platform|train=yes",
+      "public_transport=stop_position|train=yes"
+    ];
+    if (id === "poi_subway_metro") return [
+      "railway=subway_entrance",
+      "railway=station|station=subway",
+      "railway=station|subway=yes",
+      "railway=platform|subway=yes",
+      "public_transport=stop_position|subway=yes"
+    ];
+    if (id === "poi_tram") return [
+      "railway=tram_stop",
+      "railway=platform|tram=yes",
+      "public_transport=platform|tram=yes",
+      "public_transport=stop_position|tram=yes"
+    ];
+    if (id === "poi_monorail") return [
+      "railway=monorail",
+      "railway=station|monorail=yes",
+      "railway=platform|monorail=yes",
+      "public_transport=platform|monorail=yes"
+    ];
+    if (id === "poi_aerialway") return [
+      "aerialway=station",
+      "aerialway=gondola",
+      "aerialway=cable_car",
+      "aerialway=chair_lift",
+      "aerialway=drag_lift"
+    ];
+    if (id === "poi_ferry") return ["amenity=ferry_terminal"];
     if (id === "poi_airport_air") return ["aeroway=terminal", "aeroway=gate", "aeroway=boarding_area"];
      if (id === "poi_taxi") return ["amenity=taxi"];
      if (id === "poi_bike_scooter_share") return ["amenity=bicycle_rental", "amenity=scooter_rental"];
@@ -2017,6 +2059,11 @@ export class EnrichmentService {
   }
 
   private getDefaultRadius(enrichmentId: string): number {
+    const poiConfig = poiConfigManager.getPOIType(enrichmentId);
+    if (poiConfig?.defaultRadius !== undefined) {
+      return poiConfig.defaultRadius;
+    }
+
     const defaultRadii: Record<string, number> = {
       'poi_schools': 5,
       'poi_hospitals': 5,
@@ -2063,7 +2110,8 @@ export class EnrichmentService {
        'poi_usda_farmers_market': 5,
        'poi_usda_food_hub': 5,
        'poi_usda_onfarm_market': 5,
-       'poi_aurora_viewing_sites': 100
+      'poi_aurora_viewing_sites': 100,
+      'poi_ebird_hotspots': 25,
     };
     
     // Get the default radius, with special handling for power plants and other large-radius POIs
@@ -2080,7 +2128,7 @@ export class EnrichmentService {
       return radius; // No cap for power plants, charging stations, EPA power generation, and animal collisions
     }
     
-    // Cap other POI types at 5 miles maximum
+    // Cap other POI types at 5 miles maximum unless explicitly provided via config
     return Math.min(radius, 5);
   }
 
@@ -2210,6 +2258,139 @@ export class EnrichmentService {
         poi_aurora_viewing_sites_all_pois: [],
         error: error instanceof Error ? error.message : 'Unknown error',
         poi_aurora_viewing_sites_source: 'Auroras.live (https://auroras.live)',
+      };
+    }
+  }
+
+  private async getEBirdHotspots(lat: number, lon: number, distKm: number, requestedRadiusMiles?: number): Promise<Record<string, any>> {
+    try {
+      const hotspots = await fetchEBirdHotspots(lat, lon, distKm, 50);
+      const hotspotsWithDistance = hotspots.map((spot) => {
+        const distanceKm = this.calculateDistance(lat, lon, spot.lat, spot.lng);
+        const distanceMiles = distanceKm * 0.621371;
+        return {
+          ...spot,
+          name: spot.locName || spot.name || 'Birding Hotspot',
+          lon: spot.lng,
+          distance_km: Number(distanceKm.toFixed(2)),
+          distance_miles: Number(distanceMiles.toFixed(2)),
+        };
+      }).sort((a, b) => a.distance_miles - b.distance_miles);
+
+      const effectiveRadiusMiles = Number((distKm * 0.621371).toFixed(1));
+      const requestedRadiusMilesRounded =
+        requestedRadiusMiles !== undefined ? Number(requestedRadiusMiles.toFixed(1)) : undefined;
+      const radiusSummaryMiles = requestedRadiusMilesRounded ?? effectiveRadiusMiles;
+      const radiusNote =
+        requestedRadiusMilesRounded !== undefined && requestedRadiusMilesRounded !== effectiveRadiusMiles
+          ? ` (clamped to ${effectiveRadiusMiles} miles due to eBird API limit)`
+          : '';
+
+      const summary = hotspotsWithDistance.length
+        ? `Found ${hotspotsWithDistance.length} birding hotspot${hotspotsWithDistance.length === 1 ? '' : 's'} within ${radiusSummaryMiles.toFixed(1)} miles${radiusNote}.`
+        : `No birding hotspots found within ${radiusSummaryMiles.toFixed(1)} miles${radiusNote}.`;
+
+      return {
+        poi_ebird_hotspots_count: hotspotsWithDistance.length,
+        poi_ebird_hotspots_radius_km: Number(distKm.toFixed(2)),
+        poi_ebird_hotspots_radius_miles: effectiveRadiusMiles,
+        ...(requestedRadiusMilesRounded !== undefined
+          ? { poi_ebird_hotspots_radius_miles_requested: requestedRadiusMilesRounded }
+          : {}),
+        poi_ebird_hotspots_summary: summary,
+        poi_ebird_hotspots_detailed: hotspotsWithDistance.slice(0, 50),
+        poi_ebird_hotspots_all_pois: hotspotsWithDistance,
+        poi_ebird_hotspots_source: 'eBird (Cornell Lab of Ornithology)',
+        count: hotspotsWithDistance.length,
+      };
+    } catch (error) {
+      console.error('eBird hotspot lookup failed:', error);
+      return {
+        count: 0,
+        poi_ebird_hotspots_count: 0,
+        poi_ebird_hotspots_detailed: [],
+        poi_ebird_hotspots_all_pois: [],
+        poi_ebird_hotspots_summary: 'Birding hotspot data unavailable.',
+        poi_ebird_hotspots_source: 'eBird (Cornell Lab of Ornithology)',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  private async getEBirdRecentObservations(lat: number, lon: number, distKm: number, lookBackDays: number): Promise<Record<string, any>> {
+    try {
+      const observations = await fetchEBirdRecentObservations(lat, lon, distKm, lookBackDays);
+      const observationsWithDistance = observations
+        .map((obs) => {
+          const distanceKm = this.calculateDistance(lat, lon, obs.lat, obs.lng);
+          const distanceMiles = distanceKm * 0.621371;
+          return {
+            ...obs,
+            name: obs.comName,
+            species_common_name: obs.comName,
+            species_scientific_name: obs.sciName,
+            location_name: obs.locName,
+            lon: obs.lng,
+            distance_km: Number(distanceKm.toFixed(2)),
+            distance_miles: Number(distanceMiles.toFixed(2)),
+          };
+        })
+        .sort((a, b) => a.distance_miles - b.distance_miles);
+
+      const speciesMap = new Map<string, { name: string; count: number; mostRecent: string }>();
+
+      observationsWithDistance.forEach((obs) => {
+        const key = obs.speciesCode;
+        const count = obs.howMany ?? 1;
+        const existing = speciesMap.get(key);
+        if (existing) {
+          existing.count += count;
+          if (new Date(obs.obsDt) > new Date(existing.mostRecent)) {
+            existing.mostRecent = obs.obsDt;
+          }
+        } else {
+          speciesMap.set(key, {
+            name: obs.comName,
+            count,
+            mostRecent: obs.obsDt,
+          });
+        }
+      });
+
+      const topSpecies = Array.from(speciesMap.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 25);
+
+      return {
+        ebird_recent_observations_total_reports: observationsWithDistance.length,
+        ebird_recent_observations_unique_species: speciesMap.size,
+        ebird_recent_observations_top_species: topSpecies,
+        ebird_recent_observations_radius_km: Number(distKm.toFixed(2)),
+        ebird_recent_observations_radius_miles: Number((distKm * 0.621371).toFixed(1)),
+        ebird_recent_observations_lookback_days: lookBackDays,
+        ebird_recent_observations_summary: speciesMap.size
+          ? `${speciesMap.size} species reported within the last ${lookBackDays} day${lookBackDays === 1 ? '' : 's'}.`
+          : `No species reported within the last ${lookBackDays} day${lookBackDays === 1 ? '' : 's'}.`,
+        ebird_recent_observations_detailed: observationsWithDistance.slice(0, 50),
+        ebird_recent_observations_all: observationsWithDistance.slice(0, 200),
+        ebird_recent_observations_all_pois: observationsWithDistance,
+        ebird_recent_observations_nearest: observationsWithDistance[0] || null,
+        ebird_recent_observations_source: 'eBird (Cornell Lab of Ornithology)',
+        count: speciesMap.size,
+      };
+    } catch (error) {
+      console.error('eBird observation lookup failed:', error);
+      return {
+        ebird_recent_observations_total_reports: 0,
+        ebird_recent_observations_unique_species: 0,
+        ebird_recent_observations_top_species: [],
+        ebird_recent_observations_detailed: [],
+        ebird_recent_observations_all: [],
+        ebird_recent_observations_all_pois: [],
+        ebird_recent_observations_summary: 'Bird observation data unavailable.',
+        ebird_recent_observations_source: 'eBird (Cornell Lab of Ornithology)',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        count: 0,
       };
     }
   }

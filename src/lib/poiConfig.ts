@@ -175,8 +175,10 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_lakes_ponds', label: 'Lakes & Ponds', description: 'Lakes, ponds, and water bodies', isPOI: true, defaultRadius: 5, category: 'natural_resources', section: 'natural_resources' },
   { id: 'poi_rivers_streams', label: 'Rivers & Streams', description: 'Rivers, streams, brooks, and waterways', isPOI: true, defaultRadius: 5, category: 'natural_resources', section: 'natural_resources' },
   { id: 'poi_mountains_peaks', label: 'Mountains & Peaks', description: 'Mountain peaks and high elevation features', isPOI: true, defaultRadius: 5, category: 'natural_resources', section: 'natural_resources' },
-  { id: 'poi_fws_species', label: 'FWS Species & Critical Habitat', description: 'US Fish and Wildlife Service - endangered/threatened species, critical habitat, refuges, wetlands, and marine mammals within proximity', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'natural_resources', section: 'natural_resources' },
+  { id: 'poi_fws_species', label: 'FWS Species & Critical Habitat', description: 'US Fish and Wildlife Service - endangered/threatened species, critical habitat, wildlife refuges, wetlands, marine mammals, migratory birds, and fish hatcheries within proximity', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'natural_resources', section: 'natural_resources' },
   { id: 'poi_aurora_viewing_sites', label: 'Aurora Viewing Sites', description: 'Auroras.live curated northern/southern lights viewing locations', isPOI: true, defaultRadius: 100, maxRadius: 100, category: 'natural_resources', section: 'natural_resources' },
+  { id: 'poi_ebird_hotspots', label: 'Birding Hotspots', description: 'Nearby eBird lister hotspots with species richness and recent activity', isPOI: true, defaultRadius: 25, maxRadius: 50, category: 'natural_resources', section: 'natural_resources' },
+  { id: 'ebird_recent_observations', label: 'Recent Bird Observations', description: 'Recent species observations reported to eBird near this location (25-mile default search radius)', isPOI: false, defaultRadius: 25, category: 'natural_resources', section: 'natural_resources' },
   
   // Quirky
   { id: 'poi_breweries', label: 'Breweries', description: 'Craft breweries with names, types, addresses, contact info', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' },

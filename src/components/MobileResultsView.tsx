@@ -37,6 +37,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       if (key.includes('elevation') || key.includes('elev')) {
         return `${value.toLocaleString()} ft`;
       }
+      if (key.includes('radius_km')) {
+        return `${value.toLocaleString()} km`;
+      }
       if (key.includes('radius') || key.includes('miles')) {
         return `${value} miles`;
       }

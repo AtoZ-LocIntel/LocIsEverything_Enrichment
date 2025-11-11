@@ -369,6 +369,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "eBird API (Cornell Lab of Ornithology)",
+          description: "Birding hotspots, recent species observations, and community-sourced ornithological data",
+          coverage: "Global (observer-dependent)",
+          accuracy: "Community reported / curated",
+          cost: "Free (API key)"
         }
       ]
     },

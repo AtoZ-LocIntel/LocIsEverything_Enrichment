@@ -143,6 +143,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_rivers_streams': { icon: '🌊', color: '#1d4ed8', title: 'Rivers & Streams' },
   'poi_mountains_peaks': { icon: '🏔️', color: '#7c2d12', title: 'Mountains & Peaks' },
   'poi_aurora_viewing_sites': { icon: '🌌', color: '#a855f7', title: 'Aurora Viewing Sites' },
+  'poi_ebird_hotspots': { icon: '🐦', color: '#1d4ed8', title: 'Birding Hotspots' },
+  'ebird_recent_observations': { icon: '🪶', color: '#f97316', title: 'Recent Bird Observations' },
   
   // Public Lands & Protected Areas
   'poi_padus_public_access': { icon: '🏞️', color: '#22c55e', title: 'Public Lands' },
@@ -198,6 +200,55 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
         </div>
       `;
     }
+
+    if (key === 'poi_ebird_hotspots') {
+      const name = poi.name || poi.locName || legendTitle || 'Birding Hotspot';
+      const speciesCount = poi.numSpeciesAllTime;
+      const latestObservation = poi.latestObsDt
+        ? new Date(poi.latestObsDt).toLocaleString()
+        : null;
+      const distance = poi.distance_miles ?? poi.distanceMiles ?? 'Unknown';
+      const url = poi.url;
+
+      return `
+        <div style="min-width: 260px; max-width: 360px;">
+          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
+          <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+            📍 ${distance} miles away
+          </div>
+          <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+            🐦 Species recorded: ${speciesCount ?? 'Unknown'}
+          </div>
+          ${latestObservation ? `<div style="margin: 4px 0; font-size: 12px; color: #6b7280;">🗓️ Latest observation: ${latestObservation}</div>` : ''}
+          ${url ? `<div style="margin-top: 8px;"><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-size: 12px;">View hotspot on eBird</a></div>` : ''}
+        </div>
+      `;
+    }
+
+    if (key === 'ebird_recent_observations') {
+      const speciesName = poi.species_common_name || poi.comName || poi.name || 'Bird Observation';
+      const scientificName = poi.species_scientific_name || poi.sciName || null;
+      const count = poi.howMany ?? 1;
+      const observationDate = poi.obsDt ? new Date(poi.obsDt).toLocaleString() : null;
+      const locationName = poi.location_name || poi.locName || null;
+      const distance = poi.distance_miles ?? 'Unknown';
+      const checklistUrl = poi.checklistId ? `https://ebird.org/checklist/${poi.checklistId}` : poi.url;
+
+      return `
+        <div style="min-width: 260px; max-width: 360px;">
+          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${speciesName}</h3>
+          ${scientificName ? `<div style="margin: 4px 0; font-size: 12px; color: #6b7280;"><em>${scientificName}</em></div>` : ''}
+          <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+            📍 ${distance} miles away${locationName ? ` • ${locationName}` : ''}
+          </div>
+          <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
+            👥 Count observed: ${count}
+          </div>
+          ${observationDate ? `<div style="margin: 4px 0; font-size: 12px; color: #6b7280;">🗓️ Observed: ${observationDate}</div>` : ''}
+          ${checklistUrl ? `<div style="margin-top: 8px;"><a href="${checklistUrl}" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-size: 12px;">View checklist</a></div>` : ''}
+        </div>
+      `;
+    }
     
     const name = poi.tags?.name || poi.name || poi.title || 'Unnamed POI';
     const amenity = poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI';
@@ -233,6 +284,9 @@ const formatPopupValue = (value: any, key: string): string => {
   if (typeof value === 'number') {
     if (key.includes('elevation') || key.includes('elev')) {
       return `${value.toLocaleString()} ft`;
+    }
+    if (key.includes('radius_km')) {
+      return `${value.toLocaleString()} km`;
     }
     if (key.includes('radius') || key.includes('miles')) {
       return `${value} miles`;
