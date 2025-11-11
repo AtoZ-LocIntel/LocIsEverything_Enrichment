@@ -1,7 +1,10 @@
 const EBIRD_BASE_URL = 'https://api.ebird.org/v2';
-const EBIRD_TOKEN =
-  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_EBIRD_API_TOKEN) ||
-  'dkifcecl7ouq';
+const importMetaEnv =
+  typeof import.meta !== 'undefined' && typeof (import.meta as any).env !== 'undefined'
+    ? (import.meta as any).env
+    : undefined;
+
+const EBIRD_TOKEN = importMetaEnv?.VITE_EBIRD_API_TOKEN || 'dkifcecl7ouq';
 
 interface RequestOptions extends RequestInit {
   query?: Record<string, string | number | boolean | undefined>;
@@ -40,9 +43,10 @@ export const eBirdRequest = async <T>(path: string, options: RequestOptions = {}
 
 export interface EBirdHotspot {
   locId: string;
-  name: string;
+  name?: string;
   lat: number;
   lng: number;
+  locName?: string;
   latestObsDt?: string;
   numSpeciesAllTime?: number;
   countryCode?: string;
