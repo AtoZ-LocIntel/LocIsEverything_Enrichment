@@ -140,7 +140,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                 <div className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="grid grid-cols-[auto,1fr] gap-3 items-start mb-3">
+                      <div className="flex flex-col sm:grid sm:grid-cols-[auto,1fr] sm:items-start gap-3 mb-3">
                         <button
                           type="button"
                           onClick={() => handleToggleEnrichment(enrichment.id)}
@@ -164,7 +164,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                           )}
                         </button>
                         
-                        <div className="flex-1 min-w-0 w-full">
+                        <div className="flex-1 min-w-0 w-full text-center sm:text-left space-y-1">
                           <label 
                             htmlFor={`checkbox-${enrichment.id}`} 
                             className="text-lg font-semibold text-black cursor-pointer block"

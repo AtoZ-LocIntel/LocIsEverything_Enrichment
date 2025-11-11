@@ -236,6 +236,18 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
+      category: "Space Weather & Aurora",
+      sources: [
+        {
+          name: "Auroras.live API",
+          description: "Aurora hunting data including curated viewing locations and live solar wind metrics (Bz, speed, density, Kp forecasts)",
+          coverage: "High-latitude regions worldwide",
+          accuracy: "High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
       category: "Human Caused Hazards",
       sources: [
         {

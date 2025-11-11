@@ -692,11 +692,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             return (
                               <div key={enrichment.id} className="border border-gray-200 rounded-lg p-4 sm:p-4">
                                 {/* On mobile, stack checkbox above the text to give the text full width */}
-                                <div className="grid grid-cols-[auto,1fr] gap-3 items-start w-full">
+                                <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full">
                                   <button
                                     type="button"
                                     onClick={() => handleEnrichmentToggle(enrichment.id)}
-                                    className={`w-6 h-6 sm:w-5 sm:h-5 flex-shrink-0 self-start border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 ${
+                                    className={`w-6 h-6 sm:w-5 sm:h-5 flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 ${
                                       isSelected 
                                         ? 'bg-black border-black' 
                                         : 'bg-white border-gray-300'
@@ -706,8 +706,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       <Check className="w-4 h-4 sm:w-3 sm:h-3 text-white" />
                                     )}
                                   </button>
-                                  <div className="flex-1 min-w-0 w-full" style={{ maxWidth: '100%', width: '100%' }}>
-                                    <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed mb-1 w-full">
+                                  <div className="flex-1 min-w-0 w-full text-center sm:text-left space-y-1">
+                                    <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed w-full">
                                       {enrichment.label}
                                     </label>
                                     <p className="text-sm sm:text-sm text-gray-700 break-words leading-relaxed whitespace-normal w-full">
