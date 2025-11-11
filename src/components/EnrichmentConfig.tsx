@@ -244,7 +244,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 
   const handleRadiusChange = (enrichmentId: string, radius: number) => {
     const maxRadius = getMaxRadius(enrichmentId);
-    const cappedRadius = Math.min(radius, maxRadius);
+    const minRadius = enrichmentId === 'poi_aurora_viewing_sites' ? 5 : 0.1;
+    const cappedRadius = Math.max(minRadius, Math.min(radius, maxRadius));
     onPoiRadiiChange({
       ...poiRadii,
       [enrichmentId]: cappedRadius
@@ -676,6 +677,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           {categoryEnrichments.map((enrichment) => {
                             const isSelected = selectedEnrichments.includes(enrichment.id);
                             const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
+                            const maxRadius = getMaxRadius(enrichment.id);
+                            const minRadius = enrichment.id === 'poi_aurora_viewing_sites' ? 5 : 0.1;
+                            const formatMiles = (value: number) => Number.isInteger(value) ? value.toString() : value.toFixed(1);
+                            const radiusLabel = (() => {
+                              if (enrichment.id === 'poi_earthquakes') return '25 miles (earthquakes)';
+                              if (enrichment.id === 'poi_volcanoes') return '50 miles (volcanoes)';
+                              if (enrichment.id === 'poi_wildfires') return '50 miles (wildfires)';
+                              if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
+                              if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
+                              return '5 miles';
+                            })();
 
                             return (
                               <div key={enrichment.id} className="border border-gray-200 rounded-lg p-4 sm:p-4">
@@ -708,13 +720,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   <div className="mt-4 pt-4 border-t border-gray-100">
                                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
                                       <p className="text-xs text-amber-700">
-                                        ⚠️ Maximum radius: {
-                                          enrichment.id === 'poi_earthquakes' ? '25 miles (earthquakes)' :
-                                          enrichment.id === 'poi_volcanoes' ? '50 miles (volcanoes)' :
-                                          enrichment.id === 'poi_wildfires' ? '50 miles (wildfires)' :
-                                          enrichment.id === 'poi_flood_reference_points' ? '25 miles (flood reference points)' :
-                                          '5 miles'
-                                        } (for performance & accuracy)
+                                        ⚠️ Recommended range: {radiusLabel} (for performance & accuracy)
                                       </p>
                                     </div>
                                     
@@ -723,9 +729,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       <div className="flex items-center gap-2 w-full max-w-full overflow-visible">
                                         <input
                                           type="number"
-                                          min="0.1"
-                                          max={getMaxRadius(enrichment.id)}
-                                          step="0.1"
+                                          min={minRadius}
+                                          max={maxRadius}
+                                          step={enrichment.id === 'poi_aurora_viewing_sites' ? 1 : 0.1}
                                           value={currentRadius}
                                           onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
                                           className="w-24 sm:w-20 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center max-w-full"
@@ -734,19 +740,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       </div>
                                     </div>
 
-                                    {currentRadius > (
-                                      enrichment.id === 'poi_earthquakes' ? 25 :
-                                      enrichment.id === 'poi_volcanoes' ? 50 :
-                                      enrichment.id === 'poi_flood_reference_points' ? 25 :
-                                      5
-                                    ) && (
+                                    {(currentRadius > maxRadius || currentRadius < minRadius) && (
                                       <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
-                                        Capped at {
-                                          enrichment.id === 'poi_earthquakes' ? '25' :
-                                          enrichment.id === 'poi_volcanoes' ? '50' :
-                                          enrichment.id === 'poi_flood_reference_points' ? '25' :
-                                          '5'
-                                        } miles
+                                        Please stay between {formatMiles(minRadius)} and {formatMiles(maxRadius)} miles
                                       </div>
                                     )}
                                   </div>

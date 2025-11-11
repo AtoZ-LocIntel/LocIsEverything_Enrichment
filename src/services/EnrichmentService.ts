@@ -7,6 +7,7 @@ import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
 import { EPATRIService } from '../adapters/epaTRI';
 import { EPAWalkabilityService } from '../adapters/epaWalkability';
 import { FWSSpeciesService } from '../adapters/fwsSpecies';
+import { AURORA_VIEWING_LOCATIONS } from '../data/auroraLocations';
 // import { poiConfigManager } from '../lib/poiConfig'; // Temporarily commented out until needed
 
 // CORS proxy helpers from original geocoder.html
@@ -1031,8 +1032,25 @@ export class EnrichmentService {
         const elevationFeet = elevationMeters ? Math.round(elevationMeters * 3.28084) : null;
         return { elevation_ft: elevationFeet };
       
-      case 'airq':
-        return { pm25: await this.getAirQuality(lat, lon) };
+      case 'airq': {
+        const pm25 = await this.getAirQuality(lat, lon);
+        if (pm25 == null) {
+          return {
+            airq_pm25: null,
+            airq_category: 'Unavailable',
+            airq_colour: 'gray',
+            airq_message: 'Air quality data temporarily unavailable.',
+          };
+        }
+
+        const airQuality = this.classifyPM25(pm25);
+        return {
+          airq_pm25: Number(pm25.toFixed(1)),
+          airq_category: airQuality.label,
+          airq_colour: airQuality.colour,
+          airq_message: airQuality.message,
+        };
+      }
       
       case 'fips':
         return await this.getFIPSCodes(lat, lon);
@@ -1046,6 +1064,8 @@ export class EnrichmentService {
       
       case 'poi_wikipedia':
         return await this.getWikipediaPOIs(lat, lon, radius);
+      case 'poi_aurora_viewing_sites':
+        return await this.getAuroraViewingSites(lat, lon, radius);
       
       case 'poi_museums_historic':
         return await this.getPOICount('poi_museums_historic', lat, lon, radius);
@@ -1239,6 +1259,49 @@ export class EnrichmentService {
       console.error('Air quality API error:', error);
       return null;
     }
+  }
+
+  private classifyPM25(value: number): { label: string; colour: string; message: string } {
+    if (value <= 12) {
+      return {
+        label: 'Good',
+        colour: 'green',
+        message: 'Air quality is considered satisfactory, and air pollution poses little or no risk.',
+      };
+    }
+    if (value <= 35.4) {
+      return {
+        label: 'Moderate',
+        colour: 'yellow',
+        message: 'Air quality is acceptable; however, there may be a risk for some people, particularly those who are unusually sensitive to air pollution.',
+      };
+    }
+    if (value <= 55.4) {
+      return {
+        label: 'Unhealthy for Sensitive Groups',
+        colour: 'orange',
+        message: 'Members of sensitive groups may experience health effects. The general public is less likely to be affected.',
+      };
+    }
+    if (value <= 150.4) {
+      return {
+        label: 'Unhealthy',
+        colour: 'red',
+        message: 'Some members of the general public may experience health effects; members of sensitive groups may experience more serious health effects.',
+      };
+    }
+    if (value <= 250.4) {
+      return {
+        label: 'Very Unhealthy',
+        colour: 'purple',
+        message: 'Health alert: The risk of health effects is increased for everyone.',
+      };
+    }
+    return {
+      label: 'Hazardous',
+      colour: 'maroon',
+      message: 'Emergency conditions. The entire population is more likely to be affected. Limit outdoor exposure.',
+    };
   }
 
   private async getUSDAWildfireRisk(lat: number, lon: number): Promise<Record<string, any>> {
@@ -1999,14 +2062,21 @@ export class EnrichmentService {
        'poi_usda_csa': 5,
        'poi_usda_farmers_market': 5,
        'poi_usda_food_hub': 5,
-       'poi_usda_onfarm_market': 5
+       'poi_usda_onfarm_market': 5,
+       'poi_aurora_viewing_sites': 100
     };
     
     // Get the default radius, with special handling for power plants and other large-radius POIs
     const radius = defaultRadii[enrichmentId] || 5;
     
     // Allow power plants, animal collisions, and other infrastructure to use larger radii
-    if (enrichmentId === 'poi_power_plants_openei' || enrichmentId === 'poi_electric_charging' || enrichmentId === 'poi_epa_power' || enrichmentId === 'poi_animal_vehicle_collisions') {
+    if (
+      enrichmentId === 'poi_power_plants_openei' ||
+      enrichmentId === 'poi_electric_charging' ||
+      enrichmentId === 'poi_epa_power' ||
+      enrichmentId === 'poi_animal_vehicle_collisions' ||
+      enrichmentId === 'poi_aurora_viewing_sites'
+    ) {
       return radius; // No cap for power plants, charging stations, EPA power generation, and animal collisions
     }
     
@@ -2083,6 +2153,64 @@ export class EnrichmentService {
     } catch (error) {
       console.error('Wikipedia POI enrichment failed:', error);
       return { poi_wikipedia_count: 0, poi_wikipedia_error: 'Failed to fetch Wikipedia data' };
+    }
+  }
+
+  private async getAuroraViewingSites(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌌 Checking aurora viewing locations for [${lat}, ${lon}] within ${radiusMiles} miles`);
+
+      const locationsWithDistance = AURORA_VIEWING_LOCATIONS.map(location => {
+        const distanceKm = this.calculateDistance(lat, lon, location.lat, location.lon);
+        const distanceMiles = distanceKm * 0.621371;
+
+        return {
+          ...location,
+          subdivision: location.subdivision.trim(),
+          country: location.country.trim(),
+          distance_miles: Number(distanceMiles.toFixed(2)),
+          distance_km: Number(distanceKm.toFixed(2)),
+        };
+      }).sort((a, b) => a.distance_miles - b.distance_miles);
+
+      const withinRadius = locationsWithDistance.filter(site => site.distance_miles <= radiusMiles);
+      const nearest = locationsWithDistance[0] || null;
+      const detailedSites = withinRadius.slice(0, 50);
+
+      const radiusLabel = radiusMiles.toString();
+      const countKey = `poi_aurora_viewing_sites_count_${radiusLabel}mi`;
+
+      const summary = withinRadius.length > 0
+        ? `Found ${withinRadius.length} curated aurora viewing site${withinRadius.length === 1 ? '' : 's'} within ${radiusMiles} miles.`
+        : nearest
+          ? `No curated viewing sites within ${radiusMiles} miles. Nearest is ${nearest.name} (${nearest.distance_miles} miles away).`
+          : `No curated aurora viewing sites available.`;
+
+      const result: Record<string, any> = {
+        [countKey]: withinRadius.length,
+        poi_aurora_viewing_sites_count: withinRadius.length,
+        poi_aurora_viewing_sites_radius_miles: radiusMiles,
+        poi_aurora_viewing_sites_summary: summary,
+        poi_aurora_viewing_sites_nearest: nearest,
+        poi_aurora_viewing_sites_within_radius: withinRadius,
+        poi_aurora_viewing_sites_detailed: detailedSites,
+        poi_aurora_viewing_sites_all_pois: withinRadius,
+        poi_aurora_viewing_sites_source: 'Auroras.live (https://auroras.live)',
+        count: withinRadius.length,
+      };
+
+      console.log(`🌌 Aurora viewing site result:`, result);
+      return result;
+    } catch (error) {
+      console.error('🌌 Aurora viewing sites lookup failed:', error);
+      return {
+        count: 0,
+        poi_aurora_viewing_sites_count: 0,
+        poi_aurora_viewing_sites_detailed: [],
+        poi_aurora_viewing_sites_all_pois: [],
+        error: error instanceof Error ? error.message : 'Unknown error',
+        poi_aurora_viewing_sites_source: 'Auroras.live (https://auroras.live)',
+      };
     }
   }
 

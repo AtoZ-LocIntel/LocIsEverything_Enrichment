@@ -45,9 +45,14 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
   };
 
   const handleRadiusChange = (enrichmentId: string, radius: number) => {
+    const isAurora = enrichmentId === 'poi_aurora_viewing_sites';
+    const minRadius = isAurora ? 5 : 0.5;
+    const maxRadius = isAurora ? 100 : 25;
+    const normalizedRadius = Math.max(minRadius, Math.min(radius, maxRadius));
+
     onPoiRadiiChange({
       ...poiRadii,
-      [enrichmentId]: radius
+      [enrichmentId]: normalizedRadius
     });
   };
 
@@ -124,6 +129,11 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
           {category.enrichments.map((enrichment) => {
             const isSelected = selectedEnrichments.includes(enrichment.id);
             const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius || 1;
+            const radiusOptions = enrichment.id === 'poi_aurora_viewing_sites'
+              ? [5, 10, 25, 50, 100]
+              : [0.5, 1, 2, 3, 5, 10, 15, 25];
+            const formatMiles = (value: number) =>
+              Number.isInteger(value) ? value.toString() : value.toFixed(1);
 
             return (
               <div key={enrichment.id} className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -188,14 +198,11 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                                 paddingRight: "2.5rem" 
                               }}
                             >
-                              <option value={0.5}>0.5 miles</option>
-                              <option value={1}>1 mile</option>
-                              <option value={2}>2 miles</option>
-                              <option value={3}>3 miles</option>
-                              <option value={5}>5 miles</option>
-                              <option value={10}>10 miles</option>
-                              <option value={15}>15 miles</option>
-                              <option value={25}>25 miles</option>
+                              {radiusOptions.map(option => (
+                                <option key={option} value={option}>
+                                  {formatMiles(option)} {option === 1 ? 'mile' : 'miles'}
+                                </option>
+                              ))}
                             </select>
                             
                             <span className="text-sm text-black font-medium">

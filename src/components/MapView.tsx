@@ -142,6 +142,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_lakes_ponds': { icon: '🏞️', color: '#0891b2', title: 'Lakes & Ponds' },
   'poi_rivers_streams': { icon: '🌊', color: '#1d4ed8', title: 'Rivers & Streams' },
   'poi_mountains_peaks': { icon: '🏔️', color: '#7c2d12', title: 'Mountains & Peaks' },
+  'poi_aurora_viewing_sites': { icon: '🌌', color: '#a855f7', title: 'Aurora Viewing Sites' },
   
   // Public Lands & Protected Areas
   'poi_padus_public_access': { icon: '🏞️', color: '#22c55e', title: 'Public Lands' },
