@@ -696,17 +696,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => handleEnrichmentToggle(enrichment.id)}
-                                    className={`w-6 h-6 sm:w-5 sm:h-5 flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 ${
+                                    className={`w-5 h-5 sm:w-4 sm:h-4 flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 ${
                                       isSelected 
                                         ? 'bg-black border-black' 
                                         : 'bg-white border-gray-300'
                                     }`}
                                   >
                                     {isSelected && (
-                                      <Check className="w-4 h-4 sm:w-3 sm:h-3 text-white" />
+                                      <Check className="w-3 h-3 sm:w-3 sm:h-3 text-white" />
                                     )}
                                   </button>
-                                  <div className="flex-1 min-w-0 w-full text-center sm:text-left space-y-1">
+                                  <div className="flex-1 min-w-0 w-full text-left space-y-1">
                                     <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed w-full">
                                       {enrichment.label}
                                     </label>

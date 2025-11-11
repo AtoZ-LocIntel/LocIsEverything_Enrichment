@@ -144,17 +144,17 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleToggleEnrichment(enrichment.id)}
-                          className={`w-5 h-5 border-2 border-gray-400 rounded flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
+                          className={`w-4 h-4 border-2 border-gray-400 rounded flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
                             isSelected 
                               ? 'bg-black border-black' 
                               : 'bg-white border-gray-400'
                           }`}
                           style={{ 
                             marginTop: '2px',
-                            minWidth: '20px',
-                            minHeight: '20px',
-                            maxWidth: '20px',
-                            maxHeight: '20px',
+                            minWidth: '16px',
+                            minHeight: '16px',
+                            maxWidth: '16px',
+                            maxHeight: '16px',
                             position: 'relative',
                             zIndex: 1
                           }}
@@ -164,7 +164,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                           )}
                         </button>
                         
-                        <div className="flex-1 min-w-0 w-full text-center sm:text-left space-y-1">
+                        <div className="flex-1 min-w-0 w-full text-left space-y-1">
                           <label 
                             htmlFor={`checkbox-${enrichment.id}`} 
                             className="text-lg font-semibold text-black cursor-pointer block"

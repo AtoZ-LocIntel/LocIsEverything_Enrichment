@@ -568,6 +568,9 @@ const MapView: React.FC<MapViewProps> = ({
   const [viewportHeight, setViewportHeight] = useState<number>(() => (
     typeof window !== 'undefined' ? window.innerHeight : 0
   ));
+  const [viewportWidth, setViewportWidth] = useState<number>(() => (
+    typeof window !== 'undefined' ? window.innerWidth : 0
+  ));
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -602,28 +605,35 @@ const MapView: React.FC<MapViewProps> = ({
       mapInstanceRef.current = null;
       layerGroupsRef.current = null;
     };
-  }, [isMobile, results.length, viewportHeight]);
+  }, [isMobile, results.length]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    const updateViewportHeight = () => {
-      setViewportHeight(window.innerHeight);
+    const updateViewportDimensions = () => {
+      const vv = window.visualViewport;
+      const height = vv?.height ?? window.innerHeight;
+      const width = vv?.width ?? window.innerWidth;
+      setViewportHeight(height);
+      setViewportWidth(width);
       if (mapInstanceRef.current) {
         requestAnimationFrame(() => mapInstanceRef.current?.invalidateSize());
       }
     };
 
-    updateViewportHeight();
+    updateViewportDimensions();
 
-    window.addEventListener('resize', updateViewportHeight);
-    window.addEventListener('orientationchange', updateViewportHeight);
+    window.addEventListener('resize', updateViewportDimensions);
+    window.addEventListener('orientationchange', updateViewportDimensions);
+    const visualViewport = window.visualViewport;
+    visualViewport?.addEventListener('resize', updateViewportDimensions);
 
     return () => {
-      window.removeEventListener('resize', updateViewportHeight);
-      window.removeEventListener('orientationchange', updateViewportHeight);
+      window.removeEventListener('resize', updateViewportDimensions);
+      window.removeEventListener('orientationchange', updateViewportDimensions);
+      visualViewport?.removeEventListener('resize', updateViewportDimensions);
     };
   }, []);
 
@@ -760,14 +770,18 @@ const MapView: React.FC<MapViewProps> = ({
       Object.values(legendAccumulator).sort((a, b) => b.count - a.count)
     );
     setShowBatchSuccess(results.length > 1);
-  }, [results]);
+  }, [results, viewportHeight, viewportWidth]);
 
   // CSV export now handled by shared utility function
 
-  const mobileMapHeight = Math.max(viewportHeight - HEADER_HEIGHT, 320);
+  const isLandscape = viewportWidth > viewportHeight && viewportHeight > 0;
+  const mobileMapHeight = Math.max(viewportHeight - HEADER_HEIGHT, isLandscape ? 240 : 320);
 
   return (
-    <div className={`${isMobile ? 'h-screen' : 'h-screen'} flex flex-col bg-white`}>
+    <div
+      className={`${isMobile ? 'min-h-screen overflow-y-auto' : 'h-screen'} flex flex-col bg-white`}
+      style={isMobile ? { minHeight: viewportHeight || undefined } : undefined}
+    >
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-4">
@@ -802,27 +816,35 @@ const MapView: React.FC<MapViewProps> = ({
       {/* Map Container */}
       <div 
         className={`flex-1 relative ${isMobile ? 'map-container' : ''}`}
-        style={isMobile ? { 
-          height: `${mobileMapHeight}px`,
-          minHeight: '320px',
-          width: '100vw',
-          maxWidth: '100vw',
-          position: 'relative',
-          overflow: 'hidden',
-          flex: '1 1 auto'
-        } : {}}
+        style={
+          isMobile
+            ? {
+                height: `${mobileMapHeight}px`,
+                minHeight: isLandscape ? '240px' : '320px',
+                width: '100%',
+                maxWidth: '100%',
+                position: 'relative',
+                overflow: 'hidden',
+                flex: '1 1 auto'
+              }
+            : {}
+        }
       >
         <div 
           ref={mapRef} 
           className={`w-full h-full ${isMobile ? 'mobile-map' : ''}`}
-          style={isMobile ? { 
-            height: '100%', 
-            width: '100%',
-            minHeight: '320px',
-            position: 'relative',
-            display: 'block',
-            maxWidth: '100vw'
-          } : { height: '100%', width: '100%' }}
+          style={
+            isMobile
+              ? {
+                  height: '100%',
+                  width: '100%',
+                  minHeight: isLandscape ? '240px' : '320px',
+                  position: 'relative',
+                  display: 'block',
+                  maxWidth: '100%'
+                }
+              : { height: '100%', width: '100%' }
+          }
         />
         
         {/* Dynamic Legend for Single Location Results */}

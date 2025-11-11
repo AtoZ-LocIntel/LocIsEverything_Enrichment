@@ -3567,57 +3567,64 @@ out;`;
         console.log(`🦌 SAMPLE COLLISION WITH SOURCE:`, data.find(c => c.source));
       }
       
-      // Server now returns only spatially filtered data - much simpler processing
+      // Server response may include points outside the requested buffer.
+      // Apply precise client-side filtering to guarantee proximity.
       const allCollisions = Array.isArray(data) ? data : [];
-      console.log(`🦌 Received ${allCollisions.length} collisions from server-side spatial filtering`);
+      console.log(`🦌 Received ${allCollisions.length} collisions before client-side filtering`);
       
-      // Process coordinates and track sources (no distance filtering needed)
       const collisionsInUserRadius: any[] = [];
-      const collisionsIn2Miles: any[] = [];
+      const collisionsForMap: any[] = [];
       const uniqueSources = new Set<string>();
+      const mapLimit = 5000;
       
       for (const collision of allCollisions) {
         // Extract coordinates
-        let lat: number | null = null;
-        let lon: number | null = null;
+        let collisionLat: number | null = null;
+        let collisionLon: number | null = null;
         
         if (collision.geom && collision.geom.coordinates) {
           // PostGIS geometry format: [lon, lat]
-          [lon, lat] = collision.geom.coordinates;
+          [collisionLon, collisionLat] = collision.geom.coordinates;
         } else if (collision.lat && collision.lon) {
           // Direct lat/lon format
-          lat = collision.lat;
-          lon = collision.lon;
+          collisionLat = collision.lat;
+          collisionLon = collision.lon;
         }
         
-        if (!lat || !lon) continue; // Skip invalid coordinates
+        if (!collisionLat || !collisionLon) continue; // Skip invalid coordinates
         
+        const distanceMiles = this.calculateDistance(lat, lon, collisionLat, collisionLon) * 0.621371;
+        if (!Number.isFinite(distanceMiles)) {
+          continue;
+        }
+
+        if (distanceMiles > radiusMiles) {
+          continue;
+        }
+
         // Add to source tracking
         if (collision.source) {
           uniqueSources.add(collision.source);
         }
         
-        // Server already filtered by distance - just categorize by intended use
-        collisionsInUserRadius.push({
+        const collisionRecord = {
           ...collision,
-          lat,
-          lon,
-          distance_miles: 'Server filtered'
+          lat: collisionLat,
+          lon: collisionLon,
+          distance_miles: Number(distanceMiles.toFixed(2)),
+        };
+
+        collisionsInUserRadius.push({
+          ...collisionRecord,
         });
         
-        // For map display, use all data (server already filtered appropriately)
-        collisionsIn2Miles.push({
-          ...collision,
-          lat,
-          lon,
-          distance_miles: 'Server filtered'
-        });
+        collisionsForMap.push(collisionRecord);
       }
       
       const totalCollisions = collisionsInUserRadius.length;
-      const mapCollisions = collisionsIn2Miles.length;
+      const mapCollisions = collisionsForMap.length;
       console.log(`📍 Found ${totalCollisions} collisions within ${radiusMiles} miles (user proximity) for CSV export`);
-      console.log(`📍 Found ${mapCollisions} collisions within 2 miles for map display (pattern detection)`);
+      console.log(`📍 Found ${mapCollisions} collisions within ${radiusMiles} miles for map display (before limit)`);
       
       // Convert Set to array for display
       const uniqueSourcesArray = Array.from(uniqueSources);
@@ -3634,11 +3641,9 @@ out;`;
         value: collision.source || 'Unknown'
       }));
       
-      // Create detailed POI data for mapping (2-mile radius) - ALL POINTS, no limit!
-      const collisionDetails = collisionsIn2Miles.map((collision: any, index: number) => {
-        const distance = this.calculateDistance(lat, lon, collision.lat, collision.lon) * 0.621371;
-        
-        return {
+      // Create detailed POI data for mapping (limited, sorted by distance for clarity)
+      const collisionDetails = collisionsForMap
+        .map((collision: any, index: number) => ({
           id: `collision_${collision.id || index}`,
           name: `Animal-Vehicle Impact (AVI)`,
           description: `Collision record from ${collision.source || 'FARS'} database`,
@@ -3647,18 +3652,19 @@ out;`;
           crash_year: collision.crash_year,
           source: collision.source,
           st_case: collision.st_case,
-          distance_miles: distance.toFixed(2),
+          distance_miles: collision.distance_miles,
           // Include all original fields
           ...collision
-        };
-      });
+        }))
+        .sort((a: any, b: any) => (a.distance_miles ?? Infinity) - (b.distance_miles ?? Infinity))
+        .slice(0, mapLimit);
       
       // Create a result structure that matches the expected POI format
       const result = {
         count: totalCollisions, // Total count for CSV export (user proximity) - KEEP ORIGINAL STRUCTURE
         poi_animal_vehicle_collisions_count: totalCollisions, // ALSO ADD COUNT FIELD FOR DISPLAY
-        elements: collisionsIn2Miles, // Elements for map display (2-mile radius)
-        detailed_pois: collisionDetails, // Detailed POIs for map (2-mile radius)
+        elements: collisionDetails, // Elements for map display (after sorting/limit)
+        detailed_pois: collisionDetails, // Detailed POIs for map (sorted & filtered)
         all_pois: collisionsInUserRadius, // ALL POIs for CSV export (user proximity)
         poi_animal_vehicle_collisions_source: sourceSummary, // ADD SOURCE FIELD WITHOUT BREAKING EXISTING CODE
         source_entries: sourceEntries, // ADD INDIVIDUAL SOURCE ENTRIES FOR POPUP DISPLAY
