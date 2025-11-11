@@ -692,7 +692,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             return (
                               <div key={enrichment.id} className="border border-gray-200 rounded-lg p-4 sm:p-4">
                                 {/* On mobile, stack checkbox above the text to give the text full width */}
-                                <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full">
+                                <div className="grid grid-cols-[auto,1fr] gap-3 items-start w-full">
                                   <button
                                     type="button"
                                     onClick={() => handleEnrichmentToggle(enrichment.id)}
