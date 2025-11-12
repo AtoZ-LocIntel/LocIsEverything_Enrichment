@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw, Bus } from 'lucide-react';
+import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw, Bus, Heart } from 'lucide-react';
 import AdminPanel from './AdminPanel';
+import DonateModal from './DonateModal';
 
 interface HeaderProps {
   onViewDataSources?: () => void;
@@ -9,6 +10,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
   const [showDocs, setShowDocs] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showDonate, setShowDonate] = useState(false);
 
   const handleResetApp = () => {
     console.log('🔄 Starting comprehensive app reset...');
@@ -137,6 +139,13 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
               >
                 <span className="mr-2">🔒</span>
                 Admin
+              </button>
+              <button 
+                onClick={() => setShowDonate(true)}
+                className="text-red-300 hover:text-red-200 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-red-600 hover:border-red-500 flex items-center"
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Donate
               </button>
             </nav>
 
@@ -800,6 +809,11 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
       {/* Admin Panel Modal */}
       {showAdmin && (
         <AdminPanel onClose={() => setShowAdmin(false)} />
+      )}
+
+      {/* Donate Modal */}
+      {showDonate && (
+        <DonateModal onClose={() => setShowDonate(false)} />
       )}
     </>
   );

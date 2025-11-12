@@ -48,6 +48,25 @@ function App() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Handle Stripe checkout return
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get('success');
+    const canceled = params.get('canceled');
+    const sessionId = params.get('session_id');
+
+    if (success === 'true' && sessionId) {
+      // Show success message
+      alert('Thank you for your donation! Your payment was successful.');
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (canceled === 'true') {
+      // Show cancel message (optional)
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   const handleSingleSearch = async (address: string) => {
     try {
       setError(null);

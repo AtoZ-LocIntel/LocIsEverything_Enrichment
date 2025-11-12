@@ -879,6 +879,42 @@ export class EnrichmentService {
     }
   }
 
+  private async geocodePostcodesIO(q: string): Promise<GeocodeResult | null> {
+    try {
+      const cleaned = q.trim();
+      const encoded = encodeURIComponent(cleaned);
+
+      const lookupUrl = `https://api.postcodes.io/postcodes/${encoded.replace(/%20/g, '')}`;
+      let data = await fetchJSONSmart(lookupUrl);
+
+      if (data?.status !== 200 || !data?.result) {
+        const searchUrl = `https://api.postcodes.io/postcodes?q=${encodeURIComponent(cleaned)}&limit=1`;
+        data = await fetchJSONSmart(searchUrl);
+        if (data?.status !== 200 || !data?.result) {
+          return null;
+        }
+        data.result = Array.isArray(data.result) ? data.result[0] : data.result;
+      }
+
+      const r = data.result;
+      if (!r?.latitude || !r?.longitude) {
+        return null;
+      }
+
+      return {
+        lat: r.latitude,
+        lon: r.longitude,
+        source: "Postcodes.io",
+        confidence: 0.95,
+        name: r.postcode || cleaned,
+        raw: r
+      };
+    } catch (error) {
+      console.error('Postcodes.io geocoding failed:', error);
+      return null;
+    }
+  }
+
   private async geocodeAddress(q: string): Promise<GeocodeResult | null> {
     // Use your proven working geocoding approach
     console.log(`🔍 Geocoding address: ${q}`);
@@ -888,6 +924,15 @@ export class EnrichmentService {
     if (g) {
       console.log(`✅ Geocoded via Nominatim: ${g.lat}, ${g.lon}`);
       return g;
+    }
+
+    // Try UK-specific Postcodes.io for postcodes or UK addresses
+    if (/\b(UK|United Kingdom|England|Scotland|Wales|Northern Ireland)\b/i.test(q) || /\b[A-Z]{1,2}\d[A-Z0-9]?\s*\d[A-Z]{2}\b/i.test(q)) {
+      g = await this.geocodePostcodesIO(q);
+      if (g) {
+        console.log(`✅ Geocoded via Postcodes.io: ${g.lat}, ${g.lon}`);
+        return g;
+      }
     }
     
     // Try US Census for US addresses
@@ -1883,7 +1928,6 @@ export class EnrichmentService {
       // Process POIs returned by bbox (server has already filtered spatially)
       const nearbyPOIs: any[] = [];
       const seen = new Set();
-      
       const norm = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
       
       for (const el of elements) {
@@ -1903,19 +1947,26 @@ export class EnrichmentService {
         
         if (latc == null || lonc == null) continue;
         
-        // Skip POIs with no name or "unnamed" names
-        const poiName = el.tags?.name;
-        if (!poiName || poiName.toLowerCase().includes('unnamed')) {
+        const distanceMiles = this.calculateDistance(lat, lon, latc, lonc) * 0.621371;
+        if (!Number.isFinite(distanceMiles) || distanceMiles > radiusMiles) {
           continue;
         }
         
-        // Trust server's bbox filtering - no need to recalculate distance
-        const key = `${norm(poiName)}|${latc.toFixed(3)},${lonc.toFixed(3)}`;
+        const nameOrType =
+          el.tags?.name ||
+          el.tags?.amenity ||
+          el.tags?.shop ||
+          el.tags?.tourism ||
+          el.tags?.man_made ||
+          `${el.type}_${el.id}`;
+        
+        const key = `${norm(nameOrType)}|${latc.toFixed(4)},${lonc.toFixed(4)}`;
         if (!seen.has(key)) {
           seen.add(key);
           nearbyPOIs.push({
             ...el,
-            distance_miles: 'Within bbox' // Server already filtered by distance
+            processed_name: nameOrType,
+            distance_miles: Number(distanceMiles.toFixed(2))
           });
         }
       }
@@ -2034,10 +2085,10 @@ export class EnrichmentService {
         }));
         
         // Limit to top 50 closest POIs for map display (to avoid overwhelming the map)
-        result.detailed_pois = sortedPOIs.slice(0, 50).map(poi => ({
-          id: poi.id,
+        result.detailed_pois = sortedPOIs.slice(0, 5000).map((poi, index) => ({
+          id: `${poi.id || poi.type + '_' + index}`,
           type: poi.type,
-          name: poi.tags?.name || 'Unnamed',
+          name: poi.tags?.name || poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || poi.processed_name || 'Unnamed',
           lat: poi.lat || poi.center?.lat,
           lon: poi.lon || poi.center?.lon,
           distance_miles: poi.distance_miles,
@@ -2139,9 +2190,8 @@ export class EnrichmentService {
     try {
       console.log(`🔍 Wikipedia POI: Searching for articles near ${lat}, ${lon} within ${radiusMiles} miles`);
       
-      // Wikipedia API requires radius in meters, minimum 10,000 (10km)
-      // Convert miles to meters and ensure minimum 10km radius
-      const radiusMeters = Math.max(10000, Math.floor(radiusMiles * 1609.34));
+      // Wikipedia API requires radius in meters between 10 and 10,000
+      const radiusMeters = Math.min(10000, Math.max(10, Math.floor(radiusMiles * 1609.34)));
       
       // Use Wikipedia's geosearch API to find nearby articles
       const wikiUrl = new URL('https://en.wikipedia.org/w/api.php');
@@ -2159,9 +2209,67 @@ export class EnrichmentService {
       const wikiData = await fetchJSONSmart(wikiUrl.toString());
       console.log(`📊 Wikipedia API response:`, wikiData);
       
-      const articles = wikiData?.query?.geosearch || [];
-      console.log(`📚 Found ${articles.length} Wikipedia articles`);
-      
+      let articles = wikiData?.query?.geosearch || [];
+      console.log(`📚 Found ${articles.length} Wikipedia articles (geosearch)`);
+
+      if ((!articles || articles.length === 0) && radiusMiles > 6.3) {
+        console.log('⚠️ Geosearch returned no results, falling back to Wikidata SPARQL within radius');
+        const radiusKm = Math.max(10, radiusMiles * 1.60934);
+
+        const sparql = `
+          SELECT ?item ?itemLabel ?article ?coord WHERE {
+            SERVICE wikibase:around {
+              ?item wdt:P625 ?coord .
+              bd:serviceParam wikibase:center "Point(${lon} ${lat})"^^geo:wktLiteral .
+              bd:serviceParam wikibase:radius "${radiusKm}" .
+            }
+            ?article schema:about ?item ;
+                     schema:inLanguage "en" ;
+                     schema:isPartOf <https://en.wikipedia.org/> .
+            SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+          }
+          LIMIT 100
+        `;
+
+        const wikidataUrl = new URL('https://query.wikidata.org/sparql');
+        wikidataUrl.searchParams.set('format', 'json');
+        wikidataUrl.searchParams.set('query', sparql);
+
+        const wikidataResponse = await fetchJSONSmart(wikidataUrl.toString(), {
+          headers: {
+            'Accept': 'application/sparql-results+json',
+          },
+        });
+
+        console.log('📊 Wikidata fallback response:', wikidataResponse);
+
+        const bindings = wikidataResponse?.results?.bindings || [];
+        articles = bindings.map((binding: any, index: number) => {
+          const coord = binding.coord?.value;
+          let poiLat = lat;
+          let poiLon = lon;
+          if (coord) {
+            const match = coord.match(/Point\(([-\d.]+) ([-\d.]+)\)/);
+            if (match) {
+              poiLon = parseFloat(match[1]);
+              poiLat = parseFloat(match[2]);
+            }
+          }
+          const distanceKm = this.calculateDistance(lat, lon, poiLat, poiLon);
+          return {
+            title: binding.itemLabel?.value || `Wikidata Item ${index + 1}`,
+            pageid: 0,
+            lat: poiLat,
+            lon: poiLon,
+            dist: distanceKm,
+            pageTitle: binding.article?.value?.split('/').pop() || binding.item?.value?.split('/').pop(),
+            pageUrl: binding.article?.value || null,
+          };
+        });
+
+        console.log(`📚 Found ${articles.length} Wikipedia articles via Wikidata fallback`);
+      }
+
       if (articles.length === 0) {
         console.log(`⚠️  No Wikipedia articles found for this location`);
         return { poi_wikipedia_count: 0, poi_wikipedia_articles: [] };
@@ -2176,15 +2284,18 @@ export class EnrichmentService {
         // Detect interesting categories and types
         const categories = this.categorizeWikipediaArticle(title, article);
         
+        const distanceKm = typeof distance === 'number' ? distance : this.calculateDistance(lat, lon, article.lat, article.lon);
+        const url = article.pageUrl || `https://en.wikipedia.org/wiki/${encodeURIComponent(article.pageTitle || title)}`;
+
         return {
           title,
-          distance_km: distance,
-          distance_miles: Math.round(distance * 0.621371 * 100) / 100,
+          distance_km: distanceKm,
+          distance_miles: Math.round(distanceKm * 0.621371 * 100) / 100,
           page_id: pageId,
           categories,
           lat: article.lat,
           lon: article.lon,
-          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`
+          url
         };
       });
 

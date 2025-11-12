@@ -5,6 +5,7 @@ export interface GeocodeQuery {
   text: string;
   countryCodes?: string; // "us,ca"
   bbox?: BBox;
+  by?: 'lookup' | 'search' | 'auto';
 }
 
 export interface GeocodeResult {
