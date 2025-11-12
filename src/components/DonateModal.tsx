@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Heart, Loader2 } from 'lucide-react';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 
 interface DonateModalProps {
   onClose: () => void;
@@ -12,9 +12,9 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-  const stripeProductId = import.meta.env.VITE_STRIPE_PRODUCT_ID || 'prod_SkMGkZPKW9vqy8';
-  const stripePriceId = import.meta.env.VITE_STRIPE_PRICE_ID || 'price_1RorXmRotI9oY6VZymOygZRt';
+  const stripePublishableKey = (import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string) || '';
+  const stripeProductId = (import.meta.env.VITE_STRIPE_PRODUCT_ID as string) || 'prod_SkMGkZPKW9vqy8';
+  const stripePriceId = (import.meta.env.VITE_STRIPE_PRICE_ID as string) || 'price_1RorXmRotI9oY6VZymOygZRt';
 
   const presetAmounts = [5, 10, 25, 50, 100];
 
@@ -36,17 +36,13 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
       }
 
       // Initialize Stripe
-      const stripe = await loadStripe(stripePublishableKey);
+      const stripe: Stripe | null = await loadStripe(stripePublishableKey);
       if (!stripe) {
         throw new Error('Failed to initialize Stripe.');
       }
 
-      // Create checkout session via your backend API
-      // For now, we'll use a direct redirect approach if you have a payment link
-      // Or you can create a backend endpoint to create checkout sessions
-      
       // Create checkout session via backend API
-      const apiEndpoint = import.meta.env.VITE_STRIPE_CHECKOUT_API || '/api/create-checkout-session';
+      const apiEndpoint = (import.meta.env.VITE_STRIPE_CHECKOUT_API as string) || '/api/create-checkout-session';
       
       const response = await fetch(apiEndpoint, {
         method: 'POST',
@@ -77,11 +73,12 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
       }
 
       // Redirect to Stripe Checkout
-      const result = await stripe.redirectToCheckout({
+      // Note: redirectToCheckout is available but TypeScript types may not include it
+      const result = await (stripe as any).redirectToCheckout({
         sessionId: session.id,
       });
 
-      if (result.error) {
+      if (result && result.error) {
         throw new Error(result.error.message);
       }
 
