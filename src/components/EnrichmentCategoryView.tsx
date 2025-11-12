@@ -144,25 +144,19 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleToggleEnrichment(enrichment.id)}
-                          className={`border-2 border-gray-400 rounded flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
+                          className={`w-4 h-5 sm:w-4 sm:h-4 border-2 border-gray-400 rounded flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
                             isSelected 
                               ? 'bg-black border-black' 
                               : 'bg-white border-gray-400'
                           }`}
                           style={{ 
                             marginTop: '2px',
-                            width: '20px',
-                            height: '24px',
-                            minWidth: '20px',
-                            minHeight: '24px',
-                            maxWidth: '20px',
-                            maxHeight: '24px',
                             position: 'relative',
                             zIndex: 1
                           }}
                         >
                           {isSelected && (
-                            <Check className="w-3.5 h-3.5 text-white" />
+                            <Check className="w-3 h-3 text-white" />
                           )}
                         </button>
                         
@@ -180,19 +174,19 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
 
                       {/* POI Radius Configuration */}
                       {enrichment.isPOI && isSelected && (
-                        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <div className="mt-4 p-4 bg-gray-50 rounded-lg overflow-hidden">
                           <div className="flex items-center space-x-2 mb-3">
                             <Settings className="w-4 h-4 text-black" />
                             <span className="font-medium text-black">Search Radius</span>
                           </div>
                           
-                          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                            <label className="text-sm text-black font-medium whitespace-nowrap">Radius:</label>
-                            <div className="flex-1 min-w-0 max-w-full">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                            <label className="text-sm text-black font-medium whitespace-nowrap flex-shrink-0">Radius:</label>
+                            <div className="flex-1 min-w-0 w-full sm:w-auto">
                               <select
                                 value={currentRadius}
                                 onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value))}
-                                className="w-full max-w-full px-3 py-2 border-2 border-gray-400 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black font-medium appearance-none"
+                                className="w-full sm:w-auto min-w-[120px] max-w-full px-3 py-2 border-2 border-gray-400 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black font-medium appearance-none"
                                 style={{ 
                                   backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e\")", 
                                   backgroundPosition: "right 0.5rem center", 
@@ -209,7 +203,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                                 ))}
                               </select>
                             </div>
-                            <span className="text-sm text-black font-medium whitespace-nowrap">
+                            <span className="text-sm text-black font-medium whitespace-nowrap flex-shrink-0">
                               {currentRadius === 1 ? 'mile' : 'miles'} radius
                             </span>
                           </div>
