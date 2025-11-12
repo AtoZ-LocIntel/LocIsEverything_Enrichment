@@ -12,8 +12,10 @@ import EnrichmentCategoryView from './components/EnrichmentCategoryView';
 import EnrichmentConfig from './components/EnrichmentConfig';
 import { exportEnrichmentResultsToCSV } from './utils/csvExport';
 import LoadingModal from './components/LoadingModal';
+import DonateModal from './components/DonateModal';
 import { EnrichmentService } from './services/EnrichmentService';
 import { GeocodeResult } from './lib/types';
+import { Heart } from 'lucide-react';
 
 export type ViewMode = 'config' | 'map' | 'mobile-results' | 'desktop-results' | 'data-sources' | 'enrichment-category';
 
@@ -34,6 +36,7 @@ function App() {
   const [savedScrollPosition, setSavedScrollPosition] = useState<number>(0);
   const [previousViewMode, setPreviousViewMode] = useState<ViewMode | null>(null);
   const [searchInput, setSearchInput] = useState<string>('3050 Coast Rd, Santa Cruz, CA 95060');
+  const [showDonate, setShowDonate] = useState(false);
 
 
   // Detect mobile device
@@ -299,6 +302,19 @@ function App() {
               onPoiRadiiChange={setPoiRadii}
               onViewCategory={handleViewEnrichmentCategory}
             />
+
+            {/* Mobile Donate Button - Only visible on mobile at bottom of page */}
+            {isMobile && (
+              <div className="mt-8 mb-6 flex justify-center">
+                <button
+                  onClick={() => setShowDonate(true)}
+                  className="w-full max-w-sm px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center space-x-3 font-semibold text-lg border-2 border-red-500 hover:border-red-400"
+                >
+                  <Heart className="w-5 h-5" />
+                  <span>Support Our Platform</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ) : viewMode === 'mobile-results' ? (
@@ -340,6 +356,12 @@ function App() {
           />
         </div>
       )}
+
+      {/* Donate Modal - Available on all views */}
+      {showDonate && (
+        <DonateModal onClose={() => setShowDonate(false)} />
+      )}
+
       <Analytics />
     </div>
   );
