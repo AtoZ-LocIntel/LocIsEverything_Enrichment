@@ -1126,6 +1126,9 @@ export class EnrichmentService {
       case 'poi_bars_nightlife':
         return await this.getPOICount('poi_bars_nightlife', lat, lon, radius);
       
+      case 'poi_mountain_biking':
+        return await this.getMountainBikingTrails(lat, lon, radius);
+      
       case 'poi_powerlines':
         return await this.getPOICount('poi_powerlines', lat, lon, radius);
       
@@ -1868,7 +1871,159 @@ export class EnrichmentService {
     return [];
   }
 
+  // Custom Overpass query for mountain biking and biking trails
+  private async getMountainBikingTrails(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚴 Mountain Biking Trails query for [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const bbox = this.calculateBoundingBox(lat, lon, radiusMiles);
+      
+      // Build comprehensive Overpass query for MTB and bike trails
+      // Based on user's requirements: highway=path/track with bicycle=yes/designated and mtb=yes
+      // Also includes cycleways and official MTB/bike routes
+      const overpassQuery = `[out:json][timeout:60];
+(
+  // MTB trails: paths and tracks with bicycle and mtb tags
+  way["highway"="path"]["bicycle"~"yes|designated"]["mtb"="yes"](${bbox});
+  way["highway"="track"]["bicycle"~"yes|designated"]["mtb"="yes"](${bbox});
+  
+  // General bike trails: cycleways and paths/tracks with bicycle designation
+  way["highway"="cycleway"](${bbox});
+  way["highway"="path"]["bicycle"~"yes|designated"](${bbox});
+  way["highway"="track"]["bicycle"~"yes|designated"](${bbox});
+  
+  // Official MTB and bicycle route relations
+  relation["route"="mtb"](${bbox});
+  relation["route"="bicycle"](${bbox});
+);
+out center;`;
 
+      console.log(`🚴 Overpass query for MTB/Biking trails:`, overpassQuery);
+      
+      const res = await fetchJSONSmart("https://overpass-api.de/api/interpreter", {
+        method: "POST",
+        body: overpassQuery,
+        headers: { "Content-Type": "text/plain;charset=UTF-8" }
+      });
+      
+      console.log(`📊 Overpass API response:`, res);
+      
+      if (!res || !res.elements) {
+        console.error(`❌ Invalid Overpass API response:`, res);
+        return { [`poi_mountain_biking_count_${radiusMiles}mi`]: 0 };
+      }
+      
+      const elements = res.elements || [];
+      console.log(`📊 Overpass API returned ${elements.length} trail elements within bbox`);
+      
+      // Process trails and calculate distances
+      const nearbyTrails: any[] = [];
+      const seen = new Set();
+      const norm = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
+      
+      for (const el of elements) {
+        let latc: number | null = null;
+        let lonc: number | null = null;
+        
+        if (el.type === 'node') {
+          latc = el.lat;
+          lonc = el.lon;
+        } else if (el.type === 'way' || el.type === 'relation') {
+          latc = el.center?.lat;
+          lonc = el.center?.lon;
+        }
+        
+        if (latc == null || lonc == null) continue;
+        
+        const distanceMiles = this.calculateDistance(lat, lon, latc, lonc) * 0.621371;
+        if (!Number.isFinite(distanceMiles) || distanceMiles > radiusMiles) {
+          continue;
+        }
+        
+        // Determine trail type
+        const isMTB = el.tags?.mtb === 'yes' || el.tags?.route === 'mtb';
+        const isCycleway = el.tags?.highway === 'cycleway';
+        const isBikeRoute = el.tags?.route === 'bicycle';
+        const trailType = isMTB ? 'MTB' : (isCycleway ? 'Cycleway' : (isBikeRoute ? 'Bike Route' : 'Bike Trail'));
+        
+        const nameOrType = el.tags?.name || el.tags?.ref || `${trailType} ${el.id}`;
+        const key = `${norm(nameOrType)}|${latc.toFixed(4)},${lonc.toFixed(4)}`;
+        
+        if (!seen.has(key)) {
+          seen.add(key);
+          nearbyTrails.push({
+            ...el,
+            processed_name: nameOrType,
+            trail_type: trailType,
+            is_mtb: isMTB,
+            distance_miles: Number(distanceMiles.toFixed(2)),
+            mtb_scale: el.tags?.['mtb:scale'],
+            surface: el.tags?.surface,
+            sac_scale: el.tags?.['sac_scale']
+          });
+        }
+      }
+      
+      console.log(`✅ Found ${nearbyTrails.length} unique biking/MTB trails within ${radiusMiles} miles`);
+      
+      // Sort by distance
+      const sortedTrails = [...nearbyTrails].sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      // Count by type
+      const mtbCount = sortedTrails.filter(t => t.is_mtb).length;
+      const bikeCount = sortedTrails.length - mtbCount;
+      
+      const countKey = `poi_mountain_biking_count_${radiusMiles}mi`;
+      const result: Record<string, any> = {
+        [countKey]: sortedTrails.length,
+        poi_mountain_biking_total: sortedTrails.length,
+        poi_mountain_biking_mtb_count: mtbCount,
+        poi_mountain_biking_bike_count: bikeCount,
+        poi_mountain_biking_summary: `Found ${sortedTrails.length} biking trails (${mtbCount} MTB, ${bikeCount} general bike trails) within ${radiusMiles} miles`
+      };
+      
+      // Add detailed trail data for mapping
+      if (sortedTrails.length > 0) {
+        result.poi_mountain_biking_detailed = sortedTrails.slice(0, 5000).map((trail, index) => ({
+          id: `${trail.id || trail.type + '_' + index}`,
+          type: trail.type,
+          name: trail.tags?.name || trail.processed_name || 'Unnamed Trail',
+          trail_type: trail.trail_type,
+          is_mtb: trail.is_mtb,
+          lat: trail.lat || trail.center?.lat,
+          lon: trail.lon || trail.center?.lon,
+          distance_miles: trail.distance_miles,
+          mtb_scale: trail.mtb_scale,
+          surface: trail.surface,
+          sac_scale: trail.sac_scale,
+          tags: trail.tags,
+          highway: trail.tags?.highway,
+          bicycle: trail.tags?.bicycle,
+          route: trail.tags?.route
+        }));
+        
+        result.poi_mountain_biking_all_pois = sortedTrails.map(trail => ({
+          id: trail.id,
+          type: trail.type,
+          name: trail.tags?.name || trail.processed_name || 'Unnamed Trail',
+          trail_type: trail.trail_type,
+          is_mtb: trail.is_mtb,
+          lat: trail.lat || trail.center?.lat,
+          lon: trail.lon || trail.center?.lon,
+          distance_miles: trail.distance_miles,
+          mtb_scale: trail.mtb_scale,
+          surface: trail.surface,
+          sac_scale: trail.sac_scale,
+          tags: trail.tags
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('🚴 Mountain Biking Trails query failed:', error);
+      return { [`poi_mountain_biking_count_${radiusMiles}mi`]: 0 };
+    }
+  }
 
   private async overpassCountMiles(lat: number, lon: number, radiusMiles: number, filters: string[]): Promise<{ count: number, elements: any[] }> {
     try {
