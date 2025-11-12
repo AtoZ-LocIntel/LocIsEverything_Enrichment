@@ -70,25 +70,27 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
-              <Heart className="w-6 h-6 text-red-500" />
-              <span>Support Our Platform</span>
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              disabled={isProcessing}
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full my-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+        {/* Header - Fixed at top */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center space-x-2">
+            <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
+            <span>Support Our Platform</span>
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 ml-2"
+            disabled={isProcessing}
+          >
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
+        </div>
 
+        {/* Scrollable Content */}
+        <div className="overflow-y-auto flex-1 p-4 sm:p-6">
           <div className="space-y-4">
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Your donation helps us maintain and improve the Location Enrichment Platform. 
               Thank you for your support!
             </p>
@@ -106,7 +108,7 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
                       setCustomAmount('');
                     }}
                     disabled={isProcessing}
-                    className={`px-4 py-2 rounded-md border-2 transition-colors ${
+                    className={`px-2 sm:px-4 py-2 sm:py-2.5 rounded-md border-2 transition-colors text-sm sm:text-base ${
                       amount === preset.toString()
                         ? 'border-purple-600 bg-purple-50 text-purple-700'
                         : 'border-gray-300 hover:border-gray-400 text-gray-700'
@@ -121,7 +123,7 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
                     setCustomAmount('');
                   }}
                   disabled={isProcessing}
-                  className={`px-4 py-2 rounded-md border-2 transition-colors ${
+                  className={`px-2 sm:px-4 py-2 sm:py-2.5 rounded-md border-2 transition-colors text-sm sm:text-base ${
                     amount === 'custom'
                       ? 'border-purple-600 bg-purple-50 text-purple-700'
                       : 'border-gray-300 hover:border-gray-400 text-gray-700'
@@ -151,18 +153,19 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
               </div>
             )}
 
-            <div className="flex space-x-3 pt-4">
+            {/* Footer buttons - Always visible at bottom */}
+            <div className="flex space-x-3 pt-4 pb-2">
               <button
                 onClick={onClose}
                 disabled={isProcessing}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm sm:text-base font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDonate}
                 disabled={isProcessing || (!amount && !customAmount)}
-                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="flex-1 px-4 py-3 sm:py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm sm:text-base font-medium"
               >
                 {isProcessing ? (
                   <>
@@ -178,7 +181,7 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 text-center pt-2">
+            <p className="text-xs text-gray-500 text-center pt-2 pb-2">
               Secure payment powered by Stripe
             </p>
           </div>
