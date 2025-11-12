@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { X, Heart, Loader2 } from 'lucide-react';
-import { loadStripe, Stripe } from '@stripe/stripe-js';
 
 interface DonateModalProps {
   onClose: () => void;
@@ -12,7 +11,6 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const stripePublishableKey = (import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string) || '';
   const stripeProductId = (import.meta.env.VITE_STRIPE_PRODUCT_ID as string) || 'prod_SkMGkZPKW9vqy8';
   const stripePriceId = (import.meta.env.VITE_STRIPE_PRICE_ID as string) || 'price_1RorXmRotI9oY6VZymOygZRt';
 
@@ -23,22 +21,11 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
     setIsProcessing(true);
 
     try {
-      // Validate that Stripe keys are configured
-      if (!stripePublishableKey) {
-        throw new Error('Stripe publishable key is not configured. Please set VITE_STRIPE_PUBLISHABLE_KEY in your environment variables.');
-      }
-
       // Determine the amount
       const donationAmount = amount === 'custom' ? parseFloat(customAmount) : parseFloat(amount);
       
       if (isNaN(donationAmount) || donationAmount <= 0) {
         throw new Error('Please enter a valid donation amount.');
-      }
-
-      // Initialize Stripe
-      const stripe: Stripe | null = await loadStripe(stripePublishableKey);
-      if (!stripe) {
-        throw new Error('Failed to initialize Stripe.');
       }
 
       // Create checkout session via backend API
@@ -68,19 +55,13 @@ const DonateModal: React.FC<DonateModalProps> = ({ onClose }) => {
         throw new Error(session.error);
       }
 
-      if (!session.id) {
-        throw new Error('Invalid response from server. Missing session ID.');
+      if (!session.url) {
+        throw new Error('Invalid response from server. Missing checkout URL.');
       }
 
-      // Redirect to Stripe Checkout
-      // Note: redirectToCheckout is available but TypeScript types may not include it
-      const result = await (stripe as any).redirectToCheckout({
-        sessionId: session.id,
-      });
-
-      if (result && result.error) {
-        throw new Error(result.error.message);
-      }
+      // Redirect directly to Stripe Checkout URL
+      // This is the new approach - redirectToCheckout was removed in newer Stripe.js versions
+      window.location.href = session.url;
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while processing your donation.');

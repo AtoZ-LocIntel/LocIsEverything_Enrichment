@@ -48,7 +48,10 @@ export default async function handler(
       },
     });
 
-    return res.status(200).json({ id: session.id });
+    return res.status(200).json({ 
+      id: session.id,
+      url: session.url 
+    });
   } catch (error: any) {
     console.error('Error creating checkout session:', error);
     return res.status(500).json({ 
