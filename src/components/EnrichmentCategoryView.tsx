@@ -174,7 +174,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
 
                       {/* POI Radius Configuration */}
                       {enrichment.isPOI && isSelected && (
-                        <div className="mt-4 p-4 bg-gray-50 rounded-lg overflow-hidden">
+                        <div className="mt-4 p-4 sm:p-4 -mx-2 sm:mx-0 bg-gray-50 rounded-lg overflow-hidden">
                           <div className="flex items-center space-x-2 mb-3">
                             <Settings className="w-4 h-4 text-black" />
                             <span className="font-medium text-black">Search Radius</span>
