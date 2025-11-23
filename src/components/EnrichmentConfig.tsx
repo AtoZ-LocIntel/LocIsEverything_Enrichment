@@ -738,7 +738,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             zIndex: 10001
           }}
         >
-          <div className="h-screen bg-white flex flex-col overflow-hidden" style={{ height: '100vh' }}>
+          <div className="bg-white flex flex-col" style={{ height: '100vh', minHeight: 0 }}>
             {(() => {
               // Check if this is an NH sub-category (they have IDs like nh_transportation)
               const isNHSubCategory = activeModal?.startsWith('nh_');
@@ -862,7 +862,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     className="flex-1 overflow-y-auto p-3 sm:p-4" 
                     style={{ 
                       scrollBehavior: 'smooth',
-                      WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
+                      WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
+                      minHeight: 0, // Critical for flex children to scroll
+                      height: 0 // Force flex-1 to work properly
                     }}
                   >
                     <div className="space-y-3 sm:space-y-4 max-w-2xl mx-auto w-full pt-2 sm:pt-4 px-1 sm:px-0">
