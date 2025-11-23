@@ -725,7 +725,6 @@ const MapView: React.FC<MapViewProps> = ({
                   return [coord[1], coord[0]] as [number, number];
                 });
 
-                const parcelId = parcel.parcelId || 'Unknown';
                 const isContaining = parcel.isContaining;
                 const color = isContaining ? '#dc2626' : '#3b82f6'; // Red for containing, blue for nearby
                 const weight = isContaining ? 3 : 2;
