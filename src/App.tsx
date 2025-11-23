@@ -37,6 +37,7 @@ function App() {
   const [previousViewMode, setPreviousViewMode] = useState<ViewMode | null>(null);
   const [searchInput, setSearchInput] = useState<string>('3050 Coast Rd, Santa Cruz, CA 95060');
   const [showDonate, setShowDonate] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
 
   // Detect mobile device
@@ -273,27 +274,30 @@ function App() {
               </div>
             )}
 
-            <div className="space-y-8 mb-8">
-              <div id="single-search-section" data-section="single-search">
-                <SingleSearch 
-                  onSearch={handleSingleSearch} 
-                  onLocationSearch={handleLocationSearch}
-                  isMobile={isMobile}
-                  searchInput={searchInput}
-                  onSearchInputChange={setSearchInput}
-                />
-              </div>
-              {!isMobile && (
-                <div data-section="batch-processing">
-                  <BatchProcessing 
-                    onComplete={handleBatchComplete} 
-                    selectedEnrichments={selectedEnrichments}
-                    poiRadii={poiRadii}
-                    onLoadingChange={setIsLoading}
+            {/* Hide search UI when category modal is open */}
+            {!isCategoryModalOpen && (
+              <div className="space-y-8 mb-8">
+                <div id="single-search-section" data-section="single-search">
+                  <SingleSearch 
+                    onSearch={handleSingleSearch} 
+                    onLocationSearch={handleLocationSearch}
+                    isMobile={isMobile}
+                    searchInput={searchInput}
+                    onSearchInputChange={setSearchInput}
                   />
                 </div>
-              )}
-            </div>
+                {!isMobile && (
+                  <div data-section="batch-processing">
+                    <BatchProcessing 
+                      onComplete={handleBatchComplete} 
+                      selectedEnrichments={selectedEnrichments}
+                      poiRadii={poiRadii}
+                      onLoadingChange={setIsLoading}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             <EnrichmentConfig
               selectedEnrichments={selectedEnrichments}
@@ -301,6 +305,7 @@ function App() {
               poiRadii={poiRadii}
               onPoiRadiiChange={setPoiRadii}
               onViewCategory={handleViewEnrichmentCategory}
+              onModalStateChange={setIsCategoryModalOpen}
             />
 
             {/* Mobile Donate Button - Only visible on mobile at bottom of page */}

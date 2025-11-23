@@ -35,6 +35,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (key.includes('elevation') || key.includes('elev')) {
         return `${value.toLocaleString()} ft`;
       }
+      if (key.includes('carbon') && key.includes('density')) {
+        // Format soil organic carbon density with units
+        return `${value.toFixed(2)} kg/m²`;
+      }
       if (key.includes('radius_km')) {
         return `${value.toLocaleString()} km`;
       }
@@ -168,6 +172,21 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('poi_fws_species');
         }
         
+        // Soil carbon density fields - only show if soil carbon density enrichment is selected
+        if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
+          return selectedEnrichments.includes('soil_organic_carbon_density');
+        }
+        
+        // NH House District fields - only show if NH House District enrichment is selected
+        if (key.includes('nh_house_district')) {
+          return selectedEnrichments.includes('nh_house_districts_2022');
+        }
+        
+        // NH Voting Ward fields - only show if NH Voting Ward enrichment is selected
+        if (key.includes('nh_voting_ward')) {
+          return selectedEnrichments.includes('nh_voting_wards');
+        }
+        
         return false;
       });
       
@@ -215,6 +234,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Power & Infrastructure';
       } else if (key.includes('poi_') && (key.includes('beach') || key.includes('mountain') || key.includes('lake') || key.includes('water'))) {
         category = 'Natural Resources';
+      } else if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
+        category = 'Natural Resources';
+      } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward')) {
+        category = 'New Hampshire Data';
       } else if (key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';
       } else if (key.includes('poi_') && (key.includes('school') || key.includes('college') || key.includes('childcare') || key.includes('community_centre') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('worship') || key.includes('mail_shipping'))) {

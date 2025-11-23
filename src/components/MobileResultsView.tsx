@@ -37,6 +37,18 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       if (key.includes('elevation') || key.includes('elev')) {
         return `${value.toLocaleString()} ft`;
       }
+      if (key.includes('carbon') && key.includes('density')) {
+        // Format soil organic carbon density with units
+        return `${value.toFixed(2)} kg/m²`;
+      }
+      if (key.includes('nh_house_district_2022') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
+        // Format NH House District
+        return value || 'N/A';
+      }
+      if (key.includes('nh_voting_ward') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
+        // Format NH Voting Ward
+        return value || 'N/A';
+      }
       if (key.includes('radius_km')) {
         return `${value.toLocaleString()} km`;
       }
@@ -161,9 +173,14 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Geographic Info';
     }
     
-    // Political Districts
+    // Political Districts (excluding NH layers which go to New Hampshire Data)
     if (key.includes('congressional_') || key.includes('state_senate_') || key.includes('state_house_')) {
       return 'Political Districts';
+    }
+    
+    // New Hampshire Data
+    if (key.includes('nh_house_district') || key.includes('nh_voting_ward')) {
+      return 'New Hampshire Data';
     }
     
     // Demographics
@@ -193,6 +210,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Transportation';
     }
     if (key.includes('poi_beaches') || key.includes('poi_lakes_ponds') || key.includes('poi_rivers_streams') || key.includes('poi_mountains_peaks')) {
+      return 'Natural Resources';
+    }
+    if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
       return 'Natural Resources';
     }
     if (key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_parks') || key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_town_halls') || key.includes('poi_courthouses') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_colleges') || key.includes('poi_childcare') || key.includes('poi_mail_shipping')) {
@@ -290,6 +310,20 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // FWS fields - only show if FWS species enrichment is selected
       if (key.includes('fws_')) {
         return selectedEnrichments.includes('poi_fws_species');
+      }
+      
+      // Soil carbon density fields - only show if soil carbon density enrichment is selected
+      if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
+        return selectedEnrichments.includes('soil_organic_carbon_density');
+      }
+      
+      // NH House District fields - only show if NH House District enrichment is selected
+      if (key.includes('nh_house_district')) {
+        return selectedEnrichments.includes('nh_house_districts_2022');
+      }
+      
+      if (key.includes('nh_voting_ward')) {
+        return selectedEnrichments.includes('nh_voting_wards');
       }
       
       return false;

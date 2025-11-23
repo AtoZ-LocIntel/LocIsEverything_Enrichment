@@ -1,6 +1,9 @@
 import { GeocodeResult } from '../lib/types';
 import { EnrichmentResult } from '../App';
 import { getUSDAWildfireRiskData } from '../adapters/usdaWildfireRisk';
+import { getSoilCarbonDensityData } from '../adapters/soilCarbonDensity';
+import { getNHHouseDistrictData } from '../adapters/nhHouseDistricts';
+import { getNHVotingWardData } from '../adapters/nhVotingWards';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1258,6 +1261,18 @@ export class EnrichmentService {
       case 'usda_exposure_type':
         // All USDA wildfire risk layers are handled together for efficiency
         return await this.getUSDAWildfireRisk(lat, lon);
+      
+      // Soil Carbon Density (ISRIC Soilgrids via ESRI Living Atlas) - Point-based query
+      case 'soil_organic_carbon_density':
+        return await this.getSoilCarbonDensity(lat, lon);
+      
+      // NH House Districts (NH GRANIT) - Point-in-polygon query
+      case 'nh_house_districts_2022':
+        return await this.getNHHouseDistrict(lat, lon);
+      
+      // NH Voting Wards (NH GRANIT) - Point-in-polygon query
+      case 'nh_voting_wards':
+        return await this.getNHVotingWard(lat, lon);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -1425,6 +1440,106 @@ export class EnrichmentService {
       return {
         usda_wildfire_risk_error: error instanceof Error ? error.message : 'Unknown error',
         usda_wildfire_risk_source: 'USDA Forest Service - Wildfire Risk to Communities'
+      };
+    }
+  }
+
+  private async getSoilCarbonDensity(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌱 Fetching Soil Organic Carbon Density data for [${lat}, ${lon}]`);
+      
+      const soilData = await getSoilCarbonDensityData(lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      // Organic Carbon Density
+      if (soilData.organic_carbon_density !== null && soilData.organic_carbon_density !== undefined) {
+        result.soil_organic_carbon_density = soilData.organic_carbon_density;
+        result.soil_organic_carbon_density_units = soilData.organic_carbon_density_units || 'kg/m²';
+      }
+      
+      // Source attribution
+      result.soil_carbon_density_source = soilData.source;
+      
+      // Handle errors
+      if (soilData.error) {
+        result.soil_carbon_density_error = soilData.error;
+        console.warn(`⚠️ Soil Carbon Density API had errors:`, soilData.error);
+      }
+      
+      console.log(`✅ Soil Carbon Density data processed:`, {
+        carbon_density: result.soil_organic_carbon_density ? `${result.soil_organic_carbon_density.toFixed(2)} ${result.soil_organic_carbon_density_units}` : 'N/A'
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error(`❌ Error fetching Soil Carbon Density data:`, error);
+      return {
+        soil_carbon_density_error: error instanceof Error ? error.message : 'Unknown error',
+        soil_carbon_density_source: 'ISRIC Soilgrids via ESRI Living Atlas'
+      };
+    }
+  }
+
+  private async getNHHouseDistrict(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching NH House District data for [${lat}, ${lon}]`);
+      
+      const districtData = await getNHHouseDistrictData(lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      if (districtData && districtData.district) {
+        result.nh_house_district_2022 = districtData.district;
+        result.nh_house_district_2022_attributes = districtData.attributes;
+      } else {
+        result.nh_house_district_2022 = null;
+        result.nh_house_district_2022_message = 'No district found for this location';
+      }
+      
+      console.log(`✅ NH House District data processed:`, {
+        district: result.nh_house_district_2022 || 'N/A'
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH House District:', error);
+      return {
+        nh_house_district_2022: null,
+        nh_house_district_2022_error: 'Error fetching NH House District data'
+      };
+    }
+  }
+
+  private async getNHVotingWard(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗳️ Fetching NH Voting Ward data for [${lat}, ${lon}]`);
+      
+      const wardData = await getNHVotingWardData(lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      if (wardData && wardData.ward) {
+        result.nh_voting_ward = wardData.ward;
+        result.nh_voting_ward_attributes = wardData.attributes;
+      } else {
+        result.nh_voting_ward = null;
+        result.nh_voting_ward_message = 'No voting ward found for this location';
+      }
+      
+      console.log(`✅ NH Voting Ward data processed:`, {
+        ward: result.nh_voting_ward || 'N/A'
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Voting Ward:', error);
+      return {
+        nh_voting_ward: null,
+        nh_voting_ward_error: 'Error fetching NH Voting Ward data'
       };
     }
   }
