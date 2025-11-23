@@ -738,7 +738,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             zIndex: 10001
           }}
         >
-          <div className="bg-white flex flex-col" style={{ height: '100vh', minHeight: 0 }}>
+          <div className="bg-white flex flex-col" style={{ height: '100vh', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             {(() => {
               // Check if this is an NH sub-category (they have IDs like nh_transportation)
               const isNHSubCategory = activeModal?.startsWith('nh_');
@@ -816,9 +816,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     className="shadow-lg border-b border-gray-300 flex-shrink-0"
                     style={{
                       backgroundColor: headerColor,
-                      position: 'relative',
-                      zIndex: 10001,
-                      marginTop: '0'
+                      position: 'sticky',
+                      top: 0,
+                      zIndex: 10002,
+                      width: '100%'
                     }}
                   >
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -840,16 +841,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setActiveModal(null);
                             }
                           }}
-                          className="flex items-center space-x-2 text-white hover:text-gray-200 transition-colors font-semibold"
+                          className="flex items-center space-x-2 text-white hover:text-gray-200 transition-colors font-semibold text-sm sm:text-base"
                         >
-                          <ArrowLeft className="w-5 h-5" />
-                          <span>Back to Configuration</span>
+                          <ArrowLeft className="w-5 h-5 flex-shrink-0" />
+                          <span className="whitespace-nowrap">Back to Configuration</span>
                         </button>
                         
-                        <div className="flex items-center space-x-3">
-                          <div>
-                            <h1 className="text-base font-bold text-white">{category.title}</h1>
-                            <p className="text-xs text-white text-opacity-90">{selectedCount} of {categoryEnrichments.length} selected</p>
+                        <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                          <div className="text-right">
+                            <h1 className="text-sm sm:text-base font-bold text-white leading-tight">{category.title}</h1>
+                            <p className="text-xs text-white text-opacity-90 leading-tight">{selectedCount} of {categoryEnrichments.length} selected</p>
                           </div>
                         </div>
                       </div>
@@ -864,7 +865,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       scrollBehavior: 'smooth',
                       WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
                       minHeight: 0, // Critical for flex children to scroll
-                      height: 0 // Force flex-1 to work properly
+                      flex: '1 1 auto',
+                      overflowY: 'auto',
+                      overflowX: 'hidden'
                     }}
                   >
                     <div className="space-y-3 sm:space-y-4 max-w-2xl mx-auto w-full pt-2 sm:pt-4 px-1 sm:px-0">
