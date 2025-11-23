@@ -15,6 +15,8 @@ import { getNHHospitalsData } from '../adapters/nhHospitals';
 import { getNHPublicWatersAccessData } from '../adapters/nhPublicWatersAccess';
 import { getNHLawEnforcementData } from '../adapters/nhLawEnforcement';
 import { getNHRecreationTrailsData } from '../adapters/nhRecreationTrails';
+import { getNHDOTRoadsData } from '../adapters/nhDOTRoads';
+import { getNHRailroadsData } from '../adapters/nhRailroads';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1328,6 +1330,14 @@ export class EnrichmentService {
       // NH Recreation Trails (NH GRANIT) - Proximity query (line dataset)
       case 'nh_recreation_trails':
         return await this.getNHRecreationTrails(lat, lon, radius);
+      
+      // NH DOT Roads (NH GRANIT) - Proximity query (line dataset)
+      case 'nh_dot_roads':
+        return await this.getNHDOTRoads(lat, lon, radius);
+      
+      // NH Railroads (NH GRANIT) - Proximity query (line dataset)
+      case 'nh_railroads':
+        return await this.getNHRailroads(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2071,6 +2081,96 @@ export class EnrichmentService {
         nh_recreation_trails_count: 0,
         nh_recreation_trails_all: [],
         nh_recreation_trails_error: 'Error fetching NH Recreation Trails data'
+      };
+    }
+  }
+
+  private async getNHDOTRoads(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching NH DOT Roads data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 0.5 miles if not specified
+      const radiusMiles = radius || 0.5;
+      
+      const roads = await getNHDOTRoadsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (roads && roads.length > 0) {
+        result.nh_dot_roads_count = roads.length;
+        result.nh_dot_roads_all = roads.map(road => ({
+          ...road.attributes,
+          name: road.name,
+          road_type: road.road_type,
+          route_number: road.route_number,
+          geometry: road.geometry, // Include geometry for map drawing
+          distance_miles: road.distance_miles
+        }));
+      } else {
+        result.nh_dot_roads_count = 0;
+        result.nh_dot_roads_all = [];
+      }
+      
+      result.nh_dot_roads_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH DOT Roads data processed:`, {
+        count: result.nh_dot_roads_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH DOT Roads:', error);
+      return {
+        nh_dot_roads_count: 0,
+        nh_dot_roads_all: [],
+        nh_dot_roads_error: 'Error fetching NH DOT Roads data'
+      };
+    }
+  }
+
+  private async getNHRailroads(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚂 Fetching NH Railroads data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 0.5 miles if not specified
+      const radiusMiles = radius || 0.5;
+      
+      const railroads = await getNHRailroadsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (railroads && railroads.length > 0) {
+        result.nh_railroads_count = railroads.length;
+        result.nh_railroads_all = railroads.map(railroad => ({
+          ...railroad.attributes,
+          name: railroad.name,
+          status: railroad.status,
+          ownership: railroad.ownership,
+          operator: railroad.operator,
+          length_miles: railroad.length_miles,
+          geometry: railroad.geometry, // Include geometry for map drawing
+          distance_miles: railroad.distance_miles
+        }));
+      } else {
+        result.nh_railroads_count = 0;
+        result.nh_railroads_all = [];
+      }
+      
+      result.nh_railroads_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Railroads data processed:`, {
+        count: result.nh_railroads_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Railroads:', error);
+      return {
+        nh_railroads_count: 0,
+        nh_railroads_all: [],
+        nh_railroads_error: 'Error fetching NH Railroads data'
       };
     }
   }

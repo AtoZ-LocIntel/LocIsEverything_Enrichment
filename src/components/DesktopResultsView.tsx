@@ -51,7 +51,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (value.length === 0) return 'None found';
       
       // For detailed POI data, show count only in form view
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all') || key.includes('nh_nursing_homes_all') || key.includes('nh_ems_all') || key.includes('nh_fire_stations_all') || key.includes('nh_places_of_worship_all') || key.includes('nh_hospitals_all') || key.includes('nh_public_waters_access_all') || key.includes('nh_law_enforcement_all') || key.includes('nh_recreation_trails_all')) {
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all') || key.includes('nh_nursing_homes_all') || key.includes('nh_ems_all') || key.includes('nh_fire_stations_all') || key.includes('nh_places_of_worship_all') || key.includes('nh_hospitals_all') || key.includes('nh_public_waters_access_all') || key.includes('nh_law_enforcement_all') || key.includes('nh_recreation_trails_all') || key.includes('nh_dot_roads_all') || key.includes('nh_railroads_all')) {
         return `${value.length} found (see CSV for details)`;
       }
       
@@ -257,6 +257,18 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('nh_recreation_trails');
         }
         
+        // NH DOT Roads fields - only show if NH DOT Roads enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_dot_roads') && key !== 'nh_dot_roads_all') {
+          return selectedEnrichments.includes('nh_dot_roads');
+        }
+        
+        // NH Railroads fields - only show if NH Railroads enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_railroads') && key !== 'nh_railroads_all') {
+          return selectedEnrichments.includes('nh_railroads');
+        }
+        
         return false;
       });
       
@@ -306,7 +318,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Resources';
       } else if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
         category = 'Natural Resources';
-      } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_parcel') || key.includes('nh_key_destinations') || key.includes('nh_nursing_homes') || key.includes('nh_ems') || key.includes('nh_fire_stations') || key.includes('nh_places_of_worship') || key.includes('nh_hospitals') || key.includes('nh_public_waters_access') || key.includes('nh_law_enforcement') || key.includes('nh_recreation_trails')) {
+      } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_parcel') || key.includes('nh_key_destinations') || key.includes('nh_nursing_homes') || key.includes('nh_ems') || key.includes('nh_fire_stations') || key.includes('nh_places_of_worship') || key.includes('nh_hospitals') || key.includes('nh_public_waters_access') || key.includes('nh_law_enforcement') || key.includes('nh_recreation_trails') || key.includes('nh_dot_roads') || key.includes('nh_railroads')) {
         category = 'New Hampshire Data';
       } else if (key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';

@@ -334,7 +334,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key.toLowerCase().includes('_geojson') ||
     key.includes('_attributes') || // Skip attributes fields (raw JSON data)
     key === 'nh_parcels_all' || // Skip parcels array (handled separately for map drawing)
-    key === 'nh_recreation_trails_all' // Skip trails array (handled separately for map drawing)
+    key === 'nh_recreation_trails_all' || // Skip trails array (handled separately for map drawing)
+    key === 'nh_dot_roads_all' || // Skip roads array (handled separately for map drawing)
+    key === 'nh_railroads_all' // Skip railroads array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -1066,6 +1068,176 @@ const MapView: React.FC<MapViewProps> = ({
               }
             } catch (error) {
               console.error('Error drawing NH Recreation Trail polyline:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH DOT Roads as polylines on the map
+      if (enrichments.nh_dot_roads_all && Array.isArray(enrichments.nh_dot_roads_all)) {
+        enrichments.nh_dot_roads_all.forEach((road: any) => {
+          if (road.geometry && road.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              // ESRI polylines have paths (array of coordinate arrays)
+              const paths = road.geometry.paths;
+              if (paths && paths.length > 0) {
+                // For each path in the polyline, create a separate polyline
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    // Since we requested outSR=4326, coordinates should already be in WGS84
+                    // Convert [lon, lat] to [lat, lon] for Leaflet
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const streetName = road.Street || road.STREET || road.street || 'Unknown Road';
+                  const roadType = road.road_type || road.ROAD_TYPE || road.RoadType || road.type || road.TYPE || road.fclass || road.FCLASS || 'Unknown Type';
+                  const routeNumber = road.route_number || road.ROUTE_NUMBER || road.RouteNumber || road.route || road.ROUTE || road.rt_number || road.RT_NUMBER || null;
+
+                  // Create polyline with gray color for roads
+                  const polyline = L.polyline(latlngs, {
+                    color: '#6b7280', // Gray color for roads
+                    weight: 3,
+                    opacity: 0.7,
+                    smoothFactor: 1
+                  });
+
+                  // Build popup content with all road attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🛣️ ${streetName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${roadType ? `<div><strong>Type:</strong> ${roadType}</div>` : ''}
+                        ${routeNumber ? `<div><strong>Route Number:</strong> ${routeNumber}</div>` : ''}
+                        ${road.distance_miles !== null && road.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${road.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all road attributes (excluding internal fields)
+                  const excludeFields = ['name', 'road_name', 'street_name', 'road_type', 'type', 'fclass', 'route_number', 'route', 'rt_number', 'geometry', 'distance_miles'];
+                  Object.entries(road).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi);
+                  bounds.extend(polyline.getBounds());
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing NH DOT Road polyline:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Railroads as polylines on the map
+      if (enrichments.nh_railroads_all && Array.isArray(enrichments.nh_railroads_all)) {
+        enrichments.nh_railroads_all.forEach((railroad: any) => {
+          if (railroad.geometry && railroad.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              // ESRI polylines have paths (array of coordinate arrays)
+              const paths = railroad.geometry.paths;
+              if (paths && paths.length > 0) {
+                // For each path in the polyline, create a separate polyline
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    // Since we requested outSR=4326, coordinates should already be in WGS84
+                    // Convert [lon, lat] to [lat, lon] for Leaflet
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const railroadName = railroad.name || railroad.NAME || railroad.Name || railroad._name || 'Unknown Railroad';
+                  const status = railroad.status || railroad.STATUS || railroad.Status || railroad._status || '';
+                  const ownership = railroad.ownership || railroad.OWNERSHIP || railroad.Ownership || railroad._ownership || '';
+                  const operator = railroad.operator || railroad.OPERATOR || railroad.Operator || railroad._operator || '';
+                  const lengthMiles = railroad.length_miles || railroad.LENGTH_MILES || railroad.LengthMiles || railroad._length_miles || railroad.length || railroad.LENGTH || null;
+
+                  // Create polyline with brown color for railroads
+                  // Use different color/style for active vs abandoned
+                  const isActive = status && status.toLowerCase().includes('active');
+                  const color = isActive ? '#92400e' : '#78716c'; // Brown for active, gray-brown for abandoned
+                  const weight = isActive ? 4 : 3;
+                  const opacity = isActive ? 0.8 : 0.6;
+
+                  const polyline = L.polyline(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    smoothFactor: 1
+                  });
+
+                  // Build popup content with all railroad attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🚂 ${railroadName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                        ${ownership ? `<div><strong>Ownership:</strong> ${ownership}</div>` : ''}
+                        ${operator ? `<div><strong>Operator:</strong> ${operator}</div>` : ''}
+                        ${lengthMiles !== null && lengthMiles !== undefined ? `<div><strong>Length:</strong> ${lengthMiles} miles</div>` : ''}
+                        ${railroad.distance_miles !== null && railroad.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${railroad.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all railroad attributes (excluding internal fields)
+                  const excludeFields = ['name', 'status', 'ownership', 'operator', 'length_miles', 'length', 'geometry', 'distance_miles'];
+                  Object.entries(railroad).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi);
+                  bounds.extend(polyline.getBounds());
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing NH Railroad polyline:', error);
             }
           }
         });

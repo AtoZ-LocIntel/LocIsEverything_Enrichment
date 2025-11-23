@@ -243,7 +243,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_hospitals_all' ||
         key === 'nh_public_waters_access_all' ||
         key === 'nh_law_enforcement_all' ||
-        key === 'nh_recreation_trails_all') {
+        key === 'nh_recreation_trails_all' ||
+        key === 'nh_dot_roads_all' ||
+        key === 'nh_railroads_all') {
       return;
     }
     
@@ -521,7 +523,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const state = home.state || home.STATE || home.State || 'NH';
         const zip = home.zip || home.ZIP || home.Zip || '';
         const telephone = home.telephone || home.TELEPHONE || home.Telephone || '';
-        const beds = home.beds || home.BEDS || home.Beds || '';
         const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
         
         // Collect all other attributes as a JSON string for full data access
@@ -616,8 +617,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const state = station.state || station.STATE || station.State || 'NH';
         const zip = station.zip || station.ZIP || station.Zip || '';
         const telephone = station.telephone || station.TELEPHONE || station.Telephone || '';
-        const owner = station.owner || station.OWNER || station.Owner || '';
-        const fdid = station.fdid || station.FDID || station.Fdid || '';
         const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
         
         const allAttributes = { ...station };
@@ -666,7 +665,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const state = place.state || place.STATE || place.State || 'NH';
         const zip = place.zip || place.ZIP || place.Zip || '';
         const telephone = place.telephone || place.TELEPHONE || place.Telephone || '';
-        const attendance = place.attendance || place.ATTENDANCE || place.Attendance || '';
         const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
         
         const allAttributes = { ...place };
@@ -714,8 +712,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const state = hospital.state || hospital.STATE || hospital.State || 'NH';
         const zip = hospital.zip || hospital.ZIP || hospital.Zip || '';
         const telephone = hospital.telephone || hospital.TELEPHONE || hospital.Telephone || '';
-        const beds = hospital.beds || hospital.BEDS || hospital.Beds || '';
-        const owner = hospital.owner || hospital.OWNER || hospital.Owner || '';
         const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
         
         const allAttributes = { ...hospital };
@@ -891,6 +887,85 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           lengthMiles ? `${lengthMiles} miles` : attributesJson,
           '',
           '',
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_dot_roads_all' && Array.isArray(value)) {
+      // Handle NH DOT Roads - each road gets its own row with all attributes
+      value.forEach((road: any) => {
+        const roadName = road.name || road.NAME || road.Name || road._name || road.road_name || road.ROAD_NAME || road.street_name || road.STREET_NAME || 'Unknown Road';
+        const roadType = road.road_type || road.ROAD_TYPE || road.RoadType || road._road_type || road.type || road.TYPE || road.fclass || road.FCLASS || 'Unknown Type';
+        const routeNumber = road.route_number || road.ROUTE_NUMBER || road.RouteNumber || road.route || road.ROUTE || road.rt_number || road.RT_NUMBER || '';
+        
+        const allAttributes = { ...road };
+        delete allAttributes.name;
+        delete allAttributes.road_name;
+        delete allAttributes.street_name;
+        delete allAttributes.road_type;
+        delete allAttributes.type;
+        delete allAttributes.fclass;
+        delete allAttributes.route_number;
+        delete allAttributes.route;
+        delete allAttributes.rt_number;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_DOT_ROAD',
+          roadName,
+          location.lat.toString(), // Use search location for road (it's a line, not a point)
+          location.lon.toString(),
+          road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles.toFixed(2) : '',
+          roadType,
+          routeNumber || attributesJson,
+          '',
+          '',
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_railroads_all' && Array.isArray(value)) {
+      // Handle NH Railroads - each railroad gets its own row with all attributes
+      value.forEach((railroad: any) => {
+        const railroadName = railroad.name || railroad.NAME || railroad.Name || railroad._name || 'Unknown Railroad';
+        const status = railroad.status || railroad.STATUS || railroad.Status || railroad._status || '';
+        const ownership = railroad.ownership || railroad.OWNERSHIP || railroad.Ownership || railroad._ownership || '';
+        const operator = railroad.operator || railroad.OPERATOR || railroad.Operator || railroad._operator || '';
+        const lengthMiles = railroad.length_miles || railroad.LENGTH_MILES || railroad.LengthMiles || railroad._length_miles || railroad.length || railroad.LENGTH || '';
+        
+        const allAttributes = { ...railroad };
+        delete allAttributes.name;
+        delete allAttributes.status;
+        delete allAttributes.ownership;
+        delete allAttributes.operator;
+        delete allAttributes.length_miles;
+        delete allAttributes.length;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_RAILROAD',
+          railroadName,
+          location.lat.toString(), // Use search location for railroad (it's a line, not a point)
+          location.lon.toString(),
+          railroad.distance_miles !== null && railroad.distance_miles !== undefined ? railroad.distance_miles.toFixed(2) : '',
+          status || attributesJson,
+          ownership || '',
+          operator || '',
+          lengthMiles ? `${lengthMiles} miles` : attributesJson,
           attributesJson,
           'NH GRANIT'
         ]);

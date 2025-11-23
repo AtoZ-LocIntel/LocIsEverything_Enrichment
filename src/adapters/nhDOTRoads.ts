@@ -1,17 +1,17 @@
 /**
- * NH Recreation Trails Adapter
- * Queries New Hampshire Recreation Trails from NH GRANIT FeatureServer
- * Supports proximity queries to find trails within a specified radius
+ * NH DOT Roads Adapter
+ * Queries New Hampshire Department of Transportation Roads from NH GRANIT FeatureServer
+ * Supports proximity queries to find roads within a specified radius
  * This is a line dataset (polylines), so we calculate distance to nearest point on the line
  */
 
-const BASE_SERVICE_URL = 'https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_RecreationResources/FeatureServer';
-const LAYER_ID = 2;
+const BASE_SERVICE_URL = 'https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GV_BaseLayers/FeatureServer';
+const LAYER_ID = 18;
 
-export interface NHRecreationTrail {
+export interface NHDOTRoad {
   name: string | null;
-  trail_type: string | null;
-  length_miles: number | null;
+  road_type: string | null;
+  route_number: string | null;
   attributes: Record<string, any>;
   geometry: any; // ESRI polyline geometry for drawing on map
   distance_miles?: number;
@@ -98,16 +98,16 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 /**
- * Query NH Recreation Trails FeatureServer for proximity search
- * Returns trails within the specified radius (in miles)
+ * Query NH DOT Roads FeatureServer for proximity search
+ * Returns roads within the specified radius (in miles)
  */
-export async function getNHRecreationTrailsData(
+export async function getNHDOTRoadsData(
   lat: number,
   lon: number,
   radiusMiles: number
-): Promise<NHRecreationTrail[]> {
+): Promise<NHDOTRoad[]> {
   try {
-    console.log(`🥾 Querying NH Recreation Trails within ${radiusMiles} miles of [${lat}, ${lon}]`);
+    console.log(`🛣️ Querying NH DOT Roads within ${radiusMiles} miles of [${lat}, ${lon}]`);
     
     // Convert miles to meters for the buffer distance
     const radiusMeters = radiusMiles * 1609.34;
@@ -128,7 +128,7 @@ export async function getNHRecreationTrailsData(
     queryUrl.searchParams.set('returnGeometry', 'true'); // Need geometry to draw lines and calculate distance
     queryUrl.searchParams.set('returnDistinctValues', 'false');
     
-    console.log(`🔗 NH Recreation Trails Query URL: ${queryUrl.toString()}`);
+    console.log(`🔗 NH DOT Roads Query URL: ${queryUrl.toString()}`);
     
     const response = await fetch(queryUrl.toString());
     
@@ -139,47 +139,53 @@ export async function getNHRecreationTrailsData(
     const data = await response.json();
     
     if (data.error) {
-      console.error('❌ NH Recreation Trails API Error:', data.error);
+      console.error('❌ NH DOT Roads API Error:', data.error);
       return [];
     }
     
     // Check if we have features
     if (!data.features || data.features.length === 0) {
-      console.log(`ℹ️ No NH Recreation Trails found within ${radiusMiles} miles`);
+      console.log(`ℹ️ No NH DOT Roads found within ${radiusMiles} miles`);
       return [];
     }
     
     // Process all features
-    const trails: NHRecreationTrail[] = data.features.map((feature: any) => {
+    const roads: NHDOTRoad[] = data.features.map((feature: any) => {
       const attributes = feature.attributes || {};
       const geometry = feature.geometry || {};
       
-      // Extract name and trail type
+      // Extract name and road type
       const name = attributes.name || 
                    attributes.NAME || 
                    attributes.Name ||
                    attributes._name ||
-                   attributes.trail_name ||
-                   attributes.TRAIL_NAME ||
+                   attributes.road_name ||
+                   attributes.ROAD_NAME ||
+                   attributes.street_name ||
+                   attributes.STREET_NAME ||
                    null;
       
-      const trailType = attributes.trail_type || 
-                         attributes.TRAIL_TYPE || 
-                         attributes.TrailType ||
-                         attributes._trail_type ||
-                         attributes.type ||
-                         attributes.TYPE ||
-                         null;
+      const roadType = attributes.road_type || 
+                        attributes.ROAD_TYPE || 
+                        attributes.RoadType ||
+                        attributes._road_type ||
+                        attributes.type ||
+                        attributes.TYPE ||
+                        attributes.fclass ||
+                        attributes.FCLASS ||
+                        null;
       
-      // Extract length if available
-      const lengthMiles = attributes.length_miles || 
-                          attributes.LENGTH_MILES || 
-                          attributes.LengthMiles ||
-                          attributes.length ||
-                          attributes.LENGTH ||
+      // Extract route number if available
+      const routeNumber = attributes.route_number || 
+                          attributes.ROUTE_NUMBER || 
+                          attributes.RouteNumber ||
+                          attributes.route ||
+                          attributes.ROUTE ||
+                          attributes.rt_number ||
+                          attributes.RT_NUMBER ||
                           null;
       
-      // Calculate distance from search point to nearest point on trail
+      // Calculate distance from search point to nearest point on road
       let distance_miles: number | undefined = undefined;
       if (geometry.paths && geometry.paths.length > 0) {
         distance_miles = calculateDistanceToPolyline(lat, lon, geometry.paths);
@@ -187,19 +193,19 @@ export async function getNHRecreationTrailsData(
       
       return {
         name,
-        trail_type: trailType,
-        length_miles: lengthMiles !== null && lengthMiles !== undefined ? Number(lengthMiles) : null,
+        road_type: roadType,
+        route_number: routeNumber,
         attributes,
         geometry,
         distance_miles
       };
     });
     
-    console.log(`✅ Found ${trails.length} NH Recreation Trails`);
+    console.log(`✅ Found ${roads.length} NH DOT Roads`);
     
-    return trails;
+    return roads;
   } catch (error) {
-    console.error('❌ Error querying NH Recreation Trails:', error);
+    console.error('❌ Error querying NH DOT Roads:', error);
     return [];
   }
 }

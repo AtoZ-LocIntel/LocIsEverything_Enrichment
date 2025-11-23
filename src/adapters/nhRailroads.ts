@@ -1,16 +1,18 @@
 /**
- * NH Recreation Trails Adapter
- * Queries New Hampshire Recreation Trails from NH GRANIT FeatureServer
- * Supports proximity queries to find trails within a specified radius
+ * NH Railroads Adapter
+ * Queries New Hampshire Railroads from NH GRANIT FeatureServer
+ * Supports proximity queries to find railroads within a specified radius
  * This is a line dataset (polylines), so we calculate distance to nearest point on the line
  */
 
-const BASE_SERVICE_URL = 'https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_RecreationResources/FeatureServer';
-const LAYER_ID = 2;
+const BASE_SERVICE_URL = 'https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GV_BaseLayers/FeatureServer';
+const LAYER_ID = 11;
 
-export interface NHRecreationTrail {
+export interface NHRailroad {
   name: string | null;
-  trail_type: string | null;
+  status: string | null;
+  ownership: string | null;
+  operator: string | null;
   length_miles: number | null;
   attributes: Record<string, any>;
   geometry: any; // ESRI polyline geometry for drawing on map
@@ -98,16 +100,16 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 /**
- * Query NH Recreation Trails FeatureServer for proximity search
- * Returns trails within the specified radius (in miles)
+ * Query NH Railroads FeatureServer for proximity search
+ * Returns railroads within the specified radius (in miles)
  */
-export async function getNHRecreationTrailsData(
+export async function getNHRailroadsData(
   lat: number,
   lon: number,
   radiusMiles: number
-): Promise<NHRecreationTrail[]> {
+): Promise<NHRailroad[]> {
   try {
-    console.log(`🥾 Querying NH Recreation Trails within ${radiusMiles} miles of [${lat}, ${lon}]`);
+    console.log(`🚂 Querying NH Railroads within ${radiusMiles} miles of [${lat}, ${lon}]`);
     
     // Convert miles to meters for the buffer distance
     const radiusMeters = radiusMiles * 1609.34;
@@ -128,7 +130,7 @@ export async function getNHRecreationTrailsData(
     queryUrl.searchParams.set('returnGeometry', 'true'); // Need geometry to draw lines and calculate distance
     queryUrl.searchParams.set('returnDistinctValues', 'false');
     
-    console.log(`🔗 NH Recreation Trails Query URL: ${queryUrl.toString()}`);
+    console.log(`🔗 NH Railroads Query URL: ${queryUrl.toString()}`);
     
     const response = await fetch(queryUrl.toString());
     
@@ -139,47 +141,58 @@ export async function getNHRecreationTrailsData(
     const data = await response.json();
     
     if (data.error) {
-      console.error('❌ NH Recreation Trails API Error:', data.error);
+      console.error('❌ NH Railroads API Error:', data.error);
       return [];
     }
     
     // Check if we have features
     if (!data.features || data.features.length === 0) {
-      console.log(`ℹ️ No NH Recreation Trails found within ${radiusMiles} miles`);
+      console.log(`ℹ️ No NH Railroads found within ${radiusMiles} miles`);
       return [];
     }
     
     // Process all features
-    const trails: NHRecreationTrail[] = data.features.map((feature: any) => {
+    const railroads: NHRailroad[] = data.features.map((feature: any) => {
       const attributes = feature.attributes || {};
       const geometry = feature.geometry || {};
       
-      // Extract name and trail type
+      // Extract name and status
       const name = attributes.name || 
                    attributes.NAME || 
                    attributes.Name ||
                    attributes._name ||
-                   attributes.trail_name ||
-                   attributes.TRAIL_NAME ||
+                   attributes.railroad_name ||
+                   attributes.RAILROAD_NAME ||
                    null;
       
-      const trailType = attributes.trail_type || 
-                         attributes.TRAIL_TYPE || 
-                         attributes.TrailType ||
-                         attributes._trail_type ||
-                         attributes.type ||
-                         attributes.TYPE ||
-                         null;
+      const status = attributes.status || 
+                     attributes.STATUS || 
+                     attributes.Status ||
+                     attributes._status ||
+                     null;
+      
+      const ownership = attributes.ownership || 
+                        attributes.OWNERSHIP || 
+                        attributes.Ownership ||
+                        attributes._ownership ||
+                        null;
+      
+      const operator = attributes.operator || 
+                       attributes.OPERATOR || 
+                       attributes.Operator ||
+                       attributes._operator ||
+                       null;
       
       // Extract length if available
       const lengthMiles = attributes.length_miles || 
                           attributes.LENGTH_MILES || 
                           attributes.LengthMiles ||
+                          attributes._length_miles ||
                           attributes.length ||
                           attributes.LENGTH ||
                           null;
       
-      // Calculate distance from search point to nearest point on trail
+      // Calculate distance from search point to nearest point on railroad
       let distance_miles: number | undefined = undefined;
       if (geometry.paths && geometry.paths.length > 0) {
         distance_miles = calculateDistanceToPolyline(lat, lon, geometry.paths);
@@ -187,7 +200,9 @@ export async function getNHRecreationTrailsData(
       
       return {
         name,
-        trail_type: trailType,
+        status,
+        ownership,
+        operator,
         length_miles: lengthMiles !== null && lengthMiles !== undefined ? Number(lengthMiles) : null,
         attributes,
         geometry,
@@ -195,11 +210,11 @@ export async function getNHRecreationTrailsData(
       };
     });
     
-    console.log(`✅ Found ${trails.length} NH Recreation Trails`);
+    console.log(`✅ Found ${railroads.length} NH Railroads`);
     
-    return trails;
+    return railroads;
   } catch (error) {
-    console.error('❌ Error querying NH Recreation Trails:', error);
+    console.error('❌ Error querying NH Railroads:', error);
     return [];
   }
 }
