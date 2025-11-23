@@ -421,6 +421,116 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           cost: "Free"
         }
       ]
+    },
+    {
+      category: "New Hampshire Data (NH GRANIT)",
+      sources: [
+        {
+          name: "NH House of Representatives Districts",
+          description: "New Hampshire House of Representatives district boundaries for 2022 - point-in-polygon queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Voting Wards",
+          description: "New Hampshire political districts and voting wards - point-in-polygon queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Senate Districts",
+          description: "New Hampshire Senate district boundaries for 2022 - point-in-polygon queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Parcels",
+          description: "New Hampshire parcel mosaics with proximity queries (0.25, 0.50, 0.75, 1.0 miles) - identifies containing parcel and nearby parcels",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Key Destinations",
+          description: "New Hampshire key destination points - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Nursing Homes",
+          description: "New Hampshire nursing homes and long-term care facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Emergency Medical Services",
+          description: "New Hampshire EMS facilities and emergency medical services - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Fire Stations",
+          description: "New Hampshire fire stations and fire department facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Places of Worship",
+          description: "New Hampshire places of worship including churches, synagogues, mosques, and other religious facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Hospitals",
+          description: "New Hampshire hospitals and medical facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Access Sites to Public Waters",
+          description: "New Hampshire public access sites to lakes, rivers, and other water bodies - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Law Enforcement",
+          description: "New Hampshire police departments, sheriff offices, and law enforcement facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Recreation Trails",
+          description: "New Hampshire recreation trails and hiking paths - line dataset with proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH DOT Roads",
+          description: "New Hampshire Department of Transportation road network - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Railroads",
+          description: "New Hampshire railroad network including active and abandoned lines - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
     }
   ];
 

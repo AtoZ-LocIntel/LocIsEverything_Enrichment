@@ -570,7 +570,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const state = facility.state || facility.STATE || facility.State || 'NH';
         const zip = facility.zip || facility.ZIP || facility.Zip || '';
         const telephone = facility.telephone || facility.TELEPHONE || facility.Telephone || '';
-        const owner = facility.owner || facility.OWNER || facility.Owner || '';
         const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
         
         const allAttributes = { ...facility };
@@ -818,7 +817,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const state = facility.state || facility.STATE || facility.State || 'NH';
         const zip = facility.zip || facility.ZIP || facility.Zip || '';
         const telephone = facility.telephone || facility.TELEPHONE || facility.Telephone || '';
-        const owner = facility.owner || facility.OWNER || facility.Owner || '';
         const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
         
         const allAttributes = { ...facility };
