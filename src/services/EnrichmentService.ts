@@ -4,6 +4,7 @@ import { getUSDAWildfireRiskData } from '../adapters/usdaWildfireRisk';
 import { getSoilCarbonDensityData } from '../adapters/soilCarbonDensity';
 import { getNHHouseDistrictData } from '../adapters/nhHouseDistricts';
 import { getNHVotingWardData } from '../adapters/nhVotingWards';
+import { getNHParcelData } from '../adapters/nhParcels';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1273,6 +1274,10 @@ export class EnrichmentService {
       // NH Voting Wards (NH GRANIT) - Point-in-polygon query
       case 'nh_voting_wards':
         return await this.getNHVotingWard(lat, lon);
+      
+      // NH Parcels (NH GRANIT) - Point-in-polygon and proximity query
+      case 'nh_parcels':
+        return await this.getNHParcels(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -1540,6 +1545,82 @@ export class EnrichmentService {
       return {
         nh_voting_ward: null,
         nh_voting_ward_error: 'Error fetching NH Voting Ward data'
+      };
+    }
+  }
+
+  private async getNHParcels(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏠 Fetching NH Parcels data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 0.25 miles if not specified
+      const radiusMiles = radius || 0.25;
+      
+      const parcelData = await getNHParcelData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (parcelData) {
+        // Collect all parcels (containing + nearby) into a single array for CSV export
+        const allParcels: any[] = [];
+        
+        // Add containing parcel (point-in-polygon) if found
+        if (parcelData.containingParcel && parcelData.containingParcel.parcelId) {
+          allParcels.push({
+            ...parcelData.containingParcel.attributes,
+            parcelId: parcelData.containingParcel.parcelId,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: parcelData.containingParcel.geometry // Include geometry for map drawing
+          });
+          result.nh_parcel_containing = parcelData.containingParcel.parcelId;
+        } else {
+          result.nh_parcel_containing = null;
+          result.nh_parcel_containing_message = 'No parcel found containing this location';
+        }
+        
+        // Add nearby parcels (proximity search)
+        if (parcelData.nearbyParcels && parcelData.nearbyParcels.length > 0) {
+          parcelData.nearbyParcels.forEach(parcel => {
+            // Only add if it's not already in the array (avoid duplicates)
+            if (!allParcels.some(p => p.parcelId === parcel.parcelId)) {
+              allParcels.push({
+                ...parcel.attributes,
+                parcelId: parcel.parcelId,
+                isContaining: false,
+                distance_miles: null, // Distance not calculated in proximity query
+                geometry: parcel.geometry // Include geometry for map drawing
+              });
+            }
+          });
+          result.nh_parcels_nearby_count = parcelData.nearbyParcels.length;
+        } else {
+          result.nh_parcels_nearby_count = 0;
+        }
+        
+        // Store all parcels as an array for CSV export (similar to _all_pois pattern)
+        result.nh_parcels_all = allParcels;
+        result.nh_parcels_search_radius_miles = radiusMiles;
+      } else {
+        result.nh_parcel_containing = null;
+        result.nh_parcels_nearby_count = 0;
+        result.nh_parcels_all = [];
+      }
+      
+      console.log(`✅ NH Parcels data processed:`, {
+        containing: result.nh_parcel_containing || 'N/A',
+        nearbyCount: result.nh_parcels_nearby_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Parcels:', error);
+      return {
+        nh_parcel_containing: null,
+        nh_parcels_nearby_count: 0,
+        nh_parcels_all: [],
+        nh_parcels_error: 'Error fetching NH Parcels data'
       };
     }
   }

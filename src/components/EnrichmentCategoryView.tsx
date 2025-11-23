@@ -131,6 +131,8 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
             const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius || 1;
             const radiusOptions = enrichment.id === 'poi_aurora_viewing_sites'
               ? [5, 10, 25, 50, 100]
+              : enrichment.id === 'nh_parcels'
+              ? [0.25, 0.50, 0.75, 1.0]
               : [0.5, 1, 2, 3, 5, 10, 15, 25];
             const formatMiles = (value: number) =>
               Number.isInteger(value) ? value.toString() : value.toFixed(1);

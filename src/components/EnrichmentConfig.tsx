@@ -259,7 +259,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'hazards': 'hazards_risk',
       'community': 'community_services',
       'retail': 'retail_commerce',
-      'nh': 'nh',
+      'nh': 'newhampshire',
       'health': 'health_wellness',
       'transportation': 'transportation',
       'infrastructure': 'power_inf',
@@ -268,8 +268,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'public_lands': 'public_lands',
       'quirky': 'quirky_and_fun',
       'at': 'at',
-      'pct': 'PCT',
-      'nh': 'newhampshire'
+      'pct': 'PCT'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -758,6 +757,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           if (enrichment.id === 'poi_wildfires') return '50 miles (wildfires)';
                           if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
                           if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
+                          if (enrichment.id === 'nh_parcels') return '0.3 miles';
                           return '5 miles';
                         })();
 
@@ -788,37 +788,61 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               </div>
                             </div>
 
-                            {enrichment.isPOI && isSelected && (
-                              <div className="mt-4 pt-4 border-t border-gray-100">
-                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-                                  <p className="text-xs text-amber-700">
-                                    ⚠️ Recommended range: {radiusLabel} (for performance & accuracy)
-                                  </p>
-                                </div>
-                                
-                                <div className="flex flex-col gap-3 mt-4 w-full max-w-full overflow-visible">
-                                  <label className="text-sm font-medium text-black w-full">Search Radius:</label>
-                                  <div className="flex items-center gap-2 w-full max-w-full overflow-visible">
-                                    <input
-                                      type="number"
-                                      min={minRadius}
-                                      max={maxRadius}
-                                      step={enrichment.id === 'poi_aurora_viewing_sites' ? 1 : 0.1}
-                                      value={currentRadius}
-                                      onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                                      className="w-24 sm:w-20 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center max-w-full"
-                                    />
-                                    <span className="text-sm text-black whitespace-nowrap flex-shrink-0">miles</span>
+                            {enrichment.isPOI && isSelected && (() => {
+                              // For NH parcels, use a dropdown with specific options
+                              const isNHParcels = enrichment.id === 'nh_parcels';
+                              const radiusOptions = isNHParcels
+                                ? [0.25, 0.50, 0.75, 1.0]
+                                : enrichment.id === 'poi_aurora_viewing_sites'
+                                ? [5, 10, 25, 50, 100]
+                                : null; // null means use number input
+                              
+                              return (
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+                                    <p className="text-xs text-amber-700">
+                                      ⚠️ Recommended range: {radiusLabel} (for performance & accuracy)
+                                    </p>
                                   </div>
-                                </div>
+                                  
+                                  <div className="flex flex-col gap-3 mt-4 w-full max-w-full overflow-visible">
+                                    <label className="text-sm font-medium text-black w-full">Search Radius:</label>
+                                    <div className="flex items-center gap-2 w-full max-w-full overflow-visible">
+                                      {radiusOptions ? (
+                                        <select
+                                          value={currentRadius}
+                                          onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value))}
+                                          className="w-32 sm:w-28 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 max-w-full"
+                                        >
+                                          {radiusOptions.map(option => (
+                                            <option key={option} value={option}>
+                                              {formatMiles(option)} {option === 1 ? 'mile' : 'miles'}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      ) : (
+                                        <input
+                                          type="number"
+                                          min={minRadius}
+                                          max={maxRadius}
+                                          step={enrichment.id === 'poi_aurora_viewing_sites' ? 1 : 0.1}
+                                          value={currentRadius}
+                                          onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
+                                          className="w-24 sm:w-20 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center max-w-full"
+                                        />
+                                      )}
+                                      <span className="text-sm text-black whitespace-nowrap flex-shrink-0">miles</span>
+                                    </div>
+                                  </div>
 
-                                {(currentRadius > maxRadius || currentRadius < minRadius) && (
-                                  <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
-                                    Please stay between {formatMiles(minRadius)} and {formatMiles(maxRadius)} miles
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                                  {!radiusOptions && (currentRadius > maxRadius || currentRadius < minRadius) && (
+                                    <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                                      Please stay between {formatMiles(minRadius)} and {formatMiles(maxRadius)} miles
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                               </div>
                             );
                           })

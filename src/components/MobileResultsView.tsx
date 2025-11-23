@@ -43,11 +43,18 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       }
       if (key.includes('nh_house_district_2022') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
         // Format NH House District
-        return value || 'N/A';
+        return value ? String(value) : 'N/A';
       }
       if (key.includes('nh_voting_ward') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
         // Format NH Voting Ward
-        return value || 'N/A';
+        return value ? String(value) : 'N/A';
+      }
+      if (key.includes('nh_parcel') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
+        // Format NH Parcel fields
+        if (key.includes('_count')) {
+          return value ? `${value} parcel${value === 1 ? '' : 's'}` : '0 parcels';
+        }
+        return value ? String(value) : 'N/A';
       }
       if (key.includes('radius_km')) {
         return `${value.toLocaleString()} km`;
@@ -179,7 +186,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // New Hampshire Data
-    if (key.includes('nh_house_district') || key.includes('nh_voting_ward')) {
+    if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_parcel')) {
       return 'New Hampshire Data';
     }
     
@@ -268,6 +275,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return acc;
     }
     
+    // Skip attributes fields (raw JSON data that's not user-friendly)
+    if (key.includes('_attributes')) {
+      return acc;
+    }
+    
     // Only show fields for selected enrichments (plus core fields that are always shown)
     const coreFields = ['elevation', 'air_quality', 'fips_state', 'fips_county', 'fips_tract', 'acs_population', 'acs_median_income', 'weather_summary', 'weather_current', 'nws_alerts'];
     const isCoreField = coreFields.some(core => key.toLowerCase().includes(core.toLowerCase()));
@@ -324,6 +336,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       
       if (key.includes('nh_voting_ward')) {
         return selectedEnrichments.includes('nh_voting_wards');
+      }
+      
+      // NH Parcels fields - skip the _all array (handled separately)
+      if (key.includes('nh_parcel') && key !== 'nh_parcels_all') {
+        return selectedEnrichments.includes('nh_parcels');
       }
       
       return false;

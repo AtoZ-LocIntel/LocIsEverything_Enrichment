@@ -331,7 +331,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key.toLowerCase().includes('all_pois') ||
     key.toLowerCase().includes('_geometry') ||
     key.toLowerCase().includes('_raw') ||
-    key.toLowerCase().includes('_geojson')
+    key.toLowerCase().includes('_geojson') ||
+    key.includes('_attributes') || // Skip attributes fields (raw JSON data)
+    key === 'nh_parcels_all' // Skip parcels array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -705,6 +707,82 @@ const MapView: React.FC<MapViewProps> = ({
 
       locationMarker.bindPopup(createPopupContent(result), { maxWidth: 540 });
       locationMarker.addTo(primary);
+
+      // Draw NH Parcels as polygons on the map
+      if (enrichments.nh_parcels_all && Array.isArray(enrichments.nh_parcels_all)) {
+        enrichments.nh_parcels_all.forEach((parcel: any) => {
+          if (parcel.geometry && parcel.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
+              const rings = parcel.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  // Since we requested outSR=4326, coordinates should already be in WGS84
+                  // Convert [lon, lat] to [lat, lon] for Leaflet
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const parcelId = parcel.parcelId || 'Unknown';
+                const isContaining = parcel.isContaining;
+                const color = isContaining ? '#dc2626' : '#3b82f6'; // Red for containing, blue for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all parcel attributes
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '📍 Containing Parcel' : '🏠 Nearby Parcel'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 400px; overflow-y: auto;">
+                `;
+                
+                // Add all parcel attributes (excluding internal fields)
+                const excludeFields = ['parcelId', 'isContaining', 'distance_miles', 'geometry'];
+                Object.entries(parcel).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+              }
+            } catch (error) {
+              console.error('Error drawing parcel polygon:', error);
+            }
+          }
+        });
+      }
 
       Object.entries(enrichments).forEach(([key, value]) => {
         if (!Array.isArray(value)) {

@@ -128,6 +128,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return acc;
       }
       
+      // Skip attributes fields (raw JSON data that's not user-friendly)
+      if (key.includes('_attributes')) {
+        return acc;
+      }
+      
       // Only show fields for selected enrichments (plus core fields that are always shown)
       const coreFields = ['elevation', 'air_quality', 'fips_state', 'fips_county', 'fips_tract', 'acs_population', 'acs_median_income', 'weather_summary', 'weather_current', 'nws_alerts'];
       const isCoreField = coreFields.some(core => key.toLowerCase().includes(core.toLowerCase()));
@@ -187,6 +192,12 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('nh_voting_wards');
         }
         
+        // NH Parcels fields - only show if NH Parcels enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_parcel') && key !== 'nh_parcels_all') {
+          return selectedEnrichments.includes('nh_parcels');
+        }
+        
         return false;
       });
       
@@ -236,7 +247,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Resources';
       } else if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
         category = 'Natural Resources';
-      } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward')) {
+      } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_parcel')) {
         category = 'New Hampshire Data';
       } else if (key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';

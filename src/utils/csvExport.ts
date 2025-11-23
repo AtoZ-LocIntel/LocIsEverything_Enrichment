@@ -233,7 +233,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key.includes('_detailed') || 
         key.includes('_elements') || 
         key.includes('_features') ||
-        key.includes('_nearby_features')) {
+        key.includes('_nearby_features') ||
+        key === 'nh_parcels_all') {
       return;
     }
     
@@ -413,6 +414,47 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           article.url || '',
           'Wikipedia'
+        ]);
+      });
+    } else if (key === 'nh_parcels_all' && Array.isArray(value)) {
+      // Handle NH Parcels - each parcel gets its own row with all attributes
+      value.forEach((parcel: any) => {
+        // Extract parcel ID and type
+        const parcelId = parcel.parcelId || parcel.PARCELID || parcel.parcelid || parcel.OBJECTID || parcel.objectid || 'Unknown';
+        const parcelType = parcel.isContaining ? 'Containing Parcel' : 'Nearby Parcel';
+        
+        // Extract common parcel attributes that might be useful
+        const ownerName = parcel.OWNER || parcel.owner || parcel.OWNER_NAME || parcel.owner_name || '';
+        const address = parcel.ADDRESS || parcel.address || parcel.SITE_ADDR || parcel.site_addr || '';
+        const city = parcel.CITY || parcel.city || parcel.MUNICIPALITY || parcel.municipality || '';
+        const state = parcel.STATE || parcel.state || 'NH';
+        const zip = parcel.ZIP || parcel.zip || parcel.ZIP_CODE || parcel.zip_code || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        // Collect all other attributes as a JSON string for full data access
+        const allAttributes = { ...parcel };
+        delete allAttributes.parcelId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_PARCEL',
+          `${parcelType} - ${parcelId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          parcel.distance_miles !== null && parcel.distance_miles !== undefined ? parcel.distance_miles.toString() : (parcel.isContaining ? '0' : ''),
+          'NH GRANIT',
+          fullAddress || attributesJson, // Use address if available, otherwise full JSON
+          ownerName,
+          '', // Phone (not applicable for parcels)
+          attributesJson, // Full attributes in Website field for easy access
+          'NH GRANIT'
         ]);
       });
     }
