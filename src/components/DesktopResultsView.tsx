@@ -51,7 +51,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (value.length === 0) return 'None found';
       
       // For detailed POI data, show count only in form view
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features')) {
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all')) {
         return `${value.length} found (see CSV for details)`;
       }
       
@@ -192,10 +192,21 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('nh_voting_wards');
         }
         
+        // NH Senate District fields - only show if NH Senate District enrichment is selected
+        if (key.includes('nh_senate_district')) {
+          return selectedEnrichments.includes('nh_senate_districts_2022');
+        }
+        
         // NH Parcels fields - only show if NH Parcels enrichment is selected
         // Skip the _all array (handled separately in display)
         if (key.includes('nh_parcel') && key !== 'nh_parcels_all') {
           return selectedEnrichments.includes('nh_parcels');
+        }
+        
+        // NH Key Destinations fields - only show if NH Key Destinations enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_key_destinations') && key !== 'nh_key_destinations_all') {
+          return selectedEnrichments.includes('nh_key_destinations');
         }
         
         return false;
@@ -247,7 +258,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Resources';
       } else if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
         category = 'Natural Resources';
-      } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_parcel')) {
+      } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_parcel') || key.includes('nh_key_destinations')) {
         category = 'New Hampshire Data';
       } else if (key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';

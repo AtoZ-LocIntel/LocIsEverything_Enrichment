@@ -859,10 +859,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   {/* Content - Scrollable */}
                   <div 
                     ref={modalContentRef}
-                    className="flex-1 overflow-y-auto p-4 sm:p-4" 
-                    style={{ scrollBehavior: 'smooth' }}
+                    className="flex-1 overflow-y-auto p-3 sm:p-4" 
+                    style={{ 
+                      scrollBehavior: 'smooth',
+                      WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
+                    }}
                   >
-                    <div className="space-y-3 sm:space-y-4 max-w-2xl mx-auto w-full pt-4">
+                    <div className="space-y-3 sm:space-y-4 max-w-2xl mx-auto w-full pt-2 sm:pt-4 px-1 sm:px-0">
                       {categoryEnrichments.length === 0 ? (
                         <div className="text-center py-8 text-gray-500">
                           <p>No layers available yet in this category.</p>
@@ -887,27 +890,28 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         })();
 
                             return (
-                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-4 sm:p-4">
+                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 w-full max-w-full">
                             {/* On mobile, stack checkbox above the text to give the text full width */}
-                            <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full">
+                            <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full max-w-full">
                               <button
                                 type="button"
                                 onClick={() => handleEnrichmentToggle(enrichment.id)}
-                                className={`w-5 h-5 sm:w-4 sm:h-4 flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 ${
+                                className={`w-5 h-5 sm:w-4 sm:h-4 flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 self-start ${
                                   isSelected 
                                     ? 'bg-black border-black' 
                                     : 'bg-white border-gray-300'
                                 }`}
+                                style={{ minWidth: '20px', minHeight: '20px' }}
                               >
                                 {isSelected && (
                                   <Check className="w-3 h-3 sm:w-3 sm:h-3 text-white" />
                                 )}
                               </button>
-                              <div className="flex-1 min-w-0 text-left space-y-1">
-                                <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed">
+                              <div className="flex-1 min-w-0 text-left space-y-1 w-full max-w-full">
+                                <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed w-full">
                                   {enrichment.label}
                                 </label>
-                                <p className="text-sm sm:text-sm text-gray-700 break-words leading-relaxed whitespace-normal">
+                                <p className="text-sm sm:text-sm text-gray-700 break-words leading-relaxed whitespace-normal w-full">
                                   {enrichment.description}
                                 </p>
                               </div>
@@ -930,14 +934,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     </p>
                                   </div>
                                   
-                                  <div className="flex flex-col gap-3 mt-4 w-full max-w-full overflow-visible">
+                                  <div className="flex flex-col gap-3 mt-4 w-full max-w-full">
                                     <label className="text-sm font-medium text-black w-full">Search Radius:</label>
-                                    <div className="flex items-center gap-2 w-full max-w-full overflow-visible">
+                                    <div className="flex items-center gap-2 w-full max-w-full">
                                       {radiusOptions ? (
                                         <select
                                           value={currentRadius}
                                           onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value))}
-                                          className="w-32 sm:w-28 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 max-w-full"
+                                          className="w-32 sm:w-28 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900"
+                                          style={{ maxWidth: 'calc(100% - 60px)' }}
                                         >
                                           {radiusOptions.map(option => (
                                             <option key={option} value={option}>
@@ -953,7 +958,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                           step={enrichment.id === 'poi_aurora_viewing_sites' ? 1 : 0.1}
                                           value={currentRadius}
                                           onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
-                                          className="w-24 sm:w-20 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center max-w-full"
+                                          className="w-24 sm:w-20 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center"
+                                          style={{ maxWidth: 'calc(100% - 60px)' }}
                                         />
                                       )}
                                       <span className="text-sm text-black whitespace-nowrap flex-shrink-0">miles</span>

@@ -49,6 +49,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         // Format NH Voting Ward
         return value ? String(value) : 'N/A';
       }
+      if (key.includes('nh_senate_district_2022') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
+        // Format NH Senate District
+        return value ? String(value) : 'N/A';
+      }
       if (key.includes('nh_parcel') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
         // Format NH Parcel fields
         if (key.includes('_count')) {
@@ -68,7 +72,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       if (value.length === 0) return 'None found';
       
       // For detailed POI data, show count only in mobile form view
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features')) {
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all')) {
         return `${value.length} found (see CSV for details)`;
       }
       
@@ -186,7 +190,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // New Hampshire Data
-    if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_parcel')) {
+    if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_parcel') || key.includes('nh_key_destinations')) {
       return 'New Hampshire Data';
     }
     
@@ -338,9 +342,18 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         return selectedEnrichments.includes('nh_voting_wards');
       }
       
+      if (key.includes('nh_senate_district')) {
+        return selectedEnrichments.includes('nh_senate_districts_2022');
+      }
+      
       // NH Parcels fields - skip the _all array (handled separately)
       if (key.includes('nh_parcel') && key !== 'nh_parcels_all') {
         return selectedEnrichments.includes('nh_parcels');
+      }
+      
+      // NH Key Destinations fields - skip the _all array (handled separately)
+      if (key.includes('nh_key_destinations') && key !== 'nh_key_destinations_all') {
+        return selectedEnrichments.includes('nh_key_destinations');
       }
       
       return false;

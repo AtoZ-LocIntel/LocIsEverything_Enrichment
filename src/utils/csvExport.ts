@@ -234,7 +234,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key.includes('_elements') || 
         key.includes('_features') ||
         key.includes('_nearby_features') ||
-        key === 'nh_parcels_all') {
+        key === 'nh_parcels_all' ||
+        key === 'nh_key_destinations_all') {
       return;
     }
     
@@ -453,6 +454,48 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           fullAddress || attributesJson, // Use address if available, otherwise full JSON
           ownerName,
           '', // Phone (not applicable for parcels)
+          attributesJson, // Full attributes in Website field for easy access
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_key_destinations_all' && Array.isArray(value)) {
+      // Handle NH Key Destinations - each destination gets its own row with all attributes
+      value.forEach((dest: any) => {
+        // Extract name and type
+        const destName = dest.name || dest.NAME || dest.Name || dest._name || 'Unknown Destination';
+        const destType = dest.type || dest.TYPE || dest.Type || dest._type || 'Unknown Type';
+        
+        // Extract common destination attributes
+        const address = dest.address || dest.ADDRESS || dest.SITE_ADDR || dest.site_addr || '';
+        const city = dest.city || dest.CITY || dest.MUNICIPALITY || dest.municipality || dest.town || dest.TOWN || '';
+        const state = dest.state || dest.STATE || 'NH';
+        const zip = dest.zip || dest.ZIP || dest.ZIP_CODE || dest.zip_code || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        // Collect all other attributes as a JSON string for full data access
+        const allAttributes = { ...dest };
+        delete allAttributes.name;
+        delete allAttributes.type;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_KEY_DESTINATION',
+          destName,
+          (dest.lat || location.lat).toString(),
+          (dest.lon || location.lon).toString(),
+          dest.distance_miles !== null && dest.distance_miles !== undefined ? dest.distance_miles.toFixed(2) : '',
+          destType,
+          fullAddress || attributesJson, // Use address if available, otherwise full JSON
+          '', // Owner (not applicable for destinations)
+          '', // Phone (not applicable for destinations)
           attributesJson, // Full attributes in Website field for easy access
           'NH GRANIT'
         ]);

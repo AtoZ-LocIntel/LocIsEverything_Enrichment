@@ -708,6 +708,70 @@ const MapView: React.FC<MapViewProps> = ({
       locationMarker.bindPopup(createPopupContent(result), { maxWidth: 540 });
       locationMarker.addTo(primary);
 
+      // Draw NH Key Destinations as markers on the map
+      if (enrichments.nh_key_destinations_all && Array.isArray(enrichments.nh_key_destinations_all)) {
+        enrichments.nh_key_destinations_all.forEach((dest: any) => {
+          if (dest.lat && dest.lon) {
+            try {
+              const destLat = dest.lat;
+              const destLon = dest.lon;
+              const destName = dest.name || dest.NAME || dest.Name || 'Unknown Destination';
+              const destType = dest.type || dest.TYPE || dest.Type || 'Unknown Type';
+              
+              // Create a custom icon for key destinations
+              const icon = createPOIIcon('📍', '#8b5cf6'); // Purple icon for destinations
+              
+              const marker = L.marker([destLat, destLon], { icon });
+              
+              // Build popup content with all destination attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    📍 ${destName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Type:</strong> ${destType}</div>
+                    ${dest.distance_miles !== null && dest.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${dest.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all destination attributes (excluding internal fields)
+              const excludeFields = ['name', 'type', 'lat', 'lon', 'distance_miles'];
+              Object.entries(dest).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this destination
+              bounds.extend([destLat, destLon]);
+            } catch (error) {
+              console.error('Error drawing NH Key Destination marker:', error);
+            }
+          }
+        });
+      }
+
       // Draw NH Parcels as polygons on the map
       if (enrichments.nh_parcels_all && Array.isArray(enrichments.nh_parcels_all)) {
         enrichments.nh_parcels_all.forEach((parcel: any) => {

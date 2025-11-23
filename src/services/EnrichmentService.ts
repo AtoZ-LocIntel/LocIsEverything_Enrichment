@@ -4,7 +4,9 @@ import { getUSDAWildfireRiskData } from '../adapters/usdaWildfireRisk';
 import { getSoilCarbonDensityData } from '../adapters/soilCarbonDensity';
 import { getNHHouseDistrictData } from '../adapters/nhHouseDistricts';
 import { getNHVotingWardData } from '../adapters/nhVotingWards';
+import { getNHSenateDistrictData } from '../adapters/nhSenateDistricts';
 import { getNHParcelData } from '../adapters/nhParcels';
+import { getNHKeyDestinationsData } from '../adapters/nhKeyDestinations';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1275,9 +1277,17 @@ export class EnrichmentService {
       case 'nh_voting_wards':
         return await this.getNHVotingWard(lat, lon);
       
+      // NH Senate Districts (NH GRANIT) - Point-in-polygon query
+      case 'nh_senate_districts_2022':
+        return await this.getNHSenateDistrict(lat, lon);
+      
       // NH Parcels (NH GRANIT) - Point-in-polygon and proximity query
       case 'nh_parcels':
         return await this.getNHParcels(lat, lon, radius);
+      
+      // NH Key Destinations (NH GRANIT) - Proximity query
+      case 'nh_key_destinations':
+        return await this.getNHKeyDestinations(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -1545,6 +1555,81 @@ export class EnrichmentService {
       return {
         nh_voting_ward: null,
         nh_voting_ward_error: 'Error fetching NH Voting Ward data'
+      };
+    }
+  }
+
+  private async getNHSenateDistrict(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching NH Senate District data for [${lat}, ${lon}]`);
+      
+      const districtData = await getNHSenateDistrictData(lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      if (districtData && districtData.district) {
+        result.nh_senate_district_2022 = districtData.district;
+        result.nh_senate_district_2022_attributes = districtData.attributes;
+      } else {
+        result.nh_senate_district_2022 = null;
+        result.nh_senate_district_2022_message = 'No senate district found for this location';
+      }
+      
+      console.log(`✅ NH Senate District data processed:`, {
+        district: result.nh_senate_district_2022 || 'N/A'
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Senate District:', error);
+      return {
+        nh_senate_district_2022: null,
+        nh_senate_district_2022_error: 'Error fetching NH Senate District data'
+      };
+    }
+  }
+
+  private async getNHKeyDestinations(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📍 Fetching NH Key Destinations data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const destinations = await getNHKeyDestinationsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (destinations && destinations.length > 0) {
+        result.nh_key_destinations_count = destinations.length;
+        result.nh_key_destinations_all = destinations.map(dest => ({
+          ...dest.attributes,
+          name: dest.name,
+          type: dest.type,
+          lat: dest.lat,
+          lon: dest.lon,
+          distance_miles: dest.distance_miles
+        }));
+      } else {
+        result.nh_key_destinations_count = 0;
+        result.nh_key_destinations_all = [];
+      }
+      
+      result.nh_key_destinations_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Key Destinations data processed:`, {
+        count: result.nh_key_destinations_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Key Destinations:', error);
+      return {
+        nh_key_destinations_count: 0,
+        nh_key_destinations_all: [],
+        nh_key_destinations_error: 'Error fetching NH Key Destinations data'
       };
     }
   }
