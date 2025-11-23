@@ -56,6 +56,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   at: <img src="/assets/at.webp" alt="Appalachian Trail" className="w-5 h-5" />,
   pct: <img src="/assets/pct.webp" alt="Pacific Crest Trail" className="w-5 h-5" />,
   nh: <img src="/assets/newhampshire.webp" alt="New Hampshire Open Data" className="w-5 h-5" />,
+  ma: <img src="/assets/MA.webp" alt="Massachusetts Open Data" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -73,14 +74,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [viewingNHSubCategories, setViewingNHSubCategories] = useState(false);
+  const [viewingMASubCategories, setViewingMASubCategories] = useState(false);
   const [cameFromNHSubCategories, setCameFromNHSubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, onModalStateChange]); // Track if viewing NH sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
@@ -214,6 +216,34 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        // Special handling for MA - add sub-categories based on data sources
+        if (section.id === 'ma') {
+          // Get MA enrichments (filter POIs where section is 'ma')
+          const maPOIs = poiTypes.filter(poi => poi.section === 'ma');
+          const maEnrichments = maPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Define MA sub-categories (will be populated as layers are added)
+          const maSubCategories: EnrichmentCategory[] = [
+            // MA sub-categories will be added here as layers are created
+          ];
+          
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [], // MA parent category has no direct enrichments
+            subCategories: maSubCategories
+          };
+        }
+        
         return {
           id: section.id,
           title: section.title,
@@ -268,7 +298,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'public_lands': 'public_lands',
       'quirky': 'quirky_and_fun',
       'at': 'at',
-      'pct': 'PCT'
+      'pct': 'PCT',
+      'ma': 'MA'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -515,6 +546,96 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     );
   }
 
+  // If viewing MA sub-categories, show full page with round icons
+  if (viewingMASubCategories) {
+    const maCategory = enrichmentCategories.find(c => c.id === 'ma');
+    const maSubCategories = maCategory?.subCategories || [];
+    
+    return (
+      <div className="enrichment-config">
+        <div className="card">
+          <div className="card-header">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setViewingMASubCategories(false)}
+                  className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
+                  title="Back to categories"
+                >
+                  ←
+                </button>
+                <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Massachusetts Open Data</h3>
+                  <p className="text-xs lg:text-sm text-gray-300">Select a category to view available layers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="card-body">
+            {/* MA Sub-Category Round Icons Grid - Same layout as home page */}
+            <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
+                {maSubCategories.length > 0 ? (
+                  maSubCategories.map((subCategory) => {
+                    const subCategoryEnrichments = subCategory.enrichments;
+                    const selectedCount = subCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+                    
+                    // Determine ring brightness based on selection count
+                    const getRingOpacity = () => {
+                      if (selectedCount === 0) return 0;
+                      if (selectedCount <= 2) return 0.3;
+                      if (selectedCount <= 4) return 0.6;
+                      return 0.9;
+                    };
+
+                    return (
+                      <button
+                        key={subCategory.id}
+                        onClick={() => {
+                          // Open modal with this sub-category's enrichments
+                          setCameFromMASubCategories(true);
+                          setActiveModal(subCategory.id);
+                          setViewingMASubCategories(false);
+                        }}
+                        className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
+                        }}
+                      >
+                        {/* Sub-Category Icon */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          {subCategory.icon}
+                        </div>
+                        
+                        {/* Selection Counter Badge */}
+                        {selectedCount > 0 && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold z-10">
+                            {selectedCount}
+                          </div>
+                        )}
+                        
+                        {/* Category Title Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold p-2 text-center z-10">
+                          {subCategory.title}
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-2 text-center text-gray-500 py-8">
+                    <p>No sub-categories available yet. Sub-categories will appear here as layers are added.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // If viewing NH sub-categories, show full page with round icons
   if (viewingNHSubCategories) {
     const nhCategory = enrichmentCategories.find(c => c.id === 'nh');
@@ -710,6 +831,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromNHSubCategories(false);
                               setActiveModal(null);
                               setViewingNHSubCategories(true);
+                            } else if (cameFromMASubCategories) {
+                              // Go back to MA sub-categories page
+                              setCameFromMASubCategories(false);
+                              setActiveModal(null);
+                              setViewingMASubCategories(true);
                             } else {
                               // Go back to main configuration
                               setActiveModal(null);
@@ -924,6 +1050,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       // Special handling for NH - show sub-categories page instead of modal
                       if (category.id === 'nh' && category.subCategories && category.subCategories.length > 0) {
                         setViewingNHSubCategories(true);
+                      } else if (category.id === 'ma' && category.subCategories && category.subCategories.length > 0) {
+                        // Special handling for MA - show sub-categories page instead of modal
+                        setViewingMASubCategories(true);
                       } else {
                         // Always use modal view for other categories
                         if (onViewCategory) {

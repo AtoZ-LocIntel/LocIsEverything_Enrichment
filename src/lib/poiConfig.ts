@@ -103,6 +103,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'New Hampshire Open Data',
     description: 'New Hampshire state open data services and layers',
     icon: 'newhampshire.webp'
+  },
+  {
+    id: 'ma',
+    title: 'Massachusetts Open Data',
+    description: 'Massachusetts state open data services and layers',
+    icon: 'MA.webp'
   }
 ];
 
