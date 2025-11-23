@@ -76,6 +76,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [viewingNHSubCategories, setViewingNHSubCategories] = useState(false);
   const [viewingMASubCategories, setViewingMASubCategories] = useState(false);
   const [cameFromNHSubCategories, setCameFromNHSubCategories] = useState(false);
+  const [cameFromMASubCategories, setCameFromMASubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
@@ -218,20 +219,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         // Special handling for MA - add sub-categories based on data sources
         if (section.id === 'ma') {
-          // Get MA enrichments (filter POIs where section is 'ma')
-          const maPOIs = poiTypes.filter(poi => poi.section === 'ma');
-          const maEnrichments = maPOIs.map(poi => ({
-            id: poi.id,
-            label: poi.label,
-            description: poi.description,
-            isPOI: poi.isPOI,
-            defaultRadius: poi.defaultRadius,
-            category: poi.category
-          }));
-          
           // Define MA sub-categories (will be populated as layers are added)
+          // When MA layers are added, they will be organized into sub-categories similar to NH
           const maSubCategories: EnrichmentCategory[] = [
             // MA sub-categories will be added here as layers are created
+            // Example structure (commented out until ready):
+            // {
+            //   id: 'ma_massgis',
+            //   title: 'MA MassGIS',
+            //   icon: <img src="/assets/MAMassGIS.webp" alt="MA MassGIS" className="w-full h-full object-cover rounded-full" />,
+            //   description: 'Massachusetts Geographic Information System data layers',
+            //   enrichments: maEnrichments
+            // }
           ];
           
           return {
