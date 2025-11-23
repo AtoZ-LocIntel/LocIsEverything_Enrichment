@@ -294,7 +294,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nh_law_enforcement', label: 'NH Law Enforcement', description: 'NH GRANIT - Police departments, sheriff offices, and law enforcement facilities', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
   { id: 'nh_recreation_trails', label: 'NH Recreation Trails', description: 'NH GRANIT - Recreation trails and hiking paths', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
   { id: 'nh_dot_roads', label: 'NH DOT Roads', description: 'NH GRANIT - New Hampshire Department of Transportation road network', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'nh', section: 'nh' },
-  { id: 'nh_railroads', label: 'NH Railroads', description: 'NH GRANIT - New Hampshire railroad network (active and abandoned)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'nh', section: 'nh' }
+  { id: 'nh_railroads', label: 'NH Railroads', description: 'NH GRANIT - New Hampshire railroad network (active and abandoned)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'nh', section: 'nh' },
+  { id: 'nh_transmission_pipelines', label: 'NH Transmission/Pipelines', description: 'NH GRANIT - New Hampshire transmission lines and pipelines', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'nh', section: 'nh' }
 ];
 
 class POIConfigManager {

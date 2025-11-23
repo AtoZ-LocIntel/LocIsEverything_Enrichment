@@ -17,6 +17,7 @@ import { getNHLawEnforcementData } from '../adapters/nhLawEnforcement';
 import { getNHRecreationTrailsData } from '../adapters/nhRecreationTrails';
 import { getNHDOTRoadsData } from '../adapters/nhDOTRoads';
 import { getNHRailroadsData } from '../adapters/nhRailroads';
+import { getNHTransmissionPipelinesData } from '../adapters/nhTransmissionPipelines';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1338,6 +1339,10 @@ export class EnrichmentService {
       // NH Railroads (NH GRANIT) - Proximity query (line dataset)
       case 'nh_railroads':
         return await this.getNHRailroads(lat, lon, radius);
+      
+      // NH Transmission/Pipelines (NH GRANIT) - Proximity query (line dataset)
+      case 'nh_transmission_pipelines':
+        return await this.getNHTransmissionPipelines(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2171,6 +2176,50 @@ export class EnrichmentService {
         nh_railroads_count: 0,
         nh_railroads_all: [],
         nh_railroads_error: 'Error fetching NH Railroads data'
+      };
+    }
+  }
+
+  private async getNHTransmissionPipelines(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⚡ Fetching NH Transmission/Pipelines data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 0.5 miles if not specified
+      const radiusMiles = radius || 0.5;
+      
+      const transmissionPipelines = await getNHTransmissionPipelinesData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (transmissionPipelines && transmissionPipelines.length > 0) {
+        result.nh_transmission_pipelines_count = transmissionPipelines.length;
+        result.nh_transmission_pipelines_all = transmissionPipelines.map(tp => ({
+          ...tp.attributes,
+          type: tp.type,
+          pia: tp.pia,
+          granitid: tp.granitid,
+          geometry: tp.geometry, // Include geometry for map drawing
+          distance_miles: tp.distance_miles
+        }));
+      } else {
+        result.nh_transmission_pipelines_count = 0;
+        result.nh_transmission_pipelines_all = [];
+      }
+      
+      result.nh_transmission_pipelines_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Transmission/Pipelines data processed:`, {
+        count: result.nh_transmission_pipelines_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Transmission/Pipelines:', error);
+      return {
+        nh_transmission_pipelines_count: 0,
+        nh_transmission_pipelines_all: [],
+        nh_transmission_pipelines_error: 'Error fetching NH Transmission/Pipelines data'
       };
     }
   }

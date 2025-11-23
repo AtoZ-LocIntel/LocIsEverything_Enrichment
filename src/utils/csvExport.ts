@@ -245,7 +245,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_law_enforcement_all' ||
         key === 'nh_recreation_trails_all' ||
         key === 'nh_dot_roads_all' ||
-        key === 'nh_railroads_all') {
+        key === 'nh_railroads_all' ||
+        key === 'nh_transmission_pipelines_all') {
       return;
     }
     
@@ -964,6 +965,40 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           ownership || '',
           operator || '',
           lengthMiles ? `${lengthMiles} miles` : attributesJson,
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_transmission_pipelines_all' && Array.isArray(value)) {
+      // Handle NH Transmission/Pipelines - each line gets its own row with all attributes
+      value.forEach((tp: any) => {
+        const tpType = tp.type || tp.TYPE || tp.Type || tp._type || tp.pipeline_type || tp.PIPELINE_TYPE || 'Unknown Type';
+        const pia = tp.pia || tp.PIA || tp._pia || '';
+        const granitid = tp.granitid || tp.GRANITID || tp.GranitId || tp._granitid || '';
+        
+        const allAttributes = { ...tp };
+        delete allAttributes.type;
+        delete allAttributes.pia;
+        delete allAttributes.granitid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_TRANSMISSION_PIPELINE',
+          tpType || 'Transmission/Pipeline',
+          location.lat.toString(), // Use search location for line (it's a line, not a point)
+          location.lon.toString(),
+          tp.distance_miles !== null && tp.distance_miles !== undefined ? tp.distance_miles.toFixed(2) : '',
+          tpType || attributesJson,
+          pia ? `PIA: ${pia}` : '',
+          granitid ? `GRANIT ID: ${granitid}` : '',
+          attributesJson,
           attributesJson,
           'NH GRANIT'
         ]);

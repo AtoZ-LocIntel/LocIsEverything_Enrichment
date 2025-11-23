@@ -336,7 +336,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nh_parcels_all' || // Skip parcels array (handled separately for map drawing)
     key === 'nh_recreation_trails_all' || // Skip trails array (handled separately for map drawing)
     key === 'nh_dot_roads_all' || // Skip roads array (handled separately for map drawing)
-    key === 'nh_railroads_all' // Skip railroads array (handled separately for map drawing)
+    key === 'nh_railroads_all' || // Skip railroads array (handled separately for map drawing)
+    key === 'nh_transmission_pipelines_all' // Skip transmission/pipelines array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -1238,6 +1239,87 @@ const MapView: React.FC<MapViewProps> = ({
               }
             } catch (error) {
               console.error('Error drawing NH Railroad polyline:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Transmission/Pipelines as polylines on the map
+      if (enrichments.nh_transmission_pipelines_all && Array.isArray(enrichments.nh_transmission_pipelines_all)) {
+        enrichments.nh_transmission_pipelines_all.forEach((tp: any) => {
+          if (tp.geometry && tp.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              // ESRI polylines have paths (array of coordinate arrays)
+              const paths = tp.geometry.paths;
+              if (paths && paths.length > 0) {
+                // For each path in the polyline, create a separate polyline
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    // Since we requested outSR=4326, coordinates should already be in WGS84
+                    // Convert [lon, lat] to [lat, lon] for Leaflet
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const tpType = tp.type || tp.TYPE || tp.Type || tp._type || tp.pipeline_type || tp.PIPELINE_TYPE || 'Unknown Type';
+                  const pia = tp.pia || tp.PIA || tp._pia || null;
+                  const granitid = tp.granitid || tp.GRANITID || tp.GranitId || tp._granitid || null;
+
+                  // Create polyline with orange color for transmission/pipelines
+                  const polyline = L.polyline(latlngs, {
+                    color: '#f97316', // Orange color for transmission/pipelines
+                    weight: 3,
+                    opacity: 0.7,
+                    smoothFactor: 1
+                  });
+
+                  // Build popup content with all transmission/pipeline attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ⚡ ${tpType || 'Transmission/Pipeline'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${tpType ? `<div><strong>Type:</strong> ${tpType}</div>` : ''}
+                        ${pia !== null && pia !== undefined ? `<div><strong>PIA:</strong> ${pia}</div>` : ''}
+                        ${granitid ? `<div><strong>GRANIT ID:</strong> ${granitid}</div>` : ''}
+                        ${tp.distance_miles !== null && tp.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${tp.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all transmission/pipeline attributes (excluding internal fields)
+                  const excludeFields = ['type', 'pia', 'granitid', 'geometry', 'distance_miles'];
+                  Object.entries(tp).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi);
+                  bounds.extend(polyline.getBounds());
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing NH Transmission/Pipeline polyline:', error);
             }
           }
         });
