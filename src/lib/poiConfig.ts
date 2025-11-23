@@ -284,7 +284,15 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nh_voting_wards', label: 'New Hampshire Political Districts (Voting Wards)', description: 'NH GRANIT - Voting ward boundaries for point-in-polygon query', isPOI: false, defaultRadius: 0, category: 'nh', section: 'nh' },
   { id: 'nh_senate_districts_2022', label: 'New Hampshire Senate District Boundaries - 2022', description: 'NH GRANIT - Senate district boundaries for point-in-polygon query', isPOI: false, defaultRadius: 0, category: 'nh', section: 'nh' },
   { id: 'nh_parcels', label: 'New Hampshire Parcels', description: 'NH GRANIT - Parcel boundaries for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'nh', section: 'nh' },
-  { id: 'nh_key_destinations', label: 'NH Key Destinations - Points', description: 'NH GRANIT - Key destinations including hospitals, schools, municipal offices, places of worship, and more', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' }
+  { id: 'nh_key_destinations', label: 'NH Key Destinations - Points', description: 'NH GRANIT - Key destinations including hospitals, schools, municipal offices, places of worship, and more', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_nursing_homes', label: 'NH Nursing Homes', description: 'NH GRANIT - Nursing homes and assisted living facilities', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_ems', label: 'NH Emergency Medical Services', description: 'NH GRANIT - Emergency Medical Services (EMS) facilities', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_fire_stations', label: 'NH Fire Stations', description: 'NH GRANIT - Fire stations and fire departments', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_places_of_worship', label: 'NH Places of Worship', description: 'NH GRANIT - Churches, synagogues, mosques, and other places of worship', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_hospitals', label: 'NH Hospitals', description: 'NH GRANIT - Hospitals and medical facilities', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_public_waters_access', label: 'NH Access Sites to Public Waters', description: 'NH GRANIT - Public access sites to lakes, rivers, and other water bodies', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_law_enforcement', label: 'NH Law Enforcement', description: 'NH GRANIT - Police departments, sheriff offices, and law enforcement facilities', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_recreation_trails', label: 'NH Recreation Trails', description: 'NH GRANIT - Recreation trails and hiking paths', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' }
 ];
 
 class POIConfigManager {

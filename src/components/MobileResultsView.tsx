@@ -72,7 +72,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       if (value.length === 0) return 'None found';
       
       // For detailed POI data, show count only in mobile form view
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all')) {
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all') || key.includes('nh_nursing_homes_all') || key.includes('nh_ems_all') || key.includes('nh_fire_stations_all') || key.includes('nh_places_of_worship_all') || key.includes('nh_hospitals_all') || key.includes('nh_public_waters_access_all') || key.includes('nh_law_enforcement_all') || key.includes('nh_recreation_trails_all')) {
         return `${value.length} found (see CSV for details)`;
       }
       
@@ -190,7 +190,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // New Hampshire Data
-    if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_parcel') || key.includes('nh_key_destinations')) {
+    if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_parcel') || key.includes('nh_key_destinations') || key.includes('nh_nursing_homes') || key.includes('nh_ems') || key.includes('nh_fire_stations') || key.includes('nh_places_of_worship') || key.includes('nh_hospitals') || key.includes('nh_public_waters_access') || key.includes('nh_law_enforcement') || key.includes('nh_recreation_trails')) {
       return 'New Hampshire Data';
     }
     
@@ -354,6 +354,46 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // NH Key Destinations fields - skip the _all array (handled separately)
       if (key.includes('nh_key_destinations') && key !== 'nh_key_destinations_all') {
         return selectedEnrichments.includes('nh_key_destinations');
+      }
+      
+      // NH Nursing Homes fields - skip the _all array (handled separately)
+      if (key.includes('nh_nursing_homes') && key !== 'nh_nursing_homes_all') {
+        return selectedEnrichments.includes('nh_nursing_homes');
+      }
+      
+      // NH EMS fields - skip the _all array (handled separately)
+      if (key.includes('nh_ems') && key !== 'nh_ems_all') {
+        return selectedEnrichments.includes('nh_ems');
+      }
+      
+      // NH Fire Stations fields - skip the _all array (handled separately)
+      if (key.includes('nh_fire_stations') && key !== 'nh_fire_stations_all') {
+        return selectedEnrichments.includes('nh_fire_stations');
+      }
+      
+      // NH Places of Worship fields - skip the _all array (handled separately)
+      if (key.includes('nh_places_of_worship') && key !== 'nh_places_of_worship_all') {
+        return selectedEnrichments.includes('nh_places_of_worship');
+      }
+      
+      // NH Hospitals fields - skip the _all array (handled separately)
+      if (key.includes('nh_hospitals') && key !== 'nh_hospitals_all') {
+        return selectedEnrichments.includes('nh_hospitals');
+      }
+      
+      // NH Access Sites to Public Waters fields - skip the _all array (handled separately)
+      if (key.includes('nh_public_waters_access') && key !== 'nh_public_waters_access_all') {
+        return selectedEnrichments.includes('nh_public_waters_access');
+      }
+      
+      // NH Law Enforcement fields - skip the _all array (handled separately)
+      if (key.includes('nh_law_enforcement') && key !== 'nh_law_enforcement_all') {
+        return selectedEnrichments.includes('nh_law_enforcement');
+      }
+      
+      // NH Recreation Trails fields - skip the _all array (handled separately)
+      if (key.includes('nh_recreation_trails') && key !== 'nh_recreation_trails_all') {
+        return selectedEnrichments.includes('nh_recreation_trails');
       }
       
       return false;

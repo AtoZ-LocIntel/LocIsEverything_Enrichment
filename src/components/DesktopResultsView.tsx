@@ -51,7 +51,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (value.length === 0) return 'None found';
       
       // For detailed POI data, show count only in form view
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all')) {
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all') || key.includes('nh_nursing_homes_all') || key.includes('nh_ems_all') || key.includes('nh_fire_stations_all') || key.includes('nh_places_of_worship_all') || key.includes('nh_hospitals_all') || key.includes('nh_public_waters_access_all') || key.includes('nh_law_enforcement_all') || key.includes('nh_recreation_trails_all')) {
         return `${value.length} found (see CSV for details)`;
       }
       
@@ -209,6 +209,54 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('nh_key_destinations');
         }
         
+        // NH Nursing Homes fields - only show if NH Nursing Homes enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_nursing_homes') && key !== 'nh_nursing_homes_all') {
+          return selectedEnrichments.includes('nh_nursing_homes');
+        }
+        
+        // NH EMS fields - only show if NH EMS enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_ems') && key !== 'nh_ems_all') {
+          return selectedEnrichments.includes('nh_ems');
+        }
+        
+        // NH Fire Stations fields - only show if NH Fire Stations enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_fire_stations') && key !== 'nh_fire_stations_all') {
+          return selectedEnrichments.includes('nh_fire_stations');
+        }
+        
+        // NH Places of Worship fields - only show if NH Places of Worship enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_places_of_worship') && key !== 'nh_places_of_worship_all') {
+          return selectedEnrichments.includes('nh_places_of_worship');
+        }
+        
+        // NH Hospitals fields - only show if NH Hospitals enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_hospitals') && key !== 'nh_hospitals_all') {
+          return selectedEnrichments.includes('nh_hospitals');
+        }
+        
+        // NH Access Sites to Public Waters fields - only show if NH Access Sites to Public Waters enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_public_waters_access') && key !== 'nh_public_waters_access_all') {
+          return selectedEnrichments.includes('nh_public_waters_access');
+        }
+        
+        // NH Law Enforcement fields - only show if NH Law Enforcement enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_law_enforcement') && key !== 'nh_law_enforcement_all') {
+          return selectedEnrichments.includes('nh_law_enforcement');
+        }
+        
+        // NH Recreation Trails fields - only show if NH Recreation Trails enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('nh_recreation_trails') && key !== 'nh_recreation_trails_all') {
+          return selectedEnrichments.includes('nh_recreation_trails');
+        }
+        
         return false;
       });
       
@@ -258,7 +306,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Resources';
       } else if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
         category = 'Natural Resources';
-      } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_parcel') || key.includes('nh_key_destinations')) {
+      } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_parcel') || key.includes('nh_key_destinations') || key.includes('nh_nursing_homes') || key.includes('nh_ems') || key.includes('nh_fire_stations') || key.includes('nh_places_of_worship') || key.includes('nh_hospitals') || key.includes('nh_public_waters_access') || key.includes('nh_law_enforcement') || key.includes('nh_recreation_trails')) {
         category = 'New Hampshire Data';
       } else if (key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';

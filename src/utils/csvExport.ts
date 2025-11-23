@@ -235,7 +235,15 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key.includes('_features') ||
         key.includes('_nearby_features') ||
         key === 'nh_parcels_all' ||
-        key === 'nh_key_destinations_all') {
+        key === 'nh_key_destinations_all' ||
+        key === 'nh_nursing_homes_all' ||
+        key === 'nh_ems_all' ||
+        key === 'nh_fire_stations_all' ||
+        key === 'nh_places_of_worship_all' ||
+        key === 'nh_hospitals_all' ||
+        key === 'nh_public_waters_access_all' ||
+        key === 'nh_law_enforcement_all' ||
+        key === 'nh_recreation_trails_all') {
       return;
     }
     
@@ -497,6 +505,393 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Owner (not applicable for destinations)
           '', // Phone (not applicable for destinations)
           attributesJson, // Full attributes in Website field for easy access
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_nursing_homes_all' && Array.isArray(value)) {
+      // Handle NH Nursing Homes - each nursing home gets its own row with all attributes
+      value.forEach((home: any) => {
+        // Extract name and facility type
+        const homeName = home.name || home.NAME || home.Name || home._name || 'Unknown Nursing Home';
+        const facType = home.fac_type || home.FAC_TYPE || home.FacType || home._fac_type || 'Unknown Type';
+        
+        // Extract address information
+        const address = home.address || home.ADDRESS || home.Address || '';
+        const city = home.city || home.CITY || home.City || '';
+        const state = home.state || home.STATE || home.State || 'NH';
+        const zip = home.zip || home.ZIP || home.Zip || '';
+        const telephone = home.telephone || home.TELEPHONE || home.Telephone || '';
+        const beds = home.beds || home.BEDS || home.Beds || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        // Collect all other attributes as a JSON string for full data access
+        const allAttributes = { ...home };
+        delete allAttributes.name;
+        delete allAttributes.fac_type;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.zip;
+        delete allAttributes.telephone;
+        delete allAttributes.beds;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_NURSING_HOME',
+          homeName,
+          (home.lat || location.lat).toString(),
+          (home.lon || location.lon).toString(),
+          home.distance_miles !== null && home.distance_miles !== undefined ? home.distance_miles.toFixed(2) : '',
+          facType,
+          fullAddress || attributesJson, // Use address if available, otherwise full JSON
+          telephone,
+          '', // Website (not typically available for nursing homes)
+          attributesJson, // Full attributes in Website field for easy access
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_ems_all' && Array.isArray(value)) {
+      // Handle NH EMS - each EMS facility gets its own row with all attributes
+      value.forEach((facility: any) => {
+        const facilityName = facility.name || facility.NAME || facility.Name || facility._name || 'Unknown EMS Facility';
+        const facilityType = facility.type || facility.TYPE || facility.Type || facility._type || 'Unknown Type';
+        
+        const address = facility.address || facility.ADDRESS || facility.Address || '';
+        const city = facility.city || facility.CITY || facility.City || '';
+        const state = facility.state || facility.STATE || facility.State || 'NH';
+        const zip = facility.zip || facility.ZIP || facility.Zip || '';
+        const telephone = facility.telephone || facility.TELEPHONE || facility.Telephone || '';
+        const owner = facility.owner || facility.OWNER || facility.Owner || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...facility };
+        delete allAttributes.name;
+        delete allAttributes.type;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.zip;
+        delete allAttributes.telephone;
+        delete allAttributes.owner;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_EMS',
+          facilityName,
+          (facility.lat || location.lat).toString(),
+          (facility.lon || location.lon).toString(),
+          facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '',
+          facilityType,
+          fullAddress || attributesJson,
+          telephone,
+          '',
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_fire_stations_all' && Array.isArray(value)) {
+      // Handle NH Fire Stations - each fire station gets its own row with all attributes
+      value.forEach((station: any) => {
+        const stationName = station.name || station.NAME || station.Name || station._name || 'Unknown Fire Station';
+        const stationType = station.type || station.TYPE || station.Type || station._type || 'Unknown Type';
+        
+        const address = station.address || station.ADDRESS || station.Address || '';
+        const city = station.city || station.CITY || station.City || '';
+        const state = station.state || station.STATE || station.State || 'NH';
+        const zip = station.zip || station.ZIP || station.Zip || '';
+        const telephone = station.telephone || station.TELEPHONE || station.Telephone || '';
+        const owner = station.owner || station.OWNER || station.Owner || '';
+        const fdid = station.fdid || station.FDID || station.Fdid || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...station };
+        delete allAttributes.name;
+        delete allAttributes.type;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.zip;
+        delete allAttributes.telephone;
+        delete allAttributes.owner;
+        delete allAttributes.fdid;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_FIRE_STATION',
+          stationName,
+          (station.lat || location.lat).toString(),
+          (station.lon || location.lon).toString(),
+          station.distance_miles !== null && station.distance_miles !== undefined ? station.distance_miles.toFixed(2) : '',
+          stationType,
+          fullAddress || attributesJson,
+          telephone,
+          '',
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_places_of_worship_all' && Array.isArray(value)) {
+      // Handle NH Places of Worship - each place gets its own row with all attributes
+      value.forEach((place: any) => {
+        const placeName = place.name || place.NAME || place.Name || place._name || 'Unknown Place of Worship';
+        const subtype = place.subtype || place.SUBTYPE || place.Subtype || place._subtype || 'Unknown Type';
+        const denom = place.denom || place.DENOM || place.Denom || place._denom || '';
+        
+        const address = place.address || place.ADDRESS || place.Address || '';
+        const city = place.city || place.CITY || place.City || '';
+        const state = place.state || place.STATE || place.State || 'NH';
+        const zip = place.zip || place.ZIP || place.Zip || '';
+        const telephone = place.telephone || place.TELEPHONE || place.Telephone || '';
+        const attendance = place.attendance || place.ATTENDANCE || place.Attendance || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...place };
+        delete allAttributes.name;
+        delete allAttributes.subtype;
+        delete allAttributes.denom;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.zip;
+        delete allAttributes.telephone;
+        delete allAttributes.attendance;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_PLACE_OF_WORSHIP',
+          placeName,
+          (place.lat || location.lat).toString(),
+          (place.lon || location.lon).toString(),
+          place.distance_miles !== null && place.distance_miles !== undefined ? place.distance_miles.toFixed(2) : '',
+          `${subtype}${denom ? ` - ${denom}` : ''}`,
+          fullAddress || attributesJson,
+          telephone,
+          '',
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_hospitals_all' && Array.isArray(value)) {
+      // Handle NH Hospitals - each hospital gets its own row with all attributes
+      value.forEach((hospital: any) => {
+        const hospitalName = hospital.name || hospital.NAME || hospital.Name || hospital._name || 'Unknown Hospital';
+        const facType = hospital.fac_type || hospital.FAC_TYPE || hospital.FacType || hospital._fac_type || 'Unknown Type';
+        
+        const address = hospital.address || hospital.ADDRESS || hospital.Address || '';
+        const city = hospital.city || hospital.CITY || hospital.City || '';
+        const state = hospital.state || hospital.STATE || hospital.State || 'NH';
+        const zip = hospital.zip || hospital.ZIP || hospital.Zip || '';
+        const telephone = hospital.telephone || hospital.TELEPHONE || hospital.Telephone || '';
+        const beds = hospital.beds || hospital.BEDS || hospital.Beds || '';
+        const owner = hospital.owner || hospital.OWNER || hospital.Owner || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...hospital };
+        delete allAttributes.name;
+        delete allAttributes.fac_type;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.zip;
+        delete allAttributes.telephone;
+        delete allAttributes.beds;
+        delete allAttributes.owner;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_HOSPITAL',
+          hospitalName,
+          (hospital.lat || location.lat).toString(),
+          (hospital.lon || location.lon).toString(),
+          hospital.distance_miles !== null && hospital.distance_miles !== undefined ? hospital.distance_miles.toFixed(2) : '',
+          facType,
+          fullAddress || attributesJson,
+          telephone,
+          '',
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_public_waters_access_all' && Array.isArray(value)) {
+      // Handle NH Access Sites to Public Waters - each site gets its own row with all attributes
+      value.forEach((site: any) => {
+        const facilityName = site.facility || site.FACILITY || site.Facility || site._facility || 'Unknown Access Site';
+        const waterBody = site.water_body || site.WATER_BODY || site.WaterBody || site._water_body || 'Unknown Water Body';
+        const wbType = site.wb_type || site.WB_TYPE || site.WbType || site._wb_type || '';
+        const accessTyp = site.access_typ || site.ACCESS_TYP || site.AccessTyp || site._access_typ || '';
+        
+        const town = site.town || site.TOWN || site.Town || '';
+        const county = site.county || site.COUNTY || site.County || '';
+        const ownership = site.ownership || site.OWNERSHIP || site.Ownership || '';
+        const fullLocation = [town, county, 'NH'].filter(Boolean).join(', ');
+        
+        // Build amenities string
+        const amenities = [];
+        if (site.boat === 'Yes') amenities.push('Boat');
+        if (site.swim === 'Yes') amenities.push('Swim');
+        if (site.fish === 'Yes') amenities.push('Fish');
+        if (site.picnic === 'Yes') amenities.push('Picnic');
+        if (site.camp === 'Yes') amenities.push('Camp');
+        const amenitiesStr = amenities.length > 0 ? amenities.join(', ') : 'None';
+        
+        const allAttributes = { ...site };
+        delete allAttributes.facility;
+        delete allAttributes.water_body;
+        delete allAttributes.wb_type;
+        delete allAttributes.access_typ;
+        delete allAttributes.town;
+        delete allAttributes.county;
+        delete allAttributes.ownership;
+        delete allAttributes.boat;
+        delete allAttributes.swim;
+        delete allAttributes.fish;
+        delete allAttributes.picnic;
+        delete allAttributes.camp;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_PUBLIC_WATERS_ACCESS',
+          facilityName,
+          (site.lat || location.lat).toString(),
+          (site.lon || location.lon).toString(),
+          site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : '',
+          `${waterBody}${wbType ? ` (${wbType})` : ''}${accessTyp ? ` - ${accessTyp}` : ''}`,
+          fullLocation || attributesJson,
+          amenitiesStr,
+          ownership,
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_law_enforcement_all' && Array.isArray(value)) {
+      // Handle NH Law Enforcement - each facility gets its own row with all attributes
+      value.forEach((facility: any) => {
+        const facilityName = facility.name || facility.NAME || facility.Name || facility._name || 'Unknown Law Enforcement Facility';
+        const facilityType = facility.type || facility.TYPE || facility.Type || facility._type || 'Unknown Type';
+        
+        const address = facility.address || facility.ADDRESS || facility.Address || '';
+        const city = facility.city || facility.CITY || facility.City || '';
+        const state = facility.state || facility.STATE || facility.State || 'NH';
+        const zip = facility.zip || facility.ZIP || facility.Zip || '';
+        const telephone = facility.telephone || facility.TELEPHONE || facility.Telephone || '';
+        const owner = facility.owner || facility.OWNER || facility.Owner || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...facility };
+        delete allAttributes.name;
+        delete allAttributes.type;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.zip;
+        delete allAttributes.telephone;
+        delete allAttributes.owner;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_LAW_ENFORCEMENT',
+          facilityName,
+          (facility.lat || location.lat).toString(),
+          (facility.lon || location.lon).toString(),
+          facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '',
+          facilityType,
+          fullAddress || attributesJson,
+          telephone,
+          '',
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_recreation_trails_all' && Array.isArray(value)) {
+      // Handle NH Recreation Trails - each trail gets its own row with all attributes
+      value.forEach((trail: any) => {
+        const trailName = trail.name || trail.NAME || trail.Name || trail._name || trail.trail_name || trail.TRAIL_NAME || 'Unknown Trail';
+        const trailType = trail.trail_type || trail.TRAIL_TYPE || trail.TrailType || trail._trail_type || trail.type || trail.TYPE || 'Unknown Type';
+        const lengthMiles = trail.length_miles || trail.LENGTH_MILES || trail.LengthMiles || trail.length || trail.LENGTH || '';
+        
+        const allAttributes = { ...trail };
+        delete allAttributes.name;
+        delete allAttributes.trail_name;
+        delete allAttributes.trail_type;
+        delete allAttributes.type;
+        delete allAttributes.length_miles;
+        delete allAttributes.length;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_RECREATION_TRAIL',
+          trailName,
+          location.lat.toString(), // Use search location for trail (it's a line, not a point)
+          location.lon.toString(),
+          trail.distance_miles !== null && trail.distance_miles !== undefined ? trail.distance_miles.toFixed(2) : '',
+          trailType,
+          lengthMiles ? `${lengthMiles} miles` : attributesJson,
+          '',
+          '',
+          attributesJson,
           'NH GRANIT'
         ]);
       });

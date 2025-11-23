@@ -7,6 +7,14 @@ import { getNHVotingWardData } from '../adapters/nhVotingWards';
 import { getNHSenateDistrictData } from '../adapters/nhSenateDistricts';
 import { getNHParcelData } from '../adapters/nhParcels';
 import { getNHKeyDestinationsData } from '../adapters/nhKeyDestinations';
+import { getNHNursingHomesData } from '../adapters/nhNursingHomes';
+import { getNHEMSData } from '../adapters/nhEMS';
+import { getNHFireStationsData } from '../adapters/nhFireStations';
+import { getNHPlacesOfWorshipData } from '../adapters/nhPlacesOfWorship';
+import { getNHHospitalsData } from '../adapters/nhHospitals';
+import { getNHPublicWatersAccessData } from '../adapters/nhPublicWatersAccess';
+import { getNHLawEnforcementData } from '../adapters/nhLawEnforcement';
+import { getNHRecreationTrailsData } from '../adapters/nhRecreationTrails';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1288,6 +1296,38 @@ export class EnrichmentService {
       // NH Key Destinations (NH GRANIT) - Proximity query
       case 'nh_key_destinations':
         return await this.getNHKeyDestinations(lat, lon, radius);
+      
+      // NH Nursing Homes (NH GRANIT) - Proximity query
+      case 'nh_nursing_homes':
+        return await this.getNHNursingHomes(lat, lon, radius);
+      
+      // NH Emergency Medical Services (NH GRANIT) - Proximity query
+      case 'nh_ems':
+        return await this.getNHEMS(lat, lon, radius);
+      
+      // NH Fire Stations (NH GRANIT) - Proximity query
+      case 'nh_fire_stations':
+        return await this.getNHFireStations(lat, lon, radius);
+      
+      // NH Places of Worship (NH GRANIT) - Proximity query
+      case 'nh_places_of_worship':
+        return await this.getNHPlacesOfWorship(lat, lon, radius);
+      
+      // NH Hospitals (NH GRANIT) - Proximity query
+      case 'nh_hospitals':
+        return await this.getNHHospitals(lat, lon, radius);
+      
+      // NH Access Sites to Public Waters (NH GRANIT) - Proximity query
+      case 'nh_public_waters_access':
+        return await this.getNHPublicWatersAccess(lat, lon, radius);
+      
+      // NH Law Enforcement (NH GRANIT) - Proximity query
+      case 'nh_law_enforcement':
+        return await this.getNHLawEnforcement(lat, lon, radius);
+      
+      // NH Recreation Trails (NH GRANIT) - Proximity query (line dataset)
+      case 'nh_recreation_trails':
+        return await this.getNHRecreationTrails(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -1630,6 +1670,407 @@ export class EnrichmentService {
         nh_key_destinations_count: 0,
         nh_key_destinations_all: [],
         nh_key_destinations_error: 'Error fetching NH Key Destinations data'
+      };
+    }
+  }
+
+  private async getNHNursingHomes(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏥 Fetching NH Nursing Homes data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const nursingHomes = await getNHNursingHomesData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (nursingHomes && nursingHomes.length > 0) {
+        result.nh_nursing_homes_count = nursingHomes.length;
+        result.nh_nursing_homes_all = nursingHomes.map(home => ({
+          ...home.attributes,
+          name: home.name,
+          fac_type: home.fac_type,
+          address: home.address,
+          city: home.city,
+          state: home.state,
+          zip: home.zip,
+          telephone: home.telephone,
+          beds: home.beds,
+          lat: home.lat,
+          lon: home.lon,
+          distance_miles: home.distance_miles
+        }));
+      } else {
+        result.nh_nursing_homes_count = 0;
+        result.nh_nursing_homes_all = [];
+      }
+      
+      result.nh_nursing_homes_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Nursing Homes data processed:`, {
+        count: result.nh_nursing_homes_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Nursing Homes:', error);
+      return {
+        nh_nursing_homes_count: 0,
+        nh_nursing_homes_all: [],
+        nh_nursing_homes_error: 'Error fetching NH Nursing Homes data'
+      };
+    }
+  }
+
+  private async getNHEMS(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚑 Fetching NH EMS data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const emsFacilities = await getNHEMSData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (emsFacilities && emsFacilities.length > 0) {
+        result.nh_ems_count = emsFacilities.length;
+        result.nh_ems_all = emsFacilities.map(facility => ({
+          ...facility.attributes,
+          name: facility.name,
+          type: facility.type,
+          address: facility.address,
+          city: facility.city,
+          state: facility.state,
+          zip: facility.zip,
+          telephone: facility.telephone,
+          owner: facility.owner,
+          lat: facility.lat,
+          lon: facility.lon,
+          distance_miles: facility.distance_miles
+        }));
+      } else {
+        result.nh_ems_count = 0;
+        result.nh_ems_all = [];
+      }
+      
+      result.nh_ems_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH EMS data processed:`, {
+        count: result.nh_ems_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH EMS:', error);
+      return {
+        nh_ems_count: 0,
+        nh_ems_all: [],
+        nh_ems_error: 'Error fetching NH EMS data'
+      };
+    }
+  }
+
+  private async getNHFireStations(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚒 Fetching NH Fire Stations data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const fireStations = await getNHFireStationsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (fireStations && fireStations.length > 0) {
+        result.nh_fire_stations_count = fireStations.length;
+        result.nh_fire_stations_all = fireStations.map(station => ({
+          ...station.attributes,
+          name: station.name,
+          type: station.type,
+          address: station.address,
+          city: station.city,
+          state: station.state,
+          zip: station.zip,
+          telephone: station.telephone,
+          owner: station.owner,
+          fdid: station.fdid,
+          lat: station.lat,
+          lon: station.lon,
+          distance_miles: station.distance_miles
+        }));
+      } else {
+        result.nh_fire_stations_count = 0;
+        result.nh_fire_stations_all = [];
+      }
+      
+      result.nh_fire_stations_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Fire Stations data processed:`, {
+        count: result.nh_fire_stations_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Fire Stations:', error);
+      return {
+        nh_fire_stations_count: 0,
+        nh_fire_stations_all: [],
+        nh_fire_stations_error: 'Error fetching NH Fire Stations data'
+      };
+    }
+  }
+
+  private async getNHPlacesOfWorship(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🕌 Fetching NH Places of Worship data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const placesOfWorship = await getNHPlacesOfWorshipData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (placesOfWorship && placesOfWorship.length > 0) {
+        result.nh_places_of_worship_count = placesOfWorship.length;
+        result.nh_places_of_worship_all = placesOfWorship.map(place => ({
+          ...place.attributes,
+          name: place.name,
+          subtype: place.subtype,
+          denom: place.denom,
+          address: place.address,
+          city: place.city,
+          state: place.state,
+          zip: place.zip,
+          telephone: place.telephone,
+          attendance: place.attendance,
+          lat: place.lat,
+          lon: place.lon,
+          distance_miles: place.distance_miles
+        }));
+      } else {
+        result.nh_places_of_worship_count = 0;
+        result.nh_places_of_worship_all = [];
+      }
+      
+      result.nh_places_of_worship_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Places of Worship data processed:`, {
+        count: result.nh_places_of_worship_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Places of Worship:', error);
+      return {
+        nh_places_of_worship_count: 0,
+        nh_places_of_worship_all: [],
+        nh_places_of_worship_error: 'Error fetching NH Places of Worship data'
+      };
+    }
+  }
+
+  private async getNHHospitals(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏥 Fetching NH Hospitals data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const hospitals = await getNHHospitalsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (hospitals && hospitals.length > 0) {
+        result.nh_hospitals_count = hospitals.length;
+        result.nh_hospitals_all = hospitals.map(hospital => ({
+          ...hospital.attributes,
+          name: hospital.name,
+          fac_type: hospital.fac_type,
+          address: hospital.address,
+          city: hospital.city,
+          state: hospital.state,
+          zip: hospital.zip,
+          telephone: hospital.telephone,
+          beds: hospital.beds,
+          owner: hospital.owner,
+          lat: hospital.lat,
+          lon: hospital.lon,
+          distance_miles: hospital.distance_miles
+        }));
+      } else {
+        result.nh_hospitals_count = 0;
+        result.nh_hospitals_all = [];
+      }
+      
+      result.nh_hospitals_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Hospitals data processed:`, {
+        count: result.nh_hospitals_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Hospitals:', error);
+      return {
+        nh_hospitals_count: 0,
+        nh_hospitals_all: [],
+        nh_hospitals_error: 'Error fetching NH Hospitals data'
+      };
+    }
+  }
+
+  private async getNHPublicWatersAccess(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NH Access Sites to Public Waters data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const accessSites = await getNHPublicWatersAccessData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (accessSites && accessSites.length > 0) {
+        result.nh_public_waters_access_count = accessSites.length;
+        result.nh_public_waters_access_all = accessSites.map(site => ({
+          ...site.attributes,
+          facility: site.facility,
+          water_body: site.water_body,
+          wb_type: site.wb_type,
+          access_typ: site.access_typ,
+          town: site.town,
+          county: site.county,
+          ownership: site.ownership,
+          boat: site.boat,
+          swim: site.swim,
+          fish: site.fish,
+          picnic: site.picnic,
+          camp: site.camp,
+          lat: site.lat,
+          lon: site.lon,
+          distance_miles: site.distance_miles
+        }));
+      } else {
+        result.nh_public_waters_access_count = 0;
+        result.nh_public_waters_access_all = [];
+      }
+      
+      result.nh_public_waters_access_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Access Sites to Public Waters data processed:`, {
+        count: result.nh_public_waters_access_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Access Sites to Public Waters:', error);
+      return {
+        nh_public_waters_access_count: 0,
+        nh_public_waters_access_all: [],
+        nh_public_waters_access_error: 'Error fetching NH Access Sites to Public Waters data'
+      };
+    }
+  }
+
+  private async getNHLawEnforcement(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚔 Fetching NH Law Enforcement data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const lawEnforcementFacilities = await getNHLawEnforcementData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (lawEnforcementFacilities && lawEnforcementFacilities.length > 0) {
+        result.nh_law_enforcement_count = lawEnforcementFacilities.length;
+        result.nh_law_enforcement_all = lawEnforcementFacilities.map(facility => ({
+          ...facility.attributes,
+          name: facility.name,
+          type: facility.type,
+          address: facility.address,
+          city: facility.city,
+          state: facility.state,
+          zip: facility.zip,
+          telephone: facility.telephone,
+          owner: facility.owner,
+          lat: facility.lat,
+          lon: facility.lon,
+          distance_miles: facility.distance_miles
+        }));
+      } else {
+        result.nh_law_enforcement_count = 0;
+        result.nh_law_enforcement_all = [];
+      }
+      
+      result.nh_law_enforcement_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Law Enforcement data processed:`, {
+        count: result.nh_law_enforcement_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Law Enforcement:', error);
+      return {
+        nh_law_enforcement_count: 0,
+        nh_law_enforcement_all: [],
+        nh_law_enforcement_error: 'Error fetching NH Law Enforcement data'
+      };
+    }
+  }
+
+  private async getNHRecreationTrails(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🥾 Fetching NH Recreation Trails data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const trails = await getNHRecreationTrailsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (trails && trails.length > 0) {
+        result.nh_recreation_trails_count = trails.length;
+        result.nh_recreation_trails_all = trails.map(trail => ({
+          ...trail.attributes,
+          name: trail.name,
+          trail_type: trail.trail_type,
+          length_miles: trail.length_miles,
+          geometry: trail.geometry, // Include geometry for map drawing
+          distance_miles: trail.distance_miles
+        }));
+      } else {
+        result.nh_recreation_trails_count = 0;
+        result.nh_recreation_trails_all = [];
+      }
+      
+      result.nh_recreation_trails_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Recreation Trails data processed:`, {
+        count: result.nh_recreation_trails_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Recreation Trails:', error);
+      return {
+        nh_recreation_trails_count: 0,
+        nh_recreation_trails_all: [],
+        nh_recreation_trails_error: 'Error fetching NH Recreation Trails data'
       };
     }
   }

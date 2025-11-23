@@ -333,7 +333,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key.toLowerCase().includes('_raw') ||
     key.toLowerCase().includes('_geojson') ||
     key.includes('_attributes') || // Skip attributes fields (raw JSON data)
-    key === 'nh_parcels_all' // Skip parcels array (handled separately for map drawing)
+    key === 'nh_parcels_all' || // Skip parcels array (handled separately for map drawing)
+    key === 'nh_recreation_trails_all' // Skip trails array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -708,6 +709,574 @@ const MapView: React.FC<MapViewProps> = ({
       locationMarker.bindPopup(createPopupContent(result), { maxWidth: 540 });
       locationMarker.addTo(primary);
 
+      // Draw NH EMS facilities as markers on the map
+      if (enrichments.nh_ems_all && Array.isArray(enrichments.nh_ems_all)) {
+        enrichments.nh_ems_all.forEach((facility: any) => {
+          if (facility.lat && facility.lon) {
+            try {
+              const facilityLat = facility.lat;
+              const facilityLon = facility.lon;
+              const facilityName = facility.name || facility.NAME || facility.Name || 'Unknown EMS Facility';
+              const facilityType = facility.type || facility.TYPE || facility.Type || 'Unknown Type';
+              
+              // Create a custom icon for EMS facilities
+              const icon = createPOIIcon('🚑', '#ef4444'); // Red icon for emergency services
+              
+              const marker = L.marker([facilityLat, facilityLon], { icon });
+              
+              // Build popup content with all EMS facility attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🚑 ${facilityName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Type:</strong> ${facilityType}</div>
+                    ${facility.address ? `<div><strong>Address:</strong> ${facility.address}</div>` : ''}
+                    ${facility.city ? `<div><strong>City:</strong> ${facility.city}</div>` : ''}
+                    ${facility.telephone ? `<div><strong>Phone:</strong> ${facility.telephone}</div>` : ''}
+                    ${facility.owner ? `<div><strong>Owner:</strong> ${facility.owner}</div>` : ''}
+                    ${facility.distance_miles !== null && facility.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${facility.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all EMS facility attributes (excluding internal fields)
+              const excludeFields = ['name', 'type', 'address', 'city', 'state', 'zip', 'telephone', 'owner', 'lat', 'lon', 'distance_miles'];
+              Object.entries(facility).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this EMS facility
+              bounds.extend([facilityLat, facilityLon]);
+            } catch (error) {
+              console.error('Error drawing NH EMS facility marker:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Places of Worship as markers on the map
+      if (enrichments.nh_places_of_worship_all && Array.isArray(enrichments.nh_places_of_worship_all)) {
+        enrichments.nh_places_of_worship_all.forEach((place: any) => {
+          if (place.lat && place.lon) {
+            try {
+              const placeLat = place.lat;
+              const placeLon = place.lon;
+              const placeName = place.name || place.NAME || place.Name || 'Unknown Place of Worship';
+              const subtype = place.subtype || place.SUBTYPE || place.Subtype || 'Unknown Type';
+              const denom = place.denom || place.DENOM || place.Denom || '';
+              
+              // Create a custom icon for places of worship
+              const icon = createPOIIcon('🕌', '#7c3aed'); // Purple icon for places of worship
+              
+              const marker = L.marker([placeLat, placeLon], { icon });
+              
+              // Build popup content with all place of worship attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🕌 ${placeName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Type:</strong> ${subtype}${denom ? ` - ${denom}` : ''}</div>
+                    ${place.address ? `<div><strong>Address:</strong> ${place.address}</div>` : ''}
+                    ${place.city ? `<div><strong>City:</strong> ${place.city}</div>` : ''}
+                    ${place.telephone ? `<div><strong>Phone:</strong> ${place.telephone}</div>` : ''}
+                    ${place.attendance !== null && place.attendance !== undefined ? `<div><strong>Attendance:</strong> ${place.attendance}</div>` : ''}
+                    ${place.distance_miles !== null && place.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${place.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all place of worship attributes (excluding internal fields)
+              const excludeFields = ['name', 'subtype', 'denom', 'address', 'city', 'state', 'zip', 'telephone', 'attendance', 'lat', 'lon', 'distance_miles'];
+              Object.entries(place).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this place of worship
+              bounds.extend([placeLat, placeLon]);
+            } catch (error) {
+              console.error('Error drawing NH Place of Worship marker:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Access Sites to Public Waters as markers on the map
+      if (enrichments.nh_public_waters_access_all && Array.isArray(enrichments.nh_public_waters_access_all)) {
+        enrichments.nh_public_waters_access_all.forEach((site: any) => {
+          if (site.lat && site.lon) {
+            try {
+              const siteLat = site.lat;
+              const siteLon = site.lon;
+              const facilityName = site.facility || site.FACILITY || site.Facility || 'Unknown Access Site';
+              const waterBody = site.water_body || site.WATER_BODY || site.WaterBody || 'Unknown Water Body';
+              const wbType = site.wb_type || site.WB_TYPE || site.WbType || '';
+              const accessTyp = site.access_typ || site.ACCESS_TYP || site.AccessTyp || '';
+              
+              // Create a custom icon for water access sites
+              const icon = createPOIIcon('🌊', '#0ea5e9'); // Blue icon for water access
+              
+              const marker = L.marker([siteLat, siteLon], { icon });
+              
+              // Build popup content with all access site attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🌊 ${facilityName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Water Body:</strong> ${waterBody}${wbType ? ` (${wbType})` : ''}</div>
+                    ${accessTyp ? `<div><strong>Access Type:</strong> ${accessTyp}</div>` : ''}
+                    ${site.town ? `<div><strong>Town:</strong> ${site.town}</div>` : ''}
+                    ${site.county ? `<div><strong>County:</strong> ${site.county}</div>` : ''}
+                    ${site.ownership ? `<div><strong>Ownership:</strong> ${site.ownership}</div>` : ''}
+                    <div><strong>Amenities:</strong> ${[
+                      site.boat === 'Yes' ? 'Boat' : null,
+                      site.swim === 'Yes' ? 'Swim' : null,
+                      site.fish === 'Yes' ? 'Fish' : null,
+                      site.picnic === 'Yes' ? 'Picnic' : null,
+                      site.camp === 'Yes' ? 'Camp' : null
+                    ].filter(Boolean).join(', ') || 'None'}</div>
+                    ${site.distance_miles !== null && site.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${site.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all access site attributes (excluding internal fields)
+              const excludeFields = ['facility', 'water_body', 'wb_type', 'access_typ', 'town', 'county', 'ownership', 'boat', 'swim', 'fish', 'picnic', 'camp', 'lat', 'lon', 'distance_miles'];
+              Object.entries(site).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this access site
+              bounds.extend([siteLat, siteLon]);
+            } catch (error) {
+              console.error('Error drawing NH Access Site to Public Waters marker:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Law Enforcement facilities as markers on the map
+      if (enrichments.nh_law_enforcement_all && Array.isArray(enrichments.nh_law_enforcement_all)) {
+        enrichments.nh_law_enforcement_all.forEach((facility: any) => {
+          if (facility.lat && facility.lon) {
+            try {
+              const facilityLat = facility.lat;
+              const facilityLon = facility.lon;
+              const facilityName = facility.name || facility.NAME || facility.Name || 'Unknown Law Enforcement Facility';
+              const facilityType = facility.type || facility.TYPE || facility.Type || 'Unknown Type';
+              
+              // Create a custom icon for law enforcement
+              const icon = createPOIIcon('🚔', '#1e40af'); // Blue icon for law enforcement
+              
+              const marker = L.marker([facilityLat, facilityLon], { icon });
+              
+              // Build popup content with all law enforcement facility attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🚔 ${facilityName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Type:</strong> ${facilityType}</div>
+                    ${facility.address ? `<div><strong>Address:</strong> ${facility.address}</div>` : ''}
+                    ${facility.city ? `<div><strong>City:</strong> ${facility.city}</div>` : ''}
+                    ${facility.telephone ? `<div><strong>Phone:</strong> ${facility.telephone}</div>` : ''}
+                    ${facility.owner ? `<div><strong>Owner:</strong> ${facility.owner}</div>` : ''}
+                    ${facility.distance_miles !== null && facility.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${facility.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all law enforcement facility attributes (excluding internal fields)
+              const excludeFields = ['name', 'type', 'address', 'city', 'state', 'zip', 'telephone', 'owner', 'lat', 'lon', 'distance_miles'];
+              Object.entries(facility).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this law enforcement facility
+              bounds.extend([facilityLat, facilityLon]);
+            } catch (error) {
+              console.error('Error drawing NH Law Enforcement facility marker:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Recreation Trails as polylines on the map
+      if (enrichments.nh_recreation_trails_all && Array.isArray(enrichments.nh_recreation_trails_all)) {
+        enrichments.nh_recreation_trails_all.forEach((trail: any) => {
+          if (trail.geometry && trail.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              // ESRI polylines have paths (array of coordinate arrays)
+              const paths = trail.geometry.paths;
+              if (paths && paths.length > 0) {
+                // For each path in the polyline, create a separate polyline
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    // Since we requested outSR=4326, coordinates should already be in WGS84
+                    // Convert [lon, lat] to [lat, lon] for Leaflet
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const trailName = trail.name || trail.NAME || trail.Name || 'Unknown Trail';
+                  const trailType = trail.trail_type || trail.TRAIL_TYPE || trail.TrailType || trail.type || trail.TYPE || 'Unknown Type';
+                  const lengthMiles = trail.length_miles || trail.LENGTH_MILES || trail.LengthMiles || trail.length || trail.LENGTH || null;
+
+                  // Create polyline with green color for trails
+                  const polyline = L.polyline(latlngs, {
+                    color: '#059669', // Green color for trails
+                    weight: 4,
+                    opacity: 0.8,
+                    smoothFactor: 1
+                  });
+
+                  // Build popup content with all trail attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🥾 ${trailName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${trailType ? `<div><strong>Type:</strong> ${trailType}</div>` : ''}
+                        ${lengthMiles !== null && lengthMiles !== undefined ? `<div><strong>Length:</strong> ${lengthMiles} miles</div>` : ''}
+                        ${trail.distance_miles !== null && trail.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${trail.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all trail attributes (excluding internal fields)
+                  const excludeFields = ['name', 'trail_type', 'type', 'length_miles', 'length', 'geometry', 'distance_miles'];
+                  Object.entries(trail).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi);
+                  bounds.extend(polyline.getBounds());
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing NH Recreation Trail polyline:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Hospitals as markers on the map
+      if (enrichments.nh_hospitals_all && Array.isArray(enrichments.nh_hospitals_all)) {
+        enrichments.nh_hospitals_all.forEach((hospital: any) => {
+          if (hospital.lat && hospital.lon) {
+            try {
+              const hospitalLat = hospital.lat;
+              const hospitalLon = hospital.lon;
+              const hospitalName = hospital.name || hospital.NAME || hospital.Name || 'Unknown Hospital';
+              const facType = hospital.fac_type || hospital.FAC_TYPE || hospital.FacType || 'Unknown Type';
+              
+              // Create a custom icon for hospitals
+              const icon = createPOIIcon('🏥', '#dc2626'); // Red icon for hospitals
+              
+              const marker = L.marker([hospitalLat, hospitalLon], { icon });
+              
+              // Build popup content with all hospital attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🏥 ${hospitalName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Type:</strong> ${facType}</div>
+                    ${hospital.address ? `<div><strong>Address:</strong> ${hospital.address}</div>` : ''}
+                    ${hospital.city ? `<div><strong>City:</strong> ${hospital.city}</div>` : ''}
+                    ${hospital.telephone ? `<div><strong>Phone:</strong> ${hospital.telephone}</div>` : ''}
+                    ${hospital.beds !== null && hospital.beds !== undefined ? `<div><strong>Beds:</strong> ${hospital.beds}</div>` : ''}
+                    ${hospital.owner ? `<div><strong>Owner:</strong> ${hospital.owner}</div>` : ''}
+                    ${hospital.distance_miles !== null && hospital.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${hospital.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all hospital attributes (excluding internal fields)
+              const excludeFields = ['name', 'fac_type', 'address', 'city', 'state', 'zip', 'telephone', 'beds', 'owner', 'lat', 'lon', 'distance_miles'];
+              Object.entries(hospital).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this hospital
+              bounds.extend([hospitalLat, hospitalLon]);
+            } catch (error) {
+              console.error('Error drawing NH Hospital marker:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Fire Stations as markers on the map
+      if (enrichments.nh_fire_stations_all && Array.isArray(enrichments.nh_fire_stations_all)) {
+        enrichments.nh_fire_stations_all.forEach((station: any) => {
+          if (station.lat && station.lon) {
+            try {
+              const stationLat = station.lat;
+              const stationLon = station.lon;
+              const stationName = station.name || station.NAME || station.Name || 'Unknown Fire Station';
+              const stationType = station.type || station.TYPE || station.Type || 'Unknown Type';
+              
+              // Create a custom icon for fire stations
+              const icon = createPOIIcon('🚒', '#dc2626'); // Red icon for fire stations
+              
+              const marker = L.marker([stationLat, stationLon], { icon });
+              
+              // Build popup content with all fire station attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🚒 ${stationName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Type:</strong> ${stationType}</div>
+                    ${station.address ? `<div><strong>Address:</strong> ${station.address}</div>` : ''}
+                    ${station.city ? `<div><strong>City:</strong> ${station.city}</div>` : ''}
+                    ${station.telephone ? `<div><strong>Phone:</strong> ${station.telephone}</div>` : ''}
+                    ${station.owner ? `<div><strong>Owner:</strong> ${station.owner}</div>` : ''}
+                    ${station.fdid ? `<div><strong>FDID:</strong> ${station.fdid}</div>` : ''}
+                    ${station.distance_miles !== null && station.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${station.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all fire station attributes (excluding internal fields)
+              const excludeFields = ['name', 'type', 'address', 'city', 'state', 'zip', 'telephone', 'owner', 'fdid', 'lat', 'lon', 'distance_miles'];
+              Object.entries(station).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this fire station
+              bounds.extend([stationLat, stationLon]);
+            } catch (error) {
+              console.error('Error drawing NH Fire Station marker:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Nursing Homes as markers on the map
+      if (enrichments.nh_nursing_homes_all && Array.isArray(enrichments.nh_nursing_homes_all)) {
+        enrichments.nh_nursing_homes_all.forEach((home: any) => {
+          if (home.lat && home.lon) {
+            try {
+              const homeLat = home.lat;
+              const homeLon = home.lon;
+              const homeName = home.name || home.NAME || home.Name || 'Unknown Nursing Home';
+              const facType = home.fac_type || home.FAC_TYPE || home.FacType || 'Unknown Type';
+              
+              // Create a custom icon for nursing homes
+              const icon = createPOIIcon('🏥', '#dc2626'); // Red icon for healthcare facilities
+              
+              const marker = L.marker([homeLat, homeLon], { icon });
+              
+              // Build popup content with all nursing home attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🏥 ${homeName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Type:</strong> ${facType}</div>
+                    ${home.address ? `<div><strong>Address:</strong> ${home.address}</div>` : ''}
+                    ${home.city ? `<div><strong>City:</strong> ${home.city}</div>` : ''}
+                    ${home.telephone ? `<div><strong>Phone:</strong> ${home.telephone}</div>` : ''}
+                    ${home.beds !== null && home.beds !== undefined ? `<div><strong>Beds:</strong> ${home.beds}</div>` : ''}
+                    ${home.distance_miles !== null && home.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${home.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all nursing home attributes (excluding internal fields)
+              const excludeFields = ['name', 'fac_type', 'address', 'city', 'state', 'zip', 'telephone', 'beds', 'lat', 'lon', 'distance_miles'];
+              Object.entries(home).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this nursing home
+              bounds.extend([homeLat, homeLon]);
+            } catch (error) {
+              console.error('Error drawing NH Nursing Home marker:', error);
+            }
+          }
+        });
+      }
+
       // Draw NH Key Destinations as markers on the map
       if (enrichments.nh_key_destinations_all && Array.isArray(enrichments.nh_key_destinations_all)) {
         enrichments.nh_key_destinations_all.forEach((dest: any) => {
@@ -902,9 +1471,8 @@ const MapView: React.FC<MapViewProps> = ({
       });
     });
 
-    if (bounds.isValid()) {
-      map.fitBounds(bounds.pad(0.2));
-    } else if (results[0]?.location) {
+    // Always center on the geocoded location, don't zoom out to show all features
+    if (results[0]?.location) {
       map.setView([results[0].location.lat, results[0].location.lon], 12);
     }
 
