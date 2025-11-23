@@ -682,10 +682,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     <button
                       key={subCategory.id}
                       onClick={() => {
-                        // Open modal with this sub-category's enrichments
-                        setCameFromNHSubCategories(true);
-                        setActiveModal(subCategory.id);
-                        setViewingNHSubCategories(false);
+                        // Use onViewCategory to navigate to full page view (like regular categories)
+                        if (onViewCategory) {
+                          onViewCategory(subCategory);
+                        }
                       }}
                       className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       style={{

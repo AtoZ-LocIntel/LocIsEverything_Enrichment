@@ -90,6 +90,11 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                           category.id === 'natural_resources' ? '#115e59' :
                           category.id === 'public_lands' ? '#365314' :
                           category.id === 'quirky' ? '#9a3412' :
+                          category.id === 'wildfire' ? '#dc2626' :
+                          category.id === 'at' ? '#166534' :
+                          category.id === 'pct' ? '#166534' :
+                          category.id === 'nh' ? '#166534' :
+                          category.id === 'nh_granit' ? '#166534' :
                           category.id === 'core' ? '#1e293b' : '#1f2937'
         }}
       >
@@ -133,6 +138,8 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               ? [5, 10, 25, 50, 100]
               : enrichment.id === 'nh_parcels'
               ? [0.25, 0.50, 0.75, 1.0]
+              : enrichment.id === 'nh_key_destinations'
+              ? [0.5, 1, 2, 3, 5, 10, 15, 25]
               : [0.5, 1, 2, 3, 5, 10, 15, 25];
             const formatMiles = (value: number) =>
               Number.isInteger(value) ? value.toString() : value.toFixed(1);
