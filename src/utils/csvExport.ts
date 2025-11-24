@@ -1414,7 +1414,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const wetCode = wetland.WETCODE || wetland.wetCode || '';
         const itValDesc = wetland.IT_VALDESC || wetland.itValDesc || 'Unknown Wetland';
         const itValc = wetland.IT_VALC || wetland.itValc || '';
-        const polyCode = wetland.POLY_CODE || wetland.polyCode || '';
         const source = wetland.SOURCE || wetland.source || '';
         const areaAcres = wetland.AREAACRES || wetland.areaAcres || '';
         
