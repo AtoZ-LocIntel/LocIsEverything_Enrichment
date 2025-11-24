@@ -258,7 +258,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_nwi_plus_all' ||
         key === 'nh_source_water_protection_area_geometry' || // Skip geometry field (raw JSON, not user-friendly)
         key === 'nh_nwi_plus_geometry' || // Skip geometry field (raw JSON, not user-friendly)
-        key === 'ma_dep_wetlands_all') { // Skip _all arrays (handled separately)
+        key === 'ma_dep_wetlands_all' || // Skip _all arrays (handled separately)
+        key === 'ma_open_space_all') { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -1450,6 +1451,56 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           itValc || wetCode || attributesJson,
           areaAcres ? `${areaAcres} acres` : attributesJson,
           source || '',
+          '',
+          attributesJson,
+          'MassGIS'
+        ]);
+      });
+    }
+    
+    // Add MA Open Space data rows
+    if (enrichments.ma_open_space_all && Array.isArray(enrichments.ma_open_space_all)) {
+      enrichments.ma_open_space_all.forEach((openSpace: any) => {
+        const siteName = openSpace.SITE_NAME || openSpace.siteName || openSpace.SiteName || 'Unknown Open Space';
+        const siteType = openSpace.SITE_TYPE || openSpace.siteType || openSpace.SiteType || '';
+        const ownerType = openSpace.OWNER_TYPE || openSpace.ownerType || openSpace.OwnerType || '';
+        const ownerName = openSpace.OWNER_NAME || openSpace.ownerName || openSpace.OwnerName || '';
+        const acres = openSpace.ACRES || openSpace.acres || openSpace.Acres || '';
+        
+        const allAttributes = { ...openSpace };
+        delete allAttributes.SITE_NAME;
+        delete allAttributes.siteName;
+        delete allAttributes.SiteName;
+        delete allAttributes.SITE_TYPE;
+        delete allAttributes.siteType;
+        delete allAttributes.SiteType;
+        delete allAttributes.OWNER_TYPE;
+        delete allAttributes.ownerType;
+        delete allAttributes.OwnerType;
+        delete allAttributes.OWNER_NAME;
+        delete allAttributes.ownerName;
+        delete allAttributes.OwnerName;
+        delete allAttributes.ACRES;
+        delete allAttributes.acres;
+        delete allAttributes.Acres;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'MA_OPEN_SPACE',
+          siteName,
+          location.lat.toString(), // Use search location for open space (it's a polygon, not a point)
+          location.lon.toString(),
+          openSpace.distance_miles !== null && openSpace.distance_miles !== undefined ? openSpace.distance_miles.toFixed(2) : '',
+          siteType || ownerType || attributesJson,
+          acres ? `${acres} acres` : attributesJson,
+          ownerName || '',
           '',
           attributesJson,
           'MassGIS'

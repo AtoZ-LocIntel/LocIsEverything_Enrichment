@@ -1,0 +1,296 @@
+/**
+ * MA Protected and Recreational Open Space Adapter
+ * Queries Massachusetts Protected and Recreational Open Space from MassGIS FeatureServer
+ * Supports both point-in-polygon and proximity queries
+ * This is a polygon dataset, so we calculate distance to nearest point on polygon boundary
+ */
+
+const BASE_SERVICE_URL = 'https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/openspace/FeatureServer';
+const LAYER_ID = 0;
+
+export interface MAOpenSpace {
+  objectId?: number;
+  globalId?: string;
+  siteName?: string;
+  siteId?: string;
+  siteType?: string;
+  ownerType?: string;
+  ownerName?: string;
+  acres?: number;
+  distance_miles?: number;
+  geometry?: any;
+  attributes?: Record<string, any>;
+}
+
+/**
+ * Calculate distance from a point to the nearest point on a polygon boundary
+ */
+function calculateDistanceToPolygon(lat: number, lon: number, rings: number[][][]): number {
+  let minDistance = Infinity;
+  
+  rings.forEach(ring => {
+    // Each ring is an array of coordinate pairs [x, y] or [lon, lat]
+    for (let i = 0; i < ring.length - 1; i++) {
+      const p1 = ring[i];
+      const p2 = ring[i + 1];
+      
+      // Convert to lat/lon if needed (ESRI geometry might be in Web Mercator or WGS84)
+      const lat1 = p1[1];
+      const lon1 = p1[0];
+      const lat2 = p2[1];
+      const lon2 = p2[0];
+      
+      // Calculate distance from point to line segment
+      const distance = pointToLineSegmentDistance(lat, lon, lat1, lon1, lat2, lon2);
+      minDistance = Math.min(minDistance, distance);
+    }
+  });
+  
+  return minDistance;
+}
+
+/**
+ * Calculate distance from a point to a line segment
+ */
+function pointToLineSegmentDistance(
+  px: number, py: number,
+  x1: number, y1: number,
+  x2: number, y2: number
+): number {
+  // Convert to radians
+  const lat1 = y1 * Math.PI / 180;
+  const lon1 = x1 * Math.PI / 180;
+  const lat2 = y2 * Math.PI / 180;
+  const lon2 = x2 * Math.PI / 180;
+  const latP = py * Math.PI / 180;
+  const lonP = px * Math.PI / 180;
+  
+  // Calculate distance from point to each endpoint
+  const d1 = haversineDistance(latP, lonP, lat1, lon1);
+  const d2 = haversineDistance(latP, lonP, lat2, lon2);
+  
+  // Calculate distance along the line segment
+  const dSegment = haversineDistance(lat1, lon1, lat2, lon2);
+  
+  // If segment is very short, just use distance to nearest endpoint
+  if (dSegment < 0.001) {
+    return Math.min(d1, d2);
+  }
+  
+  // Calculate the closest point on the line segment
+  const t = Math.max(0, Math.min(1, 
+    ((latP - lat1) * (lat2 - lat1) + (lonP - lon1) * (lon2 - lon1)) / (dSegment * dSegment)
+  ));
+  
+  const latClosest = lat1 + t * (lat2 - lat1);
+  const lonClosest = lon1 + t * (lon2 - lon1);
+  
+  return haversineDistance(latP, lonP, latClosest, lonClosest);
+}
+
+/**
+ * Haversine distance calculation
+ */
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959; // Earth's radius in miles
+  const dLat = lat2 - lat1;
+  const dLon = lon2 - lon1;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1) * Math.cos(lat2) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+/**
+ * Check if a point is inside a polygon using ray casting algorithm
+ */
+function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean {
+  // Use the first ring (exterior ring) for point-in-polygon check
+  if (!rings || rings.length === 0) return false;
+  
+  const ring = rings[0];
+  let inside = false;
+  
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1];
+    const xj = ring[j][0], yj = ring[j][1];
+    
+    const intersect = ((yi > lat) !== (yj > lat)) &&
+                      (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  
+  return inside;
+}
+
+/**
+ * Query MA Open Space FeatureServer for point-in-polygon (containing)
+ */
+export async function getMAOpenSpaceContainingData(
+  lat: number,
+  lon: number
+): Promise<MAOpenSpace[]> {
+  try {
+    console.log(`🏞️ Querying MA Open Space containing [${lat}, ${lon}]`);
+    
+    const queryUrl = new URL(`${BASE_SERVICE_URL}/${LAYER_ID}/query`);
+    
+    // Set query parameters for point-in-polygon
+    queryUrl.searchParams.set('f', 'json');
+    queryUrl.searchParams.set('where', '1=1');
+    queryUrl.searchParams.set('outFields', '*');
+    queryUrl.searchParams.set('geometry', `${lon},${lat}`);
+    queryUrl.searchParams.set('geometryType', 'esriGeometryPoint');
+    queryUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+    queryUrl.searchParams.set('inSR', '4326');
+    queryUrl.searchParams.set('outSR', '4326');
+    queryUrl.searchParams.set('returnGeometry', 'true');
+    
+    console.log(`🔗 MA Open Space Query URL: ${queryUrl.toString()}`);
+    
+    const response = await fetch(queryUrl.toString());
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('❌ MA Open Space API Error:', data.error);
+      return [];
+    }
+    
+    if (!data.features || data.features.length === 0) {
+      console.log(`ℹ️ No MA Open Space found containing the point`);
+      return [];
+    }
+    
+    // Process features
+    const openSpaces: MAOpenSpace[] = data.features.map((feature: any) => {
+      const attributes = feature.attributes || {};
+      
+      return {
+        objectId: attributes.OBJECTID,
+        globalId: attributes.GLOBALID,
+        siteName: attributes.SITE_NAME || attributes.site_name || attributes.SiteName,
+        siteId: attributes.SITE_ID || attributes.site_id || attributes.SiteId,
+        siteType: attributes.SITE_TYPE || attributes.site_type || attributes.SiteType,
+        ownerType: attributes.OWNER_TYPE || attributes.owner_type || attributes.OwnerType,
+        ownerName: attributes.OWNER_NAME || attributes.owner_name || attributes.OwnerName,
+        acres: attributes.ACRES || attributes.acres || attributes.Acres,
+        distance_miles: 0, // Point is inside, so distance is 0
+        geometry: feature.geometry,
+        attributes,
+      };
+    });
+    
+    console.log(`✅ Found ${openSpaces.length} MA Open Space containing the point`);
+    
+    return openSpaces;
+  } catch (error) {
+    console.error('❌ Error querying MA Open Space (containing):', error);
+    return [];
+  }
+}
+
+/**
+ * Query MA Open Space FeatureServer for proximity search
+ * Returns open spaces within the specified radius (in miles)
+ */
+export async function getMAOpenSpaceNearbyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<MAOpenSpace[]> {
+  try {
+    console.log(`🏞️ Querying MA Open Space within ${radiusMiles} miles of [${lat}, ${lon}]`);
+    
+    // Convert miles to meters for the buffer distance
+    const radiusMeters = radiusMiles * 1609.34;
+    
+    const queryUrl = new URL(`${BASE_SERVICE_URL}/${LAYER_ID}/query`);
+    
+    // Set query parameters for proximity search
+    queryUrl.searchParams.set('f', 'json');
+    queryUrl.searchParams.set('where', '1=1');
+    queryUrl.searchParams.set('outFields', '*');
+    queryUrl.searchParams.set('geometry', `${lon},${lat}`);
+    queryUrl.searchParams.set('geometryType', 'esriGeometryPoint');
+    queryUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+    queryUrl.searchParams.set('distance', radiusMeters.toString());
+    queryUrl.searchParams.set('units', 'esriSRUnit_Meter');
+    queryUrl.searchParams.set('inSR', '4326');
+    queryUrl.searchParams.set('outSR', '4326');
+    queryUrl.searchParams.set('returnGeometry', 'true');
+    
+    console.log(`🔗 MA Open Space Query URL: ${queryUrl.toString()}`);
+    
+    const response = await fetch(queryUrl.toString());
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('❌ MA Open Space API Error:', data.error);
+      return [];
+    }
+    
+    if (!data.features || data.features.length === 0) {
+      console.log(`ℹ️ No MA Open Space found within ${radiusMiles} miles`);
+      return [];
+    }
+    
+    // Process features and calculate distance
+    const openSpaces: MAOpenSpace[] = data.features.map((feature: any) => {
+      const attributes = feature.attributes || {};
+      const geometry = feature.geometry || {};
+      
+      // Calculate distance from search point to nearest point on polygon boundary
+      let distance_miles: number | undefined = undefined;
+      if (geometry.rings && geometry.rings.length > 0) {
+        // Check if point is inside polygon
+        const isInside = pointInPolygon(lat, lon, geometry.rings);
+        if (isInside) {
+          distance_miles = 0;
+        } else {
+          // Calculate distance to nearest boundary point
+          distance_miles = calculateDistanceToPolygon(lat, lon, geometry.rings);
+        }
+      }
+      
+      return {
+        objectId: attributes.OBJECTID,
+        globalId: attributes.GLOBALID,
+        siteName: attributes.SITE_NAME || attributes.site_name || attributes.SiteName,
+        siteId: attributes.SITE_ID || attributes.site_id || attributes.SiteId,
+        siteType: attributes.SITE_TYPE || attributes.site_type || attributes.SiteType,
+        ownerType: attributes.OWNER_TYPE || attributes.owner_type || attributes.OwnerType,
+        ownerName: attributes.OWNER_NAME || attributes.owner_name || attributes.OwnerName,
+        acres: attributes.ACRES || attributes.acres || attributes.Acres,
+        distance_miles,
+        geometry,
+        attributes,
+      };
+    });
+    
+    // Sort by distance
+    openSpaces.sort((a, b) => {
+      const distA = a.distance_miles ?? Infinity;
+      const distB = b.distance_miles ?? Infinity;
+      return distA - distB;
+    });
+    
+    console.log(`✅ Found ${openSpaces.length} MA Open Space`);
+    
+    return openSpaces;
+  } catch (error) {
+    console.error('❌ Error querying MA Open Space (nearby):', error);
+    return [];
+  }
+}
+

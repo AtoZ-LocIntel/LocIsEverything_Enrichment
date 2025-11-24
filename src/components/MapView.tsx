@@ -2396,6 +2396,103 @@ const MapView: React.FC<MapViewProps> = ({
             }
           }
         });
+      }
+
+      // Draw MA Open Space as polygons on the map
+      if (enrichments.ma_open_space_all && Array.isArray(enrichments.ma_open_space_all)) {
+        enrichments.ma_open_space_all.forEach((openSpace: any) => {
+          if (openSpace.geometry && openSpace.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = openSpace.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = openSpace.distance_miles === 0 || openSpace.distance_miles === null;
+                const color = isContaining ? '#059669' : '#10b981'; // Green for containing, lighter green for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all open space attributes
+                const siteName = openSpace.SITE_NAME || openSpace.siteName || openSpace.SiteName || 'Unknown Open Space';
+                const siteType = openSpace.SITE_TYPE || openSpace.siteType || openSpace.SiteType || '';
+                const ownerType = openSpace.OWNER_TYPE || openSpace.ownerType || openSpace.OwnerType || '';
+                const ownerName = openSpace.OWNER_NAME || openSpace.ownerName || openSpace.OwnerName || '';
+                const acres = openSpace.ACRES || openSpace.acres || openSpace.Acres;
+                const distance = openSpace.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🏞️ Containing Open Space' : '🏞️ Nearby Open Space'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Name:</strong> ${siteName}</div>
+                      ${siteType ? `<div><strong>Type:</strong> ${siteType}</div>` : ''}
+                      ${ownerType ? `<div><strong>Owner Type:</strong> ${ownerType}</div>` : ''}
+                      ${ownerName ? `<div><strong>Owner:</strong> ${ownerName}</div>` : ''}
+                      ${acres ? `<div><strong>Area:</strong> ${acres.toFixed(2)} acres</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other open space attributes (excluding internal fields)
+                const excludeFields = ['SITE_NAME', 'siteName', 'SiteName', 'SITE_TYPE', 'siteType', 'SiteType', 'OWNER_TYPE', 'ownerType', 'OwnerType', 'OWNER_NAME', 'ownerName', 'OwnerName', 'ACRES', 'acres', 'Acres', 'geometry', 'distance_miles'];
+                Object.entries(openSpace).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['ma_open_space']) {
+                  legendAccumulator['ma_open_space'] = {
+                    icon: '🏞️',
+                    color: '#059669',
+                    title: 'MA Open Space',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['ma_open_space'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing MA Open Space polygon:', error);
+            }
+          }
+        });
       } else if (enrichments.nh_nwi_plus_geometry && !enrichments.nh_nwi_plus_all) {
         // Fallback: Draw single wetland from point-in-polygon query (no radius, no _all array)
         // Only draw if nh_nwi_plus_all doesn't exist to avoid duplicates

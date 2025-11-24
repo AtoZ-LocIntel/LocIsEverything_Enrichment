@@ -29,6 +29,7 @@ import { getNHSolidWasteFacilitiesData } from '../adapters/nhSolidWasteFacilitie
 import { getNHSourceWaterProtectionAreaData } from '../adapters/nhSourceWaterProtectionAreas';
 // NH NWI Plus functions are imported dynamically in the method
 import { getMADEPWetlandsContainingData, getMADEPWetlandsNearbyData, MADEPWetland } from '../adapters/maDEPWetlands';
+import { getMAOpenSpaceContainingData, getMAOpenSpaceNearbyData, MAOpenSpace } from '../adapters/maOpenSpace';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1398,6 +1399,10 @@ export class EnrichmentService {
       // MA DEP Wetlands (MassGIS) - Point-in-polygon and proximity query (polygon dataset)
       case 'ma_dep_wetlands':
         return await this.getMADEPWetlands(lat, lon, radius);
+      
+      // MA Protected and Recreational Open Space (MassGIS) - Point-in-polygon and proximity query (polygon dataset)
+      case 'ma_open_space':
+        return await this.getMAOpenSpace(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2943,6 +2948,91 @@ export class EnrichmentService {
         ma_dep_wetlands_count: 0,
         ma_dep_wetlands_all: [],
         ma_dep_wetlands_error: 'Error fetching MA DEP Wetlands data'
+      };
+    }
+  }
+
+  private async getMAOpenSpace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏞️ Fetching MA Open Space data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      if (radius && radius > 0) {
+        // Proximity query - get both containing and nearby open spaces
+        const containingOpenSpaces = await getMAOpenSpaceContainingData(lat, lon);
+        console.log('🏞️ Containing open spaces from adapter:', containingOpenSpaces.length);
+        
+        const nearbyOpenSpaces = await getMAOpenSpaceNearbyData(lat, lon, radius);
+        console.log(`🏞️ Nearby open spaces from adapter: ${nearbyOpenSpaces.length} found`);
+        
+        // Combine results, avoiding duplicates by OBJECTID
+        const allOpenSpacesMap = new Map<number, MAOpenSpace>();
+        
+        // Add containing open spaces first (distance = 0)
+        containingOpenSpaces.forEach(openSpace => {
+          if (openSpace.objectId) {
+            allOpenSpacesMap.set(openSpace.objectId, openSpace);
+          }
+        });
+        
+        // Add nearby open spaces (will overwrite containing ones if duplicate, but that's fine)
+        nearbyOpenSpaces.forEach(openSpace => {
+          if (openSpace.objectId) {
+            allOpenSpacesMap.set(openSpace.objectId, openSpace);
+          }
+        });
+        
+        const allOpenSpaces = Array.from(allOpenSpacesMap.values());
+        
+        if (allOpenSpaces.length > 0) {
+          result.ma_open_space_count = allOpenSpaces.length;
+          result.ma_open_space_all = allOpenSpaces.map(openSpace => {
+            const { geometry, attributes, ...rest } = openSpace;
+            return {
+              ...attributes,
+              ...rest,
+              geometry: geometry, // Include geometry for map drawing
+            };
+          });
+        } else {
+          result.ma_open_space_count = 0;
+          result.ma_open_space_all = [];
+        }
+        
+        result.ma_open_space_search_radius_miles = radius;
+      } else {
+        // Point-in-polygon query only
+        const containingOpenSpaces = await getMAOpenSpaceContainingData(lat, lon);
+        
+        if (containingOpenSpaces.length > 0) {
+          result.ma_open_space_count = containingOpenSpaces.length;
+          result.ma_open_space_all = containingOpenSpaces.map(openSpace => {
+            const { geometry, attributes, ...rest } = openSpace;
+            return {
+              ...attributes,
+              ...rest,
+              geometry: geometry, // Include geometry for map drawing
+            };
+          });
+        } else {
+          result.ma_open_space_count = 0;
+          result.ma_open_space_all = [];
+        }
+      }
+      
+      console.log(`✅ MA Open Space data processed:`, {
+        count: result.ma_open_space_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching MA Open Space:', error);
+      return {
+        ma_open_space_count: 0,
+        ma_open_space_all: [],
+        ma_open_space_error: 'Error fetching MA Open Space data'
       };
     }
   }
