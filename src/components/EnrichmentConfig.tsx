@@ -529,7 +529,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         src={`/assets/${getIconFileName(category.id)}.webp`}
                         alt={category.title}
                         className="absolute inset-0 w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
-                        style={{ objectFit: 'cover' }}
+                        style={{ 
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          minWidth: '100%',
+                          minHeight: '100%',
+                          width: '100%',
+                          height: '100%'
+                        }}
                         onError={(e) => {
                           // Fallback to category name if icon fails to load
                           const target = e.target as HTMLImageElement;
@@ -1138,7 +1145,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       src={`/assets/${getIconFileName(category.id)}.webp`}
                       alt={category.title}
                       className="absolute inset-0 w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
-                      style={{ objectFit: 'cover' }}
+                      style={{ 
+                        objectFit: 'cover',
+                        objectPosition: 'center',
+                        minWidth: '100%',
+                        minHeight: '100%',
+                        width: '100%',
+                        height: '100%'
+                      }}
                       onError={(e) => {
                         // Fallback to category name if icon fails to load
                         const target = e.target as HTMLImageElement;

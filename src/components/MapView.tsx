@@ -2301,7 +2301,14 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw MA DEP Wetlands as polygons on the map
       if (enrichments.ma_dep_wetlands_all && Array.isArray(enrichments.ma_dep_wetlands_all)) {
-        enrichments.ma_dep_wetlands_all.forEach((wetland: any) => {
+        console.log(`🗺️ Drawing MA DEP Wetlands: ${enrichments.ma_dep_wetlands_all.length} features`);
+        enrichments.ma_dep_wetlands_all.forEach((wetland: any, index: number) => {
+          console.log(`🗺️ MA DEP Wetland ${index}:`, {
+            hasGeometry: !!wetland.geometry,
+            geometryType: wetland.geometry?.type || wetland.geometry?.rings ? 'rings' : 'unknown',
+            hasRings: !!wetland.geometry?.rings,
+            ringsLength: wetland.geometry?.rings?.length
+          });
           if (wetland.geometry && wetland.geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng array
@@ -2400,7 +2407,14 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw MA Open Space as polygons on the map
       if (enrichments.ma_open_space_all && Array.isArray(enrichments.ma_open_space_all)) {
-        enrichments.ma_open_space_all.forEach((openSpace: any) => {
+        console.log(`🗺️ Drawing MA Open Space: ${enrichments.ma_open_space_all.length} features`);
+        enrichments.ma_open_space_all.forEach((openSpace: any, index: number) => {
+          console.log(`🗺️ MA Open Space ${index}:`, {
+            hasGeometry: !!openSpace.geometry,
+            geometryType: openSpace.geometry?.type || openSpace.geometry?.rings ? 'rings' : 'unknown',
+            hasRings: !!openSpace.geometry?.rings,
+            ringsLength: openSpace.geometry?.rings?.length
+          });
           if (openSpace.geometry && openSpace.geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng array
@@ -2490,6 +2504,105 @@ const MapView: React.FC<MapViewProps> = ({
               }
             } catch (error) {
               console.error('Error drawing MA Open Space polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw Cape Cod Zoning as polygons on the map
+      if (enrichments.cape_cod_zoning_all && Array.isArray(enrichments.cape_cod_zoning_all)) {
+        enrichments.cape_cod_zoning_all.forEach((zoning: any) => {
+          if (zoning.geometry && zoning.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = zoning.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = zoning.distance_miles === 0 || zoning.distance_miles === null;
+                const color = isContaining ? '#7c3aed' : '#a78bfa'; // Purple for containing, lighter purple for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with ZONECODE at the top
+                const zoneCode = zoning.ZONECODE || zoning.ZoneCode || zoning.zonecode || 'Unknown Zone';
+                const primUse = zoning.PRIM_USE || zoning.Prim_Use || zoning.prim_use || '';
+                const townCode = zoning.TOWNCODE || zoning.TownCode || zoning.towncode || '';
+                const primUse2 = zoning.PRIM_USE2 || zoning.Prim_Use2 || zoning.prim_use2 || '';
+                const acres = zoning.ACRES || zoning.Acres || zoning.acres;
+                const townId = zoning.TOWN_ID || zoning.Town_ID || zoning.town_id;
+                const distance = zoning.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🏘️ Containing Zoning District' : '🏘️ Nearby Zoning District'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div style="font-weight: 600; font-size: 13px; color: #1f2937; margin-bottom: 4px;"><strong>Zone Code:</strong> ${zoneCode}</div>
+                      ${primUse ? `<div><strong>Primary Use:</strong> ${primUse}</div>` : ''}
+                      ${primUse2 ? `<div><strong>Primary Use 2:</strong> ${primUse2}</div>` : ''}
+                      ${townCode ? `<div><strong>Town Code:</strong> ${townCode}</div>` : ''}
+                      ${townId ? `<div><strong>Town ID:</strong> ${townId}</div>` : ''}
+                      ${acres ? `<div><strong>Area:</strong> ${acres.toFixed(2)} acres</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other zoning attributes (excluding internal fields and ZONECODE since it's already shown)
+                const excludeFields = ['ZONECODE', 'ZoneCode', 'zonecode', 'PRIM_USE', 'Prim_Use', 'prim_use', 'PRIM_USE2', 'Prim_Use2', 'prim_use2', 'TOWNCODE', 'TownCode', 'towncode', 'TOWN_ID', 'Town_ID', 'town_id', 'ACRES', 'Acres', 'acres', 'geometry', 'distance_miles'];
+                Object.entries(zoning).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['cape_cod_zoning']) {
+                  legendAccumulator['cape_cod_zoning'] = {
+                    icon: '🏘️',
+                    color: '#7c3aed',
+                    title: 'Cape Cod Zoning',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['cape_cod_zoning'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing Cape Cod Zoning polygon:', error);
             }
           }
         });

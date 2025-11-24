@@ -30,6 +30,7 @@ import { getNHSourceWaterProtectionAreaData } from '../adapters/nhSourceWaterPro
 // NH NWI Plus functions are imported dynamically in the method
 import { getMADEPWetlandsContainingData, getMADEPWetlandsNearbyData, MADEPWetland } from '../adapters/maDEPWetlands';
 import { getMAOpenSpaceContainingData, getMAOpenSpaceNearbyData, MAOpenSpace } from '../adapters/maOpenSpace';
+import { getCapeCodZoningContainingData, getCapeCodZoningNearbyData, CapeCodZoning } from '../adapters/capeCodZoning';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1403,6 +1404,10 @@ export class EnrichmentService {
       // MA Protected and Recreational Open Space (MassGIS) - Point-in-polygon and proximity query (polygon dataset)
       case 'ma_open_space':
         return await this.getMAOpenSpace(lat, lon, radius);
+      
+      // Cape Cod Zoning Map - Point-in-polygon and proximity query (polygon dataset)
+      case 'cape_cod_zoning':
+        return await this.getCapeCodZoning(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2902,13 +2907,25 @@ export class EnrichmentService {
         
         if (allWetlands.length > 0) {
           result.ma_dep_wetlands_count = allWetlands.length;
-          result.ma_dep_wetlands_all = allWetlands.map(wetland => {
+          console.log(`✅ MA DEP Wetlands: Processing ${allWetlands.length} wetlands, first has geometry:`, !!allWetlands[0]?.geometry);
+          result.ma_dep_wetlands_all = allWetlands.map((wetland, idx) => {
             const { geometry, attributes, ...rest } = wetland;
-            return {
-              ...attributes,
-              ...rest,
-              geometry: geometry, // Include geometry for map drawing
+            if (idx === 0) {
+              console.log(`🔍 MA DEP Wetland 0 - geometry:`, !!geometry, 'has rings:', !!geometry?.rings, 'rings length:', geometry?.rings?.length);
+            }
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: __, ...cleanRest } = rest || {};
+            const result = {
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry, // Include geometry for map drawing (from top level)
             };
+            if (idx === 0) {
+              console.log(`🔍 MA DEP Wetland 0 - result has geometry:`, !!result.geometry, 'has rings:', !!result.geometry?.rings);
+            }
+            return result;
           });
         } else {
           result.ma_dep_wetlands_count = 0;
@@ -2924,10 +2941,14 @@ export class EnrichmentService {
           result.ma_dep_wetlands_count = containingWetlands.length;
           result.ma_dep_wetlands_all = containingWetlands.map(wetland => {
             const { geometry, attributes, ...rest } = wetland;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: __, ...cleanRest } = rest || {};
             return {
-              ...attributes,
-              ...rest,
-              geometry: geometry, // Include geometry for map drawing
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry, // Include geometry for map drawing (from top level)
             };
           });
         } else {
@@ -2987,13 +3008,25 @@ export class EnrichmentService {
         
         if (allOpenSpaces.length > 0) {
           result.ma_open_space_count = allOpenSpaces.length;
-          result.ma_open_space_all = allOpenSpaces.map(openSpace => {
+          console.log(`✅ MA Open Space: Processing ${allOpenSpaces.length} open spaces, first has geometry:`, !!allOpenSpaces[0]?.geometry);
+          result.ma_open_space_all = allOpenSpaces.map((openSpace, idx) => {
             const { geometry, attributes, ...rest } = openSpace;
-            return {
-              ...attributes,
-              ...rest,
-              geometry: geometry, // Include geometry for map drawing
+            if (idx === 0) {
+              console.log(`🔍 MA Open Space 0 - geometry:`, !!geometry, 'has rings:', !!geometry?.rings, 'rings length:', geometry?.rings?.length);
+            }
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: __, ...cleanRest } = rest || {};
+            const result = {
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry, // Include geometry for map drawing (from top level)
             };
+            if (idx === 0) {
+              console.log(`🔍 MA Open Space 0 - result has geometry:`, !!result.geometry, 'has rings:', !!result.geometry?.rings);
+            }
+            return result;
           });
         } else {
           result.ma_open_space_count = 0;
@@ -3009,10 +3042,14 @@ export class EnrichmentService {
           result.ma_open_space_count = containingOpenSpaces.length;
           result.ma_open_space_all = containingOpenSpaces.map(openSpace => {
             const { geometry, attributes, ...rest } = openSpace;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: __, ...cleanRest } = rest || {};
             return {
-              ...attributes,
-              ...rest,
-              geometry: geometry, // Include geometry for map drawing
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry, // Include geometry for map drawing (from top level)
             };
           });
         } else {
@@ -3033,6 +3070,116 @@ export class EnrichmentService {
         ma_open_space_count: 0,
         ma_open_space_all: [],
         ma_open_space_error: 'Error fetching MA Open Space data'
+      };
+    }
+  }
+
+  private async getCapeCodZoning(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏘️ Fetching Cape Cod Zoning data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      if (radius && radius > 0) {
+        // Proximity query - get both containing and nearby zoning areas
+        const containingZoning = await getCapeCodZoningContainingData(lat, lon);
+        console.log('🏘️ Containing zoning areas from adapter:', containingZoning.length);
+        
+        const nearbyZoning = await getCapeCodZoningNearbyData(lat, lon, radius);
+        console.log(`🏘️ Nearby zoning areas from adapter: ${nearbyZoning.length} found`);
+        
+        // Combine results, avoiding duplicates by FID (primary) or OBJECTID (fallback)
+        // Use a composite key to ensure uniqueness: FID takes precedence, then OBJECTID
+        const allZoningMap = new Map<string, CapeCodZoning>();
+        
+        // Add containing zoning areas first (distance = 0)
+        containingZoning.forEach(zoning => {
+          // Use FID as primary key, OBJECTID as fallback, or a combination
+          const key = zoning.fid !== undefined && zoning.fid !== null 
+            ? `fid_${zoning.fid}` 
+            : (zoning.objectId !== undefined && zoning.objectId !== null 
+              ? `oid_${zoning.objectId}` 
+              : null);
+          if (key) {
+            allZoningMap.set(key, zoning);
+          }
+        });
+        
+        // Add nearby zoning areas (will overwrite containing ones if duplicate, but that's fine)
+        nearbyZoning.forEach(zoning => {
+          const key = zoning.fid !== undefined && zoning.fid !== null 
+            ? `fid_${zoning.fid}` 
+            : (zoning.objectId !== undefined && zoning.objectId !== null 
+              ? `oid_${zoning.objectId}` 
+              : null);
+          if (key) {
+            allZoningMap.set(key, zoning);
+          }
+        });
+        
+        const allZoning = Array.from(allZoningMap.values());
+        
+        if (allZoning.length > 0) {
+          result.cape_cod_zoning_count = allZoning.length;
+          // Get the containing zone code for summary output (first one with distance = 0)
+          const containingZone = allZoning.find(z => z.distance_miles === 0 || z.distance_miles === null);
+          if (containingZone) {
+            result.cape_cod_zoning_zone_code = containingZone.zoneCode || containingZone.ZONECODE || containingZone.ZoneCode || '';
+          }
+          result.cape_cod_zoning_all = allZoning.map(zoning => {
+            const { geometry, attributes, ...rest } = zoning;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _, ...cleanAttributes } = attributes || {};
+            return {
+              ...cleanAttributes,
+              ...rest,
+              geometry: geometry, // Include geometry for map drawing
+            };
+          });
+        } else {
+          result.cape_cod_zoning_count = 0;
+          result.cape_cod_zoning_all = [];
+        }
+        
+        result.cape_cod_zoning_search_radius_miles = radius;
+      } else {
+        // Point-in-polygon query only
+        const containingZoning = await getCapeCodZoningContainingData(lat, lon);
+        
+        if (containingZoning.length > 0) {
+          result.cape_cod_zoning_count = containingZoning.length;
+          // Get the zone code for summary output (first one)
+          if (containingZoning[0]) {
+            result.cape_cod_zoning_zone_code = containingZoning[0].zoneCode || containingZoning[0].ZONECODE || containingZoning[0].ZoneCode || '';
+          }
+          result.cape_cod_zoning_all = containingZoning.map(zoning => {
+            const { geometry, attributes, ...rest } = zoning;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _, ...cleanAttributes } = attributes || {};
+            return {
+              ...cleanAttributes,
+              ...rest,
+              geometry: geometry, // Include geometry for map drawing
+            };
+          });
+        } else {
+          result.cape_cod_zoning_count = 0;
+          result.cape_cod_zoning_all = [];
+        }
+      }
+      
+      console.log(`✅ Cape Cod Zoning data processed:`, {
+        count: result.cape_cod_zoning_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching Cape Cod Zoning:', error);
+      return {
+        cape_cod_zoning_count: 0,
+        cape_cod_zoning_all: [],
+        cape_cod_zoning_error: 'Error fetching Cape Cod Zoning data'
       };
     }
   }

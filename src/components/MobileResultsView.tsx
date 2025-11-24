@@ -194,7 +194,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'New Hampshire Data';
     }
     
-    if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space')) {
+    if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning')) {
       return 'Massachusetts Data';
     }
     

@@ -259,7 +259,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_source_water_protection_area_geometry' || // Skip geometry field (raw JSON, not user-friendly)
         key === 'nh_nwi_plus_geometry' || // Skip geometry field (raw JSON, not user-friendly)
         key === 'ma_dep_wetlands_all' || // Skip _all arrays (handled separately)
-        key === 'ma_open_space_all') { // Skip _all arrays (handled separately)
+        key === 'ma_open_space_all' || // Skip _all arrays (handled separately)
+        key === 'cape_cod_zoning_all') { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -1504,6 +1505,60 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'MassGIS'
+        ]);
+      });
+    }
+    
+    // Add Cape Cod Zoning data rows
+    if (enrichments.cape_cod_zoning_all && Array.isArray(enrichments.cape_cod_zoning_all)) {
+      enrichments.cape_cod_zoning_all.forEach((zoning: any) => {
+        const zoneCode = zoning.ZONECODE || zoning.ZoneCode || zoning.zonecode || 'Unknown Zone';
+        const primUse = zoning.PRIM_USE || zoning.Prim_Use || zoning.prim_use || '';
+        const townCode = zoning.TOWNCODE || zoning.TownCode || zoning.towncode || '';
+        const primUse2 = zoning.PRIM_USE2 || zoning.Prim_Use2 || zoning.prim_use2 || '';
+        const acres = zoning.ACRES || zoning.Acres || zoning.acres || '';
+        const townId = zoning.TOWN_ID || zoning.Town_ID || zoning.town_id || '';
+        
+        const allAttributes = { ...zoning };
+        delete allAttributes.ZONECODE;
+        delete allAttributes.ZoneCode;
+        delete allAttributes.zonecode;
+        delete allAttributes.PRIM_USE;
+        delete allAttributes.Prim_Use;
+        delete allAttributes.prim_use;
+        delete allAttributes.PRIM_USE2;
+        delete allAttributes.Prim_Use2;
+        delete allAttributes.prim_use2;
+        delete allAttributes.TOWNCODE;
+        delete allAttributes.TownCode;
+        delete allAttributes.towncode;
+        delete allAttributes.TOWN_ID;
+        delete allAttributes.Town_ID;
+        delete allAttributes.town_id;
+        delete allAttributes.ACRES;
+        delete allAttributes.Acres;
+        delete allAttributes.acres;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'CAPE_COD_ZONING',
+          zoneCode,
+          location.lat.toString(), // Use search location for zoning (it's a polygon, not a point)
+          location.lon.toString(),
+          zoning.distance_miles !== null && zoning.distance_miles !== undefined ? zoning.distance_miles.toFixed(2) : '',
+          primUse || primUse2 || attributesJson,
+          acres ? `${acres} acres` : attributesJson,
+          townCode || townId || '',
+          '',
+          attributesJson,
+          'Cape Cod Commission'
         ]);
       });
     }
