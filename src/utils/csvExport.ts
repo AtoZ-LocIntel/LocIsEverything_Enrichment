@@ -251,7 +251,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_underground_storage_tanks_all' ||
         key === 'nh_water_wells_all' ||
         key === 'nh_public_water_supply_wells_all' ||
-        key === 'nh_remediation_sites_all') {
+        key === 'nh_remediation_sites_all' ||
+        key === 'nh_automobile_salvage_yards_all' ||
+        key === 'nh_solid_waste_facilities_all') {
       return;
     }
     
@@ -1222,6 +1224,102 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           fullAddress || '',
           siteStatus || '',
           '',
+          attributesJson,
+          'NH DES'
+        ]);
+      });
+    } else if (key === 'nh_automobile_salvage_yards_all' && Array.isArray(value)) {
+      // Handle NH Automobile Salvage Yards - each yard gets its own row with all attributes
+      value.forEach((yard: any) => {
+        const facilityId = yard.facility_id || yard.FACILITY_ID || yard.FacilityId || yard._facility_id || yard.id || yard.ID || yard.Id || 'Unknown Facility';
+        const siteName = yard.site_name || yard.SITE_NAME || yard.SiteName || yard._site_name || yard.name || yard.NAME || yard.Name || '';
+        const address = yard.address || yard.ADDRESS || yard.Address || yard._address || yard.street || yard.STREET || '';
+        const address2 = yard.address2 || yard.ADD2 || yard.Add2 || yard._add2 || yard.address2 || yard.ADDRESS2 || yard.Address2 || '';
+        const town = yard.town || yard.TOWN || yard.Town || yard._town || yard.city || yard.CITY || yard.City || yard.municipality || yard.MUNICIPALITY || '';
+        const state = yard.state || yard.ST || yard.State || yard._st || 'NH';
+        const status = yard.status || yard.STATUS || yard.Status || yard._status || yard.site_status || yard.SITE_STATUS || '';
+        const onestopLink = yard.onestop_link || yard.ONESTOP_LINK || yard.OneStopLink || yard._onestop_link || '';
+        const fullAddress = [address, address2, town, state].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...yard };
+        delete allAttributes.facility_id;
+        delete allAttributes.site_name;
+        delete allAttributes.address;
+        delete allAttributes.address2;
+        delete allAttributes.town;
+        delete allAttributes.state;
+        delete allAttributes.status;
+        delete allAttributes.onestop_link;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_AUTOMOBILE_SALVAGE_YARD',
+          facilityId ? String(facilityId) : 'Unknown Facility',
+          (yard.lat || location.lat).toString(),
+          (yard.lon || location.lon).toString(),
+          yard.distance_miles !== null && yard.distance_miles !== undefined ? yard.distance_miles.toFixed(2) : '',
+          siteName || attributesJson,
+          fullAddress || '',
+          status || '',
+          onestopLink || '',
+          attributesJson,
+          'NH DES'
+        ]);
+      });
+    } else if (key === 'nh_solid_waste_facilities_all' && Array.isArray(value)) {
+      // Handle NH Solid Waste Facilities - each facility gets its own row with all attributes
+      value.forEach((facility: any) => {
+        const swfLid = facility.swf_lid || facility.SWF_LID || facility.SwfLid || facility._swf_lid || facility.facility_id || facility.FACILITY_ID || facility.id || facility.ID || facility.Id || 'Unknown Facility';
+        const swfName = facility.swf_name || facility.SWF_NAME || facility.SwfName || facility._swf_name || facility.name || facility.NAME || facility.Name || '';
+        const swfType = facility.swf_type || facility.SWF_TYPE || facility.SwfType || facility._swf_type || facility.type || facility.TYPE || facility.Type || '';
+        const swfStatus = facility.swf_status || facility.SWF_STATUS || facility.SwfStatus || facility._swf_status || facility.status || facility.STATUS || facility.Status || '';
+        const swfPermit = facility.swf_permit || facility.SWF_PERMIT || facility.SwfPermit || facility._swf_permit || facility.permit || facility.PERMIT || '';
+        const address = facility.address || facility.ADDRESS || facility.Address || facility._address || facility.swf_add_1 || facility.SWF_ADD_1 || facility.street || facility.STREET || '';
+        const address2 = facility.address2 || facility.ADDRESS2 || facility.Address2 || facility._address2 || facility.swf_add_2 || facility.SWF_ADD_2 || facility.add2 || facility.ADD2 || '';
+        const city = facility.city || facility.CITY || facility.City || facility._city || facility.swf_city || facility.SWF_CITY || facility.town || facility.TOWN || facility.municipality || facility.MUNICIPALITY || '';
+        const state = facility.state || facility.ST || facility.State || facility._st || 'NH';
+        const onestopLink = facility.onestop_link || facility.ONESTOP_LINK || facility.OneStopLink || facility._onestop_link || '';
+        const fullAddress = [address, address2, city, state].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...facility };
+        delete allAttributes.swf_lid;
+        delete allAttributes.swf_name;
+        delete allAttributes.swf_type;
+        delete allAttributes.swf_status;
+        delete allAttributes.swf_permit;
+        delete allAttributes.address;
+        delete allAttributes.address2;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.onestop_link;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_SOLID_WASTE_FACILITY',
+          swfName || (swfLid ? String(swfLid) : 'Unknown Facility'),
+          (facility.lat || location.lat).toString(),
+          (facility.lon || location.lon).toString(),
+          facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '',
+          swfType || swfStatus || attributesJson,
+          fullAddress || '',
+          swfPermit || '',
+          onestopLink || '',
           attributesJson,
           'NH DES'
         ]);

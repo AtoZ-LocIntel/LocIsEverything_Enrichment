@@ -300,7 +300,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nh_underground_storage_tanks', label: 'NH Underground Storage Tank Sites', description: 'NH DES - New Hampshire underground storage tank sites', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
   { id: 'nh_water_wells', label: 'NH Water Well Inventory', description: 'NH DES - New Hampshire water well inventory', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
   { id: 'nh_public_water_supply_wells', label: 'NH Public Water Supply Wells', description: 'NH DES - New Hampshire public water supply wells', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
-  { id: 'nh_remediation_sites', label: 'NH Remediation Sites', description: 'NH DES - New Hampshire remediation sites', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' }
+  { id: 'nh_remediation_sites', label: 'NH Remediation Sites', description: 'NH DES - New Hampshire remediation sites', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_automobile_salvage_yards', label: 'NH Automobile Salvage Yards', description: 'NH DES - New Hampshire automobile salvage yards', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_solid_waste_facilities', label: 'NH Solid Waste Facilities', description: 'NH DES - New Hampshire solid waste facilities', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' }
 ];
 
 class POIConfigManager {

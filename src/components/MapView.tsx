@@ -342,7 +342,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nh_underground_storage_tanks_all' || // Skip underground storage tanks array (handled separately for map drawing)
     key === 'nh_water_wells_all' || // Skip water wells array (handled separately for map drawing)
     key === 'nh_public_water_supply_wells_all' || // Skip public water supply wells array (handled separately for map drawing)
-    key === 'nh_remediation_sites_all' // Skip remediation sites array (handled separately for map drawing)
+    key === 'nh_remediation_sites_all' || // Skip remediation sites array (handled separately for map drawing)
+    key === 'nh_automobile_salvage_yards_all' || // Skip automobile salvage yards array (handled separately for map drawing)
+    key === 'nh_solid_waste_facilities_all' // Skip solid waste facilities array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -1827,6 +1829,188 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nh_remediation_sites'].count += remediationCount;
+        }
+      }
+
+      // Draw NH Automobile Salvage Yards as markers on the map
+      if (enrichments.nh_automobile_salvage_yards_all && Array.isArray(enrichments.nh_automobile_salvage_yards_all)) {
+        let salvageYardCount = 0;
+        enrichments.nh_automobile_salvage_yards_all.forEach((yard: any) => {
+          if (yard.lat && yard.lon) {
+            try {
+              salvageYardCount++;
+              const yardLat = yard.lat;
+              const yardLon = yard.lon;
+              const facilityId = yard.facility_id || yard.FACILITY_ID || yard.FacilityId || yard._facility_id || yard.id || yard.ID || yard.Id || 'Unknown Facility';
+              const siteName = yard.site_name || yard.SITE_NAME || yard.SiteName || yard._site_name || yard.name || yard.NAME || yard.Name || '';
+              const address = yard.address || yard.ADDRESS || yard.Address || yard._address || yard.street || yard.STREET || '';
+              const address2 = yard.address2 || yard.ADD2 || yard.Add2 || yard._add2 || yard.address2 || yard.ADDRESS2 || yard.Address2 || '';
+              const town = yard.town || yard.TOWN || yard.Town || yard._town || yard.city || yard.CITY || yard.City || yard.municipality || yard.MUNICIPALITY || '';
+              const status = yard.status || yard.STATUS || yard.Status || yard._status || yard.site_status || yard.SITE_STATUS || '';
+              const onestopLink = yard.onestop_link || yard.ONESTOP_LINK || yard.OneStopLink || yard._onestop_link || '';
+              
+              // Create a custom icon for automobile salvage yards
+              const icon = createPOIIcon('🚗', '#ef4444'); // Red icon for salvage yards
+              
+              const marker = L.marker([yardLat, yardLon], { icon });
+              
+              // Build popup content with all salvage yard attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🚗 ${siteName || (facilityId ? `Facility ID: ${String(facilityId)}` : 'Automobile Salvage Yard')}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${facilityId ? `<div><strong>Facility ID:</strong> ${String(facilityId)}</div>` : ''}
+                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                    ${address2 ? `<div><strong>Address 2:</strong> ${address2}</div>` : ''}
+                    ${town ? `<div><strong>Town:</strong> ${town}</div>` : ''}
+                    ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                    ${onestopLink ? `<div><strong>OneStop Link:</strong> <a href="${onestopLink}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">View Details</a></div>` : ''}
+                    ${yard.distance_miles !== null && yard.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${yard.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all salvage yard attributes (excluding internal fields)
+              const excludeFields = ['facility_id', 'site_name', 'address', 'address2', 'town', 'state', 'status', 'onestop_link', 'lat', 'lon', 'distance_miles'];
+              Object.entries(yard).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this salvage yard
+              bounds.extend([yardLat, yardLon]);
+            } catch (error) {
+              console.error('Error drawing NH Automobile Salvage Yard marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (salvageYardCount > 0) {
+          if (!legendAccumulator['nh_automobile_salvage_yards']) {
+            legendAccumulator['nh_automobile_salvage_yards'] = {
+              icon: '🚗',
+              color: '#ef4444',
+              title: 'NH Automobile Salvage Yards',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_automobile_salvage_yards'].count += salvageYardCount;
+        }
+      }
+
+      // Draw NH Solid Waste Facilities as markers on the map
+      if (enrichments.nh_solid_waste_facilities_all && Array.isArray(enrichments.nh_solid_waste_facilities_all)) {
+        let facilityCount = 0;
+        enrichments.nh_solid_waste_facilities_all.forEach((facility: any) => {
+          if (facility.lat && facility.lon) {
+            try {
+              facilityCount++;
+              const facilityLat = facility.lat;
+              const facilityLon = facility.lon;
+              const swfLid = facility.swf_lid || facility.SWF_LID || facility.SwfLid || facility._swf_lid || facility.facility_id || facility.FACILITY_ID || facility.id || facility.ID || facility.Id || 'Unknown Facility';
+              const swfName = facility.swf_name || facility.SWF_NAME || facility.SwfName || facility._swf_name || facility.name || facility.NAME || facility.Name || '';
+              const swfType = facility.swf_type || facility.SWF_TYPE || facility.SwfType || facility._swf_type || facility.type || facility.TYPE || facility.Type || '';
+              const swfStatus = facility.swf_status || facility.SWF_STATUS || facility.SwfStatus || facility._swf_status || facility.status || facility.STATUS || facility.Status || '';
+              const swfPermit = facility.swf_permit || facility.SWF_PERMIT || facility.SwfPermit || facility._swf_permit || facility.permit || facility.PERMIT || '';
+              const address = facility.address || facility.ADDRESS || facility.Address || facility._address || facility.swf_add_1 || facility.SWF_ADD_1 || facility.street || facility.STREET || '';
+              const address2 = facility.address2 || facility.ADDRESS2 || facility.Address2 || facility._address2 || facility.swf_add_2 || facility.SWF_ADD_2 || facility.add2 || facility.ADD2 || '';
+              const city = facility.city || facility.CITY || facility.City || facility._city || facility.swf_city || facility.SWF_CITY || facility.town || facility.TOWN || facility.municipality || facility.MUNICIPALITY || '';
+              const onestopLink = facility.onestop_link || facility.ONESTOP_LINK || facility.OneStopLink || facility._onestop_link || '';
+              
+              // Create a custom icon for solid waste facilities
+              const icon = createPOIIcon('🗑️', '#16a34a'); // Green icon for solid waste facilities
+              
+              const marker = L.marker([facilityLat, facilityLon], { icon });
+              
+              // Build popup content with all solid waste facility attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🗑️ ${swfName || (swfLid ? `Facility ID: ${String(swfLid)}` : 'Solid Waste Facility')}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${swfLid ? `<div><strong>Facility ID:</strong> ${String(swfLid)}</div>` : ''}
+                    ${swfType ? `<div><strong>Type:</strong> ${swfType}</div>` : ''}
+                    ${swfStatus ? `<div><strong>Status:</strong> ${swfStatus}</div>` : ''}
+                    ${swfPermit ? `<div><strong>Permit:</strong> ${swfPermit}</div>` : ''}
+                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                    ${address2 ? `<div><strong>Address 2:</strong> ${address2}</div>` : ''}
+                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                    ${onestopLink ? `<div><strong>OneStop Link:</strong> <a href="${onestopLink}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">View Details</a></div>` : ''}
+                    ${facility.distance_miles !== null && facility.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${facility.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all solid waste facility attributes (excluding internal fields)
+              const excludeFields = ['swf_lid', 'swf_name', 'swf_type', 'swf_status', 'swf_permit', 'address', 'address2', 'city', 'state', 'onestop_link', 'lat', 'lon', 'distance_miles'];
+              Object.entries(facility).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this solid waste facility
+              bounds.extend([facilityLat, facilityLon]);
+            } catch (error) {
+              console.error('Error drawing NH Solid Waste Facility marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (facilityCount > 0) {
+          if (!legendAccumulator['nh_solid_waste_facilities']) {
+            legendAccumulator['nh_solid_waste_facilities'] = {
+              icon: '🗑️',
+              color: '#16a34a',
+              title: 'NH Solid Waste Facilities',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_solid_waste_facilities'].count += facilityCount;
         }
       }
 

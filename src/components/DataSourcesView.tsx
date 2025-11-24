@@ -576,6 +576,20 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "NH Automobile Salvage Yards",
+          description: "New Hampshire automobile salvage yards from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Solid Waste Facilities",
+          description: "New Hampshire solid waste facilities from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     }

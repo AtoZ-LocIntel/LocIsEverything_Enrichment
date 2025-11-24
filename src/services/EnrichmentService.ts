@@ -23,6 +23,8 @@ import { getNHUndergroundStorageTanksData } from '../adapters/nhUndergroundStora
 import { getNHWaterWellsData } from '../adapters/nhWaterWells';
 import { getNHPublicWaterSupplyWellsData } from '../adapters/nhPublicWaterSupplyWells';
 import { getNHRemediationSitesData } from '../adapters/nhRemediationSites';
+import { getNHAutomobileSalvageYardsData } from '../adapters/nhAutomobileSalvageYards';
+import { getNHSolidWasteFacilitiesData } from '../adapters/nhSolidWasteFacilities';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1368,6 +1370,14 @@ export class EnrichmentService {
       // NH Remediation Sites (NH DES) - Proximity query (point dataset)
       case 'nh_remediation_sites':
         return await this.getNHRemediationSites(lat, lon, radius);
+      
+      // NH Automobile Salvage Yards (NH DES) - Proximity query (point dataset)
+      case 'nh_automobile_salvage_yards':
+        return await this.getNHAutomobileSalvageYards(lat, lon, radius);
+      
+      // NH Solid Waste Facilities (NH DES) - Proximity query (point dataset)
+      case 'nh_solid_waste_facilities':
+        return await this.getNHSolidWasteFacilities(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2493,6 +2503,108 @@ export class EnrichmentService {
         nh_remediation_sites_count: 0,
         nh_remediation_sites_all: [],
         nh_remediation_sites_error: 'Error fetching NH Remediation Sites data'
+      };
+    }
+  }
+
+  private async getNHAutomobileSalvageYards(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚗 Fetching NH Automobile Salvage Yards data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const salvageYards = await getNHAutomobileSalvageYardsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (salvageYards && salvageYards.length > 0) {
+        result.nh_automobile_salvage_yards_count = salvageYards.length;
+        result.nh_automobile_salvage_yards_all = salvageYards.map(yard => ({
+          ...yard.attributes,
+          facility_id: yard.facility_id,
+          site_name: yard.site_name,
+          address: yard.address,
+          address2: yard.address2,
+          town: yard.town,
+          state: yard.state,
+          status: yard.status,
+          onestop_link: yard.onestop_link,
+          lat: yard.latitude,
+          lon: yard.longitude,
+          distance_miles: yard.distance_miles
+        }));
+      } else {
+        result.nh_automobile_salvage_yards_count = 0;
+        result.nh_automobile_salvage_yards_all = [];
+      }
+      
+      result.nh_automobile_salvage_yards_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Automobile Salvage Yards data processed:`, {
+        count: result.nh_automobile_salvage_yards_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Automobile Salvage Yards:', error);
+      return {
+        nh_automobile_salvage_yards_count: 0,
+        nh_automobile_salvage_yards_all: [],
+        nh_automobile_salvage_yards_error: 'Error fetching NH Automobile Salvage Yards data'
+      };
+    }
+  }
+
+  private async getNHSolidWasteFacilities(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗑️ Fetching NH Solid Waste Facilities data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const facilities = await getNHSolidWasteFacilitiesData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (facilities && facilities.length > 0) {
+        result.nh_solid_waste_facilities_count = facilities.length;
+        result.nh_solid_waste_facilities_all = facilities.map(facility => ({
+          ...facility.attributes,
+          swf_lid: facility.swf_lid,
+          swf_name: facility.swf_name,
+          swf_type: facility.swf_type,
+          swf_status: facility.swf_status,
+          swf_permit: facility.swf_permit,
+          address: facility.address,
+          address2: facility.address2,
+          city: facility.city,
+          state: facility.state,
+          onestop_link: facility.onestop_link,
+          lat: facility.latitude,
+          lon: facility.longitude,
+          distance_miles: facility.distance_miles
+        }));
+      } else {
+        result.nh_solid_waste_facilities_count = 0;
+        result.nh_solid_waste_facilities_all = [];
+      }
+      
+      result.nh_solid_waste_facilities_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Solid Waste Facilities data processed:`, {
+        count: result.nh_solid_waste_facilities_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Solid Waste Facilities:', error);
+      return {
+        nh_solid_waste_facilities_count: 0,
+        nh_solid_waste_facilities_all: [],
+        nh_solid_waste_facilities_error: 'Error fetching NH Solid Waste Facilities data'
       };
     }
   }
