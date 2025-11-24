@@ -720,6 +720,7 @@ const MapView: React.FC<MapViewProps> = ({
       });
 
       locationMarker.bindPopup(createPopupContent(result), { maxWidth: 540 });
+      // Location marker always visible, add directly to primary
       locationMarker.addTo(primary);
 
       // Draw NH EMS facilities as markers on the map
@@ -2239,7 +2240,7 @@ const MapView: React.FC<MapViewProps> = ({
               `;
 
               polygon.bindPopup(popupContent, { maxWidth: 400 });
-              polygon.addTo(primary);
+              polygon.addTo(layerGroupsMapRef.current[layerKey]);
               bounds.extend(polygon.getBounds());
               
               if (!legendAccumulator['nh_nwi_plus']) {
@@ -2591,8 +2592,11 @@ const MapView: React.FC<MapViewProps> = ({
                 `;
                 
                 polygon.bindPopup(popupContent, { maxWidth: 400 });
-
                 polygon.addTo(primary);
+                
+                // Attach overlap detection handler
+                attachOverlapHandler(polygon);
+                
                 bounds.extend(polygon.getBounds());
               }
             } catch (error) {
