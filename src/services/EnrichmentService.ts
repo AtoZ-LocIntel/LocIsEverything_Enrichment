@@ -15,6 +15,7 @@ import { getNHHospitalsData } from '../adapters/nhHospitals';
 import { getNHPublicWatersAccessData } from '../adapters/nhPublicWatersAccess';
 import { getNHLawEnforcementData } from '../adapters/nhLawEnforcement';
 import { getNHRecreationTrailsData } from '../adapters/nhRecreationTrails';
+import { getNHStoneWallsData } from '../adapters/nhStoneWalls';
 import { getNHDOTRoadsData } from '../adapters/nhDOTRoads';
 import { getNHRailroadsData } from '../adapters/nhRailroads';
 import { getNHTransmissionPipelinesData } from '../adapters/nhTransmissionPipelines';
@@ -1341,6 +1342,10 @@ export class EnrichmentService {
       case 'nh_recreation_trails':
         return await this.getNHRecreationTrails(lat, lon, radius);
       
+      // NH Stone Walls - Proximity query (line dataset)
+      case 'nh_stone_walls':
+        return await this.getNHStoneWalls(lat, lon, radius);
+      
       // NH DOT Roads (NH GRANIT) - Proximity query (line dataset)
       case 'nh_dot_roads':
         return await this.getNHDOTRoads(lat, lon, radius);
@@ -2131,6 +2136,50 @@ export class EnrichmentService {
         nh_recreation_trails_count: 0,
         nh_recreation_trails_all: [],
         nh_recreation_trails_error: 'Error fetching NH Recreation Trails data'
+      };
+    }
+  }
+
+  private async getNHStoneWalls(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🧱 Fetching NH Stone Walls data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const stoneWalls = await getNHStoneWallsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (stoneWalls && stoneWalls.length > 0) {
+        result.nh_stone_walls_count = stoneWalls.length;
+        result.nh_stone_walls_all = stoneWalls.map(wall => {
+          const { geometry, attributes, ...rest } = wall;
+          return {
+            ...attributes,
+            ...rest,
+            geometry: geometry, // Include geometry for map drawing
+          };
+        });
+      } else {
+        result.nh_stone_walls_count = 0;
+        result.nh_stone_walls_all = [];
+      }
+      
+      result.nh_stone_walls_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Stone Walls data processed:`, {
+        count: result.nh_stone_walls_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Stone Walls:', error);
+      return {
+        nh_stone_walls_count: 0,
+        nh_stone_walls_all: [],
+        nh_stone_walls_error: 'Error fetching NH Stone Walls data'
       };
     }
   }

@@ -1100,6 +1100,99 @@ const MapView: React.FC<MapViewProps> = ({
         }
       }
 
+      // Draw NH Stone Walls as polylines on the map
+      if (enrichments.nh_stone_walls_all && Array.isArray(enrichments.nh_stone_walls_all)) {
+        let wallCount = 0;
+        enrichments.nh_stone_walls_all.forEach((wall: any) => {
+          if (wall.geometry && wall.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              const paths = wall.geometry.paths;
+              if (paths && paths.length > 0) {
+                wallCount++;
+                // For each path in the polyline, create a separate polyline
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const town = wall.TOWN || wall.town || 'Unknown Town';
+                  const user = wall.USER_ || wall.user || null;
+                  const shapeLength = wall.Shape__Length || wall.shapeLength || null;
+
+                  // Create polyline with brown/tan color for stone walls
+                  const polyline = L.polyline(latlngs, {
+                    color: '#8b7355', // Brown/tan color for stone walls
+                    weight: 2,
+                    opacity: 0.8,
+                    smoothFactor: 1
+                  });
+
+                  // Build popup content with all stone wall attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🧱 Stone Wall
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${town ? `<div><strong>Town:</strong> ${town}</div>` : ''}
+                        ${user ? `<div><strong>Mapped by:</strong> ${user}</div>` : ''}
+                        ${shapeLength ? `<div><strong>Length:</strong> ${(shapeLength * 3.28084).toFixed(1)} ft</div>` : ''}
+                        ${wall.distance_miles !== null && wall.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${wall.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all stone wall attributes (excluding internal fields)
+                  const excludeFields = ['TOWN', 'town', 'USER_', 'user', 'Shape__Length', 'shapeLength', 'geometry', 'distance_miles'];
+                  Object.entries(wall).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi);
+                  bounds.extend(polyline.getBounds());
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing NH Stone Wall polyline:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (wallCount > 0) {
+          if (!legendAccumulator['nh_stone_walls']) {
+            legendAccumulator['nh_stone_walls'] = {
+              icon: '🧱',
+              color: '#8b7355',
+              title: 'NH Stone Walls',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_stone_walls'].count += wallCount;
+        }
+      }
+
       // Draw NH DOT Roads as polylines on the map
       if (enrichments.nh_dot_roads_all && Array.isArray(enrichments.nh_dot_roads_all)) {
         let roadCount = 0;

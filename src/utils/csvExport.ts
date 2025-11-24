@@ -244,6 +244,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_public_waters_access_all' ||
         key === 'nh_law_enforcement_all' ||
         key === 'nh_recreation_trails_all' ||
+        key === 'nh_stone_walls_all' ||
         key === 'nh_dot_roads_all' ||
         key === 'nh_railroads_all' ||
         key === 'nh_transmission_pipelines_all' ||
@@ -898,6 +899,44 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_stone_walls_all' && Array.isArray(value)) {
+      // Handle NH Stone Walls - each stone wall gets its own row with all attributes
+      value.forEach((wall: any) => {
+        const town = wall.TOWN || wall.town || 'Unknown Town';
+        const user = wall.USER_ || wall.user || '';
+        const shapeLength = wall.Shape__Length || wall.shapeLength || null;
+        const lengthFeet = shapeLength ? (shapeLength * 3.28084).toFixed(1) : '';
+        
+        const allAttributes = { ...wall };
+        delete allAttributes.TOWN;
+        delete allAttributes.town;
+        delete allAttributes.USER_;
+        delete allAttributes.user;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.shapeLength;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_STONE_WALL',
+          `Stone Wall - ${town}`,
+          location.lat.toString(), // Use search location for stone wall (it's a line, not a point)
+          location.lon.toString(),
+          wall.distance_miles !== null && wall.distance_miles !== undefined ? wall.distance_miles.toFixed(2) : '',
+          town,
+          lengthFeet ? `${lengthFeet} ft` : attributesJson,
+          user || '',
+          '',
+          attributesJson,
+          'NH Stone Wall Layer'
         ]);
       });
     } else if (key === 'nh_dot_roads_all' && Array.isArray(value)) {
