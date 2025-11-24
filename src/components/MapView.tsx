@@ -2297,6 +2297,108 @@ const MapView: React.FC<MapViewProps> = ({
       } else if (enrichments.nh_nwi_plus_geometry && !enrichments.nh_nwi_plus_all) {
         // Fallback: Draw single wetland from point-in-polygon query (no radius, no _all array)
         // Only draw if nh_nwi_plus_all doesn't exist to avoid duplicates
+      }
+
+      // Draw MA DEP Wetlands as polygons on the map
+      if (enrichments.ma_dep_wetlands_all && Array.isArray(enrichments.ma_dep_wetlands_all)) {
+        enrichments.ma_dep_wetlands_all.forEach((wetland: any) => {
+          if (wetland.geometry && wetland.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = wetland.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = wetland.distance_miles === 0 || wetland.distance_miles === null;
+                const color = isContaining ? '#14b8a6' : '#06b6d4'; // Teal for containing, cyan for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all wetland attributes
+                const wetCode = wetland.WETCODE || wetland.wetCode;
+                const itValDesc = wetland.IT_VALDESC || wetland.itValDesc;
+                const itValc = wetland.IT_VALC || wetland.itValc;
+                const polyCode = wetland.POLY_CODE || wetland.polyCode;
+                const source = wetland.SOURCE || wetland.source;
+                const areaAcres = wetland.AREAACRES || wetland.areaAcres;
+                const distance = wetland.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🌊 Containing Wetland' : '🌊 Nearby Wetland'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${itValDesc ? `<div><strong>Type:</strong> ${itValDesc}</div>` : ''}
+                      ${itValc ? `<div><strong>Code:</strong> ${itValc}</div>` : ''}
+                      ${wetCode ? `<div><strong>Wet Code:</strong> ${wetCode}</div>` : ''}
+                      ${polyCode ? `<div><strong>Poly Code:</strong> ${polyCode}</div>` : ''}
+                      ${source ? `<div><strong>Source:</strong> ${source}</div>` : ''}
+                      ${areaAcres ? `<div><strong>Area:</strong> ${areaAcres.toFixed(2)} acres</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other wetland attributes (excluding internal fields)
+                const excludeFields = ['WETCODE', 'wetCode', 'IT_VALC', 'itValc', 'IT_VALDESC', 'itValDesc', 'POLY_CODE', 'polyCode', 'SOURCE', 'source', 'AREAACRES', 'areaAcres', 'AREASQMI', 'areaSqMi', 'geometry', 'distance_miles'];
+                Object.entries(wetland).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['ma_dep_wetlands']) {
+                  legendAccumulator['ma_dep_wetlands'] = {
+                    icon: '🌊',
+                    color: '#14b8a6',
+                    title: 'MA DEP Wetlands',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['ma_dep_wetlands'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing MA DEP Wetland polygon:', error);
+            }
+          }
+        });
+      } else if (enrichments.nh_nwi_plus_geometry && !enrichments.nh_nwi_plus_all) {
+        // Fallback: Draw single wetland from point-in-polygon query (no radius, no _all array)
+        // Only draw if nh_nwi_plus_all doesn't exist to avoid duplicates
         try {
           const geometry = enrichments.nh_nwi_plus_geometry;
           if (geometry && geometry.rings) {

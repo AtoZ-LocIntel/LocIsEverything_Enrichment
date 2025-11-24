@@ -257,7 +257,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_solid_waste_facilities_all' ||
         key === 'nh_nwi_plus_all' ||
         key === 'nh_source_water_protection_area_geometry' || // Skip geometry field (raw JSON, not user-friendly)
-        key === 'nh_nwi_plus_geometry') { // Skip geometry field (raw JSON, not user-friendly)
+        key === 'nh_nwi_plus_geometry' || // Skip geometry field (raw JSON, not user-friendly)
+        key === 'ma_dep_wetlands_all') { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -1403,6 +1404,56 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           wetlandClass || '',
           attributesJson,
           'NH DES'
+        ]);
+      });
+    }
+    
+    // Add MA DEP Wetlands data rows
+    if (enrichments.ma_dep_wetlands_all && Array.isArray(enrichments.ma_dep_wetlands_all)) {
+      enrichments.ma_dep_wetlands_all.forEach((wetland: any) => {
+        const wetCode = wetland.WETCODE || wetland.wetCode || '';
+        const itValDesc = wetland.IT_VALDESC || wetland.itValDesc || 'Unknown Wetland';
+        const itValc = wetland.IT_VALC || wetland.itValc || '';
+        const polyCode = wetland.POLY_CODE || wetland.polyCode || '';
+        const source = wetland.SOURCE || wetland.source || '';
+        const areaAcres = wetland.AREAACRES || wetland.areaAcres || '';
+        
+        const allAttributes = { ...wetland };
+        delete allAttributes.WETCODE;
+        delete allAttributes.wetCode;
+        delete allAttributes.IT_VALC;
+        delete allAttributes.itValc;
+        delete allAttributes.IT_VALDESC;
+        delete allAttributes.itValDesc;
+        delete allAttributes.POLY_CODE;
+        delete allAttributes.polyCode;
+        delete allAttributes.SOURCE;
+        delete allAttributes.source;
+        delete allAttributes.AREAACRES;
+        delete allAttributes.areaAcres;
+        delete allAttributes.AREASQMI;
+        delete allAttributes.areaSqMi;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'MA_DEP_WETLAND',
+          itValDesc,
+          location.lat.toString(), // Use search location for wetland (it's a polygon, not a point)
+          location.lon.toString(),
+          wetland.distance_miles !== null && wetland.distance_miles !== undefined ? wetland.distance_miles.toFixed(2) : '',
+          itValc || wetCode || attributesJson,
+          areaAcres ? `${areaAcres} acres` : attributesJson,
+          source || '',
+          '',
+          attributesJson,
+          'MassGIS'
         ]);
       });
     }

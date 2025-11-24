@@ -57,6 +57,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   pct: <img src="/assets/pct.webp" alt="Pacific Crest Trail" className="w-5 h-5" />,
   nh: <img src="/assets/newhampshire.webp" alt="New Hampshire Open Data" className="w-5 h-5" />,
   ma: <img src="/assets/MA.webp" alt="Massachusetts Open Data" className="w-5 h-5" />,
+  ma_massgis: <img src="/assets/MassGIS.webp" alt="MassGIS" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -219,18 +220,38 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         // Special handling for MA - add sub-categories based on data sources
         if (section.id === 'ma') {
-          // Define MA sub-categories (will be populated as layers are added)
-          // When MA layers are added, they will be organized into sub-categories similar to NH
+          // Filter enrichments for MassGIS sub-category (same pattern as NH GRANIT)
+          const maMassGISPOIs = poiTypes.filter(poi => poi.section === 'ma' && poi.category === 'ma');
+          
+          console.log('🔍 Loading MA MassGIS enrichments:', {
+            allPOITypes: poiTypes.length,
+            maPOIs: maMassGISPOIs.length,
+            maPOIIds: maMassGISPOIs.map(p => p.id)
+          });
+          
+          const maMassGISEnrichments = maMassGISPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          console.log('✅ MA MassGIS Enrichments created:', {
+            count: maMassGISEnrichments.length,
+            enrichments: maMassGISEnrichments.map(e => e.id)
+          });
+          
+          // Define MA sub-categories
           const maSubCategories: EnrichmentCategory[] = [
-            // MA sub-categories will be added here as layers are created
-            // Example structure (commented out until ready):
-            // {
-            //   id: 'ma_massgis',
-            //   title: 'MA MassGIS',
-            //   icon: <img src="/assets/MAMassGIS.webp" alt="MA MassGIS" className="w-full h-full object-cover rounded-full" />,
-            //   description: 'Massachusetts Geographic Information System data layers',
-            //   enrichments: maEnrichments
-            // }
+            {
+              id: 'ma_massgis',
+              title: 'MassGIS',
+              icon: <img src="/assets/MassGIS.webp" alt="MassGIS" className="w-full h-full object-cover rounded-full" />,
+              description: 'Massachusetts Geographic Information System data layers',
+              enrichments: maMassGISEnrichments
+            }
           ];
           
           return {
@@ -298,7 +319,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'quirky': 'quirky_and_fun',
       'at': 'at',
       'pct': 'PCT',
-      'ma': 'MA'
+      'ma': 'MA',
+      'ma_massgis': 'MassGIS'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -470,8 +492,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     <button
                       key={category.id}
                       onClick={() => {
-                        // Always use modal view for consistency
-                        if (onViewCategory) {
+                        // Special handling for NH and MA - show sub-categories page
+                        if (category.id === 'nh' && category.subCategories && category.subCategories.length > 0) {
+                          setViewingNHSubCategories(true);
+                        } else if (category.id === 'ma' && category.subCategories && category.subCategories.length > 0) {
+                          setViewingMASubCategories(true);
+                        } else if (onViewCategory) {
                           onViewCategory(category);
                         } else {
                           setActiveModal(category.id);
@@ -593,10 +619,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       <button
                         key={subCategory.id}
                         onClick={() => {
-                          // Open modal with this sub-category's enrichments
-                          setCameFromMASubCategories(true);
-                          setActiveModal(subCategory.id);
-                          setViewingMASubCategories(false);
+                          // Use onViewCategory to show sub-category layers (same pattern as NH)
+                          if (onViewCategory) {
+                            setViewingMASubCategories(false);
+                            onViewCategory(subCategory);
+                          } else {
+                            // Fallback to modal
+                            setCameFromMASubCategories(true);
+                            setActiveModal(subCategory.id);
+                            setViewingMASubCategories(false);
+                          }
                         }}
                         className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         style={{

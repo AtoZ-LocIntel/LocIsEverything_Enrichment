@@ -194,6 +194,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'New Hampshire Data';
     }
     
+    if (key.includes('ma_dep_wetlands')) {
+      return 'Massachusetts Data';
+    }
+    
     // Demographics
     if (key.includes('acs_')) {
       return 'Demographics';

@@ -28,6 +28,7 @@ import { getNHAutomobileSalvageYardsData } from '../adapters/nhAutomobileSalvage
 import { getNHSolidWasteFacilitiesData } from '../adapters/nhSolidWasteFacilities';
 import { getNHSourceWaterProtectionAreaData } from '../adapters/nhSourceWaterProtectionAreas';
 // NH NWI Plus functions are imported dynamically in the method
+import { getMADEPWetlandsContainingData, getMADEPWetlandsNearbyData, MADEPWetland } from '../adapters/maDEPWetlands';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1393,6 +1394,10 @@ export class EnrichmentService {
       // NH National Wetland Inventory (NWI) Plus (NH DES) - Point-in-polygon and proximity queries (polygon dataset)
       case 'nh_nwi_plus':
         return await this.getNHNWIPlus(lat, lon, radius);
+      
+      // MA DEP Wetlands (MassGIS) - Point-in-polygon and proximity query (polygon dataset)
+      case 'ma_dep_wetlands':
+        return await this.getMADEPWetlands(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2853,6 +2858,91 @@ export class EnrichmentService {
         nh_nwi_plus_count: 0,
         nh_nwi_plus_all: [],
         nh_nwi_plus_error: 'Error fetching NH NWI Plus data'
+      };
+    }
+  }
+
+  private async getMADEPWetlands(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching MA DEP Wetlands data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      if (radius && radius > 0) {
+        // Proximity query - get both containing and nearby wetlands
+        const containingWetlands = await getMADEPWetlandsContainingData(lat, lon);
+        console.log('🌊 Containing wetlands from adapter:', containingWetlands.length);
+        
+        const nearbyWetlands = await getMADEPWetlandsNearbyData(lat, lon, radius);
+        console.log(`🌊 Nearby wetlands from adapter: ${nearbyWetlands.length} found`);
+        
+        // Combine results, avoiding duplicates by OBJECTID
+        const allWetlandsMap = new Map<number, MADEPWetland>();
+        
+        // Add containing wetlands first (distance = 0)
+        containingWetlands.forEach(wetland => {
+          if (wetland.objectId) {
+            allWetlandsMap.set(wetland.objectId, wetland);
+          }
+        });
+        
+        // Add nearby wetlands (will overwrite containing ones if duplicate, but that's fine)
+        nearbyWetlands.forEach(wetland => {
+          if (wetland.objectId) {
+            allWetlandsMap.set(wetland.objectId, wetland);
+          }
+        });
+        
+        const allWetlands = Array.from(allWetlandsMap.values());
+        
+        if (allWetlands.length > 0) {
+          result.ma_dep_wetlands_count = allWetlands.length;
+          result.ma_dep_wetlands_all = allWetlands.map(wetland => {
+            const { geometry, attributes, ...rest } = wetland;
+            return {
+              ...attributes,
+              ...rest,
+              geometry: geometry, // Include geometry for map drawing
+            };
+          });
+        } else {
+          result.ma_dep_wetlands_count = 0;
+          result.ma_dep_wetlands_all = [];
+        }
+        
+        result.ma_dep_wetlands_search_radius_miles = radius;
+      } else {
+        // Point-in-polygon query only
+        const containingWetlands = await getMADEPWetlandsContainingData(lat, lon);
+        
+        if (containingWetlands.length > 0) {
+          result.ma_dep_wetlands_count = containingWetlands.length;
+          result.ma_dep_wetlands_all = containingWetlands.map(wetland => {
+            const { geometry, attributes, ...rest } = wetland;
+            return {
+              ...attributes,
+              ...rest,
+              geometry: geometry, // Include geometry for map drawing
+            };
+          });
+        } else {
+          result.ma_dep_wetlands_count = 0;
+          result.ma_dep_wetlands_all = [];
+        }
+      }
+      
+      console.log(`✅ MA DEP Wetlands data processed:`, {
+        count: result.ma_dep_wetlands_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching MA DEP Wetlands:', error);
+      return {
+        ma_dep_wetlands_count: 0,
+        ma_dep_wetlands_all: [],
+        ma_dep_wetlands_error: 'Error fetching MA DEP Wetlands data'
       };
     }
   }
