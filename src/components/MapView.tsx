@@ -337,7 +337,12 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nh_recreation_trails_all' || // Skip trails array (handled separately for map drawing)
     key === 'nh_dot_roads_all' || // Skip roads array (handled separately for map drawing)
     key === 'nh_railroads_all' || // Skip railroads array (handled separately for map drawing)
-    key === 'nh_transmission_pipelines_all' // Skip transmission/pipelines array (handled separately for map drawing)
+    key === 'nh_transmission_pipelines_all' || // Skip transmission/pipelines array (handled separately for map drawing)
+    key === 'nh_cell_towers_all' || // Skip cell towers array (handled separately for map drawing)
+    key === 'nh_underground_storage_tanks_all' || // Skip underground storage tanks array (handled separately for map drawing)
+    key === 'nh_water_wells_all' || // Skip water wells array (handled separately for map drawing)
+    key === 'nh_public_water_supply_wells_all' || // Skip public water supply wells array (handled separately for map drawing)
+    key === 'nh_remediation_sites_all' // Skip remediation sites array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -996,6 +1001,7 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw NH Recreation Trails as polylines on the map
       if (enrichments.nh_recreation_trails_all && Array.isArray(enrichments.nh_recreation_trails_all)) {
+        let trailCount = 0;
         enrichments.nh_recreation_trails_all.forEach((trail: any) => {
           if (trail.geometry && trail.geometry.paths) {
             try {
@@ -1003,6 +1009,7 @@ const MapView: React.FC<MapViewProps> = ({
               // ESRI polylines have paths (array of coordinate arrays)
               const paths = trail.geometry.paths;
               if (paths && paths.length > 0) {
+                trailCount++;
                 // For each path in the polyline, create a separate polyline
                 paths.forEach((path: number[][]) => {
                   const latlngs = path.map((coord: number[]) => {
@@ -1072,10 +1079,24 @@ const MapView: React.FC<MapViewProps> = ({
             }
           }
         });
+        
+        // Add to legend accumulator
+        if (trailCount > 0) {
+          if (!legendAccumulator['nh_recreation_trails']) {
+            legendAccumulator['nh_recreation_trails'] = {
+              icon: '🥾',
+              color: '#059669',
+              title: 'NH Recreation Trails',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_recreation_trails'].count += trailCount;
+        }
       }
 
       // Draw NH DOT Roads as polylines on the map
       if (enrichments.nh_dot_roads_all && Array.isArray(enrichments.nh_dot_roads_all)) {
+        let roadCount = 0;
         enrichments.nh_dot_roads_all.forEach((road: any) => {
           if (road.geometry && road.geometry.paths) {
             try {
@@ -1083,6 +1104,7 @@ const MapView: React.FC<MapViewProps> = ({
               // ESRI polylines have paths (array of coordinate arrays)
               const paths = road.geometry.paths;
               if (paths && paths.length > 0) {
+                roadCount++;
                 // For each path in the polyline, create a separate polyline
                 paths.forEach((path: number[][]) => {
                   const latlngs = path.map((coord: number[]) => {
@@ -1152,10 +1174,24 @@ const MapView: React.FC<MapViewProps> = ({
             }
           }
         });
+        
+        // Add to legend accumulator
+        if (roadCount > 0) {
+          if (!legendAccumulator['nh_dot_roads']) {
+            legendAccumulator['nh_dot_roads'] = {
+              icon: '🛣️',
+              color: '#6b7280',
+              title: 'NH DOT Roads',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_dot_roads'].count += roadCount;
+        }
       }
 
       // Draw NH Railroads as polylines on the map
       if (enrichments.nh_railroads_all && Array.isArray(enrichments.nh_railroads_all)) {
+        let railroadCount = 0;
         enrichments.nh_railroads_all.forEach((railroad: any) => {
           if (railroad.geometry && railroad.geometry.paths) {
             try {
@@ -1163,6 +1199,7 @@ const MapView: React.FC<MapViewProps> = ({
               // ESRI polylines have paths (array of coordinate arrays)
               const paths = railroad.geometry.paths;
               if (paths && paths.length > 0) {
+                railroadCount++;
                 // For each path in the polyline, create a separate polyline
                 paths.forEach((path: number[][]) => {
                   const latlngs = path.map((coord: number[]) => {
@@ -1242,17 +1279,35 @@ const MapView: React.FC<MapViewProps> = ({
             }
           }
         });
+        
+        // Add to legend accumulator
+        if (railroadCount > 0) {
+          if (!legendAccumulator['nh_railroads']) {
+            legendAccumulator['nh_railroads'] = {
+              icon: '🚂',
+              color: '#92400e',
+              title: 'NH Railroads',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_railroads'].count += railroadCount;
+        }
       }
 
       // Draw NH Transmission/Pipelines as polylines on the map
       if (enrichments.nh_transmission_pipelines_all && Array.isArray(enrichments.nh_transmission_pipelines_all)) {
-        enrichments.nh_transmission_pipelines_all.forEach((tp: any) => {
+        console.log(`🔍 NH Transmission/Pipelines: Found ${enrichments.nh_transmission_pipelines_all.length} items`);
+        let tpCount = 0;
+        enrichments.nh_transmission_pipelines_all.forEach((tp: any, index: number) => {
+          console.log(`🔍 TP ${index}:`, { hasGeometry: !!tp.geometry, hasPaths: !!(tp.geometry && tp.geometry.paths), geometry: tp.geometry });
           if (tp.geometry && tp.geometry.paths) {
             try {
               // Convert ESRI polyline paths to Leaflet LatLng arrays
               // ESRI polylines have paths (array of coordinate arrays)
               const paths = tp.geometry.paths;
               if (paths && paths.length > 0) {
+                tpCount++;
+                console.log(`✅ Drawing TP ${index} with ${paths.length} paths`);
                 // For each path in the polyline, create a separate polyline
                 paths.forEach((path: number[][]) => {
                   const latlngs = path.map((coord: number[]) => {
@@ -1321,8 +1376,458 @@ const MapView: React.FC<MapViewProps> = ({
             } catch (error) {
               console.error('Error drawing NH Transmission/Pipeline polyline:', error);
             }
+          } else {
+            console.warn(`⚠️ TP ${index}: Missing geometry or paths`, tp);
           }
         });
+        
+        console.log(`✅ NH Transmission/Pipelines: Drew ${tpCount} items`);
+        
+        // Add to legend accumulator
+        if (tpCount > 0) {
+          if (!legendAccumulator['nh_transmission_pipelines']) {
+            legendAccumulator['nh_transmission_pipelines'] = {
+              icon: '⚡',
+              color: '#f97316',
+              title: 'NH Transmission/Pipelines',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_transmission_pipelines'].count += tpCount;
+        }
+      } else {
+        console.log('ℹ️ NH Transmission/Pipelines: No data or not an array', enrichments.nh_transmission_pipelines_all);
+      }
+
+      // Draw NH Cell Towers as markers on the map
+      if (enrichments.nh_cell_towers_all && Array.isArray(enrichments.nh_cell_towers_all)) {
+        let cellTowerCount = 0;
+        enrichments.nh_cell_towers_all.forEach((tower: any) => {
+          if (tower.lat && tower.lon) {
+            try {
+              cellTowerCount++;
+              const towerLat = tower.lat;
+              const towerLon = tower.lon;
+              const entityName = tower.entity_name || tower.ENTITY_NAM || tower.EntityName || tower._entity_nam || tower.owner || tower.OWNER || 'Unknown Cell Tower';
+              const structureType = tower.structure_type || tower.STRUCTURE_TYPE || tower.StrTyp || tower.str_typ || tower.STR_TYP || tower._str_typ || 'Unknown Type';
+              const city = tower.city || tower.CITY || tower.City || tower._city || tower.gismunic || tower.GISMUNIC || '';
+              const address = tower.address || tower.ADDRESS || tower.Address || tower.street || tower.STREET || tower.str_street || tower.STR_STREET || '';
+              
+              // Create a custom icon for cell towers
+              const icon = createPOIIcon('📡', '#8b5cf6'); // Purple icon for cell towers
+              
+              const marker = L.marker([towerLat, towerLon], { icon });
+              
+              // Build popup content with all cell tower attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    📡 ${entityName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${structureType ? `<div><strong>Structure Type:</strong> ${structureType}</div>` : ''}
+                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                    ${tower.height_above_ground_ft !== null && tower.height_above_ground_ft !== undefined ? `<div><strong>Height Above Ground:</strong> ${tower.height_above_ground_ft} ft</div>` : ''}
+                    ${tower.elevation_ft !== null && tower.elevation_ft !== undefined ? `<div><strong>Elevation:</strong> ${tower.elevation_ft} ft</div>` : ''}
+                    ${tower.distance_miles !== null && tower.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${tower.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all cell tower attributes (excluding internal fields)
+              const excludeFields = ['entity_name', 'structure_type', 'city', 'state', 'address', 'height_above_ground_ft', 'elevation_ft', 'lat', 'lon', 'distance_miles'];
+              Object.entries(tower).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this cell tower
+              bounds.extend([towerLat, towerLon]);
+            } catch (error) {
+              console.error('Error drawing NH Cell Tower marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (cellTowerCount > 0) {
+          if (!legendAccumulator['nh_cell_towers']) {
+            legendAccumulator['nh_cell_towers'] = {
+              icon: '📡',
+              color: '#8b5cf6',
+              title: 'NH Personal Wireless Service Facilities',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_cell_towers'].count += cellTowerCount;
+        }
+      }
+
+      // Draw NH Underground Storage Tank Sites as markers on the map
+      if (enrichments.nh_underground_storage_tanks_all && Array.isArray(enrichments.nh_underground_storage_tanks_all)) {
+        let ustCount = 0;
+        enrichments.nh_underground_storage_tanks_all.forEach((site: any) => {
+          if (site.lat && site.lon) {
+            try {
+              ustCount++;
+              const siteLat = site.lat;
+              const siteLon = site.lon;
+              const facilityName = site.facility_name || site.FACILITY_NAME || site.FacilityName || site._facility_name || site.name || site.NAME || site.Name || 'Unknown Facility';
+              const facilityAddress = site.facility_address || site.FACILITY_ADDRESS || site.FacilityAddress || site._facility_address || site.address || site.ADDRESS || site.Address || site.street || site.STREET || '';
+              const city = site.city || site.CITY || site.City || site._city || site.gismunic || site.GISMUNIC || '';
+              const tankCount = site.tank_count || site.TANK_COUNT || site.TankCount || site._tank_count || site.num_tanks || site.NUM_TANKS || site.count || site.COUNT || null;
+              
+              // Create a custom icon for UST sites
+              const icon = createPOIIcon('🛢️', '#dc2626'); // Red icon for UST sites
+              
+              const marker = L.marker([siteLat, siteLon], { icon });
+              
+              // Build popup content with all UST site attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🛢️ ${facilityName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${facilityAddress ? `<div><strong>Address:</strong> ${facilityAddress}</div>` : ''}
+                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                    ${tankCount !== null && tankCount !== undefined ? `<div><strong>Tank Count:</strong> ${tankCount}</div>` : ''}
+                    ${site.distance_miles !== null && site.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${site.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all UST site attributes (excluding internal fields)
+              const excludeFields = ['facility_name', 'facility_address', 'city', 'state', 'tank_count', 'lat', 'lon', 'distance_miles'];
+              Object.entries(site).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this UST site
+              bounds.extend([siteLat, siteLon]);
+            } catch (error) {
+              console.error('Error drawing NH Underground Storage Tank Site marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (ustCount > 0) {
+          if (!legendAccumulator['nh_underground_storage_tanks']) {
+            legendAccumulator['nh_underground_storage_tanks'] = {
+              icon: '🛢️',
+              color: '#dc2626',
+              title: 'NH Underground Storage Tank Sites',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_underground_storage_tanks'].count += ustCount;
+        }
+      }
+
+      // Draw NH Water Well Inventory as markers on the map
+      if (enrichments.nh_water_wells_all && Array.isArray(enrichments.nh_water_wells_all)) {
+        let wellCount = 0;
+        enrichments.nh_water_wells_all.forEach((well: any) => {
+          if (well.lat && well.lon) {
+            try {
+              wellCount++;
+              const wellLat = well.lat;
+              const wellLon = well.lon;
+              const wellId = well.well_id || well.WELL_ID || well.WellId || well._well_id || well.id || well.ID || well.Id || well.objectid || well.OBJECTID || 'Unknown Well';
+              const ownerName = well.owner_name || well.OWNER_NAME || well.OwnerName || well._owner_name || well.owner || well.OWNER || well.Owner || '';
+              const address = well.address || well.ADDRESS || well.Address || well._address || well.street || well.STREET || well.street_address || well.STREET_ADDRESS || '';
+              const city = well.city || well.CITY || well.City || well._city || well.gismunic || well.GISMUNIC || well.municipality || well.MUNICIPALITY || '';
+              const wellDepthFt = well.well_depth_ft || well.WELL_DEPTH_FT || well.WellDepthFt || well._well_depth_ft || well.depth || well.DEPTH || well.well_depth || well.WELL_DEPTH || null;
+              const waterDepthFt = well.water_depth_ft || well.WATER_DEPTH_FT || well.WaterDepthFt || well._water_depth_ft || well.water_depth || well.WATER_DEPTH || well.static_water_level || well.STATIC_WATER_LEVEL || null;
+              
+              // Create a custom icon for water wells
+              const icon = createPOIIcon('💧', '#0284c7'); // Blue icon for water wells
+              
+              const marker = L.marker([wellLat, wellLon], { icon });
+              
+              // Build popup content with all water well attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    💧 Well ID: ${wellId ? String(wellId) : 'Unknown'}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${ownerName ? `<div><strong>Owner:</strong> ${ownerName}</div>` : ''}
+                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                    ${wellDepthFt !== null && wellDepthFt !== undefined ? `<div><strong>Well Depth:</strong> ${wellDepthFt} ft</div>` : ''}
+                    ${waterDepthFt !== null && waterDepthFt !== undefined ? `<div><strong>Water Depth:</strong> ${waterDepthFt} ft</div>` : ''}
+                    ${well.distance_miles !== null && well.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${well.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all water well attributes (excluding internal fields)
+              const excludeFields = ['well_id', 'owner_name', 'address', 'city', 'state', 'well_depth_ft', 'water_depth_ft', 'lat', 'lon', 'distance_miles'];
+              Object.entries(well).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this water well
+              bounds.extend([wellLat, wellLon]);
+            } catch (error) {
+              console.error('Error drawing NH Water Well marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (wellCount > 0) {
+          if (!legendAccumulator['nh_water_wells']) {
+            legendAccumulator['nh_water_wells'] = {
+              icon: '💧',
+              color: '#0284c7',
+              title: 'NH Water Well Inventory',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_water_wells'].count += wellCount;
+        }
+      }
+
+      // Draw NH Public Water Supply Wells as markers on the map
+      if (enrichments.nh_public_water_supply_wells_all && Array.isArray(enrichments.nh_public_water_supply_wells_all)) {
+        let publicWellCount = 0;
+        enrichments.nh_public_water_supply_wells_all.forEach((well: any) => {
+          if (well.lat && well.lon) {
+            try {
+              publicWellCount++;
+              const wellLat = well.lat;
+              const wellLon = well.lon;
+              const wellId = well.well_id || well.WELL_ID || well.WellId || well._well_id || well.id || well.ID || well.Id || well.objectid || well.OBJECTID || 'Unknown Well';
+              const facilityName = well.facility_name || well.FACILITY_NAME || well.FacilityName || well._facility_name || well.name || well.NAME || well.Name || '';
+              const ownerName = well.owner_name || well.OWNER_NAME || well.OwnerName || well._owner_name || well.owner || well.OWNER || well.Owner || '';
+              const address = well.address || well.ADDRESS || well.Address || well._address || well.street || well.STREET || well.street_address || well.STREET_ADDRESS || '';
+              const city = well.city || well.CITY || well.City || well._city || well.gismunic || well.GISMUNIC || well.municipality || well.MUNICIPALITY || '';
+              const wellDepthFt = well.well_depth_ft || well.WELL_DEPTH_FT || well.WellDepthFt || well._well_depth_ft || well.depth || well.DEPTH || well.well_depth || well.WELL_DEPTH || null;
+              const waterDepthFt = well.water_depth_ft || well.WATER_DEPTH_FT || well.WaterDepthFt || well._water_depth_ft || well.water_depth || well.WATER_DEPTH || well.static_water_level || well.STATIC_WATER_LEVEL || null;
+              
+              // Create a custom icon for public water supply wells
+              const icon = createPOIIcon('🚰', '#0ea5e9'); // Sky blue icon for public water supply wells
+              
+              const marker = L.marker([wellLat, wellLon], { icon });
+              
+              // Build popup content with all public water supply well attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🚰 ${facilityName || (wellId ? `Well ID: ${String(wellId)}` : 'Public Water Supply Well')}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${ownerName ? `<div><strong>Owner:</strong> ${ownerName}</div>` : ''}
+                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                    ${wellId ? `<div><strong>Well ID:</strong> ${String(wellId)}</div>` : ''}
+                    ${wellDepthFt !== null && wellDepthFt !== undefined ? `<div><strong>Well Depth:</strong> ${wellDepthFt} ft</div>` : ''}
+                    ${waterDepthFt !== null && waterDepthFt !== undefined ? `<div><strong>Water Depth:</strong> ${waterDepthFt} ft</div>` : ''}
+                    ${well.distance_miles !== null && well.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${well.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all public water supply well attributes (excluding internal fields)
+              const excludeFields = ['well_id', 'facility_name', 'owner_name', 'address', 'city', 'state', 'well_depth_ft', 'water_depth_ft', 'lat', 'lon', 'distance_miles'];
+              Object.entries(well).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this public water supply well
+              bounds.extend([wellLat, wellLon]);
+            } catch (error) {
+              console.error('Error drawing NH Public Water Supply Well marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (publicWellCount > 0) {
+          if (!legendAccumulator['nh_public_water_supply_wells']) {
+            legendAccumulator['nh_public_water_supply_wells'] = {
+              icon: '🚰',
+              color: '#0ea5e9',
+              title: 'NH Public Water Supply Wells',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_public_water_supply_wells'].count += publicWellCount;
+        }
+      }
+
+      // Draw NH Remediation Sites as markers on the map
+      if (enrichments.nh_remediation_sites_all && Array.isArray(enrichments.nh_remediation_sites_all)) {
+        let remediationCount = 0;
+        enrichments.nh_remediation_sites_all.forEach((site: any) => {
+          if (site.lat && site.lon) {
+            try {
+              remediationCount++;
+              const siteLat = site.lat;
+              const siteLon = site.lon;
+              const siteId = site.site_id || site.SITE_ID || site.SiteId || site._site_id || site.id || site.ID || site.Id || site.objectid || site.OBJECTID || 'Unknown Site';
+              const siteName = site.site_name || site.SITE_NAME || site.SiteName || site._site_name || site.name || site.NAME || site.Name || '';
+              const facilityName = site.facility_name || site.FACILITY_NAME || site.FacilityName || site._facility_name || site.facility || site.FACILITY || '';
+              const address = site.address || site.ADDRESS || site.Address || site._address || site.street || site.STREET || site.street_address || site.STREET_ADDRESS || '';
+              const city = site.city || site.CITY || site.City || site._city || site.gismunic || site.GISMUNIC || site.municipality || site.MUNICIPALITY || '';
+              const siteStatus = site.site_status || site.SITE_STATUS || site.SiteStatus || site._site_status || site.status || site.STATUS || site.Status || '';
+              
+              // Create a custom icon for remediation sites
+              const icon = createPOIIcon('🔧', '#f59e0b'); // Amber/orange icon for remediation sites
+              
+              const marker = L.marker([siteLat, siteLon], { icon });
+              
+              // Build popup content with all remediation site attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🔧 ${siteName || facilityName || (siteId ? `Site ID: ${String(siteId)}` : 'Remediation Site')}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${siteId ? `<div><strong>Site ID:</strong> ${String(siteId)}</div>` : ''}
+                    ${facilityName ? `<div><strong>Facility:</strong> ${facilityName}</div>` : ''}
+                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                    ${siteStatus ? `<div><strong>Status:</strong> ${siteStatus}</div>` : ''}
+                    ${site.distance_miles !== null && site.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${site.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all remediation site attributes (excluding internal fields)
+              const excludeFields = ['site_id', 'site_name', 'facility_name', 'address', 'city', 'state', 'site_status', 'lat', 'lon', 'distance_miles'];
+              Object.entries(site).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this remediation site
+              bounds.extend([siteLat, siteLon]);
+            } catch (error) {
+              console.error('Error drawing NH Remediation Site marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (remediationCount > 0) {
+          if (!legendAccumulator['nh_remediation_sites']) {
+            legendAccumulator['nh_remediation_sites'] = {
+              icon: '🔧',
+              color: '#f59e0b',
+              title: 'NH Remediation Sites',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_remediation_sites'].count += remediationCount;
+        }
       }
 
       // Draw NH Hospitals as markers on the map
@@ -1811,8 +2316,8 @@ const MapView: React.FC<MapViewProps> = ({
           }
         />
         
-        {/* Dynamic Legend for Single Location Results */}
-        {results.length === 1 && legendItems.length > 0 && !isMobile && (
+        {/* Dynamic Legend - Always show when there are legend items */}
+        {legendItems.length > 0 && !isMobile && (
           <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-4 max-w-xs z-10">
             <h4 className="text-sm font-semibold text-gray-900 mb-3">Map Legend</h4>
             <div className="space-y-2">

@@ -295,7 +295,12 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nh_recreation_trails', label: 'NH Recreation Trails', description: 'NH GRANIT - Recreation trails and hiking paths', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
   { id: 'nh_dot_roads', label: 'NH DOT Roads', description: 'NH GRANIT - New Hampshire Department of Transportation road network', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'nh', section: 'nh' },
   { id: 'nh_railroads', label: 'NH Railroads', description: 'NH GRANIT - New Hampshire railroad network (active and abandoned)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'nh', section: 'nh' },
-  { id: 'nh_transmission_pipelines', label: 'NH Transmission/Pipelines', description: 'NH GRANIT - New Hampshire transmission lines and pipelines', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'nh', section: 'nh' }
+  { id: 'nh_transmission_pipelines', label: 'NH Transmission/Pipelines', description: 'NH GRANIT - New Hampshire transmission lines and pipelines', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'nh', section: 'nh' },
+  { id: 'nh_cell_towers', label: 'NH Personal Wireless Service Facilities', description: 'NH GRANIT - New Hampshire cell towers and wireless communication facilities', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_underground_storage_tanks', label: 'NH Underground Storage Tank Sites', description: 'NH DES - New Hampshire underground storage tank sites', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_water_wells', label: 'NH Water Well Inventory', description: 'NH DES - New Hampshire water well inventory', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_public_water_supply_wells', label: 'NH Public Water Supply Wells', description: 'NH DES - New Hampshire public water supply wells', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
+  { id: 'nh_remediation_sites', label: 'NH Remediation Sites', description: 'NH DES - New Hampshire remediation sites', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' }
 ];
 
 class POIConfigManager {

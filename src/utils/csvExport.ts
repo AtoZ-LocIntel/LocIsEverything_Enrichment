@@ -246,7 +246,12 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_recreation_trails_all' ||
         key === 'nh_dot_roads_all' ||
         key === 'nh_railroads_all' ||
-        key === 'nh_transmission_pipelines_all') {
+        key === 'nh_transmission_pipelines_all' ||
+        key === 'nh_cell_towers_all' ||
+        key === 'nh_underground_storage_tanks_all' ||
+        key === 'nh_water_wells_all' ||
+        key === 'nh_public_water_supply_wells_all' ||
+        key === 'nh_remediation_sites_all') {
       return;
     }
     
@@ -1001,6 +1006,224 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           attributesJson,
           attributesJson,
           'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_cell_towers_all' && Array.isArray(value)) {
+      // Handle NH Cell Towers - each tower gets its own row with all attributes
+      value.forEach((tower: any) => {
+        const entityName = tower.entity_name || tower.ENTITY_NAM || tower.EntityName || tower._entity_nam || tower.owner || tower.OWNER || 'Unknown Entity';
+        const structureType = tower.structure_type || tower.STRUCTURE_TYPE || tower.StrTyp || tower.str_typ || tower.STR_TYP || tower._str_typ || '';
+        const city = tower.city || tower.CITY || tower.City || tower._city || tower.gismunic || tower.GISMUNIC || '';
+        const state = tower.state || tower.ST || tower.State || tower._st || 'NH';
+        const address = tower.address || tower.ADDRESS || tower.Address || tower.street || tower.STREET || tower.str_street || tower.STR_STREET || '';
+        const heightFt = tower.height_above_ground_ft || tower.HGTABVGR_F || tower.HgtAbvGrF || tower._hgtabvgr_f || tower.height || tower.HEIGHT || '';
+        const elevationFt = tower.elevation_ft || tower.ELEV_FT || tower.ElevFt || tower._elev_ft || tower.elevation || tower.ELEVATION || '';
+        const fullAddress = [address, city, state].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...tower };
+        delete allAttributes.entity_name;
+        delete allAttributes.structure_type;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.address;
+        delete allAttributes.height_above_ground_ft;
+        delete allAttributes.elevation_ft;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_CELL_TOWER',
+          entityName,
+          (tower.lat || location.lat).toString(),
+          (tower.lon || location.lon).toString(),
+          tower.distance_miles !== null && tower.distance_miles !== undefined ? tower.distance_miles.toFixed(2) : '',
+          structureType || attributesJson,
+          fullAddress || '',
+          heightFt ? `${heightFt} ft` : '',
+          elevationFt ? `${elevationFt} ft` : '',
+          attributesJson,
+          'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'nh_underground_storage_tanks_all' && Array.isArray(value)) {
+      // Handle NH Underground Storage Tank Sites - each site gets its own row with all attributes
+      value.forEach((site: any) => {
+        const facilityName = site.facility_name || site.FACILITY_NAME || site.FacilityName || site._facility_name || site.name || site.NAME || site.Name || 'Unknown Facility';
+        const facilityAddress = site.facility_address || site.FACILITY_ADDRESS || site.FacilityAddress || site._facility_address || site.address || site.ADDRESS || site.Address || site.street || site.STREET || '';
+        const city = site.city || site.CITY || site.City || site._city || site.gismunic || site.GISMUNIC || '';
+        const state = site.state || site.ST || site.State || site._st || 'NH';
+        const tankCount = site.tank_count || site.TANK_COUNT || site.TankCount || site._tank_count || site.num_tanks || site.NUM_TANKS || site.count || site.COUNT || '';
+        const fullAddress = [facilityAddress, city, state].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...site };
+        delete allAttributes.facility_name;
+        delete allAttributes.facility_address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.tank_count;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_UNDERGROUND_STORAGE_TANK',
+          facilityName,
+          (site.lat || location.lat).toString(),
+          (site.lon || location.lon).toString(),
+          site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : '',
+          tankCount ? `Tanks: ${tankCount}` : attributesJson,
+          fullAddress || '',
+          '',
+          '',
+          attributesJson,
+          'NH DES'
+        ]);
+      });
+    } else if (key === 'nh_water_wells_all' && Array.isArray(value)) {
+      // Handle NH Water Well Inventory - each well gets its own row with all attributes
+      value.forEach((well: any) => {
+        const wellId = well.well_id || well.WELL_ID || well.WellId || well._well_id || well.id || well.ID || well.Id || well.objectid || well.OBJECTID || 'Unknown Well';
+        const ownerName = well.owner_name || well.OWNER_NAME || well.OwnerName || well._owner_name || well.owner || well.OWNER || well.Owner || '';
+        const address = well.address || well.ADDRESS || well.Address || well._address || well.street || well.STREET || well.street_address || well.STREET_ADDRESS || '';
+        const city = well.city || well.CITY || well.City || well._city || well.gismunic || well.GISMUNIC || well.municipality || well.MUNICIPALITY || '';
+        const state = well.state || well.ST || well.State || well._st || 'NH';
+        const wellDepthFt = well.well_depth_ft || well.WELL_DEPTH_FT || well.WellDepthFt || well._well_depth_ft || well.depth || well.DEPTH || well.well_depth || well.WELL_DEPTH || '';
+        const waterDepthFt = well.water_depth_ft || well.WATER_DEPTH_FT || well.WaterDepthFt || well._water_depth_ft || well.water_depth || well.WATER_DEPTH || well.static_water_level || well.STATIC_WATER_LEVEL || '';
+        const fullAddress = [address, city, state].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...well };
+        delete allAttributes.well_id;
+        delete allAttributes.owner_name;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.well_depth_ft;
+        delete allAttributes.water_depth_ft;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_WATER_WELL',
+          wellId ? String(wellId) : 'Unknown Well',
+          (well.lat || location.lat).toString(),
+          (well.lon || location.lon).toString(),
+          well.distance_miles !== null && well.distance_miles !== undefined ? well.distance_miles.toFixed(2) : '',
+          ownerName || attributesJson,
+          fullAddress || '',
+          wellDepthFt ? `${wellDepthFt} ft` : '',
+          waterDepthFt ? `${waterDepthFt} ft` : '',
+          attributesJson,
+          'NH DES'
+        ]);
+      });
+    } else if (key === 'nh_public_water_supply_wells_all' && Array.isArray(value)) {
+      // Handle NH Public Water Supply Wells - each well gets its own row with all attributes
+      value.forEach((well: any) => {
+        const wellId = well.well_id || well.WELL_ID || well.WellId || well._well_id || well.id || well.ID || well.Id || well.objectid || well.OBJECTID || 'Unknown Well';
+        const facilityName = well.facility_name || well.FACILITY_NAME || well.FacilityName || well._facility_name || well.name || well.NAME || well.Name || '';
+        const ownerName = well.owner_name || well.OWNER_NAME || well.OwnerName || well._owner_name || well.owner || well.OWNER || well.Owner || '';
+        const address = well.address || well.ADDRESS || well.Address || well._address || well.street || well.STREET || well.street_address || well.STREET_ADDRESS || '';
+        const city = well.city || well.CITY || well.City || well._city || well.gismunic || well.GISMUNIC || well.municipality || well.MUNICIPALITY || '';
+        const state = well.state || well.ST || well.State || well._st || 'NH';
+        const wellDepthFt = well.well_depth_ft || well.WELL_DEPTH_FT || well.WellDepthFt || well._well_depth_ft || well.depth || well.DEPTH || well.well_depth || well.WELL_DEPTH || '';
+        const waterDepthFt = well.water_depth_ft || well.WATER_DEPTH_FT || well.WaterDepthFt || well._water_depth_ft || well.water_depth || well.WATER_DEPTH || well.static_water_level || well.STATIC_WATER_LEVEL || '';
+        const fullAddress = [address, city, state].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...well };
+        delete allAttributes.well_id;
+        delete allAttributes.facility_name;
+        delete allAttributes.owner_name;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.well_depth_ft;
+        delete allAttributes.water_depth_ft;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_PUBLIC_WATER_SUPPLY_WELL',
+          wellId ? String(wellId) : 'Unknown Well',
+          (well.lat || location.lat).toString(),
+          (well.lon || location.lon).toString(),
+          well.distance_miles !== null && well.distance_miles !== undefined ? well.distance_miles.toFixed(2) : '',
+          facilityName || ownerName || attributesJson,
+          fullAddress || '',
+          wellDepthFt ? `${wellDepthFt} ft` : '',
+          waterDepthFt ? `${waterDepthFt} ft` : '',
+          attributesJson,
+          'NH DES'
+        ]);
+      });
+    } else if (key === 'nh_remediation_sites_all' && Array.isArray(value)) {
+      // Handle NH Remediation Sites - each site gets its own row with all attributes
+      value.forEach((site: any) => {
+        const siteId = site.site_id || site.SITE_ID || site.SiteId || site._site_id || site.id || site.ID || site.Id || site.objectid || site.OBJECTID || 'Unknown Site';
+        const siteName = site.site_name || site.SITE_NAME || site.SiteName || site._site_name || site.name || site.NAME || site.Name || '';
+        const facilityName = site.facility_name || site.FACILITY_NAME || site.FacilityName || site._facility_name || site.facility || site.FACILITY || '';
+        const address = site.address || site.ADDRESS || site.Address || site._address || site.street || site.STREET || site.street_address || site.STREET_ADDRESS || '';
+        const city = site.city || site.CITY || site.City || site._city || site.gismunic || site.GISMUNIC || site.municipality || site.MUNICIPALITY || '';
+        const state = site.state || site.ST || site.State || site._st || 'NH';
+        const siteStatus = site.site_status || site.SITE_STATUS || site.SiteStatus || site._site_status || site.status || site.STATUS || site.Status || '';
+        const fullAddress = [address, city, state].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...site };
+        delete allAttributes.site_id;
+        delete allAttributes.site_name;
+        delete allAttributes.facility_name;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.site_status;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_REMEDIATION_SITE',
+          siteId ? String(siteId) : 'Unknown Site',
+          (site.lat || location.lat).toString(),
+          (site.lon || location.lon).toString(),
+          site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : '',
+          siteName || facilityName || attributesJson,
+          fullAddress || '',
+          siteStatus || '',
+          '',
+          attributesJson,
+          'NH DES'
         ]);
       });
     }

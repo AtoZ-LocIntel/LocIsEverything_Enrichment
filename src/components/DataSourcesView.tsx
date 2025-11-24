@@ -529,6 +529,53 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "NH Transmission/Pipelines",
+          description: "New Hampshire transmission lines and pipelines - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Personal Wireless Service Facilities",
+          description: "New Hampshire cell towers and wireless communication facilities - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "New Hampshire Data (NH DES)",
+      sources: [
+        {
+          name: "NH Underground Storage Tank Sites",
+          description: "New Hampshire underground storage tank sites from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Water Well Inventory",
+          description: "New Hampshire water well inventory from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Public Water Supply Wells",
+          description: "New Hampshire public water supply wells from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Remediation Sites",
+          description: "New Hampshire remediation sites from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     }

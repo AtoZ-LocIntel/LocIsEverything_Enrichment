@@ -18,6 +18,11 @@ import { getNHRecreationTrailsData } from '../adapters/nhRecreationTrails';
 import { getNHDOTRoadsData } from '../adapters/nhDOTRoads';
 import { getNHRailroadsData } from '../adapters/nhRailroads';
 import { getNHTransmissionPipelinesData } from '../adapters/nhTransmissionPipelines';
+import { getNHCellTowersData } from '../adapters/nhCellTowers';
+import { getNHUndergroundStorageTanksData } from '../adapters/nhUndergroundStorageTanks';
+import { getNHWaterWellsData } from '../adapters/nhWaterWells';
+import { getNHPublicWaterSupplyWellsData } from '../adapters/nhPublicWaterSupplyWells';
+import { getNHRemediationSitesData } from '../adapters/nhRemediationSites';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1343,6 +1348,26 @@ export class EnrichmentService {
       // NH Transmission/Pipelines (NH GRANIT) - Proximity query (line dataset)
       case 'nh_transmission_pipelines':
         return await this.getNHTransmissionPipelines(lat, lon, radius);
+      
+      // NH Cell Towers (NH GRANIT) - Proximity query (point dataset)
+      case 'nh_cell_towers':
+        return await this.getNHCellTowers(lat, lon, radius);
+      
+      // NH Underground Storage Tank Sites (NH DES) - Proximity query (point dataset)
+      case 'nh_underground_storage_tanks':
+        return await this.getNHUndergroundStorageTanks(lat, lon, radius);
+      
+      // NH Water Well Inventory (NH DES) - Proximity query (point dataset)
+      case 'nh_water_wells':
+        return await this.getNHWaterWells(lat, lon, radius);
+      
+      // NH Public Water Supply Wells (NH DES) - Proximity query (point dataset)
+      case 'nh_public_water_supply_wells':
+        return await this.getNHPublicWaterSupplyWells(lat, lon, radius);
+      
+      // NH Remediation Sites (NH DES) - Proximity query (point dataset)
+      case 'nh_remediation_sites':
+        return await this.getNHRemediationSites(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2193,14 +2218,18 @@ export class EnrichmentService {
       
       if (transmissionPipelines && transmissionPipelines.length > 0) {
         result.nh_transmission_pipelines_count = transmissionPipelines.length;
-        result.nh_transmission_pipelines_all = transmissionPipelines.map(tp => ({
-          ...tp.attributes,
-          type: tp.type,
-          pia: tp.pia,
-          granitid: tp.granitid,
-          geometry: tp.geometry, // Include geometry for map drawing
-          distance_miles: tp.distance_miles
-        }));
+        result.nh_transmission_pipelines_all = transmissionPipelines.map(tp => {
+          // Ensure geometry is preserved (don't let attributes.geometry overwrite it)
+          const { geometry: _, ...attributesWithoutGeometry } = tp.attributes || {};
+          return {
+            ...attributesWithoutGeometry,
+            type: tp.type,
+            pia: tp.pia,
+            granitid: tp.granitid,
+            geometry: tp.geometry, // Include geometry for map drawing (from top level, not attributes)
+            distance_miles: tp.distance_miles
+          };
+        });
       } else {
         result.nh_transmission_pipelines_count = 0;
         result.nh_transmission_pipelines_all = [];
@@ -2220,6 +2249,250 @@ export class EnrichmentService {
         nh_transmission_pipelines_count: 0,
         nh_transmission_pipelines_all: [],
         nh_transmission_pipelines_error: 'Error fetching NH Transmission/Pipelines data'
+      };
+    }
+  }
+
+  private async getNHCellTowers(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📡 Fetching NH Cell Towers data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const cellTowers = await getNHCellTowersData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (cellTowers && cellTowers.length > 0) {
+        result.nh_cell_towers_count = cellTowers.length;
+        result.nh_cell_towers_all = cellTowers.map(tower => ({
+          ...tower.attributes,
+          entity_name: tower.entity_name,
+          structure_type: tower.structure_type,
+          city: tower.city,
+          state: tower.state,
+          address: tower.address,
+          height_above_ground_ft: tower.height_above_ground_ft,
+          elevation_ft: tower.elevation_ft,
+          lat: tower.latitude,
+          lon: tower.longitude,
+          distance_miles: tower.distance_miles
+        }));
+      } else {
+        result.nh_cell_towers_count = 0;
+        result.nh_cell_towers_all = [];
+      }
+      
+      result.nh_cell_towers_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Cell Towers data processed:`, {
+        count: result.nh_cell_towers_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Cell Towers:', error);
+      return {
+        nh_cell_towers_count: 0,
+        nh_cell_towers_all: [],
+        nh_cell_towers_error: 'Error fetching NH Cell Towers data'
+      };
+    }
+  }
+
+  private async getNHUndergroundStorageTanks(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛢️ Fetching NH Underground Storage Tank Sites data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const ustSites = await getNHUndergroundStorageTanksData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (ustSites && ustSites.length > 0) {
+        result.nh_underground_storage_tanks_count = ustSites.length;
+        result.nh_underground_storage_tanks_all = ustSites.map(site => ({
+          ...site.attributes,
+          facility_name: site.facility_name,
+          facility_address: site.facility_address,
+          city: site.city,
+          state: site.state,
+          tank_count: site.tank_count,
+          lat: site.latitude,
+          lon: site.longitude,
+          distance_miles: site.distance_miles
+        }));
+      } else {
+        result.nh_underground_storage_tanks_count = 0;
+        result.nh_underground_storage_tanks_all = [];
+      }
+      
+      result.nh_underground_storage_tanks_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Underground Storage Tank Sites data processed:`, {
+        count: result.nh_underground_storage_tanks_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Underground Storage Tank Sites:', error);
+      return {
+        nh_underground_storage_tanks_count: 0,
+        nh_underground_storage_tanks_all: [],
+        nh_underground_storage_tanks_error: 'Error fetching NH Underground Storage Tank Sites data'
+      };
+    }
+  }
+
+  private async getNHWaterWells(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching NH Water Well Inventory data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const waterWells = await getNHWaterWellsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (waterWells && waterWells.length > 0) {
+        result.nh_water_wells_count = waterWells.length;
+        result.nh_water_wells_all = waterWells.map(well => ({
+          ...well.attributes,
+          well_id: well.well_id,
+          owner_name: well.owner_name,
+          address: well.address,
+          city: well.city,
+          state: well.state,
+          well_depth_ft: well.well_depth_ft,
+          water_depth_ft: well.water_depth_ft,
+          lat: well.latitude,
+          lon: well.longitude,
+          distance_miles: well.distance_miles
+        }));
+      } else {
+        result.nh_water_wells_count = 0;
+        result.nh_water_wells_all = [];
+      }
+      
+      result.nh_water_wells_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Water Well Inventory data processed:`, {
+        count: result.nh_water_wells_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Water Well Inventory:', error);
+      return {
+        nh_water_wells_count: 0,
+        nh_water_wells_all: [],
+        nh_water_wells_error: 'Error fetching NH Water Well Inventory data'
+      };
+    }
+  }
+
+  private async getNHPublicWaterSupplyWells(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚰 Fetching NH Public Water Supply Wells data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const publicWells = await getNHPublicWaterSupplyWellsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (publicWells && publicWells.length > 0) {
+        result.nh_public_water_supply_wells_count = publicWells.length;
+        result.nh_public_water_supply_wells_all = publicWells.map(well => ({
+          ...well.attributes,
+          well_id: well.well_id,
+          facility_name: well.facility_name,
+          owner_name: well.owner_name,
+          address: well.address,
+          city: well.city,
+          state: well.state,
+          well_depth_ft: well.well_depth_ft,
+          water_depth_ft: well.water_depth_ft,
+          lat: well.latitude,
+          lon: well.longitude,
+          distance_miles: well.distance_miles
+        }));
+      } else {
+        result.nh_public_water_supply_wells_count = 0;
+        result.nh_public_water_supply_wells_all = [];
+      }
+      
+      result.nh_public_water_supply_wells_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Public Water Supply Wells data processed:`, {
+        count: result.nh_public_water_supply_wells_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Public Water Supply Wells:', error);
+      return {
+        nh_public_water_supply_wells_count: 0,
+        nh_public_water_supply_wells_all: [],
+        nh_public_water_supply_wells_error: 'Error fetching NH Public Water Supply Wells data'
+      };
+    }
+  }
+
+  private async getNHRemediationSites(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔧 Fetching NH Remediation Sites data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const remediationSites = await getNHRemediationSitesData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (remediationSites && remediationSites.length > 0) {
+        result.nh_remediation_sites_count = remediationSites.length;
+        result.nh_remediation_sites_all = remediationSites.map(site => ({
+          ...site.attributes,
+          site_id: site.site_id,
+          site_name: site.site_name,
+          facility_name: site.facility_name,
+          address: site.address,
+          city: site.city,
+          state: site.state,
+          site_status: site.site_status,
+          lat: site.latitude,
+          lon: site.longitude,
+          distance_miles: site.distance_miles
+        }));
+      } else {
+        result.nh_remediation_sites_count = 0;
+        result.nh_remediation_sites_all = [];
+      }
+      
+      result.nh_remediation_sites_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ NH Remediation Sites data processed:`, {
+        count: result.nh_remediation_sites_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Remediation Sites:', error);
+      return {
+        nh_remediation_sites_count: 0,
+        nh_remediation_sites_all: [],
+        nh_remediation_sites_error: 'Error fetching NH Remediation Sites data'
       };
     }
   }
