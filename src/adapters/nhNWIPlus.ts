@@ -267,8 +267,8 @@ export async function getNHNWIPlusNearbyData(
     
     // Sort by distance (closest first)
     wetlands.sort((a, b) => {
-      if (a.distance_miles === null) return 1;
-      if (b.distance_miles === null) return -1;
+      if (a.distance_miles === null || a.distance_miles === undefined) return 1;
+      if (b.distance_miles === null || b.distance_miles === undefined) return -1;
       return a.distance_miles - b.distance_miles;
     });
     

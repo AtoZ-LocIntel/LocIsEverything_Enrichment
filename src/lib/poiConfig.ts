@@ -303,7 +303,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nh_remediation_sites', label: 'NH Remediation Sites', description: 'NH DES - New Hampshire remediation sites', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
   { id: 'nh_automobile_salvage_yards', label: 'NH Automobile Salvage Yards', description: 'NH DES - New Hampshire automobile salvage yards', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
   { id: 'nh_solid_waste_facilities', label: 'NH Solid Waste Facilities', description: 'NH DES - New Hampshire solid waste facilities', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
-  { id: 'nh_source_water_protection_areas', label: 'NH Source Water Protection Areas', description: 'NH DES - New Hampshire source water protection areas (point-in-polygon)', isPOI: false, category: 'nh', section: 'nh' },
+  { id: 'nh_source_water_protection_areas', label: 'NH Source Water Protection Areas', description: 'NH DES - New Hampshire source water protection areas (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'nh', section: 'nh' },
   { id: 'nh_nwi_plus', label: 'NH National Wetland Inventory (NWI) Plus', description: 'NH DES - New Hampshire National Wetland Inventory Plus (point-in-polygon and proximity)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'nh', section: 'nh' }
 ];
 
