@@ -2240,7 +2240,7 @@ const MapView: React.FC<MapViewProps> = ({
               `;
 
               polygon.bindPopup(popupContent, { maxWidth: 400 });
-              polygon.addTo(layerGroupsMapRef.current[layerKey]);
+              polygon.addTo(primary);
               bounds.extend(polygon.getBounds());
               
               if (!legendAccumulator['nh_nwi_plus']) {
@@ -2593,10 +2593,6 @@ const MapView: React.FC<MapViewProps> = ({
                 
                 polygon.bindPopup(popupContent, { maxWidth: 400 });
                 polygon.addTo(primary);
-                
-                // Attach overlap detection handler
-                attachOverlapHandler(polygon);
-                
                 bounds.extend(polygon.getBounds());
               }
             } catch (error) {
