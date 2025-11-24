@@ -58,6 +58,14 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   nh: <img src="/assets/newhampshire.webp" alt="New Hampshire Open Data" className="w-5 h-5" />,
   ma: <img src="/assets/MA.webp" alt="Massachusetts Open Data" className="w-5 h-5" />,
   ma_massgis: <img src="/assets/MassGIS.webp" alt="MassGIS" className="w-5 h-5" />,
+  ri: <img src="/assets/RI.webp" alt="Rhode Island Open Data" className="w-5 h-5" />,
+  ct: <img src="/assets/CT.webp" alt="Connecticut Open Data" className="w-5 h-5" />,
+  ny: <img src="/assets/NY.webp" alt="New York Open Data" className="w-5 h-5" />,
+  vt: <img src="/assets/VT.webp" alt="Vermont Open Data" className="w-5 h-5" />,
+  me: <img src="/assets/ME.webp" alt="Maine Open Data" className="w-5 h-5" />,
+  nj: <img src="/assets/NJ.webp" alt="New Jersey Open Data" className="w-5 h-5" />,
+  pa: <img src="/assets/PA.webp" alt="Pennsylvania Open Data" className="w-5 h-5" />,
+  de: <img src="/assets/DE.webp" alt="Delaware Open Data" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -320,7 +328,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'at': 'at',
       'pct': 'PCT',
       'ma': 'MA',
-      'ma_massgis': 'MassGIS'
+      'ma_massgis': 'MassGIS',
+      'ri': 'RI',
+      'ct': 'CT',
+      'ny': 'NY',
+      'vt': 'VT',
+      'me': 'ME',
+      'nj': 'NJ',
+      'pa': 'PA',
+      'de': 'DE'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -512,7 +528,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       <img
                         src={`/assets/${getIconFileName(category.id)}.webp`}
                         alt={category.title}
-                        className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-full h-full' : 'w-full h-full'}`}
+                        className="absolute inset-0 w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
+                        style={{ objectFit: 'cover' }}
                         onError={(e) => {
                           // Fallback to category name if icon fails to load
                           const target = e.target as HTMLImageElement;
@@ -1068,12 +1085,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
-                // For NH, count sub-category enrichments too
-                const nhSubCategoryEnrichments = category.id === 'nh' && category.subCategories
+                // For NH, MA, and other states, count sub-category enrichments too
+                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de') && category.subCategories
                   ? category.subCategories.flatMap(sc => sc.enrichments)
                   : [];
-                const allCategoryEnrichments = category.id === 'nh' 
-                  ? nhSubCategoryEnrichments 
+                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de')
+                  ? stateSubCategoryEnrichments 
                   : categoryEnrichments;
                 const selectedCount = allCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
                 
@@ -1089,12 +1106,19 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   <button
                     key={category.id}
                     onClick={() => {
-                      // Special handling for NH - show sub-categories page instead of modal
+                      // Special handling for states with sub-categories - show sub-categories page instead of modal
                       if (category.id === 'nh' && category.subCategories && category.subCategories.length > 0) {
                         setViewingNHSubCategories(true);
                       } else if (category.id === 'ma' && category.subCategories && category.subCategories.length > 0) {
-                        // Special handling for MA - show sub-categories page instead of modal
                         setViewingMASubCategories(true);
+                      } else if ((category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de') && category.subCategories && category.subCategories.length > 0) {
+                        // For other states with sub-categories, use onViewCategory (they'll be handled like regular categories for now)
+                        // When sub-categories are added, we can add specific state handlers similar to NH/MA
+                        if (onViewCategory) {
+                          onViewCategory(category);
+                        } else {
+                          setActiveModal(category.id);
+                        }
                       } else {
                         // Always use modal view for other categories
                         if (onViewCategory) {
@@ -1113,7 +1137,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     <img
                       src={`/assets/${getIconFileName(category.id)}.webp`}
                       alt={category.title}
-                      className={`object-cover opacity-80 hover:opacity-100 transition-opacity duration-200 ${category.id === 'at' ? 'w-full h-full' : 'w-full h-full'}`}
+                      className="absolute inset-0 w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200"
+                      style={{ objectFit: 'cover' }}
                       onError={(e) => {
                         // Fallback to category name if icon fails to load
                         const target = e.target as HTMLImageElement;

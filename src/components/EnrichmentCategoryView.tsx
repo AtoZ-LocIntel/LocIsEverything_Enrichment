@@ -95,7 +95,16 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                           category.id === 'pct' ? '#166534' :
                           category.id === 'nh' ? '#166534' :
                           category.id === 'nh_granit' ? '#166534' :
+                          category.id === 'ma' ? '#166534' :
                           category.id === 'ma_massgis' ? '#166534' :
+                          category.id === 'ri' ? '#166534' :
+                          category.id === 'ct' ? '#166534' :
+                          category.id === 'ny' ? '#166534' :
+                          category.id === 'vt' ? '#166534' :
+                          category.id === 'me' ? '#166534' :
+                          category.id === 'nj' ? '#166534' :
+                          category.id === 'pa' ? '#166534' :
+                          category.id === 'de' ? '#166534' :
                           category.id === 'core' ? '#1e293b' : '#1f2937'
         }}
       >

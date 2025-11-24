@@ -109,6 +109,54 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'Massachusetts Open Data',
     description: 'Massachusetts state open data services and layers',
     icon: 'MA.webp'
+  },
+  {
+    id: 'ri',
+    title: 'Rhode Island Open Data',
+    description: 'Rhode Island state open data services and layers',
+    icon: 'RI.webp'
+  },
+  {
+    id: 'ct',
+    title: 'Connecticut Open Data',
+    description: 'Connecticut state open data services and layers',
+    icon: 'CT.webp'
+  },
+  {
+    id: 'ny',
+    title: 'New York Open Data',
+    description: 'New York state open data services and layers',
+    icon: 'NY.webp'
+  },
+  {
+    id: 'vt',
+    title: 'Vermont Open Data',
+    description: 'Vermont state open data services and layers',
+    icon: 'VT.webp'
+  },
+  {
+    id: 'me',
+    title: 'Maine Open Data',
+    description: 'Maine state open data services and layers',
+    icon: 'ME.webp'
+  },
+  {
+    id: 'nj',
+    title: 'New Jersey Open Data',
+    description: 'New Jersey state open data services and layers',
+    icon: 'NJ.webp'
+  },
+  {
+    id: 'pa',
+    title: 'Pennsylvania Open Data',
+    description: 'Pennsylvania state open data services and layers',
+    icon: 'PA.webp'
+  },
+  {
+    id: 'de',
+    title: 'Delaware Open Data',
+    description: 'Delaware state open data services and layers',
+    icon: 'DE.webp'
   }
 ];
 
