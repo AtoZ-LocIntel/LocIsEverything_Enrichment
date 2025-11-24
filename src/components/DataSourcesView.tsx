@@ -590,6 +590,20 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "NH Source Water Protection Areas",
+          description: "New Hampshire source water protection areas from the Department of Environmental Services - point-in-polygon queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH National Wetland Inventory (NWI) Plus",
+          description: "New Hampshire National Wetland Inventory Plus from the Department of Environmental Services - point-in-polygon queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     }

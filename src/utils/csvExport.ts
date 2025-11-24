@@ -253,7 +253,10 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_public_water_supply_wells_all' ||
         key === 'nh_remediation_sites_all' ||
         key === 'nh_automobile_salvage_yards_all' ||
-        key === 'nh_solid_waste_facilities_all') {
+        key === 'nh_solid_waste_facilities_all' ||
+        key === 'nh_nwi_plus_all' ||
+        key === 'nh_source_water_protection_area_geometry' || // Skip geometry field (raw JSON, not user-friendly)
+        key === 'nh_nwi_plus_geometry') { // Skip geometry field (raw JSON, not user-friendly)
       return;
     }
     
@@ -1320,6 +1323,45 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           fullAddress || '',
           swfPermit || '',
           onestopLink || '',
+          attributesJson,
+          'NH DES'
+        ]);
+      });
+    }
+    
+    // Add NH NWI Plus wetlands data rows
+    if (enrichments.nh_nwi_plus_all && Array.isArray(enrichments.nh_nwi_plus_all)) {
+      enrichments.nh_nwi_plus_all.forEach((wetland: any) => {
+        const wetlandId = wetland.wetland_id || wetland.WETLAND_ID || wetland.id || 'Unknown';
+        const wetlandType = wetland.wetland_type || wetland.WETLAND_TYPE || wetland.type || '';
+        const wetlandClass = wetland.wetland_class || wetland.WETLAND_CLASS || wetland.class || '';
+        const distance = wetland.distance_miles !== null && wetland.distance_miles !== undefined ? wetland.distance_miles.toFixed(2) : '';
+        const isContaining = wetland.isContaining ? 'Yes' : 'No';
+        
+        // Create allAttributes object excluding specific fields we're extracting
+        const allAttributes = { ...wetland };
+        delete allAttributes.wetland_id;
+        delete allAttributes.wetland_type;
+        delete allAttributes.wetland_class;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          location.source,
+          (location.confidence || 'N/A').toString(),
+          'NH_NWI_PLUS',
+          String(wetlandId),
+          location.lat.toString(), // Wetland centroid would be better, but using location for now
+          location.lon.toString(),
+          distance,
+          wetlandType || wetlandClass || attributesJson,
+          isContaining,
+          wetlandClass || '',
           attributesJson,
           'NH DES'
         ]);

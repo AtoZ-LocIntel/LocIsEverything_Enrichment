@@ -344,7 +344,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nh_public_water_supply_wells_all' || // Skip public water supply wells array (handled separately for map drawing)
     key === 'nh_remediation_sites_all' || // Skip remediation sites array (handled separately for map drawing)
     key === 'nh_automobile_salvage_yards_all' || // Skip automobile salvage yards array (handled separately for map drawing)
-    key === 'nh_solid_waste_facilities_all' // Skip solid waste facilities array (handled separately for map drawing)
+    key === 'nh_solid_waste_facilities_all' || // Skip solid waste facilities array (handled separately for map drawing)
+    key === 'nh_source_water_protection_area_geometry' || // Skip geometry field (handled separately for map drawing)
+    key === 'nh_nwi_plus_geometry' || // Skip geometry field (handled separately for map drawing)
+    key === 'nh_nwi_plus_all' // Skip wetlands array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -2011,6 +2014,246 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nh_solid_waste_facilities'].count += facilityCount;
+        }
+      }
+
+      // Draw NH Source Water Protection Area polygon on the map
+      if (enrichments.nh_source_water_protection_area_geometry) {
+        try {
+          const geometry = enrichments.nh_source_water_protection_area_geometry;
+          if (geometry && geometry.rings) {
+            // Convert ESRI polygon rings to Leaflet LatLng array
+            // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
+            const rings = geometry.rings;
+            if (rings && rings.length > 0) {
+              const outerRing = rings[0]; // First ring is the outer boundary
+              const latlngs = outerRing.map((coord: number[]) => {
+                // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                // Since we requested outSR=4326, coordinates should already be in WGS84
+                // Convert [lon, lat] to [lat, lon] for Leaflet
+                return [coord[1], coord[0]] as [number, number];
+              });
+
+              const name = enrichments.nh_source_water_protection_area_name || 'Source Water Protection Area';
+              const systemId = enrichments.nh_source_water_protection_area_system_id;
+              const allid = enrichments.nh_source_water_protection_area_allid;
+              const address = enrichments.nh_source_water_protection_area_address;
+              const town = enrichments.nh_source_water_protection_area_town;
+              const systemAct = enrichments.nh_source_water_protection_area_system_act;
+              const systemTyp = enrichments.nh_source_water_protection_area_system_typ;
+              const systemCat = enrichments.nh_source_water_protection_area_system_cat;
+              const population = enrichments.nh_source_water_protection_area_population;
+              const dwpaType = enrichments.nh_source_water_protection_area_dwpa_type;
+              const dwpaRad = enrichments.nh_source_water_protection_area_dwpa_rad;
+
+              // Create polygon with blue color for water protection areas
+              const polygon = L.polygon(latlngs, {
+                color: '#0284c7', // Blue color for water protection areas
+                weight: 3,
+                opacity: 0.7,
+                fillColor: '#0284c7',
+                fillOpacity: 0.2
+              });
+
+              // Build popup content with all protection area attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    💧 ${name}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${systemId ? `<div><strong>System ID:</strong> ${String(systemId)}</div>` : ''}
+                    ${allid ? `<div><strong>ALLID:</strong> ${String(allid)}</div>` : ''}
+                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                    ${town ? `<div><strong>Town:</strong> ${town}</div>` : ''}
+                    ${systemAct ? `<div><strong>System Activity:</strong> ${systemAct}</div>` : ''}
+                    ${systemTyp ? `<div><strong>System Type:</strong> ${systemTyp}</div>` : ''}
+                    ${systemCat ? `<div><strong>System Category:</strong> ${systemCat}</div>` : ''}
+                    ${population !== null && population !== undefined ? `<div><strong>Population:</strong> ${population.toLocaleString()}</div>` : ''}
+                    ${dwpaType ? `<div><strong>DWPA Type:</strong> ${dwpaType}</div>` : ''}
+                    ${dwpaRad !== null && dwpaRad !== undefined ? `<div><strong>DWPA Radius:</strong> ${dwpaRad}</div>` : ''}
+                  </div>
+                </div>
+              `;
+
+              polygon.bindPopup(popupContent, { maxWidth: 400 });
+              polygon.addTo(primary); // Add to primary layer group (like parcels)
+              bounds.extend(polygon.getBounds());
+              
+              // Add to legend accumulator
+              if (!legendAccumulator['nh_source_water_protection_areas']) {
+                legendAccumulator['nh_source_water_protection_areas'] = {
+                  icon: '💧',
+                  color: '#0284c7',
+                  title: 'NH Source Water Protection Area',
+                  count: 1,
+                };
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error drawing NH Source Water Protection Area polygon:', error);
+        }
+      }
+
+      // Draw NH NWI Plus wetlands as polygons on the map
+      // Priority: Draw from nh_nwi_plus_all array if it exists (proximity query with radius)
+      // Otherwise, draw from nh_nwi_plus_geometry (point-in-polygon only, no radius)
+      if (enrichments.nh_nwi_plus_all && Array.isArray(enrichments.nh_nwi_plus_all)) {
+        enrichments.nh_nwi_plus_all.forEach((wetland: any) => {
+          if (wetland.geometry && wetland.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
+              const rings = wetland.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  // Since we requested outSR=4326, coordinates should already be in WGS84
+                  // Convert [lon, lat] to [lat, lon] for Leaflet
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = wetland.isContaining;
+                const color = isContaining ? '#14b8a6' : '#06b6d4'; // Teal for containing, cyan for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all wetland attributes
+                const wetlandId = wetland.wetland_id;
+                const wetlandType = wetland.wetland_type;
+                const wetlandClass = wetland.wetland_class;
+                const distance = wetland.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🌊 Containing Wetland' : '🌊 Nearby Wetland'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 400px; overflow-y: auto;">
+                `;
+                
+                // Add wetland ID, type, class, and distance
+                if (wetlandId) {
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>Wetland ID:</strong> ${String(wetlandId)}</div>`;
+                }
+                if (wetlandType) {
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>Wetland Type:</strong> ${wetlandType}</div>`;
+                }
+                if (wetlandClass) {
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>Wetland Class:</strong> ${wetlandClass}</div>`;
+                }
+                if (distance !== null && distance !== undefined) {
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>`;
+                }
+                
+                // Add all other wetland attributes (excluding internal fields)
+                const excludeFields = ['wetland_id', 'wetland_type', 'wetland_class', 'isContaining', 'distance_miles', 'geometry'];
+                Object.entries(wetland).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary); // Add to primary layer group
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['nh_nwi_plus']) {
+                  legendAccumulator['nh_nwi_plus'] = {
+                    icon: '🌊',
+                    color: '#14b8a6',
+                    title: 'NH NWI Plus Wetlands',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['nh_nwi_plus'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing NH NWI Plus wetland polygon:', error);
+            }
+          }
+        });
+      } else if (enrichments.nh_nwi_plus_geometry && !enrichments.nh_nwi_plus_all) {
+        // Fallback: Draw single wetland from point-in-polygon query (no radius, no _all array)
+        // Only draw if nh_nwi_plus_all doesn't exist to avoid duplicates
+        try {
+          const geometry = enrichments.nh_nwi_plus_geometry;
+          if (geometry && geometry.rings) {
+            const rings = geometry.rings;
+            if (rings && rings.length > 0) {
+              const outerRing = rings[0];
+              const latlngs = outerRing.map((coord: number[]) => {
+                return [coord[1], coord[0]] as [number, number];
+              });
+
+              const wetlandId = enrichments.nh_nwi_plus_wetland_id;
+              const wetlandType = enrichments.nh_nwi_plus_wetland_type;
+              const wetlandClass = enrichments.nh_nwi_plus_wetland_class;
+
+              const polygon = L.polygon(latlngs, {
+                color: '#14b8a6',
+                weight: 3,
+                opacity: 0.7,
+                fillColor: '#14b8a6',
+                fillOpacity: 0.2
+              });
+
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🌊 NH National Wetland Inventory (NWI) Plus
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${wetlandId ? `<div><strong>Wetland ID:</strong> ${String(wetlandId)}</div>` : ''}
+                    ${wetlandType ? `<div><strong>Wetland Type:</strong> ${wetlandType}</div>` : ''}
+                    ${wetlandClass ? `<div><strong>Wetland Class:</strong> ${wetlandClass}</div>` : ''}
+                  </div>
+                </div>
+              `;
+
+              polygon.bindPopup(popupContent, { maxWidth: 400 });
+              polygon.addTo(primary);
+              bounds.extend(polygon.getBounds());
+              
+              if (!legendAccumulator['nh_nwi_plus']) {
+                legendAccumulator['nh_nwi_plus'] = {
+                  icon: '🌊',
+                  color: '#14b8a6',
+                  title: 'NH NWI Plus Wetland',
+                  count: 1,
+                };
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error drawing NH NWI Plus wetland polygon:', error);
         }
       }
 

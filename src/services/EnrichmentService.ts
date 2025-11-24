@@ -25,6 +25,8 @@ import { getNHPublicWaterSupplyWellsData } from '../adapters/nhPublicWaterSupply
 import { getNHRemediationSitesData } from '../adapters/nhRemediationSites';
 import { getNHAutomobileSalvageYardsData } from '../adapters/nhAutomobileSalvageYards';
 import { getNHSolidWasteFacilitiesData } from '../adapters/nhSolidWasteFacilities';
+import { getNHSourceWaterProtectionAreaData } from '../adapters/nhSourceWaterProtectionAreas';
+// NH NWI Plus functions are imported dynamically in the method
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1378,6 +1380,14 @@ export class EnrichmentService {
       // NH Solid Waste Facilities (NH DES) - Proximity query (point dataset)
       case 'nh_solid_waste_facilities':
         return await this.getNHSolidWasteFacilities(lat, lon, radius);
+      
+      // NH Source Water Protection Areas (NH DES) - Point-in-polygon query (polygon dataset)
+      case 'nh_source_water_protection_areas':
+        return await this.getNHSourceWaterProtectionArea(lat, lon);
+      
+      // NH National Wetland Inventory (NWI) Plus (NH DES) - Point-in-polygon and proximity queries (polygon dataset)
+      case 'nh_nwi_plus':
+        return await this.getNHNWIPlus(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2605,6 +2615,195 @@ export class EnrichmentService {
         nh_solid_waste_facilities_count: 0,
         nh_solid_waste_facilities_all: [],
         nh_solid_waste_facilities_error: 'Error fetching NH Solid Waste Facilities data'
+      };
+    }
+  }
+
+  private async getNHSourceWaterProtectionArea(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching NH Source Water Protection Area data for [${lat}, ${lon}]`);
+      
+      const protectionArea = await getNHSourceWaterProtectionAreaData(lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      if (protectionArea) {
+        result.nh_source_water_protection_area_system_id = protectionArea.system_id;
+        result.nh_source_water_protection_area_allid = protectionArea.allid;
+        result.nh_source_water_protection_area_name = protectionArea.name;
+        result.nh_source_water_protection_area_address = protectionArea.address;
+        result.nh_source_water_protection_area_town = protectionArea.town;
+        result.nh_source_water_protection_area_system_act = protectionArea.system_act;
+        result.nh_source_water_protection_area_system_typ = protectionArea.system_typ;
+        result.nh_source_water_protection_area_system_cat = protectionArea.system_cat;
+        result.nh_source_water_protection_area_population = protectionArea.population;
+        result.nh_source_water_protection_area_dwpa_type = protectionArea.dwpa_type;
+        result.nh_source_water_protection_area_dwpa_rad = protectionArea.dwpa_rad;
+        result.nh_source_water_protection_area_geometry = protectionArea.geometry; // Include geometry for map drawing
+      } else {
+        result.nh_source_water_protection_area_system_id = null;
+        result.nh_source_water_protection_area_allid = null;
+        result.nh_source_water_protection_area_name = null;
+        result.nh_source_water_protection_area_address = null;
+        result.nh_source_water_protection_area_town = null;
+        result.nh_source_water_protection_area_system_act = null;
+        result.nh_source_water_protection_area_system_typ = null;
+        result.nh_source_water_protection_area_system_cat = null;
+        result.nh_source_water_protection_area_population = null;
+        result.nh_source_water_protection_area_dwpa_type = null;
+        result.nh_source_water_protection_area_dwpa_rad = null;
+        result.nh_source_water_protection_area_geometry = null;
+      }
+      
+      console.log(`✅ NH Source Water Protection Area data processed:`, {
+        found: !!protectionArea,
+        name: protectionArea?.name || 'None'
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Source Water Protection Area:', error);
+      return {
+        nh_source_water_protection_area_system_id: null,
+        nh_source_water_protection_area_allid: null,
+        nh_source_water_protection_area_name: null,
+        nh_source_water_protection_area_address: null,
+        nh_source_water_protection_area_town: null,
+        nh_source_water_protection_area_system_act: null,
+        nh_source_water_protection_area_system_typ: null,
+        nh_source_water_protection_area_system_cat: null,
+        nh_source_water_protection_area_population: null,
+        nh_source_water_protection_area_dwpa_type: null,
+        nh_source_water_protection_area_dwpa_rad: null,
+        nh_source_water_protection_area_geometry: null,
+        nh_source_water_protection_area_error: 'Error fetching NH Source Water Protection Area data'
+      };
+    }
+  }
+
+  private async getNHNWIPlus(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NH NWI Plus data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      // If radius is provided, do proximity query
+      if (radius && radius > 0) {
+        const { getNHNWIPlusContainingData, getNHNWIPlusNearbyData } = await import('../adapters/nhNWIPlus');
+        
+        // Get containing wetland (point-in-polygon)
+        const containingWetland = await getNHNWIPlusContainingData(lat, lon);
+        console.log('🌊 Containing wetland from adapter:', containingWetland);
+        
+        // Get nearby wetlands (proximity)
+        const nearbyWetlands = await getNHNWIPlusNearbyData(lat, lon, radius);
+        console.log(`🌊 Nearby wetlands from adapter: ${nearbyWetlands.length} found`);
+        
+        // Combine containing and nearby wetlands, avoiding duplicates
+        const allWetlands: any[] = [];
+        const seenIds = new Set<string>();
+        
+        // Add containing wetland first if it exists
+        if (containingWetland) {
+          const id = containingWetland.wetland_id || containingWetland.attributes?.OBJECTID || containingWetland.attributes?.objectid || containingWetland.attributes?.FID || containingWetland.attributes?.fid || 'unknown';
+          if (!seenIds.has(String(id))) {
+            seenIds.add(String(id));
+            // Exclude geometry from attributes before spreading to avoid overwriting
+            const { geometry: _, ...attributesWithoutGeometry } = containingWetland.attributes || {};
+            allWetlands.push({
+              ...attributesWithoutGeometry,
+              wetland_id: containingWetland.wetland_id,
+              wetland_type: containingWetland.wetland_type,
+              wetland_class: containingWetland.wetland_class,
+              geometry: containingWetland.geometry,
+              isContaining: true,
+              distance_miles: 0
+            });
+            console.log('🌊 Added containing wetland to allWetlands:', {
+              wetland_id: containingWetland.wetland_id,
+              has_geometry: !!containingWetland.geometry
+            });
+          }
+        }
+        
+        // Add nearby wetlands (excluding the containing one)
+        nearbyWetlands.forEach(wetland => {
+          const id = wetland.wetland_id || wetland.attributes?.OBJECTID || wetland.attributes?.objectid || wetland.attributes?.FID || wetland.attributes?.fid || 'unknown';
+          if (!seenIds.has(String(id))) {
+            seenIds.add(String(id));
+            // Exclude geometry from attributes before spreading to avoid overwriting
+            const { geometry: _, ...attributesWithoutGeometry } = wetland.attributes || {};
+            allWetlands.push({
+              ...attributesWithoutGeometry,
+              wetland_id: wetland.wetland_id,
+              wetland_type: wetland.wetland_type,
+              wetland_class: wetland.wetland_class,
+              geometry: wetland.geometry,
+              isContaining: false,
+              distance_miles: wetland.distance_miles
+            });
+          }
+        });
+        
+        console.log(`🌊 Total wetlands in allWetlands array: ${allWetlands.length}`);
+        console.log('🌊 Sample wetland from allWetlands:', allWetlands[0] ? {
+          wetland_id: allWetlands[0].wetland_id,
+          wetland_type: allWetlands[0].wetland_type,
+          wetland_class: allWetlands[0].wetland_class,
+          has_geometry: !!allWetlands[0].geometry,
+          isContaining: allWetlands[0].isContaining
+        } : 'none');
+        
+        result.nh_nwi_plus_count = allWetlands.length;
+        result.nh_nwi_plus_all = allWetlands;
+        result.nh_nwi_plus_search_radius_miles = radius;
+        
+        // Also include the containing wetland fields for summary display
+        if (containingWetland) {
+          result.nh_nwi_plus_wetland_id = containingWetland.wetland_id;
+          result.nh_nwi_plus_wetland_type = containingWetland.wetland_type;
+          result.nh_nwi_plus_wetland_class = containingWetland.wetland_class;
+        } else {
+          result.nh_nwi_plus_wetland_id = null;
+          result.nh_nwi_plus_wetland_type = null;
+          result.nh_nwi_plus_wetland_class = null;
+        }
+      } else {
+        // No radius provided, just do point-in-polygon query
+        const { getNHNWIPlusContainingData } = await import('../adapters/nhNWIPlus');
+        const wetland = await getNHNWIPlusContainingData(lat, lon);
+        
+        if (wetland) {
+          result.nh_nwi_plus_wetland_id = wetland.wetland_id;
+          result.nh_nwi_plus_wetland_type = wetland.wetland_type;
+          result.nh_nwi_plus_wetland_class = wetland.wetland_class;
+          result.nh_nwi_plus_geometry = wetland.geometry; // Include geometry for map drawing
+        } else {
+          result.nh_nwi_plus_wetland_id = null;
+          result.nh_nwi_plus_wetland_type = null;
+          result.nh_nwi_plus_wetland_class = null;
+          result.nh_nwi_plus_geometry = null;
+        }
+      }
+      
+      console.log(`✅ NH NWI Plus data processed:`, {
+        count: result.nh_nwi_plus_count || (result.nh_nwi_plus_wetland_id ? 1 : 0),
+        has_containing: !!result.nh_nwi_plus_wetland_id
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH NWI Plus:', error);
+      return {
+        nh_nwi_plus_wetland_id: null,
+        nh_nwi_plus_wetland_type: null,
+        nh_nwi_plus_wetland_class: null,
+        nh_nwi_plus_geometry: null,
+        nh_nwi_plus_count: 0,
+        nh_nwi_plus_all: [],
+        nh_nwi_plus_error: 'Error fetching NH NWI Plus data'
       };
     }
   }
