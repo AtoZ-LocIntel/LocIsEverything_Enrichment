@@ -31,7 +31,7 @@ import { getNHSourceWaterProtectionAreaData } from '../adapters/nhSourceWaterPro
 import { getMADEPWetlandsContainingData, getMADEPWetlandsNearbyData, MADEPWetland } from '../adapters/maDEPWetlands';
 import { getMAOpenSpaceContainingData, getMAOpenSpaceNearbyData, MAOpenSpace } from '../adapters/maOpenSpace';
 import { getCapeCodZoningContainingData, getCapeCodZoningNearbyData, CapeCodZoning } from '../adapters/capeCodZoning';
-import { getMATrailsData, MATrail } from '../adapters/maTrails';
+import { getMATrailsData } from '../adapters/maTrails';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -3179,7 +3179,7 @@ export class EnrichmentService {
           result.cape_cod_zoning_count = containingZoning.length;
           // Get the zone code for summary output (first one)
           if (containingZoning[0]) {
-            result.cape_cod_zoning_zone_code = containingZoning[0].zoneCode || containingZoning[0].ZONECODE || containingZoning[0].ZoneCode || '';
+            result.cape_cod_zoning_zone_code = containingZoning[0].zoneCode || '';
           }
           result.cape_cod_zoning_all = containingZoning.map(zoning => {
             const { geometry, attributes, ...rest } = zoning;
@@ -3232,11 +3232,14 @@ export class EnrichmentService {
       if (trails.length > 0) {
         result.ma_trails_count = trails.length;
         result.ma_trails_all = trails.map(trail => {
-          const { geometry, attributes, ...rest } = trail;
+          const trailAny = trail as any;
+          const geometry = trailAny.geometry;
+          const attributes = trailAny.attributes;
+          const { geometry: _geom13, ...rest } = trailAny;
           // Exclude geometry from attributes if it exists there
-          const { geometry: _, ...cleanAttributes } = attributes || {};
+          const { geometry: _geom14, ...cleanAttributes } = attributes || {};
           // Exclude geometry from rest to ensure it doesn't overwrite
-          const { geometry: __, ...cleanRest } = rest || {};
+          const { geometry: _geom15, ...cleanRest } = rest || {};
           return {
             ...cleanAttributes,
             ...cleanRest,

@@ -3161,9 +3161,6 @@ const MapView: React.FC<MapViewProps> = ({
 
   // CSV export now handled by shared utility function
 
-  const isLandscape = viewportWidth > viewportHeight && viewportHeight > 0;
-  const mobileMapHeight = Math.max(viewportHeight - HEADER_HEIGHT, isLandscape ? 240 : 320);
-
   // Mobile: Full screen map with overlay back button
   if (isMobile) {
     return (
