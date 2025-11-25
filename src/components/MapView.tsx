@@ -3164,10 +3164,107 @@ const MapView: React.FC<MapViewProps> = ({
   const isLandscape = viewportWidth > viewportHeight && viewportHeight > 0;
   const mobileMapHeight = Math.max(viewportHeight - HEADER_HEIGHT, isLandscape ? 240 : 320);
 
+  // Mobile: Full screen map with overlay back button
+  if (isMobile) {
+    return (
+      <div
+        className="fixed inset-0 w-full h-full bg-white"
+        style={{ 
+          height: '100vh', 
+          width: '100vw',
+          zIndex: 9999,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0
+        }}
+      >
+        {/* Map Container - Full Screen */}
+        <div 
+          className="relative w-full h-full"
+          style={{
+            height: '100vh',
+            width: '100vw',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <div 
+            ref={mapRef} 
+            className="w-full h-full"
+            style={{
+              height: '100vh',
+              width: '100vw',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              zIndex: 1
+            }}
+          />
+          
+          {/* Back Button Overlay - Top Left */}
+          <button
+            onClick={onBackToConfig}
+            className="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+            style={{ zIndex: 1000 }}
+          >
+            <span className="text-lg">←</span>
+            <span className="text-sm font-medium">Back</span>
+          </button>
+          
+          {/* Download Button Overlay - Top Right (for single location) */}
+          {results.length === 1 && (
+            <button
+              onClick={() => exportEnrichmentResultsToCSV(results)}
+              className="absolute top-4 right-4 z-[1000] bg-blue-600 text-white rounded-lg shadow-lg px-3 py-2 flex items-center space-x-2 hover:bg-blue-700 transition-colors"
+              style={{ zIndex: 1000 }}
+              title="Download all proximity layers and distances for this location"
+            >
+              <span className="text-sm">⬇️</span>
+              <span className="text-sm font-medium">Download</span>
+            </button>
+          )}
+          
+          {/* Mobile Legend - Bottom Right */}
+          {legendItems.length > 0 && (
+            <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 max-w-[200px] z-[1000] max-h-[60vh] overflow-y-auto">
+              <h4 className="text-xs font-semibold text-gray-900 mb-2">Legend</h4>
+              <div className="space-y-1.5">
+                {legendItems.map((item, index) => (
+                  <div key={index} className="flex items-center space-x-1.5 text-xs">
+                    <div 
+                      className="w-3 h-3 rounded-full flex items-center justify-center text-[10px] flex-shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      {item.icon}
+                    </div>
+                    <span className="text-gray-700 truncate">{item.title}</span>
+                    <span className="text-gray-500 flex-shrink-0">({item.count})</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Batch Success Message - Mobile */}
+          {showBatchSuccess && (
+            <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg z-[1000]">
+              <div className="flex items-center space-x-2">
+                <span>✅</span>
+                <span className="text-xs font-medium">Batch completed!</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop: Original layout with header
   return (
     <div
-      className={`${isMobile ? 'min-h-screen overflow-y-auto' : 'h-screen'} flex flex-col bg-white`}
-      style={isMobile ? { minHeight: viewportHeight || undefined } : undefined}
+      className="h-screen flex flex-col bg-white"
     >
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
@@ -3202,40 +3299,16 @@ const MapView: React.FC<MapViewProps> = ({
 
       {/* Map Container */}
       <div 
-        className={`flex-1 relative ${isMobile ? 'map-container' : ''}`}
-        style={
-          isMobile
-            ? {
-                height: `${mobileMapHeight}px`,
-                minHeight: isLandscape ? '240px' : '320px',
-                width: '100%',
-                maxWidth: '100%',
-                position: 'relative',
-                overflow: 'hidden',
-                flex: '1 1 auto'
-              }
-            : {}
-        }
+        className="flex-1 relative"
       >
         <div 
           ref={mapRef} 
-          className={`w-full h-full ${isMobile ? 'mobile-map' : ''}`}
-          style={
-            isMobile
-              ? {
-                  height: '100%',
-                  width: '100%',
-                  minHeight: isLandscape ? '240px' : '320px',
-                  position: 'relative',
-                  display: 'block',
-                  maxWidth: '100%'
-                }
-              : { height: '100%', width: '100%' }
-          }
+          className="w-full h-full"
+          style={{ height: '100%', width: '100%' }}
         />
         
-        {/* Dynamic Legend - Always show when there are legend items */}
-        {legendItems.length > 0 && !isMobile && (
+        {/* Dynamic Legend - Always show when there are legend items (Desktop only) */}
+        {legendItems.length > 0 && (
           <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-4 max-w-xs z-10">
             <h4 className="text-sm font-semibold text-gray-900 mb-3">Map Legend</h4>
             <div className="space-y-2">
