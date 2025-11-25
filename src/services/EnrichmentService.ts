@@ -32,6 +32,7 @@ import { getMADEPWetlandsContainingData, getMADEPWetlandsNearbyData, MADEPWetlan
 import { getMAOpenSpaceContainingData, getMAOpenSpaceNearbyData, MAOpenSpace } from '../adapters/maOpenSpace';
 import { getCapeCodZoningContainingData, getCapeCodZoningNearbyData, CapeCodZoning } from '../adapters/capeCodZoning';
 import { getMATrailsData } from '../adapters/maTrails';
+import { getMANHESPNaturalCommunitiesContainingData, getMANHESPNaturalCommunitiesNearbyData } from '../adapters/maNHESPNaturalCommunities';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1413,6 +1414,10 @@ export class EnrichmentService {
       // MA Hiking and Wilderness Trails - Proximity query (line dataset)
       case 'ma_trails':
         return await this.getMATrails(lat, lon, radius);
+      
+      // MA NHESP Natural Communities - Point-in-polygon and proximity query (polygon dataset)
+      case 'ma_nhesp_natural_communities':
+        return await this.getMANHESPNaturalCommunities(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -3265,6 +3270,130 @@ export class EnrichmentService {
         ma_trails_count: 0,
         ma_trails_all: [],
         ma_trails_error: 'Error fetching MA Trails data'
+      };
+    }
+  }
+
+  private async getMANHESPNaturalCommunities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌿 Fetching MA NHESP Natural Communities data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      if (radius && radius > 0) {
+        // Proximity query - get both containing and nearby communities
+        const containingCommunities = await getMANHESPNaturalCommunitiesContainingData(lat, lon);
+        console.log('🌿 Containing communities from adapter:', containingCommunities.length);
+        
+        const nearbyCommunities = await getMANHESPNaturalCommunitiesNearbyData(lat, lon, radius);
+        console.log(`🌿 Nearby communities from adapter: ${nearbyCommunities.length} found`);
+        
+        // Combine results, avoiding duplicates by composite string key
+        const allCommunitiesMap = new Map<string, any>();
+        
+        // Add containing communities first (distance = 0)
+        containingCommunities.forEach(community => {
+          const key = community.objectId !== undefined && community.objectId !== null 
+            ? `oid_${community.objectId}` 
+            : (community.uniqueId !== undefined && community.uniqueId !== null
+              ? `uid_${community.uniqueId}`
+              : null);
+          if (key) {
+            allCommunitiesMap.set(key, community);
+          }
+        });
+        
+        // Add nearby communities (will overwrite containing ones if duplicate, but that's fine)
+        nearbyCommunities.forEach(community => {
+          const key = community.objectId !== undefined && community.objectId !== null 
+            ? `oid_${community.objectId}` 
+            : (community.uniqueId !== undefined && community.uniqueId !== null
+              ? `uid_${community.uniqueId}`
+              : null);
+          if (key) {
+            allCommunitiesMap.set(key, community);
+          }
+        });
+        
+        const allCommunities = Array.from(allCommunitiesMap.values());
+        
+        if (allCommunities.length > 0) {
+          result.ma_nhesp_natural_communities_count = allCommunities.length;
+          console.log(`✅ MA NHESP Natural Communities: Processing ${allCommunities.length} communities, first has geometry:`, !!(allCommunities[0] as any)?.geometry);
+          result.ma_nhesp_natural_communities_all = allCommunities.map((community, idx) => {
+            const communityAny = community as any;
+            const geometry = communityAny.geometry;
+            const attributes = communityAny.attributes;
+            if (idx === 0) {
+              console.log(`🔍 MA NHESP Natural Community 0 - geometry:`, !!geometry, 'has rings:', !!geometry?.rings, 'rings length:', geometry?.rings?.length);
+            }
+            const { geometry: _geom16, ...rest } = communityAny;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _geom17, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: _geom18, ...cleanRest } = rest || {};
+            const result = {
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry, // Include geometry for map drawing (from top level)
+            };
+            if (idx === 0) {
+              console.log(`🔍 MA NHESP Natural Community 0 - result has geometry:`, !!result.geometry, 'has rings:', !!result.geometry?.rings);
+            }
+            return result;
+          });
+        } else {
+          result.ma_nhesp_natural_communities_count = 0;
+          result.ma_nhesp_natural_communities_all = [];
+        }
+        
+        result.ma_nhesp_natural_communities_search_radius_miles = radius;
+      } else {
+        // Point-in-polygon query only
+        const containingCommunities = await getMANHESPNaturalCommunitiesContainingData(lat, lon);
+        
+        if (containingCommunities.length > 0) {
+          result.ma_nhesp_natural_communities_count = containingCommunities.length;
+          result.ma_nhesp_natural_communities_all = containingCommunities.map((community, idx) => {
+            const communityAny = community as any;
+            const geometry = communityAny.geometry;
+            const attributes = communityAny.attributes;
+            if (idx === 0) {
+              console.log(`🔍 MA NHESP Natural Community 0 (containing) - geometry:`, !!geometry, 'has rings:', !!geometry?.rings, 'rings length:', geometry?.rings?.length);
+            }
+            const { geometry: _geom19, ...rest } = communityAny;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _geom20, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: _geom21, ...cleanRest } = rest || {};
+            const result = {
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry, // Include geometry for map drawing (from top level)
+            };
+            if (idx === 0) {
+              console.log(`🔍 MA NHESP Natural Community 0 (containing) - result has geometry:`, !!result.geometry, 'has rings:', !!result.geometry?.rings);
+            }
+            return result;
+          });
+        } else {
+          result.ma_nhesp_natural_communities_count = 0;
+          result.ma_nhesp_natural_communities_all = [];
+        }
+      }
+      
+      console.log(`✅ MA NHESP Natural Communities data processed:`, {
+        count: result.ma_nhesp_natural_communities_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching MA NHESP Natural Communities:', error);
+      return {
+        ma_nhesp_natural_communities_count: 0,
+        ma_nhesp_natural_communities_all: [],
+        ma_nhesp_natural_communities_error: 'Error fetching MA NHESP Natural Communities data'
       };
     }
   }

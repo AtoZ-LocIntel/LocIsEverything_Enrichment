@@ -265,7 +265,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ma_dep_wetlands_all' || // Skip _all arrays (handled separately)
         key === 'ma_open_space_all' || // Skip _all arrays (handled separately)
         key === 'cape_cod_zoning_all' || // Skip _all arrays (handled separately)
-        key === 'ma_trails_all') { // Skip _all arrays (handled separately)
+        key === 'ma_trails_all' || // Skip _all arrays (handled separately)
+        key === 'ma_nhesp_natural_communities_all') { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -1652,6 +1653,65 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           town || siteName || attributesJson,
           lengthMiles ? `${lengthMiles} miles` : attributesJson,
           siteName || '',
+          '',
+          attributesJson,
+          'MassGIS'
+        ]);
+      });
+    }
+    
+    // Add MA NHESP Natural Communities data rows
+    if (enrichments.ma_nhesp_natural_communities_all && Array.isArray(enrichments.ma_nhesp_natural_communities_all)) {
+      enrichments.ma_nhesp_natural_communities_all.forEach((community: any) => {
+        const communNam = community.COMMUN_NAM || community.Commun_Nam || community.commun_nam || community.communNam || 'Unnamed Community';
+        const communRan = community.COMMUN_RAN || community.Commun_Ran || community.commun_ran || community.communRan || '';
+        const specificD = community.SPECIFIC_D || community.Specific_D || community.specific_d || community.specificD || '';
+        const communDes = community.COMMUN_DES || community.Commun_Des || community.commun_des || community.communDes || '';
+        const shapeArea = community['SHAPE.AREA'] || community.Shape_Area || community.shape_area || community.shapeArea;
+        const areaAcres = shapeArea ? (shapeArea * 0.000247105).toFixed(2) : '';
+        
+        const allAttributes = { ...community };
+        delete allAttributes.COMMUN_NAM;
+        delete allAttributes.Commun_Nam;
+        delete allAttributes.commun_nam;
+        delete allAttributes.communNam;
+        delete allAttributes.COMMUN_RAN;
+        delete allAttributes.Commun_Ran;
+        delete allAttributes.commun_ran;
+        delete allAttributes.communRan;
+        delete allAttributes.SPECIFIC_D;
+        delete allAttributes.Specific_D;
+        delete allAttributes.specific_d;
+        delete allAttributes.specificD;
+        delete allAttributes.COMMUN_DES;
+        delete allAttributes.Commun_Des;
+        delete allAttributes.commun_des;
+        delete allAttributes.communDes;
+        delete allAttributes['SHAPE.AREA'];
+        delete allAttributes.Shape_Area;
+        delete allAttributes.shape_area;
+        delete allAttributes.shapeArea;
+        delete allAttributes['SHAPE.LEN'];
+        delete allAttributes.Shape_Len;
+        delete allAttributes.shape_len;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'MassGIS',
+          (location.confidence || 'N/A').toString(),
+          'MA_NHESP_NATURAL_COMMUNITY',
+          communNam,
+          location.lat.toString(), // Use search location for community (it's a polygon, not a point)
+          location.lon.toString(),
+          community.distance_miles !== null && community.distance_miles !== undefined ? community.distance_miles.toFixed(2) : '',
+          communRan || communDes || attributesJson,
+          areaAcres ? `${areaAcres} acres` : attributesJson,
+          specificD || '',
           '',
           attributesJson,
           'MassGIS'

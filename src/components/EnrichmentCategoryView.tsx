@@ -152,6 +152,8 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               ? [0.1, 0.25, 0.5, 0.75, 1.0]
               : enrichment.id === 'nh_dot_roads' || enrichment.id === 'nh_railroads' || enrichment.id === 'nh_transmission_pipelines' || enrichment.id === 'ma_trails'
               ? [0.5, 1, 2.5, 5, 10]
+              : enrichment.id === 'nh_nwi_plus' || enrichment.id === 'ma_dep_wetlands' || enrichment.id === 'ma_open_space' || enrichment.id === 'cape_cod_zoning' || enrichment.id === 'ma_nhesp_natural_communities'
+              ? [0.1, 0.25, 0.5, 0.75, 1.0]
               : enrichment.id === 'nh_key_destinations'
               ? [0.5, 1, 2, 3, 5, 10, 15, 25]
               : [0.5, 1, 2, 3, 5, 10, 15, 25];

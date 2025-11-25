@@ -2606,6 +2606,104 @@ const MapView: React.FC<MapViewProps> = ({
         });
       }
 
+      // Draw MA NHESP Natural Communities as polygons on the map
+      if (enrichments.ma_nhesp_natural_communities_all && Array.isArray(enrichments.ma_nhesp_natural_communities_all)) {
+        console.log(`🗺️ Drawing ${enrichments.ma_nhesp_natural_communities_all.length} MA NHESP Natural Communities`);
+        enrichments.ma_nhesp_natural_communities_all.forEach((community: any, index: number) => {
+          console.log(`🗺️ MA NHESP Natural Community ${index}:`, {
+            hasGeometry: !!community.geometry,
+            geometryType: community.geometry?.type || (community.geometry?.rings ? 'rings' : 'unknown'),
+            hasRings: !!community.geometry?.rings,
+            ringsLength: community.geometry?.rings?.length
+          });
+          if (community.geometry && community.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng arrays
+              const rings = community.geometry.rings;
+              rings.forEach((ring: number[][]) => {
+                const latlngs = ring.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = community.distance_miles === 0 || community.distance_miles === null || community.distance_miles === undefined;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#059669' : '#10b981', // Darker green for containing, lighter for nearby
+                  weight: 2,
+                  opacity: 0.7,
+                  fillColor: isContaining ? '#059669' : '#10b981',
+                  fillOpacity: 0.3
+                });
+
+                // Build popup content with all community attributes
+                const communNam = community.COMMUN_NAM || community.Commun_Nam || community.commun_nam || community.communNam || 'Unnamed Community';
+                const communRan = community.COMMUN_RAN || community.Commun_Ran || community.commun_ran || community.communRan || '';
+                const specificD = community.SPECIFIC_D || community.Specific_D || community.specific_d || community.specificD || '';
+                const communDes = community.COMMUN_DES || community.Commun_Des || community.commun_des || community.communDes || '';
+                const shapeArea = community['SHAPE.AREA'] || community.Shape_Area || community.shape_area || community.shapeArea;
+                const distance = community.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌿 ${communNam}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${communRan ? `<div><strong>Community Rank:</strong> ${communRan}</div>` : ''}
+                      ${specificD ? `<div><strong>Specific Occurrence:</strong> ${specificD}</div>` : ''}
+                      ${communDes ? `<div><strong>Description:</strong> ${communDes}</div>` : ''}
+                      ${shapeArea ? `<div><strong>Area:</strong> ${(shapeArea * 0.000247105).toFixed(2)} acres</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other community attributes (excluding internal fields)
+                const excludeFields = ['COMMUN_NAM', 'Commun_Nam', 'commun_nam', 'communNam', 'COMMUN_RAN', 'Commun_Ran', 'commun_ran', 'communRan', 'SPECIFIC_D', 'Specific_D', 'specific_d', 'specificD', 'COMMUN_DES', 'Commun_Des', 'commun_des', 'communDes', 'SHAPE.AREA', 'Shape_Area', 'shape_area', 'shapeArea', 'SHAPE.LEN', 'Shape_Len', 'shape_len', 'geometry', 'distance_miles'];
+                Object.entries(community).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+              });
+              
+              // Add to legend accumulator (only once per community, not per ring)
+              if (!legendAccumulator['ma_nhesp_natural_communities']) {
+                legendAccumulator['ma_nhesp_natural_communities'] = {
+                  icon: '🌿',
+                  color: '#059669',
+                  title: 'MA NHESP Natural Communities',
+                  count: 0,
+                };
+              }
+              legendAccumulator['ma_nhesp_natural_communities'].count += 1;
+            } catch (error) {
+              console.error('Error drawing MA NHESP Natural Community polygon:', error);
+            }
+          }
+        });
+      }
+
       // Draw MA Trails as polylines on the map
       if (enrichments.ma_trails_all && Array.isArray(enrichments.ma_trails_all)) {
         enrichments.ma_trails_all.forEach((trail: any) => {
