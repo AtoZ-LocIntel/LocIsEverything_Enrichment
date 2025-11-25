@@ -71,7 +71,7 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      'FWS API',
       (location.confidence || 'N/A').toString(),
       'FWS_SPECIES',
       'FWS Species & Critical Habitat',
@@ -92,7 +92,7 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      'USGS',
       (location.confidence || 'N/A').toString(),
       'USGS_EARTHQUAKES',
       'Historical Earthquakes',
@@ -113,7 +113,7 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      'USGS',
       (location.confidence || 'N/A').toString(),
       'USGS_VOLCANOES',
       'Volcanoes',
@@ -134,7 +134,7 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      'USGS',
       (location.confidence || 'N/A').toString(),
       'USGS_WILDFIRES',
       'Current Wildfires',
@@ -155,7 +155,7 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      'USGS',
       (location.confidence || 'N/A').toString(),
       'USGS_WETLANDS',
       'Wetlands Within Distance',
@@ -176,11 +176,12 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      'PAD-US',
       (location.confidence || 'N/A').toString(),
       'PADUS_PUBLIC_ACCESS',
       `Nearby Count: ${enrichments.padus_public_access_nearby_count || 0}`,
-      '', '', '', '', '', '', '', ''
+      '', '', '', '', '', '', '',
+      'PAD-US'
     ]);
   }
   if (enrichments.padus_public_access_summary) {
@@ -188,11 +189,12 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      'PAD-US',
       (location.confidence || 'N/A').toString(),
       'PADUS_PUBLIC_ACCESS',
       enrichments.padus_public_access_summary,
-      '', '', '', '', '', '', '', ''
+      '', '', '', '', '', '', '',
+      'PAD-US'
     ]);
   }
   if (enrichments.padus_protection_status_nearby_count !== undefined) {
@@ -200,11 +202,12 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      'PAD-US',
       (location.confidence || 'N/A').toString(),
       'PADUS_PROTECTION_STATUS',
       `Nearby Count: ${enrichments.padus_protection_status_nearby_count || 0}`,
-      '', '', '', '', '', '', '', ''
+      '', '', '', '', '', '', '',
+      'PAD-US'
     ]);
   }
   if (enrichments.padus_protection_status_summary) {
@@ -212,11 +215,12 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      'PAD-US',
       (location.confidence || 'N/A').toString(),
       'PADUS_PROTECTION_STATUS',
       enrichments.padus_protection_status_summary,
-      '', '', '', '', '', '', '', ''
+      '', '', '', '', '', '', '',
+      'PAD-US'
     ]);
   }
 
@@ -260,7 +264,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_nwi_plus_geometry' || // Skip geometry field (raw JSON, not user-friendly)
         key === 'ma_dep_wetlands_all' || // Skip _all arrays (handled separately)
         key === 'ma_open_space_all' || // Skip _all arrays (handled separately)
-        key === 'cape_cod_zoning_all') { // Skip _all arrays (handled separately)
+        key === 'cape_cod_zoning_all' || // Skip _all arrays (handled separately)
+        key === 'ma_trails_all') { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -326,11 +331,52 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
       formattedValue = String(value);
     }
 
+    // Determine data source based on enrichment key
+    let dataSource = '';
+    if (key.includes('nh_')) {
+      if (key.includes('nwi_plus') || key.includes('source_water') || key.includes('underground_storage') || 
+          key.includes('water_well') || key.includes('remediation') || key.includes('automobile_salvage') || 
+          key.includes('solid_waste')) {
+        dataSource = 'NH DES';
+      } else {
+        dataSource = 'NH GRANIT';
+      }
+    } else if (key.includes('ma_') || key.includes('cape_cod')) {
+      if (key.includes('cape_cod')) {
+        dataSource = 'Cape Cod Commission';
+      } else {
+        dataSource = 'MassGIS';
+      }
+    } else if (key.includes('fws_')) {
+      dataSource = 'FWS API';
+    } else if (key.includes('usgs_') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || 
+               key.includes('poi_wildfires') || key.includes('poi_wetlands')) {
+      dataSource = 'USGS';
+    } else if (key.includes('padus_')) {
+      dataSource = 'PAD-US';
+    } else if (key.includes('soil_')) {
+      dataSource = 'ESRI Living Atlas / ISRIC';
+    } else if (key.includes('usda_')) {
+      dataSource = 'USDA Forest Service';
+    } else if (key.includes('epa_')) {
+      dataSource = 'EPA';
+    } else if (key.includes('noaa_')) {
+      dataSource = 'NOAA';
+    } else if (key.includes('census_')) {
+      dataSource = 'US Census Bureau';
+    } else if (key.includes('fema_')) {
+      dataSource = 'FEMA';
+    } else if (key.includes('wikipedia')) {
+      dataSource = 'Wikipedia';
+    } else if (key.includes('poi_') || key.includes('_pois')) {
+      dataSource = 'OpenStreetMap';
+    }
+
     rows.push([
       location.name,
       location.lat.toString(),
       location.lon.toString(),
-      location.source,
+      dataSource || location.source, // Use data source if available, otherwise geocoding source
       (location.confidence || 'N/A').toString(),
       key, // POI_Type
       formattedValue, // POI_Name
@@ -341,7 +387,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
       '', // POI_Address
       '', // POI_Phone
       '', // POI_Website
-      '' // POI_Source
+      dataSource // POI_Source
     ]);
   });
 };
@@ -359,7 +405,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'PAD-US',
           (location.confidence || 'N/A').toString(),
           key.includes('public_access') ? 'PADUS_PUBLIC_ACCESS' : 'PADUS_PROTECTION_STATUS',
           featureName,
@@ -387,7 +433,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
             location.name,
             location.lat.toString(),
             location.lon.toString(),
-            location.source,
+            poi.source || 'N/A',
             (location.confidence || 'N/A').toString(),
             'ANIMAL_VEHICLE_COLLISION',
             aviName,
@@ -406,7 +452,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
             location.name,
             location.lat.toString(),
             location.lon.toString(),
-            location.source,
+            'OpenStreetMap',
             (location.confidence || 'N/A').toString(),
             key.replace('_all_pois', '').replace('poi_', '').toUpperCase(),
             poi.name || poi.title || 'Unnamed',
@@ -428,7 +474,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'Wikipedia',
           (location.confidence || 'N/A').toString(),
           'WIKIPEDIA_ARTICLE',
           article.title || 'Unnamed Article',
@@ -468,7 +514,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_PARCEL',
           `${parcelType} - ${parcelId}`,
@@ -510,7 +556,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_KEY_DESTINATION',
           destName,
@@ -559,7 +605,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_NURSING_HOME',
           homeName,
@@ -605,7 +651,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_EMS',
           facilityName,
@@ -652,7 +698,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_FIRE_STATION',
           stationName,
@@ -700,7 +746,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_PLACE_OF_WORSHIP',
           placeName,
@@ -747,7 +793,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_HOSPITAL',
           hospitalName,
@@ -806,7 +852,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_PUBLIC_WATERS_ACCESS',
           facilityName,
@@ -852,7 +898,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_LAW_ENFORCEMENT',
           facilityName,
@@ -889,7 +935,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_RECREATION_TRAIL',
           trailName,
@@ -927,7 +973,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_STONE_WALL',
           `Stone Wall - ${town}`,
@@ -967,7 +1013,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_DOT_ROAD',
           roadName,
@@ -1006,7 +1052,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_RAILROAD',
           railroadName,
@@ -1040,7 +1086,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_TRANSMISSION_PIPELINE',
           tpType || 'Transmission/Pipeline',
@@ -1084,7 +1130,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH GRANIT',
           (location.confidence || 'N/A').toString(),
           'NH_CELL_TOWER',
           entityName,
@@ -1124,7 +1170,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH DES',
           (location.confidence || 'N/A').toString(),
           'NH_UNDERGROUND_STORAGE_TANK',
           facilityName,
@@ -1168,7 +1214,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH DES',
           (location.confidence || 'N/A').toString(),
           'NH_WATER_WELL',
           wellId ? String(wellId) : 'Unknown Well',
@@ -1214,7 +1260,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH DES',
           (location.confidence || 'N/A').toString(),
           'NH_PUBLIC_WATER_SUPPLY_WELL',
           wellId ? String(wellId) : 'Unknown Well',
@@ -1258,7 +1304,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH DES',
           (location.confidence || 'N/A').toString(),
           'NH_REMEDIATION_SITE',
           siteId ? String(siteId) : 'Unknown Site',
@@ -1304,7 +1350,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH DES',
           (location.confidence || 'N/A').toString(),
           'NH_AUTOMOBILE_SALVAGE_YARD',
           facilityId ? String(facilityId) : 'Unknown Facility',
@@ -1354,7 +1400,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH DES',
           (location.confidence || 'N/A').toString(),
           'NH_SOLID_WASTE_FACILITY',
           swfName || (swfLid ? String(swfLid) : 'Unknown Facility'),
@@ -1394,7 +1440,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'NH DES',
           (location.confidence || 'N/A').toString(),
           'NH_NWI_PLUS',
           String(wetlandId),
@@ -1442,7 +1488,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'MassGIS',
           (location.confidence || 'N/A').toString(),
           'MA_DEP_WETLAND',
           itValDesc,
@@ -1492,7 +1538,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'MassGIS',
           (location.confidence || 'N/A').toString(),
           'MA_OPEN_SPACE',
           siteName,
@@ -1546,7 +1592,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          location.source,
+          'Cape Cod Commission',
           (location.confidence || 'N/A').toString(),
           'CAPE_COD_ZONING',
           zoneCode,
@@ -1559,6 +1605,56 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'Cape Cod Commission'
+        ]);
+      });
+    }
+    
+    // Add MA Trails data rows
+    if (enrichments.ma_trails_all && Array.isArray(enrichments.ma_trails_all)) {
+      enrichments.ma_trails_all.forEach((trail: any) => {
+        const trailName = trail.TRAIL_NAME || trail.Trail_Name || trail.trail_name || trail.altName || trail.ALT_NAME || trail.Alt_Name || 'Unnamed Trail';
+        const town = trail.TOWN || trail.Town || trail.town || '';
+        const siteName = trail.SITE_NAME || trail.Site_Name || trail.site_name || '';
+        const shapeLength = trail.Shape__Length || trail.Shape_Length || trail.shape_length;
+        const lengthMiles = shapeLength ? (shapeLength * 0.000621371).toFixed(2) : '';
+        
+        const allAttributes = { ...trail };
+        delete allAttributes.TRAIL_NAME;
+        delete allAttributes.Trail_Name;
+        delete allAttributes.trail_name;
+        delete allAttributes.ALT_NAME;
+        delete allAttributes.Alt_Name;
+        delete allAttributes.altName;
+        delete allAttributes.TOWN;
+        delete allAttributes.Town;
+        delete allAttributes.town;
+        delete allAttributes.SITE_NAME;
+        delete allAttributes.Site_Name;
+        delete allAttributes.site_name;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.Shape_Length;
+        delete allAttributes.shape_length;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'MassGIS',
+          (location.confidence || 'N/A').toString(),
+          'MA_TRAILS',
+          trailName,
+          location.lat.toString(), // Use search location for trail (it's a polyline, not a point)
+          location.lon.toString(),
+          trail.distance_miles !== null && trail.distance_miles !== undefined ? trail.distance_miles.toFixed(2) : '',
+          town || siteName || attributesJson,
+          lengthMiles ? `${lengthMiles} miles` : attributesJson,
+          siteName || '',
+          '',
+          attributesJson,
+          'MassGIS'
         ]);
       });
     }

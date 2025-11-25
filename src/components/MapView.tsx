@@ -2606,6 +2606,92 @@ const MapView: React.FC<MapViewProps> = ({
             }
           }
         });
+      }
+
+      // Draw MA Trails as polylines on the map
+      if (enrichments.ma_trails_all && Array.isArray(enrichments.ma_trails_all)) {
+        enrichments.ma_trails_all.forEach((trail: any) => {
+          if (trail.geometry && trail.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              const paths = trail.geometry.paths;
+              paths.forEach((path: number[][]) => {
+                const latlngs = path.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polyline = L.polyline(latlngs, {
+                  color: '#10b981', // Green color for trails
+                  weight: 3,
+                  opacity: 0.8
+                });
+
+                // Build popup content with all trail attributes
+                const trailName = trail.TRAIL_NAME || trail.Trail_Name || trail.trail_name || trail.altName || trail.ALT_NAME || trail.Alt_Name || 'Unnamed Trail';
+                const town = trail.TOWN || trail.Town || trail.town || '';
+                const siteName = trail.SITE_NAME || trail.Site_Name || trail.site_name || '';
+                const shapeLength = trail.Shape__Length || trail.Shape_Length || trail.shape_length;
+                const distance = trail.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🥾 ${trailName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${town ? `<div><strong>Town:</strong> ${town}</div>` : ''}
+                      ${siteName ? `<div><strong>Site:</strong> ${siteName}</div>` : ''}
+                      ${shapeLength ? `<div><strong>Length:</strong> ${(shapeLength * 0.000621371).toFixed(2)} miles</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other trail attributes (excluding internal fields)
+                const excludeFields = ['TRAIL_NAME', 'Trail_Name', 'trail_name', 'ALT_NAME', 'Alt_Name', 'altName', 'TOWN', 'Town', 'town', 'SITE_NAME', 'Site_Name', 'site_name', 'Shape__Length', 'Shape_Length', 'shape_length', 'geometry', 'distance_miles'];
+                Object.entries(trail).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polyline.bindPopup(popupContent, { maxWidth: 400 });
+                polyline.addTo(primary);
+                bounds.extend(polyline.getBounds());
+              });
+              
+              // Add to legend accumulator (only once per trail, not per path)
+              if (!legendAccumulator['ma_trails']) {
+                legendAccumulator['ma_trails'] = {
+                  icon: '🥾',
+                  color: '#10b981',
+                  title: 'MA Trails',
+                  count: 0,
+                };
+              }
+              legendAccumulator['ma_trails'].count += 1;
+            } catch (error) {
+              console.error('Error drawing MA Trail polyline:', error);
+            }
+          }
+        });
       } else if (enrichments.nh_nwi_plus_geometry && !enrichments.nh_nwi_plus_all) {
         // Fallback: Draw single wetland from point-in-polygon query (no radius, no _all array)
         // Only draw if nh_nwi_plus_all doesn't exist to avoid duplicates

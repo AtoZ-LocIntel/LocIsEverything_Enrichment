@@ -356,7 +356,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nh_nwi_plus', label: 'NH National Wetland Inventory (NWI) Plus', description: 'NH DES - New Hampshire National Wetland Inventory Plus (point-in-polygon and proximity)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'nh', section: 'nh' },
   { id: 'ma_dep_wetlands', label: 'MA DEP Wetland Areas', description: 'MassGIS - Massachusetts Department of Environmental Protection wetland areas (point-in-polygon and proximity)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'ma', section: 'ma' },
   { id: 'ma_open_space', label: 'MA Protected and Recreational Open Space', description: 'MassGIS - Massachusetts protected and recreational open space (point-in-polygon and proximity)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'ma', section: 'ma' },
-  { id: 'cape_cod_zoning', label: 'Cape Cod Zoning Map', description: 'Cape Cod Commission - Cape Cod zoning districts (point-in-polygon and proximity)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'ma', section: 'ma' }
+  { id: 'cape_cod_zoning', label: 'Cape Cod Zoning Map', description: 'Cape Cod Commission - Cape Cod zoning districts (point-in-polygon and proximity)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'ma', section: 'ma' },
+  { id: 'ma_trails', label: 'MA Hiking and Wilderness Trails', description: 'MassGIS - Massachusetts hiking and wilderness trails (proximity)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'ma', section: 'ma' }
 ];
 
 class POIConfigManager {

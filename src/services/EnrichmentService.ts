@@ -31,6 +31,7 @@ import { getNHSourceWaterProtectionAreaData } from '../adapters/nhSourceWaterPro
 import { getMADEPWetlandsContainingData, getMADEPWetlandsNearbyData, MADEPWetland } from '../adapters/maDEPWetlands';
 import { getMAOpenSpaceContainingData, getMAOpenSpaceNearbyData, MAOpenSpace } from '../adapters/maOpenSpace';
 import { getCapeCodZoningContainingData, getCapeCodZoningNearbyData, CapeCodZoning } from '../adapters/capeCodZoning';
+import { getMATrailsData, MATrail } from '../adapters/maTrails';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1408,6 +1409,10 @@ export class EnrichmentService {
       // Cape Cod Zoning Map - Point-in-polygon and proximity query (polygon dataset)
       case 'cape_cod_zoning':
         return await this.getCapeCodZoning(lat, lon, radius);
+      
+      // MA Hiking and Wilderness Trails - Proximity query (line dataset)
+      case 'ma_trails':
+        return await this.getMATrails(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2886,20 +2891,32 @@ export class EnrichmentService {
         const nearbyWetlands = await getMADEPWetlandsNearbyData(lat, lon, radius);
         console.log(`🌊 Nearby wetlands from adapter: ${nearbyWetlands.length} found`);
         
-        // Combine results, avoiding duplicates by OBJECTID
-        const allWetlandsMap = new Map<number, MADEPWetland>();
+        // Combine results, avoiding duplicates by OBJECTID (primary) or GLOBALID (fallback)
+        // Use a composite key to ensure uniqueness
+        const allWetlandsMap = new Map<string, MADEPWetland>();
         
         // Add containing wetlands first (distance = 0)
         containingWetlands.forEach(wetland => {
-          if (wetland.objectId) {
-            allWetlandsMap.set(wetland.objectId, wetland);
+          // Use OBJECTID as primary key, GLOBALID as fallback, or a combination
+          const key = wetland.objectId !== undefined && wetland.objectId !== null 
+            ? `oid_${wetland.objectId}` 
+            : (wetland.globalId 
+              ? `gid_${wetland.globalId}` 
+              : null);
+          if (key) {
+            allWetlandsMap.set(key, wetland);
           }
         });
         
         // Add nearby wetlands (will overwrite containing ones if duplicate, but that's fine)
         nearbyWetlands.forEach(wetland => {
-          if (wetland.objectId) {
-            allWetlandsMap.set(wetland.objectId, wetland);
+          const key = wetland.objectId !== undefined && wetland.objectId !== null 
+            ? `oid_${wetland.objectId}` 
+            : (wetland.globalId 
+              ? `gid_${wetland.globalId}` 
+              : null);
+          if (key) {
+            allWetlandsMap.set(key, wetland);
           }
         });
         
@@ -2907,16 +2924,19 @@ export class EnrichmentService {
         
         if (allWetlands.length > 0) {
           result.ma_dep_wetlands_count = allWetlands.length;
-          console.log(`✅ MA DEP Wetlands: Processing ${allWetlands.length} wetlands, first has geometry:`, !!allWetlands[0]?.geometry);
+          console.log(`✅ MA DEP Wetlands: Processing ${allWetlands.length} wetlands, first has geometry:`, !!(allWetlands[0] as any)?.geometry);
           result.ma_dep_wetlands_all = allWetlands.map((wetland, idx) => {
-            const { geometry, attributes, ...rest } = wetland;
+            const wetlandAny = wetland as any;
+            const geometry = wetlandAny.geometry;
+            const attributes = wetlandAny.attributes;
+            const { geometry: _geom1, ...rest } = wetlandAny;
             if (idx === 0) {
               console.log(`🔍 MA DEP Wetland 0 - geometry:`, !!geometry, 'has rings:', !!geometry?.rings, 'rings length:', geometry?.rings?.length);
             }
             // Exclude geometry from attributes if it exists there
-            const { geometry: _, ...cleanAttributes } = attributes || {};
+            const { geometry: _geom2, ...cleanAttributes } = attributes || {};
             // Exclude geometry from rest to ensure it doesn't overwrite
-            const { geometry: __, ...cleanRest } = rest || {};
+            const { geometry: _geom3, ...cleanRest } = rest || {};
             const result = {
               ...cleanAttributes,
               ...cleanRest,
@@ -2940,11 +2960,14 @@ export class EnrichmentService {
         if (containingWetlands.length > 0) {
           result.ma_dep_wetlands_count = containingWetlands.length;
           result.ma_dep_wetlands_all = containingWetlands.map(wetland => {
-            const { geometry, attributes, ...rest } = wetland;
+            const wetlandAny = wetland as any;
+            const geometry = wetlandAny.geometry;
+            const attributes = wetlandAny.attributes;
+            const { geometry: _geom4, ...rest } = wetlandAny;
             // Exclude geometry from attributes if it exists there
-            const { geometry: _, ...cleanAttributes } = attributes || {};
+            const { geometry: _geom5, ...cleanAttributes } = attributes || {};
             // Exclude geometry from rest to ensure it doesn't overwrite
-            const { geometry: __, ...cleanRest } = rest || {};
+            const { geometry: _geom6, ...cleanRest } = rest || {};
             return {
               ...cleanAttributes,
               ...cleanRest,
@@ -3008,16 +3031,19 @@ export class EnrichmentService {
         
         if (allOpenSpaces.length > 0) {
           result.ma_open_space_count = allOpenSpaces.length;
-          console.log(`✅ MA Open Space: Processing ${allOpenSpaces.length} open spaces, first has geometry:`, !!allOpenSpaces[0]?.geometry);
+          console.log(`✅ MA Open Space: Processing ${allOpenSpaces.length} open spaces, first has geometry:`, !!(allOpenSpaces[0] as any)?.geometry);
           result.ma_open_space_all = allOpenSpaces.map((openSpace, idx) => {
-            const { geometry, attributes, ...rest } = openSpace;
+            const openSpaceAny = openSpace as any;
+            const geometry = openSpaceAny.geometry;
+            const attributes = openSpaceAny.attributes;
+            const { geometry: _geom7, ...rest } = openSpaceAny;
             if (idx === 0) {
               console.log(`🔍 MA Open Space 0 - geometry:`, !!geometry, 'has rings:', !!geometry?.rings, 'rings length:', geometry?.rings?.length);
             }
             // Exclude geometry from attributes if it exists there
-            const { geometry: _, ...cleanAttributes } = attributes || {};
+            const { geometry: _geom8, ...cleanAttributes } = attributes || {};
             // Exclude geometry from rest to ensure it doesn't overwrite
-            const { geometry: __, ...cleanRest } = rest || {};
+            const { geometry: _geom9, ...cleanRest } = rest || {};
             const result = {
               ...cleanAttributes,
               ...cleanRest,
@@ -3041,11 +3067,14 @@ export class EnrichmentService {
         if (containingOpenSpaces.length > 0) {
           result.ma_open_space_count = containingOpenSpaces.length;
           result.ma_open_space_all = containingOpenSpaces.map(openSpace => {
-            const { geometry, attributes, ...rest } = openSpace;
+            const openSpaceAny = openSpace as any;
+            const geometry = openSpaceAny.geometry;
+            const attributes = openSpaceAny.attributes;
+            const { geometry: _geom10, ...rest } = openSpaceAny;
             // Exclude geometry from attributes if it exists there
-            const { geometry: _, ...cleanAttributes } = attributes || {};
+            const { geometry: _geom11, ...cleanAttributes } = attributes || {};
             // Exclude geometry from rest to ensure it doesn't overwrite
-            const { geometry: __, ...cleanRest } = rest || {};
+            const { geometry: _geom12, ...cleanRest } = rest || {};
             return {
               ...cleanAttributes,
               ...cleanRest,
@@ -3124,7 +3153,7 @@ export class EnrichmentService {
           // Get the containing zone code for summary output (first one with distance = 0)
           const containingZone = allZoning.find(z => z.distance_miles === 0 || z.distance_miles === null);
           if (containingZone) {
-            result.cape_cod_zoning_zone_code = containingZone.zoneCode || containingZone.ZONECODE || containingZone.ZoneCode || '';
+            result.cape_cod_zoning_zone_code = containingZone.zoneCode || '';
           }
           result.cape_cod_zoning_all = allZoning.map(zoning => {
             const { geometry, attributes, ...rest } = zoning;
@@ -3180,6 +3209,59 @@ export class EnrichmentService {
         cape_cod_zoning_count: 0,
         cape_cod_zoning_all: [],
         cape_cod_zoning_error: 'Error fetching Cape Cod Zoning data'
+      };
+    }
+  }
+
+  private async getMATrails(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🥾 Fetching MA Trails data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      if (!radius || radius <= 0) {
+        // Trails require a radius for proximity queries
+        result.ma_trails_count = 0;
+        result.ma_trails_all = [];
+        return result;
+      }
+      
+      const trails = await getMATrailsData(lat, lon, radius);
+      console.log(`🥾 MA Trails from adapter: ${trails.length} found`);
+      
+      if (trails.length > 0) {
+        result.ma_trails_count = trails.length;
+        result.ma_trails_all = trails.map(trail => {
+          const { geometry, attributes, ...rest } = trail;
+          // Exclude geometry from attributes if it exists there
+          const { geometry: _, ...cleanAttributes } = attributes || {};
+          // Exclude geometry from rest to ensure it doesn't overwrite
+          const { geometry: __, ...cleanRest } = rest || {};
+          return {
+            ...cleanAttributes,
+            ...cleanRest,
+            geometry: geometry, // Include geometry for map drawing
+          };
+        });
+      } else {
+        result.ma_trails_count = 0;
+        result.ma_trails_all = [];
+      }
+      
+      result.ma_trails_search_radius_miles = radius;
+      
+      console.log(`✅ MA Trails data processed:`, {
+        count: result.ma_trails_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching MA Trails:', error);
+      return {
+        ma_trails_count: 0,
+        ma_trails_all: [],
+        ma_trails_error: 'Error fetching MA Trails data'
       };
     }
   }
