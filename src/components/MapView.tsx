@@ -5,8 +5,6 @@ import 'leaflet/dist/leaflet.css';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
 import { poiConfigManager } from '../lib/poiConfig';
 
-const HEADER_HEIGHT = 60;
-
 interface MapViewProps {
   results: EnrichmentResult[];
   onBackToConfig: () => void;
