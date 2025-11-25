@@ -604,6 +604,58 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "NH Stone Walls",
+          description: "New Hampshire stone walls - line dataset with proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Massachusetts Data (MassGIS)",
+      sources: [
+        {
+          name: "MA DEP Wetland Areas",
+          description: "Massachusetts Department of Environmental Protection wetland areas - point-in-polygon and proximity queries",
+          coverage: "Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "MA Protected and Recreational Open Space",
+          description: "Massachusetts protected and recreational open space areas - point-in-polygon and proximity queries",
+          coverage: "Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "MA Hiking and Wilderness Trails",
+          description: "Massachusetts hiking and wilderness trails - line dataset with proximity queries up to 25 miles",
+          coverage: "Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "MA NHESP Natural Communities",
+          description: "Massachusetts Natural Heritage & Endangered Species Program (NHESP) natural communities - point-in-polygon and proximity queries (0.1, 0.25, 0.5, 0.75, 1.0 miles)",
+          coverage: "Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Massachusetts Data (Cape Cod Commission)",
+      sources: [
+        {
+          name: "Cape Cod Zoning Map",
+          description: "Cape Cod zoning districts and boundaries - point-in-polygon and proximity queries",
+          coverage: "Cape Cod, Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     }
