@@ -33,6 +33,8 @@ import { getMAOpenSpaceContainingData, getMAOpenSpaceNearbyData, MAOpenSpace } f
 import { getCapeCodZoningContainingData, getCapeCodZoningNearbyData, CapeCodZoning } from '../adapters/capeCodZoning';
 import { getMATrailsData } from '../adapters/maTrails';
 import { getMANHESPNaturalCommunitiesContainingData, getMANHESPNaturalCommunitiesNearbyData } from '../adapters/maNHESPNaturalCommunities';
+import { getMALakesAndPondsContainingData, getMALakesAndPondsNearbyData } from '../adapters/maLakesAndPonds';
+import { getMARiversAndStreamsNearbyData } from '../adapters/maRiversAndStreams';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1418,6 +1420,10 @@ export class EnrichmentService {
       // MA NHESP Natural Communities - Point-in-polygon and proximity query (polygon dataset)
       case 'ma_nhesp_natural_communities':
         return await this.getMANHESPNaturalCommunities(lat, lon, radius);
+      case 'ma_lakes_and_ponds':
+        return await this.getMALakesAndPonds(lat, lon, radius);
+      case 'ma_rivers_and_streams':
+        return await this.getMARiversAndStreams(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -2913,14 +2919,15 @@ export class EnrichmentService {
           }
         });
         
-        // Add nearby wetlands (will overwrite containing ones if duplicate, but that's fine)
+        // Add nearby wetlands (only if not already present as containing feature)
         nearbyWetlands.forEach(wetland => {
           const key = wetland.objectId !== undefined && wetland.objectId !== null 
             ? `oid_${wetland.objectId}` 
             : (wetland.globalId 
               ? `gid_${wetland.globalId}` 
               : null);
-          if (key) {
+          if (key && !allWetlandsMap.has(key)) {
+            // Only add if not already present (containing features take precedence)
             allWetlandsMap.set(key, wetland);
           }
         });
@@ -3025,9 +3032,10 @@ export class EnrichmentService {
           }
         });
         
-        // Add nearby open spaces (will overwrite containing ones if duplicate, but that's fine)
+        // Add nearby open spaces (only if not already present as containing feature)
         nearbyOpenSpaces.forEach(openSpace => {
-          if (openSpace.objectId) {
+          if (openSpace.objectId && !allOpenSpacesMap.has(openSpace.objectId)) {
+            // Only add if not already present (containing features take precedence)
             allOpenSpacesMap.set(openSpace.objectId, openSpace);
           }
         });
@@ -3139,14 +3147,15 @@ export class EnrichmentService {
           }
         });
         
-        // Add nearby zoning areas (will overwrite containing ones if duplicate, but that's fine)
+        // Add nearby zoning areas (only if not already present as containing feature)
         nearbyZoning.forEach(zoning => {
           const key = zoning.fid !== undefined && zoning.fid !== null 
             ? `fid_${zoning.fid}` 
             : (zoning.objectId !== undefined && zoning.objectId !== null 
               ? `oid_${zoning.objectId}` 
               : null);
-          if (key) {
+          if (key && !allZoningMap.has(key)) {
+            // Only add if not already present (containing features take precedence)
             allZoningMap.set(key, zoning);
           }
         });
@@ -3303,14 +3312,15 @@ export class EnrichmentService {
           }
         });
         
-        // Add nearby communities (will overwrite containing ones if duplicate, but that's fine)
+        // Add nearby communities (only if not already present as containing feature)
         nearbyCommunities.forEach(community => {
           const key = community.objectId !== undefined && community.objectId !== null 
             ? `oid_${community.objectId}` 
             : (community.uniqueId !== undefined && community.uniqueId !== null
               ? `uid_${community.uniqueId}`
               : null);
-          if (key) {
+          if (key && !allCommunitiesMap.has(key)) {
+            // Only add if not already present (containing features take precedence)
             allCommunitiesMap.set(key, community);
           }
         });
@@ -3394,6 +3404,196 @@ export class EnrichmentService {
         ma_nhesp_natural_communities_count: 0,
         ma_nhesp_natural_communities_all: [],
         ma_nhesp_natural_communities_error: 'Error fetching MA NHESP Natural Communities data'
+      };
+    }
+  }
+
+  private async getMARiversAndStreams(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching MA Rivers and Streams data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      if (!radius || radius <= 0) {
+        // Rivers and Streams require a radius for proximity queries
+        result.ma_rivers_and_streams_count = 0;
+        result.ma_rivers_and_streams_all = [];
+        return result;
+      }
+      
+      const riversAndStreams = await getMARiversAndStreamsNearbyData(lat, lon, radius);
+      console.log(`🌊 MA Rivers and Streams from adapter: ${riversAndStreams.length} found`);
+      
+      if (riversAndStreams.length > 0) {
+        result.ma_rivers_and_streams_count = riversAndStreams.length;
+        result.ma_rivers_and_streams_all = riversAndStreams.map(river => {
+          const riverAny = river as any;
+          const geometry = riverAny.geometry;
+          const attributes = riverAny.attributes;
+          const { geometry: _geom34, ...rest } = riverAny;
+          // Exclude geometry from attributes if it exists there
+          const { geometry: _geom35, ...cleanAttributes } = attributes || {};
+          // Exclude geometry from rest to ensure it doesn't overwrite
+          const { geometry: _geom36, ...cleanRest } = rest || {};
+          return {
+            ...cleanAttributes,
+            ...cleanRest,
+            geometry: geometry, // Include geometry for map drawing
+          };
+        });
+      } else {
+        result.ma_rivers_and_streams_count = 0;
+        result.ma_rivers_and_streams_all = [];
+      }
+      
+      result.ma_rivers_and_streams_search_radius_miles = radius;
+      
+      console.log(`✅ MA Rivers and Streams data processed:`, {
+        count: result.ma_rivers_and_streams_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching MA Rivers and Streams:', error);
+      return {
+        ma_rivers_and_streams_count: 0,
+        ma_rivers_and_streams_all: [],
+        ma_rivers_and_streams_error: 'Error fetching MA Rivers and Streams data'
+      };
+    }
+  }
+
+  private async getMALakesAndPonds(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏞️ Fetching MA Lakes and Ponds data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      if (radius && radius > 0) {
+        // Proximity query - get both containing and nearby lakes/ponds
+        const containingLakes = await getMALakesAndPondsContainingData(lat, lon);
+        console.log('🏞️ Containing lakes/ponds from adapter:', containingLakes.length);
+        
+        const nearbyLakes = await getMALakesAndPondsNearbyData(lat, lon, radius);
+        console.log(`🏞️ Nearby lakes/ponds from adapter: ${nearbyLakes.length} found`);
+        
+        // Combine results, avoiding duplicates by composite string key
+        const allLakesMap = new Map<string, any>();
+        
+        // Add containing lakes first (distance = 0)
+        containingLakes.forEach(lake => {
+          const key = lake.objectId !== undefined && lake.objectId !== null 
+            ? `oid_${lake.objectId}` 
+            : null;
+          if (key) {
+            allLakesMap.set(key, lake);
+          }
+        });
+        
+        // Add nearby lakes (only if not already present as containing feature)
+        nearbyLakes.forEach(lake => {
+          const key = lake.objectId !== undefined && lake.objectId !== null 
+            ? `oid_${lake.objectId}` 
+            : null;
+          if (key && !allLakesMap.has(key)) {
+            // Only add if not already present (containing features take precedence)
+            allLakesMap.set(key, lake);
+          }
+        });
+        
+        const allLakes = Array.from(allLakesMap.values());
+        
+        if (allLakes.length > 0) {
+          result.ma_lakes_and_ponds_count = allLakes.length;
+          console.log(`✅ MA Lakes and Ponds: Processing ${allLakes.length} lakes/ponds`);
+          result.ma_lakes_and_ponds_all = allLakes.map((lake, idx) => {
+            const lakeAny = lake as any;
+            const geometry = lakeAny.geometry;
+            const attributes = lakeAny.attributes;
+            
+            if (idx === 0) {
+              console.log(`🔍 MA Lake/Pond 0 - Original geometry:`, !!geometry, 'has rings:', !!geometry?.rings, 'rings length:', geometry?.rings?.length);
+              console.log(`🔍 MA Lake/Pond 0 - Original attributes:`, !!attributes);
+            }
+            
+            // Extract geometry from top level before processing
+            const { geometry: _geom28, attributes: _attrs, ...rest } = lakeAny;
+            
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _geom29, ...cleanAttributes } = attributes || {};
+            
+            // Build result object - ensure geometry is preserved from top level
+            const result = {
+              ...cleanAttributes, // Attributes without geometry
+              ...rest, // Other top-level properties (like objectId, name, etc.) without geometry or attributes
+              geometry: geometry, // Include geometry for map drawing (from top level, preserved)
+            };
+            
+            if (idx === 0) {
+              console.log(`🔍 MA Lake/Pond 0 - Result geometry:`, !!result.geometry, 'has rings:', !!result.geometry?.rings, 'rings length:', result.geometry?.rings?.length);
+            }
+            
+            return result;
+          });
+        } else {
+          result.ma_lakes_and_ponds_count = 0;
+          result.ma_lakes_and_ponds_all = [];
+        }
+        
+        result.ma_lakes_and_ponds_search_radius_miles = radius;
+      } else {
+        // Point-in-polygon query only
+        const containingLakes = await getMALakesAndPondsContainingData(lat, lon);
+        
+        if (containingLakes.length > 0) {
+          result.ma_lakes_and_ponds_count = containingLakes.length;
+          result.ma_lakes_and_ponds_all = containingLakes.map((lake, idx) => {
+            const lakeAny = lake as any;
+            const geometry = lakeAny.geometry;
+            const attributes = lakeAny.attributes;
+            
+            if (idx === 0) {
+              console.log(`🔍 MA Lake/Pond 0 (containing) - Original geometry:`, !!geometry, 'has rings:', !!geometry?.rings, 'rings length:', geometry?.rings?.length);
+            }
+            
+            // Extract geometry from top level before processing
+            const { geometry: _geom31, attributes: _attrs, ...rest } = lakeAny;
+            
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _geom32, ...cleanAttributes } = attributes || {};
+            
+            // Build result object - ensure geometry is preserved from top level
+            const result = {
+              ...cleanAttributes, // Attributes without geometry
+              ...rest, // Other top-level properties (like objectId, name, etc.) without geometry or attributes
+              geometry: geometry, // Include geometry for map drawing (from top level, preserved)
+            };
+            
+            if (idx === 0) {
+              console.log(`🔍 MA Lake/Pond 0 (containing) - Result geometry:`, !!result.geometry, 'has rings:', !!result.geometry?.rings, 'rings length:', result.geometry?.rings?.length);
+            }
+            
+            return result;
+          });
+        } else {
+          result.ma_lakes_and_ponds_count = 0;
+          result.ma_lakes_and_ponds_all = [];
+        }
+      }
+      
+      console.log(`✅ MA Lakes and Ponds data processed:`, {
+        count: result.ma_lakes_and_ponds_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching MA Lakes and Ponds:', error);
+      return {
+        ma_lakes_and_ponds_count: 0,
+        ma_lakes_and_ponds_all: [],
+        ma_lakes_and_ponds_error: 'Error fetching MA Lakes and Ponds data'
       };
     }
   }

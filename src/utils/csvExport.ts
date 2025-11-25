@@ -266,7 +266,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ma_open_space_all' || // Skip _all arrays (handled separately)
         key === 'cape_cod_zoning_all' || // Skip _all arrays (handled separately)
         key === 'ma_trails_all' || // Skip _all arrays (handled separately)
-        key === 'ma_nhesp_natural_communities_all') { // Skip _all arrays (handled separately)
+        key === 'ma_nhesp_natural_communities_all' ||
+        key === 'ma_lakes_and_ponds_all' ||
+        key === 'ma_rivers_and_streams_all') { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -1712,6 +1714,87 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           communRan || communDes || attributesJson,
           areaAcres ? `${areaAcres} acres` : attributesJson,
           specificD || '',
+          '',
+          attributesJson,
+          'MassGIS'
+        ]);
+      });
+    }
+    
+    // Add MA Rivers and Streams data rows
+    if (enrichments.ma_rivers_and_streams_all && Array.isArray(enrichments.ma_rivers_and_streams_all)) {
+      enrichments.ma_rivers_and_streams_all.forEach((river: any) => {
+        const objectId = river.OBJECTID || river.objectId || '';
+        const distance = river.distance_miles;
+        
+        const allAttributes = { ...river };
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectId;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'MassGIS',
+          (location.confidence || 'N/A').toString(),
+          'MA_RIVERS_STREAMS',
+          objectId || 'River/Stream',
+          location.lat.toString(), // Use search location for river (it's a line, not a point)
+          location.lon.toString(),
+          distance !== null && distance !== undefined ? distance.toFixed(2) : '',
+          attributesJson,
+          '',
+          '',
+          '',
+          attributesJson,
+          'MassGIS'
+        ]);
+      });
+    }
+    
+    // Add MA Lakes and Ponds data rows
+    if (enrichments.ma_lakes_and_ponds_all && Array.isArray(enrichments.ma_lakes_and_ponds_all)) {
+      enrichments.ma_lakes_and_ponds_all.forEach((lake: any) => {
+        const name = lake.NAME || lake.Name || lake.name || 'Unnamed Lake/Pond';
+        const type = lake.TYPE || lake.Type || lake.type || '';
+        const sqMeters = lake.SQ_METERS || lake.Sq_Meters || lake.sq_meters || lake['SQ.METERS'];
+        const areaAcres = sqMeters ? (sqMeters * 0.000247105).toFixed(2) : '';
+        
+        const allAttributes = { ...lake };
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.name;
+        delete allAttributes.TYPE;
+        delete allAttributes.Type;
+        delete allAttributes.type;
+        delete allAttributes.SQ_METERS;
+        delete allAttributes.Sq_Meters;
+        delete allAttributes.sq_meters;
+        delete allAttributes['SQ.METERS'];
+        delete allAttributes.FEATURE;
+        delete allAttributes.Feature;
+        delete allAttributes.feature;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'MassGIS',
+          (location.confidence || 'N/A').toString(),
+          'MA_LAKE_POND',
+          name,
+          location.lat.toString(), // Use search location for lake (it's a polygon, not a point)
+          location.lon.toString(),
+          lake.distance_miles !== null && lake.distance_miles !== undefined ? lake.distance_miles.toFixed(2) : '',
+          type || attributesJson,
+          areaAcres ? `${areaAcres} acres` : attributesJson,
+          '',
           '',
           attributesJson,
           'MassGIS'

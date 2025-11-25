@@ -644,6 +644,20 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Massachusetts",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "MA Lakes and Ponds",
+          description: "Massachusetts lakes and ponds from MassGIS Hydro_Major FeatureServer - point-in-polygon and proximity queries (0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0 miles)",
+          coverage: "Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "MA Rivers and Streams",
+          description: "Massachusetts rivers and streams from MassGIS Hydro_Major FeatureServer - proximity queries (0.5, 1, 2.5, 5, 10 miles)",
+          coverage: "Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

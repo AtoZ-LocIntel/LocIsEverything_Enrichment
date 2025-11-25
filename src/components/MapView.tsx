@@ -2606,6 +2606,118 @@ const MapView: React.FC<MapViewProps> = ({
         });
       }
 
+      // Draw MA Lakes and Ponds as polygons on the map
+      if (enrichments.ma_lakes_and_ponds_all && Array.isArray(enrichments.ma_lakes_and_ponds_all)) {
+        console.log(`🗺️ Drawing ${enrichments.ma_lakes_and_ponds_all.length} MA Lakes and Ponds`);
+        enrichments.ma_lakes_and_ponds_all.forEach((lake: any, index: number) => {
+          const hasGeometry = !!lake.geometry;
+          const hasRings = !!lake.geometry?.rings;
+          const ringsLength = lake.geometry?.rings?.length;
+          
+          console.log(`🗺️ MA Lake/Pond ${index}:`, {
+            hasGeometry,
+            geometryType: lake.geometry?.type || (hasRings ? 'rings' : 'unknown'),
+            hasRings,
+            ringsLength,
+            distance_miles: lake.distance_miles,
+            objectId: lake.objectId || lake.OBJECTID,
+            fullLake: lake // Log full object for debugging
+          });
+          
+          if (!hasGeometry) {
+            console.warn(`⚠️ MA Lake/Pond ${index} has no geometry!`);
+            return;
+          }
+          
+          if (!hasRings) {
+            console.warn(`⚠️ MA Lake/Pond ${index} geometry has no rings! Geometry:`, lake.geometry);
+            return;
+          }
+          
+          if (lake.geometry && lake.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng arrays
+              const rings = lake.geometry.rings;
+              rings.forEach((ring: number[][]) => {
+                const latlngs = ring.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = lake.distance_miles === 0 || lake.distance_miles === null || lake.distance_miles === undefined;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#0284c7' : '#0ea5e9', // Darker blue for containing, lighter for nearby
+                  weight: 2,
+                  opacity: 0.7,
+                  fillColor: isContaining ? '#0284c7' : '#0ea5e9',
+                  fillOpacity: 0.3
+                });
+
+                // Build popup content with all lake attributes
+                const name = lake.NAME || lake.Name || lake.name || 'Unnamed Lake/Pond';
+                const type = lake.TYPE || lake.Type || lake.type || '';
+                const sqMeters = lake.SQ_METERS || lake.Sq_Meters || lake.sq_meters || lake['SQ.METERS'];
+                const distance = lake.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏞️ ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${sqMeters ? `<div><strong>Area:</strong> ${(sqMeters * 0.000247105).toFixed(2)} acres</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other lake attributes (excluding internal fields)
+                const excludeFields = ['NAME', 'Name', 'name', 'TYPE', 'Type', 'type', 'SQ_METERS', 'Sq_Meters', 'sq_meters', 'SQ.METERS', 'FEATURE', 'Feature', 'feature', 'geometry', 'distance_miles'];
+                Object.entries(lake).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+              });
+              
+              // Add to legend accumulator (only once per lake, not per ring)
+              if (!legendAccumulator['ma_lakes_and_ponds']) {
+                legendAccumulator['ma_lakes_and_ponds'] = {
+                  icon: '🏞️',
+                  color: '#0284c7',
+                  title: 'MA Lakes and Ponds',
+                  count: 0,
+                };
+              }
+              legendAccumulator['ma_lakes_and_ponds'].count += 1;
+            } catch (error) {
+              console.error('Error drawing MA Lake/Pond polygon:', error);
+            }
+          }
+        });
+      }
+
       // Draw MA NHESP Natural Communities as polygons on the map
       if (enrichments.ma_nhesp_natural_communities_all && Array.isArray(enrichments.ma_nhesp_natural_communities_all)) {
         console.log(`🗺️ Drawing ${enrichments.ma_nhesp_natural_communities_all.length} MA NHESP Natural Communities`);
@@ -2699,6 +2811,87 @@ const MapView: React.FC<MapViewProps> = ({
               legendAccumulator['ma_nhesp_natural_communities'].count += 1;
             } catch (error) {
               console.error('Error drawing MA NHESP Natural Community polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw MA Rivers and Streams as polylines on the map
+      if (enrichments.ma_rivers_and_streams_all && Array.isArray(enrichments.ma_rivers_and_streams_all)) {
+        enrichments.ma_rivers_and_streams_all.forEach((river: any) => {
+          if (river.geometry && river.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              const paths = river.geometry.paths;
+              paths.forEach((path: number[][]) => {
+                const latlngs = path.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polyline = L.polyline(latlngs, {
+                  color: '#0ea5e9', // Blue color for rivers/streams
+                  weight: 3,
+                  opacity: 0.8
+                });
+
+                // Build popup content with all river/stream attributes
+                const objectId = river.OBJECTID || river.objectId || '';
+                const distance = river.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌊 River/Stream
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${objectId ? `<div><strong>Object ID:</strong> ${objectId}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other river/stream attributes (excluding internal fields)
+                const excludeFields = ['OBJECTID', 'objectId', 'geometry', 'distance_miles'];
+                Object.entries(river).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polyline.bindPopup(popupContent, { maxWidth: 400 });
+                polyline.addTo(primary);
+                bounds.extend(polyline.getBounds());
+              });
+              
+              // Add to legend accumulator (only once per river, not per path)
+              if (!legendAccumulator['ma_rivers_and_streams']) {
+                legendAccumulator['ma_rivers_and_streams'] = {
+                  icon: '🌊',
+                  color: '#0ea5e9',
+                  title: 'MA Rivers and Streams',
+                  count: 0,
+                };
+              }
+              legendAccumulator['ma_rivers_and_streams'].count += 1;
+            } catch (error) {
+              console.error('Error drawing MA River/Stream polyline:', error);
             }
           }
         });
