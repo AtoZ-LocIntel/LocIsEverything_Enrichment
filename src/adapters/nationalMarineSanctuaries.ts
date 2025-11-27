@@ -165,7 +165,7 @@ export async function getNationalMarineSanctuariesNearbyData(
     });
     
     // Sort by distance
-    sanctuaries.sort((a, b) => (a.distance_miles || 0) - (b.distance_miles || 0));
+    sanctuaries.sort((a: any, b: any) => (a.distance_miles || 0) - (b.distance_miles || 0));
     
     console.log(`✅ Found ${sanctuaries.length} National Marine Sanctuaries within ${radiusMiles} miles... first has geometry:`, !!sanctuaries[0]?.geometry, 'has rings:', !!sanctuaries[0]?.geometry?.rings);
     

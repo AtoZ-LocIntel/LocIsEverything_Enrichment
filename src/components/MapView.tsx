@@ -3484,7 +3484,7 @@ const MapView: React.FC<MapViewProps> = ({
       // Draw MA Regional Planning Agencies as polygons on the map
       if (enrichments.ma_regional_planning_agencies_all && Array.isArray(enrichments.ma_regional_planning_agencies_all)) {
         console.log(`🗺️ Drawing ${enrichments.ma_regional_planning_agencies_all.length} MA Regional Planning Agencies`);
-        enrichments.ma_regional_planning_agencies_all.forEach((agency: any, index: number) => {
+        enrichments.ma_regional_planning_agencies_all.forEach((agency: any) => {
           if (agency.geometry && agency.geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng array
@@ -3547,7 +3547,7 @@ const MapView: React.FC<MapViewProps> = ({
       // Draw National Marine Sanctuaries as polygons on the map
       if (enrichments.national_marine_sanctuaries_all && Array.isArray(enrichments.national_marine_sanctuaries_all)) {
         console.log(`🗺️ Drawing ${enrichments.national_marine_sanctuaries_all.length} National Marine Sanctuaries`);
-        enrichments.national_marine_sanctuaries_all.forEach((sanctuary: any, index: number) => {
+        enrichments.national_marine_sanctuaries_all.forEach((sanctuary: any) => {
           if (sanctuary.geometry && sanctuary.geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng array
@@ -3637,7 +3637,7 @@ const MapView: React.FC<MapViewProps> = ({
       // Draw MA ACECs as polygons on the map
       if (enrichments.ma_acecs_all && Array.isArray(enrichments.ma_acecs_all)) {
         console.log(`🗺️ Drawing ${enrichments.ma_acecs_all.length} MA ACECs`);
-        enrichments.ma_acecs_all.forEach((acec: any, index: number) => {
+        enrichments.ma_acecs_all.forEach((acec: any) => {
           if (acec.geometry && acec.geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng array

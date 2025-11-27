@@ -1990,13 +1990,14 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const rpaName = agency.RPA_NAME || agency.rpa_name || 'Unknown Regional Planning Agency';
         const acronym = agency.ACRONYM || agency.acronym || '';
         const website = agency.WEBSITE || agency.website || '';
-        const rpaId = agency.RPA_ID || agency.rpa_id || '';
         
         const allAttributes = { ...agency };
         delete allAttributes.RPA_NAME;
         delete allAttributes.rpa_name;
         delete allAttributes.ACRONYM;
         delete allAttributes.acronym;
+        delete allAttributes.RPA_ID;
+        delete allAttributes.rpa_id;
         delete allAttributes.WEBSITE;
         delete allAttributes.website;
         delete allAttributes.RPA_ID;
@@ -2036,12 +2037,14 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const siteUrl = sanctuary.siteurl || sanctuary.SITEURL || '';
         const citation = sanctuary.citation || sanctuary.CITATION || '';
         const cfrSection = sanctuary.cfrsection || sanctuary.CFRSECTION || '';
-        const shapeArea = sanctuary.SHAPE__Area || sanctuary.SHAPE__AREA || '';
-        const shapeLength = sanctuary.SHAPE__Length || sanctuary.SHAPE__LENGTH || '';
         
         const allAttributes = { ...sanctuary };
         delete allAttributes.sitename;
         delete allAttributes.SITENAME;
+        delete allAttributes.SHAPE__Area;
+        delete allAttributes.SHAPE__AREA;
+        delete allAttributes.SHAPE__Length;
+        delete allAttributes.SHAPE__LENGTH;
         delete allAttributes.unitname;
         delete allAttributes.UNITNAME;
         delete allAttributes.siteurl;

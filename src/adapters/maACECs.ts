@@ -167,7 +167,7 @@ export async function getMAACECsNearbyData(
     });
     
     // Sort by distance
-    acecs.sort((a, b) => (a.distance_miles || 0) - (b.distance_miles || 0));
+    acecs.sort((a: any, b: any) => (a.distance_miles || 0) - (b.distance_miles || 0));
     
     console.log(`✅ Found ${acecs.length} MA ACECs within ${radiusMiles} miles... first has geometry:`, !!acecs[0]?.geometry, 'has rings:', !!acecs[0]?.geometry?.rings);
     

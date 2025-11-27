@@ -100,7 +100,7 @@ export async function getNHGeographicNamesNearbyData(
     });
 
     // Sort by distance (closest first)
-    places.sort((a, b) => {
+    places.sort((a: any, b: any) => {
       const distA = a.distance_miles ?? Infinity;
       const distB = b.distance_miles ?? Infinity;
       return distA - distB;

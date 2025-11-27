@@ -6056,7 +6056,7 @@ out center;`;
       
       if (allSanctuaries.length > 0) {
         result.national_marine_sanctuaries_count = allSanctuaries.length;
-        result.national_marine_sanctuaries_all = allSanctuaries.map((sanctuary, idx) => {
+        result.national_marine_sanctuaries_all = allSanctuaries.map((sanctuary) => {
           const sanctuaryAny = sanctuary as any;
           const geometry = sanctuaryAny.geometry;
           const attributes = sanctuaryAny.attributes;
@@ -6157,7 +6157,7 @@ out center;`;
       
       if (allACECs.length > 0) {
         result.ma_acecs_count = allACECs.length;
-        result.ma_acecs_all = allACECs.map((acec, idx) => {
+        result.ma_acecs_all = allACECs.map((acec) => {
           const acecAny = acec as any;
           const geometry = acecAny.geometry;
           const attributes = acecAny.attributes;
@@ -6635,7 +6635,6 @@ out;`;
       const collisionsInUserRadius: any[] = [];
       const collisionsForMap: any[] = [];
       const uniqueSources = new Set<string>();
-      const mapLimit = 5000;
       
       for (const collision of allCollisions) {
         // Extract coordinates
