@@ -5,6 +5,9 @@ import { getSoilCarbonDensityData } from '../adapters/soilCarbonDensity';
 import { getNHHouseDistrictData } from '../adapters/nhHouseDistricts';
 import { getNHVotingWardData } from '../adapters/nhVotingWards';
 import { getNHSenateDistrictData } from '../adapters/nhSenateDistricts';
+import { getNHSSURGOContainingData } from '../adapters/nhSSURGO';
+import { getNHBedrockGeologyContainingData } from '../adapters/nhBedrockGeology';
+import { getNHGeographicNamesNearbyData } from '../adapters/nhGeographicNames';
 import { getNHParcelData } from '../adapters/nhParcels';
 import { getNHKeyDestinationsData } from '../adapters/nhKeyDestinations';
 import { getNHNursingHomesData } from '../adapters/nhNursingHomes';
@@ -35,6 +38,9 @@ import { getMATrailsData } from '../adapters/maTrails';
 import { getMANHESPNaturalCommunitiesContainingData, getMANHESPNaturalCommunitiesNearbyData } from '../adapters/maNHESPNaturalCommunities';
 import { getMALakesAndPondsContainingData, getMALakesAndPondsNearbyData } from '../adapters/maLakesAndPonds';
 import { getMARiversAndStreamsNearbyData } from '../adapters/maRiversAndStreams';
+import { getMARegionalPlanningAgenciesContainingData } from '../adapters/maRegionalPlanningAgencies';
+import { getNationalMarineSanctuariesContainingData, getNationalMarineSanctuariesNearbyData } from '../adapters/nationalMarineSanctuaries';
+import { getMAACECsContainingData, getMAACECsNearbyData } from '../adapters/maACECs';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -953,6 +959,52 @@ export class EnrichmentService {
     // Use your proven working geocoding approach
     console.log(`🔍 Geocoding address: ${q}`);
     
+    // First, check if the input is already coordinates (lat, lon or lon, lat)
+    const coordMatch = q.trim().match(/^(-?\d+\.?\d*)\s*[,;]\s*(-?\d+\.?\d*)$/);
+    if (coordMatch) {
+      const first = parseFloat(coordMatch[1]);
+      const second = parseFloat(coordMatch[2]);
+      
+      // Determine if it's lat,lon or lon,lat based on value ranges
+      // Latitude: -90 to 90, Longitude: -180 to 180
+      let lat: number, lon: number;
+      
+      if (Math.abs(first) <= 90 && Math.abs(second) <= 180) {
+        // Could be lat,lon or lon,lat - check which makes more sense
+        // If first is clearly a latitude (between -90 and 90) and second is clearly a longitude (between -180 and 180)
+        if (Math.abs(first) <= 90 && Math.abs(second) <= 180) {
+          // Assume lat,lon format (most common)
+          lat = first;
+          lon = second;
+        } else {
+          // Assume lon,lat format
+          lat = second;
+          lon = first;
+        }
+      } else if (Math.abs(first) <= 180 && Math.abs(second) <= 90) {
+        // Likely lon,lat format
+        lon = first;
+        lat = second;
+      } else {
+        // Default to lat,lon
+        lat = first;
+        lon = second;
+      }
+      
+      // Validate coordinates
+      if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+        console.log(`✅ Detected coordinates: ${lat}, ${lon}`);
+        return {
+          lat: lat,
+          lon: lon,
+          source: "User Input (Coordinates)",
+          confidence: 1.0,
+          name: `${lat.toFixed(6)}, ${lon.toFixed(6)}`,
+          raw: { lat, lon }
+        };
+      }
+    }
+    
     // Try Nominatim first (most reliable)
     let g = await this.geocodeNominatim(q);
     if (g) {
@@ -1309,6 +1361,18 @@ export class EnrichmentService {
       case 'nh_senate_districts_2022':
         return await this.getNHSenateDistrict(lat, lon);
       
+      // NH SSURGO Soils (NH GRANIT) - Point-in-polygon query
+      case 'nh_ssurgo':
+        return await this.getNHSSURGO(lat, lon);
+      
+      // NH Bedrock Geology (NH GRANIT) - Point-in-polygon query
+      case 'nh_bedrock_geology':
+        return await this.getNHBedrockGeology(lat, lon);
+      
+      // NH Geographic Names (NH GRANIT) - Proximity query
+      case 'nh_geographic_names':
+        return await this.getNHGeographicNames(lat, lon, radius);
+      
       // NH Parcels (NH GRANIT) - Point-in-polygon and proximity query
       case 'nh_parcels':
         return await this.getNHParcels(lat, lon, radius);
@@ -1424,6 +1488,18 @@ export class EnrichmentService {
         return await this.getMALakesAndPonds(lat, lon, radius);
       case 'ma_rivers_and_streams':
         return await this.getMARiversAndStreams(lat, lon, radius);
+      
+      // MA Regional Planning Agencies (MassGIS) - Point-in-polygon query
+      case 'ma_regional_planning_agencies':
+        return await this.getMARegionalPlanningAgencies(lat, lon);
+      
+      // MA Areas of Critical Environmental Concern (MassGIS) - Point-in-polygon and proximity query
+      case 'ma_acecs':
+        return await this.getMAACECs(lat, lon, radius);
+      
+      // National Marine Sanctuaries (NOAA) - Point-in-polygon and proximity query
+      case 'national_marine_sanctuaries':
+        return await this.getNationalMarineSanctuaries(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -1722,6 +1798,149 @@ export class EnrichmentService {
       return {
         nh_senate_district_2022: null,
         nh_senate_district_2022_error: 'Error fetching NH Senate District data'
+      };
+    }
+  }
+
+  private async getNHSSURGO(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌱 Fetching NH SSURGO soil data for [${lat}, ${lon}]`);
+      
+      const soils = await getNHSSURGOContainingData(lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      if (soils && soils.length > 0) {
+        // Get the first soil (point should only be in one polygon)
+        const soil = soils[0];
+        result.nh_ssurgo_areasymbol = soil.areasymbol || null; // Soils code
+        result.nh_ssurgo_muname = soil.muname || null; // Soil name
+        result.nh_ssurgo_all = soils; // Store all soils with geometry for map drawing
+        result.nh_ssurgo_count = soils.length;
+      } else {
+        result.nh_ssurgo_areasymbol = null;
+        result.nh_ssurgo_muname = null;
+        result.nh_ssurgo_all = [];
+        result.nh_ssurgo_count = 0;
+        result.nh_ssurgo_message = 'No soil data found for this location';
+      }
+      
+      console.log(`✅ NH SSURGO data processed:`, {
+        areasymbol: result.nh_ssurgo_areasymbol || 'N/A',
+        muname: result.nh_ssurgo_muname || 'N/A',
+        count: result.nh_ssurgo_count
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH SSURGO:', error);
+      return {
+        nh_ssurgo_areasymbol: null,
+        nh_ssurgo_muname: null,
+        nh_ssurgo_all: [],
+        nh_ssurgo_count: 0,
+        nh_ssurgo_error: 'Error fetching NH SSURGO data'
+      };
+    }
+  }
+
+  private async getNHBedrockGeology(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🪨 Fetching NH Bedrock Geology data for [${lat}, ${lon}]`);
+      
+      const formations = await getNHBedrockGeologyContainingData(lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      if (formations && formations.length > 0) {
+        // Get the first formation (point should only be in one polygon)
+        const formation = formations[0];
+        result.nh_bedrock_geology_code = formation.code || null;
+        result.nh_bedrock_geology_major = formation.major || null;
+        result.nh_bedrock_geology_formation1 = formation.formation1 || null;
+        result.nh_bedrock_geology_formation2 = formation.formation2 || null;
+        result.nh_bedrock_geology_pluton_age = formation.pluton_age || null;
+        result.nh_bedrock_geology_rock_type = formation.rock_type || null;
+        result.nh_bedrock_geology_fullname = formation.fullname || null;
+        result.nh_bedrock_geology_geologichistory = formation.geologichistory || null;
+        result.nh_bedrock_geology_lithology = formation.lithology || null;
+        result.nh_bedrock_geology_source = formation.source || null;
+        result.nh_bedrock_geology_all = formations; // Store all formations with geometry for map drawing
+        result.nh_bedrock_geology_count = formations.length;
+      } else {
+        result.nh_bedrock_geology_code = null;
+        result.nh_bedrock_geology_major = null;
+        result.nh_bedrock_geology_formation1 = null;
+        result.nh_bedrock_geology_formation2 = null;
+        result.nh_bedrock_geology_pluton_age = null;
+        result.nh_bedrock_geology_rock_type = null;
+        result.nh_bedrock_geology_fullname = null;
+        result.nh_bedrock_geology_geologichistory = null;
+        result.nh_bedrock_geology_lithology = null;
+        result.nh_bedrock_geology_source = null;
+        result.nh_bedrock_geology_all = [];
+        result.nh_bedrock_geology_count = 0;
+        result.nh_bedrock_geology_message = 'No bedrock geology data found for this location';
+      }
+      
+      console.log(`✅ NH Bedrock Geology data processed:`, {
+        code: result.nh_bedrock_geology_code || 'N/A',
+        fullname: result.nh_bedrock_geology_fullname || 'N/A',
+        count: result.nh_bedrock_geology_count
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Bedrock Geology:', error);
+      return {
+        nh_bedrock_geology_code: null,
+        nh_bedrock_geology_major: null,
+        nh_bedrock_geology_formation1: null,
+        nh_bedrock_geology_formation2: null,
+        nh_bedrock_geology_pluton_age: null,
+        nh_bedrock_geology_rock_type: null,
+        nh_bedrock_geology_fullname: null,
+        nh_bedrock_geology_geologichistory: null,
+        nh_bedrock_geology_lithology: null,
+        nh_bedrock_geology_source: null,
+        nh_bedrock_geology_all: [],
+        nh_bedrock_geology_count: 0,
+        nh_bedrock_geology_error: 'Error fetching NH Bedrock Geology data'
+      };
+    }
+  }
+
+  private async getNHGeographicNames(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📍 Fetching NH Geographic Names data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      const places = await getNHGeographicNamesNearbyData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (places && places.length > 0) {
+        result.nh_geographic_names_all = places; // Store all places for map drawing and CSV
+        result.nh_geographic_names_count = places.length;
+      } else {
+        result.nh_geographic_names_all = [];
+        result.nh_geographic_names_count = 0;
+        result.nh_geographic_names_message = `No geographic names found within ${radius} miles`;
+      }
+      
+      console.log(`✅ NH Geographic Names data processed:`, {
+        count: result.nh_geographic_names_count
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NH Geographic Names:', error);
+      return {
+        nh_geographic_names_all: [],
+        nh_geographic_names_count: 0,
+        nh_geographic_names_error: 'Error fetching NH Geographic Names data'
       };
     }
   }
@@ -5503,7 +5722,7 @@ out center;`;
       console.log(`🏞️ PAD-US Public Access query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
       
       // First, check if point is inside any public land (point-in-polygon)
-      const insideQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=false`;
+      const insideQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=true`;
       
       console.log(`🔗 PAD-US Inside Query URL: ${insideQueryUrl}`);
       const insideResponse = await fetch(insideQueryUrl);
@@ -5533,13 +5752,15 @@ out center;`;
           designationType: feature.attributes.DesTp_Desc,
           boundaryName: feature.attributes.BndryName,
           state: feature.attributes.ST_Name,
-          acres: feature.attributes.GIS_AcrsDb
+          acres: feature.attributes.GIS_AcrsDb,
+          geometry: feature.geometry, // Preserve geometry for map drawing
+          objectId: feature.attributes.OBJECTID
         };
       }
       
       // Now query for nearby public lands within radius
       const radiusKm = radiusMiles * 1.60934;
-      const nearbyQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=true&maxRecordCount=1000`;
+      const nearbyQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=true&outSR=4326&maxRecordCount=1000`;
       
       console.log(`🔗 PAD-US Nearby Query URL: ${nearbyQueryUrl}`);
       const nearbyResponse = await fetch(nearbyQueryUrl);
@@ -5587,8 +5808,53 @@ out center;`;
           boundaryName: feature.attributes.BndryName,
           state: feature.attributes.ST_Name,
           acres: feature.attributes.GIS_AcrsDb,
-          geometry: feature.geometry // Include geometry for centroid calculation
+          geometry: feature.geometry // Include geometry for map drawing
         })),
+        padus_public_access_all: (() => {
+          const allFeatures: any[] = [];
+          
+          // Add containing feature first if it exists
+          if (isInsidePublicLand && insideLandInfo && insideLandInfo.geometry) {
+            console.log('🔍 PAD-US Public Access: Adding containing feature with geometry:', !!insideLandInfo.geometry, 'has rings:', !!insideLandInfo.geometry?.rings);
+            allFeatures.push(insideLandInfo);
+          }
+          
+          // Add nearby features, avoiding duplicates
+          const addedObjectIds = new Set<number>();
+          if (isInsidePublicLand && insideLandInfo && insideLandInfo.objectId) {
+            addedObjectIds.add(insideLandInfo.objectId);
+          }
+          
+          nearbyLands.forEach((feature: any, idx: number) => {
+            const objectId = feature.attributes.OBJECTID;
+            if (objectId && !addedObjectIds.has(objectId)) {
+              if (idx === 0) {
+                console.log('🔍 PAD-US Public Access: First nearby feature has geometry:', !!feature.geometry, 'has rings:', !!feature.geometry?.rings);
+              }
+              allFeatures.push({
+                objectId: feature.attributes.OBJECTID,
+                category: feature.attributes.Category,
+                featureClass: feature.attributes.FeatClass,
+                unitName: feature.attributes.Unit_Nm,
+                publicAccess: feature.attributes.Pub_Access,
+                gapStatus: feature.attributes.GAP_Sts,
+                iucnCategory: feature.attributes.IUCN_Cat,
+                managerType: feature.attributes.MngTp_Desc,
+                managerName: feature.attributes.MngNm_Desc,
+                designationType: feature.attributes.DesTp_Desc,
+                boundaryName: feature.attributes.BndryName,
+                state: feature.attributes.ST_Name,
+                acres: feature.attributes.GIS_AcrsDb,
+                geometry: feature.geometry, // Preserve geometry for map drawing
+                distance_miles: 0 // Will be calculated if needed
+              });
+              addedObjectIds.add(objectId);
+            }
+          });
+          
+          console.log(`✅ PAD-US Public Access: Created _all array with ${allFeatures.length} features, first has geometry:`, !!(allFeatures[0] as any)?.geometry);
+          return allFeatures;
+        })(),
         padus_public_access_summary: isInsidePublicLand 
           ? `Location is inside ${insideLandInfo?.unitName || 'public land'} (${insideLandInfo?.managerName || 'Unknown Manager'}) - ${insideLandInfo?.publicAccess || 'Unknown'} access`
           : nearbyLands.length > 0
@@ -5608,7 +5874,7 @@ out center;`;
       console.log(`🛡️ PAD-US Protection Status query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
       
       const radiusKm = radiusMiles * 1.60934;
-      const queryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,GAP_Sts,IUCN_Cat,Category,Unit_Nm,Pub_Access&f=json&returnGeometry=true&maxRecordCount=1000`;
+      const queryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,GAP_Sts,IUCN_Cat,Category,Unit_Nm,Pub_Access&f=json&returnGeometry=true&outSR=4326&maxRecordCount=1000`;
       
       console.log(`🔗 PAD-US Protection Status Query URL: ${queryUrl}`);
       const response = await fetch(queryUrl);
@@ -5655,14 +5921,297 @@ out center;`;
           category: feature.attributes.Category,
           unitName: feature.attributes.Unit_Nm,
           publicAccess: feature.attributes.Pub_Access,
-          geometry: feature.geometry // Include geometry for centroid calculation
+          geometry: feature.geometry // Include geometry for map drawing
         })),
+        padus_protection_status_all: (() => {
+          const allFeatures = features.map((feature: any, idx: number) => {
+            if (idx === 0) {
+              console.log('🔍 PAD-US Protection Status: First feature has geometry:', !!feature.geometry, 'has rings:', !!feature.geometry?.rings);
+            }
+            return {
+              objectId: feature.attributes.OBJECTID,
+              gapStatus: feature.attributes.GAP_Sts,
+              iucnCategory: feature.attributes.IUCN_Cat,
+              category: feature.attributes.Category,
+              unitName: feature.attributes.Unit_Nm,
+              publicAccess: feature.attributes.Pub_Access,
+              geometry: feature.geometry, // Preserve geometry for map drawing
+              distance_miles: 0 // Will be calculated if needed
+            };
+          });
+          console.log(`✅ PAD-US Protection Status: Created _all array with ${allFeatures.length} features, first has geometry:`, !!(allFeatures[0] as any)?.geometry);
+          return allFeatures;
+        })(),
         padus_protection_status_summary: `Found ${features.length} protected areas within ${radiusMiles} miles with various protection levels and categories.`
       };
       
     } catch (error) {
       console.error('🛡️ PAD-US Protection Status query failed:', error);
-      return { padus_protection_status_error: error instanceof Error ? error.message : String(error) };
+      return { padus_protection_status_error: error instanceof Error ? error.message : String(error)       };
+    }
+  }
+
+  private async getMARegionalPlanningAgencies(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching MA Regional Planning Agencies data for [${lat}, ${lon}]`);
+      
+      const agencies = await getMARegionalPlanningAgenciesContainingData(lat, lon);
+      console.log(`🏛️ MA Regional Planning Agencies from adapter: ${agencies.length} found`);
+      
+      const result: Record<string, any> = {};
+      
+      if (agencies && agencies.length > 0) {
+        result.ma_regional_planning_agencies_count = agencies.length;
+        result.ma_regional_planning_agencies_all = agencies.map(agency => {
+          const agencyAny = agency as any;
+          const geometry = agencyAny.geometry;
+          const attributes = agencyAny.attributes;
+          const { geometry: _geom37, ...rest } = agencyAny;
+          // Exclude geometry from attributes if it exists there
+          const { geometry: _geom38, ...cleanAttributes } = attributes || {};
+          // Exclude geometry from rest to ensure it doesn't overwrite
+          const { geometry: _geom39, ...cleanRest } = rest || {};
+          return {
+            ...cleanAttributes,
+            ...cleanRest,
+            geometry: geometry, // Include geometry for map drawing
+            RPA_ID: agency.RPA_ID,
+            RPA_NAME: agency.RPA_NAME,
+            ACRONYM: agency.ACRONYM,
+            WEBSITE: agency.WEBSITE,
+            objectId: agency.objectId,
+            distance_miles: agency.distance_miles || 0
+          };
+        });
+        
+        // Add summary info for the first agency (if point is inside)
+        if (agencies.length > 0) {
+          const firstAgency = agencies[0];
+          result.ma_regional_planning_agency_name = firstAgency.RPA_NAME || '';
+          result.ma_regional_planning_agency_acronym = firstAgency.ACRONYM || '';
+          result.ma_regional_planning_agency_website = firstAgency.WEBSITE || '';
+        }
+      } else {
+        result.ma_regional_planning_agencies_count = 0;
+        result.ma_regional_planning_agencies_all = [];
+      }
+      
+      console.log(`✅ MA Regional Planning Agencies data processed:`, {
+        count: result.ma_regional_planning_agencies_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching MA Regional Planning Agencies:', error);
+      return {
+        ma_regional_planning_agencies_count: 0,
+        ma_regional_planning_agencies_all: [],
+        ma_regional_planning_agencies_error: 'Error fetching MA Regional Planning Agencies data'
+      };
+    }
+  }
+
+  private async getNationalMarineSanctuaries(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching National Marine Sanctuaries data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      // Always do point-in-polygon query first
+      const containingSanctuaries = await getNationalMarineSanctuariesContainingData(lat, lon);
+      console.log(`🌊 National Marine Sanctuaries containing point: ${containingSanctuaries.length}`);
+      
+      // If radius is provided, also do proximity query
+      let nearbySanctuaries: any[] = [];
+      if (radius && radius > 0) {
+        nearbySanctuaries = await getNationalMarineSanctuariesNearbyData(lat, lon, radius);
+        console.log(`🌊 National Marine Sanctuaries nearby: ${nearbySanctuaries.length}`);
+      }
+      
+      // Combine results, avoiding duplicates by objectId
+      const allSanctuariesMap = new Map<string, any>();
+      
+      // Add containing sanctuaries first (distance = 0)
+      containingSanctuaries.forEach(sanctuary => {
+        const key = sanctuary.objectId !== undefined && sanctuary.objectId !== null
+          ? `oid_${sanctuary.objectId}`
+          : null;
+        if (key) {
+          allSanctuariesMap.set(key, sanctuary);
+        }
+      });
+      
+      // Add nearby sanctuaries (only if not already present as containing feature)
+      nearbySanctuaries.forEach(sanctuary => {
+        const key = sanctuary.objectId !== undefined && sanctuary.objectId !== null
+          ? `oid_${sanctuary.objectId}`
+          : null;
+        if (key && !allSanctuariesMap.has(key)) { // Only add if not already present
+          allSanctuariesMap.set(key, sanctuary);
+        }
+      });
+      
+      const allSanctuaries = Array.from(allSanctuariesMap.values());
+      
+      if (allSanctuaries.length > 0) {
+        result.national_marine_sanctuaries_count = allSanctuaries.length;
+        result.national_marine_sanctuaries_all = allSanctuaries.map((sanctuary, idx) => {
+          const sanctuaryAny = sanctuary as any;
+          const geometry = sanctuaryAny.geometry;
+          const attributes = sanctuaryAny.attributes;
+          const { geometry: _geom40, ...rest } = sanctuaryAny;
+          // Exclude geometry from attributes if it exists there
+          const { geometry: _geom41, ...cleanAttributes } = attributes || {};
+          // Exclude geometry from rest to ensure it doesn't overwrite
+          const { geometry: _geom42, ...cleanRest } = rest || {};
+          return {
+            ...cleanAttributes,
+            ...cleanRest,
+            geometry: geometry, // Include geometry for map drawing (from top level)
+            sitename: sanctuary.sitename,
+            unitname: sanctuary.unitname,
+            siteurl: sanctuary.siteurl,
+            citation: sanctuary.citation,
+            cfrsection: sanctuary.cfrsection,
+            SHAPE__Length: sanctuary.SHAPE__Length,
+            SHAPE__Area: sanctuary.SHAPE__Area,
+            objectId: sanctuary.objectId,
+            distance_miles: sanctuary.distance_miles || 0
+          };
+        });
+        
+        // Add summary info for the first sanctuary (if point is inside)
+        if (containingSanctuaries.length > 0) {
+          const firstSanctuary = containingSanctuaries[0];
+          result.national_marine_sanctuary_name = firstSanctuary.sitename || '';
+          result.national_marine_sanctuary_unit = firstSanctuary.unitname || '';
+          result.national_marine_sanctuary_url = firstSanctuary.siteurl || '';
+        }
+      } else {
+        result.national_marine_sanctuaries_count = 0;
+        result.national_marine_sanctuaries_all = [];
+      }
+      
+      if (radius && radius > 0) {
+        result.national_marine_sanctuaries_search_radius_miles = radius;
+      }
+      
+      console.log(`✅ National Marine Sanctuaries data processed:`, {
+        count: result.national_marine_sanctuaries_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching National Marine Sanctuaries:', error);
+      return {
+        national_marine_sanctuaries_count: 0,
+        national_marine_sanctuaries_all: [],
+        national_marine_sanctuaries_error: 'Error fetching National Marine Sanctuaries data'
+      };
+    }
+  }
+
+  private async getMAACECs(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌿 Fetching MA ACECs data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      // Always do point-in-polygon query first
+      const containingACECs = await getMAACECsContainingData(lat, lon);
+      console.log(`🌿 MA ACECs containing point: ${containingACECs.length}`);
+      
+      // If radius is provided, also do proximity query
+      let nearbyACECs: any[] = [];
+      if (radius && radius > 0) {
+        nearbyACECs = await getMAACECsNearbyData(lat, lon, radius);
+        console.log(`🌿 MA ACECs nearby: ${nearbyACECs.length}`);
+      }
+      
+      // Combine results, avoiding duplicates by objectId
+      const allACECsMap = new Map<string, any>();
+      
+      // Add containing ACECs first (distance = 0)
+      containingACECs.forEach(acec => {
+        const key = acec.objectId !== undefined && acec.objectId !== null
+          ? `oid_${acec.objectId}`
+          : null;
+        if (key) {
+          allACECsMap.set(key, acec);
+        }
+      });
+      
+      // Add nearby ACECs (only if not already present as containing feature)
+      nearbyACECs.forEach(acec => {
+        const key = acec.objectId !== undefined && acec.objectId !== null
+          ? `oid_${acec.objectId}`
+          : null;
+        if (key && !allACECsMap.has(key)) { // Only add if not already present
+          allACECsMap.set(key, acec);
+        }
+      });
+      
+      const allACECs = Array.from(allACECsMap.values());
+      
+      if (allACECs.length > 0) {
+        result.ma_acecs_count = allACECs.length;
+        result.ma_acecs_all = allACECs.map((acec, idx) => {
+          const acecAny = acec as any;
+          const geometry = acecAny.geometry;
+          const attributes = acecAny.attributes;
+          const { geometry: _geom43, ...rest } = acecAny;
+          // Exclude geometry from attributes if it exists there
+          const { geometry: _geom44, ...cleanAttributes } = attributes || {};
+          // Exclude geometry from rest to ensure it doesn't overwrite
+          const { geometry: _geom45, ...cleanRest } = rest || {};
+          return {
+            ...cleanAttributes,
+            ...cleanRest,
+            geometry: geometry, // Include geometry for map drawing (from top level)
+            ACECID: acec.ACECID,
+            NAME: acec.NAME,
+            DES_DATE: acec.DES_DATE,
+            SECRETARY: acec.SECRETARY,
+            ADMIN_BY: acec.ADMIN_BY,
+            REGION: acec.REGION,
+            POLY_ACRES: acec.POLY_ACRES,
+            ACEC_ACRES: acec.ACEC_ACRES,
+            objectId: acec.objectId,
+            distance_miles: acec.distance_miles || 0
+          };
+        });
+        
+        // Add summary info for the first ACEC (if point is inside)
+        if (containingACECs.length > 0) {
+          const firstACEC = containingACECs[0];
+          result.ma_acec_name = firstACEC.NAME || '';
+          result.ma_acec_id = firstACEC.ACECID || '';
+          result.ma_acec_region = firstACEC.REGION || '';
+        }
+      } else {
+        result.ma_acecs_count = 0;
+        result.ma_acecs_all = [];
+      }
+      
+      if (radius && radius > 0) {
+        result.ma_acecs_search_radius_miles = radius;
+      }
+      
+      console.log(`✅ MA ACECs data processed:`, {
+        count: result.ma_acecs_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching MA ACECs:', error);
+      return {
+        ma_acecs_count: 0,
+        ma_acecs_all: [],
+        ma_acecs_error: 'Error fetching MA ACECs data'
+      };
     }
   }
 
@@ -6152,8 +6701,10 @@ out;`;
         value: collision.source || 'Unknown'
       }));
       
-      // Create detailed POI data for mapping (limited, sorted by distance for clarity)
-      const collisionDetails = collisionsForMap
+      // Create detailed POI data for mapping (sorted by distance for clarity)
+      // Use collisionsInUserRadius as the source to ensure consistency with all_pois
+      // No limit for Animal-Vehicle Collisions - show all features
+      const collisionDetails = collisionsInUserRadius
         .map((collision: any, index: number) => ({
           id: `collision_${collision.id || index}`,
           name: `Animal-Vehicle Impact (AVI)`,
@@ -6167,21 +6718,34 @@ out;`;
           // Include all original fields
           ...collision
         }))
-        .sort((a: any, b: any) => (a.distance_miles ?? Infinity) - (b.distance_miles ?? Infinity))
-        .slice(0, mapLimit);
+        .sort((a: any, b: any) => (a.distance_miles ?? Infinity) - (b.distance_miles ?? Infinity));
       
       // Create a result structure that matches the expected POI format
+      // Use collisionsInUserRadius for all arrays to ensure consistency
       const result = {
         count: totalCollisions, // Total count for CSV export (user proximity) - KEEP ORIGINAL STRUCTURE
-        poi_animal_vehicle_collisions_count: totalCollisions, // ALSO ADD COUNT FIELD FOR DISPLAY
-        elements: collisionDetails, // Elements for map display (after sorting/limit)
-        detailed_pois: collisionDetails, // Detailed POIs for map (sorted & filtered)
-        all_pois: collisionsInUserRadius, // ALL POIs for CSV export (user proximity)
+        poi_animal_vehicle_collisions_count: totalCollisions, // Count field for display - matches all_pois length
+        elements: collisionDetails, // Elements for map display (sorted by distance, all features) - same source as all_pois
+        detailed_pois: collisionDetails, // Detailed POIs for map (sorted by distance, all features) - same source as all_pois
+        all_pois: collisionsInUserRadius, // ALL POIs for CSV export and summary form (user proximity, all features)
         poi_animal_vehicle_collisions_source: sourceSummary, // ADD SOURCE FIELD WITHOUT BREAKING EXISTING CODE
         source_entries: sourceEntries, // ADD INDIVIDUAL SOURCE ENTRIES FOR POPUP DISPLAY
         summary: `Found ${totalCollisions} animal-vehicle impact (AVI) records within ${radiusMiles} miles from The Location Is Everything Company database.`,
         api_source: 'https://api.locationfriend.com/vehicle_animal_collisions_api'
       };
+      
+      // Verify consistency - all arrays should have the same length
+      console.log(`🦌 AVI Result Verification:`, {
+        totalCollisions,
+        count: result.count,
+        poi_animal_vehicle_collisions_count: result.poi_animal_vehicle_collisions_count,
+        elementsLength: result.elements.length,
+        detailedPoisLength: result.detailed_pois.length,
+        allPoisLength: result.all_pois.length,
+        collisionsInUserRadiusLength: collisionsInUserRadius.length,
+        collisionDetailsLength: collisionDetails.length,
+        allMatch: result.elements.length === result.all_pois.length && result.all_pois.length === totalCollisions
+      });
       
       console.log(`🦌 Returning AVI result:`, result);
       console.log(`🦌 Source field value:`, result.poi_animal_vehicle_collisions_source);

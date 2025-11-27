@@ -345,7 +345,15 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nh_solid_waste_facilities_all' || // Skip solid waste facilities array (handled separately for map drawing)
     key === 'nh_source_water_protection_area_geometry' || // Skip geometry field (handled separately for map drawing)
     key === 'nh_nwi_plus_geometry' || // Skip geometry field (handled separately for map drawing)
-    key === 'nh_nwi_plus_all' // Skip wetlands array (handled separately for map drawing)
+    key === 'nh_nwi_plus_all' || // Skip wetlands array (handled separately for map drawing)
+    key === 'nh_ssurgo_all' || // Skip SSURGO soils array (handled separately for map drawing)
+    key === 'nh_bedrock_geology_all' || // Skip Bedrock Geology array (handled separately for map drawing)
+    key === 'nh_geographic_names_all' || // Skip Geographic Names array (handled separately for map drawing)
+    key === 'padus_public_access_all' || // Skip PAD-US public access array (handled separately for map drawing)
+    key === 'padus_protection_status_all' || // Skip PAD-US protection status array (handled separately for map drawing)
+    key === 'ma_regional_planning_agencies_all' || // Skip MA Regional Planning Agencies array (handled separately for map drawing)
+    key === 'ma_acecs_all' || // Skip MA ACECs array (handled separately for map drawing)
+    key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -701,8 +709,32 @@ const MapView: React.FC<MapViewProps> = ({
       return;
     }
 
-    const bounds = L.latLngBounds([]);
-    const legendAccumulator: Record<string, LegendItem> = {};
+    // STEP 1: First, plot geocoded location and zoom in close
+    // This happens immediately for better UX
+    if (results[0]?.location) {
+      const latLng = L.latLng(results[0].location.lat, results[0].location.lon);
+      const locationMarker = L.marker(latLng, {
+        title: results[0].location.name,
+      });
+      locationMarker.bindPopup(createPopupContent(results[0]), { maxWidth: 540 });
+      locationMarker.addTo(primary);
+      
+      // Zoom way in first (level 15 for close-up view)
+      map.setView([results[0].location.lat, results[0].location.lon], 15);
+    }
+
+    // STEP 2: Then, after map is set up, draw all enrichment features
+    // Use requestAnimationFrame + setTimeout to defer heavy drawing until after initial render
+    let timeoutId: NodeJS.Timeout | null = null;
+    const rafId = requestAnimationFrame(() => {
+      timeoutId = setTimeout(() => {
+        const bounds = L.latLngBounds([]);
+        const legendAccumulator: Record<string, LegendItem> = {};
+        
+        // Re-add location marker to bounds (already added above, but need for bounds calculation)
+        if (results[0]?.location) {
+          bounds.extend(L.latLng(results[0].location.lat, results[0].location.lon));
+        }
 
     results.forEach((result) => {
       const { location, enrichments } = result;
@@ -713,13 +745,7 @@ const MapView: React.FC<MapViewProps> = ({
       const latLng = L.latLng(location.lat, location.lon);
       bounds.extend(latLng);
 
-      const locationMarker = L.marker(latLng, {
-        title: location.name,
-      });
-
-      locationMarker.bindPopup(createPopupContent(result), { maxWidth: 540 });
-      // Location marker always visible, add directly to primary
-      locationMarker.addTo(primary);
+      // Location marker already added in STEP 1 above, just extend bounds here
 
       // Draw NH EMS facilities as markers on the map
       if (enrichments.nh_ems_all && Array.isArray(enrichments.nh_ems_all)) {
@@ -2297,6 +2323,291 @@ const MapView: React.FC<MapViewProps> = ({
         // Only draw if nh_nwi_plus_all doesn't exist to avoid duplicates
       }
 
+      // Draw NH SSURGO soils as polygons on the map (only the polygon containing the point)
+      if (enrichments.nh_ssurgo_all && Array.isArray(enrichments.nh_ssurgo_all)) {
+        enrichments.nh_ssurgo_all.forEach((soil: any) => {
+          if (soil.geometry && soil.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = soil.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                // Brown color for soils
+                const color = '#92400e';
+                const weight = 3;
+                const opacity = 0.8;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with soil attributes
+                const areasymbol = soil.areasymbol || 'N/A';
+                const muname = soil.muname || 'N/A';
+                const mukey = soil.mukey;
+                const musym = soil.musym;
+                const hydgrpdcd = soil.hydgrpdcd;
+                const drclassdcd = soil.drclassdcd;
+                const slopegradd = soil.slopegradd;
+                const farmlndcl = soil.farmlndcl;
+                const acres = soil.acres;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌱 ${areasymbol} - ${muname}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${mukey ? `<div><strong>Map Unit Key:</strong> ${mukey}</div>` : ''}
+                      ${musym ? `<div><strong>Map Unit Symbol:</strong> ${musym}</div>` : ''}
+                      ${hydgrpdcd ? `<div><strong>Hydrologic Group:</strong> ${hydgrpdcd}</div>` : ''}
+                      ${drclassdcd ? `<div><strong>Drainage Class:</strong> ${drclassdcd}</div>` : ''}
+                      ${slopegradd !== null && slopegradd !== undefined ? `<div><strong>Slope Grade:</strong> ${slopegradd}%</div>` : ''}
+                      ${farmlndcl ? `<div><strong>Farmland Classification:</strong> ${farmlndcl}</div>` : ''}
+                      ${acres ? `<div><strong>Area:</strong> ${acres.toFixed(2)} acres</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other soil attributes (excluding internal fields)
+                const excludeFields = ['areasymbol', 'muname', 'mukey', 'musym', 'hydgrpdcd', 'drclassdcd', 'slopegradd', 'farmlndcl', 'acres', 'geometry', 'distance_miles', 'objectId'];
+                Object.entries(soil).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary); // Add to primary layer group
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['nh_ssurgo']) {
+                  legendAccumulator['nh_ssurgo'] = {
+                    icon: '🌱',
+                    color: '#92400e',
+                    title: 'NH SSURGO Soils',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['nh_ssurgo'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing NH SSURGO soil polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Bedrock Geology formations as polygons on the map (only the polygon containing the point)
+      if (enrichments.nh_bedrock_geology_all && Array.isArray(enrichments.nh_bedrock_geology_all)) {
+        enrichments.nh_bedrock_geology_all.forEach((formation: any) => {
+          if (formation.geometry && formation.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = formation.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                // Gray color for bedrock geology
+                const color = '#6b7280';
+                const weight = 3;
+                const opacity = 0.8;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with formation attributes
+                const code = formation.code || 'N/A';
+                const fullname = formation.fullname || '';
+                const major = formation.major || '';
+                const formation1 = formation.formation1 || '';
+                const formation2 = formation.formation2 || '';
+                const plutonAge = formation.pluton_age || '';
+                const rockType = formation.rock_type || '';
+                const geologicHistory = formation.geologichistory || '';
+                const lithology = formation.lithology || '';
+                const source = formation.source || '';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🪨 ${code}${fullname ? ` - ${fullname}` : ''}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${major ? `<div><strong>Major:</strong> ${major}</div>` : ''}
+                      ${formation1 ? `<div><strong>Formation 1:</strong> ${formation1}</div>` : ''}
+                      ${formation2 ? `<div><strong>Formation 2:</strong> ${formation2}</div>` : ''}
+                      ${plutonAge ? `<div><strong>Pluton Age:</strong> ${plutonAge}</div>` : ''}
+                      ${rockType ? `<div><strong>Rock Type:</strong> ${rockType}</div>` : ''}
+                      ${geologicHistory ? `<div><strong>Geologic History:</strong> ${geologicHistory}</div>` : ''}
+                      ${lithology ? `<div><strong>Lithology:</strong> ${lithology}</div>` : ''}
+                      ${source ? `<div><strong>Source:</strong> ${source}</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other formation attributes (excluding internal fields)
+                const excludeFields = ['code', 'major', 'formation1', 'formation2', 'pluton_age', 'rock_type', 'fullname', 'geologichistory', 'lithology', 'source', 'geometry', 'distance_miles', 'objectId'];
+                Object.entries(formation).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary); // Add to primary layer group
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['nh_bedrock_geology']) {
+                  legendAccumulator['nh_bedrock_geology'] = {
+                    icon: '🪨',
+                    color: '#6b7280',
+                    title: 'NH Bedrock Geology',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['nh_bedrock_geology'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing NH Bedrock Geology polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NH Geographic Names as markers on the map
+      if (enrichments.nh_geographic_names_all && Array.isArray(enrichments.nh_geographic_names_all)) {
+        enrichments.nh_geographic_names_all.forEach((place: any) => {
+          const placeLat = place.lat;
+          const placeLon = place.lon;
+          
+          if (placeLat && placeLon) {
+            try {
+              const placeName = place.feature || 'Unknown Place';
+              const featType = place.feattype || '';
+              const county = place.county || '';
+              const quad = place.quad || '';
+              const distance = place.distance_miles !== null && place.distance_miles !== undefined ? place.distance_miles.toFixed(2) : '';
+              
+              // Create a custom icon for geographic names
+              const icon = createPOIIcon('📍', '#8b5cf6'); // Purple icon for geographic names
+              
+              const marker = L.marker([placeLat, placeLon], { icon });
+              
+              // Build popup content with all place attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    📍 ${placeName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${featType ? `<div><strong>Type:</strong> ${featType}</div>` : ''}
+                    ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                    ${quad ? `<div><strong>Quad:</strong> ${quad}</div>` : ''}
+                    ${distance ? `<div><strong>Distance:</strong> ${distance} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all other place attributes (excluding internal fields)
+              const excludeFields = ['feature', 'feattype', 'county', 'quad', 'lat', 'lon', 'distance_miles', 'geometry', 'objectId', 'featid'];
+              Object.entries(place).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this place
+              bounds.extend([placeLat, placeLon]);
+              
+              // Add to legend accumulator
+              if (!legendAccumulator['nh_geographic_names']) {
+                legendAccumulator['nh_geographic_names'] = {
+                  icon: '📍',
+                  color: '#8b5cf6',
+                  title: 'NH Geographic Names',
+                  count: 0,
+                };
+              }
+              legendAccumulator['nh_geographic_names'].count += 1;
+            } catch (error) {
+              console.error('Error drawing NH Geographic Name marker:', error);
+            }
+          }
+        });
+      }
+
       // Draw MA DEP Wetlands as polygons on the map
       if (enrichments.ma_dep_wetlands_all && Array.isArray(enrichments.ma_dep_wetlands_all)) {
         console.log(`🗺️ Drawing MA DEP Wetlands: ${enrichments.ma_dep_wetlands_all.length} features`);
@@ -2606,6 +2917,279 @@ const MapView: React.FC<MapViewProps> = ({
         });
       }
 
+      // Draw PAD-US Public Access as polygons on the map
+      if (enrichments.padus_public_access_all && Array.isArray(enrichments.padus_public_access_all)) {
+        console.log(`🗺️ Drawing ${enrichments.padus_public_access_all.length} PAD-US Public Access features`);
+        console.log(`🗺️ Map instance exists:`, !!map);
+        console.log(`🗺️ Primary layer group exists:`, !!primary);
+        enrichments.padus_public_access_all.forEach((land: any, index: number) => {
+          console.log(`🗺️ PAD-US Public Access ${index}:`, {
+            hasGeometry: !!land.geometry,
+            geometryType: land.geometry?.type || (land.geometry?.rings ? 'rings' : 'unknown'),
+            hasRings: !!land.geometry?.rings,
+            ringsLength: land.geometry?.rings?.length,
+            fullLand: land // Log full object for debugging
+          });
+          
+          if (!land.geometry) {
+            console.warn(`⚠️ PAD-US Public Access ${index} has no geometry!`);
+            return;
+          }
+          
+          if (!land.geometry.rings) {
+            console.warn(`⚠️ PAD-US Public Access ${index} geometry has no rings! Geometry:`, land.geometry);
+            return;
+          }
+          
+          if (land.geometry && land.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
+              const rings = land.geometry.rings;
+              console.log(`🔍 PAD-US Public Access ${index}: Processing rings, count: ${rings?.length}`);
+              
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                console.log(`🔍 PAD-US Public Access ${index}: Outer ring has ${outerRing?.length} coordinates`);
+                
+                if (!outerRing || outerRing.length < 3) {
+                  console.warn(`⚠️ PAD-US Public Access ${index}: Outer ring is invalid (needs at least 3 coordinates)`);
+                  return;
+                }
+                
+                // Check spatial reference - PAD-US might return Web Mercator (3857) or other projection
+                const spatialRef = land.geometry.spatialReference || land.geometry.spatialref;
+                const wkid = spatialRef?.wkid || spatialRef?.latestWkid;
+                console.log(`🔍 PAD-US Public Access ${index}: Spatial Reference WKID: ${wkid}, first coord: [${outerRing[0]?.[0]}, ${outerRing[0]?.[1]}]`);
+                
+                let latlngs: [number, number][];
+                
+                // If coordinates are in Web Mercator (3857) or look like projected coordinates, convert to WGS84
+                if (wkid === 3857 || wkid === 102100 || (!wkid && (Math.abs(outerRing[0]?.[0]) > 180 || Math.abs(outerRing[0]?.[1]) > 90))) {
+                  // Convert from Web Mercator to WGS84
+                  console.log(`🔍 PAD-US Public Access ${index}: Converting from Web Mercator to WGS84`);
+                  latlngs = outerRing.map((coord: number[]) => {
+                    const x = coord[0];
+                    const y = coord[1];
+                    // Web Mercator to WGS84 conversion
+                    const lon = (x / 20037508.34) * 180;
+                    let lat = (y / 20037508.34) * 180;
+                    lat = (Math.atan(Math.exp((lat * Math.PI) / 180)) * 360) / Math.PI - 90;
+                    return [lat, lon] as [number, number];
+                  });
+                } else {
+                  // Assume WGS84 - coordinates are [lon, lat], convert to [lat, lon] for Leaflet
+                  latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                }
+                
+                console.log(`🔍 PAD-US Public Access ${index}: Created ${latlngs.length} latlng points, first: [${latlngs[0]?.[0]}, ${latlngs[0]?.[1]}]`);
+
+                const isContaining = land.distance_miles === 0 || land.distance_miles === null || land.distance_miles === undefined;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#16a34a' : '#22c55e', // Darker green for containing, lighter for nearby
+                  weight: 2,
+                  opacity: 0.7,
+                  fillColor: isContaining ? '#16a34a' : '#22c55e',
+                  fillOpacity: 0.3
+                });
+                
+                console.log(`✅ PAD-US Public Access ${index}: Polygon created, adding to map`);
+
+                // Build popup content
+                const unitName = land.unitName || land.Unit_Nm || 'Unnamed Public Land';
+                const category = land.category || land.Category || '';
+                const publicAccess = land.publicAccess || land.Pub_Access || '';
+                const managerName = land.managerName || land.MngNm_Desc || '';
+                const acres = land.acres || land.GIS_AcrsDb;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏞️ ${unitName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${category ? `<div><strong>Category:</strong> ${category}</div>` : ''}
+                      ${publicAccess ? `<div><strong>Public Access:</strong> ${publicAccess}</div>` : ''}
+                      ${managerName ? `<div><strong>Manager:</strong> ${managerName}</div>` : ''}
+                      ${acres ? `<div><strong>Area:</strong> ${acres.toFixed(2)} acres</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                console.log(`✅ PAD-US Public Access ${index}: Polygon added to map successfully`);
+                
+                // Add to legend accumulator (only once per land)
+                if (!legendAccumulator['padus_public_access']) {
+                  legendAccumulator['padus_public_access'] = {
+                    icon: '🏞️',
+                    color: '#22c55e',
+                    title: 'PAD-US Public Access',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['padus_public_access'].count += 1;
+              } else {
+                console.warn(`⚠️ PAD-US Public Access ${index}: No rings found in geometry`);
+              }
+            } catch (error) {
+              console.error(`❌ Error drawing PAD-US Public Access polygon ${index}:`, error);
+              console.error('Error details:', {
+                hasGeometry: !!land.geometry,
+                hasRings: !!land.geometry?.rings,
+                ringsLength: land.geometry?.rings?.length,
+                firstRingLength: land.geometry?.rings?.[0]?.length,
+                land: land
+              });
+            }
+          } else {
+            console.warn(`⚠️ PAD-US Public Access ${index}: Geometry exists but no rings array`);
+          }
+        });
+      } else {
+        console.warn('⚠️ PAD-US Public Access: enrichments.padus_public_access_all is not an array or is missing');
+      }
+
+      // Draw PAD-US Protection Status as polygons on the map
+      if (enrichments.padus_protection_status_all && Array.isArray(enrichments.padus_protection_status_all)) {
+        console.log(`🗺️ Drawing ${enrichments.padus_protection_status_all.length} PAD-US Protection Status features`);
+        console.log(`🗺️ Map instance exists:`, !!map);
+        console.log(`🗺️ Primary layer group exists:`, !!primary);
+        enrichments.padus_protection_status_all.forEach((land: any, index: number) => {
+          console.log(`🗺️ PAD-US Protection Status ${index}:`, {
+            hasGeometry: !!land.geometry,
+            geometryType: land.geometry?.type || (land.geometry?.rings ? 'rings' : 'unknown'),
+            hasRings: !!land.geometry?.rings,
+            ringsLength: land.geometry?.rings?.length,
+            fullLand: land // Log full object for debugging
+          });
+          
+          if (!land.geometry) {
+            console.warn(`⚠️ PAD-US Protection Status ${index} has no geometry!`);
+            return;
+          }
+          
+          if (!land.geometry.rings) {
+            console.warn(`⚠️ PAD-US Protection Status ${index} geometry has no rings! Geometry:`, land.geometry);
+            return;
+          }
+          
+          if (land.geometry && land.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
+              const rings = land.geometry.rings;
+              console.log(`🔍 PAD-US Protection Status ${index}: Processing rings, count: ${rings?.length}`);
+              
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                console.log(`🔍 PAD-US Protection Status ${index}: Outer ring has ${outerRing?.length} coordinates`);
+                
+                if (!outerRing || outerRing.length < 3) {
+                  console.warn(`⚠️ PAD-US Protection Status ${index}: Outer ring is invalid (needs at least 3 coordinates)`);
+                  return;
+                }
+                
+                // Check spatial reference - PAD-US might return Web Mercator (3857) or other projection
+                const spatialRef = land.geometry.spatialReference || land.geometry.spatialref;
+                const wkid = spatialRef?.wkid || spatialRef?.latestWkid;
+                console.log(`🔍 PAD-US Protection Status ${index}: Spatial Reference WKID: ${wkid}, first coord: [${outerRing[0]?.[0]}, ${outerRing[0]?.[1]}]`);
+                
+                let latlngs: [number, number][];
+                
+                // If coordinates are in Web Mercator (3857) or look like projected coordinates, convert to WGS84
+                if (wkid === 3857 || wkid === 102100 || (!wkid && (Math.abs(outerRing[0]?.[0]) > 180 || Math.abs(outerRing[0]?.[1]) > 90))) {
+                  // Convert from Web Mercator to WGS84
+                  console.log(`🔍 PAD-US Protection Status ${index}: Converting from Web Mercator to WGS84`);
+                  latlngs = outerRing.map((coord: number[]) => {
+                    const x = coord[0];
+                    const y = coord[1];
+                    // Web Mercator to WGS84 conversion
+                    const lon = (x / 20037508.34) * 180;
+                    let lat = (y / 20037508.34) * 180;
+                    lat = (Math.atan(Math.exp((lat * Math.PI) / 180)) * 360) / Math.PI - 90;
+                    return [lat, lon] as [number, number];
+                  });
+                } else {
+                  // Assume WGS84 - coordinates are [lon, lat], convert to [lat, lon] for Leaflet
+                  latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                }
+                
+                console.log(`🔍 PAD-US Protection Status ${index}: Created ${latlngs.length} latlng points, first: [${latlngs[0]?.[0]}, ${latlngs[0]?.[1]}]`);
+
+                const polygon = L.polygon(latlngs, {
+                  color: '#059669', // Green color for protected areas
+                  weight: 2,
+                  opacity: 0.7,
+                  fillColor: '#059669',
+                  fillOpacity: 0.3
+                });
+                
+                console.log(`✅ PAD-US Protection Status ${index}: Polygon created, adding to map`);
+
+                // Build popup content
+                const unitName = land.unitName || land.Unit_Nm || 'Unnamed Protected Area';
+                const gapStatus = land.gapStatus || land.GAP_Sts || '';
+                const iucnCategory = land.iucnCategory || land.IUCN_Cat || '';
+                const category = land.category || land.Category || '';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🛡️ ${unitName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${gapStatus ? `<div><strong>GAP Status:</strong> ${gapStatus}</div>` : ''}
+                      ${iucnCategory ? `<div><strong>IUCN Category:</strong> ${iucnCategory}</div>` : ''}
+                      ${category ? `<div><strong>Category:</strong> ${category}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                console.log(`✅ PAD-US Protection Status ${index}: Polygon added to map successfully`);
+                
+                // Add to legend accumulator (only once per land)
+                if (!legendAccumulator['padus_protection_status']) {
+                  legendAccumulator['padus_protection_status'] = {
+                    icon: '🛡️',
+                    color: '#059669',
+                    title: 'PAD-US Protection Status',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['padus_protection_status'].count += 1;
+              } else {
+                console.warn(`⚠️ PAD-US Protection Status ${index}: No rings found in geometry`);
+              }
+            } catch (error) {
+              console.error(`❌ Error drawing PAD-US Protection Status polygon ${index}:`, error);
+              console.error('Error details:', {
+                hasGeometry: !!land.geometry,
+                hasRings: !!land.geometry?.rings,
+                ringsLength: land.geometry?.rings?.length,
+                firstRingLength: land.geometry?.rings?.[0]?.length,
+                land: land
+              });
+            }
+          } else {
+            console.warn(`⚠️ PAD-US Protection Status ${index}: Geometry exists but no rings array`);
+          }
+        });
+      } else {
+        console.warn('⚠️ PAD-US Protection Status: enrichments.padus_protection_status_all is not an array or is missing');
+      }
+
       // Draw MA Lakes and Ponds as polygons on the map
       if (enrichments.ma_lakes_and_ponds_all && Array.isArray(enrichments.ma_lakes_and_ponds_all)) {
         console.log(`🗺️ Drawing ${enrichments.ma_lakes_and_ponds_all.length} MA Lakes and Ponds`);
@@ -2892,6 +3476,235 @@ const MapView: React.FC<MapViewProps> = ({
               legendAccumulator['ma_rivers_and_streams'].count += 1;
             } catch (error) {
               console.error('Error drawing MA River/Stream polyline:', error);
+            }
+          }
+        });
+      }
+
+      // Draw MA Regional Planning Agencies as polygons on the map
+      if (enrichments.ma_regional_planning_agencies_all && Array.isArray(enrichments.ma_regional_planning_agencies_all)) {
+        console.log(`🗺️ Drawing ${enrichments.ma_regional_planning_agencies_all.length} MA Regional Planning Agencies`);
+        enrichments.ma_regional_planning_agencies_all.forEach((agency: any, index: number) => {
+          if (agency.geometry && agency.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = agency.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  // Convert [lon, lat] to [lat, lon] for Leaflet
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polygon = L.polygon(latlngs, {
+                  color: '#8b5cf6', // Purple color for planning agencies
+                  weight: 2,
+                  opacity: 0.7,
+                  fillColor: '#8b5cf6',
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content
+                const rpaName = agency.RPA_NAME || agency.rpa_name || 'Unknown Regional Planning Agency';
+                const acronym = agency.ACRONYM || agency.acronym || '';
+                const website = agency.WEBSITE || agency.website || '';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏛️ ${rpaName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${acronym ? `<div><strong>Acronym:</strong> ${acronym}</div>` : ''}
+                      ${website ? `<div><strong>Website:</strong> <a href="${website}" target="_blank" rel="noopener noreferrer">${website}</a></div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['ma_regional_planning_agencies']) {
+                  legendAccumulator['ma_regional_planning_agencies'] = {
+                    icon: '🏛️',
+                    color: '#8b5cf6',
+                    title: 'MA Regional Planning Agencies',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['ma_regional_planning_agencies'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing MA Regional Planning Agency polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw National Marine Sanctuaries as polygons on the map
+      if (enrichments.national_marine_sanctuaries_all && Array.isArray(enrichments.national_marine_sanctuaries_all)) {
+        console.log(`🗺️ Drawing ${enrichments.national_marine_sanctuaries_all.length} National Marine Sanctuaries`);
+        enrichments.national_marine_sanctuaries_all.forEach((sanctuary: any, index: number) => {
+          if (sanctuary.geometry && sanctuary.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = sanctuary.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                
+                // Check if coordinates need conversion from Web Mercator
+                const spatialRef = sanctuary.geometry.spatialReference || sanctuary.geometry.spatialref;
+                const wkid = spatialRef?.wkid || spatialRef?.latestWkid;
+                const firstCoord = outerRing[0];
+                const needsConversion = wkid === 3857 || wkid === 102100 || (!wkid && (Math.abs(firstCoord[0]) > 180 || Math.abs(firstCoord[1]) > 90));
+                
+                let latlngs: [number, number][];
+                
+                if (needsConversion) {
+                  // Convert from Web Mercator to WGS84
+                  latlngs = outerRing.map((coord: number[]) => {
+                    const x = coord[0];
+                    const y = coord[1];
+                    const lon = (x / 20037508.34) * 180;
+                    let lat = (y / 20037508.34) * 180;
+                    lat = (Math.atan(Math.exp((lat * Math.PI) / 180)) * 360) / Math.PI - 90;
+                    return [lat, lon] as [number, number];
+                  });
+                } else {
+                  // Assume WGS84 - coordinates are [lon, lat], convert to [lat, lon] for Leaflet
+                  latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                }
+
+                const isContaining = sanctuary.distance_miles === 0 || sanctuary.distance_miles === null || sanctuary.distance_miles === undefined;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#0891b2' : '#06b6d4', // Darker cyan for containing, lighter for nearby
+                  weight: 2,
+                  opacity: 0.7,
+                  fillColor: isContaining ? '#0891b2' : '#06b6d4',
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content
+                const siteName = sanctuary.sitename || sanctuary.SITENAME || 'Unknown Marine Sanctuary';
+                const unitName = sanctuary.unitname || sanctuary.UNITNAME || '';
+                const siteUrl = sanctuary.siteurl || sanctuary.SITEURL || '';
+                const citation = sanctuary.citation || sanctuary.CITATION || '';
+                const cfrSection = sanctuary.cfrsection || sanctuary.CFRSECTION || '';
+                const distance = sanctuary.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌊 ${siteName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${unitName ? `<div><strong>Unit:</strong> ${unitName}</div>` : ''}
+                      ${siteUrl ? `<div><strong>Website:</strong> <a href="${siteUrl}" target="_blank" rel="noopener noreferrer">${siteUrl}</a></div>` : ''}
+                      ${citation ? `<div><strong>Citation:</strong> ${citation}</div>` : ''}
+                      ${cfrSection ? `<div><strong>CFR Section:</strong> ${cfrSection}</div>` : ''}
+                      ${distance !== null && distance !== undefined && distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['national_marine_sanctuaries']) {
+                  legendAccumulator['national_marine_sanctuaries'] = {
+                    icon: '🌊',
+                    color: '#0891b2',
+                    title: 'National Marine Sanctuaries',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['national_marine_sanctuaries'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing National Marine Sanctuary polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw MA ACECs as polygons on the map
+      if (enrichments.ma_acecs_all && Array.isArray(enrichments.ma_acecs_all)) {
+        console.log(`🗺️ Drawing ${enrichments.ma_acecs_all.length} MA ACECs`);
+        enrichments.ma_acecs_all.forEach((acec: any, index: number) => {
+          if (acec.geometry && acec.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = acec.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  // Convert [lon, lat] to [lat, lon] for Leaflet
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = acec.distance_miles === 0 || acec.distance_miles === null || acec.distance_miles === undefined;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#059669' : '#10b981', // Darker green for containing, lighter for nearby
+                  weight: 2,
+                  opacity: 0.7,
+                  fillColor: isContaining ? '#059669' : '#10b981',
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content
+                const name = acec.NAME || acec.name || 'Unknown ACEC';
+                const acecId = acec.ACECID || acec.acecid || '';
+                const desDate = acec.DES_DATE || acec.des_date || '';
+                const secretary = acec.SECRETARY || acec.secretary || '';
+                const adminBy = acec.ADMIN_BY || acec.admin_by || '';
+                const region = acec.REGION || acec.region || '';
+                const polyAcres = acec.POLY_ACRES || acec.poly_acres || '';
+                const acecAcres = acec.ACEC_ACRES || acec.acec_acres || '';
+                const distance = acec.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌿 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${acecId ? `<div><strong>ACEC ID:</strong> ${acecId}</div>` : ''}
+                      ${desDate ? `<div><strong>Designation Date:</strong> ${desDate}</div>` : ''}
+                      ${secretary ? `<div><strong>Secretary:</strong> ${secretary}</div>` : ''}
+                      ${adminBy ? `<div><strong>Administered By:</strong> ${adminBy}</div>` : ''}
+                      ${region ? `<div><strong>Region:</strong> ${region}</div>` : ''}
+                      ${polyAcres ? `<div><strong>Polygon Acres:</strong> ${polyAcres.toLocaleString()}</div>` : ''}
+                      ${acecAcres ? `<div><strong>ACEC Acres:</strong> ${acecAcres.toLocaleString()}</div>` : ''}
+                      ${distance !== null && distance !== undefined && distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['ma_acecs']) {
+                  legendAccumulator['ma_acecs'] = {
+                    icon: '🌿',
+                    color: '#059669',
+                    title: 'MA Areas of Critical Environmental Concern',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['ma_acecs'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing MA ACEC polygon:', error);
             }
           }
         });
@@ -3382,12 +4195,18 @@ const MapView: React.FC<MapViewProps> = ({
         });
       }
 
+      // All enrichment features are drawn here (map already zoomed in STEP 1 above)
       Object.entries(enrichments).forEach(([key, value]) => {
         if (!Array.isArray(value)) {
           return;
         }
 
         if (!/_detailed$|_elements$|_features$/i.test(key)) {
+          return;
+        }
+
+        // Skip PAD-US features arrays - they're handled separately with geometry drawing
+        if (key.includes('padus_public_access_nearby_features') || key.includes('padus_protection_status_nearby_features')) {
           return;
         }
 
@@ -3408,11 +4227,18 @@ const MapView: React.FC<MapViewProps> = ({
         }
 
         const itemsArray = value as Array<any>;
+        
+        // Add to legend count - use full array length for accurate count (shows total available)
         legendAccumulator[baseKey].count += itemsArray.length;
 
         const leafletIcon = createPOIIcon(iconEmoji, iconColor);
 
-        itemsArray.slice(0, 100).forEach((item) => {
+        // For Animal-Vehicle Collisions, render up to 5000 markers to prevent browser freeze
+        // For other POIs, limit to 100 to prevent performance issues
+        // Note: Legend count shows total, but we only render a subset for performance
+        const maxItems = baseKey === 'poi_animal_vehicle_collisions' ? Math.min(itemsArray.length, 5000) : 100;
+        
+        itemsArray.slice(0, maxItems).forEach((item) => {
           const poiLat =
             item.lat ??
             item.latitude ??
@@ -3435,17 +4261,22 @@ const MapView: React.FC<MapViewProps> = ({
           poiMarker.addTo(poi);
         });
       });
-    });
-
-    // Always center on the geocoded location, don't zoom out to show all features
-    if (results[0]?.location) {
-      map.setView([results[0].location.lat, results[0].location.lon], 12);
-    }
-
+    }); // Close results.forEach
+    
     setLegendItems(
       Object.values(legendAccumulator).sort((a, b) => b.count - a.count)
     );
     setShowBatchSuccess(results.length > 1);
+      }, 100); // Small delay to ensure map is fully rendered
+    });
+
+    return () => {
+      // Cleanup: cancel animation frame and timeout if component unmounts or results change
+      cancelAnimationFrame(rafId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [results, viewportHeight, viewportWidth]);
 
   // CSV export now handled by shared utility function

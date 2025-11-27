@@ -260,6 +260,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_automobile_salvage_yards_all' ||
         key === 'nh_solid_waste_facilities_all' ||
         key === 'nh_nwi_plus_all' ||
+        key === 'nh_ssurgo_all' || // Skip _all array (handled separately)
+        key === 'nh_bedrock_geology_all' || // Skip _all array (handled separately)
+        key === 'nh_geographic_names_all' || // Skip _all array (handled separately)
         key === 'nh_source_water_protection_area_geometry' || // Skip geometry field (raw JSON, not user-friendly)
         key === 'nh_nwi_plus_geometry' || // Skip geometry field (raw JSON, not user-friendly)
         key === 'ma_dep_wetlands_all' || // Skip _all arrays (handled separately)
@@ -1421,6 +1424,185 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     }
     
     // Add NH NWI Plus wetlands data rows
+    // Add NH SSURGO soils data rows
+    if (enrichments.nh_ssurgo_all && Array.isArray(enrichments.nh_ssurgo_all)) {
+      enrichments.nh_ssurgo_all.forEach((soil: any) => {
+        const areasymbol = soil.areasymbol || 'N/A';
+        const muname = soil.muname || 'N/A';
+        const mukey = soil.mukey || '';
+        const musym = soil.musym || '';
+        const hydgrpdcd = soil.hydgrpdcd || '';
+        const drclassdcd = soil.drclassdcd || '';
+        const slopegradd = soil.slopegradd !== null && soil.slopegradd !== undefined ? soil.slopegradd.toString() : '';
+        const farmlndcl = soil.farmlndcl || '';
+        const acres = soil.acres !== null && soil.acres !== undefined ? soil.acres.toFixed(2) : '';
+        
+        // Create allAttributes object excluding specific fields we're extracting
+        const allAttributes = { ...soil };
+        delete allAttributes.areasymbol;
+        delete allAttributes.muname;
+        delete allAttributes.mukey;
+        delete allAttributes.musym;
+        delete allAttributes.hydgrpdcd;
+        delete allAttributes.drclassdcd;
+        delete allAttributes.slopegradd;
+        delete allAttributes.farmlndcl;
+        delete allAttributes.acres;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NH GRANIT',
+          (location.confidence || 'N/A').toString(),
+          'NH_SSURGO',
+          `${areasymbol} - ${muname}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          '0', // Point is inside polygon
+          'Soil Survey',
+          '', // POI_Address
+          '', // POI_Phone
+          '', // POI_Website
+          'NH GRANIT'
+        ]);
+        
+        // Add a second row with detailed attributes
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NH GRANIT',
+          (location.confidence || 'N/A').toString(),
+          'NH_SSURGO_DETAILS',
+          `Map Unit Key: ${mukey}, Symbol: ${musym}, Hydrologic Group: ${hydgrpdcd}, Drainage: ${drclassdcd}, Slope: ${slopegradd}%, Farmland: ${farmlndcl}, Acres: ${acres}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          '0',
+          'Soil Survey Details',
+          attributesJson,
+          '',
+          '',
+          'NH GRANIT'
+        ]);
+      });
+    }
+
+    // Add NH Bedrock Geology data rows
+    if (enrichments.nh_bedrock_geology_all && Array.isArray(enrichments.nh_bedrock_geology_all)) {
+      enrichments.nh_bedrock_geology_all.forEach((formation: any) => {
+        const code = formation.code || 'N/A';
+        const fullname = formation.fullname || '';
+        const major = formation.major || '';
+        const formation1 = formation.formation1 || '';
+        const formation2 = formation.formation2 || '';
+        const plutonAge = formation.pluton_age || '';
+        const rockType = formation.rock_type || '';
+        const geologicHistory = formation.geologichistory || '';
+        const lithology = formation.lithology || '';
+        const source = formation.source || '';
+        
+        // Create allAttributes object excluding specific fields we're extracting
+        const allAttributes = { ...formation };
+        delete allAttributes.code;
+        delete allAttributes.major;
+        delete allAttributes.formation1;
+        delete allAttributes.formation2;
+        delete allAttributes.pluton_age;
+        delete allAttributes.rock_type;
+        delete allAttributes.fullname;
+        delete allAttributes.geologichistory;
+        delete allAttributes.lithology;
+        delete allAttributes.source;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NH GRANIT',
+          (location.confidence || 'N/A').toString(),
+          'NH_BEDROCK_GEOLOGY',
+          `${code}${fullname ? ` - ${fullname}` : ''}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          '0', // Point is inside polygon
+          'Bedrock Geology',
+          major || formation1 || rockType || attributesJson,
+          '',
+          '',
+          'NH GRANIT'
+        ]);
+        
+        // Add a second row with detailed attributes
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NH GRANIT',
+          (location.confidence || 'N/A').toString(),
+          'NH_BEDROCK_GEOLOGY_DETAILS',
+          `Code: ${code}, Major: ${major}, Formation1: ${formation1}, Formation2: ${formation2}, Pluton Age: ${plutonAge}, Rock Type: ${rockType}, Geologic History: ${geologicHistory}, Lithology: ${lithology}, Source: ${source}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          '0',
+          'Bedrock Geology Details',
+          attributesJson,
+          '',
+          '',
+          'NH GRANIT'
+        ]);
+      });
+    }
+
+    // Add NH Geographic Names data rows
+    if (enrichments.nh_geographic_names_all && Array.isArray(enrichments.nh_geographic_names_all)) {
+      enrichments.nh_geographic_names_all.forEach((place: any) => {
+        const placeName = place.feature || 'Unknown Place';
+        const featType = place.feattype || '';
+        const county = place.county || '';
+        const quad = place.quad || '';
+        const distance = place.distance_miles !== null && place.distance_miles !== undefined ? place.distance_miles.toFixed(2) : '';
+        const placeLat = place.lat || '';
+        const placeLon = place.lon || '';
+        
+        // Create allAttributes object excluding specific fields we're extracting
+        const allAttributes = { ...place };
+        delete allAttributes.feature;
+        delete allAttributes.feattype;
+        delete allAttributes.county;
+        delete allAttributes.quad;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NH GRANIT',
+          (location.confidence || 'N/A').toString(),
+          'NH_GEOGRAPHIC_NAME',
+          placeName,
+          placeLat.toString(),
+          placeLon.toString(),
+          distance,
+          featType || 'Place of Interest',
+          county || quad || attributesJson,
+          '',
+          '',
+          'NH GRANIT'
+        ]);
+      });
+    }
+
     if (enrichments.nh_nwi_plus_all && Array.isArray(enrichments.nh_nwi_plus_all)) {
       enrichments.nh_nwi_plus_all.forEach((wetland: any) => {
         const wetlandId = wetland.wetland_id || wetland.WETLAND_ID || wetland.id || 'Unknown';
@@ -1796,6 +1978,162 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           areaAcres ? `${areaAcres} acres` : attributesJson,
           '',
           '',
+          attributesJson,
+          'MassGIS'
+        ]);
+      });
+    }
+    
+    // Add MA Regional Planning Agencies data rows
+    if (enrichments.ma_regional_planning_agencies_all && Array.isArray(enrichments.ma_regional_planning_agencies_all)) {
+      enrichments.ma_regional_planning_agencies_all.forEach((agency: any) => {
+        const rpaName = agency.RPA_NAME || agency.rpa_name || 'Unknown Regional Planning Agency';
+        const acronym = agency.ACRONYM || agency.acronym || '';
+        const website = agency.WEBSITE || agency.website || '';
+        const rpaId = agency.RPA_ID || agency.rpa_id || '';
+        
+        const allAttributes = { ...agency };
+        delete allAttributes.RPA_NAME;
+        delete allAttributes.rpa_name;
+        delete allAttributes.ACRONYM;
+        delete allAttributes.acronym;
+        delete allAttributes.WEBSITE;
+        delete allAttributes.website;
+        delete allAttributes.RPA_ID;
+        delete allAttributes.rpa_id;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'MassGIS',
+          (location.confidence || 'N/A').toString(),
+          'MA_REGIONAL_PLANNING_AGENCY',
+          rpaName,
+          location.lat.toString(), // Use search location (it's a polygon, not a point)
+          location.lon.toString(),
+          agency.distance_miles !== null && agency.distance_miles !== undefined ? agency.distance_miles.toFixed(2) : '0.00',
+          acronym || attributesJson,
+          website || attributesJson,
+          '',
+          '',
+          attributesJson,
+          'MassGIS'
+        ]);
+      });
+    }
+    
+    // Add National Marine Sanctuaries data rows
+    if (enrichments.national_marine_sanctuaries_all && Array.isArray(enrichments.national_marine_sanctuaries_all)) {
+      enrichments.national_marine_sanctuaries_all.forEach((sanctuary: any) => {
+        const siteName = sanctuary.sitename || sanctuary.SITENAME || 'Unknown Marine Sanctuary';
+        const unitName = sanctuary.unitname || sanctuary.UNITNAME || '';
+        const siteUrl = sanctuary.siteurl || sanctuary.SITEURL || '';
+        const citation = sanctuary.citation || sanctuary.CITATION || '';
+        const cfrSection = sanctuary.cfrsection || sanctuary.CFRSECTION || '';
+        const shapeArea = sanctuary.SHAPE__Area || sanctuary.SHAPE__AREA || '';
+        const shapeLength = sanctuary.SHAPE__Length || sanctuary.SHAPE__LENGTH || '';
+        
+        const allAttributes = { ...sanctuary };
+        delete allAttributes.sitename;
+        delete allAttributes.SITENAME;
+        delete allAttributes.unitname;
+        delete allAttributes.UNITNAME;
+        delete allAttributes.siteurl;
+        delete allAttributes.SITEURL;
+        delete allAttributes.citation;
+        delete allAttributes.CITATION;
+        delete allAttributes.cfrsection;
+        delete allAttributes.CFRSECTION;
+        delete allAttributes.SHAPE__Area;
+        delete allAttributes.SHAPE__AREA;
+        delete allAttributes.SHAPE__Length;
+        delete allAttributes.SHAPE__LENGTH;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NOAA',
+          (location.confidence || 'N/A').toString(),
+          'NATIONAL_MARINE_SANCTUARY',
+          siteName,
+          location.lat.toString(), // Use search location (it's a polygon, not a point)
+          location.lon.toString(),
+          sanctuary.distance_miles !== null && sanctuary.distance_miles !== undefined ? sanctuary.distance_miles.toFixed(2) : '0.00',
+          unitName || attributesJson,
+          siteUrl || attributesJson,
+          citation || '',
+          cfrSection || '',
+          attributesJson,
+          'NOAA'
+        ]);
+      });
+    }
+    
+    // Add MA ACECs data rows
+    if (enrichments.ma_acecs_all && Array.isArray(enrichments.ma_acecs_all)) {
+      enrichments.ma_acecs_all.forEach((acec: any) => {
+        const name = acec.NAME || acec.name || 'Unknown ACEC';
+        const acecId = acec.ACECID || acec.acecid || '';
+        const desDate = acec.DES_DATE || acec.des_date || '';
+        const secretary = acec.SECRETARY || acec.secretary || '';
+        const adminBy = acec.ADMIN_BY || acec.admin_by || '';
+        const region = acec.REGION || acec.region || '';
+        const polyAcres = acec.POLY_ACRES || acec.poly_acres || '';
+        const acecAcres = acec.ACEC_ACRES || acec.acec_acres || '';
+        
+        const allAttributes = { ...acec };
+        delete allAttributes.NAME;
+        delete allAttributes.name;
+        delete allAttributes.ACECID;
+        delete allAttributes.acecid;
+        delete allAttributes.DES_DATE;
+        delete allAttributes.des_date;
+        delete allAttributes.SECRETARY;
+        delete allAttributes.secretary;
+        delete allAttributes.ADMIN_BY;
+        delete allAttributes.admin_by;
+        delete allAttributes.REGION;
+        delete allAttributes.region;
+        delete allAttributes.POLY_ACRES;
+        delete allAttributes.poly_acres;
+        delete allAttributes.ACEC_ACRES;
+        delete allAttributes.acec_acres;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'MassGIS',
+          (location.confidence || 'N/A').toString(),
+          'MA_ACEC',
+          name,
+          location.lat.toString(), // Use search location (it's a polygon, not a point)
+          location.lon.toString(),
+          acec.distance_miles !== null && acec.distance_miles !== undefined ? acec.distance_miles.toFixed(2) : '0.00',
+          acecId || attributesJson,
+          desDate || '',
+          secretary || '',
+          adminBy || '',
+          region || '',
+          polyAcres ? polyAcres.toString() : '',
+          acecAcres ? acecAcres.toString() : '',
           attributesJson,
           'MassGIS'
         ]);

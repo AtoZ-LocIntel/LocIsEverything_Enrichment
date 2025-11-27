@@ -53,6 +53,14 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         // Format NH Senate District
         return value ? String(value) : 'N/A';
       }
+      if (key.includes('nh_ssurgo_areasymbol') || key.includes('nh_ssurgo_muname')) {
+        // Format NH SSURGO fields
+        return value ? String(value) : 'N/A';
+      }
+      if (key.includes('nh_bedrock_geology_formation') || key.includes('nh_bedrock_geology_symbol')) {
+        // Format NH Bedrock Geology fields
+        return value ? String(value) : 'N/A';
+      }
       if (key.includes('nh_parcel') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
         // Format NH Parcel fields
         if (key.includes('_count')) {
@@ -190,11 +198,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // New Hampshire Data
-    if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_parcel') || key.includes('nh_key_destinations') || key.includes('nh_nursing_homes') || key.includes('nh_ems') || key.includes('nh_fire_stations') || key.includes('nh_places_of_worship') || key.includes('nh_hospitals') || key.includes('nh_public_waters_access') || key.includes('nh_law_enforcement') || key.includes('nh_recreation_trails') || key.includes('nh_dot_roads') || key.includes('nh_railroads') || key.includes('nh_transmission_pipelines') || key.includes('nh_cell_towers') || key.includes('nh_underground_storage_tanks') || key.includes('nh_water_wells') || key.includes('nh_public_water_supply_wells') || key.includes('nh_remediation_sites') || key.includes('nh_automobile_salvage_yards') || key.includes('nh_solid_waste_facilities') || key.includes('nh_source_water_protection_area') || key.includes('nh_nwi_plus')) {
+    if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_ssurgo') || key.includes('nh_bedrock_geology') || key.includes('nh_geographic_names') || key.includes('nh_parcel') || key.includes('nh_key_destinations') || key.includes('nh_nursing_homes') || key.includes('nh_ems') || key.includes('nh_fire_stations') || key.includes('nh_places_of_worship') || key.includes('nh_hospitals') || key.includes('nh_public_waters_access') || key.includes('nh_law_enforcement') || key.includes('nh_recreation_trails') || key.includes('nh_dot_roads') || key.includes('nh_railroads') || key.includes('nh_transmission_pipelines') || key.includes('nh_cell_towers') || key.includes('nh_underground_storage_tanks') || key.includes('nh_water_wells') || key.includes('nh_public_water_supply_wells') || key.includes('nh_remediation_sites') || key.includes('nh_automobile_salvage_yards') || key.includes('nh_solid_waste_facilities') || key.includes('nh_source_water_protection_area') || key.includes('nh_nwi_plus')) {
       return 'New Hampshire Data';
     }
     
-    if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams')) {
+    if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs')) {
       return 'Massachusetts Data';
     }
     
@@ -228,6 +236,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Natural Resources';
     }
     if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
+      return 'Natural Resources';
+    }
+    if (key.includes('national_marine_sanctuaries')) {
       return 'Natural Resources';
     }
     if (key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_parks') || key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_town_halls') || key.includes('poi_courthouses') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_colleges') || key.includes('poi_childcare') || key.includes('poi_mail_shipping')) {

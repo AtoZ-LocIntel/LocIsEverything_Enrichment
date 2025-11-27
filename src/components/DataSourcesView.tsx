@@ -376,6 +376,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global (observer-dependent)",
           accuracy: "Community reported / curated",
           cost: "Free (API key)"
+        },
+        {
+          name: "NOAA National Marine Sanctuaries",
+          description: "National Marine Sanctuaries - point-in-polygon and proximity queries (up to 25 miles)",
+          coverage: "United States (coastal waters)",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
@@ -425,6 +432,27 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
     {
       category: "New Hampshire Data (NH GRANIT)",
       sources: [
+        {
+          name: "NH SSURGO Soils",
+          description: "Soil Survey Geographic (SSURGO) database for New Hampshire - point-in-polygon queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Bedrock Geology - Formations",
+          description: "New Hampshire bedrock geology formations - point-in-polygon queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Geographic Names Information System (Places of Interest)",
+          description: "New Hampshire geographic names and places of interest - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
         {
           name: "NH House of Representatives Districts",
           description: "New Hampshire House of Representatives district boundaries for 2022 - point-in-polygon queries",
@@ -655,6 +683,20 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         {
           name: "MA Rivers and Streams",
           description: "Massachusetts rivers and streams from MassGIS Hydro_Major FeatureServer - proximity queries (0.5, 1, 2.5, 5, 10 miles)",
+          coverage: "Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "MA Regional Planning Agencies",
+          description: "Massachusetts Regional Planning Agencies (RPAs) from MassGIS - point-in-polygon queries",
+          coverage: "Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "MA Areas of Critical Environmental Concern (ACECs)",
+          description: "MassGIS - Massachusetts Areas of Critical Environmental Concern (point-in-polygon and proximity queries up to 25 miles)",
           coverage: "Massachusetts",
           accuracy: "Very High",
           cost: "Free"

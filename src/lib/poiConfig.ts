@@ -241,6 +241,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_ebird_hotspots', label: 'Birding Hotspots', description: 'Nearby eBird lister hotspots with species richness and recent activity', isPOI: true, defaultRadius: 25, maxRadius: 50, category: 'natural_resources', section: 'natural_resources' },
   { id: 'ebird_recent_observations', label: 'Recent Bird Observations', description: 'Recent species observations reported to eBird near this location (25-mile default search radius)', isPOI: false, defaultRadius: 25, category: 'natural_resources', section: 'natural_resources' },
   { id: 'soil_organic_carbon_density', label: 'Soil Organic Carbon Density', description: 'ISRIC Soilgrids via ESRI Living Atlas - World Soils 250m Organic Carbon Density (kg/m²) at point location', isPOI: false, defaultRadius: 0, category: 'natural_resources', section: 'natural_resources' },
+  { id: 'national_marine_sanctuaries', label: 'National Marine Sanctuaries', description: 'NOAA - National Marine Sanctuaries (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'natural_resources', section: 'natural_resources' },
   
   // Quirky
   { id: 'poi_breweries', label: 'Breweries', description: 'Craft breweries with names, types, addresses, contact info', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' },
@@ -331,6 +332,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nh_house_districts_2022', label: 'New Hampshire House of Representatives District Boundaries - 2022', description: 'NH GRANIT - House district boundaries for point-in-polygon query', isPOI: false, defaultRadius: 0, category: 'nh', section: 'nh' },
   { id: 'nh_voting_wards', label: 'New Hampshire Political Districts (Voting Wards)', description: 'NH GRANIT - Voting ward boundaries for point-in-polygon query', isPOI: false, defaultRadius: 0, category: 'nh', section: 'nh' },
   { id: 'nh_senate_districts_2022', label: 'New Hampshire Senate District Boundaries - 2022', description: 'NH GRANIT - Senate district boundaries for point-in-polygon query', isPOI: false, defaultRadius: 0, category: 'nh', section: 'nh' },
+  { id: 'nh_ssurgo', label: 'Soil Survey Geographic (SSURGO) database for New Hampshire', description: 'NH GRANIT - SSURGO soil survey data for point-in-polygon query', isPOI: false, defaultRadius: 0, category: 'nh', section: 'nh' },
+  { id: 'nh_bedrock_geology', label: 'NH Bedrock Geology - Formations', description: 'NH GRANIT - Bedrock geology formations for point-in-polygon query', isPOI: false, defaultRadius: 0, category: 'nh', section: 'nh' },
+  { id: 'nh_geographic_names', label: 'NH Geographic Names Information System (Places of Interest)', description: 'NH GRANIT - Geographic names and places of interest - proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
   { id: 'nh_parcels', label: 'New Hampshire Parcels', description: 'NH GRANIT - Parcel boundaries for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'nh', section: 'nh' },
   { id: 'nh_key_destinations', label: 'NH Key Destinations - Points', description: 'NH GRANIT - Key destinations including hospitals, schools, municipal offices, places of worship, and more', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
   { id: 'nh_nursing_homes', label: 'NH Nursing Homes', description: 'NH GRANIT - Nursing homes and assisted living facilities', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nh', section: 'nh' },
@@ -360,7 +364,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ma_trails', label: 'MA Hiking and Wilderness Trails', description: 'MassGIS - Massachusetts hiking and wilderness trails (proximity)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'ma', section: 'ma' },
   { id: 'ma_nhesp_natural_communities', label: 'MA NHESP Natural Communities', description: 'MassGIS - Massachusetts Natural Heritage & Endangered Species Program natural communities (point-in-polygon and proximity)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'ma', section: 'ma' },
   { id: 'ma_lakes_and_ponds', label: 'MA Lakes and Ponds', description: 'MassGIS - Massachusetts lakes and ponds (point-in-polygon and proximity)', isPOI: true, defaultRadius: 0.25, maxRadius: 5.0, category: 'ma', section: 'ma' },
-  { id: 'ma_rivers_and_streams', label: 'MA Rivers and Streams', description: 'MassGIS - Massachusetts rivers and streams (proximity queries)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'ma', section: 'ma' }
+  { id: 'ma_rivers_and_streams', label: 'MA Rivers and Streams', description: 'MassGIS - Massachusetts rivers and streams (proximity queries)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'ma', section: 'ma' },
+  { id: 'ma_regional_planning_agencies', label: 'MA Regional Planning Agencies', description: 'MassGIS - Massachusetts Regional Planning Agencies (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'ma', section: 'ma' },
+  { id: 'ma_acecs', label: 'MA Areas of Critical Environmental Concern', description: 'MassGIS - Massachusetts Areas of Critical Environmental Concern (ACECs) (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ma', section: 'ma' }
 ];
 
 class POIConfigManager {
