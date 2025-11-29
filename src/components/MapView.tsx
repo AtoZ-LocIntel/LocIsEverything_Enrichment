@@ -4562,48 +4562,42 @@ const MapView: React.FC<MapViewProps> = ({
           top: 0,
           left: 0,
           right: 0,
-          bottom: 0
+          bottom: 0,
+          overflow: 'hidden'
         }}
       >
         {/* Map Container - Full Screen */}
         <div 
-          className="relative w-full h-full"
+          ref={mapRef} 
+          className="w-full h-full"
           style={{
             height: '100vh',
             width: '100vw',
-            position: 'relative',
-            overflow: 'hidden'
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1
           }}
-        >
-          <div 
-            ref={mapRef} 
-            className="w-full h-full"
-            style={{
-              height: '100vh',
-              width: '100vw',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              zIndex: 1
-            }}
-          />
+        />
           
-          {/* Back Button Overlay - Top Left */}
+          {/* Back Button Overlay - Top Left (compact for mobile) */}
           <button
             onClick={onBackToConfig}
-            className="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+            className="absolute top-2 left-2 z-[1000] bg-white rounded-lg shadow-lg px-2 py-1.5 flex items-center text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors"
             style={{ zIndex: 1000 }}
           >
-            <span className="text-lg">←</span>
-            <span className="text-sm font-medium">Back</span>
+            <span className="text-base">←</span>
+            <span className="text-xs font-medium ml-1">Back</span>
           </button>
           
-          {/* Basemap Dropdown - Top Left (below back button) */}
-          <div className="absolute top-16 left-4 z-[1000] bg-white rounded-lg shadow-lg">
+          {/* Basemap Dropdown - Top Left (below back button, compact for mobile) */}
+          <div className="absolute top-10 left-2 z-[1000] bg-white rounded-lg shadow-lg">
             <select
               value={selectedBasemap}
               onChange={(e) => setSelectedBasemap(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-2 py-1.5 text-xs border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               style={{ zIndex: 1000 }}
             >
               {Object.entries(MAPTILER_BASEMAPS).map(([key, config]) => (
@@ -4614,28 +4608,28 @@ const MapView: React.FC<MapViewProps> = ({
             </select>
           </div>
           
-          {/* Download Button Overlay - Top Right (for single location) */}
+          {/* Download Button Overlay - Top Right (for single location, compact for mobile) */}
           {results.length === 1 && (
             <button
               onClick={() => exportEnrichmentResultsToCSV(results)}
-              className="absolute top-4 right-4 z-[1000] bg-blue-600 text-white rounded-lg shadow-lg px-3 py-2 flex items-center space-x-2 hover:bg-blue-700 transition-colors"
+              className="absolute top-2 right-2 z-[1000] bg-blue-600 text-white rounded-lg shadow-lg px-2 py-1.5 flex items-center hover:bg-blue-700 transition-colors"
               style={{ zIndex: 1000 }}
               title="Download all proximity layers and distances for this location"
             >
-              <span className="text-sm">⬇️</span>
-              <span className="text-sm font-medium">Download</span>
+              <span className="text-xs">⬇️</span>
+              <span className="text-xs font-medium ml-1">Download</span>
             </button>
           )}
           
-          {/* Mobile Legend - Bottom Right */}
+          {/* Mobile Legend - Bottom Right (compact for mobile) */}
           {legendItems.length > 0 && (
-            <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 max-w-[200px] z-[1000] max-h-[60vh] overflow-y-auto">
-              <h4 className="text-xs font-semibold text-gray-900 mb-2">Legend</h4>
-              <div className="space-y-1.5">
+            <div className="absolute bottom-2 right-2 bg-white rounded-lg shadow-lg p-2 max-w-[180px] z-[1000] max-h-[50vh] overflow-y-auto">
+              <h4 className="text-[10px] font-semibold text-gray-900 mb-1.5">Legend</h4>
+              <div className="space-y-1">
                 {legendItems.map((item, index) => (
-                  <div key={index} className="flex items-center space-x-1.5 text-xs">
+                  <div key={index} className="flex items-center space-x-1 text-[10px]">
                     <div 
-                      className="w-3 h-3 rounded-full flex items-center justify-center text-[10px] flex-shrink-0"
+                      className="w-2.5 h-2.5 rounded-full flex items-center justify-center text-[9px] flex-shrink-0"
                       style={{ backgroundColor: item.color }}
                     >
                       {item.icon}
@@ -4650,14 +4644,13 @@ const MapView: React.FC<MapViewProps> = ({
           
           {/* Batch Success Message - Mobile */}
           {showBatchSuccess && (
-            <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg z-[1000]">
-              <div className="flex items-center space-x-2">
-                <span>✅</span>
-                <span className="text-xs font-medium">Batch completed!</span>
+            <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-2 py-1.5 rounded-lg shadow-lg z-[1000]">
+              <div className="flex items-center space-x-1">
+                <span className="text-xs">✅</span>
+                <span className="text-[10px] font-medium">Batch completed!</span>
               </div>
             </div>
           )}
-        </div>
       </div>
     );
   }
