@@ -431,7 +431,8 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       return;
     }
     
-    if (key.includes('_all_pois') && Array.isArray(value)) {
+    // Handle POI arrays: _all_pois, _detailed, or _all (for gas stations, mail shipping, etc.)
+    if ((key.includes('_all_pois') || key.endsWith('_detailed') || (key.endsWith('_all') && key.includes('poi_'))) && Array.isArray(value)) {
       // Handle ALL POI arrays (complete dataset for CSV)
       value.forEach((poi: any) => {
         // Special handling for AVI data
@@ -456,23 +457,44 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
             poi.source || 'N/A'
           ]);
         } else {
-          // Regular POI handling
+          // Regular POI handling - extract POI type from key
+          const poiType = key
+            .replace('_all_pois', '')
+            .replace('_detailed', '')
+            .replace('_all', '')
+            .replace('poi_', '')
+            .toUpperCase()
+            .replace(/_/g, ' ');
+          
+          // Get source - prefer specific source, otherwise default to OpenStreetMap
+          const source = poi.source || 'OpenStreetMap';
+          
+          // Extract name, coordinates, and other details
+          const poiName = poi.name || poi.title || poi.tags?.name || poi.tags?.brand || 'Unnamed';
+          const poiLat = poi.lat || poi.center?.lat || '';
+          const poiLon = poi.lon || poi.center?.lon || '';
+          const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toString() : 'Unknown';
+          const poiCategory = poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || poi.type || 'POI';
+          const poiAddress = poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '';
+          const poiPhone = poi.tags?.phone || poi.phone || '';
+          const poiWebsite = poi.tags?.website || poi.website || '';
+          
           rows.push([
             location.name,
             location.lat.toString(),
             location.lon.toString(),
-            'OpenStreetMap',
+            source,
             (location.confidence || 'N/A').toString(),
-            key.replace('_all_pois', '').replace('poi_', '').toUpperCase(),
-            poi.name || poi.title || 'Unnamed',
-            poi.lat || poi.center?.lat || '',
-            poi.lon || poi.center?.lon || '',
-            poi.distance_miles || 'Unknown',
-            poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI',
-            poi.tags?.['addr:street'] || poi.address || poi.tags?.['addr:full'] || '',
-            poi.tags?.phone || '',
-            poi.tags?.website || '',
-            poi.source || 'N/A'
+            poiType,
+            poiName,
+            poiLat.toString(),
+            poiLon.toString(),
+            distance,
+            poiCategory,
+            poiAddress,
+            poiPhone,
+            poiWebsite,
+            source
           ]);
         }
       });

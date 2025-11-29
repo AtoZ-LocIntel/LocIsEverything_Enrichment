@@ -1089,6 +1089,12 @@ export class EnrichmentService {
       this.runSingleEnrichment('acs', lat, lon, poiRadii).catch(error => {
         console.error('ACS demographics query failed:', error);
         return { acs_error: error instanceof Error ? error.message : 'Unknown error' };
+      }),
+      
+      // Walkability Index (runs automatically for every query)
+      this.runSingleEnrichment('poi_walkability_index', lat, lon, poiRadii).catch(error => {
+        console.error('Walkability index query failed:', error);
+        return { walkability_index_error: error instanceof Error ? error.message : 'Unknown error' };
       })
     ];
     
@@ -6599,10 +6605,51 @@ out center;`;
       const data = await response.json();
       
       const elements = data.elements || [];
-      const count = elements.length;
+      console.log(`📮 Overpass returned ${elements.length} mail & shipping elements`);
       
-      // Process mail & shipping details for mapping
-      const shippingDetails = elements.slice(0, 10).map((element: any) => ({
+      // Calculate distances and filter by radius
+      const locationsWithDistance: any[] = [];
+      for (const element of elements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let locationLat: number | null = null;
+        let locationLon: number | null = null;
+        
+        if (element.type === 'node') {
+          locationLat = element.lat;
+          locationLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          locationLat = element.center?.lat;
+          locationLon = element.center?.lon;
+        }
+        
+        if (locationLat == null || locationLon == null) {
+          console.warn(`📮 Skipping mail/shipping location ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, locationLat, locationLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include locations within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= radiusMiles) {
+          locationsWithDistance.push({
+            ...element,
+            lat: locationLat,
+            lon: locationLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      locationsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = locationsWithDistance.length;
+      console.log(`📮 Found ${count} mail & shipping locations within ${radiusMiles} miles (after distance filtering)`);
+      
+      // Process mail & shipping details for mapping (all items, already sorted by distance)
+      const shippingDetails = locationsWithDistance.map((element: any) => ({
         id: element.id,
         name: element.tags?.name || element.tags?.brand || 'Unnamed Shipping Location',
         type: element.tags?.amenity || element.tags?.shop || element.tags?.office || 'shipping',
@@ -6610,16 +6657,18 @@ out center;`;
         address: element.tags?.['addr:street'] || 'No address',
         city: element.tags?.['addr:city'] || 'Unknown city',
         state: element.tags?.['addr:state'] || 'Unknown state',
-        lat: element.lat || element.center?.lat,
-        lon: element.lon || element.center?.lon,
+        lat: element.lat,
+        lon: element.lon,
         phone: element.tags?.phone,
         website: element.tags?.website,
-        opening_hours: element.tags?.opening_hours
+        opening_hours: element.tags?.opening_hours,
+        distance_miles: element.distance_miles
       }));
       
       return {
         poi_mail_shipping_summary: `Found ${count} mail & shipping locations within ${radiusMiles} miles.`,
-        poi_mail_shipping_detailed: shippingDetails
+        poi_mail_shipping_detailed: shippingDetails,
+        poi_mail_shipping_all: locationsWithDistance // Include all locations for CSV export
       };
     } catch (error) {
       console.error('Mail & Shipping query failed:', error);

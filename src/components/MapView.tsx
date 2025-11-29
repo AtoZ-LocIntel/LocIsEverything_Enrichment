@@ -4504,12 +4504,9 @@ const MapView: React.FC<MapViewProps> = ({
 
         const leafletIcon = createPOIIcon(iconEmoji, iconColor);
 
-        // For Animal-Vehicle Collisions, render up to 5000 markers to prevent browser freeze
-        // For other POIs, limit to 100 to prevent performance issues
-        // Note: Legend count shows total, but we only render a subset for performance
-        const maxItems = baseKey === 'poi_animal_vehicle_collisions' ? Math.min(itemsArray.length, 5000) : 100;
-        
-        itemsArray.slice(0, maxItems).forEach((item) => {
+        // Map all POIs - they are already limited by proximity/radius in the query
+        // No need for additional limiting here
+        itemsArray.forEach((item) => {
           const poiLat =
             item.lat ??
             item.latitude ??
