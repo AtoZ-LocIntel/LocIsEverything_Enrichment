@@ -660,38 +660,57 @@ const MapView: React.FC<MapViewProps> = ({
     }
 
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.invalidateSize();
+      // Force a resize check for mobile
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 100);
       return;
     }
 
-    const map = L.map(mapRef.current, {
-      center: [37.0902, -95.7129],
-      zoom: 4,
-      zoomControl: true,
-      attributionControl: true,
-    });
+    // Small delay to ensure container is properly sized, especially on mobile
+    setTimeout(() => {
+      if (!mapRef.current || mapInstanceRef.current) return;
+      
+      const map = L.map(mapRef.current, {
+        center: [37.0902, -95.7129],
+        zoom: 4,
+        zoomControl: !isMobile, // Hide zoom controls on mobile to save space
+        attributionControl: true,
+      });
 
-    // Initialize with selected basemap
-    const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.streets;
-    const basemapLayer = L.tileLayer(basemapConfig.url, {
-      attribution: basemapConfig.attribution,
-      maxZoom: 22,
-    }).addTo(map);
-    basemapLayerRef.current = basemapLayer;
+      // Initialize with selected basemap
+      const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.streets;
+      const basemapLayer = L.tileLayer(basemapConfig.url, {
+        attribution: basemapConfig.attribution,
+        maxZoom: 22,
+      }).addTo(map);
+      basemapLayerRef.current = basemapLayer;
 
-    const primary = L.layerGroup().addTo(map);
-    const poi = L.layerGroup().addTo(map);
+      const primary = L.layerGroup().addTo(map);
+      const poi = L.layerGroup().addTo(map);
 
-    mapInstanceRef.current = map;
-    layerGroupsRef.current = { primary, poi };
+      mapInstanceRef.current = map;
+      layerGroupsRef.current = { primary, poi };
+      
+      // Force initial size check after a brief delay
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 200);
+    }, 50);
 
     return () => {
-      map.remove();
-      mapInstanceRef.current = null;
-      layerGroupsRef.current = null;
-      basemapLayerRef.current = null;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        layerGroupsRef.current = null;
+        basemapLayerRef.current = null;
+      }
     };
-  }, [isMobile, results.length]);
+  }, [isMobile, results.length, selectedBasemap]);
 
   // Handle basemap switching
   useEffect(() => {
@@ -4499,13 +4518,19 @@ const MapView: React.FC<MapViewProps> = ({
 
         const itemsArray = value as Array<any>;
         
+        // Debug logging for mail shipping
+        if (baseKey === 'poi_mail_shipping') {
+          console.log(`🗺️ Mail & Shipping: Processing ${itemsArray.length} items for map display`);
+        }
+        
         // Add to legend count - use full array length for accurate count (shows total available)
         legendAccumulator[baseKey].count += itemsArray.length;
 
         const leafletIcon = createPOIIcon(iconEmoji, iconColor);
 
         // Map all POIs - they are already limited by proximity/radius in the query
-        // No need for additional limiting here
+        // No need for additional limiting here - map ALL items
+        let mappedCount = 0;
         itemsArray.forEach((item) => {
           const poiLat =
             item.lat ??
@@ -4527,7 +4552,13 @@ const MapView: React.FC<MapViewProps> = ({
           const poiMarker = L.marker([poiLat, poiLon], { icon: leafletIcon });
           poiMarker.bindPopup(createPOIPopupContent(item, legendTitle, baseKey), { maxWidth: 360 });
           poiMarker.addTo(poi);
+          mappedCount++;
         });
+        
+        // Debug logging for mail shipping
+        if (baseKey === 'poi_mail_shipping') {
+          console.log(`🗺️ Mail & Shipping: Mapped ${mappedCount} markers out of ${itemsArray.length} items`);
+        }
       });
     }); // Close results.forEach
 
@@ -4553,9 +4584,9 @@ const MapView: React.FC<MapViewProps> = ({
   if (isMobile) {
     return (
       <div
-        className="fixed inset-0 w-full h-full bg-white"
+        className="fixed inset-0 bg-white"
         style={{ 
-          height: '100vh', 
+          height: '100dvh', 
           width: '100vw',
           zIndex: 9999,
           position: 'fixed',
@@ -4563,41 +4594,44 @@ const MapView: React.FC<MapViewProps> = ({
           left: 0,
           right: 0,
           bottom: 0,
-          overflow: 'hidden'
+          overflow: 'hidden',
+          margin: 0,
+          padding: 0
         }}
       >
         {/* Map Container - Full Screen */}
         <div 
           ref={mapRef} 
-          className="w-full h-full"
           style={{
-            height: '100vh',
-            width: '100vw',
+            height: '100%',
+            width: '100%',
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: 1
+            zIndex: 1,
+            margin: 0,
+            padding: 0
           }}
         />
           
-          {/* Back Button Overlay - Top Left (compact for mobile) */}
+          {/* Back Button Overlay - Top Left (very compact for mobile) */}
           <button
             onClick={onBackToConfig}
-            className="absolute top-2 left-2 z-[1000] bg-white rounded-lg shadow-lg px-2 py-1.5 flex items-center text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+            className="absolute top-1 left-1 z-[1000] bg-white rounded shadow-md px-1.5 py-1 flex items-center text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors"
             style={{ zIndex: 1000 }}
           >
-            <span className="text-base">←</span>
-            <span className="text-xs font-medium ml-1">Back</span>
+            <span className="text-sm">←</span>
+            <span className="text-[10px] font-medium ml-0.5">Back</span>
           </button>
           
-          {/* Basemap Dropdown - Top Left (below back button, compact for mobile) */}
-          <div className="absolute top-10 left-2 z-[1000] bg-white rounded-lg shadow-lg">
+          {/* Basemap Dropdown - Top Left (below back button, very compact for mobile) */}
+          <div className="absolute top-8 left-1 z-[1000] bg-white rounded shadow-md">
             <select
               value={selectedBasemap}
               onChange={(e) => setSelectedBasemap(e.target.value)}
-              className="px-2 py-1.5 text-xs border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-1.5 py-1 text-[10px] border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
               style={{ zIndex: 1000 }}
             >
               {Object.entries(MAPTILER_BASEMAPS).map(([key, config]) => (
@@ -4608,28 +4642,27 @@ const MapView: React.FC<MapViewProps> = ({
             </select>
           </div>
           
-          {/* Download Button Overlay - Top Right (for single location, compact for mobile) */}
+          {/* Download Button Overlay - Top Right (icon only, very compact for mobile) */}
           {results.length === 1 && (
             <button
               onClick={() => exportEnrichmentResultsToCSV(results)}
-              className="absolute top-2 right-2 z-[1000] bg-blue-600 text-white rounded-lg shadow-lg px-2 py-1.5 flex items-center hover:bg-blue-700 transition-colors"
-              style={{ zIndex: 1000 }}
+              className="absolute top-1 right-1 z-[1000] bg-blue-600 text-white rounded shadow-md p-1.5 hover:bg-blue-700 transition-colors"
+              style={{ zIndex: 1000, minWidth: 'auto', width: 'auto' }}
               title="Download all proximity layers and distances for this location"
             >
               <span className="text-xs">⬇️</span>
-              <span className="text-xs font-medium ml-1">Download</span>
             </button>
           )}
           
-          {/* Mobile Legend - Bottom Right (compact for mobile) */}
+          {/* Mobile Legend - Bottom Right (very compact for mobile) */}
           {legendItems.length > 0 && (
-            <div className="absolute bottom-2 right-2 bg-white rounded-lg shadow-lg p-2 max-w-[180px] z-[1000] max-h-[50vh] overflow-y-auto">
-              <h4 className="text-[10px] font-semibold text-gray-900 mb-1.5">Legend</h4>
-              <div className="space-y-1">
+            <div className="absolute bottom-1 right-1 bg-white rounded shadow-md p-1.5 max-w-[160px] z-[1000] max-h-[40vh] overflow-y-auto">
+              <h4 className="text-[9px] font-semibold text-gray-900 mb-1">Legend</h4>
+              <div className="space-y-0.5">
                 {legendItems.map((item, index) => (
-                  <div key={index} className="flex items-center space-x-1 text-[10px]">
+                  <div key={index} className="flex items-center space-x-0.5 text-[9px]">
                     <div 
-                      className="w-2.5 h-2.5 rounded-full flex items-center justify-center text-[9px] flex-shrink-0"
+                      className="w-2 h-2 rounded-full flex items-center justify-center text-[8px] flex-shrink-0"
                       style={{ backgroundColor: item.color }}
                     >
                       {item.icon}
@@ -4644,10 +4677,10 @@ const MapView: React.FC<MapViewProps> = ({
           
           {/* Batch Success Message - Mobile */}
           {showBatchSuccess && (
-            <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-2 py-1.5 rounded-lg shadow-lg z-[1000]">
-              <div className="flex items-center space-x-1">
-                <span className="text-xs">✅</span>
-                <span className="text-[10px] font-medium">Batch completed!</span>
+            <div className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-1.5 py-1 rounded shadow-md z-[1000]">
+              <div className="flex items-center space-x-0.5">
+                <span className="text-[10px]">✅</span>
+                <span className="text-[9px] font-medium">Batch completed!</span>
               </div>
             </div>
           )}

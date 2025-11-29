@@ -6665,9 +6665,11 @@ out center;`;
         distance_miles: element.distance_miles
       }));
       
+      console.log(`📮 Mail & Shipping: Returning ${shippingDetails.length} items in poi_mail_shipping_detailed (should match count: ${count})`);
+      
       return {
         poi_mail_shipping_summary: `Found ${count} mail & shipping locations within ${radiusMiles} miles.`,
-        poi_mail_shipping_detailed: shippingDetails,
+        poi_mail_shipping_detailed: shippingDetails, // All items - no limit
         poi_mail_shipping_all: locationsWithDistance // Include all locations for CSV export
       };
     } catch (error) {

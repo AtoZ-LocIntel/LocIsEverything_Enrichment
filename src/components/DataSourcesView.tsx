@@ -383,6 +383,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States (coastal waters)",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "ISRIC SoilGrids (via ESRI Living Atlas)",
+          description: "World Soils 250m Organic Carbon Density - point-in-pixel queries for soil organic carbon density (kg/m²)",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free"
         }
       ]
     },
@@ -738,6 +745,18 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Cape Cod, Massachusetts",
           accuracy: "Very High",
           cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Mapping & Basemap Services",
+      sources: [
+        {
+          name: "MapTiler",
+          description: "Professional basemap tiles including streets, satellite, topographic, hybrid, landscape, and specialized map styles",
+          coverage: "Global",
+          accuracy: "Very High",
+          cost: "Free (with API key)"
         }
       ]
     }
