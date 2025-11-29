@@ -1423,7 +1423,7 @@ const MapView: React.FC<MapViewProps> = ({
       // Draw NH Transmission/Pipelines as polylines on the map
       if (enrichments.nh_transmission_pipelines_all && Array.isArray(enrichments.nh_transmission_pipelines_all)) {
         let tpCount = 0;
-        enrichments.nh_transmission_pipelines_all.forEach((tp: any, index: number) => {
+        enrichments.nh_transmission_pipelines_all.forEach((tp: any) => {
           if (tp.geometry && tp.geometry.paths) {
             try {
               // Convert ESRI polyline paths to Leaflet LatLng arrays
@@ -2607,7 +2607,7 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw MA DEP Wetlands as polygons on the map
       if (enrichments.ma_dep_wetlands_all && Array.isArray(enrichments.ma_dep_wetlands_all)) {
-        enrichments.ma_dep_wetlands_all.forEach((wetland: any, index: number) => {
+        enrichments.ma_dep_wetlands_all.forEach((wetland: any) => {
           if (wetland.geometry && wetland.geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng array
@@ -3258,7 +3258,7 @@ const MapView: React.FC<MapViewProps> = ({
       // Draw MA NHESP Natural Communities as polygons on the map
       if (enrichments.ma_nhesp_natural_communities_all && Array.isArray(enrichments.ma_nhesp_natural_communities_all)) {
         console.log(`🗺️ Drawing ${enrichments.ma_nhesp_natural_communities_all.length} MA NHESP Natural Communities`);
-        enrichments.ma_nhesp_natural_communities_all.forEach((community: any, index: number) => {
+        enrichments.ma_nhesp_natural_communities_all.forEach((community: any) => {
           if (community.geometry && community.geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng arrays
