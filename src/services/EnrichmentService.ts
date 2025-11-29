@@ -41,6 +41,9 @@ import { getMARiversAndStreamsNearbyData } from '../adapters/maRiversAndStreams'
 import { getMARegionalPlanningAgenciesContainingData } from '../adapters/maRegionalPlanningAgencies';
 import { getNationalMarineSanctuariesContainingData, getNationalMarineSanctuariesNearbyData } from '../adapters/nationalMarineSanctuaries';
 import { getMAACECsContainingData, getMAACECsNearbyData } from '../adapters/maACECs';
+import { getMAParcelData } from '../adapters/maParcels';
+import { getCTBuildingFootprintData } from '../adapters/ctBuildingFootprints';
+import { getCTRoadsData } from '../adapters/ctRoads';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1496,6 +1499,18 @@ export class EnrichmentService {
       // MA Areas of Critical Environmental Concern (MassGIS) - Point-in-polygon and proximity query
       case 'ma_acecs':
         return await this.getMAACECs(lat, lon, radius);
+      
+      // MA Parcels (MassGIS) - Point-in-polygon and proximity query
+      case 'ma_parcels':
+        return await this.getMAParcels(lat, lon, radius);
+      
+      // CT Building Footprints (CT Geodata Portal) - Point-in-polygon and proximity query
+      case 'ct_building_footprints':
+        return await this.getCTBuildingFootprints(lat, lon, radius);
+      
+      // CT Roads and Trails (CT Geodata Portal) - Proximity query
+      case 'ct_roads':
+        return await this.getCTRoads(lat, lon, radius);
       
       // National Marine Sanctuaries (NOAA) - Point-in-polygon and proximity query
       case 'national_marine_sanctuaries':
@@ -6211,6 +6226,201 @@ out center;`;
         ma_acecs_count: 0,
         ma_acecs_all: [],
         ma_acecs_error: 'Error fetching MA ACECs data'
+      };
+    }
+  }
+
+  private async getMAParcels(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏠 Fetching MA Parcels data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 0.3; // Default to 0.3 miles if not provided
+      
+      // Get parcel data (both containing and nearby)
+      const parcelData = await getMAParcelData(lat, lon, radiusMiles);
+      
+      if (parcelData) {
+        // Collect all parcels (containing + nearby) into a single array for CSV export
+        const allParcels: any[] = [];
+        
+        // Add containing parcel (point-in-polygon) if found
+        if (parcelData.containingParcel && parcelData.containingParcel.parcelId) {
+          allParcels.push({
+            ...parcelData.containingParcel.attributes,
+            parcelId: parcelData.containingParcel.parcelId,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: parcelData.containingParcel.geometry // Include geometry for map drawing
+          });
+          result.ma_parcel_containing = parcelData.containingParcel.parcelId;
+        } else {
+          result.ma_parcel_containing = null;
+          result.ma_parcel_containing_message = 'No parcel found containing this location';
+        }
+        
+        // Add nearby parcels (proximity search)
+        if (parcelData.nearbyParcels && parcelData.nearbyParcels.length > 0) {
+          parcelData.nearbyParcels.forEach(parcel => {
+            // Only add if it's not already in the array (avoid duplicates)
+            if (!allParcels.some(p => p.parcelId === parcel.parcelId)) {
+              allParcels.push({
+                ...parcel.attributes,
+                parcelId: parcel.parcelId,
+                isContaining: false,
+                distance_miles: null, // Distance not calculated in proximity query
+                geometry: parcel.geometry // Include geometry for map drawing
+              });
+            }
+          });
+          result.ma_parcels_nearby_count = parcelData.nearbyParcels.length;
+        } else {
+          result.ma_parcels_nearby_count = 0;
+        }
+        
+        // Store all parcels as an array for CSV export (similar to _all_pois pattern)
+        result.ma_parcels_all = allParcels;
+        result.ma_parcels_search_radius_miles = radiusMiles;
+      } else {
+        result.ma_parcel_containing = null;
+        result.ma_parcels_nearby_count = 0;
+        result.ma_parcels_all = [];
+      }
+      
+      console.log(`✅ MA Parcels data processed:`, {
+        containing: result.ma_parcel_containing || 'N/A',
+        nearbyCount: result.ma_parcels_nearby_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching MA Parcels:', error);
+      return {
+        ma_parcel_containing: null,
+        ma_parcels_nearby_count: 0,
+        ma_parcels_all: [],
+        ma_parcels_error: 'Error fetching MA Parcels data'
+      };
+    }
+  }
+
+  private async getCTBuildingFootprints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏢 Fetching CT Building Footprints data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 0.25; // Default to 0.25 miles if not provided
+      
+      // Get building footprint data (both containing and nearby)
+      const buildingData = await getCTBuildingFootprintData(lat, lon, radiusMiles);
+      
+      if (buildingData) {
+        // Collect all buildings (containing + nearby) into a single array for CSV export
+        const allBuildings: any[] = [];
+        
+        // Add containing building (point-in-polygon) if found
+        if (buildingData.containingBuilding && buildingData.containingBuilding.buildingId) {
+          allBuildings.push({
+            ...buildingData.containingBuilding.attributes,
+            buildingId: buildingData.containingBuilding.buildingId,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: buildingData.containingBuilding.geometry // Include geometry for map drawing
+          });
+          result.ct_building_footprint_containing = buildingData.containingBuilding.buildingId;
+        } else {
+          result.ct_building_footprint_containing = null;
+          result.ct_building_footprint_containing_message = 'No building found containing this location';
+        }
+        
+        // Add nearby buildings (proximity search)
+        if (buildingData.nearbyBuildings && buildingData.nearbyBuildings.length > 0) {
+          buildingData.nearbyBuildings.forEach(building => {
+            // Only add if it's not already in the array (avoid duplicates)
+            if (!allBuildings.some(b => b.buildingId === building.buildingId)) {
+              allBuildings.push({
+                ...building.attributes,
+                buildingId: building.buildingId,
+                isContaining: false,
+                distance_miles: null, // Distance not calculated in proximity query
+                geometry: building.geometry // Include geometry for map drawing
+              });
+            }
+          });
+          result.ct_building_footprints_nearby_count = buildingData.nearbyBuildings.length;
+        } else {
+          result.ct_building_footprints_nearby_count = 0;
+        }
+        
+        // Store all buildings as an array for CSV export (similar to _all_pois pattern)
+        result.ct_building_footprints_all = allBuildings;
+        result.ct_building_footprints_search_radius_miles = radiusMiles;
+      } else {
+        result.ct_building_footprint_containing = null;
+        result.ct_building_footprints_nearby_count = 0;
+        result.ct_building_footprints_all = [];
+      }
+      
+      console.log(`✅ CT Building Footprints data processed:`, {
+        containing: result.ct_building_footprint_containing || 'N/A',
+        nearbyCount: result.ct_building_footprints_nearby_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching CT Building Footprints:', error);
+      return {
+        ct_building_footprint_containing: null,
+        ct_building_footprints_nearby_count: 0,
+        ct_building_footprints_all: [],
+        ct_building_footprints_error: 'Error fetching CT Building Footprints data'
+      };
+    }
+  }
+
+  private async getCTRoads(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching CT Roads and Trails data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      // Use the provided radius, defaulting to 0.5 miles if not specified
+      const radiusMiles = radius || 0.5;
+      
+      const roads = await getCTRoadsData(lat, lon, radiusMiles);
+      
+      if (roads && roads.length > 0) {
+        result.ct_roads_count = roads.length;
+        result.ct_roads_all = roads.map(road => ({
+          ...road.attributes,
+          roadClass: road.roadClass,
+          avLegend: road.avLegend,
+          imsLegend: road.imsLegend,
+          lengthMiles: road.lengthMiles,
+          geometry: road.geometry, // Include geometry for map drawing
+          distance_miles: road.distance_miles
+        }));
+      } else {
+        result.ct_roads_count = 0;
+        result.ct_roads_all = [];
+      }
+      
+      result.ct_roads_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ CT Roads and Trails data processed:`, {
+        count: result.ct_roads_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching CT Roads and Trails:', error);
+      return {
+        ct_roads_count: 0,
+        ct_roads_all: [],
+        ct_roads_error: 'Error fetching CT Roads and Trails data'
       };
     }
   }

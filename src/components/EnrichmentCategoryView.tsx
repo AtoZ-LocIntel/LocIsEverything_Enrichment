@@ -99,6 +99,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                           category.id === 'ma_massgis' ? '#166534' :
                           category.id === 'ri' ? '#166534' :
                           category.id === 'ct' ? '#166534' :
+                          category.id === 'ct_geodata_portal' ? '#166534' :
                           category.id === 'ny' ? '#166534' :
                           category.id === 'vt' ? '#166534' :
                           category.id === 'me' ? '#166534' :

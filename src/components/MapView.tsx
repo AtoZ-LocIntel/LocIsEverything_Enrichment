@@ -353,6 +353,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'padus_protection_status_all' || // Skip PAD-US protection status array (handled separately for map drawing)
     key === 'ma_regional_planning_agencies_all' || // Skip MA Regional Planning Agencies array (handled separately for map drawing)
     key === 'ma_acecs_all' || // Skip MA ACECs array (handled separately for map drawing)
+    key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
+    key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
+    key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -728,8 +731,8 @@ const MapView: React.FC<MapViewProps> = ({
     let timeoutId: NodeJS.Timeout | null = null;
     const rafId = requestAnimationFrame(() => {
       timeoutId = setTimeout(() => {
-        const bounds = L.latLngBounds([]);
-        const legendAccumulator: Record<string, LegendItem> = {};
+    const bounds = L.latLngBounds([]);
+    const legendAccumulator: Record<string, LegendItem> = {};
         
         // Re-add location marker to bounds (already added above, but need for bounds calculation)
         if (results[0]?.location) {
@@ -1419,10 +1422,8 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw NH Transmission/Pipelines as polylines on the map
       if (enrichments.nh_transmission_pipelines_all && Array.isArray(enrichments.nh_transmission_pipelines_all)) {
-        console.log(`🔍 NH Transmission/Pipelines: Found ${enrichments.nh_transmission_pipelines_all.length} items`);
         let tpCount = 0;
         enrichments.nh_transmission_pipelines_all.forEach((tp: any, index: number) => {
-          console.log(`🔍 TP ${index}:`, { hasGeometry: !!tp.geometry, hasPaths: !!(tp.geometry && tp.geometry.paths), geometry: tp.geometry });
           if (tp.geometry && tp.geometry.paths) {
             try {
               // Convert ESRI polyline paths to Leaflet LatLng arrays
@@ -1430,7 +1431,6 @@ const MapView: React.FC<MapViewProps> = ({
               const paths = tp.geometry.paths;
               if (paths && paths.length > 0) {
                 tpCount++;
-                console.log(`✅ Drawing TP ${index} with ${paths.length} paths`);
                 // For each path in the polyline, create a separate polyline
                 paths.forEach((path: number[][]) => {
                   const latlngs = path.map((coord: number[]) => {
@@ -1500,11 +1500,9 @@ const MapView: React.FC<MapViewProps> = ({
               console.error('Error drawing NH Transmission/Pipeline polyline:', error);
             }
           } else {
-            console.warn(`⚠️ TP ${index}: Missing geometry or paths`, tp);
           }
         });
         
-        console.log(`✅ NH Transmission/Pipelines: Drew ${tpCount} items`);
         
         // Add to legend accumulator
         if (tpCount > 0) {
@@ -1519,7 +1517,6 @@ const MapView: React.FC<MapViewProps> = ({
           legendAccumulator['nh_transmission_pipelines'].count += tpCount;
         }
       } else {
-        console.log('ℹ️ NH Transmission/Pipelines: No data or not an array', enrichments.nh_transmission_pipelines_all);
       }
 
       // Draw NH Cell Towers as markers on the map
@@ -2610,14 +2607,7 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw MA DEP Wetlands as polygons on the map
       if (enrichments.ma_dep_wetlands_all && Array.isArray(enrichments.ma_dep_wetlands_all)) {
-        console.log(`🗺️ Drawing MA DEP Wetlands: ${enrichments.ma_dep_wetlands_all.length} features`);
         enrichments.ma_dep_wetlands_all.forEach((wetland: any, index: number) => {
-          console.log(`🗺️ MA DEP Wetland ${index}:`, {
-            hasGeometry: !!wetland.geometry,
-            geometryType: wetland.geometry?.type || wetland.geometry?.rings ? 'rings' : 'unknown',
-            hasRings: !!wetland.geometry?.rings,
-            ringsLength: wetland.geometry?.rings?.length
-          });
           if (wetland.geometry && wetland.geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng array
@@ -2919,25 +2909,8 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw PAD-US Public Access as polygons on the map
       if (enrichments.padus_public_access_all && Array.isArray(enrichments.padus_public_access_all)) {
-        console.log(`🗺️ Drawing ${enrichments.padus_public_access_all.length} PAD-US Public Access features`);
-        console.log(`🗺️ Map instance exists:`, !!map);
-        console.log(`🗺️ Primary layer group exists:`, !!primary);
         enrichments.padus_public_access_all.forEach((land: any, index: number) => {
-          console.log(`🗺️ PAD-US Public Access ${index}:`, {
-            hasGeometry: !!land.geometry,
-            geometryType: land.geometry?.type || (land.geometry?.rings ? 'rings' : 'unknown'),
-            hasRings: !!land.geometry?.rings,
-            ringsLength: land.geometry?.rings?.length,
-            fullLand: land // Log full object for debugging
-          });
-          
-          if (!land.geometry) {
-            console.warn(`⚠️ PAD-US Public Access ${index} has no geometry!`);
-            return;
-          }
-          
-          if (!land.geometry.rings) {
-            console.warn(`⚠️ PAD-US Public Access ${index} geometry has no rings! Geometry:`, land.geometry);
+          if (!land.geometry || !land.geometry.rings) {
             return;
           }
           
@@ -2946,28 +2919,23 @@ const MapView: React.FC<MapViewProps> = ({
               // Convert ESRI polygon rings to Leaflet LatLng array
               // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
               const rings = land.geometry.rings;
-              console.log(`🔍 PAD-US Public Access ${index}: Processing rings, count: ${rings?.length}`);
               
               if (rings && rings.length > 0) {
                 const outerRing = rings[0]; // First ring is the outer boundary
-                console.log(`🔍 PAD-US Public Access ${index}: Outer ring has ${outerRing?.length} coordinates`);
                 
                 if (!outerRing || outerRing.length < 3) {
-                  console.warn(`⚠️ PAD-US Public Access ${index}: Outer ring is invalid (needs at least 3 coordinates)`);
                   return;
                 }
                 
                 // Check spatial reference - PAD-US might return Web Mercator (3857) or other projection
                 const spatialRef = land.geometry.spatialReference || land.geometry.spatialref;
                 const wkid = spatialRef?.wkid || spatialRef?.latestWkid;
-                console.log(`🔍 PAD-US Public Access ${index}: Spatial Reference WKID: ${wkid}, first coord: [${outerRing[0]?.[0]}, ${outerRing[0]?.[1]}]`);
                 
                 let latlngs: [number, number][];
                 
                 // If coordinates are in Web Mercator (3857) or look like projected coordinates, convert to WGS84
                 if (wkid === 3857 || wkid === 102100 || (!wkid && (Math.abs(outerRing[0]?.[0]) > 180 || Math.abs(outerRing[0]?.[1]) > 90))) {
                   // Convert from Web Mercator to WGS84
-                  console.log(`🔍 PAD-US Public Access ${index}: Converting from Web Mercator to WGS84`);
                   latlngs = outerRing.map((coord: number[]) => {
                     const x = coord[0];
                     const y = coord[1];
@@ -2984,8 +2952,6 @@ const MapView: React.FC<MapViewProps> = ({
                   });
                 }
                 
-                console.log(`🔍 PAD-US Public Access ${index}: Created ${latlngs.length} latlng points, first: [${latlngs[0]?.[0]}, ${latlngs[0]?.[1]}]`);
-
                 const isContaining = land.distance_miles === 0 || land.distance_miles === null || land.distance_miles === undefined;
                 const polygon = L.polygon(latlngs, {
                   color: isContaining ? '#16a34a' : '#22c55e', // Darker green for containing, lighter for nearby
@@ -2994,8 +2960,6 @@ const MapView: React.FC<MapViewProps> = ({
                   fillColor: isContaining ? '#16a34a' : '#22c55e',
                   fillOpacity: 0.3
                 });
-                
-                console.log(`✅ PAD-US Public Access ${index}: Polygon created, adding to map`);
 
                 // Build popup content
                 const unitName = land.unitName || land.Unit_Nm || 'Unnamed Public Land';
@@ -3022,8 +2986,6 @@ const MapView: React.FC<MapViewProps> = ({
                 polygon.addTo(primary);
                 bounds.extend(polygon.getBounds());
                 
-                console.log(`✅ PAD-US Public Access ${index}: Polygon added to map successfully`);
-                
                 // Add to legend accumulator (only once per land)
                 if (!legendAccumulator['padus_public_access']) {
                   legendAccumulator['padus_public_access'] = {
@@ -3034,18 +2996,9 @@ const MapView: React.FC<MapViewProps> = ({
                   };
                 }
                 legendAccumulator['padus_public_access'].count += 1;
-              } else {
-                console.warn(`⚠️ PAD-US Public Access ${index}: No rings found in geometry`);
               }
             } catch (error) {
               console.error(`❌ Error drawing PAD-US Public Access polygon ${index}:`, error);
-              console.error('Error details:', {
-                hasGeometry: !!land.geometry,
-                hasRings: !!land.geometry?.rings,
-                ringsLength: land.geometry?.rings?.length,
-                firstRingLength: land.geometry?.rings?.[0]?.length,
-                land: land
-              });
             }
           } else {
             console.warn(`⚠️ PAD-US Public Access ${index}: Geometry exists but no rings array`);
@@ -3306,12 +3259,6 @@ const MapView: React.FC<MapViewProps> = ({
       if (enrichments.ma_nhesp_natural_communities_all && Array.isArray(enrichments.ma_nhesp_natural_communities_all)) {
         console.log(`🗺️ Drawing ${enrichments.ma_nhesp_natural_communities_all.length} MA NHESP Natural Communities`);
         enrichments.ma_nhesp_natural_communities_all.forEach((community: any, index: number) => {
-          console.log(`🗺️ MA NHESP Natural Community ${index}:`, {
-            hasGeometry: !!community.geometry,
-            geometryType: community.geometry?.type || (community.geometry?.rings ? 'rings' : 'unknown'),
-            hasRings: !!community.geometry?.rings,
-            ringsLength: community.geometry?.rings?.length
-          });
           if (community.geometry && community.geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng arrays
@@ -3483,7 +3430,6 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw MA Regional Planning Agencies as polygons on the map
       if (enrichments.ma_regional_planning_agencies_all && Array.isArray(enrichments.ma_regional_planning_agencies_all)) {
-        console.log(`🗺️ Drawing ${enrichments.ma_regional_planning_agencies_all.length} MA Regional Planning Agencies`);
         enrichments.ma_regional_planning_agencies_all.forEach((agency: any) => {
           if (agency.geometry && agency.geometry.rings) {
             try {
@@ -3546,7 +3492,6 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw National Marine Sanctuaries as polygons on the map
       if (enrichments.national_marine_sanctuaries_all && Array.isArray(enrichments.national_marine_sanctuaries_all)) {
-        console.log(`🗺️ Drawing ${enrichments.national_marine_sanctuaries_all.length} National Marine Sanctuaries`);
         enrichments.national_marine_sanctuaries_all.forEach((sanctuary: any) => {
           if (sanctuary.geometry && sanctuary.geometry.rings) {
             try {
@@ -3636,7 +3581,6 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw MA ACECs as polygons on the map
       if (enrichments.ma_acecs_all && Array.isArray(enrichments.ma_acecs_all)) {
-        console.log(`🗺️ Drawing ${enrichments.ma_acecs_all.length} MA ACECs`);
         enrichments.ma_acecs_all.forEach((acec: any) => {
           if (acec.geometry && acec.geometry.rings) {
             try {
@@ -4189,10 +4133,255 @@ const MapView: React.FC<MapViewProps> = ({
                 bounds.extend(polygon.getBounds());
               }
             } catch (error) {
-              console.error('Error drawing parcel polygon:', error);
+              console.error('Error drawing NH parcel polygon:', error);
             }
           }
         });
+      }
+
+      // Draw MA Parcels as polygons on the map
+      if (enrichments.ma_parcels_all && Array.isArray(enrichments.ma_parcels_all)) {
+        enrichments.ma_parcels_all.forEach((parcel: any) => {
+          if (parcel.geometry && parcel.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
+              const rings = parcel.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  // Since we requested outSR=4326, coordinates should already be in WGS84
+                  // Convert [lon, lat] to [lat, lon] for Leaflet
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = parcel.isContaining;
+                const color = isContaining ? '#dc2626' : '#3b82f6'; // Red for containing, blue for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all parcel attributes
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '📍 Containing Parcel' : '🏠 Nearby Parcel'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 400px; overflow-y: auto;">
+                `;
+                
+                // Add all parcel attributes (excluding internal fields)
+                const excludeFields = ['parcelId', 'isContaining', 'distance_miles', 'geometry'];
+                Object.entries(parcel).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+              }
+            } catch (error) {
+              console.error('Error drawing MA parcel polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw CT Building Footprints as polygons on the map
+      if (enrichments.ct_building_footprints_all && Array.isArray(enrichments.ct_building_footprints_all)) {
+        enrichments.ct_building_footprints_all.forEach((building: any) => {
+          if (building.geometry && building.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
+              const rings = building.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  // Since we requested outSR=4326, coordinates should already be in WGS84
+                  // Convert [lon, lat] to [lat, lon] for Leaflet
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = building.isContaining;
+                const color = isContaining ? '#dc2626' : '#3b82f6'; // Red for containing, blue for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all building attributes
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '📍 Containing Building' : '🏢 Nearby Building'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 400px; overflow-y: auto;">
+                `;
+                
+                // Add all building attributes (excluding internal fields)
+                const excludeFields = ['buildingId', 'isContaining', 'distance_miles', 'geometry'];
+                Object.entries(building).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+              }
+            } catch (error) {
+              console.error('Error drawing CT building footprint polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw CT Roads and Trails as polylines on the map
+      if (enrichments.ct_roads_all && Array.isArray(enrichments.ct_roads_all)) {
+        let roadCount = 0;
+        enrichments.ct_roads_all.forEach((road: any) => {
+          if (road.geometry && road.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              // ESRI polylines have paths (array of coordinate arrays)
+              const paths = road.geometry.paths;
+              if (paths && paths.length > 0) {
+                roadCount++;
+                // For each path in the polyline, create a separate polyline
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    // Since we requested outSR=4326, coordinates should already be in WGS84
+                    // Convert [lon, lat] to [lat, lon] for Leaflet
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const roadClass = road.roadClass || road.ROAD_CLASS || road.RoadClass || 'Unknown Road';
+                  const avLegend = road.avLegend || road.AV_LEGEND || road.AvLegend || null;
+                  const imsLegend = road.imsLegend || road.IMS_LEGEND || road.ImsLegend || null;
+                  const lengthMiles = road.lengthMiles !== null && road.lengthMiles !== undefined ? road.lengthMiles : null;
+
+                  // Create polyline with orange color for CT roads
+                  const polyline = L.polyline(latlngs, {
+                    color: '#f97316', // Orange color for CT roads
+                    weight: 3,
+                    opacity: 0.7,
+                    smoothFactor: 1
+                  });
+
+                  // Build popup content with all road attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🛣️ ${roadClass}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${avLegend ? `<div><strong>AV Legend:</strong> ${avLegend}</div>` : ''}
+                        ${imsLegend ? `<div><strong>IMS Legend:</strong> ${imsLegend}</div>` : ''}
+                        ${lengthMiles !== null ? `<div><strong>Length:</strong> ${lengthMiles.toFixed(2)} miles</div>` : ''}
+                        ${road.distance_miles !== null && road.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${road.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all road attributes (excluding internal fields)
+                  const excludeFields = ['roadClass', 'ROAD_CLASS', 'RoadClass', 'avLegend', 'AV_LEGEND', 'AvLegend', 'imsLegend', 'IMS_LEGEND', 'ImsLegend', 'lengthMiles', 'LENGTH_MI', 'length_mi', 'geometry', 'distance_miles'];
+                  Object.entries(road).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi);
+                  bounds.extend(polyline.getBounds());
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing CT Road polyline:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (roadCount > 0) {
+          if (!legendAccumulator['ct_roads']) {
+            legendAccumulator['ct_roads'] = {
+              icon: '🛣️',
+              color: '#f97316',
+              title: 'CT Roads and Trails',
+              count: 0,
+            };
+          }
+          legendAccumulator['ct_roads'].count += roadCount;
+        }
       }
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)
@@ -4262,7 +4451,7 @@ const MapView: React.FC<MapViewProps> = ({
         });
       });
     }); // Close results.forEach
-    
+
     setLegendItems(
       Object.values(legendAccumulator).sort((a, b) => b.count - a.count)
     );

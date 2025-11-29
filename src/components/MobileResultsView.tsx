@@ -68,6 +68,20 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         }
         return value ? String(value) : 'N/A';
       }
+      if (key.includes('ma_parcel') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
+        // Format MA Parcel fields
+        if (key.includes('_count')) {
+          return value ? `${value} parcel${value === 1 ? '' : 's'}` : '0 parcels';
+        }
+        return value ? String(value) : 'N/A';
+      }
+      if (key.includes('ct_building_footprint') && !key.includes('_attributes') && !key.includes('_message') && !key.includes('_error')) {
+        // Format CT Building Footprint fields
+        if (key.includes('_count')) {
+          return value ? `${value} building${value === 1 ? '' : 's'}` : '0 buildings';
+        }
+        return value ? String(value) : 'N/A';
+      }
       if (key.includes('radius_km')) {
         return `${value.toLocaleString()} km`;
       }
@@ -80,7 +94,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       if (value.length === 0) return 'None found';
       
       // For detailed POI data, show count only in mobile form view
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all') || key.includes('nh_nursing_homes_all') || key.includes('nh_ems_all') || key.includes('nh_fire_stations_all') || key.includes('nh_places_of_worship_all') || key.includes('nh_hospitals_all') || key.includes('nh_public_waters_access_all') || key.includes('nh_law_enforcement_all') || key.includes('nh_recreation_trails_all') || key.includes('nh_dot_roads_all') || key.includes('nh_railroads_all') || key.includes('nh_transmission_pipelines_all') || key.includes('nh_cell_towers_all') || key.includes('nh_underground_storage_tanks_all') || key.includes('nh_water_wells_all') || key.includes('nh_public_water_supply_wells_all') || key.includes('nh_remediation_sites_all') || key.includes('nh_automobile_salvage_yards_all') || key.includes('nh_solid_waste_facilities_all')) {
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all') || key.includes('nh_nursing_homes_all') || key.includes('nh_ems_all') || key.includes('nh_fire_stations_all') || key.includes('nh_places_of_worship_all') || key.includes('nh_hospitals_all') || key.includes('nh_public_waters_access_all') || key.includes('nh_law_enforcement_all') || key.includes('nh_recreation_trails_all') || key.includes('nh_dot_roads_all') || key.includes('nh_railroads_all') || key.includes('nh_transmission_pipelines_all') || key.includes('nh_cell_towers_all') || key.includes('nh_underground_storage_tanks_all') || key.includes('nh_water_wells_all') || key.includes('nh_public_water_supply_wells_all') || key.includes('nh_remediation_sites_all') || key.includes('nh_automobile_salvage_yards_all') || key.includes('nh_solid_waste_facilities_all') || key.includes('ma_dep_wetlands_all') || key.includes('ma_open_space_all') || key.includes('cape_cod_zoning_all') || key.includes('ma_trails_all') || key.includes('ma_nhesp_natural_communities_all') || key.includes('ct_roads_all') || key.includes('ct_building_footprints_all')) {
         return `${value.length} found (see CSV for details)`;
       }
       
@@ -202,8 +216,13 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'New Hampshire Data';
     }
     
-    if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs')) {
+    if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs') || key.includes('ma_parcel')) {
       return 'Massachusetts Data';
+    }
+    
+    // Connecticut Data
+    if (key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
+      return 'Connecticut Data';
     }
     
     // Demographics
@@ -369,6 +388,22 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // NH Parcels fields - skip the _all array (handled separately)
       if (key.includes('nh_parcel') && key !== 'nh_parcels_all') {
         return selectedEnrichments.includes('nh_parcels');
+      }
+      
+      // MA Parcels fields - skip the _all array (handled separately)
+      if (key.includes('ma_parcel') && key !== 'ma_parcels_all') {
+        return selectedEnrichments.includes('ma_parcels');
+      }
+      
+      // CT Building Footprints fields - skip the _all array (handled separately)
+      if (key.includes('ct_building_footprint') && key !== 'ct_building_footprints_all') {
+        return selectedEnrichments.includes('ct_building_footprints');
+      }
+      
+      // CT Roads fields - only show if CT Roads enrichment is selected
+      // Skip the _all array (handled separately in display)
+      if (key.includes('ct_road') && key !== 'ct_roads_all') {
+        return selectedEnrichments.includes('ct_roads');
       }
       
       // NH Key Destinations fields - skip the _all array (handled separately)

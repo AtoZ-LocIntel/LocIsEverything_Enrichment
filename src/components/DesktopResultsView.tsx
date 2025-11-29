@@ -51,7 +51,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (value.length === 0) return 'None found';
       
       // For detailed POI data, show count only in form view
-      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all') || key.includes('nh_nursing_homes_all') || key.includes('nh_ems_all') || key.includes('nh_fire_stations_all') || key.includes('nh_places_of_worship_all') || key.includes('nh_hospitals_all') || key.includes('nh_public_waters_access_all') || key.includes('nh_law_enforcement_all') || key.includes('nh_recreation_trails_all') || key.includes('nh_dot_roads_all') || key.includes('nh_railroads_all') || key.includes('nh_transmission_pipelines_all') || key.includes('nh_cell_towers_all') || key.includes('nh_underground_storage_tanks_all') || key.includes('nh_water_wells_all') || key.includes('nh_public_water_supply_wells_all') || key.includes('nh_remediation_sites_all') || key.includes('nh_automobile_salvage_yards_all') || key.includes('nh_solid_waste_facilities_all') || key.includes('nh_nwi_plus_all') || key.includes('ma_dep_wetlands_all') || key.includes('ma_open_space_all') || key.includes('cape_cod_zoning_all') || key.includes('ma_trails_all') || key.includes('ma_nhesp_natural_communities_all')) {
+      if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all') || key.includes('nh_nursing_homes_all') || key.includes('nh_ems_all') || key.includes('nh_fire_stations_all') || key.includes('nh_places_of_worship_all') || key.includes('nh_hospitals_all') || key.includes('nh_public_waters_access_all') || key.includes('nh_law_enforcement_all') || key.includes('nh_recreation_trails_all') || key.includes('nh_dot_roads_all') || key.includes('nh_railroads_all') || key.includes('nh_transmission_pipelines_all') || key.includes('nh_cell_towers_all') || key.includes('nh_underground_storage_tanks_all') || key.includes('nh_water_wells_all') || key.includes('nh_public_water_supply_wells_all') || key.includes('nh_remediation_sites_all') || key.includes('nh_automobile_salvage_yards_all') || key.includes('nh_solid_waste_facilities_all') || key.includes('nh_nwi_plus_all') || key.includes('ma_dep_wetlands_all') || key.includes('ma_open_space_all') || key.includes('cape_cod_zoning_all') || key.includes('ma_trails_all') || key.includes('ma_nhesp_natural_communities_all') || key.includes('ct_roads_all') || key.includes('ct_building_footprints_all')) {
         return `${value.length} found (see CSV for details)`;
       }
       
@@ -221,6 +221,24 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         // Skip the _all array (handled separately in display)
         if (key.includes('nh_parcel') && key !== 'nh_parcels_all') {
           return selectedEnrichments.includes('nh_parcels');
+        }
+        
+        // MA Parcels fields - only show if MA Parcels enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ma_parcel') && key !== 'ma_parcels_all') {
+          return selectedEnrichments.includes('ma_parcels');
+        }
+        
+        // CT Building Footprints fields - only show if CT Building Footprints enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ct_building_footprint') && key !== 'ct_building_footprints_all') {
+          return selectedEnrichments.includes('ct_building_footprints');
+        }
+        
+        // CT Roads fields - only show if CT Roads enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ct_road') && key !== 'ct_roads_all') {
+          return selectedEnrichments.includes('ct_roads');
         }
         
         // NH Key Destinations fields - only show if NH Key Destinations enrichment is selected
@@ -401,8 +419,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Resources';
       } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_ssurgo') || key.includes('nh_bedrock_geology') || key.includes('nh_geographic_names') || key.includes('nh_parcel') || key.includes('nh_key_destinations') || key.includes('nh_nursing_homes') || key.includes('nh_ems') || key.includes('nh_fire_stations') || key.includes('nh_places_of_worship') || key.includes('nh_hospitals') || key.includes('nh_public_waters_access') || key.includes('nh_law_enforcement') || key.includes('nh_recreation_trails') || key.includes('nh_dot_roads') || key.includes('nh_railroads') || key.includes('nh_transmission_pipelines') || key.includes('nh_cell_towers') || key.includes('nh_underground_storage_tanks') || key.includes('nh_water_wells') || key.includes('nh_public_water_supply_wells') || key.includes('nh_remediation_sites') || key.includes('nh_automobile_salvage_yards') || key.includes('nh_solid_waste_facilities') || key.includes('nh_source_water_protection_area') || key.includes('nh_nwi_plus')) {
         category = 'New Hampshire Data';
-      } else if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs')) {
+      } else if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs') || key.includes('ma_parcel')) {
         category = 'Massachusetts Data';
+      } else if (key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
+        category = 'Connecticut Data';
       } else if (key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';
       } else if (key.includes('poi_') && (key.includes('school') || key.includes('college') || key.includes('childcare') || key.includes('community_centre') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('worship') || key.includes('mail_shipping'))) {

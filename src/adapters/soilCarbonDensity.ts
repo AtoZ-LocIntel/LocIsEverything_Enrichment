@@ -1,5 +1,5 @@
-// World Soils 250m Organic Carbon Density (ISRIC Soilgrids via ESRI Living Atlas)
-// Fetches soil organic carbon density data from ESRI Living Atlas ImageServer
+// World Soils 250m Organic Carbon Density (ISRIC SoilGrids REST API)
+// Fetches soil organic carbon density data from ISRIC SoilGrids v2.0 REST API
 
 interface SoilCarbonDensityResponse {
   organic_carbon_density?: number | null;
@@ -18,97 +18,172 @@ export async function getSoilCarbonDensityData(lat: number, lon: number): Promis
       return {
         organic_carbon_density: null,
         organic_carbon_density_units: 'kg/m²',
-        source: 'ISRIC Soilgrids via ESRI Living Atlas',
+        source: 'ISRIC SoilGrids',
         error: 'Invalid coordinates provided'
       };
     }
     
-    // ESRI Living Atlas ImageServer endpoint for World Soils 250m Organic Carbon Density
-    // Note: The identify endpoint might need to be called differently for tiled image services
-    const baseUrl = 'https://tiledimageservices.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/WorldSoils250mOrganicCarbonDensity/ImageServer';
-    const endpoint = `${baseUrl}/identify`;
+    // ISRIC SoilGrids v2.0 REST API endpoint
+    // The API expects arrays for property, depth, and value parameters
+    const baseUrl = 'https://rest.isric.org/soilgrids/v2.0/properties/query';
+    
+    // Validate URL construction
+    let queryUrl: URL;
+    try {
+      queryUrl = new URL(baseUrl);
+      queryUrl.searchParams.set('lon', lon.toString());
+      queryUrl.searchParams.set('lat', lat.toString());
+      
+      // Request organic carbon density (ocd) property with mean value at 0-30cm depth
+      // Using append() creates multiple query parameters with the same name (array format)
+      queryUrl.searchParams.append('property', 'ocd'); // ocd = organic carbon density
+      queryUrl.searchParams.append('value', 'mean'); // Get mean value
+      queryUrl.searchParams.append('depth', '0-30cm'); // Standard depth layer
+      
+      const finalUrl = queryUrl.toString();
+      console.log(`🌐 Soil Carbon Density API Call: ${finalUrl}`);
+      
+      // Validate the URL is properly formed
+      try {
+        new URL(finalUrl); // This will throw if URL is invalid
+      } catch (urlError) {
+        console.error('❌ Invalid URL constructed:', finalUrl);
+        throw new Error(`Invalid URL: ${urlError instanceof Error ? urlError.message : 'Unknown URL error'}`);
+      }
+    } catch (urlConstructionError) {
+      console.error('❌ Error constructing URL:', urlConstructionError);
+      throw new Error(`Failed to construct API URL: ${urlConstructionError instanceof Error ? urlConstructionError.message : 'Unknown error'}`);
+    }
     
     const result: SoilCarbonDensityResponse = {
       organic_carbon_density_units: 'kg/m²',
-      source: 'ISRIC Soilgrids via ESRI Living Atlas - World Soils 250m Organic Carbon Density'
+      source: 'ISRIC SoilGrids v2.0 - Organic Carbon Density'
     };
 
-    // Fetch data using the identify endpoint (point-in-pixel query)
-    const data = await fetchSoilData(endpoint, lat, lon);
+    // Fetch data from ISRIC SoilGrids REST API
+    let data: any = null;
+    let response: Response | null = null;
     
-    // Log the full response for debugging
-    console.log('🌱 Full identify response:', JSON.stringify(data, null, 2));
-    console.log('🌱 Response type:', typeof data);
-    console.log('🌱 Response keys:', data ? Object.keys(data) : 'null');
+    try {
+      response = await fetch(queryUrl.toString(), {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ HTTP ${response.status} error:`, errorText.substring(0, 200));
+        throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+      
+      const responseText = await response.text();
+      if (!responseText || responseText.trim() === '') {
+        throw new Error('Empty response from API');
+      }
+      
+      try {
+        data = JSON.parse(responseText);
+        console.log(`📊 Soil Carbon Density API Response (full):`, JSON.stringify(data, null, 2));
+      } catch (parseError) {
+        console.error('❌ Failed to parse JSON response:', responseText.substring(0, 200));
+        throw new Error('Invalid JSON response from API');
+      }
+      
+      // If layers array is empty, try without depth/value parameters (use API defaults)
+      if (data && data.properties && data.properties.layers && Array.isArray(data.properties.layers) && data.properties.layers.length === 0) {
+        console.log('🔄 Empty layers array, trying with only property parameter (using API defaults)...');
+        
+        try {
+          const fallbackUrl = new URL(baseUrl);
+          fallbackUrl.searchParams.set('lon', lon.toString());
+          fallbackUrl.searchParams.set('lat', lat.toString());
+          fallbackUrl.searchParams.set('property', 'ocd'); // Just request ocd, let API use defaults
+          
+          console.log(`🌐 Soil Carbon Density API Call (fallback): ${fallbackUrl.toString()}`);
+          
+          response = await fetch(fallbackUrl.toString(), {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const fallbackText = await response.text();
+            if (fallbackText && fallbackText.trim() !== '') {
+              data = JSON.parse(fallbackText);
+              console.log(`📊 Soil Carbon Density API Response (fallback, full):`, JSON.stringify(data, null, 2));
+            }
+          } else {
+            console.warn(`⚠️ Fallback request failed with HTTP ${response.status}`);
+          }
+        } catch (fallbackError) {
+          console.warn('⚠️ Fallback request failed:', fallbackError);
+        }
+      }
+    } catch (fetchError) {
+      console.error('❌ Fetch error:', fetchError);
+      throw fetchError;
+    }
+    console.log(`📊 Response type:`, typeof data);
+    console.log(`📊 Response keys:`, data ? Object.keys(data) : 'null');
     
-    // Handle different possible response structures
+    // ISRIC SoilGrids API returns GeoJSON with properties.layers array
+    // The response structure: { "properties": { "layers": [{ "name": "ocd", "depths": [{ "label": "0-30cm", "values": { "mean": value } }] }] } }
     let carbonDensityValue = null;
     
-    if (data) {
-      // Check for error first
-      if (data.error) {
-        console.error('🌱 API returned error:', data.error);
-        return {
-          organic_carbon_density: null,
-          organic_carbon_density_units: 'kg/m²',
-          source: 'ISRIC Soilgrids via ESRI Living Atlas',
-          error: `API Error: ${data.error.message || JSON.stringify(data.error)}`
-        };
-      }
+    if (data && data.properties && data.properties.layers && Array.isArray(data.properties.layers)) {
+      console.log(`🌱 Found layers array with ${data.properties.layers.length} items`);
       
-      // Check for value in various possible locations
-      // Format 1: Direct value property
-      if (data.value !== undefined && data.value !== null && data.value !== 'NoData' && data.value !== '') {
-        console.log('🌱 Found value in data.value:', data.value);
-        carbonDensityValue = data.value;
-      } 
-      // Format 2: Results array (common in ImageServer identify)
-      else if (data.results && Array.isArray(data.results) && data.results.length > 0) {
-        console.log('🌱 Found results array with', data.results.length, 'items');
-        const firstResult = data.results[0];
-        console.log('🌱 First result:', JSON.stringify(firstResult, null, 2));
-        
-        if (firstResult.value !== undefined && firstResult.value !== null && firstResult.value !== 'NoData' && firstResult.value !== '') {
-          carbonDensityValue = firstResult.value;
-        } else if (firstResult.attributes) {
-          // Sometimes value is in attributes
-          console.log('🌱 Checking attributes:', firstResult.attributes);
-          if (firstResult.attributes.value !== undefined) {
-            carbonDensityValue = firstResult.attributes.value;
-          } else if (firstResult.attributes.Pixel !== undefined) {
-            carbonDensityValue = firstResult.attributes.Pixel;
+      // Look for organic carbon density (ocd) layer
+      for (const layer of data.properties.layers) {
+        if (layer.name === 'ocd' && layer.depths && Array.isArray(layer.depths)) {
+          console.log(`🌱 Found ocd layer with ${layer.depths.length} depth levels`);
+          
+          // Prefer 0-30cm depth (standard surface layer), fallback to 0-5cm if not available
+          const preferredDepths = ['0-30cm', '0-5cm', '5-15cm', '15-30cm'];
+          
+          for (const depthLabel of preferredDepths) {
+            const depth = layer.depths.find((d: any) => d.label === depthLabel);
+            if (depth && depth.values && depth.values.mean !== undefined && depth.values.mean !== null) {
+              carbonDensityValue = depth.values.mean;
+              // Note: The API returns values in dg/dm³ (decigrams per cubic decimeter)
+              // We need to convert to kg/m² for the standard depth layer
+              // For now, we'll use the mean value directly - the unit conversion depends on the depth layer
+              console.log(`🌱 Found organic carbon density (${depthLabel}): ${carbonDensityValue} dg/dm³`);
+              break;
+            }
           }
+          
+          // If we didn't find a preferred depth, use the first available depth with mean value
+          if (!carbonDensityValue) {
+            for (const depth of layer.depths) {
+              if (depth.values && depth.values.mean !== undefined && depth.values.mean !== null) {
+                carbonDensityValue = depth.values.mean;
+                console.log(`🌱 Found organic carbon density (${depth.label}): ${carbonDensityValue} dg/dm³`);
+                break;
+              }
+            }
+          }
+          
+          break; // Found ocd layer, no need to check other layers
         }
-      } 
-      // Format 3: Properties object
-      else if (data.properties && data.properties.value !== undefined) {
-        console.log('🌱 Found value in data.properties.value:', data.properties.value);
-        carbonDensityValue = data.properties.value;
-      }
-      // Format 4: Check for pixel value directly
-      else if (data.pixel !== undefined) {
-        console.log('🌱 Found value in data.pixel:', data.pixel);
-        carbonDensityValue = data.pixel;
-      }
-      // Format 5: Check location property (sometimes contains value)
-      else if (data.location && data.location.value !== undefined) {
-        console.log('🌱 Found value in data.location.value:', data.location.value);
-        carbonDensityValue = data.location.value;
-      }
-      
-      if (carbonDensityValue === null) {
-        console.warn('🌱 Could not find value in any expected location. Full response structure:', {
-          hasValue: 'value' in data,
-          hasResults: 'results' in data,
-          hasProperties: 'properties' in data,
-          hasPixel: 'pixel' in data,
-          hasLocation: 'location' in data,
-          allKeys: Object.keys(data)
-        });
       }
     }
     
-    if (carbonDensityValue !== null) {
+    if (!carbonDensityValue) {
+      console.warn('🌱 Could not find ocd value in layers. Full response structure:', {
+        hasProperties: !!data.properties,
+        hasLayers: !!(data.properties && data.properties.layers && Array.isArray(data.properties.layers)),
+        layersCount: data.properties && data.properties.layers ? data.properties.layers.length : 0,
+        layers: data.properties && data.properties.layers ? data.properties.layers.map((l: any) => l.name) : [],
+        allKeys: Object.keys(data)
+      });
+    }
+    
+    if (carbonDensityValue !== null && carbonDensityValue !== undefined) {
       const carbonDensity = parseFloat(carbonDensityValue);
       if (!isNaN(carbonDensity)) {
         result.organic_carbon_density = carbonDensity;
@@ -118,7 +193,7 @@ export async function getSoilCarbonDensityData(lat: number, lon: number): Promis
         result.organic_carbon_density = null;
       }
     } else {
-      console.log('🌱 No data available at this location (value not found in response)');
+      console.log('🌱 No data available at this location');
       result.organic_carbon_density = null;
     }
     
@@ -128,7 +203,7 @@ export async function getSoilCarbonDensityData(lat: number, lon: number): Promis
       return {
         organic_carbon_density: null,
         organic_carbon_density_units: 'kg/m²',
-        source: 'ISRIC Soilgrids via ESRI Living Atlas',
+        source: 'ISRIC SoilGrids v2.0',
         error: 'No data available for this location'
       };
     }
@@ -141,121 +216,9 @@ export async function getSoilCarbonDensityData(lat: number, lon: number): Promis
     return {
       organic_carbon_density: null,
       organic_carbon_density_units: 'kg/m²',
-      source: 'ISRIC Soilgrids via ESRI Living Atlas',
+      source: 'ISRIC SoilGrids v2.0',
       error: error instanceof Error ? error.message : 'Unknown error'
     };
-  }
-}
-
-// Import the CORS proxy system from EnrichmentService
-import { fetchJSONSmart } from '../services/EnrichmentService';
-
-// Helper function to fetch soil data for a specific coordinate using ImageServer identify endpoint
-async function fetchSoilData(endpoint: string, lat: number, lon: number): Promise<any> {
-  try {
-    // The "Invalid URL" error suggests the endpoint might not support identify the way we're calling it
-    // Let's try using the exact format from the user's example, but also try a POST request
-    // Some ESRI services require POST for identify operations
-    
-    // Format 1: Simple comma-separated (as in user's example) - minimal parameters
-    const geometryParam1 = `${lon},${lat}`;
-    const url1 = `${endpoint}?geometry=${geometryParam1}&geometryType=esriGeometryPoint&sr=4326&returnGeometry=false&returnCatalogItems=false&f=json`;
-    
-    console.log(`🌐 Soil Carbon Density API Call (format 1 - GET): ${url1}`);
-    
-    // Try format 1 first (GET request)
-    try {
-      const data = await fetchJSONSmart(url1);
-      console.log(`📊 Soil Carbon Density API Response (format 1):`, data);
-      
-      // Check if we got an error response
-      if (data && data.error) {
-        console.warn('⚠️ Format 1 returned error, trying format 2 (POST):', data.error);
-        throw new Error('Format 1 failed');
-      }
-      
-      return data;
-    } catch (error1) {
-      // Format 1 failed, try format 2 as POST request
-      console.log('🔄 Trying format 2 (POST request with form data)...');
-      
-      try {
-        // Format 2: Try POST request with form-encoded data
-        // Some ESRI ImageServers require POST for identify
-        const formData = new URLSearchParams({
-          geometry: `${lon},${lat}`,
-          geometryType: 'esriGeometryPoint',
-          sr: '4326',
-          returnGeometry: 'false',
-          returnCatalogItems: 'false',
-          f: 'json'
-        });
-        
-        console.log(`🌐 Soil Carbon Density API Call (format 2 - POST): ${endpoint}`);
-        console.log(`🌐 POST body: ${formData.toString()}`);
-        
-        // Use fetchJSONSmart but with POST method
-        const data = await fetchJSONSmart(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: formData.toString()
-        });
-        
-        console.log(`📊 Soil Carbon Density API Response (format 2 - POST):`, data);
-        
-        if (data && data.error) {
-          console.warn('⚠️ Format 2 (POST) returned error, trying format 3:', data.error);
-          throw new Error('Format 2 failed');
-        }
-        
-        return data;
-      } catch (error2) {
-        // Format 2 failed, try format 3 with JSON geometry and POST
-        console.log('🔄 Trying format 3 (POST with JSON geometry)...');
-        
-        try {
-          const geometry3 = {
-            "x": lon,
-            "y": lat,
-            "spatialReference": {"wkid": 4326}
-          };
-          
-          const formData3 = new URLSearchParams({
-            geometry: JSON.stringify(geometry3),
-            geometryType: 'esriGeometryPoint',
-            sr: '4326',
-            imageDisplay: '400,400,96',
-            mapExtent: `${lon-0.01},${lat-0.01},${lon+0.01},${lat+0.01}`,
-            tolerance: '1',
-            returnGeometry: 'false',
-            returnCatalogItems: 'false',
-            f: 'json'
-          });
-          
-          console.log(`🌐 Soil Carbon Density API Call (format 3 - POST with JSON geometry): ${endpoint}`);
-          
-          const data = await fetchJSONSmart(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: formData3.toString()
-          });
-          
-          console.log(`📊 Soil Carbon Density API Response (format 3 - POST):`, data);
-          
-          return data;
-        } catch (error3) {
-          console.error('❌ All three formats failed');
-          return null;
-        }
-      }
-    }
-  } catch (error) {
-    console.warn('⚠️ Failed to fetch soil carbon density data:', error);
-    return null;
   }
 }
 

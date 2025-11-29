@@ -276,27 +276,27 @@ function App() {
 
             {/* Hide search UI when category modal is open */}
             {!isCategoryModalOpen && (
-              <div className="space-y-8 mb-8">
-                <div id="single-search-section" data-section="single-search">
-                  <SingleSearch 
-                    onSearch={handleSingleSearch} 
-                    onLocationSearch={handleLocationSearch}
-                    isMobile={isMobile}
-                    searchInput={searchInput}
-                    onSearchInputChange={setSearchInput}
+            <div className="space-y-8 mb-8">
+              <div id="single-search-section" data-section="single-search">
+                <SingleSearch 
+                  onSearch={handleSingleSearch} 
+                  onLocationSearch={handleLocationSearch}
+                  isMobile={isMobile}
+                  searchInput={searchInput}
+                  onSearchInputChange={setSearchInput}
+                />
+              </div>
+              {!isMobile && (
+                <div data-section="batch-processing">
+                  <BatchProcessing 
+                    onComplete={handleBatchComplete} 
+                    selectedEnrichments={selectedEnrichments}
+                    poiRadii={poiRadii}
+                    onLoadingChange={setIsLoading}
                   />
                 </div>
-                {!isMobile && (
-                  <div data-section="batch-processing">
-                    <BatchProcessing 
-                      onComplete={handleBatchComplete} 
-                      selectedEnrichments={selectedEnrichments}
-                      poiRadii={poiRadii}
-                      onLoadingChange={setIsLoading}
-                    />
-                  </div>
-                )}
-              </div>
+              )}
+            </div>
             )}
 
             <EnrichmentConfig

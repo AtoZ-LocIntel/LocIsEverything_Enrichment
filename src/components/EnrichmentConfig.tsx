@@ -84,15 +84,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [viewingNHSubCategories, setViewingNHSubCategories] = useState(false);
   const [viewingMASubCategories, setViewingMASubCategories] = useState(false);
+  const [viewingCTSubCategories, setViewingCTSubCategories] = useState(false);
   const [cameFromNHSubCategories, setCameFromNHSubCategories] = useState(false);
   const [cameFromMASubCategories, setCameFromMASubCategories] = useState(false);
+  const [cameFromCTSubCategories, setCameFromCTSubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, onModalStateChange]); // Track if viewing state sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
@@ -269,6 +271,42 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             description: section.description,
             enrichments: [], // MA parent category has no direct enrichments
             subCategories: maSubCategories
+          };
+        }
+        
+        // Special handling for CT - add sub-categories based on data sources
+        if (section.id === 'ct') {
+          // Get CT Geodata Portal enrichments (filter POIs where section is 'ct')
+          const ctGeoDataPortalPOIs = poiTypes.filter(poi => poi.section === 'ct');
+          const ctGeoDataPortalEnrichments = ctGeoDataPortalPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Define CT sub-categories (organized by data source)
+          const ctSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'ct_geodata_portal',
+              title: 'CT Geodata Portal',
+              icon: <img src="/assets/CT_GeoDataPortal.webp" alt="CT Geodata Portal" className="w-full h-full object-cover rounded-full" />,
+              description: 'Connecticut Geodata Portal data layers',
+              enrichments: ctGeoDataPortalEnrichments
+            }
+          ];
+          
+          console.log('🔵 CT SECTION PROCESSED - Sub-categories:', ctSubCategories.length, ctSubCategories.map(sc => sc.id));
+          
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [], // CT parent category has no direct enrichments
+            subCategories: ctSubCategories
           };
         }
         
@@ -508,11 +546,19 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     <button
                       key={category.id}
                       onClick={() => {
-                        // Special handling for NH and MA - show sub-categories page
+                        // Special handling for NH, MA, and CT - show sub-categories page
+                        console.log('🔍 Category clicked:', category.id, {
+                          hasSubCategories: !!category.subCategories,
+                          subCategoriesLength: category.subCategories?.length || 0,
+                          subCategories: category.subCategories?.map(sc => sc.id) || []
+                        });
                         if (category.id === 'nh' && category.subCategories && category.subCategories.length > 0) {
                           setViewingNHSubCategories(true);
                         } else if (category.id === 'ma' && category.subCategories && category.subCategories.length > 0) {
                           setViewingMASubCategories(true);
+                        } else if (category.id === 'ct' && category.subCategories && category.subCategories.length > 0) {
+                          console.log('✅ Setting viewingCTSubCategories to true');
+                          setViewingCTSubCategories(true);
                         } else if (onViewCategory) {
                           onViewCategory(category);
                         } else {
@@ -586,6 +632,97 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       </span>
                     );
                   })
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If viewing CT sub-categories, show full page with round icons
+  if (viewingCTSubCategories) {
+    const ctCategory = enrichmentCategories.find(c => c.id === 'ct');
+    const ctSubCategories = ctCategory?.subCategories || [];
+    
+    return (
+      <div className="enrichment-config">
+        <div className="card">
+          <div className="card-header">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setViewingCTSubCategories(false)}
+                  className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
+                  title="Back to categories"
+                >
+                  ←
+                </button>
+                <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Connecticut Open Data</h3>
+                  <p className="text-xs lg:text-sm text-gray-300">Select a category to view available layers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="card-body">
+            {/* CT Sub-Category Round Icons Grid - Same layout as home page */}
+            <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
+                {ctSubCategories.length > 0 ? (
+                  ctSubCategories.map((subCategory) => {
+                    const subCategoryEnrichments = subCategory.enrichments;
+                    const selectedCount = subCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+                    
+                    // Determine ring brightness based on selection count
+                    const getRingOpacity = () => {
+                      if (selectedCount === 0) return 0;
+                      if (selectedCount <= 2) return 0.3;
+                      if (selectedCount <= 4) return 0.6;
+                      return 0.9;
+                    };
+
+                    return (
+                      <button
+                        key={subCategory.id}
+                        onClick={() => {
+                          // Use onViewCategory to show sub-category layers (same pattern as NH and MA)
+                          if (onViewCategory) {
+                            setViewingCTSubCategories(false);
+                            onViewCategory(subCategory);
+                          } else {
+                            // Fallback to modal
+                            setCameFromCTSubCategories(true);
+                            setActiveModal(subCategory.id);
+                            setViewingCTSubCategories(false);
+                          }
+                        }}
+                        className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
+                        }}
+                      >
+                        {/* Sub-Category Icon */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          {subCategory.icon}
+                        </div>
+                        
+                        {/* Selection Counter Badge */}
+                        {selectedCount > 0 && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold z-10">
+                            {selectedCount}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-2 text-center text-gray-500 py-8">
+                    No sub-categories available
+                  </div>
                 )}
               </div>
             </div>
@@ -861,6 +998,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 category.id === 'pct' ? '#166534' :
                                 category.id === 'nh' ? '#166534' :
                                 category.id === 'nh_granit' ? '#166534' :
+                                category.id === 'ma_massgis' ? '#166534' :
+                                category.id === 'ct_geodata_portal' ? '#166534' :
                                 category.id === 'core' ? '#1e293b' : '#1f2937';
               
               console.log('Category:', category.id, 'Header color:', headerColor);
@@ -892,6 +1031,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromMASubCategories(false);
                               setActiveModal(null);
                               setViewingMASubCategories(true);
+                            } else if (cameFromCTSubCategories) {
+                              // Go back to CT sub-categories page
+                              setCameFromCTSubCategories(false);
+                              setActiveModal(null);
+                              setViewingCTSubCategories(true);
                             } else {
                               // Go back to main configuration
                               setActiveModal(null);
@@ -947,6 +1091,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
                           if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
                           if (enrichment.id === 'nh_parcels') return '0.3 miles';
+                          if (enrichment.id === 'ma_parcels') return '0.3 miles';
+                          if (enrichment.id === 'ct_building_footprints') return '0.3 miles';
                           return '5 miles';
                         })();
 
@@ -981,7 +1127,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             {enrichment.isPOI && isSelected && (() => {
                               // For NH parcels, use a dropdown with specific options
                               const isNHParcels = enrichment.id === 'nh_parcels';
+                              const isMAParcels = enrichment.id === 'ma_parcels';
+                              const isCTBuildingFootprints = enrichment.id === 'ct_building_footprints';
                               const radiusOptions = isNHParcels
+                                ? [0.25, 0.50, 0.75, 1.0]
+                                : isMAParcels
+                                ? [0.3, 0.5, 0.75, 1.0]
+                                : isCTBuildingFootprints
                                 ? [0.25, 0.50, 0.75, 1.0]
                                 : enrichment.id === 'poi_aurora_viewing_sites'
                                 ? [5, 10, 25, 50, 100]
@@ -1118,7 +1270,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setViewingNHSubCategories(true);
                       } else if (category.id === 'ma' && category.subCategories && category.subCategories.length > 0) {
                         setViewingMASubCategories(true);
-                      } else if ((category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de') && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'ct' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingCTSubCategories(true);
+                      } else if ((category.id === 'ri' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de') && category.subCategories && category.subCategories.length > 0) {
                         // For other states with sub-categories, use onViewCategory (they'll be handled like regular categories for now)
                         // When sub-categories are added, we can add specific state handlers similar to NH/MA
                         if (onViewCategory) {

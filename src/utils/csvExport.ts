@@ -269,6 +269,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ma_open_space_all' || // Skip _all arrays (handled separately)
         key === 'cape_cod_zoning_all' || // Skip _all arrays (handled separately)
         key === 'ma_trails_all' || // Skip _all arrays (handled separately)
+        key === 'ma_parcels_all' || // Skip _all arrays (handled separately)
+        key === 'ct_building_footprints_all' || // Skip _all arrays (handled separately)
+        key === 'ct_roads_all' || // Skip _all arrays (handled separately)
         key === 'ma_nhesp_natural_communities_all' ||
         key === 'ma_lakes_and_ponds_all' ||
         key === 'ma_rivers_and_streams_all') { // Skip _all arrays (handled separately)
@@ -533,6 +536,128 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone (not applicable for parcels)
           attributesJson, // Full attributes in Website field for easy access
           'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'ma_parcels_all' && Array.isArray(value)) {
+      // Handle MA Parcels - each parcel gets its own row with all attributes
+      value.forEach((parcel: any) => {
+        // Extract parcel ID and type
+        const parcelId = parcel.parcelId || parcel.MAP_PAR_ID || parcel.map_par_id || parcel.PROP_ID || parcel.prop_id || parcel.OBJECTID || parcel.objectid || 'Unknown';
+        const parcelType = parcel.isContaining ? 'Containing Parcel' : 'Nearby Parcel';
+        
+        // Extract common parcel attributes that might be useful
+        const ownerName = parcel.OWNER1 || parcel.owner1 || parcel.OWNER || parcel.owner || '';
+        const address = parcel.SITE_ADDR || parcel.site_addr || parcel.ADDRESS || parcel.address || '';
+        const city = parcel.CITY || parcel.city || '';
+        const state = parcel.STATE || parcel.state || 'MA';
+        const zip = parcel.ZIP || parcel.zip || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        // Collect all other attributes as a JSON string for full data access
+        const allAttributes = { ...parcel };
+        delete allAttributes.parcelId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'MassGIS',
+          (location.confidence || 'N/A').toString(),
+          'MA_PARCEL',
+          `${parcelType} - ${parcelId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          parcel.distance_miles !== null && parcel.distance_miles !== undefined ? parcel.distance_miles.toFixed(2) : (parcel.isContaining ? '0.00' : ''),
+          parcelType,
+          fullAddress || attributesJson, // Use address if available, otherwise full JSON
+          ownerName || '', // Owner
+          '', // Phone (not applicable for parcels)
+          attributesJson, // Full attributes in Website field for easy access
+          'MassGIS'
+        ]);
+      });
+    } else if (key === 'ct_building_footprints_all' && Array.isArray(value)) {
+      // Handle CT Building Footprints - each building gets its own row with all attributes
+      value.forEach((building: any) => {
+        // Extract building ID and type
+        const buildingId = building.buildingId || building.OBJECTID || building.objectid || building.OBJECTID_1 || 'Unknown';
+        const buildingType = building.isContaining ? 'Containing Building' : 'Nearby Building';
+        
+        // Extract common building attributes
+        const municipality = building.Municipality || building.municipality || '';
+        const county = building.County || building.county || '';
+        const planningRegion = building.PlanningRegion || building.planningRegion || building.Planning_Region || '';
+        
+        // Collect all other attributes as a JSON string for full data access
+        const allAttributes = { ...building };
+        delete allAttributes.buildingId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'CT Geodata Portal',
+          (location.confidence || 'N/A').toString(),
+          'CT_BUILDING_FOOTPRINT',
+          `${buildingType} - ${buildingId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          building.distance_miles !== null && building.distance_miles !== undefined ? building.distance_miles.toFixed(2) : (building.isContaining ? '0.00' : ''),
+          buildingType,
+          municipality || county || planningRegion || attributesJson, // Use location info if available, otherwise full JSON
+          '', // Owner (not applicable for buildings)
+          '', // Phone (not applicable for buildings)
+          attributesJson, // Full attributes in Website field for easy access
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_roads_all' && Array.isArray(value)) {
+      // Handle CT Roads and Trails - each road/trail gets its own row with all attributes
+      value.forEach((road: any) => {
+        const roadClass = road.roadClass || road.ROAD_CLASS || road.RoadClass || 'Unknown Road';
+        const avLegend = road.avLegend || road.AV_LEGEND || road.AvLegend || '';
+        const imsLegend = road.imsLegend || road.IMS_LEGEND || road.ImsLegend || '';
+        const lengthMiles = road.lengthMiles !== null && road.lengthMiles !== undefined ? road.lengthMiles : (road.LENGTH_MI !== undefined ? road.LENGTH_MI : null);
+        
+        const allAttributes = { ...road };
+        delete allAttributes.roadClass;
+        delete allAttributes.ROAD_CLASS;
+        delete allAttributes.RoadClass;
+        delete allAttributes.avLegend;
+        delete allAttributes.AV_LEGEND;
+        delete allAttributes.AvLegend;
+        delete allAttributes.imsLegend;
+        delete allAttributes.IMS_LEGEND;
+        delete allAttributes.ImsLegend;
+        delete allAttributes.lengthMiles;
+        delete allAttributes.LENGTH_MI;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'CT Geodata Portal',
+          (location.confidence || 'N/A').toString(),
+          'CT_ROAD',
+          roadClass,
+          location.lat.toString(), // Use search location for road (it's a line, not a point)
+          location.lon.toString(),
+          road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles.toFixed(2) : '',
+          avLegend || imsLegend || 'Road/Trail',
+          lengthMiles !== null ? `${lengthMiles.toFixed(2)} miles` : attributesJson,
+          '',
+          '',
+          attributesJson,
+          'CT Geodata Portal'
         ]);
       });
     } else if (key === 'nh_key_destinations_all' && Array.isArray(value)) {

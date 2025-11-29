@@ -571,6 +571,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "NH Stone Walls",
+          description: "New Hampshire stone walls - line dataset with proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
@@ -629,13 +636,6 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         {
           name: "NH National Wetland Inventory (NWI) Plus",
           description: "New Hampshire National Wetland Inventory Plus from the Department of Environmental Services - point-in-polygon queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Stone Walls",
-          description: "New Hampshire stone walls - line dataset with proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
@@ -698,6 +698,32 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           name: "MA Areas of Critical Environmental Concern (ACECs)",
           description: "MassGIS - Massachusetts Areas of Critical Environmental Concern (point-in-polygon and proximity queries up to 25 miles)",
           coverage: "Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "Massachusetts Property Tax Parcels",
+          description: "MassGIS Level 3 Assessors' Parcel Mapping data - point-in-polygon and proximity queries (0.3, 0.5, 0.75, 1.0 miles)",
+          coverage: "Massachusetts (350 of 351 cities and towns)",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Connecticut Data (CT Geodata Portal)",
+      sources: [
+        {
+          name: "CT 2D Building Footprints",
+          description: "Connecticut 2D building footprints - point-in-polygon and proximity queries (0.25, 0.5, 0.75, 1.0 miles)",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CT Roads and Trails",
+          description: "Connecticut roads and trails network - proximity queries up to 5 miles",
+          coverage: "Connecticut",
           accuracy: "Very High",
           cost: "Free"
         }
