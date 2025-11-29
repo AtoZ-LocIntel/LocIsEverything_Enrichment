@@ -19,6 +19,60 @@ interface LegendItem {
   count: number;
 }
 
+// MapTiler Basemap Configuration
+const MAPTILER_BASEMAPS: Record<string, { url: string; name: string; attribution: string }> = {
+  landscape: {
+    url: 'https://api.maptiler.com/maps/landscape/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Landscape',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  },
+  hybrid: {
+    url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Hybrid',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  },
+  streets: {
+    url: 'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Streets',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  },
+  topo: {
+    url: 'https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Topographic',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  },
+  satellite: {
+    url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Satellite',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  },
+  basic: {
+    url: 'https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Basic',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  },
+  bright: {
+    url: 'https://api.maptiler.com/maps/bright/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Bright',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  },
+  pastel: {
+    url: 'https://api.maptiler.com/maps/pastel/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Pastel',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  },
+  dataviz: {
+    url: 'https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Data Visualization',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  },
+  winter: {
+    url: 'https://api.maptiler.com/maps/winter-v2/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
+    name: 'Winter',
+    attribution: '© MapTiler © OpenStreetMap contributors'
+  }
+};
+
 // Fix for Leaflet marker icons in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -589,8 +643,10 @@ const MapView: React.FC<MapViewProps> = ({
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
+  const basemapLayerRef = useRef<L.TileLayer | null>(null);
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
+  const [selectedBasemap, setSelectedBasemap] = useState<string>('streets');
   const [viewportHeight, setViewportHeight] = useState<number>(() => (
     typeof window !== 'undefined' ? window.innerHeight : 0
   ));
@@ -615,10 +671,13 @@ const MapView: React.FC<MapViewProps> = ({
       attributionControl: true,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      maxZoom: 19,
+    // Initialize with selected basemap
+    const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.streets;
+    const basemapLayer = L.tileLayer(basemapConfig.url, {
+      attribution: basemapConfig.attribution,
+      maxZoom: 22,
     }).addTo(map);
+    basemapLayerRef.current = basemapLayer;
 
     const primary = L.layerGroup().addTo(map);
     const poi = L.layerGroup().addTo(map);
@@ -630,8 +689,31 @@ const MapView: React.FC<MapViewProps> = ({
       map.remove();
       mapInstanceRef.current = null;
       layerGroupsRef.current = null;
+      basemapLayerRef.current = null;
     };
   }, [isMobile, results.length]);
+
+  // Handle basemap switching
+  useEffect(() => {
+    if (!mapInstanceRef.current || !basemapLayerRef.current) {
+      return;
+    }
+
+    const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.streets;
+    
+    // Remove old basemap layer
+    if (basemapLayerRef.current) {
+      mapInstanceRef.current.removeLayer(basemapLayerRef.current);
+    }
+
+    // Add new basemap layer
+    const newBasemapLayer = L.tileLayer(basemapConfig.url, {
+      attribution: basemapConfig.attribution,
+      maxZoom: 22,
+    }).addTo(mapInstanceRef.current);
+    
+    basemapLayerRef.current = newBasemapLayer;
+  }, [selectedBasemap]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -4519,6 +4601,22 @@ const MapView: React.FC<MapViewProps> = ({
             <span className="text-sm font-medium">Back</span>
           </button>
           
+          {/* Basemap Dropdown - Top Left (below back button) */}
+          <div className="absolute top-16 left-4 z-[1000] bg-white rounded-lg shadow-lg">
+            <select
+              value={selectedBasemap}
+              onChange={(e) => setSelectedBasemap(e.target.value)}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style={{ zIndex: 1000 }}
+            >
+              {Object.entries(MAPTILER_BASEMAPS).map(([key, config]) => (
+                <option key={key} value={key}>
+                  {config.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
           {/* Download Button Overlay - Top Right (for single location) */}
           {results.length === 1 && (
             <button
@@ -4582,6 +4680,25 @@ const MapView: React.FC<MapViewProps> = ({
             <span className="w-5 h-5">←</span>
             <span className="text-sm font-medium">Back to Configuration</span>
           </button>
+          
+          {/* Basemap Dropdown */}
+          <div className="flex items-center space-x-2">
+            <label htmlFor="basemap-select" className="text-sm text-gray-600 font-medium">
+              Basemap:
+            </label>
+            <select
+              id="basemap-select"
+              value={selectedBasemap}
+              onChange={(e) => setSelectedBasemap(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {Object.entries(MAPTILER_BASEMAPS).map(([key, config]) => (
+                <option key={key} value={key}>
+                  {config.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         
         <div className="flex items-center space-x-4">

@@ -6505,27 +6505,70 @@ out center;`;
       const data = await response.json();
       
       const elements = data.elements || [];
-      const count = elements.length;
+      console.log(`⛽ Overpass returned ${elements.length} gas station elements`);
       
-      // Process gas station details for mapping
-      const stationDetails = elements.slice(0, 10).map((element: any) => ({
+      // Calculate distances and filter by radius
+      const stationsWithDistance: any[] = [];
+      for (const element of elements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let stationLat: number | null = null;
+        let stationLon: number | null = null;
+        
+        if (element.type === 'node') {
+          stationLat = element.lat;
+          stationLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          stationLat = element.center?.lat;
+          stationLon = element.center?.lon;
+        }
+        
+        if (stationLat == null || stationLon == null) {
+          console.warn(`⛽ Skipping gas station ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, stationLat, stationLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include stations within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= radiusMiles) {
+          stationsWithDistance.push({
+            ...element,
+            lat: stationLat,
+            lon: stationLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      stationsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = stationsWithDistance.length;
+      console.log(`⛽ Found ${count} gas stations within ${radiusMiles} miles (after distance filtering)`);
+      
+      // Process gas station details for mapping (take top results, already sorted by distance)
+      const stationDetails = stationsWithDistance.slice(0, 100).map((element: any) => ({
         id: element.id,
         name: element.tags?.name || element.tags?.brand || 'Unnamed Gas Station',
         brand: element.tags?.brand || 'Unknown',
         address: element.tags?.['addr:street'] || 'No address',
         city: element.tags?.['addr:city'] || 'Unknown city',
         state: element.tags?.['addr:state'] || 'Unknown state',
-        lat: element.lat || element.center?.lat,
-        lon: element.lon || element.center?.lon,
+        lat: element.lat,
+        lon: element.lon,
         type: element.type,
         phone: element.tags?.phone,
         website: element.tags?.website,
-        self_service: element.tags?.self_service
+        self_service: element.tags?.self_service,
+        distance_miles: element.distance_miles
       }));
       
       return {
         poi_gas_stations_summary: `Found ${count} gas stations within ${radiusMiles} miles.`,
-        poi_gas_stations_detailed: stationDetails
+        poi_gas_stations_detailed: stationDetails,
+        poi_gas_stations_all: stationsWithDistance // Include all stations for CSV export
       };
     } catch (error) {
       console.error('Gas Stations query failed:', error);
