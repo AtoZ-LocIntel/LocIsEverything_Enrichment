@@ -284,6 +284,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_padus_protection_status', label: 'PAD-US Protection Status', description: 'GAP status codes and IUCN categories for protected areas', isPOI: true, defaultRadius: 5, category: 'public_lands', section: 'public_lands' },
   { id: 'poi_community_centers', label: 'Community Centers', description: 'Community centers and gathering places via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   { id: 'poi_mail_shipping', label: 'Mail & Shipping', description: 'Post offices, parcel lockers, UPS/FedEx/DHL stores, shipping centers, and courier services', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_colleges_universities', label: 'Colleges & Universities', description: 'Colleges, universities, and educational institutions via OSM Overpass API', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'community', section: 'community' },
   
   // Natural Hazards - Wildfire Risk & Monitoring (grouped at top)
   { id: 'poi_wildfires', label: 'Current Wildfires', description: 'NIFC/Esri USA Wildfires - current wildfire incidents and perimeters with incident names, containment status, and discovery dates', isPOI: true, defaultRadius: 50, category: 'wildfire', section: 'wildfire' },
@@ -367,8 +368,10 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ma_regional_planning_agencies', label: 'MA Regional Planning Agencies', description: 'MassGIS - Massachusetts Regional Planning Agencies (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'ma', section: 'ma' },
   { id: 'ma_acecs', label: 'MA Areas of Critical Environmental Concern', description: 'MassGIS - Massachusetts Areas of Critical Environmental Concern (ACECs) (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ma', section: 'ma' },
   { id: 'ma_parcels', label: 'Massachusetts Property Tax Parcels', description: 'MassGIS - Massachusetts property tax parcels for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.3, maxRadius: 1.0, category: 'ma', section: 'ma' },
+  { id: 'ct_parcels', label: 'CT Parcels', description: 'CT Geodata Portal - Connecticut State Parcel Layer 2023 for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'ct', section: 'ct' },
   { id: 'ct_building_footprints', label: 'CT 2D Building Footprints', description: 'CT Geodata Portal - Connecticut 2D building footprints for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'ct', section: 'ct' },
   { id: 'ct_roads', label: 'CT Roads and Trails', description: 'CT Geodata Portal - Connecticut roads and trails network for proximity queries', isPOI: true, defaultRadius: 0.5, maxRadius: 5.0, category: 'ct', section: 'ct' },
+  { id: 'ct_urgent_care', label: 'CT Urgent Care', description: 'CT Geodata Portal - Connecticut urgent care facilities for proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' },
   { id: 'ct_deep_properties', label: 'CT DEEP Properties', description: 'CT Geodata Portal - Connecticut Department of Energy and Environmental Protection (DEEP) properties for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' }
 ];
 

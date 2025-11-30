@@ -188,6 +188,9 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_electric_charging': { icon: '🔌', color: '#10b981', title: 'Electric Charging Stations' },
   'poi_gas_stations': { icon: '⛽', color: '#f59e0b', title: 'Gas Stations' },
   'poi_mail_shipping': { icon: '📮', color: '#3b82f6', title: 'Mail & Shipping' },
+  'poi_colleges_universities': { icon: '🎓', color: '#7c3aed', title: 'Colleges & Universities' },
+  'ct_urgent_care': { icon: '🏥', color: '#f97316', title: 'CT Urgent Care' },
+  'ct_parcels': { icon: '🏠', color: '#059669', title: 'CT Parcels' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
    
   // Natural Resources
@@ -408,8 +411,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ma_regional_planning_agencies_all' || // Skip MA Regional Planning Agencies array (handled separately for map drawing)
     key === 'ma_acecs_all' || // Skip MA ACECs array (handled separately for map drawing)
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
+    key === 'ct_parcels_all' || // Skip CT parcels array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
+    key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
     key === 'ct_deep_properties_all' || // Skip CT DEEP properties array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
@@ -4430,8 +4435,122 @@ const MapView: React.FC<MapViewProps> = ({
         });
       }
 
+      // Draw CT Parcels as polygons on the map
+      if (enrichments.ct_parcels_all && Array.isArray(enrichments.ct_parcels_all)) {
+        let parcelCount = 0;
+        enrichments.ct_parcels_all.forEach((parcel: any) => {
+          if (parcel.geometry && parcel.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = parcel.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  // Since we requested outSR=4326, coordinates should already be in WGS84
+                  // Convert [lon, lat] to [lat, lon] for Leaflet
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                // Validate coordinates
+                if (latlngs.length < 3) {
+                  console.warn('CT Parcel polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+
+                const isContaining = parcel.isContaining;
+                const color = isContaining ? '#059669' : '#10b981'; // Darker green for containing, lighter for nearby
+                const weight = isContaining ? 3 : 2;
+
+                const parcelId = parcel.parcelId || parcel.Link || parcel.link || parcel.OBJECTID || 'Unknown';
+                const townName = parcel.Town_Name || parcel.TownName || parcel.town_name || '';
+                const owner = parcel.Owner || parcel.owner || '';
+                const location = parcel.Location || parcel.location || '';
+                const assessedTotal = parcel.Assessed_Total || parcel.AssessedTotal || parcel.assessed_total || null;
+
+                // Create polygon
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: 0.7,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏠 CT Parcel ${parcelId}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${isContaining ? '<div><strong>Status:</strong> Contains Location</div>' : ''}
+                      ${parcel.distance_miles !== null && parcel.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${parcel.distance_miles.toFixed(2)} miles</div>` : ''}
+                      ${townName ? `<div><strong>Town:</strong> ${townName}</div>` : ''}
+                      ${owner ? `<div><strong>Owner:</strong> ${owner}</div>` : ''}
+                      ${location ? `<div><strong>Location:</strong> ${location}</div>` : ''}
+                      ${assessedTotal !== null ? `<div><strong>Assessed Total:</strong> $${assessedTotal.toLocaleString()}</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all parcel attributes (excluding internal fields)
+                const excludeFields = ['parcelId', 'Link', 'link', 'OBJECTID', 'objectid', 'isContaining', 'geometry', 'distance_miles', 'Town_Name', 'TownName', 'town_name', 'Owner', 'owner', 'Location', 'location', 'Assessed_Total', 'AssessedTotal', 'assessed_total'];
+                Object.entries(parcel).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary); // Add to primary layer group
+                
+                try {
+                  bounds.extend(polygon.getBounds());
+                  parcelCount++;
+                } catch (boundsError) {
+                  console.warn('Error extending bounds for CT Parcel polygon:', boundsError);
+                }
+              }
+            } catch (error) {
+              console.error('Error drawing CT Parcel polygon:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (parcelCount > 0) {
+          if (!legendAccumulator['ct_parcels']) {
+            legendAccumulator['ct_parcels'] = {
+              icon: '🏠',
+              color: '#059669',
+              title: 'CT Parcels',
+              count: 0,
+            };
+          }
+          legendAccumulator['ct_parcels'].count += parcelCount;
+        }
+      }
+
       // Draw CT Building Footprints as polygons on the map
       if (enrichments.ct_building_footprints_all && Array.isArray(enrichments.ct_building_footprints_all)) {
+        let buildingCount = 0;
         enrichments.ct_building_footprints_all.forEach((building: any) => {
           if (building.geometry && building.geometry.rings) {
             try {
@@ -4446,6 +4565,12 @@ const MapView: React.FC<MapViewProps> = ({
                   // Convert [lon, lat] to [lat, lon] for Leaflet
                   return [coord[1], coord[0]] as [number, number];
                 });
+
+                // Validate coordinates
+                if (latlngs.length < 3) {
+                  console.warn('CT Building Footprint polygon has less than 3 coordinates, skipping');
+                  return;
+                }
 
                 const isContaining = building.isContaining;
                 const color = isContaining ? '#dc2626' : '#3b82f6'; // Red for containing, blue for nearby
@@ -4495,13 +4620,32 @@ const MapView: React.FC<MapViewProps> = ({
                 
                 polygon.bindPopup(popupContent, { maxWidth: 400 });
                 polygon.addTo(primary);
-                bounds.extend(polygon.getBounds());
+                
+                try {
+                  bounds.extend(polygon.getBounds());
+                  buildingCount++;
+                } catch (boundsError) {
+                  console.warn('Error extending bounds for CT Building Footprint polygon:', boundsError);
+                }
               }
             } catch (error) {
               console.error('Error drawing CT building footprint polygon:', error);
             }
           }
         });
+        
+        // Add to legend accumulator
+        if (buildingCount > 0) {
+          if (!legendAccumulator['ct_building_footprints']) {
+            legendAccumulator['ct_building_footprints'] = {
+              icon: '🏢',
+              color: '#3b82f6',
+              title: 'CT 2D Building Footprints',
+              count: 0,
+            };
+          }
+          legendAccumulator['ct_building_footprints'].count += buildingCount;
+        }
       }
 
       // Draw CT Roads and Trails as polylines on the map
@@ -4598,6 +4742,94 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['ct_roads'].count += roadCount;
+        }
+      }
+
+      // Draw CT Urgent Care facilities as points on the map
+      if (enrichments.ct_urgent_care_all && Array.isArray(enrichments.ct_urgent_care_all)) {
+        let facilityCount = 0;
+        enrichments.ct_urgent_care_all.forEach((facility: any) => {
+          if (facility.lat && facility.lon) {
+            try {
+              facilityCount++;
+              
+              // Create marker icon for urgent care facilities
+              const urgentCareIcon = L.divIcon({
+                className: 'custom-marker-icon',
+                html: `<div style="background-color: #f97316; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"><span style="color: white; font-size: 14px;">🏥</span></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+              });
+              
+              const marker = L.marker([facility.lat, facility.lon], { icon: urgentCareIcon });
+              
+              // Build popup content
+              const name = facility.name || facility.NAME || 'Unnamed Urgent Care';
+              const address = facility.address || facility.ADDRESS || '';
+              const city = facility.city || facility.CITY || '';
+              const state = facility.state || facility.STATE || 'CT';
+              const zip = facility.zip || facility.ZIP || '';
+              const phone = facility.phone || facility.PHONE || '';
+              const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+              
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🏥 ${name}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${fullAddress ? `<div><strong>Address:</strong> ${fullAddress}</div>` : ''}
+                    ${phone ? `<div><strong>Phone:</strong> ${phone}</div>` : ''}
+                    ${facility.distance_miles !== null && facility.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${facility.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all facility attributes (excluding internal fields)
+              const excludeFields = ['id', 'ID', 'name', 'NAME', 'address', 'ADDRESS', 'city', 'CITY', 'state', 'STATE', 'zip', 'ZIP', 'phone', 'PHONE', 'lat', 'lon', 'LATITUDE', 'LONGITUDE', 'distance_miles', 'attributes'];
+              const attrs = facility.attributes || facility;
+              Object.entries(attrs).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              bounds.extend([facility.lat, facility.lon]);
+            } catch (error) {
+              console.error('Error drawing CT Urgent Care marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (facilityCount > 0) {
+          if (!legendAccumulator['ct_urgent_care']) {
+            legendAccumulator['ct_urgent_care'] = {
+              icon: '🏥',
+              color: '#f97316',
+              title: 'CT Urgent Care',
+              count: 0,
+            };
+          }
+          legendAccumulator['ct_urgent_care'].count += facilityCount;
         }
       }
 

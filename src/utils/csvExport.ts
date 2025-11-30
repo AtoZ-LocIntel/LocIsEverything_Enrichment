@@ -270,8 +270,10 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'cape_cod_zoning_all' || // Skip _all arrays (handled separately)
         key === 'ma_trails_all' || // Skip _all arrays (handled separately)
         key === 'ma_parcels_all' || // Skip _all arrays (handled separately)
+        key === 'ct_parcels_all' || // Skip _all arrays (handled separately)
         key === 'ct_building_footprints_all' || // Skip _all arrays (handled separately)
         key === 'ct_roads_all' || // Skip _all arrays (handled separately)
+        key === 'ct_urgent_care_all' || // Skip _all arrays (handled separately)
         key === 'ct_deep_properties_all' || // Skip _all arrays (handled separately)
         key === 'ma_nhesp_natural_communities_all' ||
         key === 'ma_lakes_and_ponds_all' ||
@@ -2338,6 +2340,59 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           acecAcres ? acecAcres.toString() : '',
           attributesJson,
           'MassGIS'
+        ]);
+      });
+    }
+    
+    // Add CT Urgent Care data rows
+    if (enrichments.ct_urgent_care_all && Array.isArray(enrichments.ct_urgent_care_all)) {
+      enrichments.ct_urgent_care_all.forEach((facility: any) => {
+        const name = facility.name || facility.NAME || 'Unnamed Urgent Care';
+        const address = facility.address || facility.ADDRESS || '';
+        const city = facility.city || facility.CITY || '';
+        const state = facility.state || facility.STATE || 'CT';
+        const zip = facility.zip || facility.ZIP || '';
+        const phone = facility.phone || facility.PHONE || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...facility };
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.address;
+        delete allAttributes.ADDRESS;
+        delete allAttributes.city;
+        delete allAttributes.CITY;
+        delete allAttributes.state;
+        delete allAttributes.STATE;
+        delete allAttributes.zip;
+        delete allAttributes.ZIP;
+        delete allAttributes.phone;
+        delete allAttributes.PHONE;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.LATITUDE;
+        delete allAttributes.LONGITUDE;
+        delete allAttributes.distance_miles;
+        delete allAttributes.attributes;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'CT Geodata Portal',
+          (location.confidence || 'N/A').toString(),
+          'CT_URGENT_CARE',
+          name,
+          facility.lat?.toString() || location.lat.toString(),
+          facility.lon?.toString() || location.lon.toString(),
+          facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '',
+          'Urgent Care',
+          fullAddress || attributesJson,
+          phone,
+          '',
+          attributesJson,
+          'CT Geodata Portal'
         ]);
       });
     }

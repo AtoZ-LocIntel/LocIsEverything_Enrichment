@@ -42,8 +42,10 @@ import { getMARegionalPlanningAgenciesContainingData } from '../adapters/maRegio
 import { getNationalMarineSanctuariesContainingData, getNationalMarineSanctuariesNearbyData } from '../adapters/nationalMarineSanctuaries';
 import { getMAACECsContainingData, getMAACECsNearbyData } from '../adapters/maACECs';
 import { getMAParcelData } from '../adapters/maParcels';
+import { getCTParcelData } from '../adapters/ctParcels';
 import { getCTBuildingFootprintData } from '../adapters/ctBuildingFootprints';
 import { getCTRoadsData } from '../adapters/ctRoads';
+import { getCTUrgentCareData } from '../adapters/ctUrgentCare';
 import { getCTDeepPropertyData } from '../adapters/ctDeepProperties';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
@@ -1333,6 +1335,8 @@ export class EnrichmentService {
           return await this.getElectricChargingStations(lat, lon, radius);
         case 'poi_gas_stations':
           return await this.getGasStations(lat, lon, radius);
+        case 'poi_colleges_universities':
+          return await this.getCollegesUniversities(lat, lon, radius);
         
         case 'poi_mail_shipping':
           return await this.getMailShipping(lat, lon, radius);
@@ -1512,12 +1516,18 @@ export class EnrichmentService {
         return await this.getMAParcels(lat, lon, radius);
       
       // CT Building Footprints (CT Geodata Portal) - Point-in-polygon and proximity query
-      case 'ct_building_footprints':
+        case 'ct_parcels':
+          return await this.getCTParcels(lat, lon, radius);
+        case 'ct_building_footprints':
         return await this.getCTBuildingFootprints(lat, lon, radius);
       
       // CT Roads and Trails (CT Geodata Portal) - Proximity query
       case 'ct_roads':
         return await this.getCTRoads(lat, lon, radius);
+      
+      // CT Urgent Care (CT Geodata Portal) - Proximity query
+      case 'ct_urgent_care':
+        return await this.getCTUrgentCare(lat, lon, radius);
       
       // CT DEEP Properties (CT Geodata Portal) - Point-in-polygon and proximity query
       case 'ct_deep_properties':
@@ -6316,6 +6326,84 @@ out center;`;
     }
   }
 
+  private async getCTParcels(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏠 Fetching CT Parcels data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 0.25; // Default to 0.25 miles if not provided
+      
+      // Get parcel data (both containing and nearby)
+      const parcelData = await getCTParcelData(lat, lon, radiusMiles);
+      
+      if (parcelData) {
+        // Collect all parcels (containing + nearby) into a single array for CSV export
+        const allParcels: any[] = [];
+        
+        // Add containing parcel (point-in-polygon) if found
+        if (parcelData.containingParcel && parcelData.containingParcel.parcelId) {
+          allParcels.push({
+            ...parcelData.containingParcel.attributes,
+            parcelId: parcelData.containingParcel.parcelId,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: parcelData.containingParcel.geometry // Include geometry for map drawing
+          });
+          result.ct_parcel_containing = parcelData.containingParcel.parcelId;
+          result.ct_parcel_containing_town = parcelData.containingParcel.attributes?.Town_Name || null;
+          result.ct_parcel_containing_owner = parcelData.containingParcel.attributes?.Owner || null;
+          result.ct_parcel_containing_location = parcelData.containingParcel.attributes?.Location || null;
+        } else {
+          result.ct_parcel_containing = null;
+          result.ct_parcel_containing_message = 'No parcel found containing this location';
+        }
+        
+        // Add nearby parcels (proximity search)
+        if (parcelData.nearbyParcels && parcelData.nearbyParcels.length > 0) {
+          parcelData.nearbyParcels.forEach(parcel => {
+            // Only add if it's not already in the array (avoid duplicates)
+            if (!allParcels.some(p => p.parcelId === parcel.parcelId)) {
+              allParcels.push({
+                ...parcel.attributes,
+                parcelId: parcel.parcelId,
+                isContaining: false,
+                distance_miles: parcel.distance_miles || null,
+                geometry: parcel.geometry // Include geometry for map drawing
+              });
+            }
+          });
+          result.ct_parcels_nearby_count = parcelData.nearbyParcels.length;
+        } else {
+          result.ct_parcels_nearby_count = 0;
+        }
+        
+        // Store all parcels as an array for CSV export (similar to _all_pois pattern)
+        result.ct_parcels_all = allParcels;
+        result.ct_parcels_search_radius_miles = radiusMiles;
+      } else {
+        result.ct_parcel_containing = null;
+        result.ct_parcels_nearby_count = 0;
+        result.ct_parcels_all = [];
+      }
+      
+      console.log(`✅ CT Parcels data processed:`, {
+        containing: result.ct_parcel_containing || 'N/A',
+        nearbyCount: result.ct_parcels_nearby_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching CT Parcels:', error);
+      return {
+        ct_parcel_containing: null,
+        ct_parcels_nearby_count: 0,
+        ct_parcels_all: [],
+        ct_parcels_error: 'Error fetching CT Parcels data'
+      };
+    }
+  }
+
   private async getCTBuildingFootprints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`🏢 Fetching CT Building Footprints data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
@@ -6432,6 +6520,58 @@ out center;`;
         ct_roads_count: 0,
         ct_roads_all: [],
         ct_roads_error: 'Error fetching CT Roads and Trails data'
+      };
+    }
+  }
+
+  private async getCTUrgentCare(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏥 Fetching CT Urgent Care data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const facilities = await getCTUrgentCareData(lat, lon, radiusMiles);
+      
+      if (facilities && facilities.length > 0) {
+        result.ct_urgent_care_count = facilities.length;
+        result.ct_urgent_care_detailed = facilities.map(facility => ({
+          id: facility.id,
+          name: facility.name,
+          address: facility.address,
+          city: facility.city,
+          state: facility.state,
+          zip: facility.zip,
+          phone: facility.phone,
+          lat: facility.lat,
+          lon: facility.lon,
+          distance_miles: facility.distance_miles,
+          attributes: facility.attributes // Include all attributes for CSV export
+        }));
+        result.ct_urgent_care_all = facilities; // Include all facilities for CSV export
+      } else {
+        result.ct_urgent_care_count = 0;
+        result.ct_urgent_care_detailed = [];
+        result.ct_urgent_care_all = [];
+      }
+      
+      result.ct_urgent_care_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ CT Urgent Care data processed:`, {
+        count: result.ct_urgent_care_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching CT Urgent Care:', error);
+      return {
+        ct_urgent_care_count: 0,
+        ct_urgent_care_detailed: [],
+        ct_urgent_care_all: [],
+        ct_urgent_care_error: 'Error fetching CT Urgent Care data'
       };
     }
   }
@@ -6684,6 +6824,115 @@ out center;`;
       return { 
         poi_gas_stations_summary: 'No gas stations found due to error.',
         poi_gas_stations_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getCollegesUniversities(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🎓 Colleges & Universities query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const radiusMeters = Math.round(radiusMiles * 1609.34);
+      
+      // Build Overpass query based on user's provided query structure
+      const query = `[out:json][timeout:50];
+(
+  node["amenity"~"college|university"](around:${radiusMeters},${lat},${lon});
+  way["amenity"~"college|university"](around:${radiusMeters},${lat},${lon});
+  relation["amenity"~"college|university"](around:${radiusMeters},${lat},${lon});
+  way["landuse"="education"](around:${radiusMeters},${lat},${lon});
+  relation["landuse"="education"](around:${radiusMeters},${lat},${lon});
+  node["office"="educational_institution"](around:${radiusMeters},${lat},${lon});
+  way["office"="educational_institution"](around:${radiusMeters},${lat},${lon});
+  relation["office"="educational_institution"](around:${radiusMeters},${lat},${lon});
+);
+out center;`;
+      
+      let response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      
+      // Fallback to alternative server if first fails
+      if (!response.ok) {
+        console.log(`🎓 Primary server failed, trying fallback...`);
+        response = await fetch(`https://lz4.overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      }
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      
+      const elements = data.elements || [];
+      console.log(`🎓 Overpass returned ${elements.length} college/university elements`);
+      
+      // Calculate distances and filter by radius
+      const institutionsWithDistance: any[] = [];
+      for (const element of elements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let instLat: number | null = null;
+        let instLon: number | null = null;
+        
+        if (element.type === 'node') {
+          instLat = element.lat;
+          instLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          instLat = element.center?.lat;
+          instLon = element.center?.lon;
+        }
+        
+        if (instLat == null || instLon == null) {
+          console.warn(`🎓 Skipping college/university ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, instLat, instLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include institutions within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= radiusMiles) {
+          institutionsWithDistance.push({
+            ...element,
+            lat: instLat,
+            lon: instLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      institutionsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = institutionsWithDistance.length;
+      console.log(`🎓 Found ${count} colleges/universities within ${radiusMiles} miles (after distance filtering)`);
+      
+      // Process institution details for mapping
+      const institutionDetails = institutionsWithDistance.map((element: any) => ({
+        id: element.id,
+        name: element.tags?.name || 'Unnamed Institution',
+        amenity: element.tags?.amenity || 'Unknown',
+        office: element.tags?.office || null,
+        landuse: element.tags?.landuse || null,
+        address: element.tags?.['addr:street'] || null,
+        city: element.tags?.['addr:city'] || null,
+        state: element.tags?.['addr:state'] || null,
+        postcode: element.tags?.['addr:postcode'] || null,
+        lat: element.lat,
+        lon: element.lon,
+        type: element.type,
+        phone: element.tags?.phone || null,
+        website: element.tags?.website || null,
+        email: element.tags?.email || null,
+        distance_miles: element.distance_miles,
+        tags: element.tags // Include all tags for CSV export
+      }));
+      
+      return {
+        poi_colleges_universities_summary: `Found ${count} colleges/universities within ${radiusMiles} miles.`,
+        poi_colleges_universities_detailed: institutionDetails,
+        poi_colleges_universities_all: institutionsWithDistance // Include all institutions for CSV export
+      };
+    } catch (error) {
+      console.error('Colleges & Universities query failed:', error);
+      return { 
+        poi_colleges_universities_summary: 'No colleges/universities found due to error.',
+        poi_colleges_universities_error: error instanceof Error ? error.message : 'Unknown error' 
       };
     }
   }

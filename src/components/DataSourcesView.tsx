@@ -342,6 +342,18 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
+      category: "Community & Services",
+      sources: [
+        {
+          name: "OpenStreetMap Community Services",
+          description: "Colleges, universities, gas stations, mail & shipping locations, schools, hospitals, parks, and other community facilities via OSM Overpass API",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free"
+        }
+      ]
+    },
+    {
       category: "Recreation & Entertainment",
       sources: [
         {
@@ -721,6 +733,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       category: "Connecticut Data (CT Geodata Portal)",
       sources: [
         {
+          name: "CT Parcels",
+          description: "Connecticut State Parcel Layer 2023 - point-in-polygon and proximity queries (0.25, 0.5, 0.75, 1.0 miles)",
+          coverage: "Connecticut (169 municipalities)",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
           name: "CT 2D Building Footprints",
           description: "Connecticut 2D building footprints - point-in-polygon and proximity queries (0.25, 0.5, 0.75, 1.0 miles)",
           coverage: "Connecticut",
@@ -730,6 +749,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         {
           name: "CT Roads and Trails",
           description: "Connecticut roads and trails network - proximity queries up to 5 miles",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CT Urgent Care",
+          description: "Connecticut urgent care facilities - proximity queries up to 25 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
           cost: "Free"
