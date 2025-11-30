@@ -410,6 +410,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
+    key === 'ct_deep_properties_all' || // Skip CT DEEP properties array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -646,7 +647,8 @@ const MapView: React.FC<MapViewProps> = ({
   const basemapLayerRef = useRef<L.TileLayer | null>(null);
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
-  const [selectedBasemap, setSelectedBasemap] = useState<string>('streets');
+  // Default to hybrid basemap (no dropdown, fixed basemap)
+  const selectedBasemap = 'hybrid';
   const [viewportHeight, setViewportHeight] = useState<number>(() => (
     typeof window !== 'undefined' ? window.innerHeight : 0
   ));
@@ -673,15 +675,21 @@ const MapView: React.FC<MapViewProps> = ({
     setTimeout(() => {
       if (!mapRef.current || mapInstanceRef.current) return;
       
+      // Initialize map with geocoded location if available, otherwise default US view
+      const initialCenter = results && results.length > 0 && results[0]?.location
+        ? [results[0].location.lat, results[0].location.lon]
+        : [37.0902, -95.7129];
+      const initialZoom = results && results.length > 0 && results[0]?.location ? 15 : 4;
+      
       const map = L.map(mapRef.current, {
-        center: [37.0902, -95.7129],
-        zoom: 4,
+        center: initialCenter,
+        zoom: initialZoom,
         zoomControl: !isMobile, // Hide zoom controls on mobile to save space
         attributionControl: true,
       });
 
-      // Initialize with selected basemap
-      const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.streets;
+      // Initialize with hybrid basemap (fixed, no dropdown)
+      const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.hybrid;
       const basemapLayer = L.tileLayer(basemapConfig.url, {
         attribution: basemapConfig.attribution,
         maxZoom: 22,
@@ -694,12 +702,42 @@ const MapView: React.FC<MapViewProps> = ({
       mapInstanceRef.current = map;
       layerGroupsRef.current = { primary, poi };
       
-      // Force initial size check after a brief delay
-      setTimeout(() => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
+      // CRITICAL: Wait for container to be visible and sized before setting view
+      // This fixes the issue where map shows default US view until F12
+      const waitForContainerAndSetView = (attempt = 0) => {
+        if (!mapRef.current || !mapInstanceRef.current) {
+          if (attempt < 30) {
+            setTimeout(() => waitForContainerAndSetView(attempt + 1), 50);
+          }
+          return;
         }
-      }, 200);
+        
+        const container = mapRef.current;
+        const rect = container.getBoundingClientRect();
+        const styles = window.getComputedStyle(container);
+        const isVisible = rect.width > 0 && rect.height > 0 && 
+                         styles.display !== 'none' && 
+                         styles.visibility !== 'hidden' &&
+                         styles.opacity !== '0';
+        
+        if (isVisible && rect.width > 100 && rect.height > 100) {
+          console.log('🗺️ Container is visible and sized. Size:', rect.width, 'x', rect.height);
+          
+          // If we have results, set view to geocoded location immediately
+          if (results && results.length > 0 && results[0]?.location) {
+            mapInstanceRef.current.setView([results[0].location.lat, results[0].location.lon], 15, { animate: false });
+          }
+          
+          // Ensure map is properly sized
+          mapInstanceRef.current.invalidateSize();
+        } else if (attempt < 30) {
+          // Continue checking
+          setTimeout(() => waitForContainerAndSetView(attempt + 1), 50);
+        }
+      };
+      
+      // Start checking after a brief delay
+      setTimeout(() => waitForContainerAndSetView(), 100);
     }, 50);
 
     return () => {
@@ -710,29 +748,7 @@ const MapView: React.FC<MapViewProps> = ({
         basemapLayerRef.current = null;
       }
     };
-  }, [isMobile, results.length, selectedBasemap]);
-
-  // Handle basemap switching
-  useEffect(() => {
-    if (!mapInstanceRef.current || !basemapLayerRef.current) {
-      return;
-    }
-
-    const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.streets;
-    
-    // Remove old basemap layer
-    if (basemapLayerRef.current) {
-      mapInstanceRef.current.removeLayer(basemapLayerRef.current);
-    }
-
-    // Add new basemap layer
-    const newBasemapLayer = L.tileLayer(basemapConfig.url, {
-      attribution: basemapConfig.attribution,
-      maxZoom: 22,
-    }).addTo(mapInstanceRef.current);
-    
-    basemapLayerRef.current = newBasemapLayer;
-  }, [selectedBasemap]);
+  }, [isMobile, results.length]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -787,53 +803,153 @@ const MapView: React.FC<MapViewProps> = ({
       return;
     }
 
+    // ResizeObserver to handle container size changes
+    // Use debouncing to avoid excessive invalidateSize calls that cause twitching
+    let resizeTimeout: NodeJS.Timeout | null = null;
     const observer = new ResizeObserver(() => {
-      mapInstanceRef.current?.invalidateSize();
+      // Debounce resize events to reduce twitching
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
+      resizeTimeout = setTimeout(() => {
+        mapInstanceRef.current?.invalidateSize();
+      }, 150); // Debounce to 150ms
     });
 
     observer.observe(mapRef.current);
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
+    };
   }, []);
 
   useEffect(() => {
+    console.log('🔍 [DEBUG START] useEffect triggered', {
+      hasMap: !!mapInstanceRef.current,
+      hasLayerGroups: !!layerGroupsRef.current,
+      resultsCount: results?.length || 0,
+      timestamp: new Date().toISOString()
+    });
+
+    // CRITICAL FIX: Wait for map to be initialized before proceeding
+    // The map initializes in a separate useEffect, so we need to wait for it
     if (!mapInstanceRef.current || !layerGroupsRef.current) {
-      return;
+      console.log('🔍 [DEBUG] Map not ready yet, setting up retry mechanism');
+      
+      let attempts = 0;
+      const maxAttempts = 100; // 10 seconds max wait
+      const checkMapReady = setInterval(() => {
+        attempts++;
+        if (mapInstanceRef.current && layerGroupsRef.current) {
+          console.log(`🔍 [DEBUG] Map is now ready after ${attempts} attempts, proceeding`);
+          clearInterval(checkMapReady);
+          // Map is ready, proceed with adding features
+          setTimeout(() => {
+            if (mapInstanceRef.current && layerGroupsRef.current && results && results.length > 0) {
+              addFeaturesToMap();
+            }
+          }, 200); // Give map a moment to fully initialize
+        } else if (attempts >= maxAttempts) {
+          console.error('🔍 [DEBUG ERROR] Map never became ready after 100 attempts');
+          clearInterval(checkMapReady);
+        }
+      }, 100);
+      
+      return () => {
+        clearInterval(checkMapReady);
+      };
     }
+    
+    // Map is ready, proceed immediately
+    addFeaturesToMap();
+    
+    function addFeaturesToMap() {
 
     const map = mapInstanceRef.current;
     const { primary, poi } = layerGroupsRef.current;
 
-    primary.clearLayers();
-    poi.clearLayers();
+    // Debug initial map state
+    const initialContainer = map.getContainer();
+    console.log('🔍 [DEBUG] Initial map state', {
+      containerExists: !!initialContainer,
+      containerWidth: initialContainer?.offsetWidth || 0,
+      containerHeight: initialContainer?.offsetHeight || 0,
+      containerDisplay: initialContainer ? window.getComputedStyle(initialContainer).display : 'N/A',
+      containerVisibility: initialContainer ? window.getComputedStyle(initialContainer).visibility : 'N/A',
+      mapCenter: map.getCenter().toString(),
+      mapZoom: map.getZoom(),
+      primaryLayerCount: primary.getLayers().length,
+      poiLayerCount: poi.getLayers().length,
+      primaryInMap: map.hasLayer(primary),
+      poiInMap: map.hasLayer(poi)
+    });
 
     if (!results || results.length === 0) {
+      console.log('🔍 [DEBUG] No results, clearing layers');
+      primary.clearLayers();
+      poi.clearLayers();
       setLegendItems([]);
       setShowBatchSuccess(false);
       return;
     }
 
-    // STEP 1: First, plot geocoded location and zoom in close
-    // This happens immediately for better UX
-    if (results[0]?.location) {
-      const latLng = L.latLng(results[0].location.lat, results[0].location.lon);
-      const locationMarker = L.marker(latLng, {
-        title: results[0].location.name,
-      });
-      locationMarker.bindPopup(createPopupContent(results[0]), { maxWidth: 540 });
-      locationMarker.addTo(primary);
+    console.log('🔍 [DEBUG] Clearing layers');
+    primary.clearLayers();
+    poi.clearLayers();
+    
+    // CRITICAL: Ensure container has dimensions before proceeding
+    const ensureContainerReady = (attempt = 0): void => {
+      const container = map.getContainer();
+      const hasDimensions = container && container.offsetWidth > 0 && container.offsetHeight > 0;
       
-      // Zoom way in first (level 15 for close-up view)
-      map.setView([results[0].location.lat, results[0].location.lon], 15);
-    }
-
-    // STEP 2: Then, after map is set up, draw all enrichment features
-    // Use requestAnimationFrame + setTimeout to defer heavy drawing until after initial render
-    let timeoutId: NodeJS.Timeout | null = null;
-    const rafId = requestAnimationFrame(() => {
-      timeoutId = setTimeout(() => {
-    const bounds = L.latLngBounds([]);
-    const legendAccumulator: Record<string, LegendItem> = {};
+      console.log(`🔍 [DEBUG] Container check attempt ${attempt + 1}`, {
+        width: container?.offsetWidth || 0,
+        height: container?.offsetHeight || 0,
+        hasDimensions,
+        display: container ? window.getComputedStyle(container).display : 'N/A',
+        visibility: container ? window.getComputedStyle(container).visibility : 'N/A',
+        opacity: container ? window.getComputedStyle(container).opacity : 'N/A'
+      });
+      
+      if (!hasDimensions && attempt < 20) {
+        map.invalidateSize(true);
+        setTimeout(() => ensureContainerReady(attempt + 1), 100);
+        return;
+      }
+      
+      if (!hasDimensions) {
+        console.warn('🔍 [DEBUG WARNING] Container still has no dimensions after 20 attempts, proceeding anyway');
+      }
+      
+      console.log('🔍 [DEBUG] Container ready, proceeding with feature addition');
+      
+      // Force invalidateSize before doing anything
+      map.invalidateSize(true);
+      
+      // STEP 1: Add location marker (view already set during map initialization)
+      if (results[0]?.location) {
+        // Map view was already set during initialization, just add marker
+        const locationMarker = L.marker([results[0].location.lat, results[0].location.lon], {
+          title: results[0].location.name,
+        });
+        locationMarker.bindPopup(createPopupContent(results[0]), { maxWidth: 540 });
+        locationMarker.addTo(primary);
+        
+        console.log('🔍 [DEBUG] Location marker added');
+      }
+      
+      // STEP 2: Add all enrichment features
+      // Use requestAnimationFrame only (no setTimeout to reduce twitching)
+      let timeoutId: NodeJS.Timeout | null = null;
+      const rafId = requestAnimationFrame(() => {
+        // Small delay to batch feature additions, but minimal to reduce twitching
+        timeoutId = setTimeout(() => {
+        console.log('🗺️ STEP 2: Inside setTimeout, starting to draw features');
+        const bounds = L.latLngBounds([]);
+        const legendAccumulator: Record<string, LegendItem> = {};
         
         // Re-add location marker to bounds (already added above, but need for bounds calculation)
         if (results[0]?.location) {
@@ -4485,6 +4601,126 @@ const MapView: React.FC<MapViewProps> = ({
         }
       }
 
+      // Draw CT DEEP Properties as polygons on the map
+      try {
+        if (enrichments.ct_deep_properties_all && Array.isArray(enrichments.ct_deep_properties_all)) {
+          let propertyCount = 0;
+          enrichments.ct_deep_properties_all.forEach((property: any) => {
+            if (property.geometry && property.geometry.rings) {
+              try {
+                // Convert ESRI polygon rings to Leaflet LatLng array
+                const rings = property.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0]; // First ring is the outer boundary
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    // Since we requested outSR=4326, coordinates should already be in WGS84
+                    // Convert [lon, lat] to [lat, lon] for Leaflet
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  // Validate coordinates
+                  if (latlngs.length < 3) {
+                    console.warn('CT DEEP Property polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const isContaining = property.isContaining;
+                  const color = isContaining ? '#059669' : '#10b981'; // Darker green for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+
+                  const propertyName = property.propertyName || property.PROPERTY || property.property || 'CT DEEP Property';
+                  const avLegend = property.avLegend || property.AV_LEGEND || null;
+                  const imsLegend = property.imsLegend || property.IMS_LEGEND || null;
+                  const depId = property.depId || property.DEP_ID || null;
+                  const agencyFunctionCode = property.agencyFunctionCode || property.AGNCYFN_CD || null;
+                  const acreage = property.acreage !== null && property.acreage !== undefined ? property.acreage : null;
+
+                  // Create polygon
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  // Build popup content with all property attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏞️ ${propertyName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div><strong>Status:</strong> Contains Location</div>' : ''}
+                        ${property.distance_miles !== null && property.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${property.distance_miles.toFixed(2)} miles</div>` : ''}
+                        ${avLegend ? `<div><strong>AV Legend:</strong> ${avLegend}</div>` : ''}
+                        ${imsLegend ? `<div><strong>IMS Legend:</strong> ${imsLegend}</div>` : ''}
+                        ${depId ? `<div><strong>DEP ID:</strong> ${depId}</div>` : ''}
+                        ${agencyFunctionCode ? `<div><strong>Agency Function Code:</strong> ${agencyFunctionCode}</div>` : ''}
+                        ${acreage !== null ? `<div><strong>Acreage:</strong> ${acreage.toFixed(2)} acres</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all property attributes (excluding internal fields)
+                  const excludeFields = ['propertyId', 'propertyName', 'PROPERTY', 'property', 'avLegend', 'AV_LEGEND', 'AvLegend', 'imsLegend', 'IMS_LEGEND', 'ImsLegend', 'depId', 'DEP_ID', 'agencyFunctionCode', 'AGNCYFN_CD', 'acreage', 'ACRE_GIS', 'acre_gis', 'geometry', 'distance_miles', 'isContaining'];
+                  Object.entries(property).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary); // Add to primary layer group
+                  
+                  try {
+                    bounds.extend(polygon.getBounds());
+                  } catch (boundsError) {
+                    console.warn('Error extending bounds for CT DEEP Property polygon:', boundsError);
+                  }
+                  
+                  propertyCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CT DEEP Property polygon:', error);
+              }
+            }
+          });
+          
+          // Add to legend accumulator
+          if (propertyCount > 0) {
+            if (!legendAccumulator['ct_deep_properties']) {
+              legendAccumulator['ct_deep_properties'] = {
+                icon: '🏞️',
+                color: '#059669',
+                title: 'CT DEEP Properties',
+                count: 0,
+              };
+            }
+            legendAccumulator['ct_deep_properties'].count += propertyCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CT DEEP Properties:', error);
+      }
+
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)
       Object.entries(enrichments).forEach(([key, value]) => {
         if (!Array.isArray(value)) {
@@ -4562,19 +4798,84 @@ const MapView: React.FC<MapViewProps> = ({
       });
     }); // Close results.forEach
 
-    setLegendItems(
-      Object.values(legendAccumulator).sort((a, b) => b.count - a.count)
-    );
-    setShowBatchSuccess(results.length > 1);
-      }, 100); // Small delay to ensure map is fully rendered
-    });
-
+        console.log('🗺️ STEP 2: Finished drawing all features, setting legend items');
+        setLegendItems(
+          Object.values(legendAccumulator).sort((a, b) => b.count - a.count)
+        );
+        setShowBatchSuccess(results.length > 1);
+        
+        // CRITICAL: After all features are drawn, force a resize and redraw
+        // This ensures everything is visible (same as what F12 does)
+        if (mapInstanceRef.current) {
+          console.log('🗺️ STEP 2: Forcing resize and layer redraw after all features drawn');
+          
+          // Force multiple resize events in sequence (this is what F12 does)
+          const forceRedraw = () => {
+            window.dispatchEvent(new Event('resize'));
+            mapInstanceRef.current?.invalidateSize();
+            
+            // Force redraw of all layers
+            mapInstanceRef.current?.eachLayer((layer: any) => {
+              if (layer.redraw) {
+                try {
+                  layer.redraw();
+                } catch (e) {
+                  // Some layers don't have redraw, that's ok
+                }
+              }
+              // For markers, force update by resetting position
+              if (layer instanceof L.Marker) {
+                const marker = layer as L.Marker;
+                const latlng = marker.getLatLng();
+                marker.setLatLng([latlng.lat, latlng.lng]);
+              }
+            });
+          };
+          
+          // Force redraw multiple times
+          forceRedraw();
+          setTimeout(forceRedraw, 50);
+          setTimeout(forceRedraw, 100);
+          setTimeout(forceRedraw, 200);
+        }
+        
+            console.log('🔍 [DEBUG] All features added, forcing single refresh');
+            
+            // Single refresh after all features are added (reduces twitching)
+            if (mapInstanceRef.current) {
+              // Use requestAnimationFrame to ensure we're in the right render cycle
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  if (mapInstanceRef.current) {
+                    // Single invalidateSize call
+                    mapInstanceRef.current.invalidateSize(true);
+                    
+                    // Single resize event
+                    window.dispatchEvent(new Event('resize', { bubbles: true }));
+                    
+                    console.log('🔍 [DEBUG] Map refreshed after all features added');
+                  }
+                });
+              });
+            }
+          }, 100); // Closes inner setTimeout
+          
+          return () => {
+            cancelAnimationFrame(rafId);
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+            }
+          };
+        }); // Closes requestAnimationFrame
+    } // Closes ensureContainerReady
+    
+    // Start the process
+    ensureContainerReady();
+    } // Closes addFeaturesToMap function
+    
+    // Cleanup
     return () => {
-      // Cleanup: cancel animation frame and timeout if component unmounts or results change
-      cancelAnimationFrame(rafId);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      console.log('🔍 [DEBUG] useEffect cleanup');
     };
   }, [results, viewportHeight, viewportWidth]);
 
@@ -4625,22 +4926,6 @@ const MapView: React.FC<MapViewProps> = ({
             <span className="text-sm">←</span>
             <span className="text-[10px] font-medium ml-0.5">Back</span>
           </button>
-          
-          {/* Basemap Dropdown - Top Left (below back button, very compact for mobile) */}
-          <div className="absolute top-8 left-1 z-[1000] bg-white rounded shadow-md">
-            <select
-              value={selectedBasemap}
-              onChange={(e) => setSelectedBasemap(e.target.value)}
-              className="px-1.5 py-1 text-[10px] border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              style={{ zIndex: 1000 }}
-            >
-              {Object.entries(MAPTILER_BASEMAPS).map(([key, config]) => (
-                <option key={key} value={key}>
-                  {config.name}
-                </option>
-              ))}
-            </select>
-          </div>
           
           {/* Download Button Overlay - Top Right (icon only, very compact for mobile) */}
           {results.length === 1 && (
@@ -4704,24 +4989,6 @@ const MapView: React.FC<MapViewProps> = ({
             <span className="text-sm font-medium">Back to Configuration</span>
           </button>
           
-          {/* Basemap Dropdown */}
-          <div className="flex items-center space-x-2">
-            <label htmlFor="basemap-select" className="text-sm text-gray-600 font-medium">
-              Basemap:
-            </label>
-            <select
-              id="basemap-select"
-              value={selectedBasemap}
-              onChange={(e) => setSelectedBasemap(e.target.value)}
-              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {Object.entries(MAPTILER_BASEMAPS).map(([key, config]) => (
-                <option key={key} value={key}>
-                  {config.name}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
         
         <div className="flex items-center space-x-4">

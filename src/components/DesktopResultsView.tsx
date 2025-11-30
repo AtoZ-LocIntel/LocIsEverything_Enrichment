@@ -241,6 +241,12 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('ct_roads');
         }
         
+        // CT DEEP Properties fields - only show if CT DEEP Properties enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ct_deep_propert') && key !== 'ct_deep_properties_all') {
+          return selectedEnrichments.includes('ct_deep_properties');
+        }
+        
         // NH Key Destinations fields - only show if NH Key Destinations enrichment is selected
         // Skip the _all array (handled separately in display)
         if (key.includes('nh_key_destinations') && key !== 'nh_key_destinations_all') {

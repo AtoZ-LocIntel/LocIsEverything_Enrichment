@@ -44,6 +44,7 @@ import { getMAACECsContainingData, getMAACECsNearbyData } from '../adapters/maAC
 import { getMAParcelData } from '../adapters/maParcels';
 import { getCTBuildingFootprintData } from '../adapters/ctBuildingFootprints';
 import { getCTRoadsData } from '../adapters/ctRoads';
+import { getCTDeepPropertyData } from '../adapters/ctDeepProperties';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1517,6 +1518,10 @@ export class EnrichmentService {
       // CT Roads and Trails (CT Geodata Portal) - Proximity query
       case 'ct_roads':
         return await this.getCTRoads(lat, lon, radius);
+      
+      // CT DEEP Properties (CT Geodata Portal) - Point-in-polygon and proximity query
+      case 'ct_deep_properties':
+        return await this.getCTDeepProperties(lat, lon, radius);
       
       // National Marine Sanctuaries (NOAA) - Point-in-polygon and proximity query
       case 'national_marine_sanctuaries':
@@ -6427,6 +6432,104 @@ out center;`;
         ct_roads_count: 0,
         ct_roads_all: [],
         ct_roads_error: 'Error fetching CT Roads and Trails data'
+      };
+    }
+  }
+
+  private async getCTDeepProperties(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏞️ Fetching CT DEEP Properties data for coordinates [${lat}, ${lon}]`);
+      
+      // Default radius is 5 miles, max is 25 miles
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      
+      const propertyData = await getCTDeepPropertyData(lat, lon, radiusMiles);
+      
+      if (!propertyData) {
+        return {
+          ct_deep_properties_containing: null,
+          ct_deep_properties_containing_message: 'No property found containing this location',
+          ct_deep_properties_nearby_count: 0,
+          ct_deep_properties_all: [],
+          ct_deep_properties_error: 'Error fetching CT DEEP Properties data'
+        };
+      }
+      
+      const result: Record<string, any> = {};
+      
+      // Handle containing property (point-in-polygon)
+      if (propertyData.containingProperty) {
+        result.ct_deep_properties_containing = propertyData.containingProperty.propertyName || 
+                                              propertyData.containingProperty.propertyId || 
+                                              'Unknown Property';
+        result.ct_deep_properties_containing_message = `Location is within: ${result.ct_deep_properties_containing}`;
+      } else {
+        result.ct_deep_properties_containing = null;
+        result.ct_deep_properties_containing_message = 'No property found containing this location';
+      }
+      
+      // Combine containing and nearby properties for the _all array
+      const allProperties: any[] = [];
+      
+      // Add containing property if it exists
+      if (propertyData.containingProperty) {
+        allProperties.push({
+          ...propertyData.containingProperty,
+          isContaining: true,
+          distance_miles: 0
+        });
+      }
+      
+      // Add nearby properties (excluding the containing one if it exists)
+      if (propertyData.nearbyProperties && propertyData.nearbyProperties.length > 0) {
+        propertyData.nearbyProperties.forEach(property => {
+          // Skip if this is the same as the containing property
+          const isSameAsContaining = propertyData.containingProperty && 
+                                    property.propertyId === propertyData.containingProperty.propertyId;
+          if (!isSameAsContaining) {
+            allProperties.push({
+              ...property,
+              isContaining: false
+            });
+          }
+        });
+      }
+      
+      // Deduplicate by property ID
+      const uniqueProperties = new Map<string, any>();
+      allProperties.forEach(property => {
+        const key = property.propertyId || property.GlobalID || `prop_${Math.random()}`;
+        if (!uniqueProperties.has(key)) {
+          uniqueProperties.set(key, property);
+        }
+      });
+      
+      const deduplicatedProperties = Array.from(uniqueProperties.values());
+      
+      if (deduplicatedProperties.length > 0) {
+        result.ct_deep_properties_nearby_count = deduplicatedProperties.length;
+        result.ct_deep_properties_all = deduplicatedProperties;
+      } else {
+        result.ct_deep_properties_nearby_count = 0;
+        result.ct_deep_properties_all = [];
+      }
+      
+      result.ct_deep_properties_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ CT DEEP Properties data processed:`, {
+        containing: result.ct_deep_properties_containing || 'N/A',
+        nearbyCount: result.ct_deep_properties_nearby_count || 0
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CT DEEP Properties data:', error);
+      return {
+        ct_deep_properties_containing: null,
+        ct_deep_properties_containing_message: 'No property found containing this location',
+        ct_deep_properties_nearby_count: 0,
+        ct_deep_properties_all: [],
+        ct_deep_properties_error: 'Error fetching CT DEEP Properties data'
       };
     }
   }

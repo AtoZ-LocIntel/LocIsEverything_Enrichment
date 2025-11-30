@@ -368,7 +368,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ma_acecs', label: 'MA Areas of Critical Environmental Concern', description: 'MassGIS - Massachusetts Areas of Critical Environmental Concern (ACECs) (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ma', section: 'ma' },
   { id: 'ma_parcels', label: 'Massachusetts Property Tax Parcels', description: 'MassGIS - Massachusetts property tax parcels for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.3, maxRadius: 1.0, category: 'ma', section: 'ma' },
   { id: 'ct_building_footprints', label: 'CT 2D Building Footprints', description: 'CT Geodata Portal - Connecticut 2D building footprints for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'ct', section: 'ct' },
-  { id: 'ct_roads', label: 'CT Roads and Trails', description: 'CT Geodata Portal - Connecticut roads and trails network for proximity queries', isPOI: true, defaultRadius: 0.5, maxRadius: 5.0, category: 'ct', section: 'ct' }
+  { id: 'ct_roads', label: 'CT Roads and Trails', description: 'CT Geodata Portal - Connecticut roads and trails network for proximity queries', isPOI: true, defaultRadius: 0.5, maxRadius: 5.0, category: 'ct', section: 'ct' },
+  { id: 'ct_deep_properties', label: 'CT DEEP Properties', description: 'CT Geodata Portal - Connecticut Department of Energy and Environmental Protection (DEEP) properties for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' }
 ];
 
 class POIConfigManager {

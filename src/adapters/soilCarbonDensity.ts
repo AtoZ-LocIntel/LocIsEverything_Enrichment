@@ -145,13 +145,16 @@ export async function getSoilCarbonDensityData(lat: number, lon: number): Promis
           // Prefer 0-30cm depth (standard surface layer), fallback to 0-5cm if not available
           const preferredDepths = ['0-30cm', '0-5cm', '5-15cm', '15-30cm'];
           
+          // Store depth info for conversion
+          let selectedDepth: any = null;
+          let selectedDepthLabel = '';
+          
           for (const depthLabel of preferredDepths) {
             const depth = layer.depths.find((d: any) => d.label === depthLabel);
             if (depth && depth.values && depth.values.mean !== undefined && depth.values.mean !== null) {
               carbonDensityValue = depth.values.mean;
-              // Note: The API returns values in dg/dm³ (decigrams per cubic decimeter)
-              // We need to convert to kg/m² for the standard depth layer
-              // For now, we'll use the mean value directly - the unit conversion depends on the depth layer
+              selectedDepth = depth;
+              selectedDepthLabel = depthLabel;
               console.log(`🌱 Found organic carbon density (${depthLabel}): ${carbonDensityValue} dg/dm³`);
               break;
             }
@@ -162,10 +165,43 @@ export async function getSoilCarbonDensityData(lat: number, lon: number): Promis
             for (const depth of layer.depths) {
               if (depth.values && depth.values.mean !== undefined && depth.values.mean !== null) {
                 carbonDensityValue = depth.values.mean;
+                selectedDepth = depth;
+                selectedDepthLabel = depth.label;
                 console.log(`🌱 Found organic carbon density (${depth.label}): ${carbonDensityValue} dg/dm³`);
                 break;
               }
             }
+          }
+          
+          // Convert from dg/dm³ to kg/m³, then to kg/m² based on depth
+          // Conversion: 1 dg/dm³ = 0.1 kg/m³
+          // Formula: 1 dg = 0.1 g = 0.0001 kg, 1 dm³ = 0.001 m³
+          // So: 1 dg/dm³ = 0.0001 kg / 0.001 m³ = 0.1 kg/m³
+          // Then multiply by depth in meters to get kg/m² (surface density)
+          if (carbonDensityValue !== null && selectedDepth && selectedDepth.range) {
+            const depthRange = selectedDepth.range;
+            const topDepth = depthRange.top_depth || 0; // in cm
+            const bottomDepth = depthRange.bottom_depth || 0; // in cm
+            const depthMeters = (bottomDepth - topDepth) / 100; // Convert cm to meters
+            
+            const originalValue = parseFloat(carbonDensityValue.toString());
+            
+            // Convert from dg/dm³ to kg/m³: 1 dg/dm³ = 0.1 kg/m³
+            const carbonDensityKgPerM3 = originalValue * 0.1;
+            
+            // Convert from kg/m³ to kg/m² by multiplying by depth in meters
+            const carbonDensityKgPerM2 = carbonDensityKgPerM3 * depthMeters;
+            
+            carbonDensityValue = carbonDensityKgPerM2;
+            console.log(`🌱 Unit conversion: ${originalValue.toFixed(2)} dg/dm³ → ${carbonDensityKgPerM3.toFixed(2)} kg/m³ → ${carbonDensityKgPerM2.toFixed(2)} kg/m² (depth: ${depthMeters}m, ${selectedDepthLabel})`);
+          } else if (carbonDensityValue !== null) {
+            // Fallback: if we can't determine depth, just convert to kg/m³
+            // Assume 0-30cm depth (0.3m) for conversion to kg/m²
+            const originalValue = parseFloat(carbonDensityValue.toString());
+            const carbonDensityKgPerM3 = originalValue * 0.1;
+            const carbonDensityKgPerM2 = carbonDensityKgPerM3 * 0.3; // Assume 0.3m depth
+            carbonDensityValue = carbonDensityKgPerM2;
+            console.log(`🌱 Unit conversion (fallback, assuming 0-30cm): ${originalValue.toFixed(2)} dg/dm³ → ${carbonDensityKgPerM3.toFixed(2)} kg/m³ → ${carbonDensityKgPerM2.toFixed(2)} kg/m²`);
           }
           
           break; // Found ocd layer, no need to check other layers

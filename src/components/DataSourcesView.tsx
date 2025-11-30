@@ -733,6 +733,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Connecticut",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "CT DEEP Properties",
+          description: "Connecticut Department of Energy and Environmental Protection (DEEP) properties - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

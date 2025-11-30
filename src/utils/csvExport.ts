@@ -272,6 +272,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ma_parcels_all' || // Skip _all arrays (handled separately)
         key === 'ct_building_footprints_all' || // Skip _all arrays (handled separately)
         key === 'ct_roads_all' || // Skip _all arrays (handled separately)
+        key === 'ct_deep_properties_all' || // Skip _all arrays (handled separately)
         key === 'ma_nhesp_natural_communities_all' ||
         key === 'ma_lakes_and_ponds_all' ||
         key === 'ma_rivers_and_streams_all') { // Skip _all arrays (handled separately)
@@ -679,6 +680,57 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           attributesJson,
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_deep_properties_all' && Array.isArray(value)) {
+      // Handle CT DEEP Properties - each property gets its own row with all attributes
+      value.forEach((property: any) => {
+        const propertyName = property.propertyName || property.PROPERTY || property.property || 'Unknown Property';
+        const propertyType = property.isContaining ? 'Containing Property' : 'Nearby Property';
+        const avLegend = property.avLegend || property.AV_LEGEND || property.AvLegend || '';
+        const imsLegend = property.imsLegend || property.IMS_LEGEND || property.ImsLegend || '';
+        const depId = property.depId || property.DEP_ID || property.dep_id || '';
+        const agencyFunctionCode = property.agencyFunctionCode || property.AGNCYFN_CD || property.agncyfn_cd || '';
+        const acreage = property.acreage !== null && property.acreage !== undefined ? property.acreage : (property.ACRE_GIS !== undefined ? property.ACRE_GIS : null);
+        
+        const allAttributes = { ...property };
+        delete allAttributes.propertyId;
+        delete allAttributes.propertyName;
+        delete allAttributes.PROPERTY;
+        delete allAttributes.property;
+        delete allAttributes.isContaining;
+        delete allAttributes.avLegend;
+        delete allAttributes.AV_LEGEND;
+        delete allAttributes.AvLegend;
+        delete allAttributes.imsLegend;
+        delete allAttributes.IMS_LEGEND;
+        delete allAttributes.ImsLegend;
+        delete allAttributes.depId;
+        delete allAttributes.DEP_ID;
+        delete allAttributes.agencyFunctionCode;
+        delete allAttributes.AGNCYFN_CD;
+        delete allAttributes.acreage;
+        delete allAttributes.ACRE_GIS;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'CT Geodata Portal',
+          (location.confidence || 'N/A').toString(),
+          'CT_DEEP_PROPERTY',
+          `${propertyType} - ${propertyName}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          property.distance_miles !== null && property.distance_miles !== undefined ? property.distance_miles.toFixed(2) : (property.isContaining ? '0.00' : ''),
+          avLegend || imsLegend || 'CT DEEP Property',
+          `${propertyName}${depId ? ` (DEP ID: ${depId})` : ''}${agencyFunctionCode ? ` [${agencyFunctionCode}]` : ''}${acreage !== null ? ` - ${acreage.toFixed(2)} acres` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
           'CT Geodata Portal'
         ]);
       });

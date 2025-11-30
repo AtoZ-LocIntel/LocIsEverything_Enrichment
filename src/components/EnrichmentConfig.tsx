@@ -72,10 +72,10 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
 
 
 
-const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
-  selectedEnrichments,
-  onSelectionChange,
-  poiRadii,
+const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({ 
+  selectedEnrichments, 
+  onSelectionChange, 
+  poiRadii, 
   onPoiRadiiChange,
   onViewCategory,
   onModalStateChange
@@ -646,12 +646,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     const ctCategory = enrichmentCategories.find(c => c.id === 'ct');
     const ctSubCategories = ctCategory?.subCategories || [];
     
-    return (
-      <div className="enrichment-config">
-        <div className="card">
-          <div className="card-header">
-            <div className="flex flex-col space-y-4">
-              <div className="flex items-center space-x-3">
+  return (
+    <div className="enrichment-config">
+      <div className="card">
+        <div className="card-header">
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center space-x-3">
                 <button
                   onClick={() => setViewingCTSubCategories(false)}
                   className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
@@ -659,15 +659,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 >
                   ←
                 </button>
-                <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
-                <div className="flex-1 min-w-0">
+              <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+              <div className="flex-1 min-w-0">
                   <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Connecticut Open Data</h3>
                   <p className="text-xs lg:text-sm text-gray-300">Select a category to view available layers</p>
                 </div>
               </div>
+              </div>
             </div>
-          </div>
-          
+            
           <div className="card-body">
             {/* CT Sub-Category Round Icons Grid - Same layout as home page */}
             <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
@@ -686,7 +686,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     };
 
                     return (
-                      <button
+              <button
                         key={subCategory.id}
                         onClick={() => {
                           // Use onViewCategory to show sub-category layers (same pattern as NH and MA)
@@ -716,7 +716,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             {selectedCount}
                           </div>
                         )}
-                      </button>
+              </button>
                     );
                   })
                 ) : (
@@ -743,84 +743,84 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           <div className="card-header">
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-3">
-                <button
+              <button
                   onClick={() => setViewingMASubCategories(false)}
                   className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
                   title="Back to categories"
-                >
+              >
                   ←
-                </button>
+              </button>
                 <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
                 <div className="flex-1 min-w-0">
                   <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Massachusetts Open Data</h3>
                   <p className="text-xs lg:text-sm text-gray-300">Select a category to view available layers</p>
                 </div>
-              </div>
             </div>
           </div>
-          
-          <div className="card-body">
+        </div>
+        
+        <div className="card-body">
             {/* MA Sub-Category Round Icons Grid - Same layout as home page */}
-            <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
+          <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
                 {maSubCategories.length > 0 ? (
                   maSubCategories.map((subCategory) => {
                     const subCategoryEnrichments = subCategory.enrichments;
                     const selectedCount = subCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
-                    
-                    // Determine ring brightness based on selection count
-                    const getRingOpacity = () => {
-                      if (selectedCount === 0) return 0;
-                      if (selectedCount <= 2) return 0.3;
-                      if (selectedCount <= 4) return 0.6;
-                      return 0.9;
-                    };
+                
+                // Determine ring brightness based on selection count
+                const getRingOpacity = () => {
+                  if (selectedCount === 0) return 0;
+                  if (selectedCount <= 2) return 0.3;
+                  if (selectedCount <= 4) return 0.6;
+                  return 0.9;
+                };
 
-                    return (
-                      <button
+                return (
+                  <button
                         key={subCategory.id}
-                        onClick={() => {
+                    onClick={() => {
                           // Use onViewCategory to show sub-category layers (same pattern as NH)
-                          if (onViewCategory) {
+                      if (onViewCategory) {
                             setViewingMASubCategories(false);
                             onViewCategory(subCategory);
-                          } else {
+                      } else {
                             // Fallback to modal
                             setCameFromMASubCategories(true);
                             setActiveModal(subCategory.id);
                             setViewingMASubCategories(false);
-                          }
-                        }}
+                      }
+                    }}
                         className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        style={{
-                          boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
-                        }}
-                      >
+                    style={{
+                      boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
+                    }}
+                  >
                         {/* Sub-Category Icon */}
                         <div className="absolute inset-0 flex items-center justify-center">
                           {subCategory.icon}
-                        </div>
-                        
-                        {/* Selection Counter Badge */}
-                        {selectedCount > 0 && (
+                    </div>
+                    
+                    {/* Selection Counter Badge */}
+                    {selectedCount > 0 && (
                           <div className="absolute top-2 right-2 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold z-10">
-                            {selectedCount}
-                          </div>
-                        )}
+                        {selectedCount}
+                      </div>
+                    )}
                         
                         {/* Category Title Overlay */}
                         <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold p-2 text-center z-10">
                           {subCategory.title}
                         </div>
-                      </button>
-                    );
+                  </button>
+                );
                   })
                 ) : (
                   <div className="col-span-2 text-center text-gray-500 py-8">
                     <p>No sub-categories available yet. Sub-categories will appear here as layers are added.</p>
-                  </div>
+            </div>
                 )}
-              </div>
+          </div>
             </div>
           </div>
         </div>
@@ -853,8 +853,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 </div>
               </div>
             </div>
-          </div>
-          
+              </div>
+              
           <div className="card-body">
             {/* NH Sub-Category Round Icons Grid - Same layout as home page */}
             <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
@@ -870,7 +870,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     if (selectedCount <= 4) return 0.6;
                     return 0.9;
                   };
-
+                  
                   return (
                     <button
                       key={subCategory.id}
@@ -894,7 +894,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       {selectedCount > 0 && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold z-10">
                           {selectedCount}
-                        </div>
+                      </div>
                       )}
                       
                       {/* Category Title Overlay */}
@@ -905,9 +905,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   );
                 })}
               </div>
+                  </div>
+                </div>
             </div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -918,7 +918,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     // Render modal only - this will cover the entire screen
     return (
       <div className="enrichment-config" style={{ position: 'relative', zIndex: 10001 }}>
-        <div 
+            <div 
           className="fixed inset-0 bg-white"
           style={{
             position: 'fixed',
@@ -930,9 +930,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             height: '100vh',
             zIndex: 10001
           }}
-        >
+            >
           <div className="bg-white flex flex-col" style={{ height: '100vh', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            {(() => {
+                {(() => {
               // Check if this is an NH sub-category (they have IDs like nh_transportation)
               const isNHSubCategory = activeModal?.startsWith('nh_');
               let category: EnrichmentCategory | undefined;
@@ -971,8 +971,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   </div>
                 );
               }
-              
-              const categoryEnrichments = category.enrichments;
+                  
+                  const categoryEnrichments = category.enrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
               console.log('📋 Category Enrichments:', {
                 categoryId: category.id,
@@ -981,45 +981,45 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 selectedCount: selectedCount,
                 enrichments: categoryEnrichments.map(e => e.id)
               });
-              
-              const headerColor = category.id === 'hazards' ? '#991b1b' :
-                                category.id === 'community' ? '#1e40af' :
-                                category.id === 'retail' ? '#6b21a8' :
-                                category.id === 'health' ? '#9d174d' :
-                                category.id === 'transportation' ? '#3730a3' :
-                                category.id === 'infrastructure' ? '#92400e' :
-                                category.id === 'environment' ? '#166534' :
-                                category.id === 'recreation' ? '#065f46' :
-                                category.id === 'natural_resources' ? '#115e59' :
-                                category.id === 'public_lands' ? '#365314' :
-                                category.id === 'quirky' ? '#9a3412' :
-                                category.id === 'wildfire' ? '#dc2626' :
+                  
+                  const headerColor = category.id === 'hazards' ? '#991b1b' :
+                                    category.id === 'community' ? '#1e40af' :
+                                    category.id === 'retail' ? '#6b21a8' :
+                                    category.id === 'health' ? '#9d174d' :
+                                    category.id === 'transportation' ? '#3730a3' :
+                                    category.id === 'infrastructure' ? '#92400e' :
+                                    category.id === 'environment' ? '#166534' :
+                                    category.id === 'recreation' ? '#065f46' :
+                                    category.id === 'natural_resources' ? '#115e59' :
+                                    category.id === 'public_lands' ? '#365314' :
+                                    category.id === 'quirky' ? '#9a3412' :
+                                    category.id === 'wildfire' ? '#dc2626' :
                                 category.id === 'at' ? '#166534' :
                                 category.id === 'pct' ? '#166534' :
                                 category.id === 'nh' ? '#166534' :
                                 category.id === 'nh_granit' ? '#166534' :
                                 category.id === 'ma_massgis' ? '#166534' :
                                 category.id === 'ct_geodata_portal' ? '#166534' :
-                                category.id === 'core' ? '#1e293b' : '#1f2937';
-              
-              console.log('Category:', category.id, 'Header color:', headerColor);
+                                    category.id === 'core' ? '#1e293b' : '#1f2937';
+                  
+                  console.log('Category:', category.id, 'Header color:', headerColor);
 
-              return (
-                <>
+                  return (
+                    <>
                   {/* Header with Back Button - Matching EnrichmentCategoryView style exactly */}
-                  <div 
+                      <div 
                     className="shadow-lg border-b border-gray-300 flex-shrink-0"
-                    style={{
-                      backgroundColor: headerColor,
+                        style={{
+                          backgroundColor: headerColor,
                       position: 'sticky',
                       top: 0,
                       zIndex: 10002,
                       width: '100%'
-                    }}
-                  >
+                        }}
+                      >
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                       <div className="flex items-center justify-between h-16">
-                        <button
+                          <button
                           onClick={() => {
                             if (cameFromNHSubCategories) {
                               // Go back to NH sub-categories page
@@ -1045,7 +1045,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         >
                           <ArrowLeft className="w-5 h-5 flex-shrink-0" />
                           <span className="whitespace-nowrap">Back to Configuration</span>
-                        </button>
+                          </button>
                         
                         <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
                           <div className="text-right">
@@ -1054,12 +1054,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                        </div>
+                      </div>
 
-                  {/* Content - Scrollable */}
-                  <div 
-                    ref={modalContentRef}
+                      {/* Content - Scrollable */}
+                      <div 
+                        ref={modalContentRef}
                     className="flex-1 overflow-y-auto p-3 sm:p-4" 
                     style={{ 
                       scrollBehavior: 'smooth',
@@ -1069,7 +1069,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       overflowY: 'auto',
                       overflowX: 'hidden'
                     }}
-                  >
+                      >
                     <div className="space-y-3 sm:space-y-4 max-w-2xl mx-auto w-full pt-2 sm:pt-4 px-1 sm:px-0">
                       {categoryEnrichments.length === 0 ? (
                         <div className="text-center py-8 text-gray-500">
@@ -1079,50 +1079,50 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         </div>
                       ) : (
                         categoryEnrichments.map((enrichment) => {
-                        const isSelected = selectedEnrichments.includes(enrichment.id);
-                        const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
-                        const maxRadius = getMaxRadius(enrichment.id);
-                        const minRadius = enrichment.id === 'poi_aurora_viewing_sites' ? 5 : 0.1;
-                        const formatMiles = (value: number) => Number.isInteger(value) ? value.toString() : value.toFixed(1);
-                        const radiusLabel = (() => {
-                          if (enrichment.id === 'poi_earthquakes') return '25 miles (earthquakes)';
-                          if (enrichment.id === 'poi_volcanoes') return '50 miles (volcanoes)';
-                          if (enrichment.id === 'poi_wildfires') return '50 miles (wildfires)';
-                          if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
-                          if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
+                            const isSelected = selectedEnrichments.includes(enrichment.id);
+                            const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
+                            const maxRadius = getMaxRadius(enrichment.id);
+                            const minRadius = enrichment.id === 'poi_aurora_viewing_sites' ? 5 : 0.1;
+                            const formatMiles = (value: number) => Number.isInteger(value) ? value.toString() : value.toFixed(1);
+                            const radiusLabel = (() => {
+                              if (enrichment.id === 'poi_earthquakes') return '25 miles (earthquakes)';
+                              if (enrichment.id === 'poi_volcanoes') return '50 miles (volcanoes)';
+                              if (enrichment.id === 'poi_wildfires') return '50 miles (wildfires)';
+                              if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
+                              if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
                           if (enrichment.id === 'nh_parcels') return '0.3 miles';
                           if (enrichment.id === 'ma_parcels') return '0.3 miles';
                           if (enrichment.id === 'ct_building_footprints') return '0.3 miles';
-                          return '5 miles';
-                        })();
+                              return '5 miles';
+                            })();
 
                             return (
                               <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 w-full max-w-full">
-                            {/* On mobile, stack checkbox above the text to give the text full width */}
+                                {/* On mobile, stack checkbox above the text to give the text full width */}
                             <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full max-w-full">
-                              <button
-                                type="button"
-                                onClick={() => handleEnrichmentToggle(enrichment.id)}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEnrichmentToggle(enrichment.id)}
                                 className={`w-5 h-5 sm:w-4 sm:h-4 flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 self-start ${
-                                  isSelected 
-                                    ? 'bg-black border-black' 
-                                    : 'bg-white border-gray-300'
-                                }`}
+                                      isSelected 
+                                        ? 'bg-black border-black' 
+                                        : 'bg-white border-gray-300'
+                                    }`}
                                 style={{ minWidth: '20px', minHeight: '20px' }}
-                              >
-                                {isSelected && (
-                                  <Check className="w-3 h-3 sm:w-3 sm:h-3 text-white" />
-                                )}
-                              </button>
+                                  >
+                                    {isSelected && (
+                                      <Check className="w-3 h-3 sm:w-3 sm:h-3 text-white" />
+                                    )}
+                                  </button>
                               <div className="flex-1 min-w-0 text-left space-y-1 w-full max-w-full">
-                                <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed w-full">
-                                  {enrichment.label}
-                                </label>
-                                <p className="text-sm sm:text-sm text-gray-700 break-words leading-relaxed whitespace-normal w-full">
-                                  {enrichment.description}
-                                </p>
-                              </div>
-                            </div>
+                                    <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed w-full">
+                                      {enrichment.label}
+                                    </label>
+                                    <p className="text-sm sm:text-sm text-gray-700 break-words leading-relaxed whitespace-normal w-full">
+                                      {enrichment.description}
+                                    </p>
+                                  </div>
+                                </div>
 
                             {enrichment.isPOI && isSelected && (() => {
                               // For NH parcels, use a dropdown with specific options
@@ -1140,15 +1140,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 : null; // null means use number input
                               
                               return (
-                                <div className="mt-4 pt-4 border-t border-gray-100">
-                                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-                                    <p className="text-xs text-amber-700">
-                                      ⚠️ Recommended range: {radiusLabel} (for performance & accuracy)
-                                    </p>
-                                  </div>
-                                  
+                                  <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+                                      <p className="text-xs text-amber-700">
+                                        ⚠️ Recommended range: {radiusLabel} (for performance & accuracy)
+                                      </p>
+                                    </div>
+                                    
                                   <div className="flex flex-col gap-3 mt-4 w-full max-w-full">
-                                    <label className="text-sm font-medium text-black w-full">Search Radius:</label>
+                                      <label className="text-sm font-medium text-black w-full">Search Radius:</label>
                                     <div className="flex items-center gap-2 w-full max-w-full">
                                       {radiusOptions ? (
                                         <select
@@ -1175,29 +1175,29 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                           style={{ maxWidth: 'calc(100% - 60px)' }}
                                         />
                                       )}
-                                      <span className="text-sm text-black whitespace-nowrap flex-shrink-0">miles</span>
+                                        <span className="text-sm text-black whitespace-nowrap flex-shrink-0">miles</span>
+                                      </div>
                                     </div>
-                                  </div>
 
                                   {!radiusOptions && (currentRadius > maxRadius || currentRadius < minRadius) && (
-                                    <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
-                                      Please stay between {formatMiles(minRadius)} and {formatMiles(maxRadius)} miles
-                                    </div>
-                                  )}
-                                </div>
+                                      <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                                        Please stay between {formatMiles(minRadius)} and {formatMiles(maxRadius)} miles
+                                      </div>
+                                    )}
+                                  </div>
                               );
                             })()}
                               </div>
                             );
                           })
-                      )}
-                    </div>
+                                )}
+                              </div>
                   </div>
                 </>
-              );
+                            );
             })()}
-          </div>
-        </div>
+                        </div>
+                      </div>
       </div>
     );
   }
@@ -1217,7 +1217,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             
             {/* Reset All Filters Button */}
             <div className="flex flex-col sm:flex-row gap-2 w-full">
-              <button
+                        <button
                 onClick={handleResetAllFilters}
                 className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
                 title="Reset all selected enrichments and radii to defaults"
@@ -1230,13 +1230,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 onClick={handleResetApp}
                 className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
                 title="Clear browser cache and refresh application to ensure latest code"
-              >
+                        >
                 <span className="w-4 h-4">🔄</span>
                 <span className="whitespace-nowrap">Reset App</span>
-              </button>
+                        </button>
+                      </div>
+              </div>
             </div>
-          </div>
-        </div>
         
         <div className="card-body">
           {/* Custom Icon Category Button Grid - Desktop */}
@@ -1261,7 +1261,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   return 0.9;
                 };
 
-                return (
+                  return (
                   <button
                     key={category.id}
                     onClick={() => {
@@ -1346,7 +1346,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 </h4>
                 <span className="text-xs sm:text-sm font-semibold text-blue-700 bg-blue-100 px-2 sm:px-3 py-1 rounded-full self-start sm:self-auto">
                   {selectedEnrichments.length} total
-                </span>
+                    </span>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
@@ -1385,14 +1385,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     </div>
                   );
                 })}
-              </div>
+            </div>
               
               {selectedEnrichments.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-blue-200">
                   <div className="text-sm text-blue-800">
                     <strong>Ready to search!</strong> Your selected enrichments will provide comprehensive location insights.
-                  </div>
-                </div>
+          </div>
+        </div>
               )}
             </div>
           )}
