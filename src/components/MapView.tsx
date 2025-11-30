@@ -681,9 +681,9 @@ const MapView: React.FC<MapViewProps> = ({
       if (!mapRef.current || mapInstanceRef.current) return;
       
       // Initialize map with geocoded location if available, otherwise default US view
-      const initialCenter = results && results.length > 0 && results[0]?.location
-        ? [results[0].location.lat, results[0].location.lon]
-        : [37.0902, -95.7129];
+      const initialCenter: [number, number] = results && results.length > 0 && results[0]?.location
+        ? [results[0].location.lat, results[0].location.lon] as [number, number]
+        : [37.0902, -95.7129] as [number, number];
       const initialZoom = results && results.length > 0 && results[0]?.location ? 15 : 4;
       
       const map = L.map(mapRef.current, {
@@ -872,6 +872,10 @@ const MapView: React.FC<MapViewProps> = ({
     addFeaturesToMap();
     
     function addFeaturesToMap() {
+    if (!mapInstanceRef.current || !layerGroupsRef.current) {
+      console.warn('🔍 [DEBUG] Map or layer groups not ready, skipping feature addition');
+      return;
+    }
 
     const map = mapInstanceRef.current;
     const { primary, poi } = layerGroupsRef.current;
@@ -907,6 +911,11 @@ const MapView: React.FC<MapViewProps> = ({
     
     // CRITICAL: Ensure container has dimensions before proceeding
     const ensureContainerReady = (attempt = 0): void => {
+      if (!map) {
+        console.warn('🔍 [DEBUG] Map not available, skipping container check');
+        return;
+      }
+      
       const container = map.getContainer();
       const hasDimensions = container && container.offsetWidth > 0 && container.offsetHeight > 0;
       
