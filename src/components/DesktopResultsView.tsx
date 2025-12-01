@@ -22,10 +22,12 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       .replace(/^poi_/g, 'POI ')
       .replace(/^at_/g, 'AT ')
       .replace(/^pct_/g, 'PCT ')
+      .replace(/^de_/g, 'DE ')
       .replace(/nws/g, 'NWS')
       .replace(/fws/g, 'FWS')
       .replace(/_/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase());
+      .replace(/\b\w/g, l => l.toUpperCase())
+      .replace(/\bDe\b/g, 'DE');
   };
 
   const formatValue = (value: any, key: string): string => {
@@ -429,6 +431,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Massachusetts Data';
       } else if (key.includes('ct_parcel') || key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
         category = 'Connecticut Data';
+      } else if (key.includes('de_state_forest') || key.includes('de_pine_plantations') || key.includes('de_urban_tree_canopy') || key.includes('de_forest_cover_2007') || key.includes('de_')) {
+        category = 'DE Data';
       } else if (key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';
       } else if (key.includes('poi_') && (key.includes('school') || key.includes('college') || key.includes('childcare') || key.includes('community_centre') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('worship') || key.includes('mail_shipping'))) {

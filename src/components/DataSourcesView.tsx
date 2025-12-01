@@ -770,6 +770,39 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
+      category: "Delaware Data (DE FirstMap)",
+      sources: [
+        {
+          name: "DE State Forest",
+          description: "Delaware State Forest lands managed by the Delaware Forest Service - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Pine Plantations",
+          description: "Locations of Pine Plantations in Delaware - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Urban Tree Canopy Estimates",
+          description: "Urban Tree Canopy calculations for Delaware municipalities, communities, and parks - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Forest Cover 2007",
+          description: "2007 Aerial imagery based forest cover for Delaware - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
       category: "Massachusetts Data (Cape Cod Commission)",
       sources: [
         {

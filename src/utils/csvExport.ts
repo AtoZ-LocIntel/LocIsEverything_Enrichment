@@ -277,7 +277,28 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ct_deep_properties_all' || // Skip _all arrays (handled separately)
         key === 'ma_nhesp_natural_communities_all' ||
         key === 'ma_lakes_and_ponds_all' ||
-        key === 'ma_rivers_and_streams_all') { // Skip _all arrays (handled separately)
+        key === 'ma_rivers_and_streams_all' ||
+        key === 'de_state_forest_all' ||
+        key === 'de_pine_plantations_all' ||
+        key === 'de_urban_tree_canopy_all' ||
+        key === 'de_forest_cover_2007_all' ||
+        key === 'de_no_build_points_bay_all' ||
+        key === 'de_no_build_line_bay_all' ||
+        key === 'de_no_build_points_ocean_all' ||
+        key === 'de_no_build_line_ocean_all' ||
+        key === 'de_park_facilities_all' ||
+        key === 'de_natural_areas_all' ||
+        key === 'de_outdoor_recreation_parks_trails_lands_all' ||
+        key === 'de_land_water_conservation_fund_all' ||
+        key === 'de_nature_preserves_all' ||
+        key === 'de_outdoor_recreation_areas_all' ||
+        key === 'de_outdoor_recreation_parks_trails_open_space_all' ||
+        key === 'de_public_protected_lands_all' ||
+        key === 'de_conservation_easements_all' ||
+        key === 'de_trails_pathways_all' ||
+        key === 'de_seasonal_restricted_areas_all' ||
+        key === 'de_permanent_restricted_areas_all' ||
+        key === 'de_wildlife_area_boundaries_all') { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -734,6 +755,423 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'de_state_forest_all' && Array.isArray(value)) {
+      // Handle DE State Forest - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing State Forest' : 'Nearby State Forest';
+        const county = feature.COUNTY || feature.county || '';
+        const acres = feature.ACRES || feature.acres;
+        const tract = feature.TRACT || feature.tract || '';
+        const forest = feature.FOREST || feature.forest || '';
+        const label = feature.LABEL || feature.label || '';
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_STATE_FOREST',
+          `${featureType}${label ? ` - ${label}` : ''}${forest ? ` (${forest})` : ''}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          'State Forest',
+          `${county}${tract ? ` - Tract: ${tract}` : ''}${acres !== null ? ` (${acres.toFixed(2)} acres)` : ''}`,
+          '',
+          attributesJson,
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_pine_plantations_all' && Array.isArray(value)) {
+      // Handle DE Pine Plantations - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Pine Plantation' : 'Nearby Pine Plantation';
+        const acres = feature.ACRES || feature.acres;
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_PINE_PLANTATION',
+          featureType,
+          location.lat.toString(),
+          location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          'Pine Plantation',
+          acres !== null ? `${acres.toFixed(2)} acres` : '',
+          '',
+          attributesJson,
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_urban_tree_canopy_all' && Array.isArray(value)) {
+      // Handle DE Urban Tree Canopy - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Urban Tree Canopy' : 'Nearby Urban Tree Canopy';
+        const name = feature.NAME || feature.name || '';
+        const totalAcres = feature.TOTALACRES || feature.totalAcres || feature.TotalAcres;
+        const canopyAcres = feature.CANOPYACRES || feature.canopyAcres || feature.CanopyAcres;
+        const canopyPercent = feature.CANOPYPERCENT || feature.canopyPercent || feature.CanopyPercent;
+        const areaType = feature.AREATYPE || feature.areaType || feature.AreaType;
+        const areaTypeLabel = areaType === 0 ? 'Municipality' : areaType === 1 ? 'Community' : areaType === 2 ? 'Park' : areaType !== null ? String(areaType) : '';
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_URBAN_TREE_CANOPY',
+          `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          areaTypeLabel || 'Urban Tree Canopy',
+          `${totalAcres !== null ? `Total: ${totalAcres.toFixed(2)} acres` : ''}${canopyAcres !== null ? `, Canopy: ${canopyAcres.toFixed(2)} acres` : ''}${canopyPercent !== null ? ` (${canopyPercent.toFixed(1)}%)` : ''}`,
+          '',
+          attributesJson,
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_forest_cover_2007_all' && Array.isArray(value)) {
+      // Handle DE Forest Cover 2007 - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Forest Cover 2007' : 'Nearby Forest Cover 2007';
+        const type = feature.TYPE || feature.type || '';
+        const acres = feature.ACRES || feature.acres;
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_FOREST_COVER_2007',
+          `${featureType}${type ? ` - ${type}` : ''}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          type || 'Forest Cover 2007',
+          acres !== null ? `${acres.toFixed(2)} acres` : '',
+          '',
+          attributesJson,
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_no_build_points_bay_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const allAttributes = { ...feature };
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_NO_BUILD_POINTS_BAY', 'No Build Point - Bay',
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          'No Build Point - Bay', '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_no_build_line_bay_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const allAttributes = { ...feature };
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_NO_BUILD_LINE_BAY', 'No Build Line - Bay',
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          'No Build Line - Bay', '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_no_build_points_ocean_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const allAttributes = { ...feature };
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_NO_BUILD_POINTS_OCEAN', 'No Build Point - Ocean',
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          'No Build Point - Ocean', '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_no_build_line_ocean_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const allAttributes = { ...feature };
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_NO_BUILD_LINE_OCEAN', 'No Build Line - Ocean',
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          'No Build Line - Ocean', '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_park_facilities_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const park = feature.PARK || feature.park || '';
+        const facility = feature.FACILITY || feature.facility || '';
+        const allAttributes = { ...feature };
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_PARK_FACILITIES', `${park || 'Park Facility'}${facility ? ` - ${facility}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          facility || 'Park Facility', park || '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_natural_areas_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Natural Area' : 'Nearby Natural Area';
+        const name = feature.NAME || feature.name || '';
+        const acres = feature.ACRES || feature.acres;
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_NATURAL_AREAS', `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          name || 'Natural Area', acres !== null ? `${acres.toFixed(2)} acres` : '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_outdoor_recreation_parks_trails_lands_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Parks & Trails Program Land' : 'Nearby Parks & Trails Program Land';
+        const name = feature.NAME || feature.name || '';
+        const acres = feature.ACRES || feature.acres;
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_PARKS_TRAILS_PROGRAM_LANDS', `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          name || 'Parks & Trails Program Land', acres !== null ? `${acres.toFixed(2)} acres` : '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_land_water_conservation_fund_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Land & Water Conservation Fund' : 'Nearby Land & Water Conservation Fund';
+        const name = feature.NAME || feature.name || '';
+        const acres = feature.ACRES || feature.acres;
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_LAND_WATER_CONSERVATION_FUND', `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          name || 'Land & Water Conservation Fund', acres !== null ? `${acres.toFixed(2)} acres` : '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_nature_preserves_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Nature Preserve' : 'Nearby Nature Preserve';
+        const name = feature.NAME || feature.name || '';
+        const acres = feature.ACRES || feature.acres;
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_NATURE_PRESERVES', `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          name || 'Nature Preserve', acres !== null ? `${acres.toFixed(2)} acres` : '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_outdoor_recreation_areas_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Outdoor Recreation Area' : 'Nearby Outdoor Recreation Area';
+        const name = feature.NAME || feature.name || '';
+        const acres = feature.ACRES || feature.acres;
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_OUTDOOR_RECREATION_AREAS', `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          name || 'Outdoor Recreation Area', acres !== null ? `${acres.toFixed(2)} acres` : '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_outdoor_recreation_parks_trails_open_space_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Parks & Trails Open Space' : 'Nearby Parks & Trails Open Space';
+        const agency = feature.AGENCY || feature.agency || '';
+        const acres = feature.ACRES || feature.acres;
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_PARKS_TRAILS_OPEN_SPACE', `${featureType}${agency ? ` - ${agency}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          agency || 'Parks & Trails Open Space', acres !== null ? `${acres.toFixed(2)} acres` : '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_public_protected_lands_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Public Protected Land' : 'Nearby Public Protected Land';
+        const name = feature.NAME || feature.name || '';
+        const acres = feature.ACRES || feature.acres;
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_PUBLIC_PROTECTED_LANDS', `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          name || 'Public Protected Land', acres !== null ? `${acres.toFixed(2)} acres` : '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_conservation_easements_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Conservation Easement' : 'Nearby Conservation Easement';
+        const grantor = feature.GRANTOR || feature.grantor || '';
+        const acres = feature.ACRES || feature.acres;
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_CONSERVATION_EASEMENTS', `${featureType}${grantor ? ` - ${grantor}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          grantor || 'Conservation Easement', acres !== null ? `${acres.toFixed(2)} acres` : '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_trails_pathways_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const trailName = feature.TRAIL_NAME || feature.trailName || feature.trail_name || '';
+        const managedUse = feature.MANAGED_USE || feature.managedUse || feature.managed_use || '';
+        const allAttributes = { ...feature };
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_TRAILS_PATHWAYS', trailName || 'Trail',
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          trailName || 'Trail', managedUse || '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_seasonal_restricted_areas_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Seasonal Restricted Area' : 'Nearby Seasonal Restricted Area';
+        const park = feature.PARK || feature.park || '';
+        const closure = feature.CLOSURE || feature.closure || '';
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_SEASONAL_RESTRICTED_AREAS', `${featureType}${park ? ` - ${park}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          park || 'Seasonal Restricted Area', closure || '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_permanent_restricted_areas_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Permanent Restricted Area' : 'Nearby Permanent Restricted Area';
+        const park = feature.PARK || feature.park || '';
+        const closure = feature.CLOSURE || feature.closure || '';
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_PERMANENT_RESTRICTED_AREAS', `${featureType}${park ? ` - ${park}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          park || 'Permanent Restricted Area', closure || '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_wildlife_area_boundaries_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureType = feature.isContaining ? 'Containing Wildlife Area' : 'Nearby Wildlife Area';
+        const areaName = feature.AREA_NAME || feature.areaName || feature.area_name || '';
+        const tractName = feature.TRACT_NAME || feature.tractName || feature.tract_name || '';
+        const acres = feature.GIS_ACRES || feature.gisAcres || feature.gis_acres;
+        const allAttributes = { ...feature };
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'DE FirstMap',
+          (location.confidence || 'N/A').toString(), 'DE_WILDLIFE_AREA_BOUNDARIES', `${featureType}${areaName ? ` - ${areaName}` : ''}`,
+          location.lat.toString(), location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : ''),
+          areaName || 'Wildlife Area', `${tractName ? `${tractName}, ` : ''}${acres !== null ? `${acres.toFixed(2)} acres` : ''}`, attributesJson, 'DE FirstMap'
         ]);
       });
     } else if (key === 'nh_key_destinations_all' && Array.isArray(value)) {

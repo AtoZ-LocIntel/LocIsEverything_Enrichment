@@ -47,6 +47,27 @@ import { getCTBuildingFootprintData } from '../adapters/ctBuildingFootprints';
 import { getCTRoadsData } from '../adapters/ctRoads';
 import { getCTUrgentCareData } from '../adapters/ctUrgentCare';
 import { getCTDeepPropertyData } from '../adapters/ctDeepProperties';
+import { getDEStateForestData } from '../adapters/deStateForest';
+import { getDEPinePlantationData } from '../adapters/dePinePlantations';
+import { getDEUrbanTreeCanopyData } from '../adapters/deUrbanTreeCanopy';
+import { getDEForestCover2007Data } from '../adapters/deForestCover2007';
+import { getDENoBuildPointsBayData } from '../adapters/deNoBuildPointsBay';
+import { getDENoBuildLineBayData } from '../adapters/deNoBuildLineBay';
+import { getDENoBuildPointsOceanData } from '../adapters/deNoBuildPointsOcean';
+import { getDENoBuildLineOceanData } from '../adapters/deNoBuildLineOcean';
+import { getDEParkFacilitiesData } from '../adapters/deParkFacilities';
+import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
+import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
+import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
+import { getDENaturePreservesData } from '../adapters/deNaturePreserves';
+import { getDEOutdoorRecreationAreasData } from '../adapters/deOutdoorRecreationAreas';
+import { getDEOutdoorRecreationParksTrailsOpenSpaceData } from '../adapters/deOutdoorRecreationParksTrailsOpenSpace';
+import { getDEPublicProtectedLandsData } from '../adapters/dePublicProtectedLands';
+import { getDEConservationEasementsData } from '../adapters/deConservationEasements';
+import { getDETrailsPathwaysData } from '../adapters/deTrailsPathways';
+import { getDESeasonalRestrictedAreasData } from '../adapters/deSeasonalRestrictedAreas';
+import { getDEPermanentRestrictedAreasData } from '../adapters/dePermanentRestrictedAreas';
+import { getDEWildlifeAreaBoundariesData } from '../adapters/deWildlifeAreaBoundaries';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1532,6 +1553,57 @@ export class EnrichmentService {
       // CT DEEP Properties (CT Geodata Portal) - Point-in-polygon and proximity query
       case 'ct_deep_properties':
         return await this.getCTDeepProperties(lat, lon, radius);
+      
+      // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
+      case 'de_state_forest':
+        return await this.getDEStateForest(lat, lon, radius);
+      
+      // DE Pine Plantations (DE FirstMap) - Point-in-polygon and proximity query
+      case 'de_pine_plantations':
+        return await this.getDEPinePlantations(lat, lon, radius);
+      
+      // DE Urban Tree Canopy (DE FirstMap) - Point-in-polygon and proximity query
+      case 'de_urban_tree_canopy':
+        return await this.getDEUrbanTreeCanopy(lat, lon, radius);
+      
+      // DE Forest Cover 2007 (DE FirstMap) - Point-in-polygon and proximity query
+      case 'de_forest_cover_2007':
+        return await this.getDEForestCover2007(lat, lon, radius);
+      
+      case 'de_no_build_points_bay':
+        return await this.getDENoBuildPointsBay(lat, lon, radius);
+      case 'de_no_build_line_bay':
+        return await this.getDENoBuildLineBay(lat, lon, radius);
+      case 'de_no_build_points_ocean':
+        return await this.getDENoBuildPointsOcean(lat, lon, radius);
+      case 'de_no_build_line_ocean':
+        return await this.getDENoBuildLineOcean(lat, lon, radius);
+      case 'de_park_facilities':
+        return await this.getDEParkFacilities(lat, lon, radius);
+      case 'de_natural_areas':
+        return await this.getDENaturalAreas(lat, lon, radius);
+      case 'de_outdoor_recreation_parks_trails_lands':
+        return await this.getDEOutdoorRecreationParksTrailsLands(lat, lon, radius);
+      case 'de_land_water_conservation_fund':
+        return await this.getDELandWaterConservationFund(lat, lon, radius);
+      case 'de_nature_preserves':
+        return await this.getDENaturePreserves(lat, lon, radius);
+      case 'de_outdoor_recreation_areas':
+        return await this.getDEOutdoorRecreationAreas(lat, lon, radius);
+      case 'de_outdoor_recreation_parks_trails_open_space':
+        return await this.getDEOutdoorRecreationParksTrailsOpenSpace(lat, lon, radius);
+      case 'de_public_protected_lands':
+        return await this.getDEPublicProtectedLands(lat, lon, radius);
+      case 'de_conservation_easements':
+        return await this.getDEConservationEasements(lat, lon, radius);
+      case 'de_trails_pathways':
+        return await this.getDETrailsPathways(lat, lon, radius);
+      case 'de_seasonal_restricted_areas':
+        return await this.getDESeasonalRestrictedAreas(lat, lon, radius);
+      case 'de_permanent_restricted_areas':
+        return await this.getDEPermanentRestrictedAreas(lat, lon, radius);
+      case 'de_wildlife_area_boundaries':
+        return await this.getDEWildlifeAreaBoundaries(lat, lon, radius);
       
       // National Marine Sanctuaries (NOAA) - Point-in-polygon and proximity query
       case 'national_marine_sanctuaries':
@@ -6323,6 +6395,640 @@ out center;`;
         ma_parcels_all: [],
         ma_parcels_error: 'Error fetching MA Parcels data'
       };
+    }
+  }
+
+  private async getDEStateForest(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌲 Fetching DE State Forest data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 0;
+      
+      const forestData = await getDEStateForestData(lat, lon, radiusMiles);
+      
+      if (forestData) {
+        const allFeatures: any[] = [];
+        
+        if (forestData.containingFeature) {
+          allFeatures.push({
+            ...forestData.containingFeature.attributes,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: forestData.containingFeature.geometry
+          });
+          result.de_state_forest_containing = true;
+        } else {
+          result.de_state_forest_containing = false;
+        }
+        
+        if (forestData.nearbyFeatures && forestData.nearbyFeatures.length > 0) {
+          forestData.nearbyFeatures.forEach(feature => {
+            allFeatures.push({
+              ...feature.attributes,
+              isContaining: false,
+              distance_miles: feature.distance_miles,
+              geometry: feature.geometry
+            });
+          });
+          result.de_state_forest_nearby_count = forestData.nearbyFeatures.length;
+        } else {
+          result.de_state_forest_nearby_count = 0;
+        }
+        
+        result.de_state_forest_all = allFeatures;
+        result.de_state_forest_count = allFeatures.length;
+        if (radiusMiles > 0) {
+          result.de_state_forest_search_radius_miles = radiusMiles;
+        }
+      } else {
+        result.de_state_forest_count = 0;
+        result.de_state_forest_all = [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE State Forest:', error);
+      return {
+        de_state_forest_count: 0,
+        de_state_forest_all: [],
+        de_state_forest_error: 'Error fetching DE State Forest data'
+      };
+    }
+  }
+
+  private async getDEPinePlantations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌲 Fetching DE Pine Plantations data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 0;
+      
+      const plantationData = await getDEPinePlantationData(lat, lon, radiusMiles);
+      
+      if (plantationData) {
+        const allFeatures: any[] = [];
+        
+        if (plantationData.containingFeature) {
+          allFeatures.push({
+            ...plantationData.containingFeature.attributes,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: plantationData.containingFeature.geometry
+          });
+          result.de_pine_plantations_containing = true;
+        } else {
+          result.de_pine_plantations_containing = false;
+        }
+        
+        if (plantationData.nearbyFeatures && plantationData.nearbyFeatures.length > 0) {
+          plantationData.nearbyFeatures.forEach(feature => {
+            allFeatures.push({
+              ...feature.attributes,
+              isContaining: false,
+              distance_miles: feature.distance_miles,
+              geometry: feature.geometry
+            });
+          });
+          result.de_pine_plantations_nearby_count = plantationData.nearbyFeatures.length;
+        } else {
+          result.de_pine_plantations_nearby_count = 0;
+        }
+        
+        result.de_pine_plantations_all = allFeatures;
+        result.de_pine_plantations_count = allFeatures.length;
+        if (radiusMiles > 0) {
+          result.de_pine_plantations_search_radius_miles = radiusMiles;
+        }
+      } else {
+        result.de_pine_plantations_count = 0;
+        result.de_pine_plantations_all = [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Pine Plantations:', error);
+      return {
+        de_pine_plantations_count: 0,
+        de_pine_plantations_all: [],
+        de_pine_plantations_error: 'Error fetching DE Pine Plantations data'
+      };
+    }
+  }
+
+  private async getDEUrbanTreeCanopy(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌳 Fetching DE Urban Tree Canopy data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 0;
+      
+      const canopyData = await getDEUrbanTreeCanopyData(lat, lon, radiusMiles);
+      
+      if (canopyData) {
+        const allFeatures: any[] = [];
+        
+        if (canopyData.containingFeature) {
+          allFeatures.push({
+            ...canopyData.containingFeature.attributes,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: canopyData.containingFeature.geometry
+          });
+          result.de_urban_tree_canopy_containing = true;
+        } else {
+          result.de_urban_tree_canopy_containing = false;
+        }
+        
+        if (canopyData.nearbyFeatures && canopyData.nearbyFeatures.length > 0) {
+          canopyData.nearbyFeatures.forEach(feature => {
+            allFeatures.push({
+              ...feature.attributes,
+              isContaining: false,
+              distance_miles: feature.distance_miles,
+              geometry: feature.geometry
+            });
+          });
+          result.de_urban_tree_canopy_nearby_count = canopyData.nearbyFeatures.length;
+        } else {
+          result.de_urban_tree_canopy_nearby_count = 0;
+        }
+        
+        result.de_urban_tree_canopy_all = allFeatures;
+        result.de_urban_tree_canopy_count = allFeatures.length;
+        if (radiusMiles > 0) {
+          result.de_urban_tree_canopy_search_radius_miles = radiusMiles;
+        }
+      } else {
+        result.de_urban_tree_canopy_count = 0;
+        result.de_urban_tree_canopy_all = [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Urban Tree Canopy:', error);
+      return {
+        de_urban_tree_canopy_count: 0,
+        de_urban_tree_canopy_all: [],
+        de_urban_tree_canopy_error: 'Error fetching DE Urban Tree Canopy data'
+      };
+    }
+  }
+
+  private async getDEForestCover2007(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌲 Fetching DE Forest Cover 2007 data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 0;
+      
+      const forestData = await getDEForestCover2007Data(lat, lon, radiusMiles);
+      
+      if (forestData) {
+        const allFeatures: any[] = [];
+        
+        if (forestData.containingFeature) {
+          allFeatures.push({
+            ...forestData.containingFeature.attributes,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: forestData.containingFeature.geometry
+          });
+          result.de_forest_cover_2007_containing = true;
+        } else {
+          result.de_forest_cover_2007_containing = false;
+        }
+        
+        if (forestData.nearbyFeatures && forestData.nearbyFeatures.length > 0) {
+          forestData.nearbyFeatures.forEach(feature => {
+            allFeatures.push({
+              ...feature.attributes,
+              isContaining: false,
+              distance_miles: feature.distance_miles,
+              geometry: feature.geometry
+            });
+          });
+          result.de_forest_cover_2007_nearby_count = forestData.nearbyFeatures.length;
+        } else {
+          result.de_forest_cover_2007_nearby_count = 0;
+        }
+        
+        result.de_forest_cover_2007_all = allFeatures;
+        result.de_forest_cover_2007_count = allFeatures.length;
+        if (radiusMiles > 0) {
+          result.de_forest_cover_2007_search_radius_miles = radiusMiles;
+        }
+      } else {
+        result.de_forest_cover_2007_count = 0;
+        result.de_forest_cover_2007_all = [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Forest Cover 2007:', error);
+      return {
+        de_forest_cover_2007_count: 0,
+        de_forest_cover_2007_all: [],
+        de_forest_cover_2007_error: 'Error fetching DE Forest Cover 2007 data'
+      };
+    }
+  }
+
+  private async getDENoBuildPointsBay(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 5;
+      const data = await getDENoBuildPointsBayData(lat, lon, radiusMiles);
+      return {
+        de_no_build_points_bay_all: data.map(f => ({ ...f.attributes, distance_miles: f.distance_miles, geometry: f.geometry })),
+        de_no_build_points_bay_count: data.length,
+        de_no_build_points_bay_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE No Build Points Bay:', error);
+      return { de_no_build_points_bay_count: 0, de_no_build_points_bay_all: [] };
+    }
+  }
+
+  private async getDENoBuildLineBay(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 5;
+      const data = await getDENoBuildLineBayData(lat, lon, radiusMiles);
+      return {
+        de_no_build_line_bay_all: data.map(f => ({ ...f.attributes, distance_miles: f.distance_miles, geometry: f.geometry })),
+        de_no_build_line_bay_count: data.length,
+        de_no_build_line_bay_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE No Build Line Bay:', error);
+      return { de_no_build_line_bay_count: 0, de_no_build_line_bay_all: [] };
+    }
+  }
+
+  private async getDENoBuildPointsOcean(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 5;
+      const data = await getDENoBuildPointsOceanData(lat, lon, radiusMiles);
+      return {
+        de_no_build_points_ocean_all: data.map(f => ({ ...f.attributes, distance_miles: f.distance_miles, geometry: f.geometry })),
+        de_no_build_points_ocean_count: data.length,
+        de_no_build_points_ocean_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE No Build Points Ocean:', error);
+      return { de_no_build_points_ocean_count: 0, de_no_build_points_ocean_all: [] };
+    }
+  }
+
+  private async getDENoBuildLineOcean(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 5;
+      const data = await getDENoBuildLineOceanData(lat, lon, radiusMiles);
+      return {
+        de_no_build_line_ocean_all: data.map(f => ({ ...f.attributes, distance_miles: f.distance_miles, geometry: f.geometry })),
+        de_no_build_line_ocean_count: data.length,
+        de_no_build_line_ocean_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE No Build Line Ocean:', error);
+      return { de_no_build_line_ocean_count: 0, de_no_build_line_ocean_all: [] };
+    }
+  }
+
+  private async getDEParkFacilities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 5;
+      const data = await getDEParkFacilitiesData(lat, lon, radiusMiles);
+      return {
+        de_park_facilities_all: data.map(f => ({ ...f.attributes, distance_miles: f.distance_miles, geometry: f.geometry })),
+        de_park_facilities_count: data.length,
+        de_park_facilities_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Park Facilities:', error);
+      return { de_park_facilities_count: 0, de_park_facilities_all: [] };
+    }
+  }
+
+  private async getDENaturalAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDENaturalAreasData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_natural_areas_containing = true;
+      } else {
+        result.de_natural_areas_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_natural_areas_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_natural_areas_nearby_count = 0;
+      }
+      result.de_natural_areas_all = allFeatures;
+      result.de_natural_areas_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_natural_areas_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Natural Areas:', error);
+      return { de_natural_areas_count: 0, de_natural_areas_all: [] };
+    }
+  }
+
+  private async getDEOutdoorRecreationParksTrailsLands(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDEOutdoorRecreationParksTrailsLandsData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_outdoor_recreation_parks_trails_lands_containing = true;
+      } else {
+        result.de_outdoor_recreation_parks_trails_lands_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_outdoor_recreation_parks_trails_lands_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_outdoor_recreation_parks_trails_lands_nearby_count = 0;
+      }
+      result.de_outdoor_recreation_parks_trails_lands_all = allFeatures;
+      result.de_outdoor_recreation_parks_trails_lands_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_outdoor_recreation_parks_trails_lands_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Outdoor Recreation Parks Trails Lands:', error);
+      return { de_outdoor_recreation_parks_trails_lands_count: 0, de_outdoor_recreation_parks_trails_lands_all: [] };
+    }
+  }
+
+  private async getDELandWaterConservationFund(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDELandWaterConservationFundData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_land_water_conservation_fund_containing = true;
+      } else {
+        result.de_land_water_conservation_fund_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_land_water_conservation_fund_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_land_water_conservation_fund_nearby_count = 0;
+      }
+      result.de_land_water_conservation_fund_all = allFeatures;
+      result.de_land_water_conservation_fund_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_land_water_conservation_fund_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Land and Water Conservation Fund:', error);
+      return { de_land_water_conservation_fund_count: 0, de_land_water_conservation_fund_all: [] };
+    }
+  }
+
+  private async getDENaturePreserves(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDENaturePreservesData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_nature_preserves_containing = true;
+      } else {
+        result.de_nature_preserves_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_nature_preserves_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_nature_preserves_nearby_count = 0;
+      }
+      result.de_nature_preserves_all = allFeatures;
+      result.de_nature_preserves_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_nature_preserves_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Nature Preserves:', error);
+      return { de_nature_preserves_count: 0, de_nature_preserves_all: [] };
+    }
+  }
+
+  private async getDEOutdoorRecreationAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDEOutdoorRecreationAreasData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_outdoor_recreation_areas_containing = true;
+      } else {
+        result.de_outdoor_recreation_areas_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_outdoor_recreation_areas_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_outdoor_recreation_areas_nearby_count = 0;
+      }
+      result.de_outdoor_recreation_areas_all = allFeatures;
+      result.de_outdoor_recreation_areas_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_outdoor_recreation_areas_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Outdoor Recreation Areas:', error);
+      return { de_outdoor_recreation_areas_count: 0, de_outdoor_recreation_areas_all: [] };
+    }
+  }
+
+  private async getDEOutdoorRecreationParksTrailsOpenSpace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDEOutdoorRecreationParksTrailsOpenSpaceData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_outdoor_recreation_parks_trails_open_space_containing = true;
+      } else {
+        result.de_outdoor_recreation_parks_trails_open_space_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_outdoor_recreation_parks_trails_open_space_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_outdoor_recreation_parks_trails_open_space_nearby_count = 0;
+      }
+      result.de_outdoor_recreation_parks_trails_open_space_all = allFeatures;
+      result.de_outdoor_recreation_parks_trails_open_space_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_outdoor_recreation_parks_trails_open_space_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Outdoor Recreation Parks Trails Open Space:', error);
+      return { de_outdoor_recreation_parks_trails_open_space_count: 0, de_outdoor_recreation_parks_trails_open_space_all: [] };
+    }
+  }
+
+  private async getDEPublicProtectedLands(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDEPublicProtectedLandsData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_public_protected_lands_containing = true;
+      } else {
+        result.de_public_protected_lands_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_public_protected_lands_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_public_protected_lands_nearby_count = 0;
+      }
+      result.de_public_protected_lands_all = allFeatures;
+      result.de_public_protected_lands_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_public_protected_lands_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Public Protected Lands:', error);
+      return { de_public_protected_lands_count: 0, de_public_protected_lands_all: [] };
+    }
+  }
+
+  private async getDEConservationEasements(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDEConservationEasementsData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_conservation_easements_containing = true;
+      } else {
+        result.de_conservation_easements_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_conservation_easements_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_conservation_easements_nearby_count = 0;
+      }
+      result.de_conservation_easements_all = allFeatures;
+      result.de_conservation_easements_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_conservation_easements_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Conservation Easements:', error);
+      return { de_conservation_easements_count: 0, de_conservation_easements_all: [] };
+    }
+  }
+
+  private async getDETrailsPathways(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 5;
+      const data = await getDETrailsPathwaysData(lat, lon, radiusMiles);
+      return {
+        de_trails_pathways_all: data.map(f => ({ ...f.attributes, distance_miles: f.distance_miles, geometry: f.geometry })),
+        de_trails_pathways_count: data.length,
+        de_trails_pathways_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Trails and Pathways:', error);
+      return { de_trails_pathways_count: 0, de_trails_pathways_all: [] };
+    }
+  }
+
+  private async getDESeasonalRestrictedAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDESeasonalRestrictedAreasData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_seasonal_restricted_areas_containing = true;
+      } else {
+        result.de_seasonal_restricted_areas_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_seasonal_restricted_areas_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_seasonal_restricted_areas_nearby_count = 0;
+      }
+      result.de_seasonal_restricted_areas_all = allFeatures;
+      result.de_seasonal_restricted_areas_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_seasonal_restricted_areas_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Seasonal Restricted Areas:', error);
+      return { de_seasonal_restricted_areas_count: 0, de_seasonal_restricted_areas_all: [] };
+    }
+  }
+
+  private async getDEPermanentRestrictedAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDEPermanentRestrictedAreasData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_permanent_restricted_areas_containing = true;
+      } else {
+        result.de_permanent_restricted_areas_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_permanent_restricted_areas_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_permanent_restricted_areas_nearby_count = 0;
+      }
+      result.de_permanent_restricted_areas_all = allFeatures;
+      result.de_permanent_restricted_areas_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_permanent_restricted_areas_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Permanent Restricted Areas:', error);
+      return { de_permanent_restricted_areas_count: 0, de_permanent_restricted_areas_all: [] };
+    }
+  }
+
+  private async getDEWildlifeAreaBoundaries(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0;
+      const data = await getDEWildlifeAreaBoundariesData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      if (data.containingFeature) {
+        allFeatures.push({ ...data.containingFeature.attributes, isContaining: true, distance_miles: 0, geometry: data.containingFeature.geometry });
+        result.de_wildlife_area_boundaries_containing = true;
+      } else {
+        result.de_wildlife_area_boundaries_containing = false;
+      }
+      if (data.nearbyFeatures && data.nearbyFeatures.length > 0) {
+        data.nearbyFeatures.forEach(f => allFeatures.push({ ...f.attributes, isContaining: false, distance_miles: f.distance_miles, geometry: f.geometry }));
+        result.de_wildlife_area_boundaries_nearby_count = data.nearbyFeatures.length;
+      } else {
+        result.de_wildlife_area_boundaries_nearby_count = 0;
+      }
+      result.de_wildlife_area_boundaries_all = allFeatures;
+      result.de_wildlife_area_boundaries_count = allFeatures.length;
+      if (radiusMiles > 0) result.de_wildlife_area_boundaries_search_radius_miles = radiusMiles;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Wildlife Area Boundaries:', error);
+      return { de_wildlife_area_boundaries_count: 0, de_wildlife_area_boundaries_all: [] };
     }
   }
 

@@ -24,10 +24,12 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       .replace(/^poi_/g, 'POI ')
       .replace(/^at_/g, 'AT ')
       .replace(/^pct_/g, 'PCT ')
+      .replace(/^de_/g, 'DE ')
       .replace(/nws/g, 'NWS')
       .replace(/fws/g, 'FWS')
       .replace(/_/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase());
+      .replace(/\b\w/g, l => l.toUpperCase())
+      .replace(/\bDe\b/g, 'DE');
   };
 
   const formatValue = (value: any, key: string): string => {

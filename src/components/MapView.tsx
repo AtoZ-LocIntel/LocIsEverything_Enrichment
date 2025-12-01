@@ -191,6 +191,10 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_colleges_universities': { icon: '🎓', color: '#7c3aed', title: 'Colleges & Universities' },
   'ct_urgent_care': { icon: '🏥', color: '#f97316', title: 'CT Urgent Care' },
   'ct_parcels': { icon: '🏠', color: '#059669', title: 'CT Parcels' },
+  'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
+  'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
+  'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
+  'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
    
   // Natural Resources
@@ -2750,6 +2754,822 @@ const MapView: React.FC<MapViewProps> = ({
               }
             } catch (error) {
               console.error('Error drawing NH Bedrock Geology polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE State Forest polygons on the map
+      if (enrichments.de_state_forest_all && Array.isArray(enrichments.de_state_forest_all)) {
+        enrichments.de_state_forest_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = feature.isContaining;
+                const color = isContaining ? '#16a34a' : '#22c55e';
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                const county = feature.COUNTY || feature.county || '';
+                const acres = feature.ACRES || feature.acres;
+                const tract = feature.TRACT || feature.tract || '';
+                const forest = feature.FOREST || feature.forest || '';
+                const label = feature.LABEL || feature.label || '';
+                const distance = feature.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌲 ${isContaining ? 'State Forest' : 'Nearby State Forest'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280;">
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${acres !== null && acres !== undefined ? `<div><strong>Acres:</strong> ${acres.toLocaleString()}</div>` : ''}
+                      ${tract ? `<div><strong>Tract:</strong> ${tract}</div>` : ''}
+                      ${forest ? `<div><strong>Forest:</strong> ${forest}</div>` : ''}
+                      ${label ? `<div><strong>Label:</strong> ${label}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+
+                if (!legendAccumulator['de_state_forest']) {
+                  legendAccumulator['de_state_forest'] = {
+                    icon: '🌲',
+                    color: '#16a34a',
+                    title: 'DE State Forest',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['de_state_forest'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE State Forest polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Pine Plantations polygons on the map
+      if (enrichments.de_pine_plantations_all && Array.isArray(enrichments.de_pine_plantations_all)) {
+        enrichments.de_pine_plantations_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = feature.isContaining;
+                const color = isContaining ? '#15803d' : '#16a34a';
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌲 ${isContaining ? 'Pine Plantation' : 'Nearby Pine Plantation'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280;">
+                      ${acres !== null && acres !== undefined ? `<div><strong>Acres:</strong> ${acres.toLocaleString()}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+
+                if (!legendAccumulator['de_pine_plantations']) {
+                  legendAccumulator['de_pine_plantations'] = {
+                    icon: '🌲',
+                    color: '#15803d',
+                    title: 'DE Pine Plantations',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['de_pine_plantations'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Pine Plantations polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Urban Tree Canopy polygons on the map
+      if (enrichments.de_urban_tree_canopy_all && Array.isArray(enrichments.de_urban_tree_canopy_all)) {
+        enrichments.de_urban_tree_canopy_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = feature.isContaining;
+                const color = isContaining ? '#22c55e' : '#4ade80';
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                const name = feature.NAME || feature.name || '';
+                const totalAcres = feature.TOTALACRES || feature.totalAcres || feature.TotalAcres;
+                const canopyAcres = feature.CANOPYACRES || feature.canopyAcres || feature.CanopyAcres;
+                const canopyPercent = feature.CANOPYPERCENT || feature.canopyPercent || feature.CanopyPercent;
+                const areaType = feature.AREATYPE || feature.areaType || feature.AreaType;
+                const distance = feature.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌳 ${isContaining ? 'Urban Tree Canopy' : 'Nearby Urban Tree Canopy'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280;">
+                      ${name ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                      ${totalAcres !== null && totalAcres !== undefined ? `<div><strong>Total Acres:</strong> ${totalAcres.toLocaleString()}</div>` : ''}
+                      ${canopyAcres !== null && canopyAcres !== undefined ? `<div><strong>Canopy Acres:</strong> ${canopyAcres.toLocaleString()}</div>` : ''}
+                      ${canopyPercent !== null && canopyPercent !== undefined ? `<div><strong>Canopy Percent:</strong> ${canopyPercent.toFixed(1)}%</div>` : ''}
+                      ${areaType !== null && areaType !== undefined ? `<div><strong>Area Type:</strong> ${areaType === 0 ? 'Municipality' : areaType === 1 ? 'Community' : areaType === 2 ? 'Park' : areaType}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+
+                if (!legendAccumulator['de_urban_tree_canopy']) {
+                  legendAccumulator['de_urban_tree_canopy'] = {
+                    icon: '🌳',
+                    color: '#22c55e',
+                    title: 'DE Urban Tree Canopy',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['de_urban_tree_canopy'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Urban Tree Canopy polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Forest Cover 2007 polygons on the map
+      if (enrichments.de_forest_cover_2007_all && Array.isArray(enrichments.de_forest_cover_2007_all)) {
+        enrichments.de_forest_cover_2007_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = feature.isContaining;
+                const color = isContaining ? '#166534' : '#15803d';
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                const type = feature.TYPE || feature.type || '';
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌲 ${isContaining ? 'Forest Cover 2007' : 'Nearby Forest Cover 2007'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${acres !== null && acres !== undefined ? `<div><strong>Acres:</strong> ${acres.toLocaleString()}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+
+                if (!legendAccumulator['de_forest_cover_2007']) {
+                  legendAccumulator['de_forest_cover_2007'] = {
+                    icon: '🌲',
+                    color: '#166534',
+                    title: 'DE Forest Cover 2007',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['de_forest_cover_2007'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Forest Cover 2007 polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE No Build Points - Bay as markers
+      if (enrichments.de_no_build_points_bay_all && Array.isArray(enrichments.de_no_build_points_bay_all)) {
+        enrichments.de_no_build_points_bay_all.forEach((feature: any) => {
+          if (feature.geometry) {
+            try {
+              const lat = feature.geometry.y || feature.LATITUDE;
+              const lon = feature.geometry.x || feature.LONGITUDE;
+              if (lat && lon) {
+                const marker = L.marker([lat, lon], { icon: L.divIcon({ className: 'custom-marker', html: '🚫', iconSize: [20, 20] }) });
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>No Build Point - Bay</strong>${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                marker.bindPopup(popupContent);
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_no_build_points_bay']) {
+                  legendAccumulator['de_no_build_points_bay'] = { icon: '🚫', color: '#ef4444', title: 'DE No Build Points - Bay', count: 0 };
+                }
+                legendAccumulator['de_no_build_points_bay'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE No Build Points Bay:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE No Build Line - Bay as polylines
+      if (enrichments.de_no_build_line_bay_all && Array.isArray(enrichments.de_no_build_line_bay_all)) {
+        enrichments.de_no_build_line_bay_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.paths) {
+            try {
+              feature.geometry.paths.forEach((path: number[][]) => {
+                const latlngs = path.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const polyline = L.polyline(latlngs, { color: '#ef4444', weight: 3, opacity: 0.8 });
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>No Build Line - Bay</strong>${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polyline.bindPopup(popupContent);
+                polyline.addTo(primary);
+                bounds.extend(polyline.getBounds());
+              });
+              if (!legendAccumulator['de_no_build_line_bay']) {
+                legendAccumulator['de_no_build_line_bay'] = { icon: '🚫', color: '#ef4444', title: 'DE No Build Line - Bay', count: 0 };
+              }
+              legendAccumulator['de_no_build_line_bay'].count += 1;
+            } catch (error) {
+              console.error('Error drawing DE No Build Line Bay:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE No Build Points - Ocean as markers
+      if (enrichments.de_no_build_points_ocean_all && Array.isArray(enrichments.de_no_build_points_ocean_all)) {
+        enrichments.de_no_build_points_ocean_all.forEach((feature: any) => {
+          if (feature.geometry) {
+            try {
+              const lat = feature.geometry.y || feature.LATITUDE;
+              const lon = feature.geometry.x || feature.LONGITUDE;
+              if (lat && lon) {
+                const marker = L.marker([lat, lon], { icon: L.divIcon({ className: 'custom-marker', html: '🚫', iconSize: [20, 20] }) });
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>No Build Point - Ocean</strong>${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                marker.bindPopup(popupContent);
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_no_build_points_ocean']) {
+                  legendAccumulator['de_no_build_points_ocean'] = { icon: '🚫', color: '#ef4444', title: 'DE No Build Points - Ocean', count: 0 };
+                }
+                legendAccumulator['de_no_build_points_ocean'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE No Build Points Ocean:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE No Build Line - Ocean as polylines
+      if (enrichments.de_no_build_line_ocean_all && Array.isArray(enrichments.de_no_build_line_ocean_all)) {
+        enrichments.de_no_build_line_ocean_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.paths) {
+            try {
+              feature.geometry.paths.forEach((path: number[][]) => {
+                const latlngs = path.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const polyline = L.polyline(latlngs, { color: '#ef4444', weight: 3, opacity: 0.8 });
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>No Build Line - Ocean</strong>${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polyline.bindPopup(popupContent);
+                polyline.addTo(primary);
+                bounds.extend(polyline.getBounds());
+              });
+              if (!legendAccumulator['de_no_build_line_ocean']) {
+                legendAccumulator['de_no_build_line_ocean'] = { icon: '🚫', color: '#ef4444', title: 'DE No Build Line - Ocean', count: 0 };
+              }
+              legendAccumulator['de_no_build_line_ocean'].count += 1;
+            } catch (error) {
+              console.error('Error drawing DE No Build Line Ocean:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Park Facilities as markers
+      if (enrichments.de_park_facilities_all && Array.isArray(enrichments.de_park_facilities_all)) {
+        enrichments.de_park_facilities_all.forEach((feature: any) => {
+          if (feature.geometry) {
+            try {
+              const lat = feature.geometry.y || feature.LATITUDE;
+              const lon = feature.geometry.x || feature.LONGITUDE;
+              if (lat && lon) {
+                const marker = L.marker([lat, lon], { icon: L.divIcon({ className: 'custom-marker', html: '🏞️', iconSize: [20, 20] }) });
+                const park = feature.PARK || feature.park || '';
+                const facility = feature.FACILITY || feature.facility || '';
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${park || 'Park Facility'}</strong>${facility ? `<br>Facility: ${facility}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                marker.bindPopup(popupContent);
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_park_facilities']) {
+                  legendAccumulator['de_park_facilities'] = { icon: '🏞️', color: '#10b981', title: 'DE Park Facilities', count: 0 };
+                }
+                legendAccumulator['de_park_facilities'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Park Facilities:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Natural Areas polygons
+      if (enrichments.de_natural_areas_all && Array.isArray(enrichments.de_natural_areas_all)) {
+        enrichments.de_natural_areas_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#a855f7' : '#c084fc',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#a855f7' : '#c084fc',
+                  fillOpacity: 0.2
+                });
+                const name = feature.NAME || feature.name || '';
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Natural Area' : 'Nearby Natural Area'}</strong>${name ? `<br>Name: ${name}` : ''}${acres !== null && acres !== undefined ? `<br>Acres: ${acres.toLocaleString()}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_natural_areas']) {
+                  legendAccumulator['de_natural_areas'] = { icon: '🌿', color: '#a855f7', title: 'DE Natural Areas', count: 0 };
+                }
+                legendAccumulator['de_natural_areas'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Natural Areas:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Outdoor Recreation, Parks and Trails Program Lands polygons
+      if (enrichments.de_outdoor_recreation_parks_trails_lands_all && Array.isArray(enrichments.de_outdoor_recreation_parks_trails_lands_all)) {
+        enrichments.de_outdoor_recreation_parks_trails_lands_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#a855f7' : '#c084fc',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#a855f7' : '#c084fc',
+                  fillOpacity: 0.2
+                });
+                const name = feature.NAME || feature.name || '';
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Parks & Trails Program Land' : 'Nearby Parks & Trails Program Land'}</strong>${name ? `<br>Name: ${name}` : ''}${acres !== null && acres !== undefined ? `<br>Acres: ${acres.toLocaleString()}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_outdoor_recreation_parks_trails_lands']) {
+                  legendAccumulator['de_outdoor_recreation_parks_trails_lands'] = { icon: '🏕️', color: '#a855f7', title: 'DE Parks & Trails Program Lands', count: 0 };
+                }
+                legendAccumulator['de_outdoor_recreation_parks_trails_lands'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Outdoor Recreation Parks Trails Lands:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Land and Water Conservation Fund polygons
+      if (enrichments.de_land_water_conservation_fund_all && Array.isArray(enrichments.de_land_water_conservation_fund_all)) {
+        enrichments.de_land_water_conservation_fund_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#ec4899' : '#f472b6',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#ec4899' : '#f472b6',
+                  fillOpacity: 0.2
+                });
+                const name = feature.NAME || feature.name || '';
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Land & Water Conservation Fund' : 'Nearby Land & Water Conservation Fund'}</strong>${name ? `<br>Name: ${name}` : ''}${acres !== null && acres !== undefined ? `<br>Acres: ${acres.toLocaleString()}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_land_water_conservation_fund']) {
+                  legendAccumulator['de_land_water_conservation_fund'] = { icon: '💧', color: '#ec4899', title: 'DE Land & Water Conservation Fund', count: 0 };
+                }
+                legendAccumulator['de_land_water_conservation_fund'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Land and Water Conservation Fund:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Nature Preserves polygons
+      if (enrichments.de_nature_preserves_all && Array.isArray(enrichments.de_nature_preserves_all)) {
+        enrichments.de_nature_preserves_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#aa5cf7' : '#c084fc',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#aa5cf7' : '#c084fc',
+                  fillOpacity: 0.2
+                });
+                const name = feature.NAME || feature.name || '';
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Nature Preserve' : 'Nearby Nature Preserve'}</strong>${name ? `<br>Name: ${name}` : ''}${acres !== null && acres !== undefined ? `<br>Acres: ${acres.toLocaleString()}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_nature_preserves']) {
+                  legendAccumulator['de_nature_preserves'] = { icon: '🌳', color: '#aa5cf7', title: 'DE Nature Preserves', count: 0 };
+                }
+                legendAccumulator['de_nature_preserves'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Nature Preserves:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Outdoor Recreation Areas polygons
+      if (enrichments.de_outdoor_recreation_areas_all && Array.isArray(enrichments.de_outdoor_recreation_areas_all)) {
+        enrichments.de_outdoor_recreation_areas_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#10b981' : '#34d399',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#10b981' : '#34d399',
+                  fillOpacity: 0.2
+                });
+                const name = feature.NAME || feature.name || '';
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Outdoor Recreation Area' : 'Nearby Outdoor Recreation Area'}</strong>${name ? `<br>Name: ${name}` : ''}${acres !== null && acres !== undefined ? `<br>Acres: ${acres.toLocaleString()}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_outdoor_recreation_areas']) {
+                  legendAccumulator['de_outdoor_recreation_areas'] = { icon: '🏞️', color: '#10b981', title: 'DE Outdoor Recreation Areas', count: 0 };
+                }
+                legendAccumulator['de_outdoor_recreation_areas'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Outdoor Recreation Areas:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Outdoor Recreation, Parks and Trails Program Open Space polygons
+      if (enrichments.de_outdoor_recreation_parks_trails_open_space_all && Array.isArray(enrichments.de_outdoor_recreation_parks_trails_open_space_all)) {
+        enrichments.de_outdoor_recreation_parks_trails_open_space_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#10b981' : '#34d399',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#10b981' : '#34d399',
+                  fillOpacity: 0.2
+                });
+                const agency = feature.AGENCY || feature.agency || '';
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Parks & Trails Open Space' : 'Nearby Parks & Trails Open Space'}</strong>${agency ? `<br>Agency: ${agency}` : ''}${acres !== null && acres !== undefined ? `<br>Acres: ${acres.toLocaleString()}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_outdoor_recreation_parks_trails_open_space']) {
+                  legendAccumulator['de_outdoor_recreation_parks_trails_open_space'] = { icon: '🌳', color: '#10b981', title: 'DE Parks & Trails Open Space', count: 0 };
+                }
+                legendAccumulator['de_outdoor_recreation_parks_trails_open_space'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Outdoor Recreation Parks Trails Open Space:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Public Protected Lands polygons
+      if (enrichments.de_public_protected_lands_all && Array.isArray(enrichments.de_public_protected_lands_all)) {
+        enrichments.de_public_protected_lands_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#10b981' : '#34d399',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#10b981' : '#34d399',
+                  fillOpacity: 0.2
+                });
+                const name = feature.NAME || feature.name || '';
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Public Protected Land' : 'Nearby Public Protected Land'}</strong>${name ? `<br>Name: ${name}` : ''}${acres !== null && acres !== undefined ? `<br>Acres: ${acres.toLocaleString()}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_public_protected_lands']) {
+                  legendAccumulator['de_public_protected_lands'] = { icon: '🛡️', color: '#10b981', title: 'DE Public Protected Lands', count: 0 };
+                }
+                legendAccumulator['de_public_protected_lands'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Public Protected Lands:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Conservation Easements polygons
+      if (enrichments.de_conservation_easements_all && Array.isArray(enrichments.de_conservation_easements_all)) {
+        enrichments.de_conservation_easements_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#10b981' : '#34d399',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#10b981' : '#34d399',
+                  fillOpacity: 0.2
+                });
+                const grantor = feature.GRANTOR || feature.grantor || '';
+                const acres = feature.ACRES || feature.acres;
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Conservation Easement' : 'Nearby Conservation Easement'}</strong>${grantor ? `<br>Grantor: ${grantor}` : ''}${acres !== null && acres !== undefined ? `<br>Acres: ${acres.toLocaleString()}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_conservation_easements']) {
+                  legendAccumulator['de_conservation_easements'] = { icon: '🌿', color: '#10b981', title: 'DE Conservation Easements', count: 0 };
+                }
+                legendAccumulator['de_conservation_easements'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Conservation Easements:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Trails and Pathways as polylines
+      if (enrichments.de_trails_pathways_all && Array.isArray(enrichments.de_trails_pathways_all)) {
+        enrichments.de_trails_pathways_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.paths) {
+            try {
+              feature.geometry.paths.forEach((path: number[][]) => {
+                const latlngs = path.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const polyline = L.polyline(latlngs, { color: '#f59e0b', weight: 3, opacity: 0.8 });
+                const trailName = feature.TRAIL_NAME || feature.trailName || feature.trail_name || '';
+                const managedUse = feature.MANAGED_USE || feature.managedUse || feature.managed_use || '';
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${trailName || 'Trail'}</strong>${managedUse ? `<br>Use: ${managedUse}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polyline.bindPopup(popupContent);
+                polyline.addTo(primary);
+                bounds.extend(polyline.getBounds());
+              });
+              if (!legendAccumulator['de_trails_pathways']) {
+                legendAccumulator['de_trails_pathways'] = { icon: '🛤️', color: '#f59e0b', title: 'DE Trails and Pathways', count: 0 };
+              }
+              legendAccumulator['de_trails_pathways'].count += 1;
+            } catch (error) {
+              console.error('Error drawing DE Trails and Pathways:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Seasonal Restricted Areas polygons
+      if (enrichments.de_seasonal_restricted_areas_all && Array.isArray(enrichments.de_seasonal_restricted_areas_all)) {
+        enrichments.de_seasonal_restricted_areas_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#eab308' : '#facc15',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#eab308' : '#facc15',
+                  fillOpacity: 0.2
+                });
+                const park = feature.PARK || feature.park || '';
+                const closure = feature.CLOSURE || feature.closure || '';
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Seasonal Restricted Area' : 'Nearby Seasonal Restricted Area'}</strong>${park ? `<br>Park: ${park}` : ''}${closure ? `<br>Closure: ${closure}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_seasonal_restricted_areas']) {
+                  legendAccumulator['de_seasonal_restricted_areas'] = { icon: '⚠️', color: '#eab308', title: 'DE Seasonal Restricted Areas', count: 0 };
+                }
+                legendAccumulator['de_seasonal_restricted_areas'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Seasonal Restricted Areas:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Permanent Restricted Areas polygons
+      if (enrichments.de_permanent_restricted_areas_all && Array.isArray(enrichments.de_permanent_restricted_areas_all)) {
+        enrichments.de_permanent_restricted_areas_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#eab308' : '#facc15',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#eab308' : '#facc15',
+                  fillOpacity: 0.2
+                });
+                const park = feature.PARK || feature.park || '';
+                const closure = feature.CLOSURE || feature.closure || '';
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Permanent Restricted Area' : 'Nearby Permanent Restricted Area'}</strong>${park ? `<br>Park: ${park}` : ''}${closure ? `<br>Closure: ${closure}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_permanent_restricted_areas']) {
+                  legendAccumulator['de_permanent_restricted_areas'] = { icon: '🚫', color: '#eab308', title: 'DE Permanent Restricted Areas', count: 0 };
+                }
+                legendAccumulator['de_permanent_restricted_areas'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Permanent Restricted Areas:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Wildlife Area Boundaries polygons
+      if (enrichments.de_wildlife_area_boundaries_all && Array.isArray(enrichments.de_wildlife_area_boundaries_all)) {
+        enrichments.de_wildlife_area_boundaries_all.forEach((feature: any) => {
+          if (feature.geometry && feature.geometry.rings) {
+            try {
+              const rings = feature.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                const isContaining = feature.isContaining;
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#fbbf24' : '#fcd34d',
+                  weight: isContaining ? 3 : 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#fbbf24' : '#fcd34d',
+                  fillOpacity: 0.2
+                });
+                const areaName = feature.AREA_NAME || feature.areaName || feature.area_name || '';
+                const tractName = feature.TRACT_NAME || feature.tractName || feature.tract_name || '';
+                const acres = feature.GIS_ACRES || feature.gisAcres || feature.gis_acres;
+                const distance = feature.distance_miles;
+                let popupContent = `<div><strong>${isContaining ? 'Wildlife Area' : 'Nearby Wildlife Area'}</strong>${areaName ? `<br>Area: ${areaName}` : ''}${tractName ? `<br>Tract: ${tractName}` : ''}${acres !== null && acres !== undefined ? `<br>Acres: ${acres.toLocaleString()}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                polygon.bindPopup(popupContent);
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                if (!legendAccumulator['de_wildlife_area_boundaries']) {
+                  legendAccumulator['de_wildlife_area_boundaries'] = { icon: '🦌', color: '#fbbf24', title: 'DE Wildlife Area Boundaries', count: 0 };
+                }
+                legendAccumulator['de_wildlife_area_boundaries'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Wildlife Area Boundaries:', error);
             }
           }
         });
