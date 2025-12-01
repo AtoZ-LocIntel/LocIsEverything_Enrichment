@@ -799,6 +799,132 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Delaware",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "DE No Build Points - Bay",
+          description: "No Build Points along Delaware Bay coast - proximity queries up to 25 miles",
+          coverage: "Delaware Bay Coast",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE No Build Line - Bay",
+          description: "No Build Line along Delaware Bay coast - proximity queries up to 25 miles",
+          coverage: "Delaware Bay Coast",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE No Build Points - Ocean",
+          description: "No Build Points along Delaware Ocean coast - proximity queries up to 25 miles",
+          coverage: "Delaware Ocean Coast",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE No Build Line - Ocean",
+          description: "No Build Line along Delaware Ocean coast - proximity queries up to 25 miles",
+          coverage: "Delaware Ocean Coast",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Park Facilities",
+          description: "Outdoor recreational facilities throughout Delaware - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Natural Areas",
+          description: "Natural Areas Inventory boundaries for voluntary land protection - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Outdoor Recreation, Parks and Trails Program Lands",
+          description: "Lands where Delaware Outdoor Recreation, Parks and Trails Program monies have been invested - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Land and Water Conservation Fund",
+          description: "Lands protected under the Land and Water Conservation Fund - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Nature Preserves",
+          description: "Lands preserved under the Delaware Nature Preserves Program - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Outdoor Recreation Areas",
+          description: "Outdoor Recreation Inventory (ORI) - publicly and privately owned protected lands - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Outdoor Recreation, Parks and Trails Program Open Space",
+          description: "Land protected in perpetuity under the Outdoor Recreation, Parks and Trails Program - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Public Protected Lands",
+          description: "Lands that are publicly owned and open to public access - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Conservation Easements",
+          description: "Conservation Easements held by Delaware State Parks and other agencies/NGOs - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Trails and Pathways",
+          description: "Recreational trails and pathways throughout Delaware - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Seasonal Restricted Areas",
+          description: "Portions of Delaware State Parks closed to public access during different seasons - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Permanent Restricted Areas",
+          description: "Portions of Delaware State Parks closed to public access all year long - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Wildlife Area Boundaries",
+          description: "Wildlife Area locations within the State of Delaware - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE State Parcels",
+          description: "Delaware state parcels with ownership information - point-in-polygon and proximity queries up to 1 mile",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

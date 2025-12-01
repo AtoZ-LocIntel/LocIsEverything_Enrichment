@@ -271,6 +271,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ma_trails_all' || // Skip _all arrays (handled separately)
         key === 'ma_parcels_all' || // Skip _all arrays (handled separately)
         key === 'ct_parcels_all' || // Skip _all arrays (handled separately)
+        key === 'de_parcels_all' || // Skip _all arrays (handled separately)
         key === 'ct_building_footprints_all' || // Skip _all arrays (handled separately)
         key === 'ct_roads_all' || // Skip _all arrays (handled separately)
         key === 'ct_urgent_care_all' || // Skip _all arrays (handled separately)
@@ -623,6 +624,42 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone (not applicable for parcels)
           attributesJson, // Full attributes in Website field for easy access
           'MassGIS'
+        ]);
+      });
+    } else if (key === 'de_parcels_all' && Array.isArray(value)) {
+      // Handle DE Parcels - each parcel gets its own row with all attributes
+      value.forEach((parcel: any) => {
+        const parcelId = parcel.parcelId || parcel.PIN || parcel.pin || parcel.OBJECTID || parcel.objectid || 'Unknown';
+        const parcelType = parcel.isContaining ? 'Containing Parcel' : 'Nearby Parcel';
+        
+        const pin = parcel.PIN || parcel.pin || '';
+        const acres = parcel.ACRES || parcel.acres || null;
+        const county = parcel.COUNTY || parcel.county || '';
+        
+        const allAttributes = { ...parcel };
+        delete allAttributes.parcelId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_PARCEL',
+          `${parcelType} - ${parcelId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          parcel.distance_miles !== null && parcel.distance_miles !== undefined ? parcel.distance_miles.toFixed(2) : (parcel.isContaining ? '0.00' : ''),
+          parcelType,
+          `${pin ? `PIN: ${pin}` : ''}${county ? `${pin ? ', ' : ''}County: ${county}` : ''}${acres !== null ? `${pin || county ? ', ' : ''}Acres: ${acres.toFixed(2)}` : ''}` || attributesJson,
+          '', // Owner (not in basic fields)
+          '', // Phone (not applicable for parcels)
+          attributesJson,
+          'DE FirstMap'
         ]);
       });
     } else if (key === 'ct_building_footprints_all' && Array.isArray(value)) {

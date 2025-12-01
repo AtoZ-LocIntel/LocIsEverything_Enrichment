@@ -375,6 +375,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ct_deep_properties', label: 'CT DEEP Properties', description: 'CT Geodata Portal - Connecticut Department of Energy and Environmental Protection (DEEP) properties for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' },
   
   // Delaware FirstMap layers
+  { id: 'de_parcels', label: 'DE State Parcels', description: 'DE FirstMap - Delaware state parcels with ownership information for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.3, maxRadius: 1.0, category: 'de', section: 'de' },
   { id: 'de_state_forest', label: 'State Forest', description: 'DE FirstMap - State Forest lands in Delaware managed by the Delaware Forest Service for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
   { id: 'de_pine_plantations', label: 'Pine Plantations', description: 'DE FirstMap - Locations of Pine Plantations in Delaware for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
   { id: 'de_urban_tree_canopy', label: 'Urban Tree Canopy Estimates', description: 'DE FirstMap - Urban Tree Canopy calculations for Delaware municipalities, communities, and parks for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },

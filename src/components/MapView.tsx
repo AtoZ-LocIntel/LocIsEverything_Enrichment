@@ -416,6 +416,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ma_acecs_all' || // Skip MA ACECs array (handled separately for map drawing)
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
     key === 'ct_parcels_all' || // Skip CT parcels array (handled separately for map drawing)
+    key === 'de_parcels_all' || // Skip DE parcels array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -5374,6 +5375,108 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['ct_parcels'].count += parcelCount;
+        }
+      }
+
+      // Draw DE Parcels as polygons on the map
+      if (enrichments.de_parcels_all && Array.isArray(enrichments.de_parcels_all)) {
+        let parcelCount = 0;
+        enrichments.de_parcels_all.forEach((parcel: any) => {
+          if (parcel.geometry && parcel.geometry.rings) {
+            try {
+              const rings = parcel.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                if (latlngs.length < 3) {
+                  console.warn('DE Parcel polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+
+                const isContaining = parcel.isContaining;
+                const color = isContaining ? '#dc2626' : '#3b82f6';
+                const weight = isContaining ? 3 : 2;
+
+                const parcelId = parcel.parcelId || parcel.PIN || parcel.pin || parcel.OBJECTID || 'Unknown';
+                const pin = parcel.PIN || parcel.pin || '';
+                const acres = parcel.ACRES || parcel.acres || null;
+                const county = parcel.COUNTY || parcel.county || '';
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: 0.7,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏠 DE Parcel ${parcelId}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${isContaining ? '<div><strong>Status:</strong> Contains Location</div>' : ''}
+                      ${parcel.distance_miles !== null && parcel.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${parcel.distance_miles.toFixed(2)} miles</div>` : ''}
+                      ${pin ? `<div><strong>PIN:</strong> ${pin}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${acres !== null ? `<div><strong>Acres:</strong> ${acres.toLocaleString()}</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                const excludeFields = ['parcelId', 'PIN', 'pin', 'OBJECTID', 'objectid', 'isContaining', 'geometry', 'distance_miles', 'ACRES', 'acres', 'COUNTY', 'county'];
+                Object.entries(parcel).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                
+                try {
+                  bounds.extend(polygon.getBounds());
+                  parcelCount++;
+                } catch (boundsError) {
+                  console.warn('Error extending bounds for DE Parcel polygon:', boundsError);
+                }
+              }
+            } catch (error) {
+              console.error('Error drawing DE Parcel polygon:', error);
+            }
+          }
+        });
+        
+        if (parcelCount > 0) {
+          if (!legendAccumulator['de_parcels']) {
+            legendAccumulator['de_parcels'] = {
+              icon: '🏠',
+              color: '#dc2626',
+              title: 'DE Parcels',
+              count: 0,
+            };
+          }
+          legendAccumulator['de_parcels'].count += parcelCount;
         }
       }
 

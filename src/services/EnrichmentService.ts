@@ -68,6 +68,7 @@ import { getDETrailsPathwaysData } from '../adapters/deTrailsPathways';
 import { getDESeasonalRestrictedAreasData } from '../adapters/deSeasonalRestrictedAreas';
 import { getDEPermanentRestrictedAreasData } from '../adapters/dePermanentRestrictedAreas';
 import { getDEWildlifeAreaBoundariesData } from '../adapters/deWildlifeAreaBoundaries';
+import { getDEParcelData } from '../adapters/deParcels';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1604,6 +1605,9 @@ export class EnrichmentService {
         return await this.getDEPermanentRestrictedAreas(lat, lon, radius);
       case 'de_wildlife_area_boundaries':
         return await this.getDEWildlifeAreaBoundaries(lat, lon, radius);
+      
+      case 'de_parcels':
+        return await this.getDEParcels(lat, lon, radius);
       
       // National Marine Sanctuaries (NOAA) - Point-in-polygon and proximity query
       case 'national_marine_sanctuaries':
@@ -7029,6 +7033,63 @@ out center;`;
     } catch (error) {
       console.error('❌ Error fetching DE Wildlife Area Boundaries:', error);
       return { de_wildlife_area_boundaries_count: 0, de_wildlife_area_boundaries_all: [] };
+    }
+  }
+
+  private async getDEParcels(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius || 0.3;
+      const parcelData = await getDEParcelData(lat, lon, radiusMiles);
+      const result: Record<string, any> = {};
+      
+      if (parcelData) {
+        const allParcels: any[] = [];
+        
+        if (parcelData.containingParcel && parcelData.containingParcel.parcelId) {
+          allParcels.push({
+            ...parcelData.containingParcel.attributes,
+            parcelId: parcelData.containingParcel.parcelId,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: parcelData.containingParcel.geometry
+          });
+          result.de_parcel_containing = parcelData.containingParcel.parcelId;
+        } else {
+          result.de_parcel_containing = null;
+          result.de_parcel_containing_message = 'No parcel found containing this location';
+        }
+        
+        if (parcelData.nearbyParcels && parcelData.nearbyParcels.length > 0) {
+          parcelData.nearbyParcels.forEach(parcel => {
+            if (!allParcels.some(p => p.parcelId === parcel.parcelId)) {
+              allParcels.push({
+                ...parcel.attributes,
+                parcelId: parcel.parcelId,
+                isContaining: false,
+                distance_miles: parcel.distance_miles,
+                geometry: parcel.geometry
+              });
+            }
+          });
+          result.de_parcels_nearby_count = parcelData.nearbyParcels.length;
+        } else {
+          result.de_parcels_nearby_count = 0;
+        }
+        
+        result.de_parcels_all = allParcels;
+        result.de_parcels_count = allParcels.length;
+        if (radiusMiles > 0) {
+          result.de_parcels_search_radius_miles = radiusMiles;
+        }
+      } else {
+        result.de_parcels_count = 0;
+        result.de_parcels_all = [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Parcels:', error);
+      return { de_parcels_count: 0, de_parcels_all: [] };
     }
   }
 
