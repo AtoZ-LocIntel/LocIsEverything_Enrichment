@@ -417,6 +417,11 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
     key === 'ct_parcels_all' || // Skip CT parcels array (handled separately for map drawing)
     key === 'de_parcels_all' || // Skip DE parcels array (handled separately for map drawing)
+    key === 'de_lulc_2007_all' || // Skip DE LULC arrays (handled separately for map drawing)
+    key === 'de_lulc_2007_revised_all' || // Skip DE LULC arrays (handled separately for map drawing)
+    key === 'de_lulc_2012_all' || // Skip DE LULC arrays (handled separately for map drawing)
+    key === 'de_lulc_2017_all' || // Skip DE LULC arrays (handled separately for map drawing)
+    key === 'de_lulc_2022_all' || // Skip DE LULC arrays (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -5479,6 +5484,109 @@ const MapView: React.FC<MapViewProps> = ({
           legendAccumulator['de_parcels'].count += parcelCount;
         }
       }
+
+      // Draw DE LULC layers as polygons on the map
+      const lulcLayers = [
+        { key: 'de_lulc_2007_all', year: '2007', color: '#8b5cf6' },
+        { key: 'de_lulc_2007_revised_all', year: '2007 Revised', color: '#7c3aed' },
+        { key: 'de_lulc_2012_all', year: '2012', color: '#6366f1' },
+        { key: 'de_lulc_2017_all', year: '2017', color: '#4f46e5' },
+        { key: 'de_lulc_2022_all', year: '2022', color: '#4338ca' }
+      ];
+
+      lulcLayers.forEach(({ key, year, color }) => {
+        if (enrichments[key] && Array.isArray(enrichments[key])) {
+          let lulcCount = 0;
+          enrichments[key].forEach((lulc: any) => {
+            if (lulc.geometry && lulc.geometry.rings) {
+              try {
+                const rings = lulc.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn(`DE LULC ${year} polygon has less than 3 coordinates, skipping`);
+                    return;
+                  }
+
+                  const lulcCode = lulc.lulcCode || lulc.LULC_CODE2007 || lulc.LULC_CODE2012 || lulc.LULC_CODE2017 || lulc.LULC_CODE2022 || null;
+                  const lulcCategory = lulc.lulcCategory || lulc.LULC_CATEGORY2007 || lulc.LULC_CATEGORY2012 || lulc.LULC_CATEGORY2017 || lulc.LULC_CATEGORY2022 || 'Unknown';
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.3
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🗺️ DE LULC ${year}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${lulcCode !== null ? `<div><strong>LULC Code:</strong> ${lulcCode}</div>` : ''}
+                        ${lulcCategory ? `<div><strong>Category:</strong> ${lulcCategory}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['lulcCode', 'lulcCategory', 'geometry', 'LULC_CODE2007', 'LULC_CATEGORY2007', 'LULC_CODE2012', 'LULC_CATEGORY2012', 'LULC_CODE2017', 'LULC_CATEGORY2017', 'LULC_CODE2022', 'LULC_CATEGORY2022'];
+                  Object.entries(lulc).forEach(([fieldKey, value]) => {
+                    if (!excludeFields.includes(fieldKey) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = fieldKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  try {
+                    bounds.extend(polygon.getBounds());
+                    lulcCount++;
+                  } catch (boundsError) {
+                    console.warn(`Error extending bounds for DE LULC ${year} polygon:`, boundsError);
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing DE LULC ${year} polygon:`, error);
+              }
+            }
+          });
+          
+          if (lulcCount > 0) {
+            if (!legendAccumulator[key.replace('_all', '')]) {
+              legendAccumulator[key.replace('_all', '')] = {
+                icon: '🗺️',
+                color: color,
+                title: `DE LULC ${year}`,
+                count: 0,
+              };
+            }
+            legendAccumulator[key.replace('_all', '')].count += lulcCount;
+          }
+        }
+      });
 
       // Draw CT Building Footprints as polygons on the map
       if (enrichments.ct_building_footprints_all && Array.isArray(enrichments.ct_building_footprints_all)) {

@@ -69,6 +69,7 @@ import { getDESeasonalRestrictedAreasData } from '../adapters/deSeasonalRestrict
 import { getDEPermanentRestrictedAreasData } from '../adapters/dePermanentRestrictedAreas';
 import { getDEWildlifeAreaBoundariesData } from '../adapters/deWildlifeAreaBoundaries';
 import { getDEParcelData } from '../adapters/deParcels';
+import { getDELULCData } from '../adapters/deLULC';
 import { getTerrainAnalysis } from './ElevationService';
 import { queryATFeatures } from '../adapters/appalachianTrail';
 import { queryPCTFeatures } from '../adapters/pacificCrestTrail';
@@ -1608,6 +1609,21 @@ export class EnrichmentService {
       
       case 'de_parcels':
         return await this.getDEParcels(lat, lon, radius);
+      
+      case 'de_lulc_2007':
+        return await this.getDELULC(lat, lon, 0, '2007');
+      
+      case 'de_lulc_2007_revised':
+        return await this.getDELULC(lat, lon, 1, '2007_revised');
+      
+      case 'de_lulc_2012':
+        return await this.getDELULC(lat, lon, 2, '2012');
+      
+      case 'de_lulc_2017':
+        return await this.getDELULC(lat, lon, 3, '2017');
+      
+      case 'de_lulc_2022':
+        return await this.getDELULC(lat, lon, 4, '2022');
       
       // National Marine Sanctuaries (NOAA) - Point-in-polygon and proximity query
       case 'national_marine_sanctuaries':
@@ -7090,6 +7106,46 @@ out center;`;
     } catch (error) {
       console.error('❌ Error fetching DE Parcels:', error);
       return { de_parcels_count: 0, de_parcels_all: [] };
+    }
+  }
+
+  private async getDELULC(lat: number, lon: number, layerId: number, year: string): Promise<Record<string, any>> {
+    try {
+      const lulcData = await getDELULCData(lat, lon, layerId, year);
+      const result: Record<string, any> = {};
+      
+      if (lulcData) {
+        const keyPrefix = `de_lulc_${year}`;
+        result[`${keyPrefix}_code`] = lulcData.lulcCode;
+        result[`${keyPrefix}_category`] = lulcData.lulcCategory;
+        result[`${keyPrefix}_found`] = true;
+        result[`${keyPrefix}_geometry`] = lulcData.geometry;
+        
+        // Store all attributes for CSV export
+        result[`${keyPrefix}_all`] = [{
+          ...lulcData.attributes,
+          lulcCode: lulcData.lulcCode,
+          lulcCategory: lulcData.lulcCategory,
+          geometry: lulcData.geometry
+        }];
+      } else {
+        const keyPrefix = `de_lulc_${year}`;
+        result[`${keyPrefix}_found`] = false;
+        result[`${keyPrefix}_code`] = null;
+        result[`${keyPrefix}_category`] = null;
+        result[`${keyPrefix}_all`] = [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching DE LULC ${year}:`, error);
+      const keyPrefix = `de_lulc_${year}`;
+      return { 
+        [`${keyPrefix}_found`]: false,
+        [`${keyPrefix}_code`]: null,
+        [`${keyPrefix}_category`]: null,
+        [`${keyPrefix}_all`]: []
+      };
     }
   }
 

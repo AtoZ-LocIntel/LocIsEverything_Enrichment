@@ -396,7 +396,12 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'de_trails_pathways', label: 'Trails and Pathways', description: 'DE FirstMap - Recreational trails and pathways throughout Delaware for proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
   { id: 'de_seasonal_restricted_areas', label: 'Seasonal Restricted Areas', description: 'DE FirstMap - Portions of Delaware State Parks closed to public access during different seasons for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
   { id: 'de_permanent_restricted_areas', label: 'Permanent Restricted Areas', description: 'DE FirstMap - Portions of Delaware State Parks closed to public access all year long for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
-  { id: 'de_wildlife_area_boundaries', label: 'Wildlife Area Boundaries', description: 'DE FirstMap - Wildlife Area locations within the State of Delaware for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' }
+  { id: 'de_wildlife_area_boundaries', label: 'Wildlife Area Boundaries', description: 'DE FirstMap - Wildlife Area locations within the State of Delaware for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_lulc_2007', label: 'DE Land Use Land Cover 2007', description: 'DE FirstMap - 2007 Land Use Land Cover for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
+  { id: 'de_lulc_2007_revised', label: 'DE Land Use Land Cover 2007 (Revised)', description: 'DE FirstMap - 2007 Land Use Land Cover (Revised) for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
+  { id: 'de_lulc_2012', label: 'DE Land Use Land Cover 2012', description: 'DE FirstMap - 2012 Land Use Land Cover for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
+  { id: 'de_lulc_2017', label: 'DE Land Use Land Cover 2017', description: 'DE FirstMap - 2017 Land Use Land Cover for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
+  { id: 'de_lulc_2022', label: 'DE Land Use Land Cover 2022', description: 'DE FirstMap - 2022 Land Use Land Cover for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' }
 ];
 
 class POIConfigManager {

@@ -272,6 +272,11 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ma_parcels_all' || // Skip _all arrays (handled separately)
         key === 'ct_parcels_all' || // Skip _all arrays (handled separately)
         key === 'de_parcels_all' || // Skip _all arrays (handled separately)
+        key === 'de_lulc_2007_all' || // Skip _all arrays (handled separately)
+        key === 'de_lulc_2007_revised_all' || // Skip _all arrays (handled separately)
+        key === 'de_lulc_2012_all' || // Skip _all arrays (handled separately)
+        key === 'de_lulc_2017_all' || // Skip _all arrays (handled separately)
+        key === 'de_lulc_2022_all' || // Skip _all arrays (handled separately)
         key === 'ct_building_footprints_all' || // Skip _all arrays (handled separately)
         key === 'ct_roads_all' || // Skip _all arrays (handled separately)
         key === 'ct_urgent_care_all' || // Skip _all arrays (handled separately)
@@ -660,6 +665,96 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone (not applicable for parcels)
           attributesJson,
           'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_lulc_2007_all' && Array.isArray(value)) {
+      value.forEach((lulc: any) => {
+        const lulcCode = lulc.lulcCode || lulc.LULC_CODE2007 || null;
+        const lulcCategory = lulc.lulcCategory || lulc.LULC_CATEGORY2007 || 'Unknown';
+        const allAttributes = { ...lulc };
+        delete allAttributes.lulcCode;
+        delete allAttributes.lulcCategory;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(),
+          'DE FirstMap', (location.confidence || 'N/A').toString(),
+          'DE_LULC_2007', `${lulcCode !== null ? `Code ${lulcCode}: ` : ''}${lulcCategory}`,
+          location.lat.toString(), location.lon.toString(), '0.00',
+          lulcCategory, `${lulcCode !== null ? `Code: ${lulcCode}` : ''}` || attributesJson,
+          '', '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_lulc_2007_revised_all' && Array.isArray(value)) {
+      value.forEach((lulc: any) => {
+        const lulcCode = lulc.lulcCode || lulc.LULC_CODE2007 || null;
+        const lulcCategory = lulc.lulcCategory || lulc.LULC_CATEGORY2007 || 'Unknown';
+        const allAttributes = { ...lulc };
+        delete allAttributes.lulcCode;
+        delete allAttributes.lulcCategory;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(),
+          'DE FirstMap', (location.confidence || 'N/A').toString(),
+          'DE_LULC_2007_REVISED', `${lulcCode !== null ? `Code ${lulcCode}: ` : ''}${lulcCategory}`,
+          location.lat.toString(), location.lon.toString(), '0.00',
+          lulcCategory, `${lulcCode !== null ? `Code: ${lulcCode}` : ''}` || attributesJson,
+          '', '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_lulc_2012_all' && Array.isArray(value)) {
+      value.forEach((lulc: any) => {
+        const lulcCode = lulc.lulcCode || lulc.LULC_CODE2012 || null;
+        const lulcCategory = lulc.lulcCategory || lulc.LULC_CATEGORY2012 || 'Unknown';
+        const allAttributes = { ...lulc };
+        delete allAttributes.lulcCode;
+        delete allAttributes.lulcCategory;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(),
+          'DE FirstMap', (location.confidence || 'N/A').toString(),
+          'DE_LULC_2012', `${lulcCode !== null ? `Code ${lulcCode}: ` : ''}${lulcCategory}`,
+          location.lat.toString(), location.lon.toString(), '0.00',
+          lulcCategory, `${lulcCode !== null ? `Code: ${lulcCode}` : ''}` || attributesJson,
+          '', '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_lulc_2017_all' && Array.isArray(value)) {
+      value.forEach((lulc: any) => {
+        const lulcCode = lulc.lulcCode || lulc.LULC_CODE2017 || null;
+        const lulcCategory = lulc.lulcCategory || lulc.LULC_CATEGORY2017 || 'Unknown';
+        const allAttributes = { ...lulc };
+        delete allAttributes.lulcCode;
+        delete allAttributes.lulcCategory;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(),
+          'DE FirstMap', (location.confidence || 'N/A').toString(),
+          'DE_LULC_2017', `${lulcCode !== null ? `Code ${lulcCode}: ` : ''}${lulcCategory}`,
+          location.lat.toString(), location.lon.toString(), '0.00',
+          lulcCategory, `${lulcCode !== null ? `Code: ${lulcCode}` : ''}` || attributesJson,
+          '', '', attributesJson, 'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_lulc_2022_all' && Array.isArray(value)) {
+      value.forEach((lulc: any) => {
+        const lulcCode = lulc.lulcCode || lulc.LULC_CODE2022 || null;
+        const lulcCategory = lulc.lulcCategory || lulc.LULC_CATEGORY2022 || 'Unknown';
+        const allAttributes = { ...lulc };
+        delete allAttributes.lulcCode;
+        delete allAttributes.lulcCategory;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(),
+          'DE FirstMap', (location.confidence || 'N/A').toString(),
+          'DE_LULC_2022', `${lulcCode !== null ? `Code ${lulcCode}: ` : ''}${lulcCategory}`,
+          location.lat.toString(), location.lon.toString(), '0.00',
+          lulcCategory, `${lulcCode !== null ? `Code: ${lulcCode}` : ''}` || attributesJson,
+          '', '', attributesJson, 'DE FirstMap'
         ]);
       });
     } else if (key === 'ct_building_footprints_all' && Array.isArray(value)) {

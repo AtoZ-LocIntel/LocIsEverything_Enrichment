@@ -925,6 +925,41 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Delaware",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "DE Land Use Land Cover 2007",
+          description: "2007 Land Use Land Cover for Delaware based on Delaware Modified Anderson System - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Land Use Land Cover 2007 (Revised)",
+          description: "Revised 2007 Land Use Land Cover for Delaware - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Land Use Land Cover 2012",
+          description: "2012 Land Use Land Cover for Delaware - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Land Use Land Cover 2017",
+          description: "2017 Land Use Land Cover for Delaware - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Land Use Land Cover 2022",
+          description: "2022 Land Use Land Cover for Delaware - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
