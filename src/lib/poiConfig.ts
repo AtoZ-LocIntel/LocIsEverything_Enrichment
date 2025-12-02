@@ -373,6 +373,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ct_roads', label: 'CT Roads and Trails', description: 'CT Geodata Portal - Connecticut roads and trails network for proximity queries', isPOI: true, defaultRadius: 0.5, maxRadius: 5.0, category: 'ct', section: 'ct' },
   { id: 'ct_urgent_care', label: 'CT Urgent Care', description: 'CT Geodata Portal - Connecticut urgent care facilities for proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' },
   { id: 'ct_deep_properties', label: 'CT DEEP Properties', description: 'CT Geodata Portal - Connecticut Department of Energy and Environmental Protection (DEEP) properties for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' },
+  { id: 'ct_tribal_lands', label: 'CT Tribal Lands', description: 'CT Geodata Portal - Connecticut Tribal Lands (State and Federally Recognized) for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' },
+  { id: 'ct_drinking_water_watersheds', label: 'CT Drinking Water Watersheds', description: 'CT Geodata Portal - Connecticut Drinking Water Watersheds for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' },
   
   // Delaware FirstMap layers
   { id: 'de_parcels', label: 'DE State Parcels', description: 'DE FirstMap - Delaware state parcels with ownership information for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.3, maxRadius: 1.0, category: 'de', section: 'de' },
@@ -401,7 +403,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'de_lulc_2007_revised', label: 'DE Land Use Land Cover 2007 (Revised)', description: 'DE FirstMap - 2007 Land Use Land Cover (Revised) for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
   { id: 'de_lulc_2012', label: 'DE Land Use Land Cover 2012', description: 'DE FirstMap - 2012 Land Use Land Cover for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
   { id: 'de_lulc_2017', label: 'DE Land Use Land Cover 2017', description: 'DE FirstMap - 2017 Land Use Land Cover for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
-  { id: 'de_lulc_2022', label: 'DE Land Use Land Cover 2022', description: 'DE FirstMap - 2022 Land Use Land Cover for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' }
+  { id: 'de_lulc_2022', label: 'DE Land Use Land Cover 2022', description: 'DE FirstMap - 2022 Land Use Land Cover for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
+  { id: 'de_child_care_centers', label: 'DE Child Care Centers', description: 'DE FirstMap - Delaware Child Care Centers (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' }
 ];
 
 class POIConfigManager {

@@ -766,6 +766,20 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Connecticut",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "CT Tribal Lands",
+          description: "Connecticut Tribal Lands (State and Federally Recognized) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CT Drinking Water Watersheds",
+          description: "Connecticut Drinking Water Watersheds - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
@@ -957,6 +971,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         {
           name: "DE Land Use Land Cover 2022",
           description: "2022 Land Use Land Cover for Delaware - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Child Care Centers",
+          description: "Delaware Child Care Centers - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
           cost: "Free"

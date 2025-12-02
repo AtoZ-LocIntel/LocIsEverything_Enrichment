@@ -191,8 +191,11 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_colleges_universities': { icon: '🎓', color: '#7c3aed', title: 'Colleges & Universities' },
   'ct_urgent_care': { icon: '🏥', color: '#f97316', title: 'CT Urgent Care' },
   'ct_parcels': { icon: '🏠', color: '#059669', title: 'CT Parcels' },
+  'ct_tribal_lands': { icon: '🏛️', color: '#8b5cf6', title: 'CT Tribal Lands' },
+  'ct_drinking_water_watersheds': { icon: '💧', color: '#0891b2', title: 'CT Drinking Water Watersheds' },
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
+  'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -422,10 +425,13 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'de_lulc_2012_all' || // Skip DE LULC arrays (handled separately for map drawing)
     key === 'de_lulc_2017_all' || // Skip DE LULC arrays (handled separately for map drawing)
     key === 'de_lulc_2022_all' || // Skip DE LULC arrays (handled separately for map drawing)
+    key === 'de_child_care_centers_all' || // Skip DE Child Care Centers array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
     key === 'ct_deep_properties_all' || // Skip CT DEEP properties array (handled separately for map drawing)
+    key === 'ct_tribal_lands_all' || // Skip CT Tribal Lands array (handled separately for map drawing)
+    key === 'ct_drinking_water_watersheds_all' || // Skip CT Drinking Water Watersheds array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -3152,6 +3158,65 @@ const MapView: React.FC<MapViewProps> = ({
               }
             } catch (error) {
               console.error('Error drawing DE Park Facilities:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Child Care Centers as markers
+      if (enrichments.de_child_care_centers_all && Array.isArray(enrichments.de_child_care_centers_all)) {
+        enrichments.de_child_care_centers_all.forEach((center: any) => {
+          if (center.geometry) {
+            try {
+              const lat = center.geometry.y || center.LATITUDE || center.latitude;
+              const lon = center.geometry.x || center.LONGITUDE || center.longitude;
+              if (lat && lon) {
+                const icon = createPOIIcon('🏫', '#f59e0b');
+                const marker = L.marker([lat, lon], { icon });
+                const name = center.name || center.RSR_RESO_1 || center.rsr_reso_1 || 'Child Care Center';
+                const type = center.type || center.RSR_TYPE_T || center.rsr_type_t || '';
+                const address = center.address || center.ADR_STREET || center.adr_street || '';
+                const city = center.city || center.ADR_CITYNA || center.adr_cityna || '';
+                const state = center.state || center.ADR_STAECO || center.adr_staeco || '';
+                const zip = center.zip || center.ADR_ZIP || center.ZIPCODE || center.zipcode || '';
+                const phone = center.phone || center.ADR_PHONE_ || center.adr_phone_ || '';
+                const county = center.county || center.ADR_COUNTY || center.adr_county || '';
+                const capacity = center.capacity || center.RSR_CPCT_N || center.rsr_cpct_n || null;
+                const starLevel = center.starLevel || center.DSI_STAR_LEVEL || center.dsi_star_level || center.STARLEVEL || center.starlevel || null;
+                const ageRange = center.ageRange || center.RSR_AGE_RA || center.rsr_age_ra || center.AGE_GROUP || center.age_group || '';
+                const opens = center.opens || center.RSR_OPENS_ || center.rsr_opens_ || '';
+                const closes = center.closes || center.RSR_CLOSES || center.rsr_closes || '';
+                const distance = center.distance_miles;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏫 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      ${address ? `<div><strong>Address:</strong> ${address}${city ? `, ${city}` : ''}${state ? ` ${state}` : ''}${zip ? ` ${zip}` : ''}</div>` : ''}
+                      ${phone ? `<div><strong>Phone:</strong> ${phone}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${capacity !== null ? `<div><strong>Capacity:</strong> ${capacity}</div>` : ''}
+                      ${starLevel !== null ? `<div><strong>Star Level:</strong> ${starLevel}</div>` : ''}
+                      ${ageRange ? `<div><strong>Age Range:</strong> ${ageRange}</div>` : ''}
+                      ${opens && closes ? `<div><strong>Hours:</strong> ${opens} - ${closes}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_child_care_centers']) {
+                  legendAccumulator['de_child_care_centers'] = { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers', count: 0 };
+                }
+                legendAccumulator['de_child_care_centers'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Child Care Center:', error);
             }
           }
         });
@@ -5993,13 +6058,231 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing CT DEEP Properties:', error);
       }
 
+      // Draw CT Tribal Lands as polygons on the map
+      try {
+        if (enrichments.ct_tribal_lands_all && Array.isArray(enrichments.ct_tribal_lands_all)) {
+          let tribalLandCount = 0;
+          enrichments.ct_tribal_lands_all.forEach((tribalLand: any) => {
+            if (tribalLand.geometry && tribalLand.geometry.rings) {
+              try {
+                const rings = tribalLand.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CT Tribal Land polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const isContaining = tribalLand.isContaining;
+                  // Use different colors based on recognition type
+                  let color = '#8b5cf6'; // Default purple
+                  if (tribalLand.recognitionType === 'Federally Recognized') {
+                    color = isContaining ? '#059669' : '#10b981'; // Green shades
+                  } else if (tribalLand.recognitionType === 'State Recognized') {
+                    color = isContaining ? '#dc2626' : '#ef4444'; // Red shades
+                  }
+                  const weight = isContaining ? 3 : 2;
+
+                  const name = tribalLand.name || tribalLand.NAME || 'CT Tribal Land';
+                  const nameLsad = tribalLand.nameLsad || tribalLand.NAMELSAD || null;
+                  const recognitionType = tribalLand.recognitionType || null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏛️ ${name}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div><strong>Status:</strong> Contains Location</div>' : ''}
+                        ${tribalLand.distance_miles !== null && tribalLand.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${tribalLand.distance_miles.toFixed(2)} miles</div>` : ''}
+                        ${recognitionType ? `<div><strong>Recognition:</strong> ${recognitionType}</div>` : ''}
+                        ${nameLsad ? `<div><strong>Full Name:</strong> ${nameLsad}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['tribalLandId', 'name', 'NAME', 'nameLsad', 'NAMELSAD', 'recognitionType', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  Object.entries(tribalLand).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  try {
+                    bounds.extend(polygon.getBounds());
+                    tribalLandCount++;
+                  } catch (boundsError) {
+                    console.warn('Error extending bounds for CT Tribal Land polygon:', boundsError);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing CT Tribal Land polygon:', error);
+              }
+            }
+          });
+          
+          if (tribalLandCount > 0) {
+            if (!legendAccumulator['ct_tribal_lands']) {
+              legendAccumulator['ct_tribal_lands'] = {
+                icon: '🏛️',
+                color: '#8b5cf6',
+                title: 'CT Tribal Lands',
+                count: 0,
+              };
+            }
+            legendAccumulator['ct_tribal_lands'].count += tribalLandCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CT Tribal Lands:', error);
+      }
+
+      // Draw CT Drinking Water Watersheds as polygons on the map
+      try {
+        if (enrichments.ct_drinking_water_watersheds_all && Array.isArray(enrichments.ct_drinking_water_watersheds_all)) {
+          let watershedCount = 0;
+          enrichments.ct_drinking_water_watersheds_all.forEach((watershed: any) => {
+            if (watershed.geometry && watershed.geometry.rings) {
+              try {
+                const rings = watershed.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CT Drinking Water Watershed polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const isContaining = watershed.isContaining;
+                  const color = isContaining ? '#0891b2' : '#06b6d4'; // Darker blue for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+
+                  const pwsName = watershed.pwsName || watershed.pws_name || watershed.PWS_NAME || 'CT Drinking Water Watershed';
+                  const pwsId = watershed.pwsId || watershed.pws_id || watershed.PWS_ID || null;
+                  const shed = watershed.shed || watershed.SHED || null;
+                  const status = watershed.status || watershed.STATUS || null;
+                  const acres = watershed.acres !== null && watershed.acres !== undefined ? watershed.acres : null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        💧 ${pwsName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div><strong>Status:</strong> Contains Location</div>' : ''}
+                        ${watershed.distance_miles !== null && watershed.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${watershed.distance_miles.toFixed(2)} miles</div>` : ''}
+                        ${pwsId ? `<div><strong>PWS ID:</strong> ${pwsId}</div>` : ''}
+                        ${shed ? `<div><strong>Watershed:</strong> ${shed}</div>` : ''}
+                        ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                        ${acres !== null ? `<div><strong>Acres:</strong> ${acres.toFixed(2)} acres</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['watershedId', 'pwsName', 'pws_name', 'PWS_NAME', 'pwsId', 'pws_id', 'PWS_ID', 'shed', 'SHED', 'status', 'STATUS', 'acres', 'ACRES', 'st_area_sh', 'ST_AREA_SH', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  Object.entries(watershed).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  try {
+                    bounds.extend(polygon.getBounds());
+                    watershedCount++;
+                  } catch (boundsError) {
+                    console.warn('Error extending bounds for CT Drinking Water Watershed polygon:', boundsError);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing CT Drinking Water Watershed polygon:', error);
+              }
+            }
+          });
+          
+          if (watershedCount > 0) {
+            if (!legendAccumulator['ct_drinking_water_watersheds']) {
+              legendAccumulator['ct_drinking_water_watersheds'] = {
+                icon: '💧',
+                color: '#0891b2',
+                title: 'CT Drinking Water Watersheds',
+                count: 0,
+              };
+            }
+            legendAccumulator['ct_drinking_water_watersheds'].count += watershedCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CT Drinking Water Watersheds:', error);
+      }
+
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)
       Object.entries(enrichments).forEach(([key, value]) => {
         if (!Array.isArray(value)) {
           return;
         }
 
-        if (!/_detailed$|_elements$|_features$/i.test(key)) {
+        if (!/_detailed$|_elements$|_features$|_facilities$|_all_pois$/i.test(key)) {
           return;
         }
 
@@ -6008,7 +6291,7 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
-        const baseKey = key.replace(/_(detailed|elements|features)$/i, '');
+        const baseKey = key.replace(/_(detailed|elements|features|facilities|all_pois)$/i, '');
         const poiInfo = POI_ICONS[baseKey] || POI_ICONS['default'];
         const poiMeta = poiConfigManager.getPOIType(baseKey);
         const iconEmoji = poiInfo.icon || '📍';
@@ -6043,17 +6326,27 @@ const MapView: React.FC<MapViewProps> = ({
           const poiLat =
             item.lat ??
             item.latitude ??
+            item.LATITUDE ??
             item.location?.lat ??
             item.center?.lat ??
             item.geometry?.coordinates?.[1];
           const poiLon =
             item.lon ??
             item.longitude ??
+            item.LONGITUDE ??
             item.location?.lon ??
             item.center?.lon ??
             item.geometry?.coordinates?.[0];
 
           if (typeof poiLat !== 'number' || typeof poiLon !== 'number') {
+            // Debug logging for items that can't be mapped
+            if (baseKey.includes('tri_') || baseKey.includes('epa_')) {
+              console.warn(`⚠️ ${baseKey}: Skipping item with invalid coordinates:`, {
+                hasLat: !!item.lat || !!item.latitude || !!item.LATITUDE,
+                hasLon: !!item.lon || !!item.longitude || !!item.LONGITUDE,
+                itemKeys: Object.keys(item)
+              });
+            }
             return;
           }
 
@@ -6072,7 +6365,9 @@ const MapView: React.FC<MapViewProps> = ({
 
         console.log('🗺️ STEP 2: Finished drawing all features, setting legend items');
         setLegendItems(
-          Object.values(legendAccumulator).sort((a, b) => b.count - a.count)
+          Object.values(legendAccumulator)
+            .filter(item => item.count > 0) // Filter out items with zero count
+            .sort((a, b) => b.count - a.count)
         );
         setShowBatchSuccess(results.length > 1);
         

@@ -249,6 +249,18 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('ct_deep_properties');
         }
         
+        // CT Tribal Lands fields - only show if CT Tribal Lands enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ct_tribal_lands') && key !== 'ct_tribal_lands_all') {
+          return selectedEnrichments.includes('ct_tribal_lands');
+        }
+        
+        // CT Drinking Water Watersheds fields - only show if CT Drinking Water Watersheds enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ct_drinking_water_watersheds') && key !== 'ct_drinking_water_watersheds_all') {
+          return selectedEnrichments.includes('ct_drinking_water_watersheds');
+        }
+        
         // NH Key Destinations fields - only show if NH Key Destinations enrichment is selected
         // Skip the _all array (handled separately in display)
         if (key.includes('nh_key_destinations') && key !== 'nh_key_destinations_all') {

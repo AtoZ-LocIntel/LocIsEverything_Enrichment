@@ -281,6 +281,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ct_roads_all' || // Skip _all arrays (handled separately)
         key === 'ct_urgent_care_all' || // Skip _all arrays (handled separately)
         key === 'ct_deep_properties_all' || // Skip _all arrays (handled separately)
+        key === 'ct_tribal_lands_all' || // Skip CT Tribal Lands array (handled separately)
+        key === 'ct_drinking_water_watersheds_all' || // Skip CT Drinking Water Watersheds array (handled separately)
         key === 'ma_nhesp_natural_communities_all' ||
         key === 'ma_lakes_and_ponds_all' ||
         key === 'ma_rivers_and_streams_all' ||
@@ -292,7 +294,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'de_no_build_line_bay_all' ||
         key === 'de_no_build_points_ocean_all' ||
         key === 'de_no_build_line_ocean_all' ||
-        key === 'de_park_facilities_all' ||
+        key === 'de_park_facilities_all' || // Skip DE Park Facilities array (handled separately)
+        key === 'de_child_care_centers_all' || // Skip DE Child Care Centers array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -887,6 +890,151 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_tribal_lands_all' && Array.isArray(value)) {
+      // Handle CT Tribal Lands - each tribal land gets its own row with all attributes
+      value.forEach((tribalLand: any) => {
+        const name = tribalLand.name || tribalLand.NAME || 'Unknown Tribal Land';
+        const nameLsad = tribalLand.nameLsad || tribalLand.NAMELSAD || name;
+        const recognitionType = tribalLand.recognitionType || '';
+        const featureType = tribalLand.isContaining ? 'Containing Tribal Land' : 'Nearby Tribal Land';
+        
+        const allAttributes = { ...tribalLand };
+        delete allAttributes.tribalLandId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.nameLsad;
+        delete allAttributes.NAMELSAD;
+        delete allAttributes.recognitionType;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'CT Geodata Portal',
+          (location.confidence || 'N/A').toString(),
+          'CT_TRIBAL_LAND',
+          `${featureType} - ${name}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          tribalLand.distance_miles !== null && tribalLand.distance_miles !== undefined ? tribalLand.distance_miles.toFixed(2) : (tribalLand.isContaining ? '0.00' : ''),
+          recognitionType || 'Tribal Land',
+          `${name}${nameLsad && nameLsad !== name ? ` (${nameLsad})` : ''}${recognitionType ? ` - ${recognitionType}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_drinking_water_watersheds_all' && Array.isArray(value)) {
+      // Handle CT Drinking Water Watersheds - each watershed gets its own row with all attributes
+      value.forEach((watershed: any) => {
+        const pwsName = watershed.pwsName || watershed.pws_name || watershed.PWS_NAME || 'Unknown Watershed';
+        const pwsId = watershed.pwsId || watershed.pws_id || watershed.PWS_ID || '';
+        const shed = watershed.shed || watershed.SHED || '';
+        const status = watershed.status || watershed.STATUS || '';
+        const acres = watershed.acres !== null && watershed.acres !== undefined ? watershed.acres : null;
+        const featureType = watershed.isContaining ? 'Containing Watershed' : 'Nearby Watershed';
+        
+        const allAttributes = { ...watershed };
+        delete allAttributes.watershedId;
+        delete allAttributes.pwsName;
+        delete allAttributes.pws_name;
+        delete allAttributes.PWS_NAME;
+        delete allAttributes.pwsId;
+        delete allAttributes.pws_id;
+        delete allAttributes.PWS_ID;
+        delete allAttributes.shed;
+        delete allAttributes.SHED;
+        delete allAttributes.status;
+        delete allAttributes.STATUS;
+        delete allAttributes.acres;
+        delete allAttributes.ACRES;
+        delete allAttributes.st_area_sh;
+        delete allAttributes.ST_AREA_SH;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'CT Geodata Portal',
+          (location.confidence || 'N/A').toString(),
+          'CT_DRINKING_WATER_WATERSHED',
+          `${featureType} - ${pwsName}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          watershed.distance_miles !== null && watershed.distance_miles !== undefined ? watershed.distance_miles.toFixed(2) : (watershed.isContaining ? '0.00' : ''),
+          status || 'Drinking Water Watershed',
+          `${pwsName}${pwsId ? ` (PWS ID: ${pwsId})` : ''}${shed ? ` - ${shed}` : ''}${acres !== null ? ` - ${acres.toFixed(2)} acres` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'de_child_care_centers_all' && Array.isArray(value)) {
+      // Handle DE Child Care Centers - each center gets its own row with all attributes
+      value.forEach((center: any) => {
+        const name = center.name || center.RSR_RESO_1 || center.rsr_reso_1 || 'Unknown Child Care Center';
+        const type = center.type || center.RSR_TYPE_T || center.rsr_type_t || '';
+        const address = center.address || center.ADR_STREET || center.adr_street || '';
+        const city = center.city || center.ADR_CITYNA || center.adr_cityna || '';
+        const state = center.state || center.ADR_STAECO || center.adr_staeco || 'DE';
+        const zip = center.zip || center.ADR_ZIP || center.ZIPCODE || center.zipcode || '';
+        const phone = center.phone || center.ADR_PHONE_ || center.adr_phone_ || '';
+        const county = center.county || center.ADR_COUNTY || center.adr_county || '';
+        const capacity = center.capacity || center.RSR_CPCT_N || center.rsr_cpct_n || null;
+        const starLevel = center.starLevel || center.DSI_STAR_LEVEL || center.dsi_star_level || center.STARLEVEL || center.starlevel || null;
+        const ageRange = center.ageRange || center.RSR_AGE_RA || center.rsr_age_ra || center.AGE_GROUP || center.age_group || '';
+        const opens = center.opens || center.RSR_OPENS_ || center.rsr_opens_ || '';
+        const closes = center.closes || center.RSR_CLOSES || center.rsr_closes || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        // Get coordinates from geometry or attributes
+        const centerLat = center.geometry?.y || center.LATITUDE || center.latitude || location.lat;
+        const centerLon = center.geometry?.x || center.LONGITUDE || center.longitude || location.lon;
+        
+        const allAttributes = { ...center };
+        delete allAttributes.name;
+        delete allAttributes.type;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.zip;
+        delete allAttributes.phone;
+        delete allAttributes.county;
+        delete allAttributes.capacity;
+        delete allAttributes.starLevel;
+        delete allAttributes.ageRange;
+        delete allAttributes.opens;
+        delete allAttributes.closes;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_CHILD_CARE_CENTER',
+          `${name}${type ? ` - ${type}` : ''}`,
+          centerLat.toString(),
+          centerLon.toString(),
+          center.distance_miles !== null && center.distance_miles !== undefined ? center.distance_miles.toFixed(2) : '',
+          type || 'Child Care Center',
+          `${fullAddress}${county ? ` (${county})` : ''}${capacity !== null ? ` - Capacity: ${capacity}` : ''}${starLevel !== null ? ` - Star Level: ${starLevel}` : ''}${ageRange ? ` - Ages: ${ageRange}` : ''}${opens && closes ? ` - Hours: ${opens}-${closes}` : ''}`,
+          phone || '',
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
         ]);
       });
     } else if (key === 'de_state_forest_all' && Array.isArray(value)) {

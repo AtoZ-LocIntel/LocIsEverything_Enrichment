@@ -47,6 +47,8 @@ import { getCTBuildingFootprintData } from '../adapters/ctBuildingFootprints';
 import { getCTRoadsData } from '../adapters/ctRoads';
 import { getCTUrgentCareData } from '../adapters/ctUrgentCare';
 import { getCTDeepPropertyData } from '../adapters/ctDeepProperties';
+import { getCTTribalLandData } from '../adapters/ctTribalLands';
+import { getCTDrinkingWaterWatershedData } from '../adapters/ctDrinkingWaterWatersheds';
 import { getDEStateForestData } from '../adapters/deStateForest';
 import { getDEPinePlantationData } from '../adapters/dePinePlantations';
 import { getDEUrbanTreeCanopyData } from '../adapters/deUrbanTreeCanopy';
@@ -56,6 +58,7 @@ import { getDENoBuildLineBayData } from '../adapters/deNoBuildLineBay';
 import { getDENoBuildPointsOceanData } from '../adapters/deNoBuildPointsOcean';
 import { getDENoBuildLineOceanData } from '../adapters/deNoBuildLineOcean';
 import { getDEParkFacilitiesData } from '../adapters/deParkFacilities';
+import { getDEChildCareCentersData } from '../adapters/deChildCareCenters';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1556,6 +1559,12 @@ export class EnrichmentService {
       case 'ct_deep_properties':
         return await this.getCTDeepProperties(lat, lon, radius);
       
+      case 'ct_tribal_lands':
+        return await this.getCTTribalLands(lat, lon, radius);
+      
+      case 'ct_drinking_water_watersheds':
+        return await this.getCTDrinkingWaterWatersheds(lat, lon, radius);
+      
       // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
       case 'de_state_forest':
         return await this.getDEStateForest(lat, lon, radius);
@@ -1582,6 +1591,8 @@ export class EnrichmentService {
         return await this.getDENoBuildLineOcean(lat, lon, radius);
       case 'de_park_facilities':
         return await this.getDEParkFacilities(lat, lon, radius);
+      case 'de_child_care_centers':
+        return await this.getDEChildCareCenters(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -6729,6 +6740,38 @@ out center;`;
     }
   }
 
+  private async getDEChildCareCenters(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDEChildCareCentersData(lat, lon, radiusMiles);
+      return {
+        de_child_care_centers_all: data.map(f => ({
+          ...f.attributes,
+          name: f.name,
+          type: f.type,
+          address: f.address,
+          city: f.city,
+          state: f.state,
+          zip: f.zip,
+          phone: f.phone,
+          county: f.county,
+          capacity: f.capacity,
+          starLevel: f.starLevel,
+          ageRange: f.ageRange,
+          opens: f.opens,
+          closes: f.closes,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_child_care_centers_count: data.length,
+        de_child_care_centers_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Child Care Centers:', error);
+      return { de_child_care_centers_count: 0, de_child_care_centers_all: [] };
+    }
+  }
+
   private async getDENaturalAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       const radiusMiles = radius || 0;
@@ -7493,6 +7536,200 @@ out center;`;
         ct_deep_properties_nearby_count: 0,
         ct_deep_properties_all: [],
         ct_deep_properties_error: 'Error fetching CT DEEP Properties data'
+      };
+    }
+  }
+
+  private async getCTTribalLands(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const tribalLandData = await getCTTribalLandData(lat, lon, radiusMiles);
+      
+      if (!tribalLandData) {
+        return {
+          ct_tribal_lands_containing: null,
+          ct_tribal_lands_containing_message: 'No tribal land found containing this location',
+          ct_tribal_lands_nearby_count: 0,
+          ct_tribal_lands_all: []
+        };
+      }
+      
+      const result: Record<string, any> = {};
+      
+      if (tribalLandData.containingTribalLand) {
+        result.ct_tribal_lands_containing = tribalLandData.containingTribalLand.name || 
+                                            tribalLandData.containingTribalLand.tribalLandId || 
+                                            'Unknown Tribal Land';
+        result.ct_tribal_lands_containing_message = `Location is within: ${result.ct_tribal_lands_containing}`;
+        if (tribalLandData.containingTribalLand.recognitionType) {
+          result.ct_tribal_lands_containing_recognition = tribalLandData.containingTribalLand.recognitionType;
+        }
+      } else {
+        result.ct_tribal_lands_containing = null;
+        result.ct_tribal_lands_containing_message = 'No tribal land found containing this location';
+      }
+      
+      const allTribalLands: any[] = [];
+      
+      if (tribalLandData.containingTribalLand) {
+        allTribalLands.push({
+          ...tribalLandData.containingTribalLand.attributes,
+          name: tribalLandData.containingTribalLand.name,
+          nameLsad: tribalLandData.containingTribalLand.nameLsad,
+          recognitionType: tribalLandData.containingTribalLand.recognitionType,
+          isContaining: true,
+          distance_miles: 0,
+          geometry: tribalLandData.containingTribalLand.geometry
+        });
+      }
+      
+      if (tribalLandData.nearbyTribalLands && tribalLandData.nearbyTribalLands.length > 0) {
+        tribalLandData.nearbyTribalLands.forEach(tribalLand => {
+          const isSameAsContaining = tribalLandData.containingTribalLand && 
+                                    tribalLand.tribalLandId === tribalLandData.containingTribalLand.tribalLandId;
+          if (!isSameAsContaining) {
+            allTribalLands.push({
+              ...tribalLand.attributes,
+              name: tribalLand.name,
+              nameLsad: tribalLand.nameLsad,
+              recognitionType: tribalLand.recognitionType,
+              isContaining: false,
+              distance_miles: tribalLand.distance_miles,
+              geometry: tribalLand.geometry
+            });
+          }
+        });
+      }
+      
+      const uniqueTribalLands = new Map<string, any>();
+      allTribalLands.forEach(tribalLand => {
+        const key = tribalLand.tribalLandId || tribalLand.FID || tribalLand.OBJECTID || `tribal_${Math.random()}`;
+        if (!uniqueTribalLands.has(key)) {
+          uniqueTribalLands.set(key, tribalLand);
+        }
+      });
+      
+      const deduplicatedTribalLands = Array.from(uniqueTribalLands.values());
+      
+      if (deduplicatedTribalLands.length > 0) {
+        result.ct_tribal_lands_nearby_count = deduplicatedTribalLands.length;
+        result.ct_tribal_lands_all = deduplicatedTribalLands;
+      } else {
+        result.ct_tribal_lands_nearby_count = 0;
+        result.ct_tribal_lands_all = [];
+      }
+      
+      result.ct_tribal_lands_search_radius_miles = radiusMiles;
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CT Tribal Lands:', error);
+      return {
+        ct_tribal_lands_containing: null,
+        ct_tribal_lands_containing_message: 'Error fetching CT Tribal Lands data',
+        ct_tribal_lands_nearby_count: 0,
+        ct_tribal_lands_all: []
+      };
+    }
+  }
+
+  private async getCTDrinkingWaterWatersheds(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const watershedData = await getCTDrinkingWaterWatershedData(lat, lon, radiusMiles);
+      
+      if (!watershedData) {
+        return {
+          ct_drinking_water_watersheds_containing: null,
+          ct_drinking_water_watersheds_containing_message: 'No watershed found containing this location',
+          ct_drinking_water_watersheds_nearby_count: 0,
+          ct_drinking_water_watersheds_all: []
+        };
+      }
+      
+      const result: Record<string, any> = {};
+      
+      if (watershedData.containingWatershed) {
+        result.ct_drinking_water_watersheds_containing = watershedData.containingWatershed.pwsName || 
+                                                         watershedData.containingWatershed.shed || 
+                                                         watershedData.containingWatershed.watershedId || 
+                                                         'Unknown Watershed';
+        result.ct_drinking_water_watersheds_containing_message = `Location is within: ${result.ct_drinking_water_watersheds_containing}`;
+        if (watershedData.containingWatershed.pwsId) {
+          result.ct_drinking_water_watersheds_containing_pws_id = watershedData.containingWatershed.pwsId;
+        }
+        if (watershedData.containingWatershed.status) {
+          result.ct_drinking_water_watersheds_containing_status = watershedData.containingWatershed.status;
+        }
+      } else {
+        result.ct_drinking_water_watersheds_containing = null;
+        result.ct_drinking_water_watersheds_containing_message = 'No watershed found containing this location';
+      }
+      
+      const allWatersheds: any[] = [];
+      
+      if (watershedData.containingWatershed) {
+        allWatersheds.push({
+          ...watershedData.containingWatershed.attributes,
+          pwsName: watershedData.containingWatershed.pwsName,
+          pwsId: watershedData.containingWatershed.pwsId,
+          shed: watershedData.containingWatershed.shed,
+          status: watershedData.containingWatershed.status,
+          acres: watershedData.containingWatershed.acres,
+          isContaining: true,
+          distance_miles: 0,
+          geometry: watershedData.containingWatershed.geometry
+        });
+      }
+      
+      if (watershedData.nearbyWatersheds && watershedData.nearbyWatersheds.length > 0) {
+        watershedData.nearbyWatersheds.forEach(watershed => {
+          const isSameAsContaining = watershedData.containingWatershed && 
+                                    watershed.watershedId === watershedData.containingWatershed.watershedId;
+          if (!isSameAsContaining) {
+            allWatersheds.push({
+              ...watershed.attributes,
+              pwsName: watershed.pwsName,
+              pwsId: watershed.pwsId,
+              shed: watershed.shed,
+              status: watershed.status,
+              acres: watershed.acres,
+              isContaining: false,
+              distance_miles: watershed.distance_miles,
+              geometry: watershed.geometry
+            });
+          }
+        });
+      }
+      
+      const uniqueWatersheds = new Map<string, any>();
+      allWatersheds.forEach(watershed => {
+        const key = watershed.watershedId || watershed.FID || watershed.OBJECTID || `watershed_${Math.random()}`;
+        if (!uniqueWatersheds.has(key)) {
+          uniqueWatersheds.set(key, watershed);
+        }
+      });
+      
+      const deduplicatedWatersheds = Array.from(uniqueWatersheds.values());
+      
+      if (deduplicatedWatersheds.length > 0) {
+        result.ct_drinking_water_watersheds_nearby_count = deduplicatedWatersheds.length;
+        result.ct_drinking_water_watersheds_all = deduplicatedWatersheds;
+      } else {
+        result.ct_drinking_water_watersheds_nearby_count = 0;
+        result.ct_drinking_water_watersheds_all = [];
+      }
+      
+      result.ct_drinking_water_watersheds_search_radius_miles = radiusMiles;
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CT Drinking Water Watersheds:', error);
+      return {
+        ct_drinking_water_watersheds_containing: null,
+        ct_drinking_water_watersheds_containing_message: 'Error fetching CT Drinking Water Watersheds data',
+        ct_drinking_water_watersheds_nearby_count: 0,
+        ct_drinking_water_watersheds_all: []
       };
     }
   }
