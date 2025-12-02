@@ -1023,6 +1023,62 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Delaware",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "DE Wildlife Areas Stands Blinds and Fields",
+          description: "Wildlife Area Stands, Blinds, and Fields - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Wildlife Areas Boat Ramps",
+          description: "Wildlife Area Boat Ramps - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Wildlife Areas Facilities",
+          description: "Wildlife Area Facilities - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Wildlife Areas Parking",
+          description: "Wildlife Area Parking - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Wildlife Areas Restrooms",
+          description: "Wildlife Area Restrooms - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Wildlife Areas Safety Zones",
+          description: "Wildlife Area Safety Zones - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Wildlife Management Zones",
+          description: "Wildlife Management Zones for deer harvesting - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Rail Lines",
+          description: "Delaware Rail Lines - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

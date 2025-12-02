@@ -202,6 +202,14 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'de_private_schools': { icon: '🏛️', color: '#6366f1', title: 'DE Private Schools' },
   'de_votech_districts': { icon: '🎓', color: '#8b5cf6', title: 'DE VoTech Districts' },
   'de_school_districts': { icon: '📚', color: '#7c3aed', title: 'DE School Districts' },
+  'de_stands_blinds_fields': { icon: '🎯', color: '#16a34a', title: 'DE Wildlife Areas Stands Blinds Fields' },
+  'de_boat_ramps': { icon: '🚤', color: '#0284c7', title: 'DE Wildlife Areas Boat Ramps' },
+  'de_facilities': { icon: '🏢', color: '#dc2626', title: 'DE Wildlife Areas Facilities' },
+  'de_parking': { icon: '🅿️', color: '#f59e0b', title: 'DE Wildlife Areas Parking' },
+  'de_restrooms': { icon: '🚻', color: '#8b5cf6', title: 'DE Wildlife Areas Restrooms' },
+  'de_safety_zones': { icon: '⚠️', color: '#ef4444', title: 'DE Wildlife Areas Safety Zones' },
+  'de_wildlife_management_zones': { icon: '🦌', color: '#059669', title: 'DE Wildlife Management Zones' },
+  'de_rail_lines': { icon: '🚂', color: '#1f2937', title: 'DE Rail Lines' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -438,6 +446,14 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'de_private_schools_all' || // Skip DE Private Schools array (handled separately for map drawing)
     key === 'de_votech_districts_all' || // Skip DE VoTech Districts array (handled separately for map drawing)
     key === 'de_school_districts_all' || // Skip DE School Districts array (handled separately for map drawing)
+    key === 'de_stands_blinds_fields_all' || // Skip DE Stands Blinds Fields array (handled separately for map drawing)
+    key === 'de_boat_ramps_all' || // Skip DE Boat Ramps array (handled separately for map drawing)
+    key === 'de_facilities_all' || // Skip DE Facilities array (handled separately for map drawing)
+    key === 'de_parking_all' || // Skip DE Parking array (handled separately for map drawing)
+    key === 'de_restrooms_all' || // Skip DE Restrooms array (handled separately for map drawing)
+    key === 'de_safety_zones_all' || // Skip DE Safety Zones array (handled separately for map drawing)
+    key === 'de_wildlife_management_zones_all' || // Skip DE Wildlife Management Zones array (handled separately for map drawing)
+    key === 'de_rail_lines_all' || // Skip DE Rail Lines array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -3638,6 +3654,445 @@ const MapView: React.FC<MapViewProps> = ({
             }
           }
         });
+      }
+
+      // Draw DE Wildlife Areas Stands Blinds and Fields as markers
+      if (enrichments.de_stands_blinds_fields_all && Array.isArray(enrichments.de_stands_blinds_fields_all)) {
+        enrichments.de_stands_blinds_fields_all.forEach((feature: any) => {
+          if (feature.geometry) {
+            try {
+              const lat = feature.geometry.y || feature.LATITUDE || feature.latitude;
+              const lon = feature.geometry.x || feature.LONGITUDE || feature.longitude;
+              if (lat && lon) {
+                const icon = createPOIIcon('🎯', '#16a34a');
+                const marker = L.marker([lat, lon], { icon });
+                const name = feature.name || feature.NAME || 'Stands/Blinds/Fields';
+                const type = feature.type || feature.TYPE || '';
+                const distance = feature.distance_miles;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🎯 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_stands_blinds_fields']) {
+                  legendAccumulator['de_stands_blinds_fields'] = { icon: '🎯', color: '#16a34a', title: 'DE Wildlife Areas Stands Blinds Fields', count: 0 };
+                }
+                legendAccumulator['de_stands_blinds_fields'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Stands Blinds Fields:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Wildlife Areas Boat Ramps as markers
+      if (enrichments.de_boat_ramps_all && Array.isArray(enrichments.de_boat_ramps_all)) {
+        enrichments.de_boat_ramps_all.forEach((feature: any) => {
+          if (feature.geometry) {
+            try {
+              const lat = feature.geometry.y || feature.LATITUDE || feature.latitude;
+              const lon = feature.geometry.x || feature.LONGITUDE || feature.longitude;
+              if (lat && lon) {
+                const icon = createPOIIcon('🚤', '#0284c7');
+                const marker = L.marker([lat, lon], { icon });
+                const name = feature.name || feature.NAME || 'Boat Ramp';
+                const type = feature.type || feature.TYPE || '';
+                const distance = feature.distance_miles;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚤 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_boat_ramps']) {
+                  legendAccumulator['de_boat_ramps'] = { icon: '🚤', color: '#0284c7', title: 'DE Wildlife Areas Boat Ramps', count: 0 };
+                }
+                legendAccumulator['de_boat_ramps'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Boat Ramp:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Wildlife Areas Facilities as markers
+      if (enrichments.de_facilities_all && Array.isArray(enrichments.de_facilities_all)) {
+        enrichments.de_facilities_all.forEach((feature: any) => {
+          if (feature.geometry) {
+            try {
+              const lat = feature.geometry.y || feature.LATITUDE || feature.latitude;
+              const lon = feature.geometry.x || feature.LONGITUDE || feature.longitude;
+              if (lat && lon) {
+                const icon = createPOIIcon('🏢', '#dc2626');
+                const marker = L.marker([lat, lon], { icon });
+                const name = feature.name || feature.NAME || 'Facility';
+                const type = feature.type || feature.TYPE || '';
+                const distance = feature.distance_miles;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏢 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_facilities']) {
+                  legendAccumulator['de_facilities'] = { icon: '🏢', color: '#dc2626', title: 'DE Wildlife Areas Facilities', count: 0 };
+                }
+                legendAccumulator['de_facilities'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Facility:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Wildlife Areas Parking as markers
+      if (enrichments.de_parking_all && Array.isArray(enrichments.de_parking_all)) {
+        enrichments.de_parking_all.forEach((feature: any) => {
+          if (feature.geometry) {
+            try {
+              const lat = feature.geometry.y || feature.LATITUDE || feature.latitude;
+              const lon = feature.geometry.x || feature.LONGITUDE || feature.longitude;
+              if (lat && lon) {
+                const icon = createPOIIcon('🅿️', '#f59e0b');
+                const marker = L.marker([lat, lon], { icon });
+                const name = feature.name || feature.NAME || 'Parking';
+                const type = feature.type || feature.TYPE || '';
+                const distance = feature.distance_miles;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🅿️ ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_parking']) {
+                  legendAccumulator['de_parking'] = { icon: '🅿️', color: '#f59e0b', title: 'DE Wildlife Areas Parking', count: 0 };
+                }
+                legendAccumulator['de_parking'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Parking:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Wildlife Areas Restrooms as markers
+      if (enrichments.de_restrooms_all && Array.isArray(enrichments.de_restrooms_all)) {
+        enrichments.de_restrooms_all.forEach((feature: any) => {
+          if (feature.geometry) {
+            try {
+              const lat = feature.geometry.y || feature.LATITUDE || feature.latitude;
+              const lon = feature.geometry.x || feature.LONGITUDE || feature.longitude;
+              if (lat && lon) {
+                const icon = createPOIIcon('🚻', '#8b5cf6');
+                const marker = L.marker([lat, lon], { icon });
+                const name = feature.name || feature.NAME || 'Restroom';
+                const type = feature.type || feature.TYPE || '';
+                const distance = feature.distance_miles;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚻 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_restrooms']) {
+                  legendAccumulator['de_restrooms'] = { icon: '🚻', color: '#8b5cf6', title: 'DE Wildlife Areas Restrooms', count: 0 };
+                }
+                legendAccumulator['de_restrooms'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Restroom:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Wildlife Areas Safety Zones as polygons
+      if (enrichments.de_safety_zones_all && Array.isArray(enrichments.de_safety_zones_all)) {
+        enrichments.de_safety_zones_all.forEach((zone: any) => {
+          if (zone.geometry && zone.geometry.rings) {
+            try {
+              const rings = zone.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                if (latlngs.length < 3) {
+                  console.warn('DE Safety Zone polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+
+                const name = zone.name || zone.NAME || 'Safety Zone';
+                const type = zone.type || zone.TYPE || '';
+                const isContaining = zone.isContaining || false;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#dc2626' : '#ef4444',
+                  weight: 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#ef4444' : '#f87171',
+                  fillOpacity: 0.3
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ⚠️ ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                
+                try {
+                  bounds.extend(polygon.getBounds());
+                } catch (boundsError) {
+                  console.warn('Error extending bounds for DE Safety Zone:', boundsError);
+                }
+                
+                if (!legendAccumulator['de_safety_zones']) {
+                  legendAccumulator['de_safety_zones'] = {
+                    icon: '⚠️',
+                    color: '#ef4444',
+                    title: 'DE Wildlife Areas Safety Zones',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['de_safety_zones'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Safety Zone:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Wildlife Management Zones as polygons
+      if (enrichments.de_wildlife_management_zones_all && Array.isArray(enrichments.de_wildlife_management_zones_all)) {
+        enrichments.de_wildlife_management_zones_all.forEach((zone: any) => {
+          if (zone.geometry && zone.geometry.rings) {
+            try {
+              const rings = zone.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                if (latlngs.length < 3) {
+                  console.warn('DE Wildlife Management Zone polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+
+                const name = zone.name || zone.NAME || zone.ZONE || zone.zone || 'Wildlife Management Zone';
+                const type = zone.type || zone.TYPE || zone.ZONE_TYPE || zone.zone_type || '';
+                const isContaining = zone.isContaining || false;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#047857' : '#059669',
+                  weight: 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#059669' : '#10b981',
+                  fillOpacity: 0.3
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🦌 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                
+                try {
+                  bounds.extend(polygon.getBounds());
+                } catch (boundsError) {
+                  console.warn('Error extending bounds for DE Wildlife Management Zone:', boundsError);
+                }
+                
+                if (!legendAccumulator['de_wildlife_management_zones']) {
+                  legendAccumulator['de_wildlife_management_zones'] = {
+                    icon: '🦌',
+                    color: '#059669',
+                    title: 'DE Wildlife Management Zones',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['de_wildlife_management_zones'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Wildlife Management Zone:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Rail Lines as polylines
+      if (enrichments.de_rail_lines_all && Array.isArray(enrichments.de_rail_lines_all)) {
+        let railLineCount = 0;
+        enrichments.de_rail_lines_all.forEach((railLine: any) => {
+          if (railLine.geometry && railLine.geometry.paths) {
+            try {
+              const paths = railLine.geometry.paths;
+              if (paths && paths.length > 0) {
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 2) {
+                    console.warn('DE Rail Line polyline has less than 2 coordinates, skipping');
+                    return;
+                  }
+
+                  const railId = railLine.railId || railLine.RAIL_ID || railLine.rail_id || '';
+                  const trackType = railLine.trackType || railLine.TRACK_TYPE || railLine.track_type || '';
+                  const status = railLine.status || railLine.STATUS || railLine.status || '';
+                  const lineId = railLine.lineId || railLine.LINE_ID || railLine.line_id || '';
+                  const owner = railLine.owner || railLine.OWNER || railLine.owner || '';
+                  const operators = railLine.operators || [];
+                  
+                  const polyline = L.polyline(latlngs, {
+                    color: '#1f2937',
+                    weight: 3,
+                    opacity: 0.8
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🚂 Rail Line${railId ? ` ${railId}` : ''}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${lineId ? `<div><strong>Line ID:</strong> ${lineId}</div>` : ''}
+                        ${trackType ? `<div><strong>Track Type:</strong> ${trackType}</div>` : ''}
+                        ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                        ${owner ? `<div><strong>Owner:</strong> ${owner}</div>` : ''}
+                        ${operators.length > 0 ? `<div><strong>Operator${operators.length > 1 ? 's' : ''}:</strong> ${operators.join(', ')}</div>` : ''}
+                        ${railLine.distance_miles !== null && railLine.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${railLine.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['railId', 'RAIL_ID', 'rail_id', 'trackType', 'TRACK_TYPE', 'track_type', 'status', 'STATUS', 'lineId', 'LINE_ID', 'line_id', 'owner', 'OWNER', 'operators', 'OPERATOR1', 'OPERATOR2', 'OPERATOR3', 'OPERATOR4', 'geometry', 'distance_miles', 'OBJECTID', 'objectid'];
+                  Object.entries(railLine).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi);
+                  
+                  try {
+                    bounds.extend(polyline.getBounds());
+                    railLineCount++;
+                  } catch (boundsError) {
+                    console.warn('Error extending bounds for DE Rail Line polyline:', boundsError);
+                  }
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing DE Rail Line:', error);
+            }
+          }
+        });
+        
+        if (railLineCount > 0) {
+          if (!legendAccumulator['de_rail_lines']) {
+            legendAccumulator['de_rail_lines'] = {
+              icon: '🚂',
+              color: '#1f2937',
+              title: 'DE Rail Lines',
+              count: 0,
+            };
+          }
+          legendAccumulator['de_rail_lines'].count += railLineCount;
+        }
       }
 
       // Draw DE Natural Areas polygons

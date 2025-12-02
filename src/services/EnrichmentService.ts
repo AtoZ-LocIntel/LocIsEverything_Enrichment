@@ -61,6 +61,8 @@ import { getDEParkFacilitiesData } from '../adapters/deParkFacilities';
 import { getDEChildCareCentersData } from '../adapters/deChildCareCenters';
 import { getDEFishingAccessData, getDETroutStreamsData } from '../adapters/deFishingAccess';
 import { getDEPublicSchoolsData, getDEPrivateSchoolsData, getDEVoTechDistrictsData, getDESchoolDistrictsData } from '../adapters/deSchools';
+import { getDEStandsBlindsFieldsData, getDEBoatRampsData, getDEFacilitiesData, getDEParkingData, getDERestroomsData, getDESafetyZonesData, getDEWildlifeManagementZonesData } from '../adapters/deWildlife';
+import { getDERailLinesData } from '../adapters/deRailLines';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1607,6 +1609,22 @@ export class EnrichmentService {
         return await this.getDEVoTechDistricts(lat, lon);
       case 'de_school_districts':
         return await this.getDESchoolDistricts(lat, lon);
+      case 'de_stands_blinds_fields':
+        return await this.getDEStandsBlindsFields(lat, lon, radius);
+      case 'de_boat_ramps':
+        return await this.getDEBoatRamps(lat, lon, radius);
+      case 'de_facilities':
+        return await this.getDEFacilities(lat, lon, radius);
+      case 'de_parking':
+        return await this.getDEParking(lat, lon, radius);
+      case 'de_restrooms':
+        return await this.getDERestrooms(lat, lon, radius);
+      case 'de_safety_zones':
+        return await this.getDESafetyZones(lat, lon, radius);
+      case 'de_wildlife_management_zones':
+        return await this.getDEWildlifeManagementZones(lat, lon, radius);
+      case 'de_rail_lines':
+        return await this.getDERailLines(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -6941,6 +6959,192 @@ out center;`;
     } catch (error) {
       console.error('❌ Error fetching DE School Districts:', error);
       return { de_school_districts_count: 0, de_school_districts_all: [], de_school_districts_containing: false };
+    }
+  }
+
+  private async getDEStandsBlindsFields(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDEStandsBlindsFieldsData(lat, lon, radiusMiles);
+      return {
+        de_stands_blinds_fields_all: data.map(f => ({
+          ...f.attributes,
+          name: f.name,
+          type: f.type,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_stands_blinds_fields_count: data.length,
+        de_stands_blinds_fields_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Stands Blinds Fields:', error);
+      return { de_stands_blinds_fields_count: 0, de_stands_blinds_fields_all: [] };
+    }
+  }
+
+  private async getDEBoatRamps(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDEBoatRampsData(lat, lon, radiusMiles);
+      return {
+        de_boat_ramps_all: data.map(f => ({
+          ...f.attributes,
+          name: f.name,
+          type: f.type,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_boat_ramps_count: data.length,
+        de_boat_ramps_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Boat Ramps:', error);
+      return { de_boat_ramps_count: 0, de_boat_ramps_all: [] };
+    }
+  }
+
+  private async getDEFacilities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDEFacilitiesData(lat, lon, radiusMiles);
+      return {
+        de_facilities_all: data.map(f => ({
+          ...f.attributes,
+          name: f.name,
+          type: f.type,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_facilities_count: data.length,
+        de_facilities_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Facilities:', error);
+      return { de_facilities_count: 0, de_facilities_all: [] };
+    }
+  }
+
+  private async getDEParking(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDEParkingData(lat, lon, radiusMiles);
+      return {
+        de_parking_all: data.map(f => ({
+          ...f.attributes,
+          name: f.name,
+          type: f.type,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_parking_count: data.length,
+        de_parking_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Parking:', error);
+      return { de_parking_count: 0, de_parking_all: [] };
+    }
+  }
+
+  private async getDERestrooms(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDERestroomsData(lat, lon, radiusMiles);
+      return {
+        de_restrooms_all: data.map(f => ({
+          ...f.attributes,
+          name: f.name,
+          type: f.type,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_restrooms_count: data.length,
+        de_restrooms_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Restrooms:', error);
+      return { de_restrooms_count: 0, de_restrooms_all: [] };
+    }
+  }
+
+  private async getDESafetyZones(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const data = await getDESafetyZonesData(lat, lon);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      
+      if (data.containing) {
+        allFeatures.push({
+          ...data.containing.attributes,
+          name: data.containing.name,
+          type: data.containing.type,
+          isContaining: true,
+          geometry: data.containing.geometry
+        });
+        result.de_safety_zones_containing = true;
+      } else {
+        result.de_safety_zones_containing = false;
+      }
+      
+      result.de_safety_zones_all = allFeatures;
+      result.de_safety_zones_count = allFeatures.length;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Safety Zones:', error);
+      return { de_safety_zones_count: 0, de_safety_zones_all: [], de_safety_zones_containing: false };
+    }
+  }
+
+  private async getDEWildlifeManagementZones(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const data = await getDEWildlifeManagementZonesData(lat, lon);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      
+      if (data.containing) {
+        allFeatures.push({
+          ...data.containing.attributes,
+          name: data.containing.name,
+          type: data.containing.type,
+          isContaining: true,
+          geometry: data.containing.geometry
+        });
+        result.de_wildlife_management_zones_containing = true;
+      } else {
+        result.de_wildlife_management_zones_containing = false;
+      }
+      
+      result.de_wildlife_management_zones_all = allFeatures;
+      result.de_wildlife_management_zones_count = allFeatures.length;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE Wildlife Management Zones:', error);
+      return { de_wildlife_management_zones_count: 0, de_wildlife_management_zones_all: [], de_wildlife_management_zones_containing: false };
+    }
+  }
+
+  private async getDERailLines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDERailLinesData(lat, lon, radiusMiles);
+      return {
+        de_rail_lines_all: data.map(f => ({
+          ...f.attributes,
+          railId: f.railId,
+          trackType: f.trackType,
+          status: f.status,
+          lineId: f.lineId,
+          owner: f.owner,
+          operators: f.operators,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_rail_lines_count: data.length,
+        de_rail_lines_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Rail Lines:', error);
+      return { de_rail_lines_count: 0, de_rail_lines_all: [] };
     }
   }
 

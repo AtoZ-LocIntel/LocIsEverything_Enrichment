@@ -410,7 +410,15 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'de_public_schools', label: 'DE Public Schools', description: 'DE FirstMap - Delaware Public Schools (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
   { id: 'de_private_schools', label: 'DE Private Schools', description: 'DE FirstMap - Delaware Private Schools (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
   { id: 'de_votech_districts', label: 'DE VoTech School Districts', description: 'DE FirstMap - Delaware VoTech School Districts (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
-  { id: 'de_school_districts', label: 'DE School Districts', description: 'DE FirstMap - Delaware School Districts (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' }
+  { id: 'de_school_districts', label: 'DE School Districts', description: 'DE FirstMap - Delaware School Districts (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
+  { id: 'de_stands_blinds_fields', label: 'DE Wildlife Areas Stands Blinds and Fields', description: 'DE FirstMap - Wildlife Area Stands, Blinds, and Fields (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_boat_ramps', label: 'DE Wildlife Areas Boat Ramps', description: 'DE FirstMap - Wildlife Area Boat Ramps (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_facilities', label: 'DE Wildlife Areas Facilities', description: 'DE FirstMap - Wildlife Area Facilities (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_parking', label: 'DE Wildlife Areas Parking', description: 'DE FirstMap - Wildlife Area Parking (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_restrooms', label: 'DE Wildlife Areas Restrooms', description: 'DE FirstMap - Wildlife Area Restrooms (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_safety_zones', label: 'DE Wildlife Areas Safety Zones', description: 'DE FirstMap - Wildlife Area Safety Zones (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_wildlife_management_zones', label: 'DE Wildlife Management Zones', description: 'DE FirstMap - Wildlife Management Zones (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_rail_lines', label: 'DE Rail Lines', description: 'DE FirstMap - Delaware Rail Lines (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' }
 ];
 
 class POIConfigManager {

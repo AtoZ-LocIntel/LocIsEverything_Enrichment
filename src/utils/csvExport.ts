@@ -302,6 +302,14 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'de_private_schools_all' || // Skip DE Private Schools array (handled separately)
         key === 'de_votech_districts_all' || // Skip DE VoTech Districts array (handled separately)
         key === 'de_school_districts_all' || // Skip DE School Districts array (handled separately)
+        key === 'de_stands_blinds_fields_all' || // Skip DE Stands Blinds Fields array (handled separately)
+        key === 'de_boat_ramps_all' || // Skip DE Boat Ramps array (handled separately)
+        key === 'de_facilities_all' || // Skip DE Facilities array (handled separately)
+        key === 'de_parking_all' || // Skip DE Parking array (handled separately)
+        key === 'de_restrooms_all' || // Skip DE Restrooms array (handled separately)
+        key === 'de_safety_zones_all' || // Skip DE Safety Zones array (handled separately)
+        key === 'de_wildlife_management_zones_all' || // Skip DE Wildlife Management Zones array (handled separately)
+        key === 'de_rail_lines_all' || // Skip DE Rail Lines array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1317,6 +1325,312 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           district.isContaining ? '0.00' : '',
           'Public School District',
           name || 'School District',
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_stands_blinds_fields_all' && Array.isArray(value)) {
+      // Handle DE Wildlife Areas Stands Blinds and Fields - each feature gets its own row
+      value.forEach((feature: any) => {
+        const name = feature.name || feature.NAME || 'Stands/Blinds/Fields';
+        const type = feature.type || feature.TYPE || '';
+        const featureLat = feature.geometry?.y || feature.LATITUDE || feature.latitude || location.lat;
+        const featureLon = feature.geometry?.x || feature.LONGITUDE || feature.longitude || location.lon;
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.featureId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_STANDS_BLINDS_FIELDS',
+          `${name}${type ? ` - ${type}` : ''}`,
+          featureLat.toString(),
+          featureLon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          type || 'Stands/Blinds/Fields',
+          name,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_boat_ramps_all' && Array.isArray(value)) {
+      // Handle DE Wildlife Areas Boat Ramps - each ramp gets its own row
+      value.forEach((feature: any) => {
+        const name = feature.name || feature.NAME || 'Boat Ramp';
+        const type = feature.type || feature.TYPE || '';
+        const featureLat = feature.geometry?.y || feature.LATITUDE || feature.latitude || location.lat;
+        const featureLon = feature.geometry?.x || feature.LONGITUDE || feature.longitude || location.lon;
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.featureId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_BOAT_RAMPS',
+          `${name}${type ? ` - ${type}` : ''}`,
+          featureLat.toString(),
+          featureLon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          type || 'Boat Ramp',
+          name,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_facilities_all' && Array.isArray(value)) {
+      // Handle DE Wildlife Areas Facilities - each facility gets its own row
+      value.forEach((feature: any) => {
+        const name = feature.name || feature.NAME || 'Facility';
+        const type = feature.type || feature.TYPE || '';
+        const featureLat = feature.geometry?.y || feature.LATITUDE || feature.latitude || location.lat;
+        const featureLon = feature.geometry?.x || feature.LONGITUDE || feature.longitude || location.lon;
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.featureId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_FACILITIES',
+          `${name}${type ? ` - ${type}` : ''}`,
+          featureLat.toString(),
+          featureLon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          type || 'Facility',
+          name,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_parking_all' && Array.isArray(value)) {
+      // Handle DE Wildlife Areas Parking - each parking area gets its own row
+      value.forEach((feature: any) => {
+        const name = feature.name || feature.NAME || 'Parking';
+        const type = feature.type || feature.TYPE || '';
+        const featureLat = feature.geometry?.y || feature.LATITUDE || feature.latitude || location.lat;
+        const featureLon = feature.geometry?.x || feature.LONGITUDE || feature.longitude || location.lon;
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.featureId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_PARKING',
+          `${name}${type ? ` - ${type}` : ''}`,
+          featureLat.toString(),
+          featureLon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          type || 'Parking',
+          name,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_restrooms_all' && Array.isArray(value)) {
+      // Handle DE Wildlife Areas Restrooms - each restroom gets its own row
+      value.forEach((feature: any) => {
+        const name = feature.name || feature.NAME || 'Restroom';
+        const type = feature.type || feature.TYPE || '';
+        const featureLat = feature.geometry?.y || feature.LATITUDE || feature.latitude || location.lat;
+        const featureLon = feature.geometry?.x || feature.LONGITUDE || feature.longitude || location.lon;
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.featureId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_RESTROOMS',
+          `${name}${type ? ` - ${type}` : ''}`,
+          featureLat.toString(),
+          featureLon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '',
+          type || 'Restroom',
+          name,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_safety_zones_all' && Array.isArray(value)) {
+      // Handle DE Wildlife Areas Safety Zones - each zone gets its own row
+      value.forEach((zone: any) => {
+        const name = zone.name || zone.NAME || 'Safety Zone';
+        const type = zone.type || zone.TYPE || '';
+        const featureType = zone.isContaining ? 'Containing Safety Zone' : 'Safety Zone';
+        
+        const allAttributes = { ...zone };
+        delete allAttributes.featureId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_SAFETY_ZONES',
+          `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), // Use search location for zone (it's a polygon, not a point)
+          location.lon.toString(),
+          zone.isContaining ? '0.00' : '',
+          type || 'Safety Zone',
+          name || 'Safety Zone',
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_wildlife_management_zones_all' && Array.isArray(value)) {
+      // Handle DE Wildlife Management Zones - each zone gets its own row
+      value.forEach((zone: any) => {
+        const name = zone.name || zone.NAME || zone.ZONE || zone.zone || 'Wildlife Management Zone';
+        const type = zone.type || zone.TYPE || zone.ZONE_TYPE || zone.zone_type || '';
+        const featureType = zone.isContaining ? 'Containing Wildlife Management Zone' : 'Wildlife Management Zone';
+        
+        const allAttributes = { ...zone };
+        delete allAttributes.featureId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.ZONE;
+        delete allAttributes.zone;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.ZONE_TYPE;
+        delete allAttributes.zone_type;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_WILDLIFE_MANAGEMENT_ZONES',
+          `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), // Use search location for zone (it's a polygon, not a point)
+          location.lon.toString(),
+          zone.isContaining ? '0.00' : '',
+          type || 'Wildlife Management Zone',
+          name || 'Wildlife Management Zone',
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_rail_lines_all' && Array.isArray(value)) {
+      // Handle DE Rail Lines - each rail line gets its own row with all attributes
+      value.forEach((railLine: any) => {
+        const railId = railLine.railId || railLine.RAIL_ID || railLine.rail_id || '';
+        const trackType = railLine.trackType || railLine.TRACK_TYPE || railLine.track_type || '';
+        const status = railLine.status || railLine.STATUS || railLine.status || '';
+        const lineId = railLine.lineId || railLine.LINE_ID || railLine.line_id || '';
+        const owner = railLine.owner || railLine.OWNER || railLine.owner || '';
+        const operators = railLine.operators || [];
+        const operatorsStr = operators.length > 0 ? operators.join(', ') : '';
+        
+        const allAttributes = { ...railLine };
+        delete allAttributes.railId;
+        delete allAttributes.RAIL_ID;
+        delete allAttributes.rail_id;
+        delete allAttributes.trackType;
+        delete allAttributes.TRACK_TYPE;
+        delete allAttributes.track_type;
+        delete allAttributes.status;
+        delete allAttributes.STATUS;
+        delete allAttributes.lineId;
+        delete allAttributes.LINE_ID;
+        delete allAttributes.line_id;
+        delete allAttributes.owner;
+        delete allAttributes.OWNER;
+        delete allAttributes.operators;
+        delete allAttributes.OPERATOR1;
+        delete allAttributes.OPERATOR2;
+        delete allAttributes.OPERATOR3;
+        delete allAttributes.OPERATOR4;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_RAIL_LINE',
+          `Rail Line${railId ? ` ${railId}` : ''}${lineId ? ` - ${lineId}` : ''}`,
+          location.lat.toString(), // Use search location for rail line (it's a polyline, not a point)
+          location.lon.toString(),
+          railLine.distance_miles !== null && railLine.distance_miles !== undefined ? railLine.distance_miles.toFixed(2) : '',
+          trackType || 'Rail Line',
+          `${status ? `Status: ${status}` : ''}${owner ? `${status ? ' - ' : ''}Owner: ${owner}` : ''}${operatorsStr ? `${owner || status ? ' - ' : ''}Operator${operators.length > 1 ? 's' : ''}: ${operatorsStr}` : ''}`,
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'DE FirstMap'
