@@ -981,6 +981,20 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Delaware",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "DE Fishing Access",
+          description: "Delaware Fishing Access locations (boat docks, ramps, piers, shoreline fishing) - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Trout Streams",
+          description: "Delaware Trout Streams in New Castle County - proximity queries up to 25 miles",
+          coverage: "New Castle County, Delaware",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

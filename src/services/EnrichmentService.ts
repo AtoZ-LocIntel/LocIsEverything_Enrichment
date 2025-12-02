@@ -59,6 +59,7 @@ import { getDENoBuildPointsOceanData } from '../adapters/deNoBuildPointsOcean';
 import { getDENoBuildLineOceanData } from '../adapters/deNoBuildLineOcean';
 import { getDEParkFacilitiesData } from '../adapters/deParkFacilities';
 import { getDEChildCareCentersData } from '../adapters/deChildCareCenters';
+import { getDEFishingAccessData, getDETroutStreamsData } from '../adapters/deFishingAccess';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1593,6 +1594,10 @@ export class EnrichmentService {
         return await this.getDEParkFacilities(lat, lon, radius);
       case 'de_child_care_centers':
         return await this.getDEChildCareCenters(lat, lon, radius);
+      case 'de_fishing_access':
+        return await this.getDEFishingAccess(lat, lon, radius);
+      case 'de_trout_streams':
+        return await this.getDETroutStreams(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -6769,6 +6774,54 @@ out center;`;
     } catch (error) {
       console.error('❌ Error fetching DE Child Care Centers:', error);
       return { de_child_care_centers_count: 0, de_child_care_centers_all: [] };
+    }
+  }
+
+  private async getDEFishingAccess(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDEFishingAccessData(lat, lon, radiusMiles);
+      return {
+        de_fishing_access_all: data.map(f => ({
+          ...f.attributes,
+          name: f.name,
+          facility: f.facility,
+          division: f.division,
+          county: f.county,
+          tidal: f.tidal,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_fishing_access_count: data.length,
+        de_fishing_access_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Fishing Access:', error);
+      return { de_fishing_access_count: 0, de_fishing_access_all: [] };
+    }
+  }
+
+  private async getDETroutStreams(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDETroutStreamsData(lat, lon, radiusMiles);
+      return {
+        de_trout_streams_all: data.map(f => ({
+          ...f.attributes,
+          waterBodyName: f.waterBodyName,
+          restriction: f.restriction,
+          description: f.description,
+          gnisName: f.gnisName,
+          gnisId: f.gnisId,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_trout_streams_count: data.length,
+        de_trout_streams_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Trout Streams:', error);
+      return { de_trout_streams_count: 0, de_trout_streams_all: [] };
     }
   }
 

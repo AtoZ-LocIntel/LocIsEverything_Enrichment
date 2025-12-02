@@ -196,6 +196,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
+  'de_fishing_access': { icon: '🎣', color: '#0284c7', title: 'DE Fishing Access' },
+  'de_trout_streams': { icon: '🐟', color: '#0ea5e9', title: 'DE Trout Streams' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -426,6 +428,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'de_lulc_2017_all' || // Skip DE LULC arrays (handled separately for map drawing)
     key === 'de_lulc_2022_all' || // Skip DE LULC arrays (handled separately for map drawing)
     key === 'de_child_care_centers_all' || // Skip DE Child Care Centers array (handled separately for map drawing)
+    key === 'de_fishing_access_all' || // Skip DE Fishing Access array (handled separately for map drawing)
+    key === 'de_trout_streams_all' || // Skip DE Trout Streams array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -3220,6 +3224,178 @@ const MapView: React.FC<MapViewProps> = ({
             }
           }
         });
+      }
+
+      // Draw DE Fishing Access as markers
+      if (enrichments.de_fishing_access_all && Array.isArray(enrichments.de_fishing_access_all)) {
+        enrichments.de_fishing_access_all.forEach((access: any) => {
+          if (access.geometry) {
+            try {
+              const lat = access.geometry.y || access.LATITUDE || access.latitude;
+              const lon = access.geometry.x || access.LONGITUDE || access.longitude;
+              if (lat && lon) {
+                const icon = createPOIIcon('🎣', '#0284c7');
+                const marker = L.marker([lat, lon], { icon });
+                const name = access.name || access.GNIS_NAME || access.gnis_name || 'Fishing Access';
+                const facility = access.facility || access.FACILITY || access.facility || '';
+                const division = access.division || access.DIVISION || access.division || '';
+                const county = access.county || access.COUNTY || access.county || '';
+                const tidal = access.tidal || access.TIDAL || access.tidal || '';
+                const distance = access.distance_miles;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🎣 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${facility ? `<div><strong>Facility Type:</strong> ${facility}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      ${division ? `<div><strong>Division:</strong> ${division}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${tidal ? `<div><strong>Tidal:</strong> ${tidal}</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                const excludeFields = ['accessId', 'name', 'GNIS_NAME', 'gnis_name', 'facility', 'FACILITY', 'division', 'DIVISION', 'county', 'COUNTY', 'tidal', 'TIDAL', 'geometry', 'distance_miles', 'OBJECTID', 'objectid'];
+                Object.entries(access).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_fishing_access']) {
+                  legendAccumulator['de_fishing_access'] = { icon: '🎣', color: '#0284c7', title: 'DE Fishing Access', count: 0 };
+                }
+                legendAccumulator['de_fishing_access'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Fishing Access:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Trout Streams as polylines
+      if (enrichments.de_trout_streams_all && Array.isArray(enrichments.de_trout_streams_all)) {
+        let streamCount = 0;
+        enrichments.de_trout_streams_all.forEach((stream: any) => {
+          if (stream.geometry && stream.geometry.paths) {
+            try {
+              const paths = stream.geometry.paths;
+              if (paths && paths.length > 0) {
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 2) {
+                    console.warn('DE Trout Stream polyline has less than 2 coordinates, skipping');
+                    return;
+                  }
+
+                  const waterBodyName = stream.waterBodyName || stream.WATERBODYNAME || stream.waterBodyName || 'Trout Stream';
+                  const restriction = stream.restriction || stream.RESTRICTION || stream.restriction || '';
+                  const description = stream.description || stream.DESCRIPTION || stream.description || '';
+                  const gnisName = stream.gnisName || stream.GNIS_NAME || stream.gnis_name || '';
+                  
+                  // Use different colors based on restriction type
+                  let color = '#0ea5e9'; // Default blue
+                  if (restriction.includes('Fly Fishing Only')) {
+                    color = '#fbbf24'; // Yellow for fly fishing only
+                  }
+                  
+                  const polyline = L.polyline(latlngs, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.8
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🐟 ${waterBodyName || 'Trout Stream'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${restriction ? `<div><strong>Restriction:</strong> ${restriction}</div>` : ''}
+                        ${stream.distance_miles !== null && stream.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${stream.distance_miles.toFixed(2)} miles</div>` : ''}
+                        ${description ? `<div><strong>Description:</strong> ${description}</div>` : ''}
+                        ${gnisName ? `<div><strong>GNIS Name:</strong> ${gnisName}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['streamId', 'waterBodyName', 'WATERBODYNAME', 'restriction', 'RESTRICTION', 'description', 'DESCRIPTION', 'gnisName', 'GNIS_NAME', 'gnis_id', 'GNIS_ID', 'isContaining', 'geometry', 'distance_miles', 'OBJECTID', 'objectid'];
+                  Object.entries(stream).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi);
+                  
+                  try {
+                    bounds.extend(polyline.getBounds());
+                    streamCount++;
+                  } catch (boundsError) {
+                    console.warn('Error extending bounds for DE Trout Stream polyline:', boundsError);
+                  }
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing DE Trout Stream:', error);
+            }
+          }
+        });
+        
+        if (streamCount > 0) {
+          if (!legendAccumulator['de_trout_streams']) {
+            legendAccumulator['de_trout_streams'] = {
+              icon: '🐟',
+              color: '#0ea5e9',
+              title: 'DE Trout Streams',
+              count: 0,
+            };
+          }
+          legendAccumulator['de_trout_streams'].count += streamCount;
+        }
       }
 
       // Draw DE Natural Areas polygons

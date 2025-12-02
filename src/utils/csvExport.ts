@@ -296,6 +296,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'de_no_build_line_ocean_all' ||
         key === 'de_park_facilities_all' || // Skip DE Park Facilities array (handled separately)
         key === 'de_child_care_centers_all' || // Skip DE Child Care Centers array (handled separately)
+        key === 'de_fishing_access_all' || // Skip DE Fishing Access array (handled separately)
+        key === 'de_trout_streams_all' || // Skip DE Trout Streams array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1033,6 +1035,95 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           type || 'Child Care Center',
           `${fullAddress}${county ? ` (${county})` : ''}${capacity !== null ? ` - Capacity: ${capacity}` : ''}${starLevel !== null ? ` - Star Level: ${starLevel}` : ''}${ageRange ? ` - Ages: ${ageRange}` : ''}${opens && closes ? ` - Hours: ${opens}-${closes}` : ''}`,
           phone || '',
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_fishing_access_all' && Array.isArray(value)) {
+      // Handle DE Fishing Access - each access point gets its own row with all attributes
+      value.forEach((access: any) => {
+        const name = access.name || access.GNIS_NAME || access.gnis_name || 'Fishing Access';
+        const facility = access.facility || access.FACILITY || access.facility || '';
+        const division = access.division || access.DIVISION || access.division || '';
+        const county = access.county || access.COUNTY || access.county || '';
+        const tidal = access.tidal || access.TIDAL || access.tidal || '';
+        
+        const accessLat = access.geometry?.y || access.LATITUDE || access.latitude || location.lat;
+        const accessLon = access.geometry?.x || access.LONGITUDE || access.longitude || location.lon;
+        
+        const allAttributes = { ...access };
+        delete allAttributes.accessId;
+        delete allAttributes.name;
+        delete allAttributes.GNIS_NAME;
+        delete allAttributes.gnis_name;
+        delete allAttributes.facility;
+        delete allAttributes.FACILITY;
+        delete allAttributes.division;
+        delete allAttributes.DIVISION;
+        delete allAttributes.county;
+        delete allAttributes.COUNTY;
+        delete allAttributes.tidal;
+        delete allAttributes.TIDAL;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_FISHING_ACCESS',
+          `${name}${facility ? ` - ${facility}` : ''}`,
+          accessLat.toString(),
+          accessLon.toString(),
+          access.distance_miles !== null && access.distance_miles !== undefined ? access.distance_miles.toFixed(2) : '',
+          facility || 'Fishing Access',
+          `${name}${division ? ` (${division})` : ''}${county ? ` - ${county}` : ''}${tidal ? ` - Tidal: ${tidal}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_trout_streams_all' && Array.isArray(value)) {
+      // Handle DE Trout Streams - each stream gets its own row with all attributes
+      value.forEach((stream: any) => {
+        const waterBodyName = stream.waterBodyName || stream.WATERBODYNAME || stream.waterBodyName || 'Trout Stream';
+        const restriction = stream.restriction || stream.RESTRICTION || stream.restriction || '';
+        const description = stream.description || stream.DESCRIPTION || stream.description || '';
+        const gnisName = stream.gnisName || stream.GNIS_NAME || stream.gnis_name || '';
+        
+        const allAttributes = { ...stream };
+        delete allAttributes.streamId;
+        delete allAttributes.waterBodyName;
+        delete allAttributes.WATERBODYNAME;
+        delete allAttributes.restriction;
+        delete allAttributes.RESTRICTION;
+        delete allAttributes.description;
+        delete allAttributes.DESCRIPTION;
+        delete allAttributes.gnisName;
+        delete allAttributes.GNIS_NAME;
+        delete allAttributes.gnisId;
+        delete allAttributes.GNIS_ID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_TROUT_STREAM',
+          `${waterBodyName}${restriction ? ` - ${restriction}` : ''}`,
+          location.lat.toString(), // Use search location for stream (it's a polyline, not a point)
+          location.lon.toString(),
+          stream.distance_miles !== null && stream.distance_miles !== undefined ? stream.distance_miles.toFixed(2) : '',
+          restriction || 'Trout Stream',
+          `${waterBodyName}${gnisName ? ` (${gnisName})` : ''}${description ? ` - ${description}` : ''}`,
+          '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'DE FirstMap'
         ]);
