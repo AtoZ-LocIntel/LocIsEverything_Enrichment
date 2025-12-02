@@ -198,6 +198,10 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
   'de_fishing_access': { icon: '🎣', color: '#0284c7', title: 'DE Fishing Access' },
   'de_trout_streams': { icon: '🐟', color: '#0ea5e9', title: 'DE Trout Streams' },
+  'de_public_schools': { icon: '🏫', color: '#3b82f6', title: 'DE Public Schools' },
+  'de_private_schools': { icon: '🏛️', color: '#6366f1', title: 'DE Private Schools' },
+  'de_votech_districts': { icon: '🎓', color: '#8b5cf6', title: 'DE VoTech Districts' },
+  'de_school_districts': { icon: '📚', color: '#7c3aed', title: 'DE School Districts' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -430,6 +434,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'de_child_care_centers_all' || // Skip DE Child Care Centers array (handled separately for map drawing)
     key === 'de_fishing_access_all' || // Skip DE Fishing Access array (handled separately for map drawing)
     key === 'de_trout_streams_all' || // Skip DE Trout Streams array (handled separately for map drawing)
+    key === 'de_public_schools_all' || // Skip DE Public Schools array (handled separately for map drawing)
+    key === 'de_private_schools_all' || // Skip DE Private Schools array (handled separately for map drawing)
+    key === 'de_votech_districts_all' || // Skip DE VoTech Districts array (handled separately for map drawing)
+    key === 'de_school_districts_all' || // Skip DE School Districts array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -3396,6 +3404,240 @@ const MapView: React.FC<MapViewProps> = ({
           }
           legendAccumulator['de_trout_streams'].count += streamCount;
         }
+      }
+
+      // Draw DE Public Schools as markers
+      if (enrichments.de_public_schools_all && Array.isArray(enrichments.de_public_schools_all)) {
+        enrichments.de_public_schools_all.forEach((school: any) => {
+          if (school.geometry) {
+            try {
+              const lat = school.geometry.y || school.LATITUDE || school.latitude;
+              const lon = school.geometry.x || school.LONGITUDE || school.longitude;
+              if (lat && lon) {
+                const icon = createPOIIcon('🏫', '#3b82f6');
+                const marker = L.marker([lat, lon], { icon });
+                const name = school.name || school.NAME || school.SCHOOL_NAME || school.school_name || 'Public School';
+                const schoolType = school.schoolType || school.TYPE || school.SCHOOL_TYPE || school.school_type || '';
+                const district = school.district || school.DISTRICT || school.DISTRICT_NAME || school.district_name || '';
+                const address = school.address || school.ADDRESS || school.STREET || school.street || '';
+                const city = school.city || school.CITY || '';
+                const state = school.state || school.STATE || 'DE';
+                const zip = school.zip || school.ZIP || school.ZIP_CODE || school.zip_code || '';
+                const phone = school.phone || school.PHONE || school.TELEPHONE || school.telephone || '';
+                const distance = school.distance_miles;
+                const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏫 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${schoolType ? `<div><strong>Type:</strong> ${schoolType}</div>` : ''}
+                      ${district ? `<div><strong>District:</strong> ${district}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      ${fullAddress ? `<div><strong>Address:</strong> ${fullAddress}</div>` : ''}
+                      ${phone ? `<div><strong>Phone:</strong> ${phone}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_public_schools']) {
+                  legendAccumulator['de_public_schools'] = { icon: '🏫', color: '#3b82f6', title: 'DE Public Schools', count: 0 };
+                }
+                legendAccumulator['de_public_schools'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Public School:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE Private Schools as markers
+      if (enrichments.de_private_schools_all && Array.isArray(enrichments.de_private_schools_all)) {
+        enrichments.de_private_schools_all.forEach((school: any) => {
+          if (school.geometry) {
+            try {
+              const lat = school.geometry.y || school.LATITUDE || school.latitude;
+              const lon = school.geometry.x || school.LONGITUDE || school.longitude;
+              if (lat && lon) {
+                const icon = createPOIIcon('🏛️', '#6366f1');
+                const marker = L.marker([lat, lon], { icon });
+                const name = school.name || school.NAME || school.SCHOOL_NAME || school.school_name || 'Private School';
+                const schoolType = school.schoolType || school.TYPE || school.SCHOOL_TYPE || school.school_type || '';
+                const district = school.district || school.DISTRICT || school.DISTRICT_NAME || school.district_name || '';
+                const address = school.address || school.ADDRESS || school.STREET || school.street || '';
+                const city = school.city || school.CITY || '';
+                const state = school.state || school.STATE || 'DE';
+                const zip = school.zip || school.ZIP || school.ZIP_CODE || school.zip_code || '';
+                const phone = school.phone || school.PHONE || school.TELEPHONE || school.telephone || '';
+                const distance = school.distance_miles;
+                const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏛️ ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${schoolType ? `<div><strong>Type:</strong> ${schoolType}</div>` : ''}
+                      ${district ? `<div><strong>District:</strong> ${district}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      ${fullAddress ? `<div><strong>Address:</strong> ${fullAddress}</div>` : ''}
+                      ${phone ? `<div><strong>Phone:</strong> ${phone}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                if (!legendAccumulator['de_private_schools']) {
+                  legendAccumulator['de_private_schools'] = { icon: '🏛️', color: '#6366f1', title: 'DE Private Schools', count: 0 };
+                }
+                legendAccumulator['de_private_schools'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE Private School:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE VoTech Districts as polygons
+      if (enrichments.de_votech_districts_all && Array.isArray(enrichments.de_votech_districts_all)) {
+        enrichments.de_votech_districts_all.forEach((district: any) => {
+          if (district.geometry && district.geometry.rings) {
+            try {
+              const rings = district.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                if (latlngs.length < 3) {
+                  console.warn('DE VoTech District polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+
+                const name = district.name || district.NAME || district.DISTRICT_NAME || district.district_name || 'VoTech District';
+                const isContaining = district.isContaining || false;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#5b21b6' : '#8b5cf6',
+                  weight: 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#7c3aed' : '#a78bfa',
+                  fillOpacity: 0.3
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🎓 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> VoTech School District</div>
+                      ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                
+                try {
+                  bounds.extend(polygon.getBounds());
+                } catch (boundsError) {
+                  console.warn('Error extending bounds for DE VoTech District:', boundsError);
+                }
+                
+                if (!legendAccumulator['de_votech_districts']) {
+                  legendAccumulator['de_votech_districts'] = {
+                    icon: '🎓',
+                    color: '#8b5cf6',
+                    title: 'DE VoTech Districts',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['de_votech_districts'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE VoTech District:', error);
+            }
+          }
+        });
+      }
+
+      // Draw DE School Districts as polygons
+      if (enrichments.de_school_districts_all && Array.isArray(enrichments.de_school_districts_all)) {
+        enrichments.de_school_districts_all.forEach((district: any) => {
+          if (district.geometry && district.geometry.rings) {
+            try {
+              const rings = district.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                if (latlngs.length < 3) {
+                  console.warn('DE School District polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+
+                const name = district.name || district.NAME || district.DISTRICT_NAME || district.district_name || 'School District';
+                const isContaining = district.isContaining || false;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: isContaining ? '#5b21b6' : '#7c3aed',
+                  weight: 2,
+                  opacity: 0.8,
+                  fillColor: isContaining ? '#6d28d9' : '#8b5cf6',
+                  fillOpacity: 0.3
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      📚 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> Public School District</div>
+                      ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                
+                try {
+                  bounds.extend(polygon.getBounds());
+                } catch (boundsError) {
+                  console.warn('Error extending bounds for DE School District:', boundsError);
+                }
+                
+                if (!legendAccumulator['de_school_districts']) {
+                  legendAccumulator['de_school_districts'] = {
+                    icon: '📚',
+                    color: '#7c3aed',
+                    title: 'DE School Districts',
+                    count: 0,
+                  };
+                }
+                legendAccumulator['de_school_districts'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing DE School District:', error);
+            }
+          }
+        });
       }
 
       // Draw DE Natural Areas polygons

@@ -60,6 +60,7 @@ import { getDENoBuildLineOceanData } from '../adapters/deNoBuildLineOcean';
 import { getDEParkFacilitiesData } from '../adapters/deParkFacilities';
 import { getDEChildCareCentersData } from '../adapters/deChildCareCenters';
 import { getDEFishingAccessData, getDETroutStreamsData } from '../adapters/deFishingAccess';
+import { getDEPublicSchoolsData, getDEPrivateSchoolsData, getDEVoTechDistrictsData, getDESchoolDistrictsData } from '../adapters/deSchools';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1598,6 +1599,14 @@ export class EnrichmentService {
         return await this.getDEFishingAccess(lat, lon, radius);
       case 'de_trout_streams':
         return await this.getDETroutStreams(lat, lon, radius);
+      case 'de_public_schools':
+        return await this.getDEPublicSchools(lat, lon, radius);
+      case 'de_private_schools':
+        return await this.getDEPrivateSchools(lat, lon, radius);
+      case 'de_votech_districts':
+        return await this.getDEVoTechDistricts(lat, lon);
+      case 'de_school_districts':
+        return await this.getDESchoolDistricts(lat, lon);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -6822,6 +6831,116 @@ out center;`;
     } catch (error) {
       console.error('❌ Error fetching DE Trout Streams:', error);
       return { de_trout_streams_count: 0, de_trout_streams_all: [] };
+    }
+  }
+
+  private async getDEPublicSchools(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDEPublicSchoolsData(lat, lon, radiusMiles);
+      return {
+        de_public_schools_all: data.map(f => ({
+          ...f.attributes,
+          name: f.name,
+          schoolType: f.schoolType,
+          district: f.district,
+          address: f.address,
+          city: f.city,
+          state: f.state,
+          zip: f.zip,
+          phone: f.phone,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_public_schools_count: data.length,
+        de_public_schools_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Public Schools:', error);
+      return { de_public_schools_count: 0, de_public_schools_all: [] };
+    }
+  }
+
+  private async getDEPrivateSchools(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const data = await getDEPrivateSchoolsData(lat, lon, radiusMiles);
+      return {
+        de_private_schools_all: data.map(f => ({
+          ...f.attributes,
+          name: f.name,
+          schoolType: f.schoolType,
+          district: f.district,
+          address: f.address,
+          city: f.city,
+          state: f.state,
+          zip: f.zip,
+          phone: f.phone,
+          distance_miles: f.distance_miles,
+          geometry: f.geometry
+        })),
+        de_private_schools_count: data.length,
+        de_private_schools_search_radius_miles: radiusMiles
+      };
+    } catch (error) {
+      console.error('❌ Error fetching DE Private Schools:', error);
+      return { de_private_schools_count: 0, de_private_schools_all: [] };
+    }
+  }
+
+  private async getDEVoTechDistricts(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      const data = await getDEVoTechDistrictsData(lat, lon);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      
+      if (data.containing) {
+        allFeatures.push({
+          ...data.containing.attributes,
+          name: data.containing.name,
+          districtType: data.containing.districtType,
+          isContaining: true,
+          geometry: data.containing.geometry
+        });
+        result.de_votech_districts_containing = true;
+      } else {
+        result.de_votech_districts_containing = false;
+      }
+      
+      result.de_votech_districts_all = allFeatures;
+      result.de_votech_districts_count = allFeatures.length;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE VoTech Districts:', error);
+      return { de_votech_districts_count: 0, de_votech_districts_all: [], de_votech_districts_containing: false };
+    }
+  }
+
+  private async getDESchoolDistricts(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      const data = await getDESchoolDistrictsData(lat, lon);
+      const result: Record<string, any> = {};
+      const allFeatures: any[] = [];
+      
+      if (data.containing) {
+        allFeatures.push({
+          ...data.containing.attributes,
+          name: data.containing.name,
+          districtType: data.containing.districtType,
+          isContaining: true,
+          geometry: data.containing.geometry
+        });
+        result.de_school_districts_containing = true;
+      } else {
+        result.de_school_districts_containing = false;
+      }
+      
+      result.de_school_districts_all = allFeatures;
+      result.de_school_districts_count = allFeatures.length;
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DE School Districts:', error);
+      return { de_school_districts_count: 0, de_school_districts_all: [], de_school_districts_containing: false };
     }
   }
 

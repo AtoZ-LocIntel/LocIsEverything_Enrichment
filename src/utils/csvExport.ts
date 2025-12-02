@@ -298,6 +298,10 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'de_child_care_centers_all' || // Skip DE Child Care Centers array (handled separately)
         key === 'de_fishing_access_all' || // Skip DE Fishing Access array (handled separately)
         key === 'de_trout_streams_all' || // Skip DE Trout Streams array (handled separately)
+        key === 'de_public_schools_all' || // Skip DE Public Schools array (handled separately)
+        key === 'de_private_schools_all' || // Skip DE Private Schools array (handled separately)
+        key === 'de_votech_districts_all' || // Skip DE VoTech Districts array (handled separately)
+        key === 'de_school_districts_all' || // Skip DE School Districts array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1123,6 +1127,196 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           stream.distance_miles !== null && stream.distance_miles !== undefined ? stream.distance_miles.toFixed(2) : '',
           restriction || 'Trout Stream',
           `${waterBodyName}${gnisName ? ` (${gnisName})` : ''}${description ? ` - ${description}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_public_schools_all' && Array.isArray(value)) {
+      // Handle DE Public Schools - each school gets its own row with all attributes
+      value.forEach((school: any) => {
+        const name = school.name || school.NAME || school.SCHOOL_NAME || school.school_name || 'Public School';
+        const schoolType = school.schoolType || school.TYPE || school.SCHOOL_TYPE || school.school_type || '';
+        const district = school.district || school.DISTRICT || school.DISTRICT_NAME || school.district_name || '';
+        const address = school.address || school.ADDRESS || school.STREET || school.street || '';
+        const city = school.city || school.CITY || '';
+        const state = school.state || school.STATE || 'DE';
+        const zip = school.zip || school.ZIP || school.ZIP_CODE || school.zip_code || '';
+        const phone = school.phone || school.PHONE || school.TELEPHONE || school.telephone || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        const schoolLat = school.geometry?.y || school.LATITUDE || school.latitude || location.lat;
+        const schoolLon = school.geometry?.x || school.LONGITUDE || school.longitude || location.lon;
+        
+        const allAttributes = { ...school };
+        delete allAttributes.schoolId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.SCHOOL_NAME;
+        delete allAttributes.school_name;
+        delete allAttributes.schoolType;
+        delete allAttributes.TYPE;
+        delete allAttributes.SCHOOL_TYPE;
+        delete allAttributes.district;
+        delete allAttributes.DISTRICT;
+        delete allAttributes.DISTRICT_NAME;
+        delete allAttributes.address;
+        delete allAttributes.ADDRESS;
+        delete allAttributes.city;
+        delete allAttributes.CITY;
+        delete allAttributes.state;
+        delete allAttributes.STATE;
+        delete allAttributes.zip;
+        delete allAttributes.ZIP;
+        delete allAttributes.phone;
+        delete allAttributes.PHONE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_PUBLIC_SCHOOL',
+          `${name}${schoolType ? ` - ${schoolType}` : ''}`,
+          schoolLat.toString(),
+          schoolLon.toString(),
+          school.distance_miles !== null && school.distance_miles !== undefined ? school.distance_miles.toFixed(2) : '',
+          schoolType || 'Public School',
+          `${fullAddress}${district ? ` - District: ${district}` : ''}`,
+          phone || '',
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_private_schools_all' && Array.isArray(value)) {
+      // Handle DE Private Schools - each school gets its own row with all attributes
+      value.forEach((school: any) => {
+        const name = school.name || school.NAME || school.SCHOOL_NAME || school.school_name || 'Private School';
+        const schoolType = school.schoolType || school.TYPE || school.SCHOOL_TYPE || school.school_type || '';
+        const district = school.district || school.DISTRICT || school.DISTRICT_NAME || school.district_name || '';
+        const address = school.address || school.ADDRESS || school.STREET || school.street || '';
+        const city = school.city || school.CITY || '';
+        const state = school.state || school.STATE || 'DE';
+        const zip = school.zip || school.ZIP || school.ZIP_CODE || school.zip_code || '';
+        const phone = school.phone || school.PHONE || school.TELEPHONE || school.telephone || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+        
+        const schoolLat = school.geometry?.y || school.LATITUDE || school.latitude || location.lat;
+        const schoolLon = school.geometry?.x || school.LONGITUDE || school.longitude || location.lon;
+        
+        const allAttributes = { ...school };
+        delete allAttributes.schoolId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.SCHOOL_NAME;
+        delete allAttributes.school_name;
+        delete allAttributes.schoolType;
+        delete allAttributes.TYPE;
+        delete allAttributes.SCHOOL_TYPE;
+        delete allAttributes.district;
+        delete allAttributes.DISTRICT;
+        delete allAttributes.DISTRICT_NAME;
+        delete allAttributes.address;
+        delete allAttributes.ADDRESS;
+        delete allAttributes.city;
+        delete allAttributes.CITY;
+        delete allAttributes.state;
+        delete allAttributes.STATE;
+        delete allAttributes.zip;
+        delete allAttributes.ZIP;
+        delete allAttributes.phone;
+        delete allAttributes.PHONE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_PRIVATE_SCHOOL',
+          `${name}${schoolType ? ` - ${schoolType}` : ''}`,
+          schoolLat.toString(),
+          schoolLon.toString(),
+          school.distance_miles !== null && school.distance_miles !== undefined ? school.distance_miles.toFixed(2) : '',
+          schoolType || 'Private School',
+          `${fullAddress}${district ? ` - District: ${district}` : ''}`,
+          phone || '',
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_votech_districts_all' && Array.isArray(value)) {
+      // Handle DE VoTech Districts - each district gets its own row
+      value.forEach((district: any) => {
+        const name = district.name || district.NAME || district.DISTRICT_NAME || district.district_name || 'VoTech District';
+        const featureType = district.isContaining ? 'Containing VoTech District' : 'VoTech District';
+        
+        const allAttributes = { ...district };
+        delete allAttributes.districtId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.DISTRICT_NAME;
+        delete allAttributes.district_name;
+        delete allAttributes.districtType;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_VOTECH_DISTRICT',
+          `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), // Use search location for district (it's a polygon, not a point)
+          location.lon.toString(),
+          district.isContaining ? '0.00' : '',
+          'VoTech School District',
+          name || 'VoTech District',
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'de_school_districts_all' && Array.isArray(value)) {
+      // Handle DE School Districts - each district gets its own row
+      value.forEach((district: any) => {
+        const name = district.name || district.NAME || district.DISTRICT_NAME || district.district_name || 'School District';
+        const featureType = district.isContaining ? 'Containing School District' : 'School District';
+        
+        const allAttributes = { ...district };
+        delete allAttributes.districtId;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.DISTRICT_NAME;
+        delete allAttributes.district_name;
+        delete allAttributes.districtType;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DE FirstMap',
+          (location.confidence || 'N/A').toString(),
+          'DE_SCHOOL_DISTRICT',
+          `${featureType}${name ? ` - ${name}` : ''}`,
+          location.lat.toString(), // Use search location for district (it's a polygon, not a point)
+          location.lon.toString(),
+          district.isContaining ? '0.00' : '',
+          'Public School District',
+          name || 'School District',
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'DE FirstMap'

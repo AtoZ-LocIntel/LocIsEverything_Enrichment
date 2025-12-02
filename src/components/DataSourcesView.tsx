@@ -995,6 +995,34 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Castle County, Delaware",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "DE Public Schools",
+          description: "Delaware Public Schools - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE Private Schools",
+          description: "Delaware Private Schools - proximity queries up to 25 miles",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE VoTech School Districts",
+          description: "Delaware VoTech School Districts - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "DE School Districts",
+          description: "Delaware Public School Districts - point-in-polygon queries",
+          coverage: "Delaware",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

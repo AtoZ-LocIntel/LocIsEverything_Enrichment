@@ -406,7 +406,11 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'de_lulc_2022', label: 'DE Land Use Land Cover 2022', description: 'DE FirstMap - 2022 Land Use Land Cover for Delaware (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
   { id: 'de_child_care_centers', label: 'DE Child Care Centers', description: 'DE FirstMap - Delaware Child Care Centers (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
   { id: 'de_fishing_access', label: 'DE Fishing Access', description: 'DE FirstMap - Delaware Fishing Access locations (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
-  { id: 'de_trout_streams', label: 'DE Trout Streams', description: 'DE FirstMap - Delaware Trout Streams (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' }
+  { id: 'de_trout_streams', label: 'DE Trout Streams', description: 'DE FirstMap - Delaware Trout Streams (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_public_schools', label: 'DE Public Schools', description: 'DE FirstMap - Delaware Public Schools (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_private_schools', label: 'DE Private Schools', description: 'DE FirstMap - Delaware Private Schools (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'de_votech_districts', label: 'DE VoTech School Districts', description: 'DE FirstMap - Delaware VoTech School Districts (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' },
+  { id: 'de_school_districts', label: 'DE School Districts', description: 'DE FirstMap - Delaware School Districts (point-in-polygon)', isPOI: false, defaultRadius: 0, category: 'de', section: 'de' }
 ];
 
 class POIConfigManager {
