@@ -49,27 +49,6 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 /**
- * Check if a point is inside a polygon using ray casting algorithm
- */
-function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean {
-  let inside = false;
-  
-  rings.forEach(ring => {
-    if (ring.length < 3) return;
-    
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      const xi = ring[i][0], yi = ring[i][1];
-      const xj = ring[j][0], yj = ring[j][1];
-      
-      const intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
-    }
-  });
-  
-  return inside;
-}
-
-/**
  * Query DE Public Schools FeatureServer for proximity search
  */
 export async function getDEPublicSchoolsData(
