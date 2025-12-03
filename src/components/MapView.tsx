@@ -210,6 +210,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'de_safety_zones': { icon: '⚠️', color: '#ef4444', title: 'DE Wildlife Areas Safety Zones' },
   'de_wildlife_management_zones': { icon: '🦌', color: '#059669', title: 'DE Wildlife Management Zones' },
   'de_rail_lines': { icon: '🚂', color: '#1f2937', title: 'DE Rail Lines' },
+  'nj_parcels': { icon: '🏠', color: '#059669', title: 'NJ Tax Parcels' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -454,6 +455,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'de_safety_zones_all' || // Skip DE Safety Zones array (handled separately for map drawing)
     key === 'de_wildlife_management_zones_all' || // Skip DE Wildlife Management Zones array (handled separately for map drawing)
     key === 'de_rail_lines_all' || // Skip DE Rail Lines array (handled separately for map drawing)
+    key === 'nj_parcels_all' || // Skip NJ Parcels array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -6318,6 +6320,137 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['ct_parcels'].count += parcelCount;
+        }
+      }
+
+      // Draw NJ Parcels as polygons on the map
+      if (enrichments.nj_parcels_all && Array.isArray(enrichments.nj_parcels_all)) {
+        let parcelCount = 0;
+        enrichments.nj_parcels_all.forEach((parcel: any) => {
+          if (parcel.geometry && parcel.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = parcel.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  // Since we requested outSR=4326, coordinates should already be in WGS84
+                  // Convert [lon, lat] to [lat, lon] for Leaflet
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                // Validate coordinates
+                if (latlngs.length < 3) {
+                  console.warn('NJ Parcel polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+
+                const isContaining = parcel.isContaining;
+                const color = isContaining ? '#059669' : '#10b981'; // Darker green for containing, lighter for nearby
+                const weight = isContaining ? 3 : 2;
+
+                const parcelId = parcel.parcelId || parcel.PAMS_PIN || parcel.pams_pin || parcel.GIS_PIN || parcel.gis_pin || parcel.PIN_NODUP || parcel.pin_nodup || 'Unknown';
+                const pin = parcel.pin || parcel.PAMS_PIN || parcel.pams_pin || parcel.GIS_PIN || parcel.gis_pin || parcel.PIN_NODUP || parcel.pin_nodup || '';
+                const municipality = parcel.municipality || parcel.MUN_NAME || parcel.mun_name || '';
+                const county = parcel.county || parcel.COUNTY || parcel.county || '';
+                const block = parcel.block || parcel.PCLBLOCK || parcel.pclblock || '';
+                const lot = parcel.lot || parcel.PCLLOT || parcel.pcllot || '';
+                const ownerName = parcel.ownerName || parcel.OWNER_NAME || parcel.owner_name || '';
+                const streetAddress = parcel.streetAddress || parcel.ST_ADDRESS || parcel.st_address || '';
+                const cityState = parcel.cityState || parcel.CITY_STATE || parcel.city_state || '';
+                const zipCode = parcel.zipCode || parcel.ZIP_CODE || parcel.zip_code || parcel.ZIP5 || parcel.zip5 || '';
+                const landValue = parcel.landValue || parcel.LAND_VAL || parcel.land_val || null;
+                const improvementValue = parcel.improvementValue || parcel.IMPRVT_VAL || parcel.imprvt_val || null;
+                const netValue = parcel.netValue || parcel.NET_VALUE || parcel.net_value || null;
+                const acres = parcel.acres || parcel.CALC_ACRE || parcel.calc_acre || null;
+
+                // Create polygon
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: 0.7,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏠 NJ Parcel ${parcelId}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${isContaining ? '<div><strong>Status:</strong> Contains Location</div>' : ''}
+                      ${parcel.distance_miles !== null && parcel.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${parcel.distance_miles.toFixed(2)} miles</div>` : ''}
+                      ${pin ? `<div><strong>PIN:</strong> ${pin}</div>` : ''}
+                      ${municipality ? `<div><strong>Municipality:</strong> ${municipality}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${block ? `<div><strong>Block:</strong> ${block}</div>` : ''}
+                      ${lot ? `<div><strong>Lot:</strong> ${lot}</div>` : ''}
+                      ${ownerName ? `<div><strong>Owner:</strong> ${ownerName}</div>` : ''}
+                      ${streetAddress ? `<div><strong>Address:</strong> ${streetAddress}</div>` : ''}
+                      ${cityState ? `<div><strong>City/State:</strong> ${cityState}</div>` : ''}
+                      ${zipCode ? `<div><strong>ZIP:</strong> ${zipCode}</div>` : ''}
+                      ${landValue !== null ? `<div><strong>Land Value:</strong> $${landValue.toLocaleString()}</div>` : ''}
+                      ${improvementValue !== null ? `<div><strong>Improvement Value:</strong> $${improvementValue.toLocaleString()}</div>` : ''}
+                      ${netValue !== null ? `<div><strong>Net Value:</strong> $${netValue.toLocaleString()}</div>` : ''}
+                      ${acres !== null ? `<div><strong>Acres:</strong> ${acres.toFixed(2)}</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all parcel attributes (excluding internal fields)
+                const excludeFields = ['parcelId', 'pin', 'municipality', 'county', 'block', 'lot', 'ownerName', 'streetAddress', 'cityState', 'zipCode', 'landValue', 'improvementValue', 'netValue', 'acres', 'isContaining', 'geometry', 'distance_miles', 'PAMS_PIN', 'pams_pin', 'GIS_PIN', 'gis_pin', 'PIN_NODUP', 'pin_nodup', 'MUN_NAME', 'mun_name', 'COUNTY', 'county', 'PCLBLOCK', 'pclblock', 'PCLLOT', 'pcllot', 'OWNER_NAME', 'owner_name', 'ST_ADDRESS', 'st_address', 'CITY_STATE', 'city_state', 'ZIP_CODE', 'zip_code', 'ZIP5', 'zip5', 'LAND_VAL', 'land_val', 'IMPRVT_VAL', 'imprvt_val', 'NET_VALUE', 'net_value', 'CALC_ACRE', 'calc_acre'];
+                Object.entries(parcel).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary); // Add to primary layer group
+                
+                try {
+                  bounds.extend(polygon.getBounds());
+                  parcelCount++;
+                } catch (boundsError) {
+                  console.warn('Error extending bounds for NJ Parcel polygon:', boundsError);
+                }
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Parcel polygon:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (parcelCount > 0) {
+          if (!legendAccumulator['nj_parcels']) {
+            legendAccumulator['nj_parcels'] = {
+              icon: '🏠',
+              color: '#059669',
+              title: 'NJ Tax Parcels',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_parcels'].count += parcelCount;
         }
       }
 

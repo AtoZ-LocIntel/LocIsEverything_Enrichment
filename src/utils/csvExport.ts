@@ -310,6 +310,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'de_safety_zones_all' || // Skip DE Safety Zones array (handled separately)
         key === 'de_wildlife_management_zones_all' || // Skip DE Wildlife Management Zones array (handled separately)
         key === 'de_rail_lines_all' || // Skip DE Rail Lines array (handled separately)
+        key === 'nj_parcels_all' || // Skip NJ Parcels array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1634,6 +1635,63 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'DE FirstMap'
+        ]);
+      });
+    } else if (key === 'nj_parcels_all' && Array.isArray(value)) {
+      // Handle NJ Parcels - each parcel gets its own row with all attributes
+      value.forEach((parcel: any) => {
+        const pin = parcel.pin || parcel.PAMS_PIN || parcel.pams_pin || parcel.GIS_PIN || parcel.gis_pin || parcel.PIN_NODUP || parcel.pin_nodup || '';
+        const municipality = parcel.municipality || parcel.MUN_NAME || parcel.mun_name || '';
+        const county = parcel.county || parcel.COUNTY || parcel.county || '';
+        const block = parcel.block || parcel.PCLBLOCK || parcel.pclblock || '';
+        const lot = parcel.lot || parcel.PCLLOT || parcel.pcllot || '';
+        const ownerName = parcel.ownerName || parcel.OWNER_NAME || parcel.owner_name || '';
+        const streetAddress = parcel.streetAddress || parcel.ST_ADDRESS || parcel.st_address || '';
+        const cityState = parcel.cityState || parcel.CITY_STATE || parcel.city_state || '';
+        const zipCode = parcel.zipCode || parcel.ZIP_CODE || parcel.zip_code || parcel.ZIP5 || parcel.zip5 || '';
+        const landValue = parcel.landValue || parcel.LAND_VAL || parcel.land_val || null;
+        const improvementValue = parcel.improvementValue || parcel.IMPRVT_VAL || parcel.imprvt_val || null;
+        const netValue = parcel.netValue || parcel.NET_VALUE || parcel.net_value || null;
+        const acres = parcel.acres || parcel.CALC_ACRE || parcel.calc_acre || null;
+        const parcelType = parcel.isContaining ? 'Containing Parcel' : 'Nearby Parcel';
+        const fullAddress = [streetAddress, cityState, zipCode].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...parcel };
+        delete allAttributes.parcelId;
+        delete allAttributes.pin;
+        delete allAttributes.municipality;
+        delete allAttributes.county;
+        delete allAttributes.block;
+        delete allAttributes.lot;
+        delete allAttributes.ownerName;
+        delete allAttributes.streetAddress;
+        delete allAttributes.cityState;
+        delete allAttributes.zipCode;
+        delete allAttributes.landValue;
+        delete allAttributes.improvementValue;
+        delete allAttributes.netValue;
+        delete allAttributes.acres;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJGIN',
+          (location.confidence || 'N/A').toString(),
+          'NJ_PARCEL',
+          `${parcelType}${pin ? ` - ${pin}` : ''}${block && lot ? ` (Block ${block}, Lot ${lot})` : ''}`,
+          location.lat.toString(), // Use search location for parcel (it's a polygon, not a point)
+          location.lon.toString(),
+          parcel.distance_miles !== null && parcel.distance_miles !== undefined ? parcel.distance_miles.toFixed(2) : (parcel.isContaining ? '0.00' : ''),
+          `${municipality || ''}${county ? `, ${county}` : ''}`,
+          `${fullAddress || ''}${ownerName ? ` - Owner: ${ownerName}` : ''}${landValue !== null ? ` - Land Value: $${landValue.toLocaleString()}` : ''}${improvementValue !== null ? ` - Improvement Value: $${improvementValue.toLocaleString()}` : ''}${netValue !== null ? ` - Net Value: $${netValue.toLocaleString()}` : ''}${acres !== null ? ` - Acres: ${acres.toFixed(2)}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJGIN'
         ]);
       });
     } else if (key === 'de_state_forest_all' && Array.isArray(value)) {

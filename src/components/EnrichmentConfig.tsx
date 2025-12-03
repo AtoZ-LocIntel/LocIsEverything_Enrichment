@@ -86,17 +86,19 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [viewingMASubCategories, setViewingMASubCategories] = useState(false);
   const [viewingCTSubCategories, setViewingCTSubCategories] = useState(false);
   const [viewingDESubCategories, setViewingDESubCategories] = useState(false);
+  const [viewingNJSubCategories, setViewingNJSubCategories] = useState(false);
   const [cameFromNHSubCategories, setCameFromNHSubCategories] = useState(false);
   const [cameFromMASubCategories, setCameFromMASubCategories] = useState(false);
   const [cameFromCTSubCategories, setCameFromCTSubCategories] = useState(false);
   const [cameFromDESubCategories, setCameFromDESubCategories] = useState(false);
+  const [cameFromNJSubCategories, setCameFromNJSubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, onModalStateChange]); // Track if viewing state sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
@@ -343,6 +345,40 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             description: section.description,
             enrichments: [], // DE parent category has no direct enrichments
             subCategories: deSubCategories
+          };
+        }
+        
+        // Special handling for NJ - add sub-categories based on data sources
+        if (section.id === 'nj') {
+          // Get NJGIN enrichments (filter POIs where section is 'nj')
+          const njGINPOIs = poiTypes.filter(poi => poi.section === 'nj');
+          const njGINEnrichments = njGINPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Define NJ sub-categories (organized by data source)
+          const njSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'nj_gin',
+              title: 'NJGIN',
+              icon: <img src="/assets/NJGIN.webp" alt="NJGIN" className="w-full h-full object-cover rounded-full" />,
+              description: 'New Jersey Geographic Information Network data layers',
+              enrichments: njGINEnrichments
+            }
+          ];
+          
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [], // NJ parent category has no direct enrichments
+            subCategories: njSubCategories
           };
         }
         
@@ -603,6 +639,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             subCategoryIds: category.subCategories.map(sc => sc.id)
                           });
                           setViewingDESubCategories(true);
+                        } else if (category.id === 'nj' && category.subCategories && category.subCategories.length > 0) {
+                          console.log('✅ Setting viewingNJSubCategories to true', {
+                            categoryId: category.id,
+                            hasSubCategories: !!category.subCategories,
+                            subCategoriesLength: category.subCategories.length,
+                            subCategoryIds: category.subCategories.map(sc => sc.id)
+                          });
+                          setViewingNJSubCategories(true);
                         } else if (category.id === 'de') {
                           console.log('⚠️ DE clicked but no sub-categories found', {
                             categoryId: category.id,
@@ -682,6 +726,102 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       </span>
                     );
                   })
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If viewing NJ sub-categories, show full page with round icons
+  if (viewingNJSubCategories) {
+    const njCategory = enrichmentCategories.find(c => c.id === 'nj');
+    const njSubCategories = njCategory?.subCategories || [];
+    
+    return (
+      <div className="enrichment-config">
+        <div className="card">
+          <div className="card-header">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setViewingNJSubCategories(false)}
+                  className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
+                  title="Back to categories"
+                >
+                  ←
+                </button>
+                <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>New Jersey Open Data</h3>
+                  <p className="text-xs lg:text-sm text-gray-300">Select a category to view available layers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+            
+          <div className="card-body">
+            {/* NJ Sub-Category Round Icons Grid - Same layout as home page */}
+            <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
+                {njSubCategories.length > 0 ? (
+                  njSubCategories.map((subCategory) => {
+                    const subCategoryEnrichments = subCategory.enrichments;
+                    const selectedCount = subCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+                    
+                    // Determine ring brightness based on selection count
+                    const getRingOpacity = () => {
+                      if (selectedCount === 0) return 0;
+                      if (selectedCount <= 2) return 0.3;
+                      if (selectedCount <= 4) return 0.6;
+                      return 0.9;
+                    };
+
+                    return (
+                      <button
+                        key={subCategory.id}
+                        onClick={() => {
+                          // Use onViewCategory to show sub-category layers (same pattern as NH, MA, CT, DE)
+                          if (onViewCategory) {
+                            setViewingNJSubCategories(false);
+                            onViewCategory(subCategory);
+                          } else {
+                            // Fallback to modal
+                            setCameFromNJSubCategories(true);
+                            setActiveModal(subCategory.id);
+                            setViewingNJSubCategories(false);
+                          }
+                        }}
+                        className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
+                        }}
+                      >
+                        {/* Sub-Category Icon */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          {subCategory.icon}
+                        </div>
+                        
+                        {/* Selection Counter Badge */}
+                        {selectedCount > 0 && (
+                          <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                            {selectedCount}
+                          </div>
+                        )}
+                        
+                        {/* Category Title Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold py-1 px-2 text-center">
+                          {subCategory.title}
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-2 text-center text-gray-500 py-8">
+                    No sub-categories available
+                  </div>
                 )}
               </div>
             </div>
@@ -1084,6 +1224,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const isMASubCategory = activeModal?.startsWith('ma_');
               const isCTSubCategory = activeModal?.startsWith('ct_');
               const isDESubCategory = activeModal?.startsWith('de_');
+              const isNJSubCategory = activeModal?.startsWith('nj_');
               let category: EnrichmentCategory | undefined;
               
               if (isNHSubCategory) {
@@ -1131,6 +1272,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   isDESubCategory,
                   deCategoryFound: !!deCategory,
                   subCategories: deCategory?.subCategories?.map(sc => sc.id),
+                  foundCategory: category?.id,
+                  enrichmentsCount: category?.enrichments?.length
+                });
+              } else if (isNJSubCategory) {
+                // Find the NJ category and get the sub-category
+                const njCategory = enrichmentCategories.find(c => c.id === 'nj');
+                category = njCategory?.subCategories?.find(sc => sc.id === activeModal);
+                console.log('🔍 NJ Sub-Category Modal:', {
+                  activeModal,
+                  isNJSubCategory,
+                  njCategoryFound: !!njCategory,
+                  subCategories: njCategory?.subCategories?.map(sc => sc.id),
                   foundCategory: category?.id,
                   enrichmentsCount: category?.enrichments?.length
                 });
@@ -1227,6 +1380,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromDESubCategories(false);
                               setActiveModal(null);
                               setViewingDESubCategories(true);
+                            } else if (cameFromNJSubCategories) {
+                              // Go back to NJ sub-categories page
+                              setCameFromNJSubCategories(false);
+                              setActiveModal(null);
+                              setViewingNJSubCategories(true);
                             } else {
                               // Go back to main configuration
                               setActiveModal(null);
@@ -1465,7 +1623,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setViewingCTSubCategories(true);
                       } else if (category.id === 'de' && category.subCategories && category.subCategories.length > 0) {
                         setViewingDESubCategories(true);
-                      } else if ((category.id === 'ri' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa') && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'nj' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingNJSubCategories(true);
+                      } else if ((category.id === 'ri' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'pa') && category.subCategories && category.subCategories.length > 0) {
                         // For other states with sub-categories, use onViewCategory (they'll be handled like regular categories for now)
                         // When sub-categories are added, we can add specific state handlers similar to NH/MA
                         if (onViewCategory) {

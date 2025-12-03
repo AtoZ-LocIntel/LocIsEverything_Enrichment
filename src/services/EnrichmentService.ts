@@ -63,6 +63,7 @@ import { getDEFishingAccessData, getDETroutStreamsData } from '../adapters/deFis
 import { getDEPublicSchoolsData, getDEPrivateSchoolsData, getDEVoTechDistrictsData, getDESchoolDistrictsData } from '../adapters/deSchools';
 import { getDEStandsBlindsFieldsData, getDEBoatRampsData, getDEFacilitiesData, getDEParkingData, getDERestroomsData, getDESafetyZonesData, getDEWildlifeManagementZonesData } from '../adapters/deWildlife';
 import { getDERailLinesData } from '../adapters/deRailLines';
+import { getNJParcelsData } from '../adapters/njParcels';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1620,11 +1621,13 @@ export class EnrichmentService {
       case 'de_restrooms':
         return await this.getDERestrooms(lat, lon, radius);
       case 'de_safety_zones':
-        return await this.getDESafetyZones(lat, lon, radius);
+        return await this.getDESafetyZones(lat, lon);
       case 'de_wildlife_management_zones':
-        return await this.getDEWildlifeManagementZones(lat, lon, radius);
+        return await this.getDEWildlifeManagementZones(lat, lon);
       case 'de_rail_lines':
         return await this.getDERailLines(lat, lon, radius);
+      case 'nj_parcels':
+        return await this.getNJParcels(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -7067,7 +7070,7 @@ out center;`;
     }
   }
 
-  private async getDESafetyZones(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+  private async getDESafetyZones(lat: number, lon: number): Promise<Record<string, any>> {
     try {
       const data = await getDESafetyZonesData(lat, lon);
       const result: Record<string, any> = {};
@@ -7095,7 +7098,7 @@ out center;`;
     }
   }
 
-  private async getDEWildlifeManagementZones(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+  private async getDEWildlifeManagementZones(lat: number, lon: number): Promise<Record<string, any>> {
     try {
       const data = await getDEWildlifeManagementZonesData(lat, lon);
       const result: Record<string, any> = {};
@@ -7642,6 +7645,110 @@ out center;`;
         ct_parcels_nearby_count: 0,
         ct_parcels_all: [],
         ct_parcels_error: 'Error fetching CT Parcels data'
+      };
+    }
+  }
+
+  private async getNJParcels(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏠 Fetching NJ Parcels data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 0.25; // Default to 0.25 miles if not provided
+      
+      // Get parcel data (both containing and nearby)
+      const parcelData = await getNJParcelsData(lat, lon, radiusMiles);
+      
+      if (parcelData) {
+        // Collect all parcels (containing + nearby) into a single array for CSV export
+        const allParcels: any[] = [];
+        
+        // Add containing parcel (point-in-polygon) if found
+        if (parcelData.containing && parcelData.containing.parcelId) {
+          allParcels.push({
+            ...parcelData.containing.attributes,
+            parcelId: parcelData.containing.parcelId,
+            pin: parcelData.containing.pin,
+            municipality: parcelData.containing.municipality,
+            county: parcelData.containing.county,
+            block: parcelData.containing.block,
+            lot: parcelData.containing.lot,
+            ownerName: parcelData.containing.ownerName,
+            streetAddress: parcelData.containing.streetAddress,
+            cityState: parcelData.containing.cityState,
+            zipCode: parcelData.containing.zipCode,
+            landValue: parcelData.containing.landValue,
+            improvementValue: parcelData.containing.improvementValue,
+            netValue: parcelData.containing.netValue,
+            acres: parcelData.containing.acres,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: parcelData.containing.geometry // Include geometry for map drawing
+          });
+          result.nj_parcel_containing = parcelData.containing.parcelId;
+          result.nj_parcel_containing_pin = parcelData.containing.pin;
+          result.nj_parcel_containing_municipality = parcelData.containing.municipality;
+          result.nj_parcel_containing_county = parcelData.containing.county;
+        } else {
+          result.nj_parcel_containing = null;
+          result.nj_parcel_containing_message = 'No parcel found containing this location';
+        }
+        
+        // Add nearby parcels (proximity search)
+        if (parcelData.nearby && parcelData.nearby.length > 0) {
+          parcelData.nearby.forEach(parcel => {
+            // Only add if it's not already in the array (avoid duplicates)
+            if (!allParcels.some(p => p.parcelId === parcel.parcelId)) {
+              allParcels.push({
+                ...parcel.attributes,
+                parcelId: parcel.parcelId,
+                pin: parcel.pin,
+                municipality: parcel.municipality,
+                county: parcel.county,
+                block: parcel.block,
+                lot: parcel.lot,
+                ownerName: parcel.ownerName,
+                streetAddress: parcel.streetAddress,
+                cityState: parcel.cityState,
+                zipCode: parcel.zipCode,
+                landValue: parcel.landValue,
+                improvementValue: parcel.improvementValue,
+                netValue: parcel.netValue,
+                acres: parcel.acres,
+                isContaining: false,
+                distance_miles: parcel.distance_miles || null,
+                geometry: parcel.geometry // Include geometry for map drawing
+              });
+            }
+          });
+          result.nj_parcels_nearby_count = parcelData.nearby.length;
+        } else {
+          result.nj_parcels_nearby_count = 0;
+        }
+        
+        // Store all parcels as an array for CSV export (similar to _all_pois pattern)
+        result.nj_parcels_all = allParcels;
+        result.nj_parcels_search_radius_miles = radiusMiles;
+      } else {
+        result.nj_parcel_containing = null;
+        result.nj_parcels_nearby_count = 0;
+        result.nj_parcels_all = [];
+      }
+      
+      console.log(`✅ NJ Parcels data processed:`, {
+        containing: result.nj_parcel_containing || 'N/A',
+        nearbyCount: result.nj_parcels_nearby_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Parcels:', error);
+      return {
+        nj_parcel_containing: null,
+        nj_parcels_nearby_count: 0,
+        nj_parcels_all: [],
+        nj_parcels_error: 'Error fetching NJ Parcels data'
       };
     }
   }

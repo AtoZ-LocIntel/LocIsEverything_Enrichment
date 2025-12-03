@@ -418,7 +418,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'de_restrooms', label: 'DE Wildlife Areas Restrooms', description: 'DE FirstMap - Wildlife Area Restrooms (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
   { id: 'de_safety_zones', label: 'DE Wildlife Areas Safety Zones', description: 'DE FirstMap - Wildlife Area Safety Zones (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
   { id: 'de_wildlife_management_zones', label: 'DE Wildlife Management Zones', description: 'DE FirstMap - Wildlife Management Zones (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
-  { id: 'de_rail_lines', label: 'DE Rail Lines', description: 'DE FirstMap - Delaware Rail Lines (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' }
+  { id: 'de_rail_lines', label: 'DE Rail Lines', description: 'DE FirstMap - Delaware Rail Lines (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'de', section: 'de' },
+  { id: 'nj_parcels', label: 'NJ Tax Parcels', description: 'NJGIN - New Jersey Tax Parcels (point-in-polygon and proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.3, maxRadius: 1, category: 'nj', section: 'nj' }
 ];
 
 class POIConfigManager {
