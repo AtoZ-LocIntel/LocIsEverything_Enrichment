@@ -70,6 +70,7 @@ import { getNJSafetyServicePatrolData } from '../adapters/njSafetyServicePatrol'
 import { getNJServiceAreasData } from '../adapters/njServiceAreas';
 import { getNJRoadwayNetworkData } from '../adapters/njRoadwayNetwork';
 import { getNJKnownContaminatedSitesData } from '../adapters/njKnownContaminatedSites';
+import { getNJAlternativeFuelStationsData } from '../adapters/njAlternativeFuelStations';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1646,6 +1647,8 @@ export class EnrichmentService {
         return await this.getNJRoadwayNetwork(lat, lon, radius);
       case 'nj_known_contaminated_sites':
         return await this.getNJKnownContaminatedSites(lat, lon, radius);
+      case 'nj_alternative_fuel_stations':
+        return await this.getNJAlternativeFuelStations(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -8087,6 +8090,58 @@ out center;`;
         nj_known_contaminated_sites_all: [],
         nj_known_contaminated_sites_count: 0,
         nj_known_contaminated_sites_error: 'Error fetching NJ Known Contaminated Sites data'
+      };
+    }
+  }
+
+  private async getNJAlternativeFuelStations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛽ Fetching NJ Alternative Fueled Vehicle Fueling Stations data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 5; // Default to 5 miles if not provided, capped at 25 miles
+      const cappedRadius = Math.min(radiusMiles, 25.0);
+      
+      // Get alternative fuel stations data
+      const fuelStations = await getNJAlternativeFuelStationsData(lat, lon, cappedRadius);
+      
+      if (fuelStations && fuelStations.length > 0) {
+        // Store all fuel stations for CSV export and map drawing
+        result.nj_alternative_fuel_stations_all = fuelStations.map(station => ({
+          ...station.attributes,
+          stationId: station.stationId,
+          stationName: station.stationName,
+          address: station.address,
+          municipality: station.municipality,
+          county: station.county,
+          zipCode: station.zipCode,
+          fuelType: station.fuelType,
+          stationType: station.stationType,
+          lat: station.lat,
+          lon: station.lon,
+          distance_miles: station.distance_miles
+        }));
+        
+        result.nj_alternative_fuel_stations_count = fuelStations.length;
+        result.nj_alternative_fuel_stations_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_alternative_fuel_stations_all = [];
+        result.nj_alternative_fuel_stations_count = 0;
+        result.nj_alternative_fuel_stations_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Alternative Fueled Vehicle Fueling Stations data processed:`, {
+        count: result.nj_alternative_fuel_stations_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Alternative Fueled Vehicle Fueling Stations:', error);
+      return {
+        nj_alternative_fuel_stations_all: [],
+        nj_alternative_fuel_stations_count: 0,
+        nj_alternative_fuel_stations_error: 'Error fetching NJ Alternative Fueled Vehicle Fueling Stations data'
       };
     }
   }

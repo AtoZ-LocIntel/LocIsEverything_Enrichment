@@ -425,7 +425,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nj_safety_service_patrol', label: 'NJ Safety Service Patrol', description: 'NJGIN - New Jersey Department of Transportation Safety Service Patrol routes (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
   { id: 'nj_service_areas', label: 'NJ Service Areas', description: 'NJGIN - New Jersey Service Areas (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'nj', section: 'nj' },
   { id: 'nj_roadway_network', label: 'NJ Roadway Network', description: 'NJGIN - New Jersey Department of Transportation Roadway Network (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
-  { id: 'nj_known_contaminated_sites', label: 'NJ Known Contaminated Sites', description: 'NJDEP - New Jersey Department of Environmental Protection Known Contaminated Sites (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' }
+  { id: 'nj_known_contaminated_sites', label: 'NJ Known Contaminated Sites', description: 'NJDEP - New Jersey Department of Environmental Protection Known Contaminated Sites (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
+  { id: 'nj_alternative_fuel_stations', label: 'NJ Alternative Fueled Vehicle Fueling Stations', description: 'NJDEP - New Jersey Department of Environmental Protection Alternative Fueled Vehicle Fueling Stations (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' }
 ];
 
 class POIConfigManager {

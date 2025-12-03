@@ -841,6 +841,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Jersey",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "NJ Alternative Fueled Vehicle Fueling Stations",
+          description: "New Jersey Department of Environmental Protection (NJDEP) Alternative Fueled Vehicle Fueling Stations from Structures MapServer - proximity queries up to 25 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

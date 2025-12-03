@@ -217,6 +217,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'nj_service_areas': { icon: '🛣️', color: '#8b5cf6', title: 'NJ Service Areas' },
   'nj_roadway_network': { icon: '🛣️', color: '#6b7280', title: 'NJ Roadway Network' },
   'nj_known_contaminated_sites': { icon: '⚠️', color: '#dc2626', title: 'NJ Known Contaminated Sites' },
+  'nj_alternative_fuel_stations': { icon: '⛽', color: '#10b981', title: 'NJ Alternative Fuel Stations' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -468,6 +469,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nj_service_areas_all' || // Skip NJ Service Areas array (handled separately for map drawing)
     key === 'nj_roadway_network_all' || // Skip NJ Roadway Network array (handled separately for map drawing)
     key === 'nj_known_contaminated_sites_all' || // Skip NJ Known Contaminated Sites array (handled separately for map drawing)
+    key === 'nj_alternative_fuel_stations_all' || // Skip NJ Alternative Fuel Stations array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -7061,6 +7063,104 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nj_known_contaminated_sites'].count += contaminatedSiteCount;
+        }
+      }
+
+      // Draw NJ Alternative Fueled Vehicle Fueling Stations as markers on the map
+      if (enrichments.nj_alternative_fuel_stations_all && Array.isArray(enrichments.nj_alternative_fuel_stations_all)) {
+        let fuelStationCount = 0;
+        enrichments.nj_alternative_fuel_stations_all.forEach((station: any) => {
+          if (station.lat !== null && station.lat !== undefined && station.lon !== null && station.lon !== undefined) {
+            try {
+              fuelStationCount++;
+              
+              const stationName = station.stationName || station.STATION_NAME || station.station_name || station.NAME || station.name || station.FACILITY_NAME || station.facility_name || 'Unknown Station';
+              const address = station.address || station.ADDRESS || station.address || '';
+              const municipality = station.municipality || station.MUNICIPALITY || station.municipality || '';
+              const county = station.county || station.COUNTY || station.county || '';
+              const zipCode = station.zipCode || station.ZIP_CODE || station.zip_code || station.ZIP || station.zip || '';
+              const fuelType = station.fuelType || station.FUEL_TYPE || station.fuel_type || station.TYPE || station.type || station.ALTERNATIVE_FUEL || station.alternative_fuel || '';
+              const stationType = station.stationType || station.STATION_TYPE || station.station_type || station.FACILITY_TYPE || station.facility_type || '';
+
+              // Create marker with green color for fuel stations
+              const marker = L.marker([station.lat, station.lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker-icon',
+                  html: `<div style="background-color: #10b981; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    <span style="color: white; font-size: 14px;">⛽</span>
+                  </div>`,
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
+                })
+              });
+
+              // Build popup content with all station attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ⛽ ${stationName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                    ${municipality ? `<div><strong>Municipality:</strong> ${municipality}</div>` : ''}
+                    ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                    ${zipCode ? `<div><strong>ZIP Code:</strong> ${zipCode}</div>` : ''}
+                    ${fuelType ? `<div><strong>Fuel Type:</strong> ${fuelType}</div>` : ''}
+                    ${stationType ? `<div><strong>Station Type:</strong> ${stationType}</div>` : ''}
+                    ${station.distance_miles !== null && station.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${station.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all station attributes (excluding internal fields)
+              const excludeFields = ['stationId', 'stationName', 'address', 'municipality', 'county', 'zipCode', 'fuelType', 'stationType', 'lat', 'lon', 'distance_miles', 'STATION_NAME', 'station_name', 'NAME', 'name', 'FACILITY_NAME', 'facility_name', 'ADDRESS', 'address', 'ADDR', 'addr', 'STREET_ADDRESS', 'street_address', 'MUNICIPALITY', 'municipality', 'MUNI', 'muni', 'CITY', 'city', 'COUNTY', 'county', 'ZIP_CODE', 'zip_code', 'ZIP', 'zip', 'POSTAL_CODE', 'postal_code', 'FUEL_TYPE', 'fuel_type', 'TYPE', 'type', 'ALTERNATIVE_FUEL', 'alternative_fuel', 'STATION_TYPE', 'station_type', 'FACILITY_TYPE', 'facility_type'];
+              Object.entries(station).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi); // Add to POI layer group
+              
+              try {
+                bounds.extend([station.lat, station.lon]);
+              } catch (boundsError) {
+                console.warn('Error extending bounds for NJ Alternative Fuel Station:', boundsError);
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Alternative Fuel Station:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (fuelStationCount > 0) {
+          if (!legendAccumulator['nj_alternative_fuel_stations']) {
+            legendAccumulator['nj_alternative_fuel_stations'] = {
+              icon: '⛽',
+              color: '#10b981',
+              title: 'NJ Alternative Fuel Stations',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_alternative_fuel_stations'].count += fuelStationCount;
         }
       }
 

@@ -317,6 +317,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nj_service_areas_all' || // Skip NJ Service Areas array (handled separately)
         key === 'nj_roadway_network_all' || // Skip NJ Roadway Network array (handled separately)
         key === 'nj_known_contaminated_sites_all' || // Skip NJ Known Contaminated Sites array (handled separately)
+        key === 'nj_alternative_fuel_stations_all' || // Skip NJ Alternative Fuel Stations array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1960,6 +1961,49 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : '',
           siteType || '',
           `${siteName || ''}${address ? ` - ${address}` : ''}${municipality ? `, ${municipality}` : ''}${county ? `, ${county}` : ''}${zipCode ? ` ${zipCode}` : ''}${status ? ` - Status: ${status}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJDEP'
+        ]);
+      });
+    } else if (key === 'nj_alternative_fuel_stations_all' && Array.isArray(value)) {
+      // Handle NJ Alternative Fueled Vehicle Fueling Stations - each station gets its own row with all attributes
+      value.forEach((station: any) => {
+        const stationName = station.stationName || station.STATION_NAME || station.station_name || station.NAME || station.name || station.FACILITY_NAME || station.facility_name || 'Unknown Station';
+        const address = station.address || station.ADDRESS || station.address || '';
+        const municipality = station.municipality || station.MUNICIPALITY || station.municipality || '';
+        const county = station.county || station.COUNTY || station.county || '';
+        const zipCode = station.zipCode || station.ZIP_CODE || station.zip_code || station.ZIP || station.zip || '';
+        const fuelType = station.fuelType || station.FUEL_TYPE || station.fuel_type || station.TYPE || station.type || station.ALTERNATIVE_FUEL || station.alternative_fuel || '';
+        const stationType = station.stationType || station.STATION_TYPE || station.station_type || station.FACILITY_TYPE || station.facility_type || '';
+        
+        const allAttributes = { ...station };
+        delete allAttributes.stationId;
+        delete allAttributes.stationName;
+        delete allAttributes.address;
+        delete allAttributes.municipality;
+        delete allAttributes.county;
+        delete allAttributes.zipCode;
+        delete allAttributes.fuelType;
+        delete allAttributes.stationType;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJDEP',
+          (location.confidence || 'N/A').toString(),
+          'NJ_ALTERNATIVE_FUEL_STATIONS',
+          `${stationName}${fuelType ? ` (${fuelType})` : ''}`,
+          station.lat ? station.lat.toString() : location.lat.toString(),
+          station.lon ? station.lon.toString() : location.lon.toString(),
+          station.distance_miles !== null && station.distance_miles !== undefined ? station.distance_miles.toFixed(2) : '',
+          fuelType || '',
+          `${stationName || ''}${address ? ` - ${address}` : ''}${municipality ? `, ${municipality}` : ''}${county ? `, ${county}` : ''}${zipCode ? ` ${zipCode}` : ''}${stationType ? ` - Type: ${stationType}` : ''}`,
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'NJDEP'
