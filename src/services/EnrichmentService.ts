@@ -71,6 +71,8 @@ import { getNJServiceAreasData } from '../adapters/njServiceAreas';
 import { getNJRoadwayNetworkData } from '../adapters/njRoadwayNetwork';
 import { getNJKnownContaminatedSitesData } from '../adapters/njKnownContaminatedSites';
 import { getNJAlternativeFuelStationsData } from '../adapters/njAlternativeFuelStations';
+import { getNJPowerPlantsData } from '../adapters/njPowerPlants';
+import { getNJPublicSolarFacilitiesData } from '../adapters/njPublicSolarFacilities';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1649,6 +1651,10 @@ export class EnrichmentService {
         return await this.getNJKnownContaminatedSites(lat, lon, radius);
       case 'nj_alternative_fuel_stations':
         return await this.getNJAlternativeFuelStations(lat, lon, radius);
+      case 'nj_power_plants':
+        return await this.getNJPowerPlants(lat, lon, radius);
+      case 'nj_public_solar_facilities':
+        return await this.getNJPublicSolarFacilities(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -8142,6 +8148,121 @@ out center;`;
         nj_alternative_fuel_stations_all: [],
         nj_alternative_fuel_stations_count: 0,
         nj_alternative_fuel_stations_error: 'Error fetching NJ Alternative Fueled Vehicle Fueling Stations data'
+      };
+    }
+  }
+
+  private async getNJPowerPlants(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⚡ Fetching NJ Power Plants data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 5; // Default to 5 miles if not provided, capped at 25 miles
+      const cappedRadius = Math.min(radiusMiles, 25.0);
+      
+      // Get power plants data
+      const powerPlants = await getNJPowerPlantsData(lat, lon, cappedRadius);
+      
+      if (powerPlants && powerPlants.length > 0) {
+        // Store all power plants for CSV export and map drawing
+        result.nj_power_plants_all = powerPlants.map(plant => ({
+          ...plant.attributes,
+          plantId: plant.plantId,
+          plantCode: plant.plantCode,
+          plantName: plant.plantName,
+          utilityName: plant.utilityName,
+          siteId: plant.siteId,
+          airPi: plant.airPi,
+          city: plant.city,
+          county: plant.county,
+          streetAddress: plant.streetAddress,
+          primarySource: plant.primarySource,
+          installMW: plant.installMW,
+          totalMW: plant.totalMW,
+          sourceDescription: plant.sourceDescription,
+          technical: plant.technical,
+          edc: plant.edc,
+          gridSupply: plant.gridSupply,
+          dmrLink: plant.dmrLink,
+          lat: plant.lat,
+          lon: plant.lon,
+          distance_miles: plant.distance_miles
+        }));
+        
+        result.nj_power_plants_count = powerPlants.length;
+        result.nj_power_plants_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_power_plants_all = [];
+        result.nj_power_plants_count = 0;
+        result.nj_power_plants_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Power Plants data processed:`, {
+        count: result.nj_power_plants_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Power Plants:', error);
+      return {
+        nj_power_plants_all: [],
+        nj_power_plants_count: 0,
+        nj_power_plants_error: 'Error fetching NJ Power Plants data'
+      };
+    }
+  }
+
+  private async getNJPublicSolarFacilities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`☀️ Fetching NJ Public Solar Facilities data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 5; // Default to 5 miles if not provided, capped at 25 miles
+      const cappedRadius = Math.min(radiusMiles, 25.0);
+      
+      // Get public solar facilities data
+      const solarFacilities = await getNJPublicSolarFacilitiesData(lat, lon, cappedRadius);
+      
+      if (solarFacilities && solarFacilities.length > 0) {
+        // Store all solar facilities for CSV export and map drawing
+        result.nj_public_solar_facilities_all = solarFacilities.map(facility => ({
+          ...facility.attributes,
+          facilityId: facility.facilityId,
+          accountNumber: facility.accountNumber,
+          companyName: facility.companyName,
+          systemSize: facility.systemSize,
+          customerType: facility.customerType,
+          installAddress: facility.installAddress,
+          installCity: facility.installCity,
+          installZip: facility.installZip,
+          installer: facility.installer,
+          statusDate: facility.statusDate,
+          lat: facility.lat,
+          lon: facility.lon,
+          distance_miles: facility.distance_miles
+        }));
+        
+        result.nj_public_solar_facilities_count = solarFacilities.length;
+        result.nj_public_solar_facilities_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_public_solar_facilities_all = [];
+        result.nj_public_solar_facilities_count = 0;
+        result.nj_public_solar_facilities_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Public Solar Facilities data processed:`, {
+        count: result.nj_public_solar_facilities_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Public Solar Facilities:', error);
+      return {
+        nj_public_solar_facilities_all: [],
+        nj_public_solar_facilities_count: 0,
+        nj_public_solar_facilities_error: 'Error fetching NJ Public Solar Facilities data'
       };
     }
   }

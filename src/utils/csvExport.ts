@@ -318,6 +318,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nj_roadway_network_all' || // Skip NJ Roadway Network array (handled separately)
         key === 'nj_known_contaminated_sites_all' || // Skip NJ Known Contaminated Sites array (handled separately)
         key === 'nj_alternative_fuel_stations_all' || // Skip NJ Alternative Fuel Stations array (handled separately)
+        key === 'nj_power_plants_all' || // Skip NJ Power Plants array (handled separately)
+        key === 'nj_public_solar_facilities_all' || // Skip NJ Public Solar Facilities array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -2004,6 +2006,120 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           station.distance_miles !== null && station.distance_miles !== undefined ? station.distance_miles.toFixed(2) : '',
           fuelType || '',
           `${stationName || ''}${address ? ` - ${address}` : ''}${municipality ? `, ${municipality}` : ''}${county ? `, ${county}` : ''}${zipCode ? ` ${zipCode}` : ''}${stationType ? ` - Type: ${stationType}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJDEP'
+        ]);
+      });
+    } else if (key === 'nj_power_plants_all' && Array.isArray(value)) {
+      // Handle NJ Power Plants - each plant gets its own row with all attributes
+      value.forEach((plant: any) => {
+        const plantName = plant.plantName || plant.PLANT_NAME || plant.plant_name || plant.NAME || plant.name || 'Unknown Power Plant';
+        const utilityName = plant.utilityName || plant.UTILITY_NAME || plant.utility_name || '';
+        const city = plant.city || plant.CITY || plant.city || '';
+        const county = plant.county || plant.COUNTY || plant.county || '';
+        const streetAddress = plant.streetAddress || plant.STREET_ADD || plant.street_add || plant.ADDRESS || plant.address || '';
+        const primarySource = plant.primarySource || plant.PRIMSOURCE || plant.primsource || plant.PRIMARY_SOURCE || plant.primary_source || '';
+        const installMW = plant.installMW !== null && plant.installMW !== undefined ? plant.installMW : null;
+        const totalMW = plant.totalMW !== null && plant.totalMW !== undefined ? plant.totalMW : null;
+        const sourceDescription = plant.sourceDescription || plant.SOURCE_DES || plant.source_des || '';
+        const technical = plant.technical || plant.TECHNICAL || plant.technical || '';
+        const edc = plant.edc || plant.EDC || plant.edc || '';
+        const gridSupply = plant.gridSupply || plant.GRIDSUPPLY || plant.gridsupply || '';
+        
+        const allAttributes = { ...plant };
+        delete allAttributes.plantId;
+        delete allAttributes.plantCode;
+        delete allAttributes.plantName;
+        delete allAttributes.utilityName;
+        delete allAttributes.siteId;
+        delete allAttributes.airPi;
+        delete allAttributes.city;
+        delete allAttributes.county;
+        delete allAttributes.streetAddress;
+        delete allAttributes.primarySource;
+        delete allAttributes.installMW;
+        delete allAttributes.totalMW;
+        delete allAttributes.sourceDescription;
+        delete allAttributes.technical;
+        delete allAttributes.edc;
+        delete allAttributes.gridSupply;
+        delete allAttributes.dmrLink;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJDEP',
+          (location.confidence || 'N/A').toString(),
+          'NJ_POWER_PLANTS',
+          `${plantName}${primarySource ? ` (${primarySource})` : ''}`,
+          plant.lat ? plant.lat.toString() : location.lat.toString(),
+          plant.lon ? plant.lon.toString() : location.lon.toString(),
+          plant.distance_miles !== null && plant.distance_miles !== undefined ? plant.distance_miles.toFixed(2) : '',
+          primarySource || '',
+          `${plantName || ''}${utilityName ? ` - Utility: ${utilityName}` : ''}${streetAddress ? ` - ${streetAddress}` : ''}${city ? `, ${city}` : ''}${county ? `, ${county}` : ''}${installMW !== null ? ` - Installed: ${installMW.toFixed(1)} MW` : ''}${totalMW !== null ? ` - Total: ${totalMW.toFixed(1)} MW` : ''}${sourceDescription ? ` - ${sourceDescription}` : ''}${technical ? ` - ${technical}` : ''}${edc ? ` - EDC: ${edc}` : ''}${gridSupply ? ` - Grid Supply: ${gridSupply}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJDEP'
+        ]);
+      });
+    } else if (key === 'nj_public_solar_facilities_all' && Array.isArray(value)) {
+      // Handle NJ Public Solar Facilities - each facility gets its own row with all attributes
+      value.forEach((facility: any) => {
+        const companyName = facility.companyName || facility.COMPNAME || facility.compname || facility.COMPANY_NAME || facility.company_name || facility.NAME || facility.name || 'Unknown Facility';
+        const systemSize = facility.systemSize !== null && facility.systemSize !== undefined ? facility.systemSize : null;
+        const customerType = facility.customerType || facility.CUSTOMERTYPE || facility.customertype || facility.CUSTOMER_TYPE || facility.customer_type || '';
+        const installAddress = facility.installAddress || facility.INSTALLADD || facility.installadd || facility.INSTALL_ADDRESS || facility.install_address || facility.ADDRESS || facility.address || '';
+        const installCity = facility.installCity || facility.INSTALLCITY || facility.installcity || facility.INSTALL_CITY || facility.install_city || facility.CITY || facility.city || '';
+        const installZip = facility.installZip || facility.INSTALLZIP || facility.installzip || facility.INSTALL_ZIP || facility.install_zip || facility.ZIP || facility.zip || '';
+        const installer = facility.installer || facility.INSTALLER || facility.installer || '';
+        const statusDate = facility.statusDate !== null && facility.statusDate !== undefined ? facility.statusDate : null;
+        
+        // Format status date if available
+        let statusDateFormatted = '';
+        if (statusDate !== null) {
+          try {
+            const date = new Date(statusDate);
+            statusDateFormatted = date.toLocaleDateString();
+          } catch (e) {
+            statusDateFormatted = statusDate.toString();
+          }
+        }
+        
+        const allAttributes = { ...facility };
+        delete allAttributes.facilityId;
+        delete allAttributes.accountNumber;
+        delete allAttributes.companyName;
+        delete allAttributes.systemSize;
+        delete allAttributes.customerType;
+        delete allAttributes.installAddress;
+        delete allAttributes.installCity;
+        delete allAttributes.installZip;
+        delete allAttributes.installer;
+        delete allAttributes.statusDate;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJDEP',
+          (location.confidence || 'N/A').toString(),
+          'NJ_PUBLIC_SOLAR_FACILITIES',
+          `${companyName}${systemSize !== null ? ` (${systemSize.toFixed(2)} kW)` : ''}`,
+          facility.lat ? facility.lat.toString() : location.lat.toString(),
+          facility.lon ? facility.lon.toString() : location.lon.toString(),
+          facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '',
+          customerType || '',
+          `${companyName || ''}${installAddress ? ` - ${installAddress}` : ''}${installCity ? `, ${installCity}` : ''}${installZip ? ` ${installZip}` : ''}${systemSize !== null ? ` - System Size: ${systemSize.toFixed(2)} kW` : ''}${installer ? ` - Installer: ${installer}` : ''}${statusDateFormatted ? ` - Status Date: ${statusDateFormatted}` : ''}`,
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'NJDEP'

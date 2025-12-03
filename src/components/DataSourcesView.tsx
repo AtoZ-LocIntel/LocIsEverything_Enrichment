@@ -848,6 +848,20 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Jersey",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "NJ Power Plants",
+          description: "New Jersey Department of Environmental Protection (NJDEP) Power Plants from Utilities MapServer - proximity queries up to 25 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NJ Public Solar Facilities",
+          description: "New Jersey Department of Environmental Protection (NJDEP) Solar PV at Public Facilities from Utilities MapServer - proximity queries up to 25 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

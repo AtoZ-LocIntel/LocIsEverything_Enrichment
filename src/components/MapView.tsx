@@ -218,6 +218,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'nj_roadway_network': { icon: '🛣️', color: '#6b7280', title: 'NJ Roadway Network' },
   'nj_known_contaminated_sites': { icon: '⚠️', color: '#dc2626', title: 'NJ Known Contaminated Sites' },
   'nj_alternative_fuel_stations': { icon: '⛽', color: '#10b981', title: 'NJ Alternative Fuel Stations' },
+  'nj_power_plants': { icon: '⚡', color: '#f59e0b', title: 'NJ Power Plants' },
+  'nj_public_solar_facilities': { icon: '☀️', color: '#fbbf24', title: 'NJ Public Solar Facilities' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -470,6 +472,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nj_roadway_network_all' || // Skip NJ Roadway Network array (handled separately for map drawing)
     key === 'nj_known_contaminated_sites_all' || // Skip NJ Known Contaminated Sites array (handled separately for map drawing)
     key === 'nj_alternative_fuel_stations_all' || // Skip NJ Alternative Fuel Stations array (handled separately for map drawing)
+    key === 'nj_power_plants_all' || // Skip NJ Power Plants array (handled separately for map drawing)
+    key === 'nj_public_solar_facilities_all' || // Skip NJ Public Solar Facilities array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -7161,6 +7165,229 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nj_alternative_fuel_stations'].count += fuelStationCount;
+        }
+      }
+
+      // Draw NJ Power Plants as markers on the map
+      if (enrichments.nj_power_plants_all && Array.isArray(enrichments.nj_power_plants_all)) {
+        let powerPlantCount = 0;
+        enrichments.nj_power_plants_all.forEach((plant: any) => {
+          if (plant.lat !== null && plant.lat !== undefined && plant.lon !== null && plant.lon !== undefined) {
+            try {
+              powerPlantCount++;
+              
+              const plantName = plant.plantName || plant.PLANT_NAME || plant.plant_name || plant.NAME || plant.name || 'Unknown Power Plant';
+              const utilityName = plant.utilityName || plant.UTILITY_NAME || plant.utility_name || '';
+              const city = plant.city || plant.CITY || plant.city || '';
+              const county = plant.county || plant.COUNTY || plant.county || '';
+              const streetAddress = plant.streetAddress || plant.STREET_ADD || plant.street_add || plant.ADDRESS || plant.address || '';
+              const primarySource = plant.primarySource || plant.PRIMSOURCE || plant.primsource || plant.PRIMARY_SOURCE || plant.primary_source || '';
+              const installMW = plant.installMW !== null && plant.installMW !== undefined ? plant.installMW : null;
+              const totalMW = plant.totalMW !== null && plant.totalMW !== undefined ? plant.totalMW : null;
+              const sourceDescription = plant.sourceDescription || plant.SOURCE_DES || plant.source_des || '';
+              const technical = plant.technical || plant.TECHNICAL || plant.technical || '';
+              const edc = plant.edc || plant.EDC || plant.edc || '';
+              const gridSupply = plant.gridSupply || plant.GRIDSUPPLY || plant.gridsupply || '';
+              const dmrLink = plant.dmrLink || plant.DMR_LINK || plant.dmr_link || '';
+
+              // Create marker with orange/yellow color for power plants
+              const marker = L.marker([plant.lat, plant.lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker-icon',
+                  html: `<div style="background-color: #f59e0b; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    <span style="color: white; font-size: 14px;">⚡</span>
+                  </div>`,
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
+                })
+              });
+
+              // Build popup content with all plant attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ⚡ ${plantName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${utilityName ? `<div><strong>Utility:</strong> ${utilityName}</div>` : ''}
+                    ${streetAddress ? `<div><strong>Address:</strong> ${streetAddress}</div>` : ''}
+                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                    ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                    ${primarySource ? `<div><strong>Primary Source:</strong> ${primarySource}</div>` : ''}
+                    ${installMW !== null ? `<div><strong>Installed Capacity:</strong> ${installMW.toFixed(1)} MW</div>` : ''}
+                    ${totalMW !== null ? `<div><strong>Total Capacity:</strong> ${totalMW.toFixed(1)} MW</div>` : ''}
+                    ${sourceDescription ? `<div><strong>Source Description:</strong> ${sourceDescription}</div>` : ''}
+                    ${technical ? `<div><strong>Technical:</strong> ${technical}</div>` : ''}
+                    ${edc ? `<div><strong>EDC:</strong> ${edc}</div>` : ''}
+                    ${gridSupply ? `<div><strong>Grid Supply:</strong> ${gridSupply}</div>` : ''}
+                    ${plant.distance_miles !== null && plant.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${plant.distance_miles.toFixed(2)} miles</div>` : ''}
+                    ${dmrLink ? `<div><strong><a href="${dmrLink}" target="_blank" rel="noopener noreferrer">DMR Link</a></strong></div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all plant attributes (excluding internal fields)
+              const excludeFields = ['plantId', 'plantCode', 'plantName', 'utilityName', 'siteId', 'airPi', 'city', 'county', 'streetAddress', 'primarySource', 'installMW', 'totalMW', 'sourceDescription', 'technical', 'edc', 'gridSupply', 'dmrLink', 'lat', 'lon', 'distance_miles', 'PLANT_NAME', 'plant_name', 'NAME', 'name', 'UTILITY_NAME', 'utility_name', 'CITY', 'city', 'COUNTY', 'county', 'STREET_ADD', 'street_add', 'ADDRESS', 'address', 'PRIMSOURCE', 'primsource', 'PRIMARY_SOURCE', 'primary_source', 'INSTALL_MW', 'install_mw', 'TOTAL_MW', 'total_mw', 'SOURCE_DES', 'source_des', 'SOURCE_DESC', 'source_desc', 'TECHNICAL', 'technical', 'EDC', 'edc', 'GRIDSUPPLY', 'gridsupply', 'GRID_SUPPLY', 'grid_supply', 'DMR_LINK', 'dmr_link', 'DMR', 'dmr', 'LATITUDE', 'LONGITUDE'];
+              Object.entries(plant).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi); // Add to POI layer group
+              
+              try {
+                bounds.extend([plant.lat, plant.lon]);
+              } catch (boundsError) {
+                console.warn('Error extending bounds for NJ Power Plant:', boundsError);
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Power Plant:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (powerPlantCount > 0) {
+          if (!legendAccumulator['nj_power_plants']) {
+            legendAccumulator['nj_power_plants'] = {
+              icon: '⚡',
+              color: '#f59e0b',
+              title: 'NJ Power Plants',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_power_plants'].count += powerPlantCount;
+        }
+      }
+
+      // Draw NJ Public Solar Facilities as markers on the map
+      if (enrichments.nj_public_solar_facilities_all && Array.isArray(enrichments.nj_public_solar_facilities_all)) {
+        let solarFacilityCount = 0;
+        enrichments.nj_public_solar_facilities_all.forEach((facility: any) => {
+          if (facility.lat !== null && facility.lat !== undefined && facility.lon !== null && facility.lon !== undefined) {
+            try {
+              solarFacilityCount++;
+              
+              const companyName = facility.companyName || facility.COMPNAME || facility.compname || facility.COMPANY_NAME || facility.company_name || facility.NAME || facility.name || 'Unknown Facility';
+              const systemSize = facility.systemSize !== null && facility.systemSize !== undefined ? facility.systemSize : null;
+              const customerType = facility.customerType || facility.CUSTOMERTYPE || facility.customertype || facility.CUSTOMER_TYPE || facility.customer_type || '';
+              const installAddress = facility.installAddress || facility.INSTALLADD || facility.installadd || facility.INSTALL_ADDRESS || facility.install_address || facility.ADDRESS || facility.address || '';
+              const installCity = facility.installCity || facility.INSTALLCITY || facility.installcity || facility.INSTALL_CITY || facility.install_city || facility.CITY || facility.city || '';
+              const installZip = facility.installZip || facility.INSTALLZIP || facility.installzip || facility.INSTALL_ZIP || facility.install_zip || facility.ZIP || facility.zip || '';
+              const installer = facility.installer || facility.INSTALLER || facility.installer || '';
+              const accountNumber = facility.accountNumber || facility.ACCOUNT_NUMBER || facility.account_number || '';
+              const statusDate = facility.statusDate !== null && facility.statusDate !== undefined ? facility.statusDate : null;
+              
+              // Format status date if available (it's a timestamp in milliseconds)
+              let statusDateFormatted = '';
+              if (statusDate !== null) {
+                try {
+                  const date = new Date(statusDate);
+                  statusDateFormatted = date.toLocaleDateString();
+                } catch (e) {
+                  statusDateFormatted = statusDate.toString();
+                }
+              }
+
+              // Create marker with yellow/gold color for solar facilities
+              const marker = L.marker([facility.lat, facility.lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker-icon',
+                  html: `<div style="background-color: #fbbf24; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    <span style="color: white; font-size: 14px;">☀️</span>
+                  </div>`,
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
+                })
+              });
+
+              // Build popup content with all facility attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ☀️ ${companyName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${systemSize !== null ? `<div><strong>System Size:</strong> ${systemSize.toFixed(2)} kW</div>` : ''}
+                    ${customerType ? `<div><strong>Customer Type:</strong> ${customerType}</div>` : ''}
+                    ${installAddress ? `<div><strong>Address:</strong> ${installAddress}</div>` : ''}
+                    ${installCity ? `<div><strong>City:</strong> ${installCity}</div>` : ''}
+                    ${installZip ? `<div><strong>ZIP Code:</strong> ${installZip}</div>` : ''}
+                    ${installer ? `<div><strong>Installer:</strong> ${installer}</div>` : ''}
+                    ${accountNumber ? `<div><strong>Account Number:</strong> ${accountNumber}</div>` : ''}
+                    ${statusDateFormatted ? `<div><strong>Status Date:</strong> ${statusDateFormatted}</div>` : ''}
+                    ${facility.distance_miles !== null && facility.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${facility.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all facility attributes (excluding internal fields)
+              const excludeFields = ['facilityId', 'accountNumber', 'companyName', 'systemSize', 'customerType', 'installAddress', 'installCity', 'installZip', 'installer', 'statusDate', 'lat', 'lon', 'distance_miles', 'COMPNAME', 'compname', 'COMPANY_NAME', 'company_name', 'NAME', 'name', 'SYSTEMSIZE', 'systemsize', 'CUSTOMERTYPE', 'customertype', 'CUSTOMER_TYPE', 'customer_type', 'INSTALLADD', 'installadd', 'INSTALL_ADDRESS', 'install_address', 'ADDRESS', 'address', 'INSTALLCITY', 'installcity', 'INSTALL_CITY', 'install_city', 'CITY', 'city', 'INSTALLZIP', 'installzip', 'INSTALL_ZIP', 'install_zip', 'ZIP', 'zip', 'INSTALLER', 'installer', 'ACCOUNT_NUMBER', 'account_number', 'ACCOUNT', 'account', 'STATUSDATE', 'statusdate', 'LATITUDE', 'LONGITUDE'];
+              Object.entries(facility).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi); // Add to POI layer group
+              
+              try {
+                bounds.extend([facility.lat, facility.lon]);
+              } catch (boundsError) {
+                console.warn('Error extending bounds for NJ Public Solar Facility:', boundsError);
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Public Solar Facility:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (solarFacilityCount > 0) {
+          if (!legendAccumulator['nj_public_solar_facilities']) {
+            legendAccumulator['nj_public_solar_facilities'] = {
+              icon: '☀️',
+              color: '#fbbf24',
+              title: 'NJ Public Solar Facilities',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_public_solar_facilities'].count += solarFacilityCount;
         }
       }
 
