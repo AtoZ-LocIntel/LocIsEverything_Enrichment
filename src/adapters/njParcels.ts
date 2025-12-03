@@ -107,10 +107,13 @@ export async function getNJParcelsData(
 ): Promise<{ containing: NJParcelInfo | null; nearby: NJParcelInfo[] }> {
   try {
     if (radiusMiles && radiusMiles > 0) {
-      // Proximity query
-      console.log(`🏠 Querying NJ Parcels within ${radiusMiles} miles of [${lat}, ${lon}]`);
+      // Cap radius at 5 miles
+      const cappedRadius = Math.min(radiusMiles, 5.0);
       
-      const radiusMeters = radiusMiles * 1609.34;
+      // Proximity query
+      console.log(`🏠 Querying NJ Parcels within ${cappedRadius} miles of [${lat}, ${lon}]`);
+      
+      const radiusMeters = cappedRadius * 1609.34;
       const queryUrl = new URL(`${BASE_SERVICE_URL}/${PARCELS_LAYER_ID}/query`);
       
       queryUrl.searchParams.set('f', 'json');
@@ -141,7 +144,7 @@ export async function getNJParcelsData(
       }
       
       if (!data.features || data.features.length === 0) {
-        console.log(`ℹ️ No NJ Parcels found within ${radiusMiles} miles`);
+        console.log(`ℹ️ No NJ Parcels found within ${cappedRadius} miles`);
         return { containing: null, nearby: [] };
       }
       
@@ -203,10 +206,10 @@ export async function getNJParcelsData(
       // Separate containing and nearby parcels
       const containingParcel = parcels.find(p => p.isContaining) || null;
       const nearbyParcels = parcels
-        .filter(p => !p.isContaining && p.distance_miles !== undefined && p.distance_miles <= radiusMiles)
+        .filter(p => !p.isContaining && p.distance_miles !== undefined && p.distance_miles <= cappedRadius)
         .sort((a, b) => (a.distance_miles ?? Infinity) - (b.distance_miles ?? Infinity));
       
-      console.log(`✅ Found ${containingParcel ? 1 : 0} containing parcel and ${nearbyParcels.length} nearby NJ Parcels within ${radiusMiles} miles`);
+      console.log(`✅ Found ${containingParcel ? 1 : 0} containing parcel and ${nearbyParcels.length} nearby NJ Parcels within ${cappedRadius} miles`);
       return { containing: containingParcel, nearby: nearbyParcels };
     } else {
       // Point-in-polygon only query

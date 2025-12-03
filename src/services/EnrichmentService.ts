@@ -64,6 +64,8 @@ import { getDEPublicSchoolsData, getDEPrivateSchoolsData, getDEVoTechDistrictsDa
 import { getDEStandsBlindsFieldsData, getDEBoatRampsData, getDEFacilitiesData, getDEParkingData, getDERestroomsData, getDESafetyZonesData, getDEWildlifeManagementZonesData } from '../adapters/deWildlife';
 import { getDERailLinesData } from '../adapters/deRailLines';
 import { getNJParcelsData } from '../adapters/njParcels';
+import { getNJAddressPointsData } from '../adapters/njAddressPoints';
+import { getNJBusStopsData } from '../adapters/njBusStops';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1628,6 +1630,10 @@ export class EnrichmentService {
         return await this.getDERailLines(lat, lon, radius);
       case 'nj_parcels':
         return await this.getNJParcels(lat, lon, radius);
+      case 'nj_address_points':
+        return await this.getNJAddressPoints(lat, lon, radius);
+      case 'nj_bus_stops':
+        return await this.getNJBusStops(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -7749,6 +7755,116 @@ out center;`;
         nj_parcels_nearby_count: 0,
         nj_parcels_all: [],
         nj_parcels_error: 'Error fetching NJ Parcels data'
+      };
+    }
+  }
+
+  private async getNJAddressPoints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📍 Fetching NJ Address Points data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 0.3; // Default to 0.3 miles if not provided, capped at 5 miles
+      const cappedRadius = Math.min(radiusMiles, 5.0);
+      
+      // Get address points data
+      const addressPoints = await getNJAddressPointsData(lat, lon, cappedRadius);
+      
+      if (addressPoints && addressPoints.length > 0) {
+        // Store all address points for CSV export and map drawing
+        result.nj_address_points_all = addressPoints.map(point => ({
+          ...point.attributes,
+          addressId: point.addressId,
+          fullAddress: point.fullAddress,
+          streetName: point.streetName,
+          streetNumber: point.streetNumber,
+          municipality: point.municipality,
+          county: point.county,
+          zipCode: point.zipCode,
+          state: point.state,
+          country: point.country,
+          subtype: point.subtype,
+          primaryPoint: point.primaryPoint,
+          status: point.status,
+          placement: point.placement,
+          lat: point.lat,
+          lon: point.lon,
+          distance_miles: point.distance_miles
+        }));
+        
+        result.nj_address_points_count = addressPoints.length;
+        result.nj_address_points_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_address_points_all = [];
+        result.nj_address_points_count = 0;
+        result.nj_address_points_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Address Points data processed:`, {
+        count: result.nj_address_points_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Address Points:', error);
+      return {
+        nj_address_points_all: [],
+        nj_address_points_count: 0,
+        nj_address_points_error: 'Error fetching NJ Address Points data'
+      };
+    }
+  }
+
+  private async getNJBusStops(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚌 Fetching NJ Bus Stops data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 5; // Default to 5 miles if not provided, capped at 25 miles
+      const cappedRadius = Math.min(radiusMiles, 25.0);
+      
+      // Get bus stops data
+      const busStops = await getNJBusStopsData(lat, lon, cappedRadius);
+      
+      if (busStops && busStops.length > 0) {
+        // Store all bus stops for CSV export and map drawing
+        result.nj_bus_stops_all = busStops.map(stop => ({
+          ...stop.attributes,
+          stopId: stop.stopId,
+          stopNumber: stop.stopNumber,
+          description: stop.description,
+          county: stop.county,
+          municipality: stop.municipality,
+          stopType: stop.stopType,
+          direction: stop.direction,
+          streetDirection: stop.streetDirection,
+          allLines: stop.allLines,
+          lat: stop.lat,
+          lon: stop.lon,
+          distance_miles: stop.distance_miles
+        }));
+        
+        result.nj_bus_stops_count = busStops.length;
+        result.nj_bus_stops_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_bus_stops_all = [];
+        result.nj_bus_stops_count = 0;
+        result.nj_bus_stops_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Bus Stops data processed:`, {
+        count: result.nj_bus_stops_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Bus Stops:', error);
+      return {
+        nj_bus_stops_all: [],
+        nj_bus_stops_count: 0,
+        nj_bus_stops_error: 'Error fetching NJ Bus Stops data'
       };
     }
   }

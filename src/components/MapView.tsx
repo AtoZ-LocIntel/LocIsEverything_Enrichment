@@ -211,6 +211,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'de_wildlife_management_zones': { icon: '🦌', color: '#059669', title: 'DE Wildlife Management Zones' },
   'de_rail_lines': { icon: '🚂', color: '#1f2937', title: 'DE Rail Lines' },
   'nj_parcels': { icon: '🏠', color: '#059669', title: 'NJ Tax Parcels' },
+  'nj_address_points': { icon: '📍', color: '#3b82f6', title: 'NJ Address Points' },
+  'nj_bus_stops': { icon: '🚌', color: '#f59e0b', title: 'NJ Bus Stops' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -456,6 +458,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'de_wildlife_management_zones_all' || // Skip DE Wildlife Management Zones array (handled separately for map drawing)
     key === 'de_rail_lines_all' || // Skip DE Rail Lines array (handled separately for map drawing)
     key === 'nj_parcels_all' || // Skip NJ Parcels array (handled separately for map drawing)
+    key === 'nj_address_points_all' || // Skip NJ Address Points array (handled separately for map drawing)
+    key === 'nj_bus_stops_all' || // Skip NJ Bus Stops array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -6451,6 +6455,194 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nj_parcels'].count += parcelCount;
+        }
+      }
+
+      // Draw NJ Address Points as markers on the map
+      if (enrichments.nj_address_points_all && Array.isArray(enrichments.nj_address_points_all)) {
+        let addressPointCount = 0;
+        enrichments.nj_address_points_all.forEach((point: any) => {
+          if (point.lat && point.lon) {
+            try {
+              const pointLat = point.lat;
+              const pointLon = point.lon;
+              const fullAddress = point.fullAddress || point.FULL_ADDRESS || point.full_address || 'Unknown Address';
+              const streetName = point.streetName || point.ST_NAME || point.st_name || point.LST_NAME || point.lst_name || '';
+              const streetNumber = point.streetNumber || point.ST_NUMBER || point.st_number || point.LST_NUMBER || point.lst_number || '';
+              const municipality = point.municipality || point.INC_MUNI || point.inc_muni || '';
+              const county = point.county || point.COUNTY || point.county || '';
+              const zipCode = point.zipCode || point.POST_CODE || point.post_code || point.ZIP_CODE || point.zip_code || '';
+              const subtype = point.subtype || point.SUBTYPE || point.subtype || '';
+              const placement = point.placement || point.PLACEMENT || point.placement || '';
+              
+              // Create a custom icon for address points
+              const icon = createPOIIcon('📍', '#3b82f6'); // Blue icon for address points
+              
+              const marker = L.marker([pointLat, pointLon], { icon });
+              
+              // Build popup content with all address point attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    📍 ${fullAddress}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${streetNumber ? `<div><strong>Street Number:</strong> ${streetNumber}</div>` : ''}
+                    ${streetName ? `<div><strong>Street Name:</strong> ${streetName}</div>` : ''}
+                    ${municipality ? `<div><strong>Municipality:</strong> ${municipality}</div>` : ''}
+                    ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                    ${zipCode ? `<div><strong>ZIP Code:</strong> ${zipCode}</div>` : ''}
+                    ${subtype ? `<div><strong>Subtype:</strong> ${subtype}</div>` : ''}
+                    ${placement ? `<div><strong>Placement:</strong> ${placement}</div>` : ''}
+                    ${point.distance_miles !== null && point.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${point.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all address point attributes (excluding internal fields)
+              const excludeFields = ['fullAddress', 'streetName', 'streetNumber', 'municipality', 'county', 'zipCode', 'subtype', 'placement', 'lat', 'lon', 'distance_miles', 'FULL_ADDRESS', 'full_address', 'ST_NAME', 'st_name', 'LST_NAME', 'lst_name', 'ST_NUMBER', 'st_number', 'LST_NUMBER', 'lst_number', 'INC_MUNI', 'inc_muni', 'COUNTY', 'county', 'POST_CODE', 'post_code', 'ZIP_CODE', 'zip_code', 'ZIP5', 'zip5', 'SUBTYPE', 'subtype', 'PLACEMENT', 'placement'];
+              Object.entries(point).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                    </div>
+                  </div>
+                `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi); // Add to POI layer group
+              
+              try {
+                bounds.extend([pointLat, pointLon]);
+                addressPointCount++;
+              } catch (boundsError) {
+                console.warn('Error extending bounds for NJ Address Point:', boundsError);
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Address Point:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (addressPointCount > 0) {
+          if (!legendAccumulator['nj_address_points']) {
+            legendAccumulator['nj_address_points'] = {
+              icon: '📍',
+              color: '#3b82f6',
+              title: 'NJ Address Points',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_address_points'].count += addressPointCount;
+        }
+      }
+
+      // Draw NJ Bus Stops as markers on the map
+      if (enrichments.nj_bus_stops_all && Array.isArray(enrichments.nj_bus_stops_all)) {
+        let busStopCount = 0;
+        enrichments.nj_bus_stops_all.forEach((stop: any) => {
+          if (stop.lat && stop.lon) {
+            try {
+              const stopLat = stop.lat;
+              const stopLon = stop.lon;
+              const description = stop.description || stop.DESCRIPTION_BSL || stop.description_bsl || 'Unknown Bus Stop';
+              const stopNumber = stop.stopNumber || stop.STOP_NUM || stop.stop_num || '';
+              const county = stop.county || stop.COUNTY || stop.county || '';
+              const municipality = stop.municipality || stop.MUNICIPALITY || stop.municipality || '';
+              const stopType = stop.stopType || stop.STOP_TYPE || stop.stop_type || '';
+              const direction = stop.direction || stop.DIRECTION_OP || stop.direction_op || '';
+              const streetDirection = stop.streetDirection || stop.STREET_DIR || stop.street_dir || '';
+              const allLines = stop.allLines || stop.ALL_LINES || stop.all_lines || '';
+              
+              // Create a custom icon for bus stops
+              const icon = createPOIIcon('🚌', '#f59e0b'); // Orange icon for bus stops
+              
+              const marker = L.marker([stopLat, stopLon], { icon });
+              
+              // Build popup content with all bus stop attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🚌 ${description}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${stopNumber ? `<div><strong>Stop Number:</strong> ${stopNumber}</div>` : ''}
+                    ${municipality ? `<div><strong>Municipality:</strong> ${municipality}</div>` : ''}
+                    ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                    ${stopType ? `<div><strong>Stop Type:</strong> ${stopType}</div>` : ''}
+                    ${direction ? `<div><strong>Direction:</strong> ${direction}</div>` : ''}
+                    ${streetDirection ? `<div><strong>Street Direction:</strong> ${streetDirection}</div>` : ''}
+                    ${allLines ? `<div><strong>Bus Lines:</strong> ${allLines}</div>` : ''}
+                    ${stop.distance_miles !== null && stop.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${stop.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all bus stop attributes (excluding internal fields)
+              const excludeFields = ['description', 'stopNumber', 'county', 'municipality', 'stopType', 'direction', 'streetDirection', 'allLines', 'lat', 'lon', 'distance_miles', 'DESCRIPTION_BSL', 'description_bsl', 'DESCRIPTION', 'description', 'STOP_NUM', 'stop_num', 'STOP_NUMBER', 'stop_number', 'COUNTY', 'county', 'MUNICIPALITY', 'municipality', 'STOP_TYPE', 'stop_type', 'DIRECTION_OP', 'direction_op', 'DIRECTION', 'direction', 'STREET_DIR', 'street_dir', 'ALL_LINES', 'all_lines', 'LINES', 'lines'];
+              Object.entries(stop).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                    </div>
+                  </div>
+                `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi); // Add to POI layer group
+              
+              try {
+                bounds.extend([stopLat, stopLon]);
+                busStopCount++;
+              } catch (boundsError) {
+                console.warn('Error extending bounds for NJ Bus Stop:', boundsError);
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Bus Stop:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (busStopCount > 0) {
+          if (!legendAccumulator['nj_bus_stops']) {
+            legendAccumulator['nj_bus_stops'] = {
+              icon: '🚌',
+              color: '#f59e0b',
+              title: 'NJ Bus Stops',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_bus_stops'].count += busStopCount;
         }
       }
 

@@ -311,6 +311,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'de_wildlife_management_zones_all' || // Skip DE Wildlife Management Zones array (handled separately)
         key === 'de_rail_lines_all' || // Skip DE Rail Lines array (handled separately)
         key === 'nj_parcels_all' || // Skip NJ Parcels array (handled separately)
+        key === 'nj_address_points_all' || // Skip NJ Address Points array (handled separately)
+        key === 'nj_bus_stops_all' || // Skip NJ Bus Stops array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1689,6 +1691,98 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           parcel.distance_miles !== null && parcel.distance_miles !== undefined ? parcel.distance_miles.toFixed(2) : (parcel.isContaining ? '0.00' : ''),
           `${municipality || ''}${county ? `, ${county}` : ''}`,
           `${fullAddress || ''}${ownerName ? ` - Owner: ${ownerName}` : ''}${landValue !== null ? ` - Land Value: $${landValue.toLocaleString()}` : ''}${improvementValue !== null ? ` - Improvement Value: $${improvementValue.toLocaleString()}` : ''}${netValue !== null ? ` - Net Value: $${netValue.toLocaleString()}` : ''}${acres !== null ? ` - Acres: ${acres.toFixed(2)}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJGIN'
+        ]);
+      });
+    } else if (key === 'nj_address_points_all' && Array.isArray(value)) {
+      // Handle NJ Address Points - each address point gets its own row with all attributes
+      value.forEach((point: any) => {
+        const fullAddress = point.fullAddress || point.FULL_ADDRESS || point.full_address || '';
+        const streetName = point.streetName || point.ST_NAME || point.st_name || point.LST_NAME || point.lst_name || '';
+        const streetNumber = point.streetNumber || point.ST_NUMBER || point.st_number || point.LST_NUMBER || point.lst_number || '';
+        const municipality = point.municipality || point.INC_MUNI || point.inc_muni || '';
+        const county = point.county || point.COUNTY || point.county || '';
+        const zipCode = point.zipCode || point.POST_CODE || point.post_code || point.ZIP_CODE || point.zip_code || point.ZIP5 || point.zip5 || '';
+        const subtype = point.subtype || point.SUBTYPE || point.subtype || '';
+        const placement = point.placement || point.PLACEMENT || point.placement || '';
+        const addressId = point.addressId || point.OBJECTID || point.objectid || point.ADDR_PT_ID || point.addr_pt_id || '';
+        
+        const allAttributes = { ...point };
+        delete allAttributes.addressId;
+        delete allAttributes.fullAddress;
+        delete allAttributes.streetName;
+        delete allAttributes.streetNumber;
+        delete allAttributes.municipality;
+        delete allAttributes.county;
+        delete allAttributes.zipCode;
+        delete allAttributes.subtype;
+        delete allAttributes.placement;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJGIN',
+          (location.confidence || 'N/A').toString(),
+          'NJ_ADDRESS_POINT',
+          `${fullAddress || 'Address Point'}${addressId ? ` (ID: ${addressId})` : ''}`,
+          point.lat ? point.lat.toString() : location.lat.toString(),
+          point.lon ? point.lon.toString() : location.lon.toString(),
+          point.distance_miles !== null && point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '',
+          `${municipality || ''}${county ? `, ${county}` : ''}`,
+          `${streetNumber ? `${streetNumber} ` : ''}${streetName || ''}${zipCode ? `, ${zipCode}` : ''}${subtype ? ` - Type: ${subtype}` : ''}${placement ? ` - Placement: ${placement}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJGIN'
+        ]);
+      });
+    } else if (key === 'nj_bus_stops_all' && Array.isArray(value)) {
+      // Handle NJ Bus Stops - each bus stop gets its own row with all attributes
+      value.forEach((stop: any) => {
+        const description = stop.description || stop.DESCRIPTION_BSL || stop.description_bsl || 'Bus Stop';
+        const stopNumber = stop.stopNumber || stop.STOP_NUM || stop.stop_num || '';
+        const county = stop.county || stop.COUNTY || stop.county || '';
+        const municipality = stop.municipality || stop.MUNICIPALITY || stop.municipality || '';
+        const stopType = stop.stopType || stop.STOP_TYPE || stop.stop_type || '';
+        const direction = stop.direction || stop.DIRECTION_OP || stop.direction_op || '';
+        const streetDirection = stop.streetDirection || stop.STREET_DIR || stop.street_dir || '';
+        const allLines = stop.allLines || stop.ALL_LINES || stop.all_lines || '';
+        const stopId = stop.stopId || stop.OBJECTID || stop.objectid || '';
+        
+        const allAttributes = { ...stop };
+        delete allAttributes.stopId;
+        delete allAttributes.stopNumber;
+        delete allAttributes.description;
+        delete allAttributes.county;
+        delete allAttributes.municipality;
+        delete allAttributes.stopType;
+        delete allAttributes.direction;
+        delete allAttributes.streetDirection;
+        delete allAttributes.allLines;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJGIN',
+          (location.confidence || 'N/A').toString(),
+          'NJ_BUS_STOP',
+          `${description}${stopNumber ? ` (Stop #${stopNumber})` : ''}`,
+          stop.lat ? stop.lat.toString() : location.lat.toString(),
+          stop.lon ? stop.lon.toString() : location.lon.toString(),
+          stop.distance_miles !== null && stop.distance_miles !== undefined ? stop.distance_miles.toFixed(2) : '',
+          `${municipality || ''}${county ? `, ${county}` : ''}`,
+          `${description || ''}${stopType ? ` - Type: ${stopType}` : ''}${direction ? ` - Direction: ${direction}` : ''}${streetDirection ? ` - Street Dir: ${streetDirection}` : ''}${allLines ? ` - Lines: ${allLines}` : ''}`,
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'NJGIN'

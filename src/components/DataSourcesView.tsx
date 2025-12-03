@@ -784,6 +784,32 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
+      category: "New Jersey Data (NJGIN)",
+      sources: [
+        {
+          name: "NJ Tax Parcels",
+          description: "New Jersey Tax Parcels from NJGIN - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NJ Address Points",
+          description: "New Jersey Address Points from NJGIN - comprehensive statewide NG9-1-1 database meeting NENA 2018 NG9-1-1 GIS Data Standard - proximity queries up to 5 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NJ Bus Stops",
+          description: "New Jersey Transit Bus Stops from NJGIN - single point bus stops for NJ Transit routes - proximity queries up to 25 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
       category: "Delaware Data (DE FirstMap)",
       sources: [
         {
