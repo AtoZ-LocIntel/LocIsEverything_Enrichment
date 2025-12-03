@@ -428,7 +428,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nj_known_contaminated_sites', label: 'NJ Known Contaminated Sites', description: 'NJDEP - New Jersey Department of Environmental Protection Known Contaminated Sites (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
   { id: 'nj_alternative_fuel_stations', label: 'NJ Alternative Fueled Vehicle Fueling Stations', description: 'NJDEP - New Jersey Department of Environmental Protection Alternative Fueled Vehicle Fueling Stations (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
   { id: 'nj_power_plants', label: 'NJ Power Plants', description: 'NJDEP - New Jersey Department of Environmental Protection Power Plants (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
-  { id: 'nj_public_solar_facilities', label: 'NJ Public Solar Facilities', description: 'NJDEP - New Jersey Department of Environmental Protection Solar PV at Public Facilities (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' }
+  { id: 'nj_public_solar_facilities', label: 'NJ Public Solar Facilities', description: 'NJDEP - New Jersey Department of Environmental Protection Solar PV at Public Facilities (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
+  { id: 'nj_public_places_to_keep_cool', label: 'NJ Public Places to Keep Cool', description: 'NJDEP - New Jersey Department of Environmental Protection Public Places to Keep Cool (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' }
 ];
 
 class POIConfigManager {

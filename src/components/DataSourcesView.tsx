@@ -861,6 +861,12 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "New Jersey Department of Environmental Protection (NJDEP) Solar PV at Public Facilities from Utilities MapServer - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
+        },
+        {
+          name: "NJ Public Places to Keep Cool",
+          description: "New Jersey Department of Environmental Protection (NJDEP) Public Places to Keep Cool from FeatureServer - proximity queries up to 25 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
           cost: "Free"
         }
       ]

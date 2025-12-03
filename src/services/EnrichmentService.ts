@@ -73,6 +73,7 @@ import { getNJKnownContaminatedSitesData } from '../adapters/njKnownContaminated
 import { getNJAlternativeFuelStationsData } from '../adapters/njAlternativeFuelStations';
 import { getNJPowerPlantsData } from '../adapters/njPowerPlants';
 import { getNJPublicSolarFacilitiesData } from '../adapters/njPublicSolarFacilities';
+import { getNJPublicPlacesToKeepCoolData } from '../adapters/njPublicPlacesToKeepCool';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1655,6 +1656,8 @@ export class EnrichmentService {
         return await this.getNJPowerPlants(lat, lon, radius);
       case 'nj_public_solar_facilities':
         return await this.getNJPublicSolarFacilities(lat, lon, radius);
+      case 'nj_public_places_to_keep_cool':
+        return await this.getNJPublicPlacesToKeepCool(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -8263,6 +8266,63 @@ out center;`;
         nj_public_solar_facilities_all: [],
         nj_public_solar_facilities_count: 0,
         nj_public_solar_facilities_error: 'Error fetching NJ Public Solar Facilities data'
+      };
+    }
+  }
+
+  private async getNJPublicPlacesToKeepCool(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`❄️ Fetching NJ Public Places to Keep Cool data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 5; // Default to 5 miles if not provided, capped at 25 miles
+      const cappedRadius = Math.min(radiusMiles, 25.0);
+      
+      // Get public places to keep cool data
+      const places = await getNJPublicPlacesToKeepCoolData(lat, lon, cappedRadius);
+      
+      if (places && places.length > 0) {
+        // Store all places for CSV export and map drawing
+        result.nj_public_places_to_keep_cool_all = places.map(place => ({
+          ...place.attributes,
+          placeId: place.placeId,
+          featureType: place.featureType,
+          featureName: place.featureName,
+          address: place.address,
+          city: place.city,
+          zip: place.zip,
+          municipality: place.municipality,
+          county: place.county,
+          website: place.website,
+          phoneNumber: place.phoneNumber,
+          admission: place.admission,
+          in211: place.in211,
+          notes: place.notes,
+          lat: place.lat,
+          lon: place.lon,
+          distance_miles: place.distance_miles
+        }));
+        
+        result.nj_public_places_to_keep_cool_count = places.length;
+        result.nj_public_places_to_keep_cool_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_public_places_to_keep_cool_all = [];
+        result.nj_public_places_to_keep_cool_count = 0;
+        result.nj_public_places_to_keep_cool_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Public Places to Keep Cool data processed:`, {
+        count: result.nj_public_places_to_keep_cool_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Public Places to Keep Cool:', error);
+      return {
+        nj_public_places_to_keep_cool_all: [],
+        nj_public_places_to_keep_cool_count: 0,
+        nj_public_places_to_keep_cool_error: 'Error fetching NJ Public Places to Keep Cool data'
       };
     }
   }

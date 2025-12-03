@@ -350,9 +350,23 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         // Special handling for NJ - add sub-categories based on data sources
         if (section.id === 'nj') {
-          // Get NJGIN enrichments (filter POIs where section is 'nj')
-          const njGINPOIs = poiTypes.filter(poi => poi.section === 'nj');
+          // Get all NJ enrichments (filter POIs where section is 'nj')
+          const njPOIs = poiTypes.filter(poi => poi.section === 'nj');
+          
+          // Split into NJGIN and NJDEP based on description
+          const njGINPOIs = njPOIs.filter(poi => poi.description.includes('NJGIN'));
+          const njDEPPOIs = njPOIs.filter(poi => poi.description.includes('NJDEP'));
+          
           const njGINEnrichments = njGINPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          const njDEPEnrichments = njDEPPOIs.map(poi => ({
             id: poi.id,
             label: poi.label,
             description: poi.description,
@@ -369,6 +383,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               icon: <img src="/assets/NJGIN.webp" alt="NJGIN" className="w-full h-full object-cover rounded-full" />,
               description: 'New Jersey Geographic Information Network data layers',
               enrichments: njGINEnrichments
+            },
+            {
+              id: 'nj_dep',
+              title: 'NJDEP Bureau of GIS',
+              icon: <img src="/assets/NJDEP.webp" alt="NJDEP Bureau of GIS" className="w-full h-full object-cover rounded-full" />,
+              description: 'New Jersey Department of Environmental Protection Bureau of GIS data layers',
+              enrichments: njDEPEnrichments
             }
           ];
           

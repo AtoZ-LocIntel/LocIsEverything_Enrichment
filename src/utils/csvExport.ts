@@ -320,6 +320,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nj_alternative_fuel_stations_all' || // Skip NJ Alternative Fuel Stations array (handled separately)
         key === 'nj_power_plants_all' || // Skip NJ Power Plants array (handled separately)
         key === 'nj_public_solar_facilities_all' || // Skip NJ Public Solar Facilities array (handled separately)
+        key === 'nj_public_places_to_keep_cool_all' || // Skip NJ Public Places to Keep Cool array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -2121,6 +2122,59 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           customerType || '',
           `${companyName || ''}${installAddress ? ` - ${installAddress}` : ''}${installCity ? `, ${installCity}` : ''}${installZip ? ` ${installZip}` : ''}${systemSize !== null ? ` - System Size: ${systemSize.toFixed(2)} kW` : ''}${installer ? ` - Installer: ${installer}` : ''}${statusDateFormatted ? ` - Status Date: ${statusDateFormatted}` : ''}`,
           '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJDEP'
+        ]);
+      });
+    } else if (key === 'nj_public_places_to_keep_cool_all' && Array.isArray(value)) {
+      // Handle NJ Public Places to Keep Cool - each place gets its own row with all attributes
+      value.forEach((place: any) => {
+        const featureName = place.featureName || place.FEATURE_NAME || place.feature_name || place.NAME || place.name || 'Unknown Place';
+        const featureType = place.featureType || place.FEATURE_TYPE || place.feature_type || place.FeatureType || '';
+        const address = place.address || place.ADDRESS || place.address || '';
+        const city = place.city || place.CITY || place.city || '';
+        const zip = place.zip || place.ZIP || place.zip || '';
+        const municipality = place.municipality || place.MUNICIPALITY || place.municipality || '';
+        const county = place.county || place.COUNTY || place.county || '';
+        const website = place.website || place.WEBSITE || place.website || '';
+        const phoneNumber = place.phoneNumber || place.PHONE_NUMBER || place.phone_number || place.PHONE || place.phone || '';
+        const admission = place.admission || place.ADMISSION || place.admission || '';
+        const in211 = place.in211 || place.IN_211 || place.in_211 || place.IN211 || place.in211 || '';
+        const notes = place.notes || place.NOTES || place.notes || '';
+        
+        const allAttributes = { ...place };
+        delete allAttributes.placeId;
+        delete allAttributes.featureType;
+        delete allAttributes.featureName;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.zip;
+        delete allAttributes.municipality;
+        delete allAttributes.county;
+        delete allAttributes.website;
+        delete allAttributes.phoneNumber;
+        delete allAttributes.admission;
+        delete allAttributes.in211;
+        delete allAttributes.notes;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJDEP',
+          (location.confidence || 'N/A').toString(),
+          'NJ_PUBLIC_PLACES_TO_KEEP_COOL',
+          featureName,
+          place.lat ? place.lat.toString() : location.lat.toString(),
+          place.lon ? place.lon.toString() : location.lon.toString(),
+          place.distance_miles !== null && place.distance_miles !== undefined ? place.distance_miles.toFixed(2) : '',
+          featureType || 'Public Place to Keep Cool',
+          `${address ? `${address}` : ''}${city ? `, ${city}` : ''}${zip ? ` ${zip}` : ''}${municipality ? ` (${municipality})` : ''}${county ? `, ${county}` : ''}${phoneNumber ? ` - Phone: ${phoneNumber}` : ''}${website ? ` - Website: ${website}` : ''}${admission ? ` - Admission: ${admission}` : ''}${in211 ? ` - In 211: ${in211}` : ''}${notes ? ` - Notes: ${notes}` : ''}`,
+          phoneNumber || '',
           attributesJson, // Full attributes in Website field
           'NJDEP'
         ]);

@@ -220,6 +220,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'nj_alternative_fuel_stations': { icon: '⛽', color: '#10b981', title: 'NJ Alternative Fuel Stations' },
   'nj_power_plants': { icon: '⚡', color: '#f59e0b', title: 'NJ Power Plants' },
   'nj_public_solar_facilities': { icon: '☀️', color: '#fbbf24', title: 'NJ Public Solar Facilities' },
+  'nj_public_places_to_keep_cool': { icon: '❄️', color: '#3b82f6', title: 'NJ Public Places to Keep Cool' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -474,6 +475,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nj_alternative_fuel_stations_all' || // Skip NJ Alternative Fuel Stations array (handled separately for map drawing)
     key === 'nj_power_plants_all' || // Skip NJ Power Plants array (handled separately for map drawing)
     key === 'nj_public_solar_facilities_all' || // Skip NJ Public Solar Facilities array (handled separately for map drawing)
+    key === 'nj_public_places_to_keep_cool_all' || // Skip NJ Public Places to Keep Cool array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -7388,6 +7390,135 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nj_public_solar_facilities'].count += solarFacilityCount;
+        }
+      }
+
+      // Draw NJ Public Places to Keep Cool as markers on the map
+      if (enrichments.nj_public_places_to_keep_cool_all && Array.isArray(enrichments.nj_public_places_to_keep_cool_all)) {
+        let placeCount = 0;
+        enrichments.nj_public_places_to_keep_cool_all.forEach((place: any) => {
+          if (place.lat !== null && place.lat !== undefined && place.lon !== null && place.lon !== undefined) {
+            try {
+              placeCount++;
+              
+              const featureName = place.featureName || place.FEATURE_NAME || place.feature_name || place.NAME || place.name || 'Unknown Place';
+              const featureType = place.featureType || place.FEATURE_TYPE || place.feature_type || place.FeatureType || '';
+              const address = place.address || place.ADDRESS || place.address || '';
+              const city = place.city || place.CITY || place.city || '';
+              const zip = place.zip || place.ZIP || place.zip || '';
+              const municipality = place.municipality || place.MUNICIPALITY || place.municipality || '';
+              const county = place.county || place.COUNTY || place.county || '';
+              const website = place.website || place.WEBSITE || place.website || '';
+              const phoneNumber = place.phoneNumber || place.PHONE_NUMBER || place.phone_number || place.PHONE || place.phone || '';
+              const admission = place.admission || place.ADMISSION || place.admission || '';
+              const in211 = place.in211 || place.IN_211 || place.in_211 || place.IN211 || place.in211 || '';
+              const notes = place.notes || place.NOTES || place.notes || '';
+              const distanceMiles = place.distance_miles !== null && place.distance_miles !== undefined ? place.distance_miles : null;
+
+              // Create marker with blue color for cooling places
+              const marker = L.marker([place.lat, place.lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: `<div style="background-color: #3b82f6; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">❄️</div>`,
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12],
+                }),
+              });
+
+              // Build popup content
+              let popupContent = `
+                <div style="max-width: 300px;">
+                  <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px; color: #1e40af;">
+                    ${featureName}
+                  </div>
+                  <div style="font-size: 12px; color: #4b5563;">
+              `;
+
+              if (featureType) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${featureType}</div>`;
+              }
+              if (address) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Address:</strong> ${address}</div>`;
+              }
+              if (city) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>City:</strong> ${city}</div>`;
+              }
+              if (zip) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>ZIP:</strong> ${zip}</div>`;
+              }
+              if (municipality) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Municipality:</strong> ${municipality}</div>`;
+              }
+              if (county) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>County:</strong> ${county}</div>`;
+              }
+              if (phoneNumber) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Phone:</strong> ${phoneNumber}</div>`;
+              }
+              if (website) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Website:</strong> <a href="${website}" target="_blank" rel="noopener noreferrer">${website}</a></div>`;
+              }
+              if (admission) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Admission:</strong> ${admission}</div>`;
+              }
+              if (in211) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>In 211:</strong> ${in211}</div>`;
+              }
+              if (notes) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Notes:</strong> ${notes}</div>`;
+              }
+              if (distanceMiles !== null) {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Distance:</strong> ${distanceMiles.toFixed(2)} miles</div>`;
+              }
+
+              // Add all other attributes
+              Object.keys(place).forEach(key => {
+                if (!['lat', 'lon', 'distance_miles', 'featureName', 'FEATURE_NAME', 'feature_name', 'NAME', 'name', 'featureType', 'FEATURE_TYPE', 'feature_type', 'FeatureType', 'address', 'ADDRESS', 'address', 'city', 'CITY', 'city', 'zip', 'ZIP', 'zip', 'municipality', 'MUNICIPALITY', 'municipality', 'county', 'COUNTY', 'county', 'website', 'WEBSITE', 'website', 'phoneNumber', 'PHONE_NUMBER', 'phone_number', 'PHONE', 'phone', 'admission', 'ADMISSION', 'admission', 'in211', 'IN_211', 'in_211', 'IN211', 'in211', 'notes', 'NOTES', 'notes'].includes(key)) {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = place[key];
+                  
+                  if (typeof displayValue === 'object') {
+                    displayValue = JSON.stringify(displayValue);
+                  } else if (typeof displayValue === 'number') {
+                    displayValue = displayValue.toLocaleString();
+                  } else {
+                    displayValue = String(displayValue);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi); // Add to POI layer group
+              
+              try {
+                bounds.extend([place.lat, place.lon]);
+              } catch (boundsError) {
+                console.warn('Error extending bounds for NJ Public Place to Keep Cool:', boundsError);
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Public Place to Keep Cool:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (placeCount > 0) {
+          if (!legendAccumulator['nj_public_places_to_keep_cool']) {
+            legendAccumulator['nj_public_places_to_keep_cool'] = {
+              icon: '❄️',
+              color: '#3b82f6',
+              title: 'NJ Public Places to Keep Cool',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_public_places_to_keep_cool'].count += placeCount;
         }
       }
 
