@@ -315,6 +315,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nj_bus_stops_all' || // Skip NJ Bus Stops array (handled separately)
         key === 'nj_safety_service_patrol_all' || // Skip NJ Safety Service Patrol array (handled separately)
         key === 'nj_service_areas_all' || // Skip NJ Service Areas array (handled separately)
+        key === 'nj_roadway_network_all' || // Skip NJ Roadway Network array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1867,6 +1868,58 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles.toFixed(2) : '',
           route || '',
           `${name || ''}${milepost !== null ? ` - Milepost: ${milepost.toFixed(2)}` : ''}${lineType ? ` - Line Type: ${lineType}` : ''}${rotation !== null ? ` - Rotation: ${rotation}°` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJGIN'
+        ]);
+      });
+    } else if (key === 'nj_roadway_network_all' && Array.isArray(value)) {
+      // Handle NJ Roadway Network - each roadway segment gets its own row with all attributes
+      value.forEach((roadway: any) => {
+        const sldName = roadway.sldName || roadway.SLD_NAME || roadway.sld_name || roadway.NAME || roadway.name || 'Roadway Segment';
+        const sri = roadway.sri || roadway.SRI || roadway.sri || '';
+        const parentSRI = roadway.parentSRI || roadway.PARENT_SRI || roadway.parent_sri || '';
+        const mpStart = roadway.mpStart !== null && roadway.mpStart !== undefined ? roadway.mpStart : null;
+        const mpEnd = roadway.mpEnd !== null && roadway.mpEnd !== undefined ? roadway.mpEnd : null;
+        const parentMpStart = roadway.parentMpStart !== null && roadway.parentMpStart !== undefined ? roadway.parentMpStart : null;
+        const parentMpEnd = roadway.parentMpEnd !== null && roadway.parentMpEnd !== undefined ? roadway.parentMpEnd : null;
+        const measuredLength = roadway.measuredLength !== null && roadway.measuredLength !== undefined ? roadway.measuredLength : null;
+        const direction = roadway.direction || roadway.DIRECTION || roadway.direction || '';
+        const active = roadway.active || roadway.ACTIVE || roadway.active || '';
+        const routeSubtype = roadway.routeSubtype !== null && roadway.routeSubtype !== undefined ? roadway.routeSubtype : null;
+        const roadNum = roadway.roadNum || roadway.ROAD_NUM || roadway.road_num || '';
+        
+        const allAttributes = { ...roadway };
+        delete allAttributes.roadwayId;
+        delete allAttributes.sri;
+        delete allAttributes.sldName;
+        delete allAttributes.parentSRI;
+        delete allAttributes.mpStart;
+        delete allAttributes.mpEnd;
+        delete allAttributes.parentMpStart;
+        delete allAttributes.parentMpEnd;
+        delete allAttributes.measuredLength;
+        delete allAttributes.direction;
+        delete allAttributes.active;
+        delete allAttributes.routeSubtype;
+        delete allAttributes.roadNum;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJGIN',
+          (location.confidence || 'N/A').toString(),
+          'NJ_ROADWAY_NETWORK',
+          `${sldName}${sri ? ` (${sri})` : ''}`,
+          location.lat.toString(), // Use search location (roadway is a line, not a point)
+          location.lon.toString(),
+          roadway.distance_miles !== null && roadway.distance_miles !== undefined ? roadway.distance_miles.toFixed(2) : '',
+          parentSRI || sri || '',
+          `${sldName || ''}${mpStart !== null ? ` - MP Start: ${mpStart.toFixed(3)}` : ''}${mpEnd !== null ? ` - MP End: ${mpEnd.toFixed(3)}` : ''}${measuredLength !== null ? ` - Length: ${measuredLength.toFixed(3)} mi` : ''}${direction ? ` - Direction: ${direction}` : ''}${active ? ` - Active: ${active}` : ''}${routeSubtype !== null ? ` - Route Subtype: ${routeSubtype}` : ''}${roadNum ? ` - Road #: ${roadNum}` : ''}`,
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'NJGIN'

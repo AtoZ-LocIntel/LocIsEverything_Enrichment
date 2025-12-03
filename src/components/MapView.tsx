@@ -215,6 +215,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'nj_bus_stops': { icon: '🚌', color: '#f59e0b', title: 'NJ Bus Stops' },
   'nj_safety_service_patrol': { icon: '🚨', color: '#dc2626', title: 'NJ Safety Service Patrol' },
   'nj_service_areas': { icon: '🛣️', color: '#8b5cf6', title: 'NJ Service Areas' },
+  'nj_roadway_network': { icon: '🛣️', color: '#6b7280', title: 'NJ Roadway Network' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -464,6 +465,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nj_bus_stops_all' || // Skip NJ Bus Stops array (handled separately for map drawing)
     key === 'nj_safety_service_patrol_all' || // Skip NJ Safety Service Patrol array (handled separately for map drawing)
     key === 'nj_service_areas_all' || // Skip NJ Service Areas array (handled separately for map drawing)
+    key === 'nj_roadway_network_all' || // Skip NJ Roadway Network array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -6842,6 +6844,123 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nj_service_areas'].count += serviceAreaCount;
+        }
+      }
+
+      // Draw NJ Roadway Network as polylines on the map
+      if (enrichments.nj_roadway_network_all && Array.isArray(enrichments.nj_roadway_network_all)) {
+        let roadwayCount = 0;
+        enrichments.nj_roadway_network_all.forEach((roadway: any) => {
+          if (roadway.geometry && roadway.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              const paths = roadway.geometry.paths;
+              if (paths && paths.length > 0) {
+                roadwayCount++;
+                // For each path in the polyline, create a separate polyline
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    // Since we requested outSR=4326, coordinates should already be in WGS84
+                    // Convert [lon, lat] to [lat, lon] for Leaflet
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const sldName = roadway.sldName || roadway.SLD_NAME || roadway.sld_name || roadway.NAME || roadway.name || 'Unknown Roadway';
+                  const sri = roadway.sri || roadway.SRI || roadway.sri || '';
+                  const parentSRI = roadway.parentSRI || roadway.PARENT_SRI || roadway.parent_sri || '';
+                  const mpStart = roadway.mpStart !== null && roadway.mpStart !== undefined ? roadway.mpStart : null;
+                  const mpEnd = roadway.mpEnd !== null && roadway.mpEnd !== undefined ? roadway.mpEnd : null;
+                  const parentMpStart = roadway.parentMpStart !== null && roadway.parentMpStart !== undefined ? roadway.parentMpStart : null;
+                  const parentMpEnd = roadway.parentMpEnd !== null && roadway.parentMpEnd !== undefined ? roadway.parentMpEnd : null;
+                  const measuredLength = roadway.measuredLength !== null && roadway.measuredLength !== undefined ? roadway.measuredLength : null;
+                  const direction = roadway.direction || roadway.DIRECTION || roadway.direction || '';
+                  const active = roadway.active || roadway.ACTIVE || roadway.active || '';
+                  const routeSubtype = roadway.routeSubtype !== null && roadway.routeSubtype !== undefined ? roadway.routeSubtype : null;
+                  const roadNum = roadway.roadNum || roadway.ROAD_NUM || roadway.road_num || '';
+
+                  // Create polyline with gray color for roadways
+                  const polyline = L.polyline(latlngs, {
+                    color: '#6b7280', // Gray color for roadways
+                    weight: 3,
+                    opacity: 0.7,
+                    smoothFactor: 1
+                  });
+
+                  // Build popup content with all roadway attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🛣️ ${sldName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${sri ? `<div><strong>SRI:</strong> ${sri}</div>` : ''}
+                        ${parentSRI ? `<div><strong>Parent SRI:</strong> ${parentSRI}</div>` : ''}
+                        ${mpStart !== null ? `<div><strong>MP Start:</strong> ${mpStart.toFixed(3)}</div>` : ''}
+                        ${mpEnd !== null ? `<div><strong>MP End:</strong> ${mpEnd.toFixed(3)}</div>` : ''}
+                        ${parentMpStart !== null ? `<div><strong>Parent MP Start:</strong> ${parentMpStart.toFixed(3)}</div>` : ''}
+                        ${parentMpEnd !== null ? `<div><strong>Parent MP End:</strong> ${parentMpEnd.toFixed(3)}</div>` : ''}
+                        ${measuredLength !== null ? `<div><strong>Measured Length:</strong> ${measuredLength.toFixed(3)} mi</div>` : ''}
+                        ${direction ? `<div><strong>Direction:</strong> ${direction}</div>` : ''}
+                        ${active ? `<div><strong>Active:</strong> ${active}</div>` : ''}
+                        ${routeSubtype !== null ? `<div><strong>Route Subtype:</strong> ${routeSubtype}</div>` : ''}
+                        ${roadNum ? `<div><strong>Road Number:</strong> ${roadNum}</div>` : ''}
+                        ${roadway.distance_miles !== null && roadway.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${roadway.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all roadway attributes (excluding internal fields)
+                  const excludeFields = ['sldName', 'sri', 'parentSRI', 'mpStart', 'mpEnd', 'parentMpStart', 'parentMpEnd', 'measuredLength', 'direction', 'active', 'routeSubtype', 'roadNum', 'geometry', 'distance_miles', 'SLD_NAME', 'sld_name', 'NAME', 'name', 'SRI', 'sri', 'PARENT_SRI', 'parent_sri', 'MP_START', 'mp_start', 'MP_END', 'mp_end', 'PARENT_MP_START', 'parent_mp_start', 'PARENT_MP_END', 'parent_mp_end', 'MEASURED_LENGTH', 'measured_length', 'DIRECTION', 'direction', 'ACTIVE', 'active', 'ROUTE_SUBTYPE', 'route_subtype', 'ROAD_NUM', 'road_num'];
+                  Object.entries(roadway).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi); // Add to POI layer group
+                  
+                  try {
+                    bounds.extend(polyline.getBounds());
+                  } catch (boundsError) {
+                    console.warn('Error extending bounds for NJ Roadway Network segment:', boundsError);
+                  }
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Roadway Network segment:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (roadwayCount > 0) {
+          if (!legendAccumulator['nj_roadway_network']) {
+            legendAccumulator['nj_roadway_network'] = {
+              icon: '🛣️',
+              color: '#6b7280',
+              title: 'NJ Roadway Network',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_roadway_network'].count += roadwayCount;
         }
       }
 

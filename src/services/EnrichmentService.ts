@@ -68,6 +68,7 @@ import { getNJAddressPointsData } from '../adapters/njAddressPoints';
 import { getNJBusStopsData } from '../adapters/njBusStops';
 import { getNJSafetyServicePatrolData } from '../adapters/njSafetyServicePatrol';
 import { getNJServiceAreasData } from '../adapters/njServiceAreas';
+import { getNJRoadwayNetworkData } from '../adapters/njRoadwayNetwork';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1640,6 +1641,8 @@ export class EnrichmentService {
         return await this.getNJSafetyServicePatrol(lat, lon, radius);
       case 'nj_service_areas':
         return await this.getNJServiceAreas(lat, lon, radius);
+      case 'nj_roadway_network':
+        return await this.getNJRoadwayNetwork(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -7973,6 +7976,62 @@ out center;`;
         nj_service_areas_all: [],
         nj_service_areas_count: 0,
         nj_service_areas_error: 'Error fetching NJ Service Areas data'
+      };
+    }
+  }
+
+  private async getNJRoadwayNetwork(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching NJ Roadway Network data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 5; // Default to 5 miles if not provided, capped at 25 miles
+      const cappedRadius = Math.min(radiusMiles, 25.0);
+      
+      // Get roadway network data
+      const roadwaySegments = await getNJRoadwayNetworkData(lat, lon, cappedRadius);
+      
+      if (roadwaySegments && roadwaySegments.length > 0) {
+        // Store all roadway segments for CSV export and map drawing
+        result.nj_roadway_network_all = roadwaySegments.map(segment => ({
+          ...segment.attributes,
+          roadwayId: segment.roadwayId,
+          sri: segment.sri,
+          sldName: segment.sldName,
+          parentSRI: segment.parentSRI,
+          mpStart: segment.mpStart,
+          mpEnd: segment.mpEnd,
+          parentMpStart: segment.parentMpStart,
+          parentMpEnd: segment.parentMpEnd,
+          measuredLength: segment.measuredLength,
+          direction: segment.direction,
+          active: segment.active,
+          routeSubtype: segment.routeSubtype,
+          roadNum: segment.roadNum,
+          geometry: segment.geometry, // Include geometry for map drawing
+          distance_miles: segment.distance_miles
+        }));
+        
+        result.nj_roadway_network_count = roadwaySegments.length;
+        result.nj_roadway_network_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_roadway_network_all = [];
+        result.nj_roadway_network_count = 0;
+        result.nj_roadway_network_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Roadway Network data processed:`, {
+        count: result.nj_roadway_network_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Roadway Network:', error);
+      return {
+        nj_roadway_network_all: [],
+        nj_roadway_network_count: 0,
+        nj_roadway_network_error: 'Error fetching NJ Roadway Network data'
       };
     }
   }

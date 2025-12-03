@@ -273,7 +273,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         },
         {
           name: "EPA TRI Facilities",
-          description: "Toxics Release Inventory facilities reporting chemical releases",
+          description: "Toxics Release Inventory facilities reporting chemical releases. Includes: All TRI Facilities, TRI Facilities (Tribal Land), Manufacturing Facilities, Metal Mining Facilities, Electric Utility Facilities, Wood Products Facilities, Automotive Manufacturing, PFAS Facilities, Lead Facilities, Dioxins Facilities, Ethylene Oxide Facilities, Carcinogens Facilities, Mercury Facilities, and Federal TRI Facilities",
           coverage: "United States",
           accuracy: "High",
           cost: "Free"
@@ -726,6 +726,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Massachusetts (350 of 351 cities and towns)",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "Cape Cod Zoning Map",
+          description: "Cape Cod zoning districts and boundaries - point-in-polygon and proximity queries",
+          coverage: "Cape Cod, Massachusetts",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
@@ -817,6 +824,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         {
           name: "NJ Service Areas",
           description: "New Jersey Service Areas from NJGIN - highway service areas and rest stops - proximity queries up to 50 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NJ Roadway Network",
+          description: "New Jersey Department of Transportation Roadway Network from NJGIN - comprehensive road network including highways, routes, and ramps - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
           cost: "Free"
@@ -1117,18 +1131,6 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           name: "DE Rail Lines",
           description: "Delaware Rail Lines - proximity queries up to 25 miles",
           coverage: "Delaware",
-          accuracy: "Very High",
-          cost: "Free"
-        }
-      ]
-    },
-    {
-      category: "Massachusetts Data (Cape Cod Commission)",
-      sources: [
-        {
-          name: "Cape Cod Zoning Map",
-          description: "Cape Cod zoning districts and boundaries - point-in-polygon and proximity queries",
-          coverage: "Cape Cod, Massachusetts",
           accuracy: "Very High",
           cost: "Free"
         }
