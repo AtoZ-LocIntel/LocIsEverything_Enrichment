@@ -213,6 +213,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'nj_parcels': { icon: '🏠', color: '#059669', title: 'NJ Tax Parcels' },
   'nj_address_points': { icon: '📍', color: '#3b82f6', title: 'NJ Address Points' },
   'nj_bus_stops': { icon: '🚌', color: '#f59e0b', title: 'NJ Bus Stops' },
+  'nj_safety_service_patrol': { icon: '🚨', color: '#dc2626', title: 'NJ Safety Service Patrol' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -460,6 +461,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nj_parcels_all' || // Skip NJ Parcels array (handled separately for map drawing)
     key === 'nj_address_points_all' || // Skip NJ Address Points array (handled separately for map drawing)
     key === 'nj_bus_stops_all' || // Skip NJ Bus Stops array (handled separately for map drawing)
+    key === 'nj_safety_service_patrol_all' || // Skip NJ Safety Service Patrol array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -6643,6 +6645,113 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nj_bus_stops'].count += busStopCount;
+        }
+      }
+
+      // Draw NJ Safety Service Patrol routes as polylines on the map
+      if (enrichments.nj_safety_service_patrol_all && Array.isArray(enrichments.nj_safety_service_patrol_all)) {
+        let patrolRouteCount = 0;
+        enrichments.nj_safety_service_patrol_all.forEach((route: any) => {
+          if (route.geometry && route.geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              const paths = route.geometry.paths;
+              if (paths && paths.length > 0) {
+                patrolRouteCount++;
+                // For each path in the polyline, create a separate polyline
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    // Since we requested outSR=4326, coordinates should already be in WGS84
+                    // Convert [lon, lat] to [lat, lon] for Leaflet
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const routeName = route.routeName || route.SRI_ || route.sri_ || route.ROUTE || route.route || 'Unknown Route';
+                  const sri = route.sri || route.SRI || route.sri || '';
+                  const beginMile = route.beginMile !== null && route.beginMile !== undefined ? route.beginMile : null;
+                  const endMile = route.endMile !== null && route.endMile !== undefined ? route.endMile : null;
+                  const totalMiles = route.totalMiles !== null && route.totalMiles !== undefined ? route.totalMiles : null;
+                  const category = route.category || route.CAT || route.cat || '';
+                  const categoryType = route.categoryType || route.CAT_1 || route.cat_1 || '';
+
+                  // Create polyline with red color for safety service patrol
+                  const polyline = L.polyline(latlngs, {
+                    color: '#dc2626', // Red color for safety service patrol
+                    weight: 4,
+                    opacity: 0.8,
+                    smoothFactor: 1
+                  });
+
+                  // Build popup content with all route attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🚨 ${routeName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${sri ? `<div><strong>SRI:</strong> ${sri}</div>` : ''}
+                        ${beginMile !== null ? `<div><strong>Begin Mile:</strong> ${beginMile.toFixed(2)}</div>` : ''}
+                        ${endMile !== null ? `<div><strong>End Mile:</strong> ${endMile.toFixed(2)}</div>` : ''}
+                        ${totalMiles !== null ? `<div><strong>Total Miles:</strong> ${totalMiles.toFixed(2)}</div>` : ''}
+                        ${category ? `<div><strong>Category:</strong> ${category}</div>` : ''}
+                        ${categoryType ? `<div><strong>Category Type:</strong> ${categoryType}</div>` : ''}
+                        ${route.distance_miles !== null && route.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${route.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all route attributes (excluding internal fields)
+                  const excludeFields = ['routeName', 'sri', 'beginMile', 'endMile', 'totalMiles', 'category', 'categoryType', 'locationError', 'geometry', 'distance_miles', 'SRI_', 'sri_', 'ROUTE', 'route', 'SRI', 'sri', 'BEGIN_MILE', 'begin_mile', 'END_MILEPO', 'end_milepo', 'TOTAL_MILE', 'total_mile', 'CAT', 'cat', 'CAT_1', 'cat_1', 'LOC_ERROR', 'loc_error'];
+                  Object.entries(route).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi); // Add to POI layer group
+                  
+                  try {
+                    bounds.extend(polyline.getBounds());
+                  } catch (boundsError) {
+                    console.warn('Error extending bounds for NJ Safety Service Patrol route:', boundsError);
+                  }
+                });
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Safety Service Patrol route:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (patrolRouteCount > 0) {
+          if (!legendAccumulator['nj_safety_service_patrol']) {
+            legendAccumulator['nj_safety_service_patrol'] = {
+              icon: '🚨',
+              color: '#dc2626',
+              title: 'NJ Safety Service Patrol',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_safety_service_patrol'].count += patrolRouteCount;
         }
       }
 

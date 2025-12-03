@@ -313,6 +313,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nj_parcels_all' || // Skip NJ Parcels array (handled separately)
         key === 'nj_address_points_all' || // Skip NJ Address Points array (handled separately)
         key === 'nj_bus_stops_all' || // Skip NJ Bus Stops array (handled separately)
+        key === 'nj_safety_service_patrol_all' || // Skip NJ Safety Service Patrol array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1782,6 +1783,49 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           stop.distance_miles !== null && stop.distance_miles !== undefined ? stop.distance_miles.toFixed(2) : '',
           `${municipality || ''}${county ? `, ${county}` : ''}`,
           `${description || ''}${stopType ? ` - Type: ${stopType}` : ''}${direction ? ` - Direction: ${direction}` : ''}${streetDirection ? ` - Street Dir: ${streetDirection}` : ''}${allLines ? ` - Lines: ${allLines}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJGIN'
+        ]);
+      });
+    } else if (key === 'nj_safety_service_patrol_all' && Array.isArray(value)) {
+      // Handle NJ Safety Service Patrol - each route gets its own row with all attributes
+      value.forEach((route: any) => {
+        const routeName = route.routeName || route.SRI_ || route.sri_ || route.ROUTE || route.route || 'Safety Service Patrol Route';
+        const sri = route.sri || route.SRI || route.sri || '';
+        const beginMile = route.beginMile !== null && route.beginMile !== undefined ? route.beginMile : null;
+        const endMile = route.endMile !== null && route.endMile !== undefined ? route.endMile : null;
+        const totalMiles = route.totalMiles !== null && route.totalMiles !== undefined ? route.totalMiles : null;
+        const category = route.category || route.CAT || route.cat || '';
+        const categoryType = route.categoryType || route.CAT_1 || route.cat_1 || '';
+        
+        const allAttributes = { ...route };
+        delete allAttributes.routeId;
+        delete allAttributes.routeName;
+        delete allAttributes.sri;
+        delete allAttributes.beginMile;
+        delete allAttributes.endMile;
+        delete allAttributes.totalMiles;
+        delete allAttributes.category;
+        delete allAttributes.categoryType;
+        delete allAttributes.locationError;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJGIN',
+          (location.confidence || 'N/A').toString(),
+          'NJ_SAFETY_SERVICE_PATROL',
+          `${routeName}${sri ? ` (${sri})` : ''}`,
+          location.lat.toString(), // Use search location (route is a line, not a point)
+          location.lon.toString(),
+          route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '',
+          category || '',
+          `${routeName || ''}${beginMile !== null ? ` - Begin: ${beginMile.toFixed(2)} mi` : ''}${endMile !== null ? ` - End: ${endMile.toFixed(2)} mi` : ''}${totalMiles !== null ? ` - Total: ${totalMiles.toFixed(2)} mi` : ''}${categoryType ? ` - Type: ${categoryType}` : ''}`,
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'NJGIN'

@@ -66,6 +66,7 @@ import { getDERailLinesData } from '../adapters/deRailLines';
 import { getNJParcelsData } from '../adapters/njParcels';
 import { getNJAddressPointsData } from '../adapters/njAddressPoints';
 import { getNJBusStopsData } from '../adapters/njBusStops';
+import { getNJSafetyServicePatrolData } from '../adapters/njSafetyServicePatrol';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1634,6 +1635,8 @@ export class EnrichmentService {
         return await this.getNJAddressPoints(lat, lon, radius);
       case 'nj_bus_stops':
         return await this.getNJBusStops(lat, lon, radius);
+      case 'nj_safety_service_patrol':
+        return await this.getNJSafetyServicePatrol(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -7865,6 +7868,58 @@ out center;`;
         nj_bus_stops_all: [],
         nj_bus_stops_count: 0,
         nj_bus_stops_error: 'Error fetching NJ Bus Stops data'
+      };
+    }
+  }
+
+  private async getNJSafetyServicePatrol(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚨 Fetching NJ Safety Service Patrol data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 5; // Default to 5 miles if not provided, capped at 25 miles
+      const cappedRadius = Math.min(radiusMiles, 25.0);
+      
+      // Get patrol routes data
+      const patrolRoutes = await getNJSafetyServicePatrolData(lat, lon, cappedRadius);
+      
+      if (patrolRoutes && patrolRoutes.length > 0) {
+        // Store all patrol routes for CSV export and map drawing
+        result.nj_safety_service_patrol_all = patrolRoutes.map(route => ({
+          ...route.attributes,
+          routeId: route.routeId,
+          routeName: route.routeName,
+          sri: route.sri,
+          beginMile: route.beginMile,
+          endMile: route.endMile,
+          totalMiles: route.totalMiles,
+          category: route.category,
+          categoryType: route.categoryType,
+          locationError: route.locationError,
+          geometry: route.geometry, // Include geometry for map drawing
+          distance_miles: route.distance_miles
+        }));
+        
+        result.nj_safety_service_patrol_count = patrolRoutes.length;
+        result.nj_safety_service_patrol_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_safety_service_patrol_all = [];
+        result.nj_safety_service_patrol_count = 0;
+        result.nj_safety_service_patrol_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Safety Service Patrol data processed:`, {
+        count: result.nj_safety_service_patrol_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Safety Service Patrol:', error);
+      return {
+        nj_safety_service_patrol_all: [],
+        nj_safety_service_patrol_count: 0,
+        nj_safety_service_patrol_error: 'Error fetching NJ Safety Service Patrol data'
       };
     }
   }

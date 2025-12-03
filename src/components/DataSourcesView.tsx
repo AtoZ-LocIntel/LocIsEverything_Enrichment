@@ -806,6 +806,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Jersey",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "NJ Safety Service Patrol",
+          description: "New Jersey Department of Transportation Safety Service Patrol routes from NJGIN - highway patrol coverage areas - proximity queries up to 25 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
