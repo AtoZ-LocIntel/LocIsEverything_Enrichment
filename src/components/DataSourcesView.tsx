@@ -795,7 +795,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       sources: [
         {
           name: "NJ Tax Parcels",
-          description: "New Jersey Tax Parcels from NJGIN - point-in-polygon and proximity queries up to 5 miles",
+          description: "New Jersey Tax Parcels from NJGIN - point-in-polygon and proximity queries (0.25, 0.50, 0.75, 1.0 miles)",
           coverage: "New Jersey",
           accuracy: "Very High",
           cost: "Free"
@@ -831,6 +831,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         {
           name: "NJ Roadway Network",
           description: "New Jersey Department of Transportation Roadway Network from NJGIN - comprehensive road network including highways, routes, and ramps - proximity queries up to 25 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NJ Known Contaminated Sites",
+          description: "New Jersey Department of Environmental Protection (NJDEP) Known Contaminated Sites from Environmental NJEMS - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
           cost: "Free"

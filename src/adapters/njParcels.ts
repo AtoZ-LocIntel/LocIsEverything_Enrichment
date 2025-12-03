@@ -107,48 +107,77 @@ export async function getNJParcelsData(
 ): Promise<{ containing: NJParcelInfo | null; nearby: NJParcelInfo[] }> {
   try {
     if (radiusMiles && radiusMiles > 0) {
-      // Cap radius at 5 miles
-      const cappedRadius = Math.min(radiusMiles, 5.0);
+      // Cap radius at 1 mile
+      const cappedRadius = Math.min(radiusMiles, 1.0);
       
-      // Proximity query
+      // Proximity query with pagination to get all results
       console.log(`🏠 Querying NJ Parcels within ${cappedRadius} miles of [${lat}, ${lon}]`);
       
       const radiusMeters = cappedRadius * 1609.34;
-      const queryUrl = new URL(`${BASE_SERVICE_URL}/${PARCELS_LAYER_ID}/query`);
+      const allFeatures: any[] = [];
+      let resultOffset = 0;
+      const batchSize = 2000; // ESRI FeatureServer max per request
+      let hasMore = true;
       
-      queryUrl.searchParams.set('f', 'json');
-      queryUrl.searchParams.set('where', '1=1');
-      queryUrl.searchParams.set('outFields', '*');
-      queryUrl.searchParams.set('geometry', JSON.stringify({
-        x: lon,
-        y: lat,
-        spatialReference: { wkid: 4326 }
-      }));
-      queryUrl.searchParams.set('geometryType', 'esriGeometryPoint');
-      queryUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
-      queryUrl.searchParams.set('distance', radiusMeters.toString());
-      queryUrl.searchParams.set('units', 'esriSRUnit_Meter');
-      queryUrl.searchParams.set('inSR', '4326');
-      queryUrl.searchParams.set('outSR', '4326');
-      queryUrl.searchParams.set('returnGeometry', 'true');
-      
-      const response = await fetch(queryUrl.toString());
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Fetch all results in batches
+      while (hasMore) {
+        const queryUrl = new URL(`${BASE_SERVICE_URL}/${PARCELS_LAYER_ID}/query`);
+        
+        queryUrl.searchParams.set('f', 'json');
+        queryUrl.searchParams.set('where', '1=1');
+        queryUrl.searchParams.set('outFields', '*');
+        queryUrl.searchParams.set('geometry', JSON.stringify({
+          x: lon,
+          y: lat,
+          spatialReference: { wkid: 4326 }
+        }));
+        queryUrl.searchParams.set('geometryType', 'esriGeometryPoint');
+        queryUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+        queryUrl.searchParams.set('distance', radiusMeters.toString());
+        queryUrl.searchParams.set('units', 'esriSRUnit_Meter');
+        queryUrl.searchParams.set('inSR', '4326');
+        queryUrl.searchParams.set('outSR', '4326');
+        queryUrl.searchParams.set('returnGeometry', 'true');
+        queryUrl.searchParams.set('resultRecordCount', batchSize.toString());
+        queryUrl.searchParams.set('resultOffset', resultOffset.toString());
+        
+        const response = await fetch(queryUrl.toString());
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (data.error) {
+          console.error('❌ NJ Parcels API Error:', data.error);
+          break;
+        }
+        
+        if (!data.features || data.features.length === 0) {
+          hasMore = false;
+          break;
+        }
+        
+        allFeatures.push(...data.features);
+        console.log(`📦 Fetched batch: ${data.features.length} parcels (total so far: ${allFeatures.length})`);
+        
+        // Check if there are more records to fetch
+        if (data.exceededTransferLimit === true || data.features.length === batchSize) {
+          resultOffset += batchSize;
+          // Small delay to avoid overwhelming the server
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } else {
+          hasMore = false;
+        }
       }
       
-      const data = await response.json();
-      if (data.error) {
-        console.error('❌ NJ Parcels API Error:', data.error);
-        return { containing: null, nearby: [] };
-      }
-      
-      if (!data.features || data.features.length === 0) {
+      if (allFeatures.length === 0) {
         console.log(`ℹ️ No NJ Parcels found within ${cappedRadius} miles`);
         return { containing: null, nearby: [] };
       }
       
-      const parcels: NJParcelInfo[] = data.features.map((feature: any) => {
+      console.log(`✅ Fetched ${allFeatures.length} total NJ Parcels (${Math.ceil(allFeatures.length / batchSize)} batches)`);
+      
+      const parcels: NJParcelInfo[] = allFeatures.map((feature: any) => {
         const attributes = feature.attributes || {};
         const geometry = feature.geometry || null;
         
@@ -230,6 +259,7 @@ export async function getNJParcelsData(
       queryUrl.searchParams.set('inSR', '4326');
       queryUrl.searchParams.set('outSR', '4326');
       queryUrl.searchParams.set('returnGeometry', 'true');
+      queryUrl.searchParams.set('resultRecordCount', '10000'); // Increase limit to get all results
       
       const response = await fetch(queryUrl.toString());
       if (!response.ok) {
@@ -245,6 +275,11 @@ export async function getNJParcelsData(
       if (!data.features || data.features.length === 0) {
         console.log(`ℹ️ No NJ Parcels found containing the point`);
         return { containing: null, nearby: [] };
+      }
+      
+      // Check if there are more records (exceededTransferLimit indicates pagination needed)
+      if (data.exceededTransferLimit === true) {
+        console.warn(`⚠️ NJ Parcels query exceeded transfer limit. Consider using a smaller radius or implementing pagination.`);
       }
       
       const containingFeature = data.features[0];

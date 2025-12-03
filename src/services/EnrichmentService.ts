@@ -69,6 +69,7 @@ import { getNJBusStopsData } from '../adapters/njBusStops';
 import { getNJSafetyServicePatrolData } from '../adapters/njSafetyServicePatrol';
 import { getNJServiceAreasData } from '../adapters/njServiceAreas';
 import { getNJRoadwayNetworkData } from '../adapters/njRoadwayNetwork';
+import { getNJKnownContaminatedSitesData } from '../adapters/njKnownContaminatedSites';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1643,6 +1644,8 @@ export class EnrichmentService {
         return await this.getNJServiceAreas(lat, lon, radius);
       case 'nj_roadway_network':
         return await this.getNJRoadwayNetwork(lat, lon, radius);
+      case 'nj_known_contaminated_sites':
+        return await this.getNJKnownContaminatedSites(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -8032,6 +8035,58 @@ out center;`;
         nj_roadway_network_all: [],
         nj_roadway_network_count: 0,
         nj_roadway_network_error: 'Error fetching NJ Roadway Network data'
+      };
+    }
+  }
+
+  private async getNJKnownContaminatedSites(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏭 Fetching NJ Known Contaminated Sites data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 5; // Default to 5 miles if not provided, capped at 25 miles
+      const cappedRadius = Math.min(radiusMiles, 25.0);
+      
+      // Get contaminated sites data
+      const contaminatedSites = await getNJKnownContaminatedSitesData(lat, lon, cappedRadius);
+      
+      if (contaminatedSites && contaminatedSites.length > 0) {
+        // Store all contaminated sites for CSV export and map drawing
+        result.nj_known_contaminated_sites_all = contaminatedSites.map(site => ({
+          ...site.attributes,
+          siteId: site.siteId,
+          siteName: site.siteName,
+          address: site.address,
+          municipality: site.municipality,
+          county: site.county,
+          zipCode: site.zipCode,
+          siteType: site.siteType,
+          status: site.status,
+          lat: site.lat,
+          lon: site.lon,
+          distance_miles: site.distance_miles
+        }));
+        
+        result.nj_known_contaminated_sites_count = contaminatedSites.length;
+        result.nj_known_contaminated_sites_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_known_contaminated_sites_all = [];
+        result.nj_known_contaminated_sites_count = 0;
+        result.nj_known_contaminated_sites_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Known Contaminated Sites data processed:`, {
+        count: result.nj_known_contaminated_sites_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Known Contaminated Sites:', error);
+      return {
+        nj_known_contaminated_sites_all: [],
+        nj_known_contaminated_sites_count: 0,
+        nj_known_contaminated_sites_error: 'Error fetching NJ Known Contaminated Sites data'
       };
     }
   }

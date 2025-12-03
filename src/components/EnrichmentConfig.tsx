@@ -1440,6 +1440,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
                               if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
                           if (enrichment.id === 'nh_parcels') return '0.3 miles';
+                          if (enrichment.id === 'nj_parcels') return '0.3 miles';
                           if (enrichment.id === 'ma_parcels') return '0.3 miles';
                           if (enrichment.id === 'ct_building_footprints') return '0.3 miles';
                               return '5 miles';
@@ -1476,9 +1477,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             {enrichment.isPOI && isSelected && (() => {
                               // For NH parcels, use a dropdown with specific options
                               const isNHParcels = enrichment.id === 'nh_parcels';
+                              const isNJParcels = enrichment.id === 'nj_parcels';
                               const isMAParcels = enrichment.id === 'ma_parcels';
                               const isCTBuildingFootprints = enrichment.id === 'ct_building_footprints';
-                              const radiusOptions = isNHParcels
+                              const radiusOptions = isNHParcels || isNJParcels
                                 ? [0.25, 0.50, 0.75, 1.0]
                                 : isMAParcels
                                 ? [0.3, 0.5, 0.75, 1.0]

@@ -216,6 +216,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'nj_safety_service_patrol': { icon: '🚨', color: '#dc2626', title: 'NJ Safety Service Patrol' },
   'nj_service_areas': { icon: '🛣️', color: '#8b5cf6', title: 'NJ Service Areas' },
   'nj_roadway_network': { icon: '🛣️', color: '#6b7280', title: 'NJ Roadway Network' },
+  'nj_known_contaminated_sites': { icon: '⚠️', color: '#dc2626', title: 'NJ Known Contaminated Sites' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -466,6 +467,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nj_safety_service_patrol_all' || // Skip NJ Safety Service Patrol array (handled separately for map drawing)
     key === 'nj_service_areas_all' || // Skip NJ Service Areas array (handled separately for map drawing)
     key === 'nj_roadway_network_all' || // Skip NJ Roadway Network array (handled separately for map drawing)
+    key === 'nj_known_contaminated_sites_all' || // Skip NJ Known Contaminated Sites array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -6961,6 +6963,104 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nj_roadway_network'].count += roadwayCount;
+        }
+      }
+
+      // Draw NJ Known Contaminated Sites as markers on the map
+      if (enrichments.nj_known_contaminated_sites_all && Array.isArray(enrichments.nj_known_contaminated_sites_all)) {
+        let contaminatedSiteCount = 0;
+        enrichments.nj_known_contaminated_sites_all.forEach((site: any) => {
+          if (site.lat !== null && site.lat !== undefined && site.lon !== null && site.lon !== undefined) {
+            try {
+              contaminatedSiteCount++;
+              
+              const siteName = site.siteName || site.SITE_NAME || site.site_name || site.NAME || site.name || site.SITE || site.site || 'Unknown Site';
+              const address = site.address || site.ADDRESS || site.address || '';
+              const municipality = site.municipality || site.MUNICIPALITY || site.municipality || '';
+              const county = site.county || site.COUNTY || site.county || '';
+              const zipCode = site.zipCode || site.ZIP_CODE || site.zip_code || site.ZIP || site.zip || '';
+              const siteType = site.siteType || site.SITE_TYPE || site.site_type || site.TYPE || site.type || '';
+              const status = site.status || site.STATUS || site.status || site.SITE_STATUS || site.site_status || '';
+
+              // Create marker with warning icon color
+              const marker = L.marker([site.lat, site.lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker-icon',
+                  html: `<div style="background-color: #dc2626; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    <span style="color: white; font-size: 14px;">⚠️</span>
+                  </div>`,
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
+                })
+              });
+
+              // Build popup content with all site attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ⚠️ ${siteName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                    ${municipality ? `<div><strong>Municipality:</strong> ${municipality}</div>` : ''}
+                    ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                    ${zipCode ? `<div><strong>ZIP Code:</strong> ${zipCode}</div>` : ''}
+                    ${siteType ? `<div><strong>Site Type:</strong> ${siteType}</div>` : ''}
+                    ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                    ${site.distance_miles !== null && site.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${site.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all site attributes (excluding internal fields)
+              const excludeFields = ['siteId', 'siteName', 'address', 'municipality', 'county', 'zipCode', 'siteType', 'status', 'lat', 'lon', 'distance_miles', 'SITE_NAME', 'site_name', 'NAME', 'name', 'SITE', 'site', 'ADDRESS', 'address', 'ADDR', 'addr', 'MUNICIPALITY', 'municipality', 'MUNI', 'muni', 'CITY', 'city', 'COUNTY', 'county', 'ZIP_CODE', 'zip_code', 'ZIP', 'zip', 'POSTAL_CODE', 'postal_code', 'SITE_TYPE', 'site_type', 'TYPE', 'type', 'STATUS', 'status', 'SITE_STATUS', 'site_status'];
+              Object.entries(site).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi); // Add to POI layer group
+              
+              try {
+                bounds.extend([site.lat, site.lon]);
+              } catch (boundsError) {
+                console.warn('Error extending bounds for NJ Known Contaminated Site:', boundsError);
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Known Contaminated Site:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (contaminatedSiteCount > 0) {
+          if (!legendAccumulator['nj_known_contaminated_sites']) {
+            legendAccumulator['nj_known_contaminated_sites'] = {
+              icon: '⚠️',
+              color: '#dc2626',
+              title: 'NJ Known Contaminated Sites',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_known_contaminated_sites'].count += contaminatedSiteCount;
         }
       }
 

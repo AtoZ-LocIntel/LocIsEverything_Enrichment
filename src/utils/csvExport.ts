@@ -316,6 +316,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nj_safety_service_patrol_all' || // Skip NJ Safety Service Patrol array (handled separately)
         key === 'nj_service_areas_all' || // Skip NJ Service Areas array (handled separately)
         key === 'nj_roadway_network_all' || // Skip NJ Roadway Network array (handled separately)
+        key === 'nj_known_contaminated_sites_all' || // Skip NJ Known Contaminated Sites array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1923,6 +1924,49 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'NJGIN'
+        ]);
+      });
+    } else if (key === 'nj_known_contaminated_sites_all' && Array.isArray(value)) {
+      // Handle NJ Known Contaminated Sites - each site gets its own row with all attributes
+      value.forEach((site: any) => {
+        const siteName = site.siteName || site.SITE_NAME || site.site_name || site.NAME || site.name || site.SITE || site.site || 'Unknown Site';
+        const address = site.address || site.ADDRESS || site.address || '';
+        const municipality = site.municipality || site.MUNICIPALITY || site.municipality || '';
+        const county = site.county || site.COUNTY || site.county || '';
+        const zipCode = site.zipCode || site.ZIP_CODE || site.zip_code || site.ZIP || site.zip || '';
+        const siteType = site.siteType || site.SITE_TYPE || site.site_type || site.TYPE || site.type || '';
+        const status = site.status || site.STATUS || site.status || site.SITE_STATUS || site.site_status || '';
+        
+        const allAttributes = { ...site };
+        delete allAttributes.siteId;
+        delete allAttributes.siteName;
+        delete allAttributes.address;
+        delete allAttributes.municipality;
+        delete allAttributes.county;
+        delete allAttributes.zipCode;
+        delete allAttributes.siteType;
+        delete allAttributes.status;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJDEP',
+          (location.confidence || 'N/A').toString(),
+          'NJ_KNOWN_CONTAMINATED_SITES',
+          `${siteName}${siteType ? ` (${siteType})` : ''}`,
+          site.lat ? site.lat.toString() : location.lat.toString(),
+          site.lon ? site.lon.toString() : location.lon.toString(),
+          site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : '',
+          siteType || '',
+          `${siteName || ''}${address ? ` - ${address}` : ''}${municipality ? `, ${municipality}` : ''}${county ? `, ${county}` : ''}${zipCode ? ` ${zipCode}` : ''}${status ? ` - Status: ${status}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJDEP'
         ]);
       });
     } else if (key === 'de_state_forest_all' && Array.isArray(value)) {
