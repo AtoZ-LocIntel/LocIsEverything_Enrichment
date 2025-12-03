@@ -1753,7 +1753,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const direction = stop.direction || stop.DIRECTION_OP || stop.direction_op || '';
         const streetDirection = stop.streetDirection || stop.STREET_DIR || stop.street_dir || '';
         const allLines = stop.allLines || stop.ALL_LINES || stop.all_lines || '';
-        const stopId = stop.stopId || stop.OBJECTID || stop.objectid || '';
         
         const allAttributes = { ...stop };
         delete allAttributes.stopId;
