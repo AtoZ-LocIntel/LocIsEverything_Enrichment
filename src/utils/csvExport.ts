@@ -1842,10 +1842,8 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const milepost = area.milepost !== null && area.milepost !== undefined ? area.milepost : null;
         const lineType = area.lineType || area.LINETYPE || area.linetype || '';
         const rotation = area.rotation !== null && area.rotation !== undefined ? area.rotation : null;
-        const serviceAreaId = area.serviceAreaId || area.OBJECTID || area.objectid || area.OBJECTID_1 || area.objectid_1 || '';
         
         const allAttributes = { ...area };
-        delete allAttributes.serviceAreaId;
         delete allAttributes.name;
         delete allAttributes.route;
         delete allAttributes.milepost;
@@ -1882,8 +1880,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const parentSRI = roadway.parentSRI || roadway.PARENT_SRI || roadway.parent_sri || '';
         const mpStart = roadway.mpStart !== null && roadway.mpStart !== undefined ? roadway.mpStart : null;
         const mpEnd = roadway.mpEnd !== null && roadway.mpEnd !== undefined ? roadway.mpEnd : null;
-        const parentMpStart = roadway.parentMpStart !== null && roadway.parentMpStart !== undefined ? roadway.parentMpStart : null;
-        const parentMpEnd = roadway.parentMpEnd !== null && roadway.parentMpEnd !== undefined ? roadway.parentMpEnd : null;
         const measuredLength = roadway.measuredLength !== null && roadway.measuredLength !== undefined ? roadway.measuredLength : null;
         const direction = roadway.direction || roadway.DIRECTION || roadway.direction || '';
         const active = roadway.active || roadway.ACTIVE || roadway.active || '';
