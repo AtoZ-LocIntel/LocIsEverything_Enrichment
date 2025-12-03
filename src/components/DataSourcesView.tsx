@@ -813,6 +813,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "New Jersey",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "NJ Service Areas",
+          description: "New Jersey Service Areas from NJGIN - highway service areas and rest stops - proximity queries up to 50 miles",
+          coverage: "New Jersey",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

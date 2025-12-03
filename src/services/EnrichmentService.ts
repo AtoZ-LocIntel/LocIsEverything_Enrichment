@@ -67,6 +67,7 @@ import { getNJParcelsData } from '../adapters/njParcels';
 import { getNJAddressPointsData } from '../adapters/njAddressPoints';
 import { getNJBusStopsData } from '../adapters/njBusStops';
 import { getNJSafetyServicePatrolData } from '../adapters/njSafetyServicePatrol';
+import { getNJServiceAreasData } from '../adapters/njServiceAreas';
 import { getDENaturalAreasData } from '../adapters/deNaturalAreas';
 import { getDEOutdoorRecreationParksTrailsLandsData } from '../adapters/deOutdoorRecreationParksTrailsLands';
 import { getDELandWaterConservationFundData } from '../adapters/deLandWaterConservationFund';
@@ -1637,6 +1638,8 @@ export class EnrichmentService {
         return await this.getNJBusStops(lat, lon, radius);
       case 'nj_safety_service_patrol':
         return await this.getNJSafetyServicePatrol(lat, lon, radius);
+      case 'nj_service_areas':
+        return await this.getNJServiceAreas(lat, lon, radius);
       case 'de_natural_areas':
         return await this.getDENaturalAreas(lat, lon, radius);
       case 'de_outdoor_recreation_parks_trails_lands':
@@ -7920,6 +7923,56 @@ out center;`;
         nj_safety_service_patrol_all: [],
         nj_safety_service_patrol_count: 0,
         nj_safety_service_patrol_error: 'Error fetching NJ Safety Service Patrol data'
+      };
+    }
+  }
+
+  private async getNJServiceAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching NJ Service Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      const radiusMiles = radius || 5; // Default to 5 miles if not provided, capped at 50 miles
+      const cappedRadius = Math.min(radiusMiles, 50.0);
+      
+      // Get service areas data
+      const serviceAreas = await getNJServiceAreasData(lat, lon, cappedRadius);
+      
+      if (serviceAreas && serviceAreas.length > 0) {
+        // Store all service areas for CSV export and map drawing
+        result.nj_service_areas_all = serviceAreas.map(area => ({
+          ...area.attributes,
+          serviceAreaId: area.serviceAreaId,
+          name: area.name,
+          route: area.route,
+          milepost: area.milepost,
+          lineType: area.lineType,
+          rotation: area.rotation,
+          lat: area.lat,
+          lon: area.lon,
+          distance_miles: area.distance_miles
+        }));
+        
+        result.nj_service_areas_count = serviceAreas.length;
+        result.nj_service_areas_search_radius_miles = cappedRadius;
+      } else {
+        result.nj_service_areas_all = [];
+        result.nj_service_areas_count = 0;
+        result.nj_service_areas_search_radius_miles = cappedRadius;
+      }
+      
+      console.log(`✅ NJ Service Areas data processed:`, {
+        count: result.nj_service_areas_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching NJ Service Areas:', error);
+      return {
+        nj_service_areas_all: [],
+        nj_service_areas_count: 0,
+        nj_service_areas_error: 'Error fetching NJ Service Areas data'
       };
     }
   }

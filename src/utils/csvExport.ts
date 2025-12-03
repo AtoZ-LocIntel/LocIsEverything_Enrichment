@@ -314,6 +314,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nj_address_points_all' || // Skip NJ Address Points array (handled separately)
         key === 'nj_bus_stops_all' || // Skip NJ Bus Stops array (handled separately)
         key === 'nj_safety_service_patrol_all' || // Skip NJ Safety Service Patrol array (handled separately)
+        key === 'nj_service_areas_all' || // Skip NJ Service Areas array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -1826,6 +1827,46 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '',
           category || '',
           `${routeName || ''}${beginMile !== null ? ` - Begin: ${beginMile.toFixed(2)} mi` : ''}${endMile !== null ? ` - End: ${endMile.toFixed(2)} mi` : ''}${totalMiles !== null ? ` - Total: ${totalMiles.toFixed(2)} mi` : ''}${categoryType ? ` - Type: ${categoryType}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'NJGIN'
+        ]);
+      });
+    } else if (key === 'nj_service_areas_all' && Array.isArray(value)) {
+      // Handle NJ Service Areas - each service area gets its own row with all attributes
+      value.forEach((area: any) => {
+        const name = area.name || area.NAME || area.name || 'Service Area';
+        const route = area.route || area.ROUTE || area.route || '';
+        const milepost = area.milepost !== null && area.milepost !== undefined ? area.milepost : null;
+        const lineType = area.lineType || area.LINETYPE || area.linetype || '';
+        const rotation = area.rotation !== null && area.rotation !== undefined ? area.rotation : null;
+        const serviceAreaId = area.serviceAreaId || area.OBJECTID || area.objectid || area.OBJECTID_1 || area.objectid_1 || '';
+        
+        const allAttributes = { ...area };
+        delete allAttributes.serviceAreaId;
+        delete allAttributes.name;
+        delete allAttributes.route;
+        delete allAttributes.milepost;
+        delete allAttributes.lineType;
+        delete allAttributes.rotation;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NJGIN',
+          (location.confidence || 'N/A').toString(),
+          'NJ_SERVICE_AREA',
+          `${name}${route ? ` (${route})` : ''}${milepost !== null ? ` - Milepost ${milepost.toFixed(2)}` : ''}`,
+          area.lat ? area.lat.toString() : location.lat.toString(),
+          area.lon ? area.lon.toString() : location.lon.toString(),
+          area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles.toFixed(2) : '',
+          route || '',
+          `${name || ''}${milepost !== null ? ` - Milepost: ${milepost.toFixed(2)}` : ''}${lineType ? ` - Line Type: ${lineType}` : ''}${rotation !== null ? ` - Rotation: ${rotation}°` : ''}`,
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
           'NJGIN'

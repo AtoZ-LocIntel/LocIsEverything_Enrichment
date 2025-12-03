@@ -422,7 +422,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nj_parcels', label: 'NJ Tax Parcels', description: 'NJGIN - New Jersey Tax Parcels (point-in-polygon and proximity queries up to 5 miles)', isPOI: true, defaultRadius: 0.3, maxRadius: 5, category: 'nj', section: 'nj' },
   { id: 'nj_address_points', label: 'NJ Address Points', description: 'NJGIN - New Jersey Address Points (proximity queries up to 5 miles)', isPOI: true, defaultRadius: 0.3, maxRadius: 5, category: 'nj', section: 'nj' },
   { id: 'nj_bus_stops', label: 'NJ Bus Stops', description: 'NJGIN - New Jersey Transit Bus Stops (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
-  { id: 'nj_safety_service_patrol', label: 'NJ Safety Service Patrol', description: 'NJGIN - New Jersey Department of Transportation Safety Service Patrol routes (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' }
+  { id: 'nj_safety_service_patrol', label: 'NJ Safety Service Patrol', description: 'NJGIN - New Jersey Department of Transportation Safety Service Patrol routes (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
+  { id: 'nj_service_areas', label: 'NJ Service Areas', description: 'NJGIN - New Jersey Service Areas (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'nj', section: 'nj' }
 ];
 
 class POIConfigManager {

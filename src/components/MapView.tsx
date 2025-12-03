@@ -214,6 +214,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'nj_address_points': { icon: '📍', color: '#3b82f6', title: 'NJ Address Points' },
   'nj_bus_stops': { icon: '🚌', color: '#f59e0b', title: 'NJ Bus Stops' },
   'nj_safety_service_patrol': { icon: '🚨', color: '#dc2626', title: 'NJ Safety Service Patrol' },
+  'nj_service_areas': { icon: '🛣️', color: '#8b5cf6', title: 'NJ Service Areas' },
   'de_urban_tree_canopy': { icon: '🌳', color: '#22c55e', title: 'DE Urban Tree Canopy' },
   'de_forest_cover_2007': { icon: '🌲', color: '#166534', title: 'DE Forest Cover 2007' },
   'poi_walkability_index': { icon: '🚶', color: '#10b981', title: 'Walkability Index' },
@@ -462,6 +463,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nj_address_points_all' || // Skip NJ Address Points array (handled separately for map drawing)
     key === 'nj_bus_stops_all' || // Skip NJ Bus Stops array (handled separately for map drawing)
     key === 'nj_safety_service_patrol_all' || // Skip NJ Safety Service Patrol array (handled separately for map drawing)
+    key === 'nj_service_areas_all' || // Skip NJ Service Areas array (handled separately for map drawing)
     key === 'ct_building_footprints_all' || // Skip CT building footprints array (handled separately for map drawing)
     key === 'ct_roads_all' || // Skip CT roads array (handled separately for map drawing)
     key === 'ct_urgent_care_all' || // Skip CT urgent care array (handled separately for map drawing)
@@ -6752,6 +6754,94 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nj_safety_service_patrol'].count += patrolRouteCount;
+        }
+      }
+
+      // Draw NJ Service Areas as markers on the map
+      if (enrichments.nj_service_areas_all && Array.isArray(enrichments.nj_service_areas_all)) {
+        let serviceAreaCount = 0;
+        enrichments.nj_service_areas_all.forEach((area: any) => {
+          if (area.lat && area.lon) {
+            try {
+              const areaLat = area.lat;
+              const areaLon = area.lon;
+              const name = area.name || area.NAME || area.name || 'Unknown Service Area';
+              const route = area.route || area.ROUTE || area.route || '';
+              const milepost = area.milepost !== null && area.milepost !== undefined ? area.milepost : null;
+              const lineType = area.lineType || area.LINETYPE || area.linetype || '';
+              const rotation = area.rotation !== null && area.rotation !== undefined ? area.rotation : null;
+              
+              // Create a custom icon for service areas
+              const icon = createPOIIcon('🛣️', '#8b5cf6'); // Purple icon for service areas
+              
+              const marker = L.marker([areaLat, areaLon], { icon });
+              
+              // Build popup content with all service area attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🛣️ ${name}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${route ? `<div><strong>Route:</strong> ${route}</div>` : ''}
+                    ${milepost !== null ? `<div><strong>Milepost:</strong> ${milepost.toFixed(2)}</div>` : ''}
+                    ${lineType ? `<div><strong>Line Type:</strong> ${lineType}</div>` : ''}
+                    ${rotation !== null ? `<div><strong>Rotation:</strong> ${rotation}°</div>` : ''}
+                    ${area.distance_miles !== null && area.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${area.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all service area attributes (excluding internal fields)
+              const excludeFields = ['name', 'route', 'milepost', 'lineType', 'rotation', 'lat', 'lon', 'distance_miles', 'NAME', 'name', 'ROUTE', 'route', 'MILEPOST', 'milepost', 'LINETYPE', 'linetype', 'ROTATION', 'rotation'];
+              Object.entries(area).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              popupContent += `
+                    </div>
+                  </div>
+                `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi); // Add to POI layer group
+              
+              try {
+                bounds.extend([areaLat, areaLon]);
+                serviceAreaCount++;
+              } catch (boundsError) {
+                console.warn('Error extending bounds for NJ Service Area:', boundsError);
+              }
+            } catch (error) {
+              console.error('Error drawing NJ Service Area:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (serviceAreaCount > 0) {
+          if (!legendAccumulator['nj_service_areas']) {
+            legendAccumulator['nj_service_areas'] = {
+              icon: '🛣️',
+              color: '#8b5cf6',
+              title: 'NJ Service Areas',
+              count: 0,
+            };
+          }
+          legendAccumulator['nj_service_areas'].count += serviceAreaCount;
         }
       }
 
