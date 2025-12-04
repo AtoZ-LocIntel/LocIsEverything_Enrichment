@@ -380,6 +380,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ct_boat_launches', label: 'CT Boat Launches', description: 'CT Geodata Portal - Connecticut DEEP Boat Launches for proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' },
   { id: 'ct_federal_open_space', label: 'CT Federal Open Space', description: 'CT Geodata Portal - Connecticut Federal Open Space for point-in-polygon and proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ct', section: 'ct' },
   { id: 'ct_huc_watersheds', label: 'CT HUC Watershed Boundaries', description: 'CT Geodata Portal - Connecticut HUC (Hydrologic Unit Code) Watershed Boundaries for point-in-polygon queries', isPOI: false, defaultRadius: 0, category: 'ct', section: 'ct' },
+  { id: 'ct_soils_parent_material', label: 'CT Soils Parent Material Name', description: 'CT Geodata Portal - Connecticut Soils Parent Material Name (SSURGO) for point-in-polygon queries', isPOI: false, defaultRadius: 0, category: 'ct', section: 'ct' },
   
   // Delaware FirstMap layers
   { id: 'de_parcels', label: 'DE State Parcels', description: 'DE FirstMap - Delaware state parcels with ownership information for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.3, maxRadius: 1.0, category: 'de', section: 'de' },

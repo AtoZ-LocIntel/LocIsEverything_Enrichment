@@ -822,6 +822,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Connecticut",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "CT Soils Parent Material Name",
+          description: "Connecticut Soils Parent Material Name (SSURGO) - point-in-polygon queries",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

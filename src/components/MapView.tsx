@@ -199,6 +199,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ct_boat_launches': { icon: '🚤', color: '#3b82f6', title: 'CT Boat Launches' },
   'ct_federal_open_space': { icon: '🏞️', color: '#10b981', title: 'CT Federal Open Space' },
   'ct_huc_watersheds': { icon: '🌊', color: '#06b6d4', title: 'CT HUC Watershed Boundaries' },
+  'ct_soils_parent_material': { icon: '🌱', color: '#a16207', title: 'CT Soils Parent Material Name' },
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
@@ -493,6 +494,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ct_boat_launches_all' || // Skip CT Boat Launches array (handled separately for map drawing)
     key === 'ct_federal_open_space_all' || // Skip CT Federal Open Space array (handled separately for map drawing)
     key === 'ct_huc_watersheds_all' || // Skip CT HUC Watersheds array (handled separately for map drawing)
+    key === 'ct_soils_parent_material_all' || // Skip CT Soils Parent Material array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -8923,6 +8925,99 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CT HUC Watershed Boundaries:', error);
+      }
+
+      // Draw CT Soils Parent Material Name
+      try {
+        if (enrichments.ct_soils_parent_material_all && Array.isArray(enrichments.ct_soils_parent_material_all)) {
+          let soilCount = 0;
+          enrichments.ct_soils_parent_material_all.forEach((soil: any) => {
+            if (soil.geometry && soil.geometry.rings) {
+              try {
+                const rings = soil.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CT Soils Parent Material polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#a16207'; // Brown/tan for soils
+                  const weight = 3;
+
+                  const parentMaterialName = soil.parentMaterialName || soil.ParMatNm || soil.parmatnm || 'Unknown Soil';
+                  const mukey = soil.mukey || soil.MUKEY || soil.mukey || null;
+                  const musym = soil.musym || soil.MUSYM || soil.musym || null;
+                  const areaSymbol = soil.areaSymbol || soil.AREASYMBOL || soil.areasymbol || null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌱 ${parentMaterialName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Status:</strong> Contains Location</div>
+                        ${mukey ? `<div><strong>Map Unit Key (MUKEY):</strong> ${mukey}</div>` : ''}
+                        ${musym ? `<div><strong>Map Unit Symbol (MUSYM):</strong> ${musym}</div>` : ''}
+                        ${areaSymbol ? `<div><strong>Area Symbol:</strong> ${areaSymbol}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['soilId', 'soil_id', 'SOIL_ID', 'parentMaterialName', 'ParMatNm', 'parmatnm', 'mukey', 'MUKEY', 'musym', 'MUSYM', 'areaSymbol', 'AREASYMBOL', 'areasymbol', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  Object.entries(soil).forEach(([key, value]) => {
+                    if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                      return;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  soilCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CT Soils Parent Material polygon:', error);
+              }
+            }
+          });
+          
+          if (soilCount > 0) {
+            if (!legendAccumulator['ct_soils_parent_material']) {
+              legendAccumulator['ct_soils_parent_material'] = {
+                icon: '🌱',
+                color: '#a16207',
+                title: 'CT Soils Parent Material Name',
+                count: 0,
+              };
+            }
+            legendAccumulator['ct_soils_parent_material'].count += soilCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CT Soils Parent Material Name:', error);
       }
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)

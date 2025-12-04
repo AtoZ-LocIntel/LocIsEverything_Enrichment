@@ -288,6 +288,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ct_boat_launches_all' || // Skip CT Boat Launches array (handled separately)
         key === 'ct_federal_open_space_all' || // Skip CT Federal Open Space array (handled separately)
         key === 'ct_huc_watersheds_all' || // Skip CT HUC Watersheds array (handled separately)
+        key === 'ct_soils_parent_material_all' || // Skip CT Soils Parent Material array (handled separately)
         key === 'ma_nhesp_natural_communities_all' ||
         key === 'ma_lakes_and_ponds_all' ||
         key === 'ma_rivers_and_streams_all' ||
@@ -1219,6 +1220,51 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '0.00', // Always containing, so distance is 0
           'Containing Watershed',
           `${watershedName}${huc12 ? ` (HUC-12: ${huc12})` : ''}${huc10 ? ` (HUC-10: ${huc10})` : ''}${huc8 ? ` (HUC-8: ${huc8})` : ''}${acres !== null ? ` - ${acres.toFixed(2)} acres` : ''}${states ? ` - ${states}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson,
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_soils_parent_material_all' && Array.isArray(value)) {
+      // Handle CT Soils Parent Material Name - each soil polygon gets its own row with all attributes
+      value.forEach((soil: any) => {
+        const parentMaterialName = soil.parentMaterialName || soil.ParMatNm || soil.parmatnm || 'Unknown Soil';
+        const mukey = soil.mukey || soil.MUKEY || '';
+        const musym = soil.musym || soil.MUSYM || '';
+        const areaSymbol = soil.areaSymbol || soil.AREASYMBOL || soil.areasymbol || '';
+        
+        const allAttributes = { ...soil };
+        delete allAttributes.soilId;
+        delete allAttributes.parentMaterialName;
+        delete allAttributes.ParMatNm;
+        delete allAttributes.parmatnm;
+        delete allAttributes.mukey;
+        delete allAttributes.MUKEY;
+        delete allAttributes.musym;
+        delete allAttributes.MUSYM;
+        delete allAttributes.areaSymbol;
+        delete allAttributes.AREASYMBOL;
+        delete allAttributes.areasymbol;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CT Soils Parent Material',
+          parentMaterialName,
+          mukey || '',
+          '',
+          '',
+          '',
+          '',
+          '0.00', // Always containing, so distance is 0
+          'Containing Soil Polygon',
+          `${parentMaterialName}${mukey ? ` (MUKEY: ${mukey})` : ''}${musym ? ` (MUSYM: ${musym})` : ''}${areaSymbol ? ` - Area: ${areaSymbol}` : ''}`,
           '', // Phone (not applicable)
           attributesJson,
           'CT Geodata Portal'

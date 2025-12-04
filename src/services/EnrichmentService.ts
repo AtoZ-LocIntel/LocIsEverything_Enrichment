@@ -54,6 +54,7 @@ import { getCTWaterPollutionControlData } from '../adapters/ctWaterPollutionCont
 import { getCTBoatLaunchesData } from '../adapters/ctBoatLaunches';
 import { getCTFederalOpenSpaceData } from '../adapters/ctFederalOpenSpace';
 import { getCTHUCWatershedData } from '../adapters/ctHUCWatersheds';
+import { getCTSoilsParentMaterialData } from '../adapters/ctSoilsParentMaterial';
 import { getDEStateForestData } from '../adapters/deStateForest';
 import { getDEPinePlantationData } from '../adapters/dePinePlantations';
 import { getDEUrbanTreeCanopyData } from '../adapters/deUrbanTreeCanopy';
@@ -1604,6 +1605,10 @@ export class EnrichmentService {
       // CT HUC Watershed Boundaries (CT Geodata Portal) - Point-in-polygon query only
       case 'ct_huc_watersheds':
         return await this.getCTHUCWatersheds(lat, lon);
+      
+      // CT Soils Parent Material Name (CT Geodata Portal) - Point-in-polygon query only
+      case 'ct_soils_parent_material':
+        return await this.getCTSoilsParentMaterial(lat, lon);
       
       // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
       case 'de_state_forest':
@@ -6767,6 +6772,73 @@ out center;`;
         ct_huc_watersheds_containing: null,
         ct_huc_watersheds_containing_message: 'Error fetching CT HUC Watershed data',
         ct_huc_watersheds_all: []
+      };
+    }
+  }
+
+  private async getCTSoilsParentMaterial(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      const soilData = await getCTSoilsParentMaterialData(lat, lon);
+      
+      if (!soilData) {
+        return {
+          ct_soils_parent_material_containing: null,
+          ct_soils_parent_material_containing_message: 'No soil polygon found containing this location',
+          ct_soils_parent_material_all: []
+        };
+      }
+      
+      const result: Record<string, any> = {};
+      
+      // Set containing soil information
+      result.ct_soils_parent_material_containing = soilData.parentMaterialName || 
+                                                  soilData.mukey || 
+                                                  soilData.musym || 
+                                                  soilData.soilId || 
+                                                  'Unknown Soil';
+      result.ct_soils_parent_material_containing_message = `Location is within: ${result.ct_soils_parent_material_containing}`;
+      
+      if (soilData.parentMaterialName) {
+        result.ct_soils_parent_material_containing_parent_material_name = soilData.parentMaterialName;
+      }
+      if (soilData.mukey) {
+        result.ct_soils_parent_material_containing_mukey = soilData.mukey;
+      }
+      if (soilData.musym) {
+        result.ct_soils_parent_material_containing_musym = soilData.musym;
+      }
+      if (soilData.areaSymbol) {
+        result.ct_soils_parent_material_containing_area_symbol = soilData.areaSymbol;
+      }
+      if (soilData.spatialVersion !== null) {
+        result.ct_soils_parent_material_containing_spatial_version = soilData.spatialVersion;
+      }
+      
+      // Add to _all array for map drawing
+      result.ct_soils_parent_material_all = [{
+        ...soilData.attributes,
+        soilId: soilData.soilId,
+        areaSymbol: soilData.areaSymbol,
+        musym: soilData.musym,
+        mukey: soilData.mukey,
+        parentMaterialName: soilData.parentMaterialName,
+        spatialVersion: soilData.spatialVersion,
+        isContaining: true,
+        distance_miles: 0,
+        geometry: soilData.geometry
+      }];
+      
+      console.log(`✅ CT Soils Parent Material data processed:`, {
+        containing: result.ct_soils_parent_material_containing || 'N/A'
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CT Soils Parent Material data:', error);
+      return {
+        ct_soils_parent_material_containing: null,
+        ct_soils_parent_material_containing_message: 'Error fetching CT Soils Parent Material data',
+        ct_soils_parent_material_all: []
       };
     }
   }
