@@ -49,6 +49,11 @@ import { getCTUrgentCareData } from '../adapters/ctUrgentCare';
 import { getCTDeepPropertyData } from '../adapters/ctDeepProperties';
 import { getCTTribalLandData } from '../adapters/ctTribalLands';
 import { getCTDrinkingWaterWatershedData } from '../adapters/ctDrinkingWaterWatersheds';
+import { getCTBroadbandAvailabilityData } from '../adapters/ctBroadbandAvailability';
+import { getCTWaterPollutionControlData } from '../adapters/ctWaterPollutionControl';
+import { getCTBoatLaunchesData } from '../adapters/ctBoatLaunches';
+import { getCTFederalOpenSpaceData } from '../adapters/ctFederalOpenSpace';
+import { getCTHUCWatershedData } from '../adapters/ctHUCWatersheds';
 import { getDEStateForestData } from '../adapters/deStateForest';
 import { getDEPinePlantationData } from '../adapters/dePinePlantations';
 import { getDEUrbanTreeCanopyData } from '../adapters/deUrbanTreeCanopy';
@@ -1579,6 +1584,26 @@ export class EnrichmentService {
       
       case 'ct_drinking_water_watersheds':
         return await this.getCTDrinkingWaterWatersheds(lat, lon, radius);
+      
+      // CT Broadband Availability (CT Geodata Portal) - Point-in-polygon and proximity query
+      case 'ct_broadband_availability':
+        return await this.getCTBroadbandAvailability(lat, lon, radius);
+      
+      // CT Water Pollution Control Facilities (CT Geodata Portal) - Proximity query
+      case 'ct_water_pollution_control':
+        return await this.getCTWaterPollutionControl(lat, lon, radius);
+      
+      // CT Boat Launches (CT Geodata Portal) - Proximity query
+      case 'ct_boat_launches':
+        return await this.getCTBoatLaunches(lat, lon, radius);
+      
+      // CT Federal Open Space (CT Geodata Portal) - Point-in-polygon and proximity query
+      case 'ct_federal_open_space':
+        return await this.getCTFederalOpenSpace(lat, lon, radius);
+      
+      // CT HUC Watershed Boundaries (CT Geodata Portal) - Point-in-polygon query only
+      case 'ct_huc_watersheds':
+        return await this.getCTHUCWatersheds(lat, lon);
       
       // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
       case 'de_state_forest':
@@ -6494,6 +6519,258 @@ out center;`;
     }
   }
 
+  private async getCTWaterPollutionControl(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const facilities = await getCTWaterPollutionControlData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {
+        ct_water_pollution_control_count: facilities.length,
+        ct_water_pollution_control_search_radius_miles: radiusMiles,
+        ct_water_pollution_control_all: facilities.map(facility => ({
+          ...facility.attributes,
+          facilityId: facility.facilityId,
+          facilityName: facility.facilityName,
+          permittee: facility.permittee,
+          address: facility.address,
+          city: facility.city,
+          zip: facility.zip,
+          phone: facility.phone,
+          permitId: facility.permitId,
+          facilityIdCode: facility.facilityIdCode,
+          receivingWaterbody: facility.receivingWaterbody,
+          dischargeType: facility.dischargeType,
+          facilityClass: facility.facilityClass,
+          owner: facility.owner,
+          lat: facility.lat,
+          lon: facility.lon,
+          distance_miles: facility.distance_miles
+        }))
+      };
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CT Water Pollution Control Facilities:', error);
+      return {
+        ct_water_pollution_control_count: 0,
+        ct_water_pollution_control_all: [],
+        ct_water_pollution_control_error: 'Error fetching CT Water Pollution Control Facilities data'
+      };
+    }
+  }
+
+  private async getCTBoatLaunches(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const launches = await getCTBoatLaunchesData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {
+        ct_boat_launches_count: launches.length,
+        ct_boat_launches_search_radius_miles: radiusMiles,
+        ct_boat_launches_all: launches.map(launch => ({
+          ...launch.attributes,
+          launchId: launch.launchId,
+          name: launch.name,
+          address: launch.address,
+          city: launch.city,
+          state: launch.state,
+          zip: launch.zip,
+          phone: launch.phone,
+          lat: launch.lat,
+          lon: launch.lon,
+          distance_miles: launch.distance_miles
+        }))
+      };
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CT Boat Launches:', error);
+      return {
+        ct_boat_launches_count: 0,
+        ct_boat_launches_all: [],
+        ct_boat_launches_error: 'Error fetching CT Boat Launches data'
+      };
+    }
+  }
+
+  private async getCTFederalOpenSpace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 25) : 5;
+      const openSpaceData = await getCTFederalOpenSpaceData(lat, lon, radiusMiles);
+      
+      if (!openSpaceData) {
+        return {
+          ct_federal_open_space_containing: null,
+          ct_federal_open_space_containing_message: 'No open space found containing this location',
+          ct_federal_open_space_nearby_count: 0,
+          ct_federal_open_space_all: []
+        };
+      }
+      
+      const result: Record<string, any> = {};
+      
+      if (openSpaceData.containingOpenSpace) {
+        result.ct_federal_open_space_containing = openSpaceData.containingOpenSpace.name || 
+                                                  openSpaceData.containingOpenSpace.openSpaceId || 
+                                                  'Unknown Open Space';
+        result.ct_federal_open_space_containing_message = `Location is within: ${result.ct_federal_open_space_containing}`;
+        if (openSpaceData.containingOpenSpace.agency) {
+          result.ct_federal_open_space_containing_agency = openSpaceData.containingOpenSpace.agency;
+        }
+      } else {
+        result.ct_federal_open_space_containing = null;
+        result.ct_federal_open_space_containing_message = 'No open space found containing this location';
+      }
+      
+      const allOpenSpaces: any[] = [];
+      
+      if (openSpaceData.containingOpenSpace) {
+        allOpenSpaces.push({
+          ...openSpaceData.containingOpenSpace.attributes,
+          openSpaceId: openSpaceData.containingOpenSpace.openSpaceId,
+          name: openSpaceData.containingOpenSpace.name,
+          agency: openSpaceData.containingOpenSpace.agency,
+          isContaining: true,
+          distance_miles: 0,
+          geometry: openSpaceData.containingOpenSpace.geometry
+        });
+      }
+      
+      if (openSpaceData.nearbyOpenSpaces && openSpaceData.nearbyOpenSpaces.length > 0) {
+        openSpaceData.nearbyOpenSpaces.forEach(openSpace => {
+          const isSameAsContaining = openSpaceData.containingOpenSpace && 
+                                    openSpace.openSpaceId === openSpaceData.containingOpenSpace.openSpaceId;
+          if (!isSameAsContaining) {
+            allOpenSpaces.push({
+              ...openSpace.attributes,
+              openSpaceId: openSpace.openSpaceId,
+              name: openSpace.name,
+              agency: openSpace.agency,
+              isContaining: false,
+              distance_miles: openSpace.distance_miles,
+              geometry: openSpace.geometry
+            });
+          }
+        });
+      }
+      
+      const uniqueOpenSpaces = new Map<string, any>();
+      allOpenSpaces.forEach(openSpace => {
+        const key = openSpace.openSpaceId || openSpace.OBJECTID || `openspace_${Math.random()}`;
+        if (!uniqueOpenSpaces.has(key)) {
+          uniqueOpenSpaces.set(key, openSpace);
+        }
+      });
+      
+      const deduplicatedOpenSpaces = Array.from(uniqueOpenSpaces.values());
+      
+      if (deduplicatedOpenSpaces.length > 0) {
+        result.ct_federal_open_space_nearby_count = deduplicatedOpenSpaces.length;
+        result.ct_federal_open_space_all = deduplicatedOpenSpaces;
+      } else {
+        result.ct_federal_open_space_nearby_count = 0;
+        result.ct_federal_open_space_all = [];
+      }
+      
+      result.ct_federal_open_space_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ CT Federal Open Space data processed:`, {
+        containing: result.ct_federal_open_space_containing || 'N/A',
+        nearbyCount: result.ct_federal_open_space_nearby_count || 0
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CT Federal Open Space data:', error);
+      return {
+        ct_federal_open_space_containing: null,
+        ct_federal_open_space_containing_message: 'Error fetching CT Federal Open Space data',
+        ct_federal_open_space_nearby_count: 0,
+        ct_federal_open_space_all: []
+      };
+    }
+  }
+
+  private async getCTHUCWatersheds(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      const watershedData = await getCTHUCWatershedData(lat, lon);
+      
+      if (!watershedData) {
+        return {
+          ct_huc_watersheds_containing: null,
+          ct_huc_watersheds_containing_message: 'No watershed found containing this location',
+          ct_huc_watersheds_all: []
+        };
+      }
+      
+      const result: Record<string, any> = {};
+      
+      // Set containing watershed information
+      result.ct_huc_watersheds_containing = watershedData.huc12Name || 
+                                            watershedData.huc10Name || 
+                                            watershedData.huc12 || 
+                                            watershedData.huc10 || 
+                                            watershedData.watershedId || 
+                                            'Unknown Watershed';
+      result.ct_huc_watersheds_containing_message = `Location is within: ${result.ct_huc_watersheds_containing}`;
+      
+      if (watershedData.huc12) {
+        result.ct_huc_watersheds_containing_huc12 = watershedData.huc12;
+      }
+      if (watershedData.huc10) {
+        result.ct_huc_watersheds_containing_huc10 = watershedData.huc10;
+      }
+      if (watershedData.huc8) {
+        result.ct_huc_watersheds_containing_huc8 = watershedData.huc8;
+      }
+      if (watershedData.huc12Name) {
+        result.ct_huc_watersheds_containing_huc12_name = watershedData.huc12Name;
+      }
+      if (watershedData.huc10Name) {
+        result.ct_huc_watersheds_containing_huc10_name = watershedData.huc10Name;
+      }
+      if (watershedData.acres !== null) {
+        result.ct_huc_watersheds_containing_acres = watershedData.acres;
+      }
+      if (watershedData.states) {
+        result.ct_huc_watersheds_containing_states = watershedData.states;
+      }
+      
+      // Add to _all array for map drawing
+      result.ct_huc_watersheds_all = [{
+        ...watershedData.attributes,
+        watershedId: watershedData.watershedId,
+        huc8: watershedData.huc8,
+        huc10: watershedData.huc10,
+        huc12: watershedData.huc12,
+        huc10Name: watershedData.huc10Name,
+        huc12Name: watershedData.huc12Name,
+        huc10Type: watershedData.huc10Type,
+        huc12Type: watershedData.huc12Type,
+        huc10Mod: watershedData.huc10Mod,
+        huc12Mod: watershedData.huc12Mod,
+        acres: watershedData.acres,
+        states: watershedData.states,
+        isContaining: true,
+        distance_miles: 0,
+        geometry: watershedData.geometry
+      }];
+      
+      console.log(`✅ CT HUC Watershed data processed:`, {
+        containing: result.ct_huc_watersheds_containing || 'N/A'
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CT HUC Watershed data:', error);
+      return {
+        ct_huc_watersheds_containing: null,
+        ct_huc_watersheds_containing_message: 'Error fetching CT HUC Watershed data',
+        ct_huc_watersheds_all: []
+      };
+    }
+  }
+
   private async getDEStateForest(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`🌲 Fetching DE State Forest data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
@@ -8787,6 +9064,137 @@ out center;`;
         ct_drinking_water_watersheds_containing_message: 'Error fetching CT Drinking Water Watersheds data',
         ct_drinking_water_watersheds_nearby_count: 0,
         ct_drinking_water_watersheds_all: []
+      };
+    }
+  }
+
+  private async getCTBroadbandAvailability(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const radiusMiles = radius ? Math.min(radius, 5) : 0.5;
+      const broadbandData = await getCTBroadbandAvailabilityData(lat, lon, radiusMiles);
+      
+      if (!broadbandData) {
+        return {
+          ct_broadband_availability_containing: null,
+          ct_broadband_availability_containing_message: 'No block found containing this location',
+          ct_broadband_availability_nearby_count: 0,
+          ct_broadband_availability_all: []
+        };
+      }
+      
+      const result: Record<string, any> = {};
+      
+      if (broadbandData.containingBlock) {
+        result.ct_broadband_availability_containing = broadbandData.containingBlock.blockName || 
+                                                     broadbandData.containingBlock.blockGeoid || 
+                                                     broadbandData.containingBlock.blockId || 
+                                                     'Unknown Block';
+        result.ct_broadband_availability_containing_message = `Location is within: ${result.ct_broadband_availability_containing}`;
+        if (broadbandData.containingBlock.blockGeoid) {
+          result.ct_broadband_availability_containing_block_geoid = broadbandData.containingBlock.blockGeoid;
+        }
+        if (broadbandData.containingBlock.pctUnserved !== null) {
+          result.ct_broadband_availability_containing_pct_unserved = broadbandData.containingBlock.pctUnserved;
+        }
+        if (broadbandData.containingBlock.maxDownload !== null) {
+          result.ct_broadband_availability_containing_max_download = broadbandData.containingBlock.maxDownload;
+        }
+      } else {
+        result.ct_broadband_availability_containing = null;
+        result.ct_broadband_availability_containing_message = 'No block found containing this location';
+      }
+      
+      const allBlocks: any[] = [];
+      
+      if (broadbandData.containingBlock) {
+        allBlocks.push({
+          ...broadbandData.containingBlock.attributes,
+          blockId: broadbandData.containingBlock.blockId,
+          blockGeoid: broadbandData.containingBlock.blockGeoid,
+          blockName: broadbandData.containingBlock.blockName,
+          totalLocations: broadbandData.containingBlock.totalLocations,
+          unserved: broadbandData.containingBlock.unserved,
+          underserved: broadbandData.containingBlock.underserved,
+          served: broadbandData.containingBlock.served,
+          pctUnserved: broadbandData.containingBlock.pctUnserved,
+          pctUnderserved: broadbandData.containingBlock.pctUnderserved,
+          pctServed: broadbandData.containingBlock.pctServed,
+          maxDownload: broadbandData.containingBlock.maxDownload,
+          minDownload: broadbandData.containingBlock.minDownload,
+          nProviders: broadbandData.containingBlock.nProviders,
+          allProviders: broadbandData.containingBlock.allProviders,
+          townName: broadbandData.containingBlock.townName,
+          countyName: broadbandData.containingBlock.countyName,
+          isContaining: true,
+          distance_miles: 0,
+          geometry: broadbandData.containingBlock.geometry
+        });
+      }
+      
+      if (broadbandData.nearbyBlocks && broadbandData.nearbyBlocks.length > 0) {
+        broadbandData.nearbyBlocks.forEach(block => {
+          const isSameAsContaining = broadbandData.containingBlock && 
+                                    block.blockId === broadbandData.containingBlock.blockId;
+          if (!isSameAsContaining) {
+            allBlocks.push({
+              ...block.attributes,
+              blockId: block.blockId,
+              blockGeoid: block.blockGeoid,
+              blockName: block.blockName,
+              totalLocations: block.totalLocations,
+              unserved: block.unserved,
+              underserved: block.underserved,
+              served: block.served,
+              pctUnserved: block.pctUnserved,
+              pctUnderserved: block.pctUnderserved,
+              pctServed: block.pctServed,
+              maxDownload: block.maxDownload,
+              minDownload: block.minDownload,
+              nProviders: block.nProviders,
+              allProviders: block.allProviders,
+              townName: block.townName,
+              countyName: block.countyName,
+              isContaining: false,
+              distance_miles: block.distance_miles,
+              geometry: block.geometry
+            });
+          }
+        });
+      }
+      
+      const uniqueBlocks = new Map<string, any>();
+      allBlocks.forEach(block => {
+        const key = block.blockId || block.blockGeoid || block.OBJECTID || `block_${Math.random()}`;
+        if (!uniqueBlocks.has(key)) {
+          uniqueBlocks.set(key, block);
+        }
+      });
+      
+      const deduplicatedBlocks = Array.from(uniqueBlocks.values());
+      
+      if (deduplicatedBlocks.length > 0) {
+        result.ct_broadband_availability_nearby_count = deduplicatedBlocks.length;
+        result.ct_broadband_availability_all = deduplicatedBlocks;
+      } else {
+        result.ct_broadband_availability_nearby_count = 0;
+        result.ct_broadband_availability_all = [];
+      }
+      
+      result.ct_broadband_availability_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ CT Broadband Availability data processed:`, {
+        containing: result.ct_broadband_availability_containing || 'N/A',
+        nearbyCount: result.ct_broadband_availability_nearby_count || 0
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CT Broadband Availability data:', error);
+      return {
+        ct_broadband_availability_containing: null,
+        ct_broadband_availability_containing_message: 'Error fetching CT Broadband Availability data',
+        ct_broadband_availability_nearby_count: 0,
+        ct_broadband_availability_all: []
       };
     }
   }

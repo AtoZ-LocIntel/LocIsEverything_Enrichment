@@ -787,6 +787,41 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Connecticut",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "CT 2025 Broadband Availability by Block",
+          description: "Connecticut 2025 Broadband Availability by Census Block - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CT Water Pollution Control Facilities",
+          description: "Connecticut Water Pollution Control Facilities - proximity queries up to 25 miles",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CT Boat Launches",
+          description: "Connecticut DEEP Boat Launches - proximity queries up to 25 miles",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CT Federal Open Space",
+          description: "Connecticut Federal Open Space - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CT HUC Watershed Boundaries",
+          description: "Connecticut HUC (Hydrologic Unit Code) Watershed Boundaries - point-in-polygon queries",
+          coverage: "Connecticut",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

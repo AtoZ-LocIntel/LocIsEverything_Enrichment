@@ -17,6 +17,7 @@ interface LegendItem {
   color: string;
   title: string;
   count: number;
+  ranges?: Array<{ label: string; color: string; count: number }>; // For color-coded layers like broadband
 }
 
 // MapTiler Basemap Configuration
@@ -193,6 +194,11 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ct_parcels': { icon: '🏠', color: '#059669', title: 'CT Parcels' },
   'ct_tribal_lands': { icon: '🏛️', color: '#8b5cf6', title: 'CT Tribal Lands' },
   'ct_drinking_water_watersheds': { icon: '💧', color: '#0891b2', title: 'CT Drinking Water Watersheds' },
+  'ct_broadband_availability': { icon: '📡', color: '#7c3aed', title: 'CT 2025 Broadband Availability by Block' },
+  'ct_water_pollution_control': { icon: '💧', color: '#0ea5e9', title: 'CT Water Pollution Control Facilities' },
+  'ct_boat_launches': { icon: '🚤', color: '#3b82f6', title: 'CT Boat Launches' },
+  'ct_federal_open_space': { icon: '🏞️', color: '#10b981', title: 'CT Federal Open Space' },
+  'ct_huc_watersheds': { icon: '🌊', color: '#06b6d4', title: 'CT HUC Watershed Boundaries' },
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
@@ -482,6 +488,11 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ct_deep_properties_all' || // Skip CT DEEP properties array (handled separately for map drawing)
     key === 'ct_tribal_lands_all' || // Skip CT Tribal Lands array (handled separately for map drawing)
     key === 'ct_drinking_water_watersheds_all' || // Skip CT Drinking Water Watersheds array (handled separately for map drawing)
+    key === 'ct_broadband_availability_all' || // Skip CT Broadband Availability array (handled separately for map drawing)
+    key === 'ct_water_pollution_control_all' || // Skip CT Water Pollution Control array (handled separately for map drawing)
+    key === 'ct_boat_launches_all' || // Skip CT Boat Launches array (handled separately for map drawing)
+    key === 'ct_federal_open_space_all' || // Skip CT Federal Open Space array (handled separately for map drawing)
+    key === 'ct_huc_watersheds_all' || // Skip CT HUC Watersheds array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -8350,6 +8361,570 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing CT Drinking Water Watersheds:', error);
       }
 
+      // Draw CT Broadband Availability blocks
+      try {
+        if (enrichments.ct_broadband_availability_all && Array.isArray(enrichments.ct_broadband_availability_all)) {
+          let blockCount = 0;
+          // Track counts for each served range
+          const rangeCounts: Record<string, { label: string; color: string; count: number }> = {
+            'no_data': { label: 'No Data', color: '#9ca3af', count: 0 },
+            '0': { label: '0 served', color: '#dc2626', count: 0 },
+            '1-10': { label: '1-10 served', color: '#f97316', count: 0 },
+            '11-25': { label: '11-25 served', color: '#fb923c', count: 0 },
+            '26-50': { label: '26-50 served', color: '#eab308', count: 0 },
+            '51-100': { label: '51-100 served', color: '#22c55e', count: 0 },
+            '101-250': { label: '101-250 served', color: '#16a34a', count: 0 },
+            '251+': { label: '251+ served', color: '#15803d', count: 0 }
+          };
+          
+          enrichments.ct_broadband_availability_all.forEach((block: any) => {
+            if (block.geometry && block.geometry.rings) {
+              try {
+                const rings = block.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CT Broadband Availability block polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const isContaining = block.isContaining;
+                  
+                  // Get served count for color coding
+                  const served = block.served !== null && block.served !== undefined 
+                    ? parseInt(block.served.toString()) 
+                    : (block.served_locations !== null && block.served_locations !== undefined 
+                      ? parseInt(block.served_locations.toString()) 
+                      : null);
+                  
+                  // Color code based on served count ranges
+                  let color: string;
+                  let colorLabel: string;
+                  let rangeKey: string;
+                  if (served === null || served === undefined) {
+                    // No data - gray
+                    color = '#9ca3af';
+                    colorLabel = 'No Data';
+                    rangeKey = 'no_data';
+                  } else if (served === 0) {
+                    // 0 served - red
+                    color = '#dc2626';
+                    colorLabel = '0 served';
+                    rangeKey = '0';
+                  } else if (served <= 10) {
+                    // 1-10 served - orange-red
+                    color = '#f97316';
+                    colorLabel = '1-10 served';
+                    rangeKey = '1-10';
+                  } else if (served <= 25) {
+                    // 11-25 served - orange
+                    color = '#fb923c';
+                    colorLabel = '11-25 served';
+                    rangeKey = '11-25';
+                  } else if (served <= 50) {
+                    // 26-50 served - yellow
+                    color = '#eab308';
+                    colorLabel = '26-50 served';
+                    rangeKey = '26-50';
+                  } else if (served <= 100) {
+                    // 51-100 served - light green
+                    color = '#22c55e';
+                    colorLabel = '51-100 served';
+                    rangeKey = '51-100';
+                  } else if (served <= 250) {
+                    // 101-250 served - green
+                    color = '#16a34a';
+                    colorLabel = '101-250 served';
+                    rangeKey = '101-250';
+                  } else {
+                    // 251+ served - dark green
+                    color = '#15803d';
+                    colorLabel = '251+ served';
+                    rangeKey = '251+';
+                  }
+                  
+                  // Increment count for this range
+                  if (rangeCounts[rangeKey]) {
+                    rangeCounts[rangeKey].count++;
+                  }
+                  
+                  const weight = isContaining ? 3 : 2;
+
+                  const blockName = block.blockName || block.block_name || block.BLOCK_NAME || 'CT Broadband Block';
+                  const blockGeoid = block.blockGeoid || block.block_geoid || block.BLOCK_GEOID || null;
+                  const pctUnserved = block.pctUnserved !== null && block.pctUnserved !== undefined ? block.pctUnserved : null;
+                  const maxDownload = block.maxDownload !== null && block.maxDownload !== undefined ? block.maxDownload : null;
+                  const nProviders = block.nProviders !== null && block.nProviders !== undefined ? block.nProviders : null;
+                  const townName = block.townName || block.town_name || block.TOWN_NAME || null;
+                  const countyName = block.countyName || block.county_name || block.COUNTY_NAME || null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.8,
+                    fillColor: color,
+                    fillOpacity: 0.3
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        📡 ${blockName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div><strong>Status:</strong> Contains Location</div>' : ''}
+                        ${block.distance_miles !== null && block.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${block.distance_miles.toFixed(2)} miles</div>` : ''}
+                        ${served !== null ? `<div><strong>Served Locations:</strong> ${served} <span style="color: ${color}; font-weight: 600;">(${colorLabel})</span></div>` : ''}
+                        ${blockGeoid ? `<div><strong>Block GEOID:</strong> ${blockGeoid}</div>` : ''}
+                        ${townName ? `<div><strong>Town:</strong> ${townName}</div>` : ''}
+                        ${countyName ? `<div><strong>County:</strong> ${countyName}</div>` : ''}
+                        ${pctUnserved !== null ? `<div><strong>% Unserved:</strong> ${pctUnserved.toFixed(2)}%</div>` : ''}
+                        ${maxDownload !== null ? `<div><strong>Max Download:</strong> ${maxDownload.toFixed(2)} Mbps</div>` : ''}
+                        ${nProviders !== null ? `<div><strong>Number of Providers:</strong> ${nProviders}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['blockId', 'block_id', 'BLOCK_ID', 'blockGeoid', 'block_geoid', 'BLOCK_GEOID', 'blockName', 'block_name', 'BLOCK_NAME', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  Object.entries(block).forEach(([key, value]) => {
+                    if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                      return;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  blockCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CT Broadband Availability block polygon:', error);
+              }
+            }
+          });
+          
+          if (blockCount > 0) {
+            // Create ranges array with only ranges that have counts > 0
+            const ranges = Object.values(rangeCounts)
+              .filter(range => range.count > 0)
+              .sort((a, b) => {
+                // Sort by served count (approximate order)
+                const order: Record<string, number> = {
+                  'No Data': 0,
+                  '0 served': 1,
+                  '1-10 served': 2,
+                  '11-25 served': 3,
+                  '26-50 served': 4,
+                  '51-100 served': 5,
+                  '101-250 served': 6,
+                  '251+ served': 7
+                };
+                return (order[a.label] || 999) - (order[b.label] || 999);
+              });
+            
+            if (!legendAccumulator['ct_broadband_availability']) {
+              legendAccumulator['ct_broadband_availability'] = {
+                icon: '📡',
+                color: '#7c3aed',
+                title: 'CT 2025 Broadband Availability by Block',
+                count: blockCount,
+                ranges: ranges
+              };
+            } else {
+              legendAccumulator['ct_broadband_availability'].count += blockCount;
+              // Merge ranges (in case blocks are processed in multiple batches)
+              if (legendAccumulator['ct_broadband_availability'].ranges) {
+                ranges.forEach(newRange => {
+                  const existingRange = legendAccumulator['ct_broadband_availability'].ranges!.find(r => r.label === newRange.label);
+                  if (existingRange) {
+                    existingRange.count += newRange.count;
+                  } else {
+                    legendAccumulator['ct_broadband_availability'].ranges!.push(newRange);
+                  }
+                });
+                // Re-sort after merging
+                legendAccumulator['ct_broadband_availability'].ranges!.sort((a, b) => {
+                  const order: Record<string, number> = {
+                    'No Data': 0,
+                    '0 served': 1,
+                    '1-10 served': 2,
+                    '11-25 served': 3,
+                    '26-50 served': 4,
+                    '51-100 served': 5,
+                    '101-250 served': 6,
+                    '251+ served': 7
+                  };
+                  return (order[a.label] || 999) - (order[b.label] || 999);
+                });
+              } else {
+                legendAccumulator['ct_broadband_availability'].ranges = ranges;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CT Broadband Availability:', error);
+      }
+
+      // Draw CT Water Pollution Control Facilities
+      try {
+        if (enrichments.ct_water_pollution_control_all && Array.isArray(enrichments.ct_water_pollution_control_all)) {
+          let facilityCount = 0;
+          enrichments.ct_water_pollution_control_all.forEach((facility: any) => {
+            if (facility.lat !== null && facility.lon !== null) {
+              try {
+                const facilityName = facility.facilityName || facility.FACILITY_Name || facility.facility_name || 'CT Water Pollution Control Facility';
+                const permittee = facility.permittee || facility.Permitte || null;
+                const address = facility.address || facility.FACILITY_Address || facility.facility_address || null;
+                const city = facility.city || facility.TOWN || facility.town || null;
+                const permitId = facility.permitId || facility.Permit_ID || facility.permit_id || null;
+                const receivingWaterbody = facility.receivingWaterbody || facility.Receiving_Waterbody || null;
+                const facilityClass = facility.facilityClass || facility.CLASS || facility.class || null;
+
+                const marker = L.marker([facility.lat, facility.lon], {
+                  icon: createPOIIcon('💧', '#0ea5e9')
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      💧 ${facilityName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${facility.distance_miles !== null && facility.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${facility.distance_miles.toFixed(2)} miles</div>` : ''}
+                      ${permittee ? `<div><strong>Permittee:</strong> ${permittee}</div>` : ''}
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                      ${permitId ? `<div><strong>Permit ID:</strong> ${permitId}</div>` : ''}
+                      ${receivingWaterbody ? `<div><strong>Receiving Waterbody:</strong> ${receivingWaterbody}</div>` : ''}
+                      ${facilityClass ? `<div><strong>Class:</strong> ${facilityClass}</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                const excludeFields = ['facilityId', 'facility_id', 'FACILITY_ID', 'facilityName', 'facility_name', 'FACILITY_Name', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'lat', 'lon'];
+                Object.entries(facility).forEach(([key, value]) => {
+                  if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                    return;
+                  }
+                  if (typeof value === 'object' && !Array.isArray(value)) {
+                    return;
+                  }
+                  const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                  popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                marker.addTo(poi);
+                bounds.extend([facility.lat, facility.lon]);
+                facilityCount++;
+              } catch (error) {
+                console.error('Error drawing CT Water Pollution Control Facility marker:', error);
+              }
+            }
+          });
+          
+          if (facilityCount > 0) {
+            if (!legendAccumulator['ct_water_pollution_control']) {
+              legendAccumulator['ct_water_pollution_control'] = {
+                icon: '💧',
+                color: '#0ea5e9',
+                title: 'CT Water Pollution Control Facilities',
+                count: 0,
+              };
+            }
+            legendAccumulator['ct_water_pollution_control'].count += facilityCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CT Water Pollution Control Facilities:', error);
+      }
+
+      // Draw CT Boat Launches
+      try {
+        if (enrichments.ct_boat_launches_all && Array.isArray(enrichments.ct_boat_launches_all)) {
+          let launchCount = 0;
+          enrichments.ct_boat_launches_all.forEach((launch: any) => {
+            if (launch.lat !== null && launch.lon !== null) {
+              try {
+                const name = launch.name || launch.NAME || launch.Name || 'CT Boat Launch';
+                const address = launch.address || launch.ADDRESS || launch.Address || null;
+                const city = launch.city || launch.CITY || launch.City || null;
+                const phone = launch.phone || launch.PHONE || launch.Phone || null;
+
+                const marker = L.marker([launch.lat, launch.lon], {
+                  icon: createPOIIcon('🚤', '#3b82f6')
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚤 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${launch.distance_miles !== null && launch.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${launch.distance_miles.toFixed(2)} miles</div>` : ''}
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                      ${phone ? `<div><strong>Phone:</strong> ${phone}</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                const excludeFields = ['launchId', 'launch_id', 'LAUNCH_ID', 'name', 'NAME', 'Name', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'lat', 'lon'];
+                Object.entries(launch).forEach(([key, value]) => {
+                  if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                    return;
+                  }
+                  if (typeof value === 'object' && !Array.isArray(value)) {
+                    return;
+                  }
+                  const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                  popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                marker.addTo(poi);
+                bounds.extend([launch.lat, launch.lon]);
+                launchCount++;
+              } catch (error) {
+                console.error('Error drawing CT Boat Launch marker:', error);
+              }
+            }
+          });
+          
+          if (launchCount > 0) {
+            if (!legendAccumulator['ct_boat_launches']) {
+              legendAccumulator['ct_boat_launches'] = {
+                icon: '🚤',
+                color: '#3b82f6',
+                title: 'CT Boat Launches',
+                count: 0,
+              };
+            }
+            legendAccumulator['ct_boat_launches'].count += launchCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CT Boat Launches:', error);
+      }
+
+      // Draw CT Federal Open Space
+      try {
+        if (enrichments.ct_federal_open_space_all && Array.isArray(enrichments.ct_federal_open_space_all)) {
+          let openSpaceCount = 0;
+          enrichments.ct_federal_open_space_all.forEach((openSpace: any) => {
+            if (openSpace.geometry && openSpace.geometry.rings) {
+              try {
+                const rings = openSpace.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CT Federal Open Space polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const isContaining = openSpace.isContaining;
+                  const color = isContaining ? '#10b981' : '#34d399'; // Darker green for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+
+                  const name = openSpace.name || openSpace.NAME || openSpace.Name || 'CT Federal Open Space';
+                  const agency = openSpace.agency || openSpace.AGENCY || openSpace.Agency || null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏞️ ${name}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div><strong>Status:</strong> Contains Location</div>' : ''}
+                        ${openSpace.distance_miles !== null && openSpace.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${openSpace.distance_miles.toFixed(2)} miles</div>` : ''}
+                        ${agency ? `<div><strong>Agency:</strong> ${agency}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['openSpaceId', 'open_space_id', 'OPEN_SPACE_ID', 'name', 'NAME', 'Name', 'agency', 'AGENCY', 'Agency', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  Object.entries(openSpace).forEach(([key, value]) => {
+                    if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                      return;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  openSpaceCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CT Federal Open Space polygon:', error);
+              }
+            }
+          });
+          
+          if (openSpaceCount > 0) {
+            if (!legendAccumulator['ct_federal_open_space']) {
+              legendAccumulator['ct_federal_open_space'] = {
+                icon: '🏞️',
+                color: '#10b981',
+                title: 'CT Federal Open Space',
+                count: 0,
+              };
+            }
+            legendAccumulator['ct_federal_open_space'].count += openSpaceCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CT Federal Open Space:', error);
+      }
+
+      // Draw CT HUC Watershed Boundaries
+      try {
+        if (enrichments.ct_huc_watersheds_all && Array.isArray(enrichments.ct_huc_watersheds_all)) {
+          let watershedCount = 0;
+          enrichments.ct_huc_watersheds_all.forEach((watershed: any) => {
+            if (watershed.geometry && watershed.geometry.rings) {
+              try {
+                const rings = watershed.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CT HUC Watershed polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#06b6d4'; // Cyan for HUC watersheds
+                  const weight = 3;
+
+                  const huc12Name = watershed.huc12Name || watershed.HU_12_NAME || watershed.hu_12_name || null;
+                  const huc10Name = watershed.huc10Name || watershed.HU_10_NAME || watershed.hu_10_name || null;
+                  const huc12 = watershed.huc12 || watershed.HUC_12 || watershed.huc_12 || null;
+                  const huc10 = watershed.huc10 || watershed.HUC_10 || watershed.huc_10 || null;
+                  const huc8 = watershed.huc8 || watershed.HUC_8 || watershed.huc_8 || null;
+                  const acres = watershed.acres !== null && watershed.acres !== undefined ? watershed.acres : (watershed.ACRES !== undefined ? watershed.ACRES : null);
+                  const states = watershed.states || watershed.STATES || null;
+
+                  const watershedName = huc12Name || huc10Name || `HUC ${huc12 || huc10 || huc8 || 'Unknown'}`;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌊 ${watershedName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Status:</strong> Contains Location</div>
+                        ${huc12 ? `<div><strong>HUC-12:</strong> ${huc12}</div>` : ''}
+                        ${huc12Name ? `<div><strong>HUC-12 Name:</strong> ${huc12Name}</div>` : ''}
+                        ${huc10 ? `<div><strong>HUC-10:</strong> ${huc10}</div>` : ''}
+                        ${huc10Name ? `<div><strong>HUC-10 Name:</strong> ${huc10Name}</div>` : ''}
+                        ${huc8 ? `<div><strong>HUC-8:</strong> ${huc8}</div>` : ''}
+                        ${acres !== null ? `<div><strong>Acres:</strong> ${acres.toFixed(2)} acres</div>` : ''}
+                        ${states ? `<div><strong>States:</strong> ${states}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['watershedId', 'watershed_id', 'WATERSHED_ID', 'huc8', 'HUC_8', 'huc_8', 'huc10', 'HUC_10', 'huc_10', 'huc12', 'HUC_12', 'huc_12', 'huc10Name', 'HU_10_NAME', 'hu_10_name', 'huc12Name', 'HU_12_NAME', 'hu_12_name', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  Object.entries(watershed).forEach(([key, value]) => {
+                    if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                      return;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  watershedCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CT HUC Watershed polygon:', error);
+              }
+            }
+          });
+          
+          if (watershedCount > 0) {
+            if (!legendAccumulator['ct_huc_watersheds']) {
+              legendAccumulator['ct_huc_watersheds'] = {
+                icon: '🌊',
+                color: '#06b6d4',
+                title: 'CT HUC Watershed Boundaries',
+                count: 0,
+              };
+            }
+            legendAccumulator['ct_huc_watersheds'].count += watershedCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CT HUC Watershed Boundaries:', error);
+      }
+
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)
       Object.entries(enrichments).forEach(([key, value]) => {
         if (!Array.isArray(value)) {
@@ -8586,15 +9161,32 @@ const MapView: React.FC<MapViewProps> = ({
               <h4 className="text-[9px] font-semibold text-gray-900 mb-1">Legend</h4>
               <div className="space-y-0.5">
                 {legendItems.map((item, index) => (
-                  <div key={index} className="flex items-center space-x-0.5 text-[9px]">
-                    <div 
-                      className="w-2 h-2 rounded-full flex items-center justify-center text-[8px] flex-shrink-0"
-                      style={{ backgroundColor: item.color }}
-                    >
-                      {item.icon}
+                  <div key={index}>
+                    <div className="flex items-center space-x-0.5 text-[9px]">
+                      <div 
+                        className="w-2 h-2 rounded-full flex items-center justify-center text-[8px] flex-shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      >
+                        {item.icon}
+                      </div>
+                      <span className="text-gray-700 truncate">{item.title}</span>
+                      <span className="text-gray-500 flex-shrink-0">({item.count})</span>
                     </div>
-                    <span className="text-gray-700 truncate">{item.title}</span>
-                    <span className="text-gray-500 flex-shrink-0">({item.count})</span>
+                    {/* Show ranges for broadband layer */}
+                    {item.ranges && item.ranges.length > 0 && (
+                      <div className="ml-3 mt-0.5 space-y-0.5">
+                        {item.ranges.map((range, rangeIndex) => (
+                          <div key={rangeIndex} className="flex items-center space-x-1 text-[8px]">
+                            <div 
+                              className="w-1.5 h-1.5 rounded flex-shrink-0"
+                              style={{ backgroundColor: range.color }}
+                            />
+                            <span className="text-gray-600 truncate">{range.label}</span>
+                            <span className="text-gray-400 flex-shrink-0">({range.count})</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -8667,15 +9259,32 @@ const MapView: React.FC<MapViewProps> = ({
             <h4 className="text-sm font-semibold text-gray-900 mb-3">Map Legend</h4>
             <div className="space-y-2">
               {legendItems.map((item, index) => (
-                <div key={index} className="flex items-center space-x-2 text-xs">
-                  <div 
-                    className="w-4 h-4 rounded-full flex items-center justify-center text-xs"
-                    style={{ backgroundColor: item.color }}
-                  >
-                    {item.icon}
+                <div key={index}>
+                  <div className="flex items-center space-x-2 text-xs">
+                    <div 
+                      className="w-4 h-4 rounded-full flex items-center justify-center text-xs"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      {item.icon}
+                    </div>
+                    <span className="text-gray-700">{item.title}</span>
+                    <span className="text-gray-500">({item.count})</span>
                   </div>
-                  <span className="text-gray-700">{item.title}</span>
-                  <span className="text-gray-500">({item.count})</span>
+                  {/* Show ranges for broadband layer */}
+                  {item.ranges && item.ranges.length > 0 && (
+                    <div className="ml-6 mt-1 space-y-1">
+                      {item.ranges.map((range, rangeIndex) => (
+                        <div key={rangeIndex} className="flex items-center space-x-2 text-xs">
+                          <div 
+                            className="w-3 h-3 rounded flex-shrink-0"
+                            style={{ backgroundColor: range.color }}
+                          />
+                          <span className="text-gray-600">{range.label}</span>
+                          <span className="text-gray-400">({range.count})</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

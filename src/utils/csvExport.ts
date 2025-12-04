@@ -283,6 +283,11 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ct_deep_properties_all' || // Skip _all arrays (handled separately)
         key === 'ct_tribal_lands_all' || // Skip CT Tribal Lands array (handled separately)
         key === 'ct_drinking_water_watersheds_all' || // Skip CT Drinking Water Watersheds array (handled separately)
+        key === 'ct_broadband_availability_all' || // Skip CT Broadband Availability array (handled separately)
+        key === 'ct_water_pollution_control_all' || // Skip CT Water Pollution Control array (handled separately)
+        key === 'ct_boat_launches_all' || // Skip CT Boat Launches array (handled separately)
+        key === 'ct_federal_open_space_all' || // Skip CT Federal Open Space array (handled separately)
+        key === 'ct_huc_watersheds_all' || // Skip CT HUC Watersheds array (handled separately)
         key === 'ma_nhesp_natural_communities_all' ||
         key === 'ma_lakes_and_ponds_all' ||
         key === 'ma_rivers_and_streams_all' ||
@@ -1001,6 +1006,221 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           `${pwsName}${pwsId ? ` (PWS ID: ${pwsId})` : ''}${shed ? ` - ${shed}` : ''}${acres !== null ? ` - ${acres.toFixed(2)} acres` : ''}`,
           '', // Phone (not applicable)
           attributesJson, // Full attributes in Website field
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_broadband_availability_all' && Array.isArray(value)) {
+      // Handle CT Broadband Availability - each block gets its own row with all attributes
+      value.forEach((block: any) => {
+        const blockName = block.blockName || block.block_name || block.BLOCK_NAME || 'Unknown Block';
+        const blockGeoid = block.blockGeoid || block.block_geoid || block.BLOCK_GEOID || '';
+        const featureType = block.isContaining ? 'Containing Block' : 'Nearby Block';
+        const townName = block.townName || block.town_name || block.TOWN_NAME || '';
+        const countyName = block.countyName || block.county_name || block.COUNTY_NAME || '';
+        const pctUnserved = block.pctUnserved !== null && block.pctUnserved !== undefined ? block.pctUnserved : null;
+        const maxDownload = block.maxDownload !== null && block.maxDownload !== undefined ? block.maxDownload : null;
+        const nProviders = block.nProviders !== null && block.nProviders !== undefined ? block.nProviders : null;
+        
+        const allAttributes = { ...block };
+        delete allAttributes.blockId;
+        delete allAttributes.blockGeoid;
+        delete allAttributes.block_geoid;
+        delete allAttributes.BLOCK_GEOID;
+        delete allAttributes.blockName;
+        delete allAttributes.block_name;
+        delete allAttributes.BLOCK_NAME;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CT Broadband Availability',
+          blockName,
+          blockGeoid || '',
+          townName || '',
+          countyName || '',
+          '',
+          '',
+          block.distance_miles !== null && block.distance_miles !== undefined ? block.distance_miles.toFixed(2) : (block.isContaining ? '0.00' : ''),
+          featureType,
+          `${blockName}${blockGeoid ? ` (GEOID: ${blockGeoid})` : ''}${townName ? ` - ${townName}` : ''}${countyName ? `, ${countyName}` : ''}${pctUnserved !== null ? ` - ${pctUnserved.toFixed(2)}% unserved` : ''}${maxDownload !== null ? ` - Max: ${maxDownload.toFixed(2)} Mbps` : ''}${nProviders !== null ? ` - ${nProviders} providers` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson, // Full attributes in Website field
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_water_pollution_control_all' && Array.isArray(value)) {
+      // Handle CT Water Pollution Control Facilities - each facility gets its own row with all attributes
+      value.forEach((facility: any) => {
+        const facilityName = facility.facilityName || facility.FACILITY_Name || facility.facility_name || 'Unknown Facility';
+        const permittee = facility.permittee || facility.Permitte || '';
+        const address = facility.address || facility.FACILITY_Address || '';
+        const city = facility.city || facility.TOWN || facility.town || '';
+        const phone = facility.phone || facility.PHONE || '';
+        const permitId = facility.permitId || facility.Permit_ID || '';
+        const receivingWaterbody = facility.receivingWaterbody || facility.Receiving_Waterbody || '';
+        
+        const allAttributes = { ...facility };
+        delete allAttributes.facilityId;
+        delete allAttributes.facilityName;
+        delete allAttributes.permittee;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.zip;
+        delete allAttributes.phone;
+        delete allAttributes.permitId;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CT Water Pollution Control',
+          facilityName,
+          permitId || '',
+          city || '',
+          '',
+          '',
+          '',
+          facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '',
+          'Water Pollution Control Facility',
+          `${facilityName}${permittee ? ` - ${permittee}` : ''}${address ? ` - ${address}` : ''}${city ? `, ${city}` : ''}${receivingWaterbody ? ` - ${receivingWaterbody}` : ''}`,
+          phone || '',
+          attributesJson,
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_boat_launches_all' && Array.isArray(value)) {
+      // Handle CT Boat Launches - each launch gets its own row with all attributes
+      value.forEach((launch: any) => {
+        const name = launch.name || launch.NAME || launch.Name || 'Unknown Boat Launch';
+        const address = launch.address || launch.ADDRESS || launch.Address || '';
+        const city = launch.city || launch.CITY || launch.City || '';
+        const state = launch.state || launch.STATE || launch.State || 'CT';
+        const zip = launch.zip || launch.ZIP || launch.Zip || '';
+        const phone = launch.phone || launch.PHONE || launch.Phone || '';
+        
+        const allAttributes = { ...launch };
+        delete allAttributes.launchId;
+        delete allAttributes.name;
+        delete allAttributes.address;
+        delete allAttributes.city;
+        delete allAttributes.state;
+        delete allAttributes.zip;
+        delete allAttributes.phone;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CT Boat Launches',
+          name,
+          '',
+          city || '',
+          '',
+          '',
+          '',
+          launch.distance_miles !== null && launch.distance_miles !== undefined ? launch.distance_miles.toFixed(2) : '',
+          'Boat Launch',
+          `${name}${address ? ` - ${address}` : ''}${city ? `, ${city}` : ''}${state ? ` ${state}` : ''}${zip ? ` ${zip}` : ''}`,
+          phone || '',
+          attributesJson,
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_federal_open_space_all' && Array.isArray(value)) {
+      // Handle CT Federal Open Space - each open space gets its own row with all attributes
+      value.forEach((openSpace: any) => {
+        const name = openSpace.name || openSpace.NAME || openSpace.Name || 'Unknown Open Space';
+        const agency = openSpace.agency || openSpace.AGENCY || openSpace.Agency || '';
+        const featureType = openSpace.isContaining ? 'Containing Open Space' : 'Nearby Open Space';
+        
+        const allAttributes = { ...openSpace };
+        delete allAttributes.openSpaceId;
+        delete allAttributes.name;
+        delete allAttributes.agency;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CT Federal Open Space',
+          name,
+          '',
+          '',
+          '',
+          '',
+          '',
+          openSpace.distance_miles !== null && openSpace.distance_miles !== undefined ? openSpace.distance_miles.toFixed(2) : (openSpace.isContaining ? '0.00' : ''),
+          featureType,
+          `${name}${agency ? ` - ${agency}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson,
+          'CT Geodata Portal'
+        ]);
+      });
+    } else if (key === 'ct_huc_watersheds_all' && Array.isArray(value)) {
+      // Handle CT HUC Watershed Boundaries - each watershed gets its own row with all attributes
+      value.forEach((watershed: any) => {
+        const huc12Name = watershed.huc12Name || watershed.HU_12_NAME || watershed.hu_12_name || null;
+        const huc10Name = watershed.huc10Name || watershed.HU_10_NAME || watershed.hu_10_name || null;
+        const huc12 = watershed.huc12 || watershed.HUC_12 || watershed.huc_12 || null;
+        const huc10 = watershed.huc10 || watershed.HUC_10 || watershed.huc_10 || null;
+        const huc8 = watershed.huc8 || watershed.HUC_8 || watershed.huc_8 || null;
+        const watershedName = huc12Name || huc10Name || `HUC ${huc12 || huc10 || huc8 || 'Unknown'}`;
+        const acres = watershed.acres !== null && watershed.acres !== undefined ? watershed.acres : (watershed.ACRES !== undefined ? watershed.ACRES : null);
+        const states = watershed.states || watershed.STATES || '';
+        
+        const allAttributes = { ...watershed };
+        delete allAttributes.watershedId;
+        delete allAttributes.huc8;
+        delete allAttributes.huc10;
+        delete allAttributes.huc12;
+        delete allAttributes.huc10Name;
+        delete allAttributes.huc12Name;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CT HUC Watershed Boundaries',
+          watershedName,
+          huc12 || '',
+          '',
+          '',
+          '',
+          '',
+          '0.00', // Always containing, so distance is 0
+          'Containing Watershed',
+          `${watershedName}${huc12 ? ` (HUC-12: ${huc12})` : ''}${huc10 ? ` (HUC-10: ${huc10})` : ''}${huc8 ? ` (HUC-8: ${huc8})` : ''}${acres !== null ? ` - ${acres.toFixed(2)} acres` : ''}${states ? ` - ${states}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson,
           'CT Geodata Portal'
         ]);
       });
