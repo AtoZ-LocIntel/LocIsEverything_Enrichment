@@ -169,6 +169,48 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'California Open Data',
     description: 'California state open data services and layers',
     icon: 'CA.webp'
+  },
+  {
+    id: 'ga',
+    title: 'Georgia Open Data',
+    description: 'Georgia state open data services and layers',
+    icon: 'GA.webp'
+  },
+  {
+    id: 'sc',
+    title: 'South Carolina Open Data',
+    description: 'South Carolina state open data services and layers',
+    icon: 'SC.webp'
+  },
+  {
+    id: 'nc',
+    title: 'North Carolina Open Data',
+    description: 'North Carolina state open data services and layers',
+    icon: 'NC.webp'
+  },
+  {
+    id: 'md',
+    title: 'Maryland Open Data',
+    description: 'Maryland state open data services and layers',
+    icon: 'MD.webp'
+  },
+  {
+    id: 'dc',
+    title: 'District of Columbia Open Data',
+    description: 'District of Columbia open data services and layers',
+    icon: 'DC.webp'
+  },
+  {
+    id: 'va',
+    title: 'Virginia Open Data',
+    description: 'Virginia state open data services and layers',
+    icon: 'VA.webp'
+  },
+  {
+    id: 'fl',
+    title: 'Florida Open Data',
+    description: 'Florida state open data services and layers',
+    icon: 'FL.webp'
   }
 ];
 

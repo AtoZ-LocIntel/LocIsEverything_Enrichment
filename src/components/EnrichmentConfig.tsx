@@ -68,6 +68,13 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   de: <img src="/assets/DE.webp" alt="Delaware Open Data" className="w-5 h-5" />,
   wv: <img src="/assets/WV.webp" alt="West Virginia Open Data" className="w-5 h-5" />,
   ca: <img src="/assets/CA.webp" alt="California Open Data" className="w-5 h-5" />,
+  ga: <img src="/assets/GA.webp" alt="Georgia Open Data" className="w-5 h-5" />,
+  sc: <img src="/assets/SC.webp" alt="South Carolina Open Data" className="w-5 h-5" />,
+  nc: <img src="/assets/NC.webp" alt="North Carolina Open Data" className="w-5 h-5" />,
+  md: <img src="/assets/MD.webp" alt="Maryland Open Data" className="w-5 h-5" />,
+  dc: <img src="/assets/DC.webp" alt="District of Columbia Open Data" className="w-5 h-5" />,
+  va: <img src="/assets/VA.webp" alt="Virginia Open Data" className="w-5 h-5" />,
+  fl: <img src="/assets/FL.webp" alt="Florida Open Data" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -91,6 +98,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [viewingNJSubCategories, setViewingNJSubCategories] = useState(false);
   const [viewingWVSubCategories, setViewingWVSubCategories] = useState(false);
   const [viewingCASubCategories, setViewingCASubCategories] = useState(false);
+  const [viewingGASubCategories, setViewingGASubCategories] = useState(false);
+  const [viewingSCSubCategories, setViewingSCSubCategories] = useState(false);
+  const [viewingNCSubCategories, setViewingNCSubCategories] = useState(false);
+  const [viewingMDSubCategories, setViewingMDSubCategories] = useState(false);
+  const [viewingDCSubCategories, setViewingDCSubCategories] = useState(false);
+  const [viewingVASubCategories, setViewingVASubCategories] = useState(false);
+  const [viewingFLSubCategories, setViewingFLSubCategories] = useState(false);
   const [cameFromNHSubCategories, setCameFromNHSubCategories] = useState(false);
   const [cameFromMASubCategories, setCameFromMASubCategories] = useState(false);
   const [cameFromCTSubCategories, setCameFromCTSubCategories] = useState(false);
@@ -98,13 +112,20 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [cameFromNJSubCategories, setCameFromNJSubCategories] = useState(false);
   const [cameFromWVSubCategories, setCameFromWVSubCategories] = useState(false);
   const [cameFromCASubCategories, setCameFromCASubCategories] = useState(false);
+  const [cameFromGASubCategories, setCameFromGASubCategories] = useState(false);
+  const [cameFromSCSubCategories, setCameFromSCSubCategories] = useState(false);
+  const [cameFromNCSubCategories, setCameFromNCSubCategories] = useState(false);
+  const [cameFromMDSubCategories, setCameFromMDSubCategories] = useState(false);
+  const [cameFromDCSubCategories, setCameFromDCSubCategories] = useState(false);
+  const [cameFromVASubCategories, setCameFromVASubCategories] = useState(false);
+  const [cameFromFLSubCategories, setCameFromFLSubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, onModalStateChange]); // Track if viewing state sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
@@ -455,6 +476,90 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        if (section.id === 'ga') {
+          // GA will have sub-categories (to be added later)
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
+        if (section.id === 'sc') {
+          // SC will have sub-categories (to be added later)
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
+        if (section.id === 'nc') {
+          // NC will have sub-categories (to be added later)
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
+        if (section.id === 'md') {
+          // MD will have sub-categories (to be added later)
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
+        if (section.id === 'dc') {
+          // DC will have sub-categories (to be added later)
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
+        if (section.id === 'va') {
+          // VA will have sub-categories (to be added later)
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
+        if (section.id === 'fl') {
+          // FL will have sub-categories (to be added later)
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
         return {
           id: section.id,
           title: section.title,
@@ -521,7 +626,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'pa': 'PA',
       'de': 'DE',
       'wv': 'WV',
-      'ca': 'CA'
+      'ca': 'CA',
+      'ga': 'GA',
+      'sc': 'SC',
+      'nc': 'NC',
+      'md': 'MD',
+      'dc': 'DC',
+      'va': 'VA',
+      'fl': 'FL'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -1093,6 +1205,103 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     );
   }
 
+  // Helper function to render state sub-categories page
+  const renderStateSubCategoriesPage = (
+    viewingState: boolean,
+    setViewingState: (value: boolean) => void,
+    stateId: string,
+    stateTitle: string,
+    setCameFromState: (value: boolean) => void
+  ) => {
+    if (!viewingState) return null;
+    
+    const stateCategory = enrichmentCategories.find(c => c.id === stateId);
+    const stateSubCategories = stateCategory?.subCategories || [];
+    
+    return (
+      <div className="enrichment-config">
+        <div className="card">
+          <div className="card-header">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setViewingState(false)}
+                  className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
+                  title="Back to categories"
+                >
+                  ←
+                </button>
+                <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>{stateTitle}</h3>
+                  <p className="text-xs lg:text-sm text-gray-300">Select a category to view available layers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+            
+          <div className="card-body">
+            <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
+                {stateSubCategories.length > 0 ? (
+                  stateSubCategories.map((subCategory) => {
+                    const subCategoryEnrichments = subCategory.enrichments;
+                    const selectedCount = subCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+                    
+                    const getRingOpacity = () => {
+                      if (selectedCount === 0) return 0;
+                      if (selectedCount <= 2) return 0.3;
+                      if (selectedCount <= 4) return 0.6;
+                      return 0.9;
+                    };
+
+                    return (
+                      <button
+                        key={subCategory.id}
+                        onClick={() => {
+                          if (onViewCategory) {
+                            setViewingState(false);
+                            onViewCategory(subCategory);
+                          } else {
+                            setCameFromState(true);
+                            setActiveModal(subCategory.id);
+                            setViewingState(false);
+                          }
+                        }}
+                        className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
+                        }}
+                      >
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          {subCategory.icon}
+                        </div>
+                        
+                        {selectedCount > 0 && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold z-10">
+                            {selectedCount}
+                          </div>
+                        )}
+                        
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold p-2 text-center z-10">
+                          {subCategory.title}
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-2 text-center text-gray-500 py-8">
+                    <p>No sub-categories available yet. Sub-categories will appear here as layers are added.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // If viewing CA sub-categories, show full page with round icons
   if (viewingCASubCategories) {
     const caCategory = enrichmentCategories.find(c => c.id === 'ca');
@@ -1284,6 +1493,70 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       </div>
     );
   }
+
+  // Render new state sub-categories pages
+  const gaSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingGASubCategories,
+    setViewingGASubCategories,
+    'ga',
+    'Georgia Open Data',
+    setCameFromGASubCategories
+  );
+  if (gaSubCategoriesPage) return gaSubCategoriesPage;
+
+  const scSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingSCSubCategories,
+    setViewingSCSubCategories,
+    'sc',
+    'South Carolina Open Data',
+    setCameFromSCSubCategories
+  );
+  if (scSubCategoriesPage) return scSubCategoriesPage;
+
+  const ncSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingNCSubCategories,
+    setViewingNCSubCategories,
+    'nc',
+    'North Carolina Open Data',
+    setCameFromNCSubCategories
+  );
+  if (ncSubCategoriesPage) return ncSubCategoriesPage;
+
+  const mdSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingMDSubCategories,
+    setViewingMDSubCategories,
+    'md',
+    'Maryland Open Data',
+    setCameFromMDSubCategories
+  );
+  if (mdSubCategoriesPage) return mdSubCategoriesPage;
+
+  const dcSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingDCSubCategories,
+    setViewingDCSubCategories,
+    'dc',
+    'District of Columbia Open Data',
+    setCameFromDCSubCategories
+  );
+  if (dcSubCategoriesPage) return dcSubCategoriesPage;
+
+  const vaSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingVASubCategories,
+    setViewingVASubCategories,
+    'va',
+    'Virginia Open Data',
+    setCameFromVASubCategories
+  );
+  if (vaSubCategoriesPage) return vaSubCategoriesPage;
+
+  const flSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingFLSubCategories,
+    setViewingFLSubCategories,
+    'fl',
+    'Florida Open Data',
+    setCameFromFLSubCategories
+  );
+  if (flSubCategoriesPage) return flSubCategoriesPage;
 
   // If viewing NH sub-categories, show full page with round icons
   if (viewingNHSubCategories) {
@@ -1579,6 +1852,41 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromCASubCategories(false);
                               setActiveModal(null);
                               setViewingCASubCategories(true);
+                            } else if (cameFromGASubCategories) {
+                              // Go back to GA sub-categories page
+                              setCameFromGASubCategories(false);
+                              setActiveModal(null);
+                              setViewingGASubCategories(true);
+                            } else if (cameFromSCSubCategories) {
+                              // Go back to SC sub-categories page
+                              setCameFromSCSubCategories(false);
+                              setActiveModal(null);
+                              setViewingSCSubCategories(true);
+                            } else if (cameFromNCSubCategories) {
+                              // Go back to NC sub-categories page
+                              setCameFromNCSubCategories(false);
+                              setActiveModal(null);
+                              setViewingNCSubCategories(true);
+                            } else if (cameFromMDSubCategories) {
+                              // Go back to MD sub-categories page
+                              setCameFromMDSubCategories(false);
+                              setActiveModal(null);
+                              setViewingMDSubCategories(true);
+                            } else if (cameFromDCSubCategories) {
+                              // Go back to DC sub-categories page
+                              setCameFromDCSubCategories(false);
+                              setActiveModal(null);
+                              setViewingDCSubCategories(true);
+                            } else if (cameFromVASubCategories) {
+                              // Go back to VA sub-categories page
+                              setCameFromVASubCategories(false);
+                              setActiveModal(null);
+                              setViewingVASubCategories(true);
+                            } else if (cameFromFLSubCategories) {
+                              // Go back to FL sub-categories page
+                              setCameFromFLSubCategories(false);
+                              setActiveModal(null);
+                              setViewingFLSubCategories(true);
                             } else {
                               // Go back to main configuration
                               setActiveModal(null);
@@ -1825,6 +2133,20 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setViewingWVSubCategories(true);
                       } else if (category.id === 'ca' && category.subCategories && category.subCategories.length > 0) {
                         setViewingCASubCategories(true);
+                      } else if (category.id === 'ga' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingGASubCategories(true);
+                      } else if (category.id === 'sc' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingSCSubCategories(true);
+                      } else if (category.id === 'nc' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingNCSubCategories(true);
+                      } else if (category.id === 'md' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingMDSubCategories(true);
+                      } else if (category.id === 'dc' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingDCSubCategories(true);
+                      } else if (category.id === 'va' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingVASubCategories(true);
+                      } else if (category.id === 'fl' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingFLSubCategories(true);
                       } else if ((category.id === 'ri' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'pa') && category.subCategories && category.subCategories.length > 0) {
                         // For other states with sub-categories, use onViewCategory (they'll be handled like regular categories for now)
                         // When sub-categories are added, we can add specific state handlers similar to NH/MA
