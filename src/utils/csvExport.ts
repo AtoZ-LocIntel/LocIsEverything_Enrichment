@@ -1322,6 +1322,123 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'CA Open Data Portal'
         ]);
       });
+    } else if (key === 'ca_fire_perimeters_all_all' && Array.isArray(value)) {
+      // Handle CA Fire Perimeters (All) - each fire perimeter gets its own row with all attributes
+      value.forEach((fire: any) => {
+        const fireName = fire.fireName || fire.FIRE_NAME || fire.Name || fire.name || 'Unknown Fire';
+        const fireYear = fire.fireYear !== null && fire.fireYear !== undefined ? fire.fireYear : (fire.YEAR_ !== null && fire.YEAR_ !== undefined ? fire.YEAR_ : null);
+        const acres = fire.acres !== null && fire.acres !== undefined ? fire.acres : (fire.ACRES !== null && fire.ACRES !== undefined ? fire.ACRES : null);
+        const distance = fire.distance_miles !== null && fire.distance_miles !== undefined ? fire.distance_miles.toFixed(2) : '0.00';
+        const statusText = fire.isContaining ? 'Containing Fire Perimeter' : `Nearby Fire Perimeter (${distance} miles)`;
+        
+        const allAttributes = { ...fire };
+        delete allAttributes.fireId;
+        delete allAttributes.fireName;
+        delete allAttributes.fireYear;
+        delete allAttributes.acres;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Fire Perimeters (All)',
+          fireName,
+          fireYear ? fireYear.toString() : '',
+          '',
+          '',
+          '',
+          '',
+          distance,
+          statusText,
+          `${fireName}${fireYear ? ` (${fireYear})` : ''}${acres !== null ? ` - ${acres.toLocaleString(undefined, { maximumFractionDigits: 0 })} acres` : ''}`,
+          '',
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
+    } else if (key === 'ca_fire_perimeters_recent_large_all' && Array.isArray(value)) {
+      // Handle CA Recent Large Fire Perimeters - each fire perimeter gets its own row with all attributes
+      value.forEach((fire: any) => {
+        const fireName = fire.fireName || fire.FIRE_NAME || fire.Name || fire.name || 'Unknown Fire';
+        const fireYear = fire.fireYear !== null && fire.fireYear !== undefined ? fire.fireYear : (fire.YEAR_ !== null && fire.YEAR_ !== undefined ? fire.YEAR_ : null);
+        const acres = fire.acres !== null && fire.acres !== undefined ? fire.acres : (fire.ACRES !== null && fire.ACRES !== undefined ? fire.ACRES : null);
+        const distance = fire.distance_miles !== null && fire.distance_miles !== undefined ? fire.distance_miles.toFixed(2) : '0.00';
+        const statusText = fire.isContaining ? 'Containing Fire Perimeter' : `Nearby Fire Perimeter (${distance} miles)`;
+        
+        const allAttributes = { ...fire };
+        delete allAttributes.fireId;
+        delete allAttributes.fireName;
+        delete allAttributes.fireYear;
+        delete allAttributes.acres;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Recent Large Fire Perimeters',
+          fireName,
+          fireYear ? fireYear.toString() : '',
+          '',
+          '',
+          '',
+          '',
+          distance,
+          statusText,
+          `${fireName}${fireYear ? ` (${fireYear})` : ''}${acres !== null ? ` - ${acres.toLocaleString(undefined, { maximumFractionDigits: 0 })} acres` : ''}`,
+          '',
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
+    } else if (key === 'ca_fire_perimeters_1950_all' && Array.isArray(value)) {
+      // Handle CA Fire Perimeters (1950+) - each fire perimeter gets its own row with all attributes
+      value.forEach((fire: any) => {
+        const fireName = fire.fireName || fire.FIRE_NAME || fire.Name || fire.name || 'Unknown Fire';
+        const fireYear = fire.fireYear !== null && fire.fireYear !== undefined ? fire.fireYear : (fire.YEAR_ !== null && fire.YEAR_ !== undefined ? fire.YEAR_ : null);
+        const acres = fire.acres !== null && fire.acres !== undefined ? fire.acres : (fire.ACRES !== null && fire.ACRES !== undefined ? fire.ACRES : null);
+        const distance = fire.distance_miles !== null && fire.distance_miles !== undefined ? fire.distance_miles.toFixed(2) : '0.00';
+        const statusText = fire.isContaining ? 'Containing Fire Perimeter' : `Nearby Fire Perimeter (${distance} miles)`;
+        
+        const allAttributes = { ...fire };
+        delete allAttributes.fireId;
+        delete allAttributes.fireName;
+        delete allAttributes.fireYear;
+        delete allAttributes.acres;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Fire Perimeters (1950+)',
+          fireName,
+          fireYear ? fireYear.toString() : '',
+          '',
+          '',
+          '',
+          '',
+          distance,
+          statusText,
+          `${fireName}${fireYear ? ` (${fireYear})` : ''}${acres !== null ? ` - ${acres.toLocaleString(undefined, { maximumFractionDigits: 0 })} acres` : ''}`,
+          '',
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
     } else if (key === 'de_child_care_centers_all' && Array.isArray(value)) {
       // Handle DE Child Care Centers - each center gets its own row with all attributes
       value.forEach((center: any) => {

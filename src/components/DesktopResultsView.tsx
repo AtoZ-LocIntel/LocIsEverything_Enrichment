@@ -115,18 +115,19 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
     const grouped = Object.entries(enrichments).reduce((acc, [key, value]) => {
       // Skip POI "All" fields completely - they should not appear in the form
       // This includes any field that contains detailed POI data
-      if (key.includes('_all_pois') || 
+      // BUT allow count fields (e.g., ca_fire_perimeters_all_count) to be displayed
+      if ((key.includes('_all_pois') || 
           key.includes('_detailed') || 
           key.includes('_elements') ||
           key.includes('_features') ||
           key.endsWith('_all') ||
           key.endsWith(' All') ||
-          key.includes('_all') ||
+          (key.includes('_all') && !key.endsWith('_count')) ||
           (key.includes('poi_') && key.includes('_all')) ||
           // Catch specific patterns like "Poi Cafes Coffee All" and "Poi Banks All"
           (key.toLowerCase().includes('poi') && key.toLowerCase().includes('all')) ||
           // Catch any field that ends with "All" regardless of case
-          key.toLowerCase().endsWith('all')) {
+          key.toLowerCase().endsWith('all')) && !key.endsWith('_count')) {
         return acc;
       }
       
@@ -386,6 +387,30 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('nh_nwi_plus');
         }
         
+        // CA Power Outage Areas fields - only show if CA Power Outage Areas enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_power_outage_areas') && key !== 'ca_power_outage_areas_all') {
+          return selectedEnrichments.includes('ca_power_outage_areas');
+        }
+        
+        // CA Fire Perimeters (All) fields - only show if CA Fire Perimeters (All) enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_fire_perimeters_all') && key !== 'ca_fire_perimeters_all_all') {
+          return selectedEnrichments.includes('ca_fire_perimeters_all');
+        }
+        
+        // CA Recent Large Fire Perimeters fields - only show if CA Recent Large Fire Perimeters enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_fire_perimeters_recent_large') && key !== 'ca_fire_perimeters_recent_large_all') {
+          return selectedEnrichments.includes('ca_fire_perimeters_recent_large');
+        }
+        
+        // CA Fire Perimeters (1950+) fields - only show if CA Fire Perimeters (1950+) enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_fire_perimeters_1950') && key !== 'ca_fire_perimeters_1950_all') {
+          return selectedEnrichments.includes('ca_fire_perimeters_1950');
+        }
+        
         return false;
       });
       
@@ -445,6 +470,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Connecticut Data';
       } else if (key.includes('de_state_forest') || key.includes('de_pine_plantations') || key.includes('de_urban_tree_canopy') || key.includes('de_forest_cover_2007') || key.includes('de_')) {
         category = 'DE Data';
+      } else if (key.includes('ca_power_outage_areas') || key.includes('ca_fire_perimeters') || key.includes('ca_')) {
+        category = 'California Data';
       } else if (key.includes('nj_parcel') || key.includes('nj_')) {
         category = 'NJ Data';
       } else if (key.startsWith('nj_')) {

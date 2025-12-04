@@ -56,6 +56,9 @@ import { getCTFederalOpenSpaceData } from '../adapters/ctFederalOpenSpace';
 import { getCTHUCWatershedData } from '../adapters/ctHUCWatersheds';
 import { getCTSoilsParentMaterialData } from '../adapters/ctSoilsParentMaterial';
 import { getCAPowerOutageAreaData } from '../adapters/caPowerOutageAreas';
+import { getCAFirePerimetersAllData } from '../adapters/caFirePerimetersAll';
+import { getCAFirePerimetersRecentLargeData } from '../adapters/caFirePerimetersRecentLarge';
+import { getCAFirePerimeters1950Data } from '../adapters/caFirePerimeters1950';
 import { getDEStateForestData } from '../adapters/deStateForest';
 import { getDEPinePlantationData } from '../adapters/dePinePlantations';
 import { getDEUrbanTreeCanopyData } from '../adapters/deUrbanTreeCanopy';
@@ -1614,6 +1617,18 @@ export class EnrichmentService {
       // CA Power Outage Areas (CA Open Data Portal) - Point-in-polygon and proximity query
       case 'ca_power_outage_areas':
         return await this.getCAPowerOutageAreas(lat, lon, radius);
+      
+      // CA Fire Perimeters (All) (CA Open Data Portal) - Point-in-polygon and proximity query
+      case 'ca_fire_perimeters_all':
+        return await this.getCAFirePerimetersAll(lat, lon, radius);
+      
+      // CA Recent Large Fire Perimeters (CA Open Data Portal) - Point-in-polygon and proximity query
+      case 'ca_fire_perimeters_recent_large':
+        return await this.getCAFirePerimetersRecentLarge(lat, lon, radius);
+      
+      // CA Fire Perimeters (1950+) (CA Open Data Portal) - Point-in-polygon and proximity query
+      case 'ca_fire_perimeters_1950':
+        return await this.getCAFirePerimeters1950(lat, lon, radius);
       
       // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
       case 'de_state_forest':
@@ -6926,6 +6941,213 @@ out center;`;
         ca_power_outage_areas_containing_message: 'Error fetching CA Power Outage Areas data',
         ca_power_outage_areas_count: 0,
         ca_power_outage_areas_all: []
+      };
+    }
+  }
+
+  private async getCAFirePerimetersAll(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔥 Fetching CA Fire Perimeters (All) data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const firePerimeters = await getCAFirePerimetersAllData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (firePerimeters.length === 0) {
+        result.ca_fire_perimeters_all_containing = null;
+        result.ca_fire_perimeters_all_containing_message = 'No fire perimeter found containing this location';
+        result.ca_fire_perimeters_all_count = 0;
+        result.ca_fire_perimeters_all_all = [];
+        return result;
+      }
+      
+      // Find containing fire (distance = 0)
+      const containingFire = firePerimeters.find(f => f.distance_miles === 0);
+      
+      if (containingFire) {
+        result.ca_fire_perimeters_all_containing = containingFire.fireName || 
+                                                   containingFire.fireId || 
+                                                   'Fire Perimeter';
+        result.ca_fire_perimeters_all_containing_message = `Location is within a fire perimeter: ${result.ca_fire_perimeters_all_containing}`;
+        
+        if (containingFire.fireName) {
+          result.ca_fire_perimeters_all_containing_name = containingFire.fireName;
+        }
+        if (containingFire.fireYear !== null) {
+          result.ca_fire_perimeters_all_containing_year = containingFire.fireYear;
+        }
+        if (containingFire.acres !== null) {
+          result.ca_fire_perimeters_all_containing_acres = containingFire.acres;
+        }
+      } else {
+        result.ca_fire_perimeters_all_containing = null;
+        result.ca_fire_perimeters_all_containing_message = 'No fire perimeter found containing this location';
+      }
+      
+      // Set count and all array
+      result.ca_fire_perimeters_all_count = firePerimeters.length;
+      result.ca_fire_perimeters_all_all = firePerimeters.map(fire => ({
+        ...fire.attributes,
+        fireId: fire.fireId,
+        fireName: fire.fireName,
+        fireYear: fire.fireYear,
+        acres: fire.acres,
+        isContaining: fire.distance_miles === 0,
+        distance_miles: fire.distance_miles || 0,
+        geometry: fire.geometry
+      }));
+      
+      console.log(`✅ CA Fire Perimeters (All) data processed:`, {
+        containing: result.ca_fire_perimeters_all_containing || 'N/A',
+        totalCount: result.ca_fire_perimeters_all_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Fire Perimeters (All) data:', error);
+      return {
+        ca_fire_perimeters_all_containing: null,
+        ca_fire_perimeters_all_containing_message: 'Error fetching CA Fire Perimeters (All) data',
+        ca_fire_perimeters_all_count: 0,
+        ca_fire_perimeters_all_all: []
+      };
+    }
+  }
+
+  private async getCAFirePerimetersRecentLarge(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔥 Fetching CA Recent Large Fire Perimeters data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const firePerimeters = await getCAFirePerimetersRecentLargeData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (firePerimeters.length === 0) {
+        result.ca_fire_perimeters_recent_large_containing = null;
+        result.ca_fire_perimeters_recent_large_containing_message = 'No fire perimeter found containing this location';
+        result.ca_fire_perimeters_recent_large_count = 0;
+        result.ca_fire_perimeters_recent_large_all = [];
+        return result;
+      }
+      
+      // Find containing fire (distance = 0)
+      const containingFire = firePerimeters.find(f => f.distance_miles === 0);
+      
+      if (containingFire) {
+        result.ca_fire_perimeters_recent_large_containing = containingFire.fireName || 
+                                                            containingFire.fireId || 
+                                                            'Fire Perimeter';
+        result.ca_fire_perimeters_recent_large_containing_message = `Location is within a fire perimeter: ${result.ca_fire_perimeters_recent_large_containing}`;
+        
+        if (containingFire.fireName) {
+          result.ca_fire_perimeters_recent_large_containing_name = containingFire.fireName;
+        }
+        if (containingFire.fireYear !== null) {
+          result.ca_fire_perimeters_recent_large_containing_year = containingFire.fireYear;
+        }
+        if (containingFire.acres !== null) {
+          result.ca_fire_perimeters_recent_large_containing_acres = containingFire.acres;
+        }
+      } else {
+        result.ca_fire_perimeters_recent_large_containing = null;
+        result.ca_fire_perimeters_recent_large_containing_message = 'No fire perimeter found containing this location';
+      }
+      
+      // Set count and all array
+      result.ca_fire_perimeters_recent_large_count = firePerimeters.length;
+      result.ca_fire_perimeters_recent_large_all = firePerimeters.map(fire => ({
+        ...fire.attributes,
+        fireId: fire.fireId,
+        fireName: fire.fireName,
+        fireYear: fire.fireYear,
+        acres: fire.acres,
+        isContaining: fire.distance_miles === 0,
+        distance_miles: fire.distance_miles || 0,
+        geometry: fire.geometry
+      }));
+      
+      console.log(`✅ CA Recent Large Fire Perimeters data processed:`, {
+        containing: result.ca_fire_perimeters_recent_large_containing || 'N/A',
+        totalCount: result.ca_fire_perimeters_recent_large_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Recent Large Fire Perimeters data:', error);
+      return {
+        ca_fire_perimeters_recent_large_containing: null,
+        ca_fire_perimeters_recent_large_containing_message: 'Error fetching CA Recent Large Fire Perimeters data',
+        ca_fire_perimeters_recent_large_count: 0,
+        ca_fire_perimeters_recent_large_all: []
+      };
+    }
+  }
+
+  private async getCAFirePerimeters1950(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔥 Fetching CA Fire Perimeters (1950+) data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const firePerimeters = await getCAFirePerimeters1950Data(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (firePerimeters.length === 0) {
+        result.ca_fire_perimeters_1950_containing = null;
+        result.ca_fire_perimeters_1950_containing_message = 'No fire perimeter found containing this location';
+        result.ca_fire_perimeters_1950_count = 0;
+        result.ca_fire_perimeters_1950_all = [];
+        return result;
+      }
+      
+      // Find containing fire (distance = 0)
+      const containingFire = firePerimeters.find(f => f.distance_miles === 0);
+      
+      if (containingFire) {
+        result.ca_fire_perimeters_1950_containing = containingFire.fireName || 
+                                                    containingFire.fireId || 
+                                                    'Fire Perimeter';
+        result.ca_fire_perimeters_1950_containing_message = `Location is within a fire perimeter: ${result.ca_fire_perimeters_1950_containing}`;
+        
+        if (containingFire.fireName) {
+          result.ca_fire_perimeters_1950_containing_name = containingFire.fireName;
+        }
+        if (containingFire.fireYear !== null) {
+          result.ca_fire_perimeters_1950_containing_year = containingFire.fireYear;
+        }
+        if (containingFire.acres !== null) {
+          result.ca_fire_perimeters_1950_containing_acres = containingFire.acres;
+        }
+      } else {
+        result.ca_fire_perimeters_1950_containing = null;
+        result.ca_fire_perimeters_1950_containing_message = 'No fire perimeter found containing this location';
+      }
+      
+      // Set count and all array
+      result.ca_fire_perimeters_1950_count = firePerimeters.length;
+      result.ca_fire_perimeters_1950_all = firePerimeters.map(fire => ({
+        ...fire.attributes,
+        fireId: fire.fireId,
+        fireName: fire.fireName,
+        fireYear: fire.fireYear,
+        acres: fire.acres,
+        isContaining: fire.distance_miles === 0,
+        distance_miles: fire.distance_miles || 0,
+        geometry: fire.geometry
+      }));
+      
+      console.log(`✅ CA Fire Perimeters (1950+) data processed:`, {
+        containing: result.ca_fire_perimeters_1950_containing || 'N/A',
+        totalCount: result.ca_fire_perimeters_1950_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Fire Perimeters (1950+) data:', error);
+      return {
+        ca_fire_perimeters_1950_containing: null,
+        ca_fire_perimeters_1950_containing_message: 'Error fetching CA Fire Perimeters (1950+) data',
+        ca_fire_perimeters_1950_count: 0,
+        ca_fire_perimeters_1950_all: []
       };
     }
   }

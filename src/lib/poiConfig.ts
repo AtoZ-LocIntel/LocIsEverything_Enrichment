@@ -396,6 +396,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   
   // California Open Data Portal layers
   { id: 'ca_power_outage_areas', label: 'CA Power Outage Areas', description: 'CA Open Data Portal - California Power Outage Areas for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
+  { id: 'ca_fire_perimeters_all', label: 'CA Fire Perimeters (All)', description: 'CA Open Data Portal - California Historic Fire Perimeters (all historical fires) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
+  { id: 'ca_fire_perimeters_recent_large', label: 'CA Recent Large Fire Perimeters', description: 'CA Open Data Portal - California Recent Large Fire Perimeters (GT 5000 acres) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
+  { id: 'ca_fire_perimeters_1950', label: 'CA Fire Perimeters (1950+)', description: 'CA Open Data Portal - California Fire Perimeters (1950+) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
   
   // Delaware FirstMap layers
   { id: 'de_parcels', label: 'DE State Parcels', description: 'DE FirstMap - Delaware state parcels with ownership information for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.3, maxRadius: 1.0, category: 'de', section: 'de' },

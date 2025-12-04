@@ -201,6 +201,9 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ct_huc_watersheds': { icon: '🌊', color: '#06b6d4', title: 'CT HUC Watershed Boundaries' },
   'ct_soils_parent_material': { icon: '🌱', color: '#a16207', title: 'CT Soils Parent Material Name' },
   'ca_power_outage_areas': { icon: '⚡', color: '#f59e0b', title: 'CA Power Outage Areas' },
+  'ca_fire_perimeters_all': { icon: '🔥', color: '#dc2626', title: 'CA Fire Perimeters (All)' },
+  'ca_fire_perimeters_recent_large': { icon: '🔥', color: '#ea580c', title: 'CA Recent Large Fire Perimeters' },
+  'ca_fire_perimeters_1950': { icon: '🔥', color: '#f97316', title: 'CA Fire Perimeters (1950+)' },
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
@@ -497,6 +500,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ct_huc_watersheds_all' || // Skip CT HUC Watersheds array (handled separately for map drawing)
     key === 'ct_soils_parent_material_all' || // Skip CT Soils Parent Material array (handled separately for map drawing)
     key === 'ca_power_outage_areas_all' || // Skip CA Power Outage Areas array (handled separately for map drawing)
+    key === 'ca_fire_perimeters_all_all' || // Skip CA Fire Perimeters (All) array (handled separately for map drawing)
+    key === 'ca_fire_perimeters_recent_large_all' || // Skip CA Recent Large Fire Perimeters array (handled separately for map drawing)
+    key === 'ca_fire_perimeters_1950_all' || // Skip CA Fire Perimeters (1950+) array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -9131,6 +9137,231 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA Power Outage Areas:', error);
+      }
+
+      // Draw CA Fire Perimeters (All)
+      try {
+        if (enrichments.ca_fire_perimeters_all_all && Array.isArray(enrichments.ca_fire_perimeters_all_all)) {
+          let fireCount = 0;
+          enrichments.ca_fire_perimeters_all_all.forEach((fire: any) => {
+            if (fire.geometry && fire.geometry.rings) {
+              try {
+                const rings = fire.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CA Fire Perimeter polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#dc2626'; // Red for fire perimeters
+                  const weight = 2;
+
+                  const fireName = fire.fireName || fire.FIRE_NAME || fire.Name || fire.name || 'Unknown Fire';
+                  const fireYear = fire.fireYear !== null && fire.fireYear !== undefined ? fire.fireYear : (fire.YEAR_ !== null && fire.YEAR_ !== undefined ? fire.YEAR_ : null);
+                  const acres = fire.acres !== null && fire.acres !== undefined ? fire.acres : (fire.ACRES !== null && fire.ACRES !== undefined ? fire.ACRES : null);
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🔥 ${fireName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${fireYear ? `<div><strong>Year:</strong> ${fireYear}</div>` : ''}
+                        ${acres !== null ? `<div><strong>Acres:</strong> ${acres.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>` : ''}
+                        ${fire.isContaining ? '<div style="color: #dc2626; font-weight: 600; margin-top: 8px;">📍 Contains Location</div>' : ''}
+                        ${fire.distance_miles && fire.distance_miles > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${fire.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  fireCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Fire Perimeter polygon:', error);
+              }
+            }
+          });
+          
+          if (fireCount > 0) {
+            if (!legendAccumulator['ca_fire_perimeters_all']) {
+              legendAccumulator['ca_fire_perimeters_all'] = {
+                icon: '🔥',
+                color: '#dc2626',
+                title: 'CA Fire Perimeters (All)',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_fire_perimeters_all'].count += fireCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Fire Perimeters (All):', error);
+      }
+
+      // Draw CA Recent Large Fire Perimeters
+      try {
+        if (enrichments.ca_fire_perimeters_recent_large_all && Array.isArray(enrichments.ca_fire_perimeters_recent_large_all)) {
+          let fireCount = 0;
+          enrichments.ca_fire_perimeters_recent_large_all.forEach((fire: any) => {
+            if (fire.geometry && fire.geometry.rings) {
+              try {
+                const rings = fire.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CA Recent Large Fire Perimeter polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#ea580c'; // Orange-red for recent large fires
+                  const weight = 2;
+
+                  const fireName = fire.fireName || fire.FIRE_NAME || fire.Name || fire.name || 'Unknown Fire';
+                  const fireYear = fire.fireYear !== null && fire.fireYear !== undefined ? fire.fireYear : (fire.YEAR_ !== null && fire.YEAR_ !== undefined ? fire.YEAR_ : null);
+                  const acres = fire.acres !== null && fire.acres !== undefined ? fire.acres : (fire.ACRES !== null && fire.ACRES !== undefined ? fire.ACRES : null);
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🔥 ${fireName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${fireYear ? `<div><strong>Year:</strong> ${fireYear}</div>` : ''}
+                        ${acres !== null ? `<div><strong>Acres:</strong> ${acres.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>` : ''}
+                        ${fire.isContaining ? '<div style="color: #dc2626; font-weight: 600; margin-top: 8px;">📍 Contains Location</div>' : ''}
+                        ${fire.distance_miles && fire.distance_miles > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${fire.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  fireCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Recent Large Fire Perimeter polygon:', error);
+              }
+            }
+          });
+          
+          if (fireCount > 0) {
+            if (!legendAccumulator['ca_fire_perimeters_recent_large']) {
+              legendAccumulator['ca_fire_perimeters_recent_large'] = {
+                icon: '🔥',
+                color: '#ea580c',
+                title: 'CA Recent Large Fire Perimeters',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_fire_perimeters_recent_large'].count += fireCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Recent Large Fire Perimeters:', error);
+      }
+
+      // Draw CA Fire Perimeters (1950+)
+      try {
+        if (enrichments.ca_fire_perimeters_1950_all && Array.isArray(enrichments.ca_fire_perimeters_1950_all)) {
+          let fireCount = 0;
+          enrichments.ca_fire_perimeters_1950_all.forEach((fire: any) => {
+            if (fire.geometry && fire.geometry.rings) {
+              try {
+                const rings = fire.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CA Fire Perimeter (1950+) polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#f97316'; // Orange for 1950+ fires
+                  const weight = 2;
+
+                  const fireName = fire.fireName || fire.FIRE_NAME || fire.Name || fire.name || 'Unknown Fire';
+                  const fireYear = fire.fireYear !== null && fire.fireYear !== undefined ? fire.fireYear : (fire.YEAR_ !== null && fire.YEAR_ !== undefined ? fire.YEAR_ : null);
+                  const acres = fire.acres !== null && fire.acres !== undefined ? fire.acres : (fire.ACRES !== null && fire.ACRES !== undefined ? fire.ACRES : null);
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🔥 ${fireName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${fireYear ? `<div><strong>Year:</strong> ${fireYear}</div>` : ''}
+                        ${acres !== null ? `<div><strong>Acres:</strong> ${acres.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>` : ''}
+                        ${fire.isContaining ? '<div style="color: #dc2626; font-weight: 600; margin-top: 8px;">📍 Contains Location</div>' : ''}
+                        ${fire.distance_miles && fire.distance_miles > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${fire.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  fireCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Fire Perimeter (1950+) polygon:', error);
+              }
+            }
+          });
+          
+          if (fireCount > 0) {
+            if (!legendAccumulator['ca_fire_perimeters_1950']) {
+              legendAccumulator['ca_fire_perimeters_1950'] = {
+                icon: '🔥',
+                color: '#f97316',
+                title: 'CA Fire Perimeters (1950+)',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_fire_perimeters_1950'].count += fireCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Fire Perimeters (1950+):', error);
       }
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)

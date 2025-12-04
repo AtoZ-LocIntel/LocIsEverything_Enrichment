@@ -841,6 +841,27 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "California",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "CA Fire Perimeters (All)",
+          description: "California Historic Fire Perimeters (all historical fires) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Recent Large Fire Perimeters",
+          description: "California Recent Large Fire Perimeters (GT 5000 acres) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Fire Perimeters (1950+)",
+          description: "California Fire Perimeters (1950+) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
