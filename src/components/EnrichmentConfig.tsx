@@ -66,6 +66,8 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   nj: <img src="/assets/NJ.webp" alt="New Jersey Open Data" className="w-5 h-5" />,
   pa: <img src="/assets/PA.webp" alt="Pennsylvania Open Data" className="w-5 h-5" />,
   de: <img src="/assets/DE.webp" alt="Delaware Open Data" className="w-5 h-5" />,
+  wv: <img src="/assets/WV.webp" alt="West Virginia Open Data" className="w-5 h-5" />,
+  ca: <img src="/assets/CA.webp" alt="California Open Data" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -87,18 +89,22 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [viewingCTSubCategories, setViewingCTSubCategories] = useState(false);
   const [viewingDESubCategories, setViewingDESubCategories] = useState(false);
   const [viewingNJSubCategories, setViewingNJSubCategories] = useState(false);
+  const [viewingWVSubCategories, setViewingWVSubCategories] = useState(false);
+  const [viewingCASubCategories, setViewingCASubCategories] = useState(false);
   const [cameFromNHSubCategories, setCameFromNHSubCategories] = useState(false);
   const [cameFromMASubCategories, setCameFromMASubCategories] = useState(false);
   const [cameFromCTSubCategories, setCameFromCTSubCategories] = useState(false);
   const [cameFromDESubCategories, setCameFromDESubCategories] = useState(false);
   const [cameFromNJSubCategories, setCameFromNJSubCategories] = useState(false);
+  const [cameFromWVSubCategories, setCameFromWVSubCategories] = useState(false);
+  const [cameFromCASubCategories, setCameFromCASubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
@@ -403,6 +409,52 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        if (section.id === 'wv') {
+          // WV will have sub-categories (to be added later)
+          // For now, return empty category ready for sub-categories
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [], // WV parent category has no direct enrichments
+            subCategories: [] // Will be populated when sub-categories are added
+          };
+        }
+        
+        if (section.id === 'ca') {
+          // Get CA Open Data Portal enrichments (filter POIs where section is 'ca')
+          const caOpenDataPortalPOIs = poiTypes.filter(poi => poi.section === 'ca');
+          const caOpenDataPortalEnrichments = caOpenDataPortalPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Define CA sub-categories (organized by data source)
+          const caSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'ca_open_data_portal',
+              title: 'CA Open Data Portal',
+              icon: <img src="/assets/CAopendataportal.webp" alt="CA Open Data Portal" className="w-full h-full object-cover rounded-full" />,
+              description: 'California Open Data Portal data layers',
+              enrichments: caOpenDataPortalEnrichments
+            }
+          ];
+          
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [], // CA parent category has no direct enrichments
+            subCategories: caSubCategories
+          };
+        }
+        
         return {
           id: section.id,
           title: section.title,
@@ -467,7 +519,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'me': 'ME',
       'nj': 'NJ',
       'pa': 'PA',
-      'de': 'DE'
+      'de': 'DE',
+      'wv': 'WV',
+      'ca': 'CA'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -1039,6 +1093,102 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     );
   }
 
+  // If viewing CA sub-categories, show full page with round icons
+  if (viewingCASubCategories) {
+    const caCategory = enrichmentCategories.find(c => c.id === 'ca');
+    const caSubCategories = caCategory?.subCategories || [];
+    
+    return (
+      <div className="enrichment-config">
+        <div className="card">
+          <div className="card-header">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setViewingCASubCategories(false)}
+                  className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
+                  title="Back to categories"
+                >
+                  ←
+                </button>
+                <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>California Open Data</h3>
+                  <p className="text-xs lg:text-sm text-gray-300">Select a category to view available layers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+            
+          <div className="card-body">
+            {/* CA Sub-Category Round Icons Grid - Same layout as home page */}
+            <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
+                {caSubCategories.length > 0 ? (
+                  caSubCategories.map((subCategory) => {
+                    const subCategoryEnrichments = subCategory.enrichments;
+                    const selectedCount = subCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+                    
+                    // Determine ring brightness based on selection count
+                    const getRingOpacity = () => {
+                      if (selectedCount === 0) return 0;
+                      if (selectedCount <= 2) return 0.3;
+                      if (selectedCount <= 4) return 0.6;
+                      return 0.9;
+                    };
+
+                    return (
+                      <button
+                        key={subCategory.id}
+                        onClick={() => {
+                          // Use onViewCategory to show sub-category layers (same pattern as NH, MA, CT, DE)
+                          if (onViewCategory) {
+                            setViewingCASubCategories(false);
+                            onViewCategory(subCategory);
+                          } else {
+                            // Fallback to modal
+                            setCameFromCASubCategories(true);
+                            setActiveModal(subCategory.id);
+                            setViewingCASubCategories(false);
+                          }
+                        }}
+                        className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
+                        }}
+                      >
+                        {/* Sub-Category Icon */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          {subCategory.icon}
+                        </div>
+                        
+                        {/* Selection Counter Badge */}
+                        {selectedCount > 0 && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold z-10">
+                            {selectedCount}
+                          </div>
+                        )}
+                        
+                        {/* Category Title Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold p-2 text-center z-10">
+                          {subCategory.title}
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-2 text-center text-gray-500 py-8">
+                    <p>No sub-categories available yet. Sub-categories will appear here as layers are added.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // If viewing MA sub-categories, show full page with round icons
   if (viewingMASubCategories) {
     const maCategory = enrichmentCategories.find(c => c.id === 'ma');
@@ -1246,6 +1396,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const isCTSubCategory = activeModal?.startsWith('ct_');
               const isDESubCategory = activeModal?.startsWith('de_');
               const isNJSubCategory = activeModal?.startsWith('nj_');
+              const isCASubCategory = activeModal?.startsWith('ca_');
               let category: EnrichmentCategory | undefined;
               
               if (isNHSubCategory) {
@@ -1305,6 +1456,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   isNJSubCategory,
                   njCategoryFound: !!njCategory,
                   subCategories: njCategory?.subCategories?.map(sc => sc.id),
+                  foundCategory: category?.id,
+                  enrichmentsCount: category?.enrichments?.length
+                });
+              } else if (isCASubCategory) {
+                // Find the CA category and get the sub-category
+                const caCategory = enrichmentCategories.find(c => c.id === 'ca');
+                category = caCategory?.subCategories?.find(sc => sc.id === activeModal);
+                console.log('🔍 CA Sub-Category Modal:', {
+                  activeModal,
+                  isCASubCategory,
+                  caCategoryFound: !!caCategory,
+                  subCategories: caCategory?.subCategories?.map(sc => sc.id),
                   foundCategory: category?.id,
                   enrichmentsCount: category?.enrichments?.length
                 });
@@ -1406,6 +1569,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromNJSubCategories(false);
                               setActiveModal(null);
                               setViewingNJSubCategories(true);
+                            } else if (cameFromWVSubCategories) {
+                              // Go back to WV sub-categories page
+                              setCameFromWVSubCategories(false);
+                              setActiveModal(null);
+                              setViewingWVSubCategories(true);
+                            } else if (cameFromCASubCategories) {
+                              // Go back to CA sub-categories page
+                              setCameFromCASubCategories(false);
+                              setActiveModal(null);
+                              setViewingCASubCategories(true);
                             } else {
                               // Go back to main configuration
                               setActiveModal(null);
@@ -1648,6 +1821,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setViewingDESubCategories(true);
                       } else if (category.id === 'nj' && category.subCategories && category.subCategories.length > 0) {
                         setViewingNJSubCategories(true);
+                      } else if (category.id === 'wv' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingWVSubCategories(true);
+                      } else if (category.id === 'ca' && category.subCategories && category.subCategories.length > 0) {
+                        setViewingCASubCategories(true);
                       } else if ((category.id === 'ri' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'pa') && category.subCategories && category.subCategories.length > 0) {
                         // For other states with sub-categories, use onViewCategory (they'll be handled like regular categories for now)
                         // When sub-categories are added, we can add specific state handlers similar to NH/MA

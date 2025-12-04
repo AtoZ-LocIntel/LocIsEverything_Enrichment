@@ -55,6 +55,7 @@ import { getCTBoatLaunchesData } from '../adapters/ctBoatLaunches';
 import { getCTFederalOpenSpaceData } from '../adapters/ctFederalOpenSpace';
 import { getCTHUCWatershedData } from '../adapters/ctHUCWatersheds';
 import { getCTSoilsParentMaterialData } from '../adapters/ctSoilsParentMaterial';
+import { getCAPowerOutageAreaData } from '../adapters/caPowerOutageAreas';
 import { getDEStateForestData } from '../adapters/deStateForest';
 import { getDEPinePlantationData } from '../adapters/dePinePlantations';
 import { getDEUrbanTreeCanopyData } from '../adapters/deUrbanTreeCanopy';
@@ -1609,6 +1610,10 @@ export class EnrichmentService {
       // CT Soils Parent Material Name (CT Geodata Portal) - Point-in-polygon query only
       case 'ct_soils_parent_material':
         return await this.getCTSoilsParentMaterial(lat, lon);
+      
+      // CA Power Outage Areas (CA Open Data Portal) - Point-in-polygon and proximity query
+      case 'ca_power_outage_areas':
+        return await this.getCAPowerOutageAreas(lat, lon, radius);
       
       // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
       case 'de_state_forest':
@@ -6839,6 +6844,88 @@ out center;`;
         ct_soils_parent_material_containing: null,
         ct_soils_parent_material_containing_message: 'Error fetching CT Soils Parent Material data',
         ct_soils_parent_material_all: []
+      };
+    }
+  }
+
+  private async getCAPowerOutageAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⚡ Fetching CA Power Outage Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const outageAreas = await getCAPowerOutageAreaData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (outageAreas.length === 0) {
+        result.ca_power_outage_areas_containing = null;
+        result.ca_power_outage_areas_containing_message = 'No power outage area found containing this location';
+        result.ca_power_outage_areas_count = 0;
+        result.ca_power_outage_areas_all = [];
+        return result;
+      }
+      
+      // Find containing outage (distance = 0)
+      const containingOutage = outageAreas.find(o => o.distance_miles === 0);
+      
+      if (containingOutage) {
+        result.ca_power_outage_areas_containing = containingOutage.incidentId || 
+                                                 containingOutage.outageId || 
+                                                 containingOutage.utilityCompany || 
+                                                 'Power Outage Area';
+        result.ca_power_outage_areas_containing_message = `Location is within a power outage area: ${result.ca_power_outage_areas_containing}`;
+        
+        if (containingOutage.utilityCompany) {
+          result.ca_power_outage_areas_containing_utility_company = containingOutage.utilityCompany;
+        }
+        if (containingOutage.outageStatus) {
+          result.ca_power_outage_areas_containing_status = containingOutage.outageStatus;
+        }
+        if (containingOutage.outageType) {
+          result.ca_power_outage_areas_containing_type = containingOutage.outageType;
+        }
+        if (containingOutage.impactedCustomers !== null) {
+          result.ca_power_outage_areas_containing_customers = containingOutage.impactedCustomers;
+        }
+        if (containingOutage.county) {
+          result.ca_power_outage_areas_containing_county = containingOutage.county;
+        }
+      } else {
+        result.ca_power_outage_areas_containing = null;
+        result.ca_power_outage_areas_containing_message = 'No power outage area found containing this location';
+      }
+      
+      // Set count and all array
+      result.ca_power_outage_areas_count = outageAreas.length;
+      result.ca_power_outage_areas_all = outageAreas.map(outage => ({
+        ...outage.attributes,
+        outageId: outage.outageId,
+        utilityCompany: outage.utilityCompany,
+        startDate: outage.startDate,
+        estimatedRestoreDate: outage.estimatedRestoreDate,
+        cause: outage.cause,
+        impactedCustomers: outage.impactedCustomers,
+        county: outage.county,
+        outageStatus: outage.outageStatus,
+        outageType: outage.outageType,
+        incidentId: outage.incidentId,
+        isContaining: outage.distance_miles === 0,
+        distance_miles: outage.distance_miles || 0,
+        geometry: outage.geometry
+      }));
+      
+      console.log(`✅ CA Power Outage Areas data processed:`, {
+        containing: result.ca_power_outage_areas_containing || 'N/A',
+        totalCount: result.ca_power_outage_areas_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Power Outage Areas data:', error);
+      return {
+        ca_power_outage_areas_containing: null,
+        ca_power_outage_areas_containing_message: 'Error fetching CA Power Outage Areas data',
+        ca_power_outage_areas_count: 0,
+        ca_power_outage_areas_all: []
       };
     }
   }

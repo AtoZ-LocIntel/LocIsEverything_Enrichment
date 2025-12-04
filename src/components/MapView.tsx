@@ -200,6 +200,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ct_federal_open_space': { icon: '🏞️', color: '#10b981', title: 'CT Federal Open Space' },
   'ct_huc_watersheds': { icon: '🌊', color: '#06b6d4', title: 'CT HUC Watershed Boundaries' },
   'ct_soils_parent_material': { icon: '🌱', color: '#a16207', title: 'CT Soils Parent Material Name' },
+  'ca_power_outage_areas': { icon: '⚡', color: '#f59e0b', title: 'CA Power Outage Areas' },
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
@@ -495,6 +496,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ct_federal_open_space_all' || // Skip CT Federal Open Space array (handled separately for map drawing)
     key === 'ct_huc_watersheds_all' || // Skip CT HUC Watersheds array (handled separately for map drawing)
     key === 'ct_soils_parent_material_all' || // Skip CT Soils Parent Material array (handled separately for map drawing)
+    key === 'ca_power_outage_areas_all' || // Skip CA Power Outage Areas array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -9018,6 +9020,117 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CT Soils Parent Material Name:', error);
+      }
+
+      // Draw CA Power Outage Areas
+      try {
+        if (enrichments.ca_power_outage_areas_all && Array.isArray(enrichments.ca_power_outage_areas_all)) {
+          let outageCount = 0;
+          enrichments.ca_power_outage_areas_all.forEach((outage: any) => {
+            if (outage.geometry && outage.geometry.rings) {
+              try {
+                const rings = outage.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CA Power Outage Area polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  // Color based on outage type: orange for "Not Planned", yellow for "Planned"
+                  const isPlanned = outage.outageType === 'Planned' || outage.OutageType === 'Planned';
+                  const color = isPlanned ? '#fbbf24' : '#f59e0b'; // Yellow for planned, orange for not planned
+                  const weight = 3;
+
+                  const utilityCompany = outage.utilityCompany || outage.UtilityCompany || 'Unknown Utility';
+                  const outageStatus = outage.outageStatus || outage.OutageStatus || 'Unknown';
+                  const outageType = outage.outageType || outage.OutageType || 'Unknown';
+                  const incidentId = outage.incidentId || outage.IncidentId || outage.outageId || 'N/A';
+                  const impactedCustomers = outage.impactedCustomers !== null && outage.impactedCustomers !== undefined 
+                    ? outage.impactedCustomers 
+                    : (outage.ImpactedCustomers !== null && outage.ImpactedCustomers !== undefined 
+                      ? outage.ImpactedCustomers 
+                      : null);
+                  const county = outage.county || outage.County || null;
+                  const cause = outage.cause || outage.Cause || null;
+                  const startDate = outage.startDate || outage.StartDate ? new Date(outage.startDate || outage.StartDate).toLocaleString() : null;
+                  const estimatedRestoreDate = outage.estimatedRestoreDate || outage.EstimatedRestoreDate ? new Date(outage.estimatedRestoreDate || outage.EstimatedRestoreDate).toLocaleString() : null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.8,
+                    fillColor: color,
+                    fillOpacity: 0.3
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ⚡ Power Outage Area
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Incident ID:</strong> ${incidentId}</div>
+                        <div><strong>Utility Company:</strong> ${utilityCompany}</div>
+                        <div><strong>Status:</strong> ${outageStatus}</div>
+                        <div><strong>Type:</strong> ${outageType}</div>
+                        ${impactedCustomers !== null ? `<div><strong>Impacted Customers:</strong> ${impactedCustomers.toLocaleString()}</div>` : ''}
+                        ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                        ${cause ? `<div><strong>Cause:</strong> ${cause}</div>` : ''}
+                        ${startDate ? `<div><strong>Start Date:</strong> ${startDate}</div>` : ''}
+                        ${estimatedRestoreDate ? `<div><strong>Estimated Restoration:</strong> ${estimatedRestoreDate}</div>` : ''}
+                        ${outage.isContaining ? '<div style="color: #dc2626; font-weight: 600; margin-top: 8px;">📍 Contains Location</div>' : ''}
+                        ${outage.distance_miles && outage.distance_miles > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${outage.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['outageId', 'OutageId', 'incidentId', 'IncidentId', 'utilityCompany', 'UtilityCompany', 'outageStatus', 'OutageStatus', 'outageType', 'OutageType', 'impactedCustomers', 'ImpactedCustomers', 'county', 'County', 'cause', 'Cause', 'startDate', 'StartDate', 'estimatedRestoreDate', 'EstimatedRestoreDate', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  Object.entries(outage).forEach(([key, value]) => {
+                    if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                      return;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  outageCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Power Outage Area polygon:', error);
+              }
+            }
+          });
+          
+          if (outageCount > 0) {
+            if (!legendAccumulator['ca_power_outage_areas']) {
+              legendAccumulator['ca_power_outage_areas'] = {
+                icon: '⚡',
+                color: '#f59e0b',
+                title: 'CA Power Outage Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_power_outage_areas'].count += outageCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Power Outage Areas:', error);
       }
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)

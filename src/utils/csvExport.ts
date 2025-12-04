@@ -1270,6 +1270,58 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'CT Geodata Portal'
         ]);
       });
+    } else if (key === 'ca_power_outage_areas_all' && Array.isArray(value)) {
+      // Handle CA Power Outage Areas - each outage area gets its own row with all attributes
+      value.forEach((outage: any) => {
+        const incidentId = outage.incidentId || outage.IncidentId || outage.outageId || 'Unknown';
+        const utilityCompany = outage.utilityCompany || outage.UtilityCompany || '';
+        const outageStatus = outage.outageStatus || outage.OutageStatus || '';
+        const outageType = outage.outageType || outage.OutageType || '';
+        const impactedCustomers = outage.impactedCustomers !== null && outage.impactedCustomers !== undefined 
+          ? outage.impactedCustomers 
+          : (outage.ImpactedCustomers !== null && outage.ImpactedCustomers !== undefined 
+            ? outage.ImpactedCustomers 
+            : null);
+        const county = outage.county || outage.County || '';
+        const distance = outage.distance_miles !== null && outage.distance_miles !== undefined ? outage.distance_miles.toFixed(2) : '0.00';
+        const statusText = outage.isContaining ? 'Containing Outage Area' : `Nearby Outage Area (${distance} miles)`;
+        
+        const allAttributes = { ...outage };
+        delete allAttributes.outageId;
+        delete allAttributes.incidentId;
+        delete allAttributes.utilityCompany;
+        delete allAttributes.outageStatus;
+        delete allAttributes.outageType;
+        delete allAttributes.impactedCustomers;
+        delete allAttributes.county;
+        delete allAttributes.cause;
+        delete allAttributes.startDate;
+        delete allAttributes.estimatedRestoreDate;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Power Outage Areas',
+          incidentId,
+          utilityCompany || '',
+          '',
+          '',
+          '',
+          '',
+          distance,
+          statusText,
+          `${incidentId}${utilityCompany ? ` - ${utilityCompany}` : ''}${outageStatus ? ` (${outageStatus})` : ''}${outageType ? ` - ${outageType}` : ''}${impactedCustomers !== null ? ` - ${impactedCustomers.toLocaleString()} customers` : ''}${county ? ` - ${county} County` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
     } else if (key === 'de_child_care_centers_all' && Array.isArray(value)) {
       // Handle DE Child Care Centers - each center gets its own row with all attributes
       value.forEach((center: any) => {

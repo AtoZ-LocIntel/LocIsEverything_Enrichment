@@ -833,6 +833,18 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
+      category: "California Data (CA Open Data Portal)",
+      sources: [
+        {
+          name: "CA Power Outage Areas",
+          description: "California Power Outage Areas - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
       category: "New Jersey Data (NJGIN)",
       sources: [
         {
