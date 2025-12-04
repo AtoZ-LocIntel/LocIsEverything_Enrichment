@@ -396,9 +396,16 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   
   // California Open Data Portal layers
   { id: 'ca_power_outage_areas', label: 'CA Power Outage Areas', description: 'CA Open Data Portal - California Power Outage Areas for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
+  // Fire-related layers grouped together
   { id: 'ca_fire_perimeters_all', label: 'CA Fire Perimeters (All)', description: 'CA Open Data Portal - California Historic Fire Perimeters (all historical fires) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
   { id: 'ca_fire_perimeters_recent_large', label: 'CA Recent Large Fire Perimeters', description: 'CA Open Data Portal - California Recent Large Fire Perimeters (GT 5000 acres) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
   { id: 'ca_fire_perimeters_1950', label: 'CA Fire Perimeters (1950+)', description: 'CA Open Data Portal - California Fire Perimeters (1950+) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
+  { id: 'ca_wildland_fire_direct_protection', label: 'CA Wildland Fire Direct Protection Areas', description: 'CA Open Data Portal - California Wildland Fire Direct Protection Areas (USFS) for point-in-polygon queries', isPOI: false, defaultRadius: 0, category: 'ca', section: 'ca' },
+  { id: 'ca_land_ownership', label: 'CA Land Ownership', description: 'CA Open Data Portal - California Land Ownership (CAL FIRE FRAP) for point-in-polygon queries', isPOI: false, defaultRadius: 0, category: 'ca', section: 'ca' },
+  { id: 'ca_state_parks_entry_points', label: 'CA State Parks Entry Points', description: 'CA Open Data Portal - California State Parks Entry Points for proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
+  { id: 'ca_state_parks_parking_lots', label: 'CA State Parks Parking Lots', description: 'CA Open Data Portal - California State Parks Parking Lots for proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
+  { id: 'ca_state_parks_boundaries', label: 'CA State Parks Boundaries', description: 'CA Open Data Portal - California State Parks Boundaries for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
+  { id: 'ca_state_parks_campgrounds', label: 'CA State Parks Campgrounds', description: 'CA Open Data Portal - California State Parks Campgrounds for proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
   
   // Delaware FirstMap layers
   { id: 'de_parcels', label: 'DE State Parcels', description: 'DE FirstMap - Delaware state parcels with ownership information for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.3, maxRadius: 1.0, category: 'de', section: 'de' },

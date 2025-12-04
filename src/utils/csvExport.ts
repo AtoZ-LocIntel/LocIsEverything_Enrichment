@@ -1439,6 +1439,245 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'CA Open Data Portal'
         ]);
       });
+    } else if (key === 'ca_land_ownership_all' && Array.isArray(value)) {
+      // Handle CA Land Ownership - each ownership polygon gets its own row with all attributes
+      value.forEach((ownership: any) => {
+        const ownGroup = ownership.ownGroup || ownership.OWN_GROUP || ownership.own_group || 'Unknown';
+        const ownAgency = ownership.ownAgency || ownership.OWN_AGENCY || ownership.own_agency || '';
+        const ownLevel = ownership.ownLevel || ownership.OWN_LEVEL || ownership.own_level || '';
+        
+        const allAttributes = { ...ownership };
+        delete allAttributes.ownershipId;
+        delete allAttributes.ownLevel;
+        delete allAttributes.ownAgency;
+        delete allAttributes.ownGroup;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Land Ownership',
+          ownGroup,
+          ownAgency || '',
+          '',
+          '',
+          '',
+          '',
+          '0.00', // Always containing, so distance is 0
+          'Containing Ownership Polygon',
+          `${ownGroup}${ownAgency ? ` - ${ownAgency}` : ''}${ownLevel ? ` (${ownLevel})` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
+    } else if (key === 'ca_wildland_fire_direct_protection_all' && Array.isArray(value)) {
+      // Handle CA Wildland Fire Direct Protection Areas - each protection area gets its own row with all attributes
+      value.forEach((protection: any) => {
+        const dpaAgency = protection.dpaAgency || protection.DPA_AGENCY || protection.dpa_agency || 'Unknown';
+        const dpaGroup = protection.dpaGroup || protection.DPA_GROUP || protection.dpa_group || '';
+        const respondId = protection.respondId || protection.RESPOND_ID || protection.respond_id || '';
+        const nwcgUnitId = protection.nwcgUnitId || protection.NWCG_UNITID || protection.nwcg_unitid || '';
+        
+        const allAttributes = { ...protection };
+        delete allAttributes.protectionAreaId;
+        delete allAttributes.dpaAgency;
+        delete allAttributes.dpaGroup;
+        delete allAttributes.respondId;
+        delete allAttributes.nwcgUnitId;
+        delete allAttributes.agreements;
+        delete allAttributes.costAppor;
+        delete allAttributes.comments;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Wildland Fire Direct Protection Areas',
+          dpaAgency,
+          dpaGroup || '',
+          '',
+          '',
+          '',
+          '',
+          '0.00', // Always containing, so distance is 0
+          'Containing Protection Area',
+          `${dpaAgency}${dpaGroup ? ` - ${dpaGroup}` : ''}${respondId ? ` (${respondId})` : ''}${nwcgUnitId ? ` - NWCG: ${nwcgUnitId}` : ''}`,
+          '', // Phone (not applicable)
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
+    } else if (key === 'ca_state_parks_entry_points_all' && Array.isArray(value)) {
+      // Handle CA State Parks Entry Points - each entry point gets its own row with all attributes
+      value.forEach((entryPoint: any) => {
+        const parkUnitName = entryPoint.parkUnitName || entryPoint.PARK_NAME || entryPoint.park_name || entryPoint.ParkName || entryPoint.NAME || entryPoint.name || 'Unknown Park';
+        const streetAddress = entryPoint.streetAddress || entryPoint.ADDRESS || entryPoint.address || entryPoint.Address || '';
+        const city = entryPoint.city || entryPoint.CITY || entryPoint.City || '';
+        const zipCode = entryPoint.zipCode || entryPoint.ZIP || entryPoint.zip || entryPoint.ZIP_CODE || entryPoint.zip_code || '';
+        const phone = entryPoint.phone || entryPoint.PHONE || entryPoint.Phone || '';
+        const distance = entryPoint.distance_miles !== null && entryPoint.distance_miles !== undefined ? entryPoint.distance_miles.toFixed(2) : '0.00';
+        const fullAddress = [streetAddress, city, zipCode].filter(Boolean).join(', ');
+        
+        const allAttributes = { ...entryPoint };
+        delete allAttributes.entryPointId;
+        delete allAttributes.parkUnitName;
+        delete allAttributes.streetAddress;
+        delete allAttributes.city;
+        delete allAttributes.zipCode;
+        delete allAttributes.phone;
+        delete allAttributes.website;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA State Parks Entry Points',
+          parkUnitName,
+          fullAddress || '',
+          city || '',
+          '',
+          zipCode || '',
+          '',
+          distance,
+          `Nearby Entry Point (${distance} miles)`,
+          `${parkUnitName}${fullAddress ? ` - ${fullAddress}` : ''}`,
+          phone || '',
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
+    } else if (key === 'ca_state_parks_parking_lots_all' && Array.isArray(value)) {
+      // Handle CA State Parks Parking Lots - each parking lot gets its own row with all attributes
+      value.forEach((parkingLot: any) => {
+        const name = parkingLot.name || parkingLot.NAME || parkingLot.Name || 'Unknown Parking Lot';
+        const unitName = parkingLot.unitName || parkingLot.UNITNAME || parkingLot.unitName || '';
+        const type = parkingLot.type || parkingLot.TYPE || parkingLot.Type || '';
+        const distance = parkingLot.distance_miles !== null && parkingLot.distance_miles !== undefined ? parkingLot.distance_miles.toFixed(2) : '0.00';
+        
+        const allAttributes = { ...parkingLot };
+        delete allAttributes.parkingLotId;
+        delete allAttributes.name;
+        delete allAttributes.unitName;
+        delete allAttributes.type;
+        delete allAttributes.subType;
+        delete allAttributes.useType;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA State Parks Parking Lots',
+          name,
+          unitName || '',
+          '',
+          '',
+          '',
+          '',
+          distance,
+          `Nearby Parking Lot (${distance} miles)`,
+          `${name}${unitName ? ` - ${unitName}` : ''}${type ? ` (${type})` : ''}`,
+          '',
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
+    } else if (key === 'ca_state_parks_boundaries_all' && Array.isArray(value)) {
+      // Handle CA State Parks Boundaries - each boundary gets its own row with all attributes
+      value.forEach((boundary: any) => {
+        const unitName = boundary.unitName || boundary.UNITNAME || boundary.unitName || 'Unknown Park';
+        const subType = boundary.subType || boundary.SUBTYPE || boundary.subType || '';
+        const unitNbr = boundary.unitNbr || boundary.UNITNBR || boundary.unitNbr || '';
+        const distance = boundary.distance_miles !== null && boundary.distance_miles !== undefined ? boundary.distance_miles.toFixed(2) : '0.00';
+        const statusText = boundary.isContaining ? 'Containing Park Boundary' : `Nearby Park Boundary (${distance} miles)`;
+        
+        const allAttributes = { ...boundary };
+        delete allAttributes.boundaryId;
+        delete allAttributes.unitName;
+        delete allAttributes.subType;
+        delete allAttributes.unitNbr;
+        delete allAttributes.isContaining;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA State Parks Boundaries',
+          unitName,
+          subType || '',
+          '',
+          '',
+          '',
+          '',
+          distance,
+          statusText,
+          `${unitName}${subType ? ` (${subType})` : ''}${unitNbr ? ` - Unit #${unitNbr}` : ''}`,
+          '',
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
+    } else if (key === 'ca_state_parks_campgrounds_all' && Array.isArray(value)) {
+      // Handle CA State Parks Campgrounds - each campground gets its own row with all attributes
+      value.forEach((campground: any) => {
+        const name = campground.name || campground.NAME || campground.Name || 'Unknown Campground';
+        const unitName = campground.unitName || campground.UNITNAME || campground.unitName || '';
+        const type = campground.type || campground.TYPE || campground.Type || '';
+        const distance = campground.distance_miles !== null && campground.distance_miles !== undefined ? campground.distance_miles.toFixed(2) : '0.00';
+        
+        const allAttributes = { ...campground };
+        delete allAttributes.campgroundId;
+        delete allAttributes.name;
+        delete allAttributes.unitName;
+        delete allAttributes.type;
+        delete allAttributes.subType;
+        delete allAttributes.useType;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA State Parks Campgrounds',
+          name,
+          unitName || '',
+          '',
+          '',
+          '',
+          '',
+          distance,
+          `Nearby Campground (${distance} miles)`,
+          `${name}${unitName ? ` - ${unitName}` : ''}${type ? ` (${type})` : ''}`,
+          '',
+          attributesJson,
+          'CA Open Data Portal'
+        ]);
+      });
     } else if (key === 'de_child_care_centers_all' && Array.isArray(value)) {
       // Handle DE Child Care Centers - each center gets its own row with all attributes
       value.forEach((center: any) => {

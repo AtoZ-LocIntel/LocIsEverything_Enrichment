@@ -862,6 +862,48 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "California",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "CA Land Ownership",
+          description: "California Land Ownership (CAL FIRE FRAP) - point-in-polygon queries",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Wildland Fire Direct Protection Areas",
+          description: "California Wildland Fire Direct Protection Areas (USFS) - point-in-polygon queries",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA State Parks Entry Points",
+          description: "California State Parks Entry Points - proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA State Parks Parking Lots",
+          description: "California State Parks Parking Lots - proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA State Parks Boundaries",
+          description: "California State Parks Boundaries - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA State Parks Campgrounds",
+          description: "California State Parks Campgrounds - proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

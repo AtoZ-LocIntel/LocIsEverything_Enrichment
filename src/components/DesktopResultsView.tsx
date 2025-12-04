@@ -23,11 +23,13 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       .replace(/^at_/g, 'AT ')
       .replace(/^pct_/g, 'PCT ')
       .replace(/^de_/g, 'DE ')
+      .replace(/^ca_/g, 'CA ')
       .replace(/nws/g, 'NWS')
       .replace(/fws/g, 'FWS')
       .replace(/_/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase())
-      .replace(/\bDe\b/g, 'DE');
+      .replace(/\bDe\b/g, 'DE')
+      .replace(/\bCa\b/g, 'CA');
   };
 
   const formatValue = (value: any, key: string): string => {
@@ -409,6 +411,42 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         // Skip the _all array (handled separately in display)
         if (key.includes('ca_fire_perimeters_1950') && key !== 'ca_fire_perimeters_1950_all') {
           return selectedEnrichments.includes('ca_fire_perimeters_1950');
+        }
+        
+        // CA Land Ownership fields - only show if CA Land Ownership enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_land_ownership') && key !== 'ca_land_ownership_all') {
+          return selectedEnrichments.includes('ca_land_ownership');
+        }
+        
+        // CA Wildland Fire Direct Protection Areas fields - only show if CA Wildland Fire Direct Protection Areas enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_wildland_fire_direct_protection') && key !== 'ca_wildland_fire_direct_protection_all') {
+          return selectedEnrichments.includes('ca_wildland_fire_direct_protection');
+        }
+        
+        // CA State Parks Entry Points fields - only show if CA State Parks Entry Points enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_state_parks_entry_points') && key !== 'ca_state_parks_entry_points_all') {
+          return selectedEnrichments.includes('ca_state_parks_entry_points');
+        }
+        
+        // CA State Parks Parking Lots fields - only show if CA State Parks Parking Lots enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_state_parks_parking_lots') && key !== 'ca_state_parks_parking_lots_all') {
+          return selectedEnrichments.includes('ca_state_parks_parking_lots');
+        }
+        
+        // CA State Parks Boundaries fields - only show if CA State Parks Boundaries enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_state_parks_boundaries') && key !== 'ca_state_parks_boundaries_all') {
+          return selectedEnrichments.includes('ca_state_parks_boundaries');
+        }
+        
+        // CA State Parks Campgrounds fields - only show if CA State Parks Campgrounds enrichment is selected
+        // Skip the _all array (handled separately in display)
+        if (key.includes('ca_state_parks_campgrounds') && key !== 'ca_state_parks_campgrounds_all') {
+          return selectedEnrichments.includes('ca_state_parks_campgrounds');
         }
         
         return false;

@@ -204,6 +204,12 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_fire_perimeters_all': { icon: '🔥', color: '#dc2626', title: 'CA Fire Perimeters (All)' },
   'ca_fire_perimeters_recent_large': { icon: '🔥', color: '#ea580c', title: 'CA Recent Large Fire Perimeters' },
   'ca_fire_perimeters_1950': { icon: '🔥', color: '#f97316', title: 'CA Fire Perimeters (1950+)' },
+  'ca_land_ownership': { icon: '🏛️', color: '#6366f1', title: 'CA Land Ownership' },
+  'ca_wildland_fire_direct_protection': { icon: '🔥', color: '#b91c1c', title: 'CA Wildland Fire Direct Protection Areas' },
+  'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
+  'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
+  'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
+  'ca_state_parks_campgrounds': { icon: '⛺', color: '#f59e0b', title: 'CA State Parks Campgrounds' },
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
@@ -503,6 +509,12 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_fire_perimeters_all_all' || // Skip CA Fire Perimeters (All) array (handled separately for map drawing)
     key === 'ca_fire_perimeters_recent_large_all' || // Skip CA Recent Large Fire Perimeters array (handled separately for map drawing)
     key === 'ca_fire_perimeters_1950_all' || // Skip CA Fire Perimeters (1950+) array (handled separately for map drawing)
+    key === 'ca_land_ownership_all' || // Skip CA Land Ownership array (handled separately for map drawing)
+    key === 'ca_wildland_fire_direct_protection_all' || // Skip CA Wildland Fire Direct Protection Areas array (handled separately for map drawing)
+    key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
+    key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
+    key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
+    key === 'ca_state_parks_campgrounds_all' || // Skip CA State Parks Campgrounds array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -9362,6 +9374,459 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA Fire Perimeters (1950+):', error);
+      }
+
+      // Draw CA Land Ownership
+      try {
+        if (enrichments.ca_land_ownership_all && Array.isArray(enrichments.ca_land_ownership_all)) {
+          let ownershipCount = 0;
+          enrichments.ca_land_ownership_all.forEach((ownership: any) => {
+            if (ownership.geometry && ownership.geometry.rings) {
+              try {
+                const rings = ownership.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CA Land Ownership polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#6366f1'; // Indigo for land ownership
+                  const weight = 2;
+
+                  const ownGroup = ownership.ownGroup || ownership.OWN_GROUP || ownership.own_group || 'Unknown';
+                  const ownAgency = ownership.ownAgency || ownership.OWN_AGENCY || ownership.own_agency || null;
+                  const ownLevel = ownership.ownLevel || ownership.OWN_LEVEL || ownership.own_level || null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏛️ ${ownGroup}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Status:</strong> Contains Location</div>
+                        ${ownAgency ? `<div><strong>Agency:</strong> ${ownAgency}</div>` : ''}
+                        ${ownLevel ? `<div><strong>Level:</strong> ${ownLevel}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['ownershipId', 'ownership_id', 'OWNERSHIP_ID', 'ownLevel', 'OWN_LEVEL', 'own_level', 'ownAgency', 'OWN_AGENCY', 'own_agency', 'ownGroup', 'OWN_GROUP', 'own_group', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  Object.entries(ownership).forEach(([key, value]) => {
+                    if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                      return;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  ownershipCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Land Ownership polygon:', error);
+              }
+            }
+          });
+          
+          if (ownershipCount > 0) {
+            if (!legendAccumulator['ca_land_ownership']) {
+              legendAccumulator['ca_land_ownership'] = {
+                icon: '🏛️',
+                color: '#6366f1',
+                title: 'CA Land Ownership',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_land_ownership'].count += ownershipCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Land Ownership:', error);
+      }
+
+      // Draw CA Wildland Fire Direct Protection Areas
+      try {
+        if (enrichments.ca_wildland_fire_direct_protection_all && Array.isArray(enrichments.ca_wildland_fire_direct_protection_all)) {
+          let protectionCount = 0;
+          enrichments.ca_wildland_fire_direct_protection_all.forEach((protection: any) => {
+            if (protection.geometry && protection.geometry.rings) {
+              try {
+                const rings = protection.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CA Wildland Fire Direct Protection Area polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#b91c1c'; // Dark red for fire protection areas
+                  const weight = 2;
+
+                  const dpaAgency = protection.dpaAgency || protection.DPA_AGENCY || protection.dpa_agency || 'Unknown';
+                  const dpaGroup = protection.dpaGroup || protection.DPA_GROUP || protection.dpa_group || null;
+                  const respondId = protection.respondId || protection.RESPOND_ID || protection.respond_id || null;
+                  const nwcgUnitId = protection.nwcgUnitId || protection.NWCG_UNITID || protection.nwcg_unitid || null;
+                  const agreements = protection.agreements || protection.AGREEMENTS || protection.agreements || null;
+                  const costAppor = protection.costAppor || protection.COST_APPOR || protection.cost_appor || null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🔥 ${dpaAgency}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Status:</strong> Contains Location</div>
+                        ${dpaGroup ? `<div><strong>Group:</strong> ${dpaGroup}</div>` : ''}
+                        ${respondId ? `<div><strong>Respond ID:</strong> ${respondId}</div>` : ''}
+                        ${nwcgUnitId ? `<div><strong>NWCG Unit ID:</strong> ${nwcgUnitId}</div>` : ''}
+                        ${agreements ? `<div><strong>Agreements:</strong> ${agreements}</div>` : ''}
+                        ${costAppor ? `<div><strong>Cost Apportionment:</strong> ${costAppor}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['protectionAreaId', 'protection_area_id', 'PROTECTION_AREA_ID', 'dpaAgency', 'DPA_AGENCY', 'dpa_agency', 'dpaGroup', 'DPA_GROUP', 'dpa_group', 'respondId', 'RESPOND_ID', 'respond_id', 'nwcgUnitId', 'NWCG_UNITID', 'nwcg_unitid', 'agreements', 'AGREEMENTS', 'costAppor', 'COST_APPOR', 'cost_appor', 'comments', 'COMMENTS', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  Object.entries(protection).forEach(([key, value]) => {
+                    if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                      return;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  protectionCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Wildland Fire Direct Protection Area polygon:', error);
+              }
+            }
+          });
+          
+          if (protectionCount > 0) {
+            if (!legendAccumulator['ca_wildland_fire_direct_protection']) {
+              legendAccumulator['ca_wildland_fire_direct_protection'] = {
+                icon: '🔥',
+                color: '#b91c1c',
+                title: 'CA Wildland Fire Direct Protection Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_wildland_fire_direct_protection'].count += protectionCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Wildland Fire Direct Protection Areas:', error);
+      }
+
+      // Draw CA State Parks Entry Points
+      try {
+        if (enrichments.ca_state_parks_entry_points_all && Array.isArray(enrichments.ca_state_parks_entry_points_all)) {
+          let entryPointCount = 0;
+          enrichments.ca_state_parks_entry_points_all.forEach((entryPoint: any) => {
+            if (entryPoint.geometry && entryPoint.geometry.x && entryPoint.geometry.y) {
+              try {
+                const lat = entryPoint.geometry.y;
+                const lon = entryPoint.geometry.x;
+                
+                const parkUnitName = entryPoint.parkUnitName || entryPoint.PARK_NAME || entryPoint.park_name || entryPoint.ParkName || entryPoint.NAME || entryPoint.name || 'Unknown Park';
+                const streetAddress = entryPoint.streetAddress || entryPoint.ADDRESS || entryPoint.address || entryPoint.Address || null;
+                const city = entryPoint.city || entryPoint.CITY || entryPoint.City || null;
+                const zipCode = entryPoint.zipCode || entryPoint.ZIP || entryPoint.zip || entryPoint.ZIP_CODE || entryPoint.zip_code || null;
+                const phone = entryPoint.phone || entryPoint.PHONE || entryPoint.Phone || null;
+                const website = entryPoint.website || entryPoint.WEBSITE || entryPoint.Website || entryPoint.URL || entryPoint.url || null;
+                const distance = entryPoint.distance_miles !== null && entryPoint.distance_miles !== undefined ? entryPoint.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🏞️', '#059669')
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏞️ ${parkUnitName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${streetAddress ? `<div><strong>Address:</strong> ${streetAddress}</div>` : ''}
+                      ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                      ${zipCode ? `<div><strong>ZIP:</strong> ${zipCode}</div>` : ''}
+                      ${phone ? `<div><strong>Phone:</strong> ${phone}</div>` : ''}
+                      ${website ? `<div><strong>Website:</strong> <a href="${website}" target="_blank" rel="noopener noreferrer">${website}</a></div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                entryPointCount++;
+              } catch (error) {
+                console.error('Error drawing CA State Parks Entry Point:', error);
+              }
+            }
+          });
+          
+          if (entryPointCount > 0) {
+            if (!legendAccumulator['ca_state_parks_entry_points']) {
+              legendAccumulator['ca_state_parks_entry_points'] = {
+                icon: '🏞️',
+                color: '#059669',
+                title: 'CA State Parks Entry Points',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_state_parks_entry_points'].count += entryPointCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA State Parks Entry Points:', error);
+      }
+
+      // Draw CA State Parks Parking Lots
+      try {
+        if (enrichments.ca_state_parks_parking_lots_all && Array.isArray(enrichments.ca_state_parks_parking_lots_all)) {
+          let parkingLotCount = 0;
+          enrichments.ca_state_parks_parking_lots_all.forEach((parkingLot: any) => {
+            if (parkingLot.geometry && parkingLot.geometry.x && parkingLot.geometry.y) {
+              try {
+                const lat = parkingLot.geometry.y;
+                const lon = parkingLot.geometry.x;
+                
+                const name = parkingLot.name || parkingLot.NAME || parkingLot.Name || 'Unknown Parking Lot';
+                const unitName = parkingLot.unitName || parkingLot.UNITNAME || parkingLot.unitName || null;
+                const type = parkingLot.type || parkingLot.TYPE || parkingLot.Type || null;
+                const subType = parkingLot.subType || parkingLot.SUBTYPE || parkingLot.subType || null;
+                const useType = parkingLot.useType || parkingLot.USETYPE || parkingLot.useType || null;
+                const trailhead = parkingLot.trailhead || parkingLot.TRAILHEAD || parkingLot.trailhead || null;
+                const distance = parkingLot.distance_miles !== null && parkingLot.distance_miles !== undefined ? parkingLot.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🅿️', '#0891b2')
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🅿️ ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${unitName ? `<div><strong>Park Unit:</strong> ${unitName}</div>` : ''}
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${subType ? `<div><strong>Sub Type:</strong> ${subType}</div>` : ''}
+                      ${useType ? `<div><strong>Use Type:</strong> ${useType}</div>` : ''}
+                      ${trailhead ? `<div><strong>Trailhead:</strong> ${trailhead}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                parkingLotCount++;
+              } catch (error) {
+                console.error('Error drawing CA State Parks Parking Lot:', error);
+              }
+            }
+          });
+          
+          if (parkingLotCount > 0) {
+            if (!legendAccumulator['ca_state_parks_parking_lots']) {
+              legendAccumulator['ca_state_parks_parking_lots'] = {
+                icon: '🅿️',
+                color: '#0891b2',
+                title: 'CA State Parks Parking Lots',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_state_parks_parking_lots'].count += parkingLotCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA State Parks Parking Lots:', error);
+      }
+
+      // Draw CA State Parks Boundaries
+      try {
+        if (enrichments.ca_state_parks_boundaries_all && Array.isArray(enrichments.ca_state_parks_boundaries_all)) {
+          let boundaryCount = 0;
+          enrichments.ca_state_parks_boundaries_all.forEach((boundary: any) => {
+            if (boundary.geometry && boundary.geometry.rings) {
+              try {
+                const rings = boundary.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CA State Parks Boundary polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#10b981'; // Green for park boundaries
+                  const weight = 2;
+
+                  const unitName = boundary.unitName || boundary.UNITNAME || boundary.unitName || 'Unknown Park';
+                  const subType = boundary.subType || boundary.SUBTYPE || boundary.subType || null;
+                  const unitNbr = boundary.unitNbr || boundary.UNITNBR || boundary.unitNbr || null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏞️ ${unitName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${subType ? `<div><strong>Sub Type:</strong> ${subType}</div>` : ''}
+                        ${unitNbr ? `<div><strong>Unit Number:</strong> ${unitNbr}</div>` : ''}
+                        ${boundary.isContaining ? '<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Contains Location</div>' : ''}
+                        ${boundary.distance_miles && boundary.distance_miles > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${boundary.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  boundaryCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA State Parks Boundary polygon:', error);
+              }
+            }
+          });
+          
+          if (boundaryCount > 0) {
+            if (!legendAccumulator['ca_state_parks_boundaries']) {
+              legendAccumulator['ca_state_parks_boundaries'] = {
+                icon: '🏞️',
+                color: '#10b981',
+                title: 'CA State Parks Boundaries',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_state_parks_boundaries'].count += boundaryCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA State Parks Boundaries:', error);
+      }
+
+      // Draw CA State Parks Campgrounds
+      try {
+        if (enrichments.ca_state_parks_campgrounds_all && Array.isArray(enrichments.ca_state_parks_campgrounds_all)) {
+          let campgroundCount = 0;
+          enrichments.ca_state_parks_campgrounds_all.forEach((campground: any) => {
+            if (campground.geometry && campground.geometry.x && campground.geometry.y) {
+              try {
+                const lat = campground.geometry.y;
+                const lon = campground.geometry.x;
+                
+                const name = campground.name || campground.NAME || campground.Name || 'Unknown Campground';
+                const unitName = campground.unitName || campground.UNITNAME || campground.unitName || null;
+                const type = campground.type || campground.TYPE || campground.Type || null;
+                const subType = campground.subType || campground.SUBTYPE || campground.subType || null;
+                const useType = campground.useType || campground.USETYPE || campground.useType || null;
+                const distance = campground.distance_miles !== null && campground.distance_miles !== undefined ? campground.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('⛺', '#f59e0b')
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ⛺ ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${unitName ? `<div><strong>Park Unit:</strong> ${unitName}</div>` : ''}
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${subType ? `<div><strong>Sub Type:</strong> ${subType}</div>` : ''}
+                      ${useType ? `<div><strong>Use Type:</strong> ${useType}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                campgroundCount++;
+              } catch (error) {
+                console.error('Error drawing CA State Parks Campground:', error);
+              }
+            }
+          });
+          
+          if (campgroundCount > 0) {
+            if (!legendAccumulator['ca_state_parks_campgrounds']) {
+              legendAccumulator['ca_state_parks_campgrounds'] = {
+                icon: '⛺',
+                color: '#f59e0b',
+                title: 'CA State Parks Campgrounds',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_state_parks_campgrounds'].count += campgroundCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA State Parks Campgrounds:', error);
       }
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)

@@ -59,6 +59,12 @@ import { getCAPowerOutageAreaData } from '../adapters/caPowerOutageAreas';
 import { getCAFirePerimetersAllData } from '../adapters/caFirePerimetersAll';
 import { getCAFirePerimetersRecentLargeData } from '../adapters/caFirePerimetersRecentLarge';
 import { getCAFirePerimeters1950Data } from '../adapters/caFirePerimeters1950';
+import { getCALandOwnershipData } from '../adapters/caLandOwnership';
+import { getCAWildlandFireDirectProtectionData } from '../adapters/caWildlandFireDirectProtection';
+import { getCAStateParksEntryPointsData } from '../adapters/caStateParksEntryPoints';
+import { getCAStateParksParkingLotsData } from '../adapters/caStateParksParkingLots';
+import { getCAStateParksBoundariesData } from '../adapters/caStateParksBoundaries';
+import { getCAStateParksCampgroundsData } from '../adapters/caStateParksCampgrounds';
 import { getDEStateForestData } from '../adapters/deStateForest';
 import { getDEPinePlantationData } from '../adapters/dePinePlantations';
 import { getDEUrbanTreeCanopyData } from '../adapters/deUrbanTreeCanopy';
@@ -1629,6 +1635,30 @@ export class EnrichmentService {
       // CA Fire Perimeters (1950+) (CA Open Data Portal) - Point-in-polygon and proximity query
       case 'ca_fire_perimeters_1950':
         return await this.getCAFirePerimeters1950(lat, lon, radius);
+      
+      // CA Land Ownership (CA Open Data Portal) - Point-in-polygon query only
+      case 'ca_land_ownership':
+        return await this.getCALandOwnership(lat, lon);
+      
+      // CA Wildland Fire Direct Protection Areas (CA Open Data Portal) - Point-in-polygon query only
+      case 'ca_wildland_fire_direct_protection':
+        return await this.getCAWildlandFireDirectProtection(lat, lon);
+      
+      // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
+      case 'ca_state_parks_entry_points':
+        return await this.getCAStateParksEntryPoints(lat, lon, radius);
+      
+      // CA State Parks Parking Lots (CA Open Data Portal) - Proximity query only
+      case 'ca_state_parks_parking_lots':
+        return await this.getCAStateParksParkingLots(lat, lon, radius);
+      
+      // CA State Parks Boundaries (CA Open Data Portal) - Point-in-polygon and proximity query
+      case 'ca_state_parks_boundaries':
+        return await this.getCAStateParksBoundaries(lat, lon, radius);
+      
+      // CA State Parks Campgrounds (CA Open Data Portal) - Proximity query only
+      case 'ca_state_parks_campgrounds':
+        return await this.getCAStateParksCampgrounds(lat, lon, radius);
       
       // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
       case 'de_state_forest':
@@ -7148,6 +7178,343 @@ out center;`;
         ca_fire_perimeters_1950_containing_message: 'Error fetching CA Fire Perimeters (1950+) data',
         ca_fire_perimeters_1950_count: 0,
         ca_fire_perimeters_1950_all: []
+      };
+    }
+  }
+
+  private async getCALandOwnership(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      const ownershipData = await getCALandOwnershipData(lat, lon);
+      
+      if (!ownershipData) {
+        return {
+          ca_land_ownership_containing: null,
+          ca_land_ownership_containing_message: 'No land ownership polygon found containing this location',
+          ca_land_ownership_all: []
+        };
+      }
+      
+      const result: Record<string, any> = {};
+      
+      // Set containing ownership information
+      result.ca_land_ownership_containing = ownershipData.ownGroup || 
+                                           ownershipData.ownAgency || 
+                                           ownershipData.ownLevel || 
+                                           ownershipData.ownershipId || 
+                                           'Unknown Ownership';
+      result.ca_land_ownership_containing_message = `Location is within: ${result.ca_land_ownership_containing}`;
+      
+      if (ownershipData.ownGroup) {
+        result.ca_land_ownership_containing_group = ownershipData.ownGroup;
+      }
+      if (ownershipData.ownAgency) {
+        result.ca_land_ownership_containing_agency = ownershipData.ownAgency;
+      }
+      if (ownershipData.ownLevel) {
+        result.ca_land_ownership_containing_level = ownershipData.ownLevel;
+      }
+      
+      // Add to _all array for map drawing
+      result.ca_land_ownership_all = [{
+        ...ownershipData.attributes,
+        ownershipId: ownershipData.ownershipId,
+        ownLevel: ownershipData.ownLevel,
+        ownAgency: ownershipData.ownAgency,
+        ownGroup: ownershipData.ownGroup,
+        isContaining: true,
+        distance_miles: 0,
+        geometry: ownershipData.geometry
+      }];
+      
+      console.log(`✅ CA Land Ownership data processed:`, {
+        containing: result.ca_land_ownership_containing || 'N/A'
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Land Ownership data:', error);
+      return {
+        ca_land_ownership_containing: null,
+        ca_land_ownership_containing_message: 'Error fetching CA Land Ownership data',
+        ca_land_ownership_all: []
+      };
+    }
+  }
+
+  private async getCAWildlandFireDirectProtection(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      const protectionData = await getCAWildlandFireDirectProtectionData(lat, lon);
+      
+      if (!protectionData) {
+        return {
+          ca_wildland_fire_direct_protection_containing: null,
+          ca_wildland_fire_direct_protection_containing_message: 'No wildland fire direct protection area found containing this location',
+          ca_wildland_fire_direct_protection_all: []
+        };
+      }
+      
+      const result: Record<string, any> = {};
+      
+      // Set containing protection area information
+      result.ca_wildland_fire_direct_protection_containing = protectionData.dpaAgency || 
+                                                             protectionData.dpaGroup || 
+                                                             protectionData.respondId || 
+                                                             protectionData.protectionAreaId || 
+                                                             'Unknown Protection Area';
+      result.ca_wildland_fire_direct_protection_containing_message = `Location is within: ${result.ca_wildland_fire_direct_protection_containing}`;
+      
+      if (protectionData.dpaAgency) {
+        result.ca_wildland_fire_direct_protection_containing_agency = protectionData.dpaAgency;
+      }
+      if (protectionData.dpaGroup) {
+        result.ca_wildland_fire_direct_protection_containing_group = protectionData.dpaGroup;
+      }
+      if (protectionData.respondId) {
+        result.ca_wildland_fire_direct_protection_containing_respond_id = protectionData.respondId;
+      }
+      if (protectionData.nwcgUnitId) {
+        result.ca_wildland_fire_direct_protection_containing_nwcg_unit_id = protectionData.nwcgUnitId;
+      }
+      if (protectionData.agreements) {
+        result.ca_wildland_fire_direct_protection_containing_agreements = protectionData.agreements;
+      }
+      if (protectionData.costAppor) {
+        result.ca_wildland_fire_direct_protection_containing_cost_appor = protectionData.costAppor;
+      }
+      
+      // Add to _all array for map drawing
+      result.ca_wildland_fire_direct_protection_all = [{
+        ...protectionData.attributes,
+        protectionAreaId: protectionData.protectionAreaId,
+        dpaAgency: protectionData.dpaAgency,
+        dpaGroup: protectionData.dpaGroup,
+        respondId: protectionData.respondId,
+        nwcgUnitId: protectionData.nwcgUnitId,
+        agreements: protectionData.agreements,
+        costAppor: protectionData.costAppor,
+        comments: protectionData.comments,
+        isContaining: true,
+        distance_miles: 0,
+        geometry: protectionData.geometry
+      }];
+      
+      console.log(`✅ CA Wildland Fire Direct Protection Areas data processed:`, {
+        containing: result.ca_wildland_fire_direct_protection_containing || 'N/A'
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Wildland Fire Direct Protection Areas data:', error);
+      return {
+        ca_wildland_fire_direct_protection_containing: null,
+        ca_wildland_fire_direct_protection_containing_message: 'Error fetching CA Wildland Fire Direct Protection Areas data',
+        ca_wildland_fire_direct_protection_all: []
+      };
+    }
+  }
+
+  private async getCAStateParksEntryPoints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏞️ Fetching CA State Parks Entry Points data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_state_parks_entry_points_count: 0,
+          ca_state_parks_entry_points_all: []
+        };
+      }
+      
+      const entryPoints = await getCAStateParksEntryPointsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_state_parks_entry_points_count = entryPoints.length;
+      result.ca_state_parks_entry_points_all = entryPoints.map(entryPoint => ({
+        ...entryPoint.attributes,
+        entryPointId: entryPoint.entryPointId,
+        parkUnitName: entryPoint.parkUnitName,
+        streetAddress: entryPoint.streetAddress,
+        city: entryPoint.city,
+        zipCode: entryPoint.zipCode,
+        phone: entryPoint.phone,
+        website: entryPoint.website,
+        distance_miles: entryPoint.distance_miles || 0,
+        geometry: entryPoint.geometry
+      }));
+      
+      console.log(`✅ CA State Parks Entry Points data processed:`, {
+        totalCount: result.ca_state_parks_entry_points_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA State Parks Entry Points data:', error);
+      return {
+        ca_state_parks_entry_points_count: 0,
+        ca_state_parks_entry_points_all: []
+      };
+    }
+  }
+
+  private async getCAStateParksParkingLots(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🅿️ Fetching CA State Parks Parking Lots data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_state_parks_parking_lots_count: 0,
+          ca_state_parks_parking_lots_all: []
+        };
+      }
+      
+      const parkingLots = await getCAStateParksParkingLotsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_state_parks_parking_lots_count = parkingLots.length;
+      result.ca_state_parks_parking_lots_all = parkingLots.map(parkingLot => ({
+        ...parkingLot.attributes,
+        parkingLotId: parkingLot.parkingLotId,
+        name: parkingLot.name,
+        gisId: parkingLot.gisId,
+        type: parkingLot.type,
+        subType: parkingLot.subType,
+        unitNbr: parkingLot.unitNbr,
+        useType: parkingLot.useType,
+        unitName: parkingLot.unitName,
+        trailhead: parkingLot.trailhead,
+        share: parkingLot.share,
+        distance_miles: parkingLot.distance_miles || 0,
+        geometry: parkingLot.geometry
+      }));
+      
+      console.log(`✅ CA State Parks Parking Lots data processed:`, {
+        totalCount: result.ca_state_parks_parking_lots_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA State Parks Parking Lots data:', error);
+      return {
+        ca_state_parks_parking_lots_count: 0,
+        ca_state_parks_parking_lots_all: []
+      };
+    }
+  }
+
+  private async getCAStateParksBoundaries(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏞️ Fetching CA State Parks Boundaries data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const boundaries = await getCAStateParksBoundariesData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (boundaries.length === 0) {
+        result.ca_state_parks_boundaries_containing = null;
+        result.ca_state_parks_boundaries_containing_message = 'No state park boundary found containing this location';
+        result.ca_state_parks_boundaries_count = 0;
+        result.ca_state_parks_boundaries_all = [];
+        return result;
+      }
+      
+      // Find containing boundary (distance = 0)
+      const containingBoundary = boundaries.find(b => b.distance_miles === 0);
+      
+      if (containingBoundary) {
+        result.ca_state_parks_boundaries_containing = containingBoundary.unitName || 
+                                                      containingBoundary.boundaryId || 
+                                                      'State Park';
+        result.ca_state_parks_boundaries_containing_message = `Location is within: ${result.ca_state_parks_boundaries_containing}`;
+        
+        if (containingBoundary.unitName) {
+          result.ca_state_parks_boundaries_containing_unit_name = containingBoundary.unitName;
+        }
+        if (containingBoundary.gisId) {
+          result.ca_state_parks_boundaries_containing_gis_id = containingBoundary.gisId;
+        }
+        if (containingBoundary.subType) {
+          result.ca_state_parks_boundaries_containing_sub_type = containingBoundary.subType;
+        }
+        if (containingBoundary.unitNbr) {
+          result.ca_state_parks_boundaries_containing_unit_nbr = containingBoundary.unitNbr;
+        }
+      } else {
+        result.ca_state_parks_boundaries_containing = null;
+        result.ca_state_parks_boundaries_containing_message = 'No state park boundary found containing this location';
+      }
+      
+      // Set count and all array
+      result.ca_state_parks_boundaries_count = boundaries.length;
+      result.ca_state_parks_boundaries_all = boundaries.map(boundary => ({
+        ...boundary.attributes,
+        boundaryId: boundary.boundaryId,
+        unitName: boundary.unitName,
+        gisId: boundary.gisId,
+        subType: boundary.subType,
+        unitNbr: boundary.unitNbr,
+        isContaining: boundary.distance_miles === 0,
+        distance_miles: boundary.distance_miles || 0,
+        geometry: boundary.geometry
+      }));
+      
+      console.log(`✅ CA State Parks Boundaries data processed:`, {
+        containing: result.ca_state_parks_boundaries_containing || 'N/A',
+        totalCount: result.ca_state_parks_boundaries_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA State Parks Boundaries data:', error);
+      return {
+        ca_state_parks_boundaries_containing: null,
+        ca_state_parks_boundaries_containing_message: 'Error fetching CA State Parks Boundaries data',
+        ca_state_parks_boundaries_count: 0,
+        ca_state_parks_boundaries_all: []
+      };
+    }
+  }
+
+  private async getCAStateParksCampgrounds(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛺ Fetching CA State Parks Campgrounds data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_state_parks_campgrounds_count: 0,
+          ca_state_parks_campgrounds_all: []
+        };
+      }
+      
+      const campgrounds = await getCAStateParksCampgroundsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_state_parks_campgrounds_count = campgrounds.length;
+      result.ca_state_parks_campgrounds_all = campgrounds.map(campground => ({
+        ...campground.attributes,
+        campgroundId: campground.campgroundId,
+        name: campground.name,
+        gisId: campground.gisId,
+        type: campground.type,
+        subType: campground.subType,
+        unitNbr: campground.unitNbr,
+        useType: campground.useType,
+        unitName: campground.unitName,
+        distance_miles: campground.distance_miles || 0,
+        geometry: campground.geometry
+      }));
+      
+      console.log(`✅ CA State Parks Campgrounds data processed:`, {
+        totalCount: result.ca_state_parks_campgrounds_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA State Parks Campgrounds data:', error);
+      return {
+        ca_state_parks_campgrounds_count: 0,
+        ca_state_parks_campgrounds_all: []
       };
     }
   }
