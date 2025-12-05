@@ -203,11 +203,11 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ct_soils_parent_material': { icon: '🌱', color: '#a16207', title: 'CT Soils Parent Material Name' },
   'ca_power_outage_areas': { icon: '⚡', color: '#f59e0b', title: 'CA Power Outage Areas' },
   'ca_fire_perimeters_all': { icon: '🔥', color: '#dc2626', title: 'Historical CA Fire Perimeters (All)' },
-  'ca_fire_perimeters_recent_large': { icon: '🔥', color: '#ea580c', title: 'CA Recent Large Fire Perimeters' },
-  'ca_fire_perimeters_1950': { icon: '🔥', color: '#f97316', title: 'CA Fire Perimeters (1950+)' },
+  'ca_fire_perimeters_recent_large': { icon: '🔥', color: '#f97316', title: 'CA Recent Large Fire Perimeters' },
+  'ca_fire_perimeters_1950': { icon: '🔥', color: '#f59e0b', title: 'CA Fire Perimeters (1950+)' },
   'ca_land_ownership': { icon: '🏛️', color: '#6366f1', title: 'CA Land Ownership' },
-  'ca_wildland_fire_direct_protection': { icon: '🔥', color: '#b91c1c', title: 'CA Wildland Fire Direct Protection Areas' },
-  'ca_calvtp_treatment_areas': { icon: '🔥', color: '#991b1b', title: 'CA CalVTP Treatment Areas' },
+  'ca_wildland_fire_direct_protection': { icon: '🔥', color: '#eab308', title: 'CA Wildland Fire Direct Protection Areas' },
+  'ca_calvtp_treatment_areas': { icon: '🔥', color: '#fbbf24', title: 'CA CalVTP Treatment Areas' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -9146,7 +9146,7 @@ const MapView: React.FC<MapViewProps> = ({
                     return;
                   }
 
-                  const color = '#dc2626'; // Red for fire perimeters
+                  const color = '#dc2626'; // Red for historical fire perimeters
                   const weight = 2;
 
                   const fireName = fire.fireName || fire.FIRE_NAME || fire.Name || fire.name || 'Unknown Fire';
@@ -9221,7 +9221,7 @@ const MapView: React.FC<MapViewProps> = ({
                     return;
                   }
 
-                  const color = '#ea580c'; // Orange-red for recent large fires
+                  const color = '#f97316'; // Orange for recent large fires
                   const weight = 2;
 
                   const fireName = fire.fireName || fire.FIRE_NAME || fire.Name || fire.name || 'Unknown Fire';
@@ -9296,7 +9296,7 @@ const MapView: React.FC<MapViewProps> = ({
                     return;
                   }
 
-                  const color = '#f97316'; // Orange for 1950+ fires
+                  const color = '#f59e0b'; // Amber/orange for 1950+ fires
                   const weight = 2;
 
                   const fireName = fire.fireName || fire.FIRE_NAME || fire.Name || fire.name || 'Unknown Fire';
@@ -9683,7 +9683,7 @@ const MapView: React.FC<MapViewProps> = ({
                     return;
                   }
 
-                  const color = '#b91c1c'; // Dark red for fire protection areas
+                  const color = '#eab308'; // Yellow for fire protection areas
                   const weight = 2;
 
                   const dpaAgency = protection.dpaAgency || protection.DPA_AGENCY || protection.dpa_agency || 'Unknown';
@@ -9749,7 +9749,7 @@ const MapView: React.FC<MapViewProps> = ({
             if (!legendAccumulator['ca_wildland_fire_direct_protection']) {
               legendAccumulator['ca_wildland_fire_direct_protection'] = {
                 icon: '🔥',
-                color: '#b91c1c',
+                color: '#eab308',
                 title: 'CA Wildland Fire Direct Protection Areas',
                 count: 0,
               };
@@ -9782,8 +9782,8 @@ const MapView: React.FC<MapViewProps> = ({
                   const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles : 0;
                   
                   const polygon = L.polygon(latLngs, {
-                    color: '#991b1b',
-                    fillColor: '#991b1b',
+                    color: '#fbbf24',
+                    fillColor: '#fbbf24',
                     fillOpacity: 0.3,
                     weight: 2
                   });
@@ -9854,7 +9854,7 @@ const MapView: React.FC<MapViewProps> = ({
             if (!legendAccumulator['ca_calvtp_treatment_areas']) {
               legendAccumulator['ca_calvtp_treatment_areas'] = {
                 icon: '🔥',
-                color: '#991b1b',
+                color: '#fbbf24',
                 title: 'CA CalVTP Treatment Areas',
                 count: 0,
               };

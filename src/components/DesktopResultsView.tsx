@@ -525,12 +525,12 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'New Hampshire Data';
       } else if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs') || key.includes('ma_parcel')) {
         category = 'Massachusetts Data';
+      } else if (key.includes('ca_fire_perimeters') || key.includes('ca_wildland_fire') || key.includes('ca_calvtp_treatment_areas') || key.includes('ca_power_outage_areas') || key.includes('ca_')) {
+        category = 'California Data';
       } else if (key.includes('ct_parcel') || key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
         category = 'Connecticut Data';
       } else if (key.includes('de_state_forest') || key.includes('de_pine_plantations') || key.includes('de_urban_tree_canopy') || key.includes('de_forest_cover_2007') || key.includes('de_')) {
         category = 'DE Data';
-      } else if (key.includes('ca_power_outage_areas') || key.includes('ca_fire_perimeters') || key.includes('ca_')) {
-        category = 'California Data';
       } else if (key.includes('nj_parcel') || key.includes('nj_')) {
         category = 'NJ Data';
       } else if (key.startsWith('nj_')) {

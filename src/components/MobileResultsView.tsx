@@ -220,9 +220,24 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Massachusetts Data';
     }
     
+    // California Data - check before CT and DE to avoid mis-categorization
+    if (key.includes('ca_fire_perimeters') || key.includes('ca_wildland_fire') || key.includes('ca_calvtp_treatment_areas') || key.includes('ca_power_outage_areas') || key.includes('ca_')) {
+      return 'California Data';
+    }
+    
     // Connecticut Data
     if (key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
       return 'Connecticut Data';
+    }
+    
+    // Delaware Data
+    if (key.includes('de_state_forest') || key.includes('de_pine_plantations') || key.includes('de_urban_tree_canopy') || key.includes('de_forest_cover_2007') || key.includes('de_')) {
+      return 'DE Data';
+    }
+    
+    // New Jersey Data
+    if (key.includes('nj_parcel') || key.includes('nj_')) {
+      return 'NJ Data';
     }
     
     // Demographics
