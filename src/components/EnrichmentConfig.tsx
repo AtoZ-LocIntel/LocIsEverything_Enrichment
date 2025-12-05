@@ -2048,7 +2048,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             })();
 
                             return (
-                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 w-full max-w-full">
+                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 w-full max-w-full" style={isMobile ? { padding: '20px', marginBottom: '16px', width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
                                 {/* On mobile, stack checkbox above the text to give the text full width */}
                             <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full max-w-full">
                                   <button
@@ -2061,26 +2061,26 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                         : 'bg-white border-gray-300'
                                     } ${isMobile ? 'mobile-checkbox' : 'w-4 h-4'}`}
                                 style={isMobile ? { 
-                                  width: '32px', 
-                                  height: '32px', 
-                                  minWidth: '32px', 
-                                  minHeight: '32px', 
-                                  maxWidth: '32px', 
-                                  maxHeight: '32px',
-                                  aspectRatio: '1 / 1',
+                                  width: '36px', 
+                                  height: '36px', 
+                                  minWidth: '36px', 
+                                  minHeight: '36px', 
+                                  maxWidth: '36px', 
+                                  maxHeight: '36px',
+                                  aspectRatio: '1',
                                   flexShrink: '0',
                                   boxSizing: 'border-box'
                                 } as React.CSSProperties : {}}
                                   >
                                     {isSelected && (
-                                      <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={isMobile ? { width: '20px', height: '20px', minWidth: '20px', minHeight: '20px' } as React.CSSProperties : {}} />
+                                      <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={isMobile ? { width: '22px', height: '22px', minWidth: '22px', minHeight: '22px' } as React.CSSProperties : {}} />
                                     )}
                                   </button>
-                              <div className={`flex-1 min-w-0 text-left w-full max-w-full ${isMobile ? 'space-y-2' : 'space-y-1'}`}>
-                                    <label htmlFor={enrichment.id} className={`font-semibold text-gray-900 cursor-pointer block break-words leading-relaxed w-full ${isMobile ? 'text-lg' : 'text-base sm:text-base'}`}>
+                              <div className={`flex-1 min-w-0 text-left w-full max-w-full ${isMobile ? 'space-y-3' : 'space-y-1'}`} style={isMobile ? { width: '100%', maxWidth: '100%', padding: '0', margin: '0' } as React.CSSProperties : {}}>
+                                    <label htmlFor={enrichment.id} className={`font-semibold text-gray-900 cursor-pointer block break-words w-full ${isMobile ? 'text-xl leading-7' : 'text-base sm:text-base leading-relaxed'}`} style={isMobile ? { fontSize: '20px', lineHeight: '1.6', marginBottom: '12px', width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
                                       {enrichment.label}
                                     </label>
-                                    <p className={`text-gray-700 break-words leading-relaxed whitespace-normal w-full ${isMobile ? 'text-base leading-6' : 'text-sm sm:text-sm'}`}>
+                                    <p className={`text-gray-700 break-words whitespace-normal w-full ${isMobile ? 'text-lg leading-7' : 'text-sm sm:text-sm leading-relaxed'}`} style={isMobile ? { fontSize: '17px', lineHeight: '1.8', width: '100%', maxWidth: '100%', margin: '0', padding: '0' } as React.CSSProperties : {}}>
                                       {enrichment.description}
                                     </p>
                                   </div>
