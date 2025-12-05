@@ -212,6 +212,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
   'ca_state_parks_campgrounds': { icon: '⛺', color: '#f59e0b', title: 'CA State Parks Campgrounds' },
+  'ca_state_parks_recreational_routes': { icon: '🛤️', color: '#10b981', title: 'CA State Parks Recreational Routes' },
   'ca_condor_range': { icon: '🦅', color: '#7c3aed', title: 'CA Condor Range' },
   'ca_black_bear_range': { icon: '🐻', color: '#1f2937', title: 'CA Black Bear Range' },
   'ca_brush_rabbit_range': { icon: '🐰', color: '#92400e', title: 'CA Brush Rabbit Range' },
@@ -526,6 +527,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
     key === 'ca_state_parks_campgrounds_all' || // Skip CA State Parks Campgrounds array (handled separately for map drawing)
+    key === 'ca_state_parks_recreational_routes_all' || // Skip CA State Parks Recreational Routes array (handled separately for map drawing)
     key === 'ca_condor_range_all' || // Skip CA Condor Range array (handled separately for map drawing)
     key === 'ca_black_bear_range_all' || // Skip CA Black Bear Range array (handled separately for map drawing)
     key === 'ca_brush_rabbit_range_all' || // Skip CA Brush Rabbit Range array (handled separately for map drawing)
@@ -10129,6 +10131,119 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA State Parks Campgrounds:', error);
+      }
+
+      // Draw CA State Parks Recreational Routes as polylines on the map
+      try {
+        if (enrichments.ca_state_parks_recreational_routes_all && Array.isArray(enrichments.ca_state_parks_recreational_routes_all)) {
+          let routeCount = 0;
+          enrichments.ca_state_parks_recreational_routes_all.forEach((route: any) => {
+            if (route.geometry && route.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = route.geometry.paths;
+                if (paths && paths.length > 0) {
+                  routeCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const routeName = route.routeName || route.ROUTENAME || route.RouteName || route.NAME || route.name || 'Unknown Route';
+                    const routeClass = route.routeClass || route.ROUTECLASS || route.RouteClass || null;
+                    const routeCategory = route.routeCategory || route.ROUTECAT || route.RouteCat || route.routeCat || null;
+                    const routeType = route.routeType || route.ROUTETYPE || route.RouteType || null;
+                    const unitName = route.unitName || route.UNITNAME || route.UnitName || null;
+                    const segmentLength = route.segmentLength || route.SEGLNGTH || route.segLngth || route.Shape_Length || route.shape_length || null;
+                    const share = route.share || route.SHARE || route.Share || null;
+                    const routeDescription = route.routeDescription || route.ROUTEDES || route.routeDes || null;
+                    const trailDescription = route.trailDescription || route.TRAILDES || route.trailDes || null;
+                    const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles : 0;
+
+                    // Create polyline with green color for recreational routes
+                    const polyline = L.polyline(latlngs, {
+                      color: '#10b981', // Green color matching state parks theme
+                      weight: 3,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all route attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🛤️ ${routeName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${unitName ? `<div><strong>Park Unit:</strong> ${unitName}</div>` : ''}
+                          ${routeClass ? `<div><strong>Class:</strong> ${routeClass}</div>` : ''}
+                          ${routeCategory ? `<div><strong>Category:</strong> ${routeCategory}</div>` : ''}
+                          ${routeType ? `<div><strong>Type:</strong> ${routeType}</div>` : ''}
+                          ${segmentLength !== null && segmentLength !== undefined ? `<div><strong>Segment Length:</strong> ${segmentLength.toFixed(2)} meters</div>` : ''}
+                          ${share ? `<div><strong>Share:</strong> ${share}</div>` : ''}
+                          ${routeDescription ? `<div><strong>Route Description:</strong> ${routeDescription}</div>` : ''}
+                          ${trailDescription ? `<div><strong>Trail Description:</strong> ${trailDescription}</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all route attributes (excluding internal fields)
+                    const excludeFields = ['routeName', 'routeClass', 'routeCategory', 'routeType', 'unitName', 'segmentLength', 'share', 'routeDescription', 'trailDescription', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'GlobalID', 'ROUTENAME', 'ROUTECLASS', 'ROUTECAT', 'ROUTETYPE', 'UNITNAME', 'SEGLNGTH', 'SHARE', 'ROUTEDES', 'TRAILDES'];
+                    Object.entries(route).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let displayValue = '';
+                        
+                        if (typeof value === 'object') {
+                          displayValue = JSON.stringify(value);
+                        } else if (typeof value === 'number') {
+                          displayValue = value.toLocaleString();
+                        } else {
+                          displayValue = String(value);
+                        }
+                        
+                        popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(poi);
+                    bounds.extend(polyline.getBounds());
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing CA State Parks Recreational Route polyline:', error);
+              }
+            }
+          });
+          
+          if (routeCount > 0) {
+            if (!legendAccumulator['ca_state_parks_recreational_routes']) {
+              legendAccumulator['ca_state_parks_recreational_routes'] = {
+                icon: '🛤️',
+                color: '#10b981',
+                title: 'CA State Parks Recreational Routes',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_state_parks_recreational_routes'].count += routeCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA State Parks Recreational Routes:', error);
       }
 
       // Draw CA Condor Range as polygons on the map

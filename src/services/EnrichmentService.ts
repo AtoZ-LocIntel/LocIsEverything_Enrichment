@@ -68,6 +68,7 @@ import { getCAStateParksEntryPointsData } from '../adapters/caStateParksEntryPoi
 import { getCAStateParksParkingLotsData } from '../adapters/caStateParksParkingLots';
 import { getCAStateParksBoundariesData } from '../adapters/caStateParksBoundaries';
 import { getCAStateParksCampgroundsData } from '../adapters/caStateParksCampgrounds';
+import { getCAStateParksRecreationalRoutesData } from '../adapters/caStateParksRecreationalRoutes';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1680,6 +1681,10 @@ export class EnrichmentService {
       // CA State Parks Campgrounds (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_campgrounds':
         return await this.getCAStateParksCampgrounds(lat, lon, radius);
+      
+      // CA State Parks Recreational Routes (CA Open Data Portal) - Proximity query only (linear features)
+      case 'ca_state_parks_recreational_routes':
+        return await this.getCAStateParksRecreationalRoutes(lat, lon, radius);
       
       // CA Condor Range (CDFW BIOS) - Point-in-polygon and proximity query
       case 'ca_condor_range':
@@ -7757,6 +7762,56 @@ out center;`;
       return {
         ca_state_parks_campgrounds_count: 0,
         ca_state_parks_campgrounds_all: []
+      };
+    }
+  }
+
+  private async getCAStateParksRecreationalRoutes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛤️ Fetching CA State Parks Recreational Routes data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_state_parks_recreational_routes_count: 0,
+          ca_state_parks_recreational_routes_all: []
+        };
+      }
+      
+      const routes = await getCAStateParksRecreationalRoutesData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      result.ca_state_parks_recreational_routes_count = routes.length;
+      result.ca_state_parks_recreational_routes_all = routes.map(route => ({
+        ...route.attributes,
+        routeId: route.routeId,
+        routeName: route.routeName,
+        gisId: route.gisId,
+        routeClass: route.routeClass,
+        routeCategory: route.routeCategory,
+        routeType: route.routeType,
+        unitNbr: route.unitNbr,
+        unitName: route.unitName,
+        segmentLength: route.segmentLength,
+        share: route.share,
+        routeDescription: route.routeDescription,
+        trailDescription: route.trailDescription,
+        geometry: route.geometry,
+        distance_miles: route.distance_miles
+      }));
+      
+      result.ca_state_parks_recreational_routes_summary = `Found ${routes.length} recreational route(s) within ${radius} miles.`;
+      
+      console.log(`✅ CA State Parks Recreational Routes data processed:`, {
+        totalCount: result.ca_state_parks_recreational_routes_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA State Parks Recreational Routes data:', error);
+      return {
+        ca_state_parks_recreational_routes_count: 0,
+        ca_state_parks_recreational_routes_all: []
       };
     }
   }
