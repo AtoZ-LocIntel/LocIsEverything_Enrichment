@@ -1,0 +1,104 @@
+/* ============================================
+   CRITICAL MOBILE FIXES FOR LAYER SELECTION
+   This file contains fixes that MUST work
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* TEST: Make checkbox OBVIOUSLY different - 50px square, bright red border */
+  .fixed.inset-0.bg-white button[data-enrichment-checkbox="true"],
+  .fixed.inset-0.bg-white .border.border-gray-200 button[data-enrichment-checkbox="true"] {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    min-height: 50px !important;
+    max-width: 50px !important;
+    max-height: 50px !important;
+    aspect-ratio: 1 !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .fixed.inset-0.bg-white button[data-enrichment-checkbox="true"] svg,
+  .fixed.inset-0.bg-white .border.border-gray-200 button[data-enrichment-checkbox="true"] svg {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+  }
+  
+  /* Force text containers FULL WIDTH */
+  .fixed.inset-0.bg-white .border.border-gray-200 > .flex > div.flex-1,
+  .fixed.inset-0.bg-white .flex.flex-col > div.flex-1 {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 1 1 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Make labels and descriptions LARGE and FULL WIDTH */
+  .fixed.inset-0.bg-white .border.border-gray-200 label,
+  .fixed.inset-0.bg-white .border.border-gray-200 .font-semibold {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 24px !important;
+    line-height: 1.6 !important;
+    margin-bottom: 16px !important;
+    padding: 0 !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+  
+  .fixed.inset-0.bg-white .border.border-gray-200 p {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 19px !important;
+    line-height: 1.9 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Distance selection FULL WIDTH */
+  .fixed.inset-0.bg-white .border.border-gray-200 .mt-4.pt-4.border-t {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 0 !important;
+    margin: 16px 0 0 0 !important;
+    box-sizing: border-box !important;
+  }
+  
+  .fixed.inset-0.bg-white .border.border-gray-200 .mt-4.pt-4.border-t select,
+  .fixed.inset-0.bg-white .border.border-gray-200 .mt-4.pt-4.border-t input[type="number"] {
+    width: calc(100% - 90px) !important;
+    max-width: calc(100% - 90px) !important;
+    min-width: 180px !important;
+    box-sizing: border-box !important;
+    font-size: 18px !important;
+    padding: 12px !important;
+  }
+  
+  /* Layer cards MORE PADDING */
+  .fixed.inset-0.bg-white .border.border-gray-200.rounded-lg {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 28px !important;
+    margin-bottom: 24px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Flex container FULL WIDTH */
+  .fixed.inset-0.bg-white .border.border-gray-200 > .flex.flex-col {
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 24px !important;
+    box-sizing: border-box !important;
+  }
+}
+
