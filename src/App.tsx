@@ -250,9 +250,9 @@ function App() {
                   <span className="text-white font-semibold text-sm sm:text-base">
                     <span className="font-bold text-lg sm:text-xl">{totalLayersCount.toLocaleString()}</span> Open Data Layers Available
                   </span>
-                  <span className="ml-2 text-white text-xs opacity-90 flex flex-col items-center">
-                    <span className="italic opacity-75">and</span>
-                    <span className="flex items-center">
+                  <span className="ml-2 text-white text-xs opacity-90 flex flex-col items-center justify-center">
+                    <span className="italic opacity-75 text-center">and</span>
+                    <span className="flex items-center justify-center">
                       <span className="inline-block w-2 h-2 bg-green-400 rounded-full mr-1.5 animate-pulse"></span>
                       <span className="italic">growing</span>
                     </span>

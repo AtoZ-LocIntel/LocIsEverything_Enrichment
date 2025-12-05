@@ -1076,25 +1076,29 @@ body.modal-open {
   }
   
   /* Make checkbox square and taller on mobile - ensure check mark is visible */
-  .fixed.inset-0.bg-white button.w-6,
-  .fixed.inset-0.bg-white button[class*="w-6"],
-  .fixed.inset-0.bg-white .border.border-gray-200 button,
-  .fixed.inset-0.bg-white .flex button {
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    min-height: 28px !important;
-    max-width: 28px !important;
-    max-height: 28px !important;
+  /* Target all checkbox buttons in the enrichment config modal */
+  .fixed.inset-0.bg-white button.enrichment-checkbox,
+  .fixed.inset-0.bg-white button.mobile-checkbox,
+  .fixed.inset-0.bg-white .border.border-gray-200 button.enrichment-checkbox,
+  .fixed.inset-0.bg-white .flex button.enrichment-checkbox,
+  .fixed.inset-0.bg-white .flex.flex-col button.enrichment-checkbox,
+  .fixed.inset-0.bg-white button[class*="enrichment-checkbox"] {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
     aspect-ratio: 1 !important;
     flex-shrink: 0 !important;
   }
   
   /* Ensure check mark icon is properly sized for the larger checkbox */
-  .fixed.inset-0.bg-white button svg,
-  .fixed.inset-0.bg-white .border.border-gray-200 button svg {
-    width: 18px !important;
-    height: 18px !important;
+  .fixed.inset-0.bg-white button.enrichment-checkbox svg,
+  .fixed.inset-0.bg-white button.mobile-checkbox svg,
+  .fixed.inset-0.bg-white .border.border-gray-200 button.enrichment-checkbox svg {
+    width: 20px !important;
+    height: 20px !important;
     flex-shrink: 0 !important;
   }
   
