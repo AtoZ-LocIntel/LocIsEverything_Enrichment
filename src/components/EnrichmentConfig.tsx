@@ -141,11 +141,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
   // const [activeCategory, setActiveCategory] = useState<string | null>(null); // Unused after removing mobile view
 
-  // Mobile detection
+  // Mobile detection - use window width directly to ensure it works
   useEffect(() => {
     const checkMobile = () => {
       const isMobileDevice = window.innerWidth < 768;
       setIsMobile(isMobileDevice);
+      // Debug log to verify mobile detection
+      if (isMobileDevice) {
+        console.log('📱 Mobile detected, width:', window.innerWidth);
+      }
     };
     
     checkMobile();
@@ -2048,9 +2052,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             })();
 
                             return (
-                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 w-full max-w-full" style={isMobile ? { padding: '20px', marginBottom: '16px', width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 w-full max-w-full" style={isMobile ? { padding: '20px', marginBottom: '16px', width: '100%', maxWidth: '100%', boxSizing: 'border-box' } as React.CSSProperties : {}}>
                                 {/* On mobile, stack checkbox above the text to give the text full width */}
-                            <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full max-w-full">
+                            <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full max-w-full" style={isMobile ? { width: '100%', maxWidth: '100%', flexDirection: 'column', alignItems: 'flex-start' } as React.CSSProperties : {}}>
                                   <button
                                     type="button"
                                     onClick={() => handleEnrichmentToggle(enrichment.id)}
@@ -2061,26 +2065,29 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                         : 'bg-white border-gray-300'
                                     } ${isMobile ? 'mobile-checkbox' : 'w-4 h-4'}`}
                                 style={isMobile ? { 
-                                  width: '36px', 
-                                  height: '36px', 
-                                  minWidth: '36px', 
-                                  minHeight: '36px', 
-                                  maxWidth: '36px', 
-                                  maxHeight: '36px',
+                                  width: '40px', 
+                                  height: '40px', 
+                                  minWidth: '40px', 
+                                  minHeight: '40px', 
+                                  maxWidth: '40px', 
+                                  maxHeight: '40px',
                                   aspectRatio: '1',
                                   flexShrink: '0',
-                                  boxSizing: 'border-box'
+                                  boxSizing: 'border-box',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
                                 } as React.CSSProperties : {}}
                                   >
                                     {isSelected && (
-                                      <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={isMobile ? { width: '22px', height: '22px', minWidth: '22px', minHeight: '22px' } as React.CSSProperties : {}} />
+                                      <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={isMobile ? { width: '24px', height: '24px', minWidth: '24px', minHeight: '24px', flexShrink: '0' } as React.CSSProperties : {}} />
                                     )}
                                   </button>
-                              <div className={`flex-1 min-w-0 text-left w-full max-w-full ${isMobile ? 'space-y-3' : 'space-y-1'}`} style={isMobile ? { width: '100%', maxWidth: '100%', padding: '0', margin: '0' } as React.CSSProperties : {}}>
-                                    <label htmlFor={enrichment.id} className={`font-semibold text-gray-900 cursor-pointer block break-words w-full ${isMobile ? 'text-xl leading-7' : 'text-base sm:text-base leading-relaxed'}`} style={isMobile ? { fontSize: '20px', lineHeight: '1.6', marginBottom: '12px', width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                              <div className={`flex-1 min-w-0 text-left w-full max-w-full ${isMobile ? 'space-y-3' : 'space-y-1'}`} style={isMobile ? { width: '100%', maxWidth: '100%', padding: '0', margin: '0', flex: '1 1 100%', minWidth: '0' } as React.CSSProperties : {}}>
+                                    <label htmlFor={enrichment.id} className={`font-semibold text-gray-900 cursor-pointer block break-words w-full ${isMobile ? 'text-xl leading-7' : 'text-base sm:text-base leading-relaxed'}`} style={isMobile ? { fontSize: '20px', lineHeight: '1.6', marginBottom: '12px', width: '100%', maxWidth: '100%', display: 'block' } as React.CSSProperties : {}}>
                                       {enrichment.label}
                                     </label>
-                                    <p className={`text-gray-700 break-words whitespace-normal w-full ${isMobile ? 'text-lg leading-7' : 'text-sm sm:text-sm leading-relaxed'}`} style={isMobile ? { fontSize: '17px', lineHeight: '1.8', width: '100%', maxWidth: '100%', margin: '0', padding: '0' } as React.CSSProperties : {}}>
+                                    <p className={`text-gray-700 break-words whitespace-normal w-full ${isMobile ? 'text-lg leading-7' : 'text-sm sm:text-sm leading-relaxed'}`} style={isMobile ? { fontSize: '17px', lineHeight: '1.8', width: '100%', maxWidth: '100%', margin: '0', padding: '0', display: 'block' } as React.CSSProperties : {}}>
                                       {enrichment.description}
                                     </p>
                                   </div>
@@ -2103,22 +2110,22 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 : null; // null means use number input
                               
                               return (
-                                  <div className="mt-4 pt-4 border-t border-gray-100">
-                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-                                      <p className="text-xs text-amber-700">
+                                  <div className="mt-4 pt-4 border-t border-gray-100" style={isMobile ? { width: '100%', maxWidth: '100%', marginTop: '16px', paddingTop: '16px', paddingLeft: '0', paddingRight: '0', boxSizing: 'border-box' } as React.CSSProperties : {}}>
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3" style={isMobile ? { width: '100%', maxWidth: '100%', boxSizing: 'border-box' } as React.CSSProperties : {}}>
+                                      <p className="text-xs text-amber-700" style={isMobile ? { width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
                                         ⚠️ Recommended range: {radiusLabel} (for performance & accuracy)
                                       </p>
                                     </div>
                                     
-                                  <div className="flex flex-col gap-3 mt-4 w-full max-w-full">
-                                      <label className="text-sm font-medium text-black w-full">Search Radius:</label>
-                                    <div className="flex items-center gap-2 w-full max-w-full">
+                                  <div className="flex flex-col gap-3 mt-4 w-full max-w-full" style={isMobile ? { width: '100%', maxWidth: '100%', boxSizing: 'border-box' } as React.CSSProperties : {}}>
+                                      <label className="text-sm font-medium text-black w-full" style={isMobile ? { width: '100%', maxWidth: '100%', fontSize: '16px', display: 'block' } as React.CSSProperties : {}}>Search Radius:</label>
+                                    <div className="flex items-center gap-2 w-full max-w-full" style={isMobile ? { width: '100%', maxWidth: '100%', boxSizing: 'border-box' } as React.CSSProperties : {}}>
                                       {radiusOptions ? (
                                         <select
                                           value={currentRadius}
                                           onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value))}
                                           className="w-32 sm:w-28 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900"
-                                          style={{ maxWidth: 'calc(100% - 60px)' }}
+                                          style={isMobile ? { width: 'calc(100% - 70px)', maxWidth: 'calc(100% - 70px)', minWidth: '120px', boxSizing: 'border-box' } as React.CSSProperties : { maxWidth: 'calc(100% - 60px)' }}
                                         >
                                           {radiusOptions.map(option => (
                                             <option key={option} value={option}>
@@ -2135,10 +2142,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                           value={currentRadius}
                                           onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
                                           className="w-24 sm:w-20 flex-shrink-0 px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center"
-                                          style={{ maxWidth: 'calc(100% - 60px)' }}
+                                          style={isMobile ? { width: 'calc(100% - 70px)', maxWidth: 'calc(100% - 70px)', minWidth: '100px', boxSizing: 'border-box' } as React.CSSProperties : { maxWidth: 'calc(100% - 60px)' }}
                                         />
                                       )}
-                                        <span className="text-sm text-black whitespace-nowrap flex-shrink-0">miles</span>
+                                        <span className="text-sm text-black whitespace-nowrap flex-shrink-0" style={isMobile ? { fontSize: '16px' } as React.CSSProperties : {}}>miles</span>
                                       </div>
                                     </div>
 
