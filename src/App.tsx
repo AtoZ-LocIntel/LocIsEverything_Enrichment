@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 
 import Header from './components/Header';
@@ -16,7 +16,6 @@ import DonateModal from './components/DonateModal';
 import { EnrichmentService } from './services/EnrichmentService';
 import { GeocodeResult } from './lib/types';
 import { Heart } from 'lucide-react';
-import { poiConfigManager } from './lib/poiConfig';
 
 export type ViewMode = 'config' | 'map' | 'mobile-results' | 'desktop-results' | 'data-sources' | 'enrichment-category';
 
