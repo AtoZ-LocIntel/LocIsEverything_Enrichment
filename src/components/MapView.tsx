@@ -210,7 +210,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_calvtp_treatment_areas': { icon: '🔥', color: '#fbbf24', title: 'CA CalVTP Treatment Areas' },
   'ca_postfire_damage_inspections': { icon: '🔥', color: '#dc2626', title: 'CA Post-Fire Damage Inspections (DINS)' },
   'ca_medium_heavy_duty_infrastructure': { icon: '🚛', color: '#f97316', title: 'CA Medium & Heavy Duty Infrastructure' },
-  'ca_frap_facilities': { icon: '🚒', color: '#dc2626', title: 'CA FRAP Facilities' },
+  'ca_frap_facilities': { icon: '🚒', color: '#dc2626', title: 'CA Facilities for Wildland Fire Protection' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -10189,7 +10189,7 @@ const MapView: React.FC<MapViewProps> = ({
               legendAccumulator['ca_frap_facilities'] = {
                 icon: '🚒',
                 color: '#dc2626',
-                title: 'CA FRAP Facilities',
+                title: 'CA Facilities for Wildland Fire Protection',
                 count: 0,
               };
             }
