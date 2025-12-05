@@ -70,6 +70,7 @@ import { getCAStateParksBoundariesData } from '../adapters/caStateParksBoundarie
 import { getCAStateParksCampgroundsData } from '../adapters/caStateParksCampgrounds';
 import { getCAStateParksRecreationalRoutesData } from '../adapters/caStateParksRecreationalRoutes';
 import { getCAMarineOilTerminalsData } from '../adapters/caMarineOilTerminals';
+import { getCAPostfireDamageInspectionsData } from '../adapters/caPostfireDamageInspections';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1666,6 +1667,10 @@ export class EnrichmentService {
       // CA CalVTP Treatment Areas (CA Open Data Portal) - Point-in-polygon and proximity query
       case 'ca_calvtp_treatment_areas':
         return await this.getCACalVTPTreatmentAreas(lat, lon, radius);
+      
+      // CA Post-Fire Damage Inspections (DINS) - Proximity query only
+      case 'ca_postfire_damage_inspections':
+        return await this.getCAPostfireDamageInspections(lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -7561,6 +7566,65 @@ out center;`;
       return {
         ca_calvtp_treatment_areas_count: 0,
         ca_calvtp_treatment_areas_all: []
+      };
+    }
+  }
+
+  private async getCAPostfireDamageInspections(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔥 Fetching CA Post-Fire Damage Inspections (DINS) data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_postfire_damage_inspections_count: 0,
+          ca_postfire_damage_inspections_all: []
+        };
+      }
+      
+      const inspections = await getCAPostfireDamageInspectionsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      result.ca_postfire_damage_inspections_count = inspections.length;
+      result.ca_postfire_damage_inspections_all = inspections.map(inspection => ({
+        ...inspection.attributes,
+        inspectionId: inspection.inspectionId,
+        damage: inspection.damage,
+        siteAddress: inspection.siteAddress,
+        streetNumber: inspection.streetNumber,
+        streetName: inspection.streetName,
+        streetType: inspection.streetType,
+        city: inspection.city,
+        county: inspection.county,
+        zipCode: inspection.zipCode,
+        incidentName: inspection.incidentName,
+        incidentNum: inspection.incidentNum,
+        incidentStartDate: inspection.incidentStartDate,
+        fireName: inspection.fireName,
+        structureType: inspection.structureType,
+        structureCategory: inspection.structureCategory,
+        roofConstruction: inspection.roofConstruction,
+        yearBuilt: inspection.yearBuilt,
+        apn: inspection.apn,
+        assessedImprovedValue: inspection.assessedImprovedValue,
+        calFireUnit: inspection.calFireUnit,
+        battalion: inspection.battalion,
+        geometry: inspection.geometry,
+        distance_miles: inspection.distance_miles
+      }));
+      
+      result.ca_postfire_damage_inspections_summary = `Found ${inspections.length} post-fire damage inspection(s) within ${radius} miles.`;
+      
+      console.log(`✅ CA Post-Fire Damage Inspections (DINS) data processed:`, {
+        totalCount: result.ca_postfire_damage_inspections_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Post-Fire Damage Inspections (DINS) data:', error);
+      return {
+        ca_postfire_damage_inspections_count: 0,
+        ca_postfire_damage_inspections_all: []
       };
     }
   }

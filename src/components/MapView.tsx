@@ -208,6 +208,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_land_ownership': { icon: '🏛️', color: '#6366f1', title: 'CA Land Ownership' },
   'ca_wildland_fire_direct_protection': { icon: '🔥', color: '#eab308', title: 'CA Wildland Fire Direct Protection Areas' },
   'ca_calvtp_treatment_areas': { icon: '🔥', color: '#fbbf24', title: 'CA CalVTP Treatment Areas' },
+  'ca_postfire_damage_inspections': { icon: '🔥', color: '#dc2626', title: 'CA Post-Fire Damage Inspections (DINS)' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -524,6 +525,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_cgs_liquefaction_zones_all' || // Skip CA CGS Liquefaction Zones array (handled separately for map drawing)
     key === 'ca_wildland_fire_direct_protection_all' || // Skip CA Wildland Fire Direct Protection Areas array (handled separately for map drawing)
     key === 'ca_calvtp_treatment_areas_all' || // Skip CA CalVTP Treatment Areas array (handled separately for map drawing)
+    key === 'ca_postfire_damage_inspections_all' || // Skip CA Post-Fire Damage Inspections array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -9868,6 +9870,122 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA CalVTP Treatment Areas:', error);
+      }
+
+      // Draw CA Post-Fire Damage Inspections (DINS) as point markers on the map
+      try {
+        if (enrichments.ca_postfire_damage_inspections_all && Array.isArray(enrichments.ca_postfire_damage_inspections_all)) {
+          let inspectionCount = 0;
+          enrichments.ca_postfire_damage_inspections_all.forEach((inspection: any) => {
+            // Check for geometry with x/y (point geometry) or latitude/longitude fields
+            const lat = inspection.geometry?.y || inspection.Latitude || inspection.latitude || null;
+            const lon = inspection.geometry?.x || inspection.Longitude || inspection.longitude || null;
+            
+            if (lat !== null && lon !== null) {
+              try {
+                const damage = inspection.damage || inspection.DAMAGE || inspection.Damage || 'Unknown';
+                const siteAddress = inspection.siteAddress || inspection.SITEADDRESS || inspection.SiteAddress || null;
+                const streetNumber = inspection.streetNumber || inspection.STREETNUMBER || inspection.StreetNumber || null;
+                const streetName = inspection.streetName || inspection.STREETNAME || inspection.StreetName || null;
+                const streetType = inspection.streetType || inspection.STREETTYPE || inspection.StreetType || null;
+                const city = inspection.city || inspection.CITY || inspection.City || null;
+                const county = inspection.county || inspection.COUNTY || inspection.County || null;
+                const incidentName = inspection.incidentName || inspection.INCIDENTNAME || inspection.IncidentName || null;
+                const incidentNum = inspection.incidentNum || inspection.INCIDENTNUM || inspection.IncidentNum || null;
+                const incidentStartDate = inspection.incidentStartDate || inspection.INCIDENTSTARTDATE || inspection.IncidentStartDate || null;
+                const fireName = inspection.fireName || inspection.FIRENAME || inspection.FireName || null;
+                const structureType = inspection.structureType || inspection.STRUCTURETYPE || inspection.StructureType || null;
+                const structureCategory = inspection.structureCategory || inspection.STRUCTURECATEGORY || inspection.StructureCategory || null;
+                const roofConstruction = inspection.roofConstruction || inspection.ROOFCONSTRUCTION || inspection.RoofConstruction || null;
+                const yearBuilt = inspection.yearBuilt || inspection.YEARBUILT || inspection.YearBuilt || null;
+                const apn = inspection.apn || inspection.APN || inspection.Apn || null;
+                const assessedImprovedValue = inspection.assessedImprovedValue || inspection.ASSESSEDIMPROVEDVALUE || inspection.AssessedImprovedValue || null;
+                const calFireUnit = inspection.calFireUnit || inspection.CALFIREUNIT || inspection.CalFireUnit || null;
+                const distance = inspection.distance_miles !== null && inspection.distance_miles !== undefined ? inspection.distance_miles : 0;
+                
+                // Determine icon color based on damage level
+                let iconColor = '#dc2626'; // Red for damaged/destroyed
+                if (damage && (damage.toLowerCase().includes('no damage') || damage.toLowerCase().includes('affected'))) {
+                  iconColor = '#f59e0b'; // Amber for affected/no damage
+                }
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🔥', iconColor)
+                });
+                
+                // Build address string
+                let addressString = siteAddress || '';
+                if (!addressString && (streetNumber || streetName || streetType)) {
+                  const addressParts = [streetNumber, streetName, streetType].filter(part => part);
+                  addressString = addressParts.join(' ');
+                }
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🔥 ${damage}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${addressString ? `<div><strong>Address:</strong> ${addressString}</div>` : ''}
+                      ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${fireName ? `<div><strong>Fire Name:</strong> ${fireName}</div>` : ''}
+                      ${incidentName ? `<div><strong>Incident:</strong> ${incidentName}</div>` : ''}
+                      ${incidentNum ? `<div><strong>Incident #:</strong> ${incidentNum}</div>` : ''}
+                      ${incidentStartDate ? `<div><strong>Incident Date:</strong> ${incidentStartDate}</div>` : ''}
+                      ${structureType ? `<div><strong>Structure Type:</strong> ${structureType}</div>` : ''}
+                      ${structureCategory ? `<div><strong>Structure Category:</strong> ${structureCategory}</div>` : ''}
+                      ${roofConstruction ? `<div><strong>Roof Construction:</strong> ${roofConstruction}</div>` : ''}
+                      ${yearBuilt ? `<div><strong>Year Built:</strong> ${yearBuilt}</div>` : ''}
+                      ${apn ? `<div><strong>APN:</strong> ${apn}</div>` : ''}
+                      ${assessedImprovedValue !== null && assessedImprovedValue !== undefined ? `<div><strong>Assessed Value:</strong> $${assessedImprovedValue.toLocaleString()}</div>` : ''}
+                      ${calFireUnit ? `<div><strong>CAL FIRE Unit:</strong> ${calFireUnit}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all inspection attributes (excluding internal fields)
+                const excludeFields = ['damage', 'DAMAGE', 'Damage', 'siteAddress', 'SITEADDRESS', 'SiteAddress', 'streetNumber', 'STREETNUMBER', 'StreetNumber', 'streetName', 'STREETNAME', 'StreetName', 'streetType', 'STREETTYPE', 'StreetType', 'city', 'CITY', 'City', 'county', 'COUNTY', 'County', 'zipCode', 'ZIPCODE', 'ZipCode', 'incidentName', 'INCIDENTNAME', 'IncidentName', 'incidentNum', 'INCIDENTNUM', 'IncidentNum', 'incidentStartDate', 'INCIDENTSTARTDATE', 'IncidentStartDate', 'fireName', 'FIRENAME', 'FireName', 'structureType', 'STRUCTURETYPE', 'StructureType', 'structureCategory', 'STRUCTURECATEGORY', 'StructureCategory', 'roofConstruction', 'ROOFCONSTRUCTION', 'RoofConstruction', 'yearBuilt', 'YEARBUILT', 'YearBuilt', 'apn', 'APN', 'Apn', 'assessedImprovedValue', 'ASSESSEDIMPROVEDVALUE', 'AssessedImprovedValue', 'calFireUnit', 'CALFIREUNIT', 'CalFireUnit', 'battalion', 'BATTALION', 'Battalion', 'latitude', 'Latitude', 'LATITUDE', 'longitude', 'Longitude', 'LONGITUDE', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'GlobalID', 'GLOBALID'];
+                Object.entries(inspection).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                inspectionCount++;
+              } catch (error) {
+                console.error('Error drawing CA Post-Fire Damage Inspection marker:', error);
+              }
+            }
+          });
+          
+          if (inspectionCount > 0) {
+            if (!legendAccumulator['ca_postfire_damage_inspections']) {
+              legendAccumulator['ca_postfire_damage_inspections'] = {
+                icon: '🔥',
+                color: '#dc2626',
+                title: 'CA Post-Fire Damage Inspections (DINS)',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_postfire_damage_inspections'].count += inspectionCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Post-Fire Damage Inspections:', error);
       }
 
       // Draw CA State Parks Entry Points
