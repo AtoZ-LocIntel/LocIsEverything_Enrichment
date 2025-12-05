@@ -765,35 +765,37 @@ const MapView: React.FC<MapViewProps> = ({
   const basemapLayerRef = useRef<L.TileLayer | null>(null);
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
+  const [isMapReady, setIsMapReady] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   // Default to hybrid basemap (no dropdown, fixed basemap)
   const selectedBasemap = 'hybrid';
-  const [viewportHeight, setViewportHeight] = useState<number>(() => (
-    typeof window !== 'undefined' ? window.innerHeight : 0
-  ));
-  const [viewportWidth, setViewportWidth] = useState<number>(() => (
-    typeof window !== 'undefined' ? window.innerWidth : 0
-  ));
+  // Removed viewportHeight and viewportWidth - not needed and were causing issues
 
   useEffect(() => {
-    if (!mapRef.current) {
+    if (!mapRef.current || mapInstanceRef.current) {
       return;
     }
 
-    if (mapInstanceRef.current) {
-      // Force a resize check for mobile
-      setTimeout(() => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
-        }
-      }, 100);
-      return;
-    }
+    // Wait for container to be fully rendered and visible before initializing map
+    // This prevents twitchy behavior when transitioning to map view
+    const initializeMap = () => {
+      if (!mapRef.current) return;
 
-    // Small delay to ensure container is properly sized, especially on mobile
-    setTimeout(() => {
-      if (!mapRef.current || mapInstanceRef.current) return;
+      // Ensure container is visible and has dimensions
+      const container = mapRef.current;
+      const rect = container.getBoundingClientRect();
+      const computedStyle = window.getComputedStyle(container);
+      const isVisible = computedStyle.display !== 'none' && 
+                        computedStyle.visibility !== 'hidden' && 
+                        computedStyle.opacity !== '0';
       
-      // Initialize map with geocoded location if available, otherwise default US view
+      if (rect.width === 0 || rect.height === 0 || !isVisible) {
+        // Container not ready yet, retry after a short delay
+        setTimeout(initializeMap, 50);
+        return;
+      }
+
+      // Simple, direct initialization - map starts at geocoded location immediately
       const initialCenter: [number, number] = results && results.length > 0 && results[0]?.location
         ? [results[0].location.lat, results[0].location.lon] as [number, number]
         : [37.0902, -95.7129] as [number, number];
@@ -802,11 +804,14 @@ const MapView: React.FC<MapViewProps> = ({
       const map = L.map(mapRef.current, {
         center: initialCenter,
         zoom: initialZoom,
-        zoomControl: !isMobile, // Hide zoom controls on mobile to save space
+        zoomControl: !isMobile,
         attributionControl: true,
+        fadeAnimation: true,
+        zoomAnimation: true,
+        zoomAnimationThreshold: 4,
       });
 
-      // Initialize with hybrid basemap (fixed, no dropdown)
+      // Initialize with hybrid basemap
       const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.hybrid;
       const basemapLayer = L.tileLayer(basemapConfig.url, {
         attribution: basemapConfig.attribution,
@@ -819,44 +824,22 @@ const MapView: React.FC<MapViewProps> = ({
 
       mapInstanceRef.current = map;
       layerGroupsRef.current = { primary, poi };
-      
-      // CRITICAL: Wait for container to be visible and sized before setting view
-      // This fixes the issue where map shows default US view until F12
-      const waitForContainerAndSetView = (attempt = 0) => {
-        if (!mapRef.current || !mapInstanceRef.current) {
-          if (attempt < 30) {
-            setTimeout(() => waitForContainerAndSetView(attempt + 1), 50);
+
+      // After map is initialized, invalidate size to ensure proper rendering
+      // Use requestAnimationFrame to ensure DOM is fully updated
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize(false);
+            setIsMapReady(true);
+            setIsInitialized(true);
           }
-          return;
-        }
-        
-        const container = mapRef.current;
-        const rect = container.getBoundingClientRect();
-        const styles = window.getComputedStyle(container);
-        const isVisible = rect.width > 0 && rect.height > 0 && 
-                         styles.display !== 'none' && 
-                         styles.visibility !== 'hidden' &&
-                         styles.opacity !== '0';
-        
-        if (isVisible && rect.width > 100 && rect.height > 100) {
-          console.log('🗺️ Container is visible and sized. Size:', rect.width, 'x', rect.height);
-          
-          // If we have results, set view to geocoded location immediately
-          if (results && results.length > 0 && results[0]?.location) {
-            mapInstanceRef.current.setView([results[0].location.lat, results[0].location.lon], 15, { animate: false });
-          }
-          
-          // Ensure map is properly sized
-          mapInstanceRef.current.invalidateSize();
-        } else if (attempt < 30) {
-          // Continue checking
-          setTimeout(() => waitForContainerAndSetView(attempt + 1), 50);
-        }
-      };
-      
-      // Start checking after a brief delay
-      setTimeout(() => waitForContainerAndSetView(), 100);
-    }, 50);
+        }, 100);
+      });
+    };
+
+    // Small delay to ensure container is rendered in DOM
+    setTimeout(initializeMap, 50);
 
     return () => {
       if (mapInstanceRef.current) {
@@ -865,8 +848,10 @@ const MapView: React.FC<MapViewProps> = ({
         layerGroupsRef.current = null;
         basemapLayerRef.current = null;
       }
+      setIsMapReady(false);
+      setIsInitialized(false);
     };
-  }, [isMobile, results.length]);
+  }, [isMobile, results.length, selectedBasemap]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -874,14 +859,8 @@ const MapView: React.FC<MapViewProps> = ({
     }
 
     const updateViewportDimensions = () => {
-      const vv = window.visualViewport;
-      const height = vv?.height ?? window.innerHeight;
-      const width = vv?.width ?? window.innerWidth;
-      setViewportHeight(height);
-      setViewportWidth(width);
-      if (mapInstanceRef.current) {
-        requestAnimationFrame(() => mapInstanceRef.current?.invalidateSize());
-      }
+      // Viewport dimensions no longer tracked - was causing unnecessary invalidateSize calls
+      // Map handles sizing naturally
     };
 
     updateViewportDimensions();
@@ -898,23 +877,27 @@ const MapView: React.FC<MapViewProps> = ({
     };
   }, []);
 
+  // Handle map size invalidation when view becomes visible
   useEffect(() => {
-    if (!mapInstanceRef.current) {
+    if (!mapInstanceRef.current || !isInitialized) {
       return;
     }
 
-    const invalidate = () => mapInstanceRef.current?.invalidateSize();
-
-    // Run immediately and schedule a follow-up once layout stabilizes
-    invalidate();
-    const frameId = requestAnimationFrame(invalidate);
-    const timeoutId = window.setTimeout(invalidate, 300);
+    // When map view is first shown, ensure proper sizing
+    // Use a small delay to allow CSS transitions to complete
+    const timeoutId = setTimeout(() => {
+      if (mapInstanceRef.current && mapRef.current) {
+        const rect = mapRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          mapInstanceRef.current.invalidateSize(false);
+        }
+      }
+    }, 300); // Wait for fade-in transition to complete
 
     return () => {
-      cancelAnimationFrame(frameId);
-      window.clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
     };
-  }, [isMobile, results.length]);
+  }, [isInitialized]);
 
   useEffect(() => {
     if (!mapRef.current || !mapInstanceRef.current || typeof ResizeObserver === 'undefined') {
@@ -922,16 +905,32 @@ const MapView: React.FC<MapViewProps> = ({
     }
 
     // ResizeObserver to handle container size changes
-    // Use debouncing to avoid excessive invalidateSize calls that cause twitching
+    // Only call invalidateSize when container actually changes size significantly
     let resizeTimeout: NodeJS.Timeout | null = null;
-    const observer = new ResizeObserver(() => {
-      // Debounce resize events to reduce twitching
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout);
+    let lastWidth = 0;
+    let lastHeight = 0;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      
+      const { width, height } = entry.contentRect;
+      
+      // Only invalidateSize if size changed significantly (more than 10px difference)
+      // This prevents twitching from minor size fluctuations
+      if (Math.abs(width - lastWidth) > 10 || Math.abs(height - lastHeight) > 10) {
+        lastWidth = width;
+        lastHeight = height;
+        
+        // Debounce to avoid excessive calls
+        if (resizeTimeout) {
+          clearTimeout(resizeTimeout);
+        }
+        resizeTimeout = setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize(false);
+          }
+        }, 150);
       }
-      resizeTimeout = setTimeout(() => {
-        mapInstanceRef.current?.invalidateSize();
-      }, 150); // Debounce to 150ms
     });
 
     observer.observe(mapRef.current);
@@ -1018,62 +1017,21 @@ const MapView: React.FC<MapViewProps> = ({
       return;
     }
 
-    console.log('🔍 [DEBUG] Clearing layers');
+    // Clear layers and add features - simple and direct
     primary.clearLayers();
     poi.clearLayers();
     
-    // CRITICAL: Ensure container has dimensions before proceeding
-    const ensureContainerReady = (attempt = 0): void => {
-      if (!map) {
-        console.warn('🔍 [DEBUG] Map not available, skipping container check');
-        return;
-      }
-      
-      const container = map.getContainer();
-      const hasDimensions = container && container.offsetWidth > 0 && container.offsetHeight > 0;
-      
-      console.log(`🔍 [DEBUG] Container check attempt ${attempt + 1}`, {
-        width: container?.offsetWidth || 0,
-        height: container?.offsetHeight || 0,
-        hasDimensions,
-        display: container ? window.getComputedStyle(container).display : 'N/A',
-        visibility: container ? window.getComputedStyle(container).visibility : 'N/A',
-        opacity: container ? window.getComputedStyle(container).opacity : 'N/A'
+    // Add location marker
+    if (results[0]?.location) {
+      const locationMarker = L.marker([results[0].location.lat, results[0].location.lon], {
+        title: results[0].location.name,
       });
-      
-      if (!hasDimensions && attempt < 20) {
-        map.invalidateSize(true);
-        setTimeout(() => ensureContainerReady(attempt + 1), 100);
-        return;
-      }
-      
-      if (!hasDimensions) {
-        console.warn('🔍 [DEBUG WARNING] Container still has no dimensions after 20 attempts, proceeding anyway');
-      }
-      
-      console.log('🔍 [DEBUG] Container ready, proceeding with feature addition');
-      
-      // Force invalidateSize before doing anything
-      map.invalidateSize(true);
-      
-      // STEP 1: Add location marker (view already set during map initialization)
-      if (results[0]?.location) {
-        // Map view was already set during initialization, just add marker
-        const locationMarker = L.marker([results[0].location.lat, results[0].location.lon], {
-          title: results[0].location.name,
-        });
-        locationMarker.bindPopup(createPopupContent(results[0]), { maxWidth: 540 });
-        locationMarker.addTo(primary);
-        
-        console.log('🔍 [DEBUG] Location marker added');
-      }
-      
-      // STEP 2: Add all enrichment features
-      // Use requestAnimationFrame only (no setTimeout to reduce twitching)
-      let timeoutId: NodeJS.Timeout | null = null;
-      const rafId = requestAnimationFrame(() => {
-        // Small delay to batch feature additions, but minimal to reduce twitching
-        timeoutId = setTimeout(() => {
+      locationMarker.bindPopup(createPopupContent(results[0]), { maxWidth: 540 });
+      locationMarker.addTo(primary);
+    }
+    
+    // Add all enrichment features - use requestAnimationFrame for smooth rendering
+    requestAnimationFrame(() => {
         console.log('🗺️ STEP 2: Inside setTimeout, starting to draw features');
         const bounds = L.latLngBounds([]);
         const legendAccumulator: Record<string, LegendItem> = {};
@@ -10597,80 +10555,53 @@ const MapView: React.FC<MapViewProps> = ({
         );
         setShowBatchSuccess(results.length > 1);
         
-        // CRITICAL: After all features are drawn, force a resize and redraw
-        // This ensures everything is visible (same as what F12 does)
-        if (mapInstanceRef.current) {
-          console.log('🗺️ STEP 2: Forcing resize and layer redraw after all features drawn');
+        // Features drawn - smoothly animate to geocoded location if needed
+        // Wait for map to be fully ready before animating
+        if (mapInstanceRef.current && isMapReady && results && results.length > 0 && results[0]?.location) {
+          const targetLat = results[0].location.lat;
+          const targetLon = results[0].location.lon;
+          const currentCenter = mapInstanceRef.current.getCenter();
+          const currentZoom = mapInstanceRef.current.getZoom();
           
-          // Force multiple resize events in sequence (this is what F12 does)
-          const forceRedraw = () => {
-            window.dispatchEvent(new Event('resize'));
-            mapInstanceRef.current?.invalidateSize();
-            
-            // Force redraw of all layers
-            mapInstanceRef.current?.eachLayer((layer: any) => {
-              if (layer.redraw) {
+          // Calculate distance between current center and target
+          const distance = mapInstanceRef.current.distance(currentCenter, L.latLng(targetLat, targetLon));
+          
+          // Only animate if we're significantly away from the target (more than 100 meters)
+          // or if zoom level is not appropriate
+          const targetZoom = results.length === 1 ? 15 : 12;
+          const shouldAnimate = distance > 100 || Math.abs(currentZoom - targetZoom) > 2;
+          
+          if (shouldAnimate) {
+            // Smoothly fly to the geocoded location
+            // Use a longer delay to ensure map tiles are loaded and map is stable
+            setTimeout(() => {
+              if (mapInstanceRef.current) {
                 try {
-                  layer.redraw();
-                } catch (e) {
-                  // Some layers don't have redraw, that's ok
+                  mapInstanceRef.current.flyTo(
+                    [targetLat, targetLon],
+                    targetZoom,
+                    {
+                      duration: 1.2, // Smooth 1.2 second animation
+                      easeLinearity: 0.25
+                    }
+                  );
+                } catch (error) {
+                  // Fallback to setView if flyTo fails
+                  console.warn('flyTo failed, using setView instead:', error);
+                  mapInstanceRef.current.setView([targetLat, targetLon], targetZoom, { animate: true });
                 }
               }
-              // For markers, force update by resetting position
-              if (layer instanceof L.Marker) {
-                const marker = layer as L.Marker;
-                const latlng = marker.getLatLng();
-                marker.setLatLng([latlng.lat, latlng.lng]);
-              }
-            });
-          };
-          
-          // Force redraw multiple times
-          forceRedraw();
-          setTimeout(forceRedraw, 50);
-          setTimeout(forceRedraw, 100);
-          setTimeout(forceRedraw, 200);
+            }, 400); // Longer delay to ensure map is fully ready
+          } else {
+            // Just ensure we're at the right location without animation
+            mapInstanceRef.current.setView([targetLat, targetLon], targetZoom, { animate: false });
+          }
         }
         
-            console.log('🔍 [DEBUG] All features added, forcing single refresh');
-            
-            // Single refresh after all features are added (reduces twitching)
-            if (mapInstanceRef.current) {
-              // Use requestAnimationFrame to ensure we're in the right render cycle
-              requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                  if (mapInstanceRef.current) {
-                    // Single invalidateSize call
-                    mapInstanceRef.current.invalidateSize(true);
-                    
-                    // Single resize event
-                    window.dispatchEvent(new Event('resize', { bubbles: true }));
-                    
-                    console.log('🔍 [DEBUG] Map refreshed after all features added');
-                  }
-                });
-              });
-            }
-          }, 100); // Closes inner setTimeout
-          
-          return () => {
-            cancelAnimationFrame(rafId);
-            if (timeoutId) {
-              clearTimeout(timeoutId);
-            }
-          };
-        }); // Closes requestAnimationFrame
-    } // Closes ensureContainerReady
-    
-    // Start the process
-    ensureContainerReady();
-    } // Closes addFeaturesToMap function
-    
-    // Cleanup
-    return () => {
-      console.log('🔍 [DEBUG] useEffect cleanup');
-    };
-  }, [results, viewportHeight, viewportWidth]);
+        console.log('🗺️ All features drawn');
+      });
+    }
+  }, [results]);
 
   // CSV export now handled by shared utility function
 
@@ -10690,7 +10621,9 @@ const MapView: React.FC<MapViewProps> = ({
           bottom: 0,
           overflow: 'hidden',
           margin: 0,
-          padding: 0
+          padding: 0,
+          opacity: isMapReady ? 1 : 0,
+          transition: 'opacity 0.3s ease-in-out'
         }}
       >
         {/* Map Container - Full Screen */}
@@ -10706,7 +10639,9 @@ const MapView: React.FC<MapViewProps> = ({
             bottom: 0,
             zIndex: 1,
             margin: 0,
-            padding: 0
+            padding: 0,
+            opacity: isMapReady ? 1 : 0,
+            transition: 'opacity 0.3s ease-in-out'
           }}
         />
           
@@ -10787,6 +10722,10 @@ const MapView: React.FC<MapViewProps> = ({
   return (
     <div
       className="h-screen flex flex-col bg-white"
+      style={{
+        opacity: isMapReady ? 1 : 0,
+        transition: 'opacity 0.3s ease-in-out'
+      }}
     >
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
@@ -10827,7 +10766,12 @@ const MapView: React.FC<MapViewProps> = ({
         <div 
           ref={mapRef} 
           className="w-full h-full"
-          style={{ height: '100%', width: '100%' }}
+          style={{ 
+            height: '100%', 
+            width: '100%',
+            opacity: isMapReady ? 1 : 0,
+            transition: 'opacity 0.3s ease-in-out'
+          }}
         />
         
         {/* Dynamic Legend - Always show when there are legend items (Desktop only) */}
