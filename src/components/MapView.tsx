@@ -517,6 +517,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_fire_perimeters_recent_large_all' || // Skip CA Recent Large Fire Perimeters array (handled separately for map drawing)
     key === 'ca_fire_perimeters_1950_all' || // Skip CA Fire Perimeters (1950+) array (handled separately for map drawing)
     key === 'ca_land_ownership_all' || // Skip CA Land Ownership array (handled separately for map drawing)
+    key === 'ca_cgs_landslide_zones_all' || // Skip CA CGS Landslide Zones array (handled separately for map drawing)
     key === 'ca_wildland_fire_direct_protection_all' || // Skip CA Wildland Fire Direct Protection Areas array (handled separately for map drawing)
     key === 'ca_calvtp_treatment_areas_all' || // Skip CA CalVTP Treatment Areas array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
@@ -776,20 +777,19 @@ const MapView: React.FC<MapViewProps> = ({
       return;
     }
 
-    // Wait for container to be fully rendered and visible before initializing map
+    // Wait for container to be fully rendered before initializing map
     // This prevents twitchy behavior when transitioning to map view
     const initializeMap = () => {
       if (!mapRef.current) return;
 
-      // Ensure container is visible and has dimensions
+      // Ensure container has dimensions (don't check opacity as it may start at 0 for fade-in)
       const container = mapRef.current;
       const rect = container.getBoundingClientRect();
       const computedStyle = window.getComputedStyle(container);
-      const isVisible = computedStyle.display !== 'none' && 
-                        computedStyle.visibility !== 'hidden' && 
-                        computedStyle.opacity !== '0';
+      // Only check if display is none or visibility is hidden, not opacity (allows fade-in)
+      const isHidden = computedStyle.display === 'none' || computedStyle.visibility === 'hidden';
       
-      if (rect.width === 0 || rect.height === 0 || !isVisible) {
+      if (rect.width === 0 || rect.height === 0 || isHidden) {
         // Container not ready yet, retry after a short delay
         setTimeout(initializeMap, 50);
         return;
@@ -824,6 +824,9 @@ const MapView: React.FC<MapViewProps> = ({
 
       mapInstanceRef.current = map;
       layerGroupsRef.current = { primary, poi };
+      
+      // Mark as initialized immediately so other useEffects can proceed
+      setIsInitialized(true);
 
       // After map is initialized, invalidate size to ensure proper rendering
       // Use requestAnimationFrame to ensure DOM is fully updated
@@ -832,7 +835,6 @@ const MapView: React.FC<MapViewProps> = ({
           if (mapInstanceRef.current) {
             mapInstanceRef.current.invalidateSize(false);
             setIsMapReady(true);
-            setIsInitialized(true);
           }
         }, 100);
       });
@@ -9439,6 +9441,118 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing CA Land Ownership:', error);
       }
 
+      // Draw CA CGS Landslide Zones
+      try {
+        if (enrichments.ca_cgs_landslide_zones_all && Array.isArray(enrichments.ca_cgs_landslide_zones_all)) {
+          let landslideCount = 0;
+          enrichments.ca_cgs_landslide_zones_all.forEach((zone: any) => {
+            if (zone.geometry && zone.geometry.rings) {
+              try {
+                const rings = zone.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CA CGS Landslide Zone polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#f59e0b'; // Amber/orange for landslide zones
+                  const weight = 2;
+
+                  const zoneName = zone.zoneName || zone.NAME || zone.name || zone.Name || 'Unknown Landslide Zone';
+                  const zoneType = zone.zoneType || zone.TYPE || zone.type || zone.Type || null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏔️ ${zoneName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${zoneType ? `<div><strong>Type:</strong> ${zoneType}</div>` : ''}
+                        ${zone.isContaining ? '<div style="color: #f59e0b; font-weight: 600; margin-top: 8px;">📍 Contains Location</div>' : ''}
+                        ${zone.distance_miles && zone.distance_miles > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${zone.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['landslideZoneId', 'landslide_zone_id', 'LANDSLIDE_ZONE_ID', 'zoneName', 'zone_name', 'ZONE_NAME', 'zoneType', 'zone_type', 'ZONE_TYPE', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid'];
+                  
+                  // Check for link fields first and add them prominently
+                  const geoPdfLink = zone.GEOPDFLINK || zone.geopdflink || zone.GeoPdfLink || null;
+                  const reportLink = zone.REPORTLINK || zone.reportlink || zone.ReportLink || null;
+                  
+                  if (geoPdfLink || reportLink) {
+                    popupContent += `<div style="margin-bottom: 8px; padding: 8px; background-color: #f3f4f6; border-radius: 4px;">`;
+                    if (geoPdfLink) {
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>GeoPDF:</strong> <a href="${geoPdfLink}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline; word-break: break-all;">${geoPdfLink}</a></div>`;
+                    }
+                    if (reportLink) {
+                      popupContent += `<div><strong>Report:</strong> <a href="${reportLink}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline; word-break: break-all;">${reportLink}</a></div>`;
+                    }
+                    popupContent += `</div>`;
+                  }
+                  
+                  Object.entries(zone).forEach(([key, value]) => {
+                    // Skip excluded fields and link fields (already handled above)
+                    if (excludeFields.includes(key) || 
+                        key.toUpperCase() === 'GEOPDFLINK' || 
+                        key.toUpperCase() === 'REPORTLINK' ||
+                        value === null || 
+                        value === undefined || 
+                        value === '') {
+                      return;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  landslideCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA CGS Landslide Zone polygon:', error);
+              }
+            }
+          });
+          
+          if (landslideCount > 0) {
+            if (!legendAccumulator['ca_cgs_landslide_zones']) {
+              legendAccumulator['ca_cgs_landslide_zones'] = {
+                icon: '🏔️',
+                color: '#f59e0b',
+                title: 'CA CGS Landslide Zones',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_cgs_landslide_zones'].count += landslideCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA CGS Landslide Zones:', error);
+      }
+
       // Draw CA Wildland Fire Direct Protection Areas
       try {
         if (enrichments.ca_wildland_fire_direct_protection_all && Array.isArray(enrichments.ca_wildland_fire_direct_protection_all)) {
@@ -10621,9 +10735,7 @@ const MapView: React.FC<MapViewProps> = ({
           bottom: 0,
           overflow: 'hidden',
           margin: 0,
-          padding: 0,
-          opacity: isMapReady ? 1 : 0,
-          transition: 'opacity 0.3s ease-in-out'
+          padding: 0
         }}
       >
         {/* Map Container - Full Screen */}
@@ -10639,9 +10751,7 @@ const MapView: React.FC<MapViewProps> = ({
             bottom: 0,
             zIndex: 1,
             margin: 0,
-            padding: 0,
-            opacity: isMapReady ? 1 : 0,
-            transition: 'opacity 0.3s ease-in-out'
+            padding: 0
           }}
         />
           
@@ -10722,10 +10832,6 @@ const MapView: React.FC<MapViewProps> = ({
   return (
     <div
       className="h-screen flex flex-col bg-white"
-      style={{
-        opacity: isMapReady ? 1 : 0,
-        transition: 'opacity 0.3s ease-in-out'
-      }}
     >
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">

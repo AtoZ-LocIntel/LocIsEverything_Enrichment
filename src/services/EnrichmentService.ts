@@ -60,6 +60,7 @@ import { getCAFirePerimetersAllData } from '../adapters/caFirePerimetersAll';
 import { getCAFirePerimetersRecentLargeData } from '../adapters/caFirePerimetersRecentLarge';
 import { getCAFirePerimeters1950Data } from '../adapters/caFirePerimeters1950';
 import { getCALandOwnershipData } from '../adapters/caLandOwnership';
+import { getCACGSLandslideZonesData } from '../adapters/caCgsLandslideZones';
 import { getCAWildlandFireDirectProtectionData } from '../adapters/caWildlandFireDirectProtection';
 import { getCACalVTPTreatmentAreasData } from '../adapters/caCalVTPTreatmentAreas';
 import { getCAStateParksEntryPointsData } from '../adapters/caStateParksEntryPoints';
@@ -1646,6 +1647,10 @@ export class EnrichmentService {
       // CA Land Ownership (CA Open Data Portal) - Point-in-polygon query only
       case 'ca_land_ownership':
         return await this.getCALandOwnership(lat, lon);
+      
+      // CA CGS Landslide Zones (CA Open Data Portal) - Point-in-polygon and proximity query (max 10 miles)
+      case 'ca_cgs_landslide_zones':
+        return await this.getCACGSLandslideZones(lat, lon, radius);
       
       // CA Wildland Fire Direct Protection Areas (CA Open Data Portal) - Point-in-polygon query only
       case 'ca_wildland_fire_direct_protection':
@@ -7252,7 +7257,6 @@ out center;`;
         ownAgency: ownershipData.ownAgency,
         ownGroup: ownershipData.ownGroup,
         isContaining: true,
-        distance_miles: 0,
         geometry: ownershipData.geometry
       }];
       
@@ -7267,6 +7271,79 @@ out center;`;
         ca_land_ownership_containing: null,
         ca_land_ownership_containing_message: 'Error fetching CA Land Ownership data',
         ca_land_ownership_all: []
+      };
+    }
+  }
+
+  private async getCACGSLandslideZones(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏔️ Fetching CA CGS Landslide Zones data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Limit radius to 10 miles maximum as specified
+      const maxRadius = 10;
+      const queryRadius = radius && radius > 0 ? Math.min(radius, maxRadius) : undefined;
+      
+      const landslideZones = await getCACGSLandslideZonesData(lat, lon, queryRadius);
+      
+      const result: Record<string, any> = {};
+      
+      if (landslideZones.length === 0) {
+        result.ca_cgs_landslide_zones_containing = null;
+        result.ca_cgs_landslide_zones_containing_message = 'No landslide zone found containing this location';
+        result.ca_cgs_landslide_zones_count = 0;
+        result.ca_cgs_landslide_zones_all = [];
+        return result;
+      }
+      
+      // Find containing zone (distance = 0)
+      const containingZone = landslideZones.find(z => z.distance_miles === 0);
+      
+      if (containingZone) {
+        result.ca_cgs_landslide_zones_containing = containingZone.zoneName || 
+                                                   containingZone.zoneType || 
+                                                   containingZone.landslideZoneId || 
+                                                   'Landslide Zone';
+        result.ca_cgs_landslide_zones_containing_message = `Location is within a landslide zone: ${result.ca_cgs_landslide_zones_containing}`;
+        
+        if (containingZone.zoneName) {
+          result.ca_cgs_landslide_zones_containing_name = containingZone.zoneName;
+        }
+        if (containingZone.zoneType) {
+          result.ca_cgs_landslide_zones_containing_type = containingZone.zoneType;
+        }
+        if (containingZone.landslideZoneId) {
+          result.ca_cgs_landslide_zones_containing_id = containingZone.landslideZoneId;
+        }
+      } else {
+        result.ca_cgs_landslide_zones_containing = null;
+        result.ca_cgs_landslide_zones_containing_message = 'No landslide zone found containing this location';
+      }
+      
+      // Set count and all array
+      result.ca_cgs_landslide_zones_count = landslideZones.length;
+      result.ca_cgs_landslide_zones_all = landslideZones.map(zone => ({
+        ...zone.attributes,
+        landslideZoneId: zone.landslideZoneId,
+        zoneName: zone.zoneName,
+        zoneType: zone.zoneType,
+        isContaining: zone.distance_miles === 0,
+        distance_miles: zone.distance_miles || 0,
+        geometry: zone.geometry
+      }));
+      
+      console.log(`✅ CA CGS Landslide Zones data processed:`, {
+        containing: result.ca_cgs_landslide_zones_containing || 'N/A',
+        totalCount: result.ca_cgs_landslide_zones_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA CGS Landslide Zones data:', error);
+      return {
+        ca_cgs_landslide_zones_containing: null,
+        ca_cgs_landslide_zones_containing_message: 'Error fetching CA CGS Landslide Zones data',
+        ca_cgs_landslide_zones_count: 0,
+        ca_cgs_landslide_zones_all: []
       };
     }
   }
