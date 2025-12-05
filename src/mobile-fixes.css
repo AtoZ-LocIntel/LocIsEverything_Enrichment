@@ -43,7 +43,8 @@
   
   /* Make labels and descriptions LARGE and FULL WIDTH */
   .fixed.inset-0.bg-white .border.border-gray-200 label,
-  .fixed.inset-0.bg-white .border.border-gray-200 .font-semibold {
+  .fixed.inset-0.bg-white .border.border-gray-200 .font-semibold,
+  .fixed.inset-0.bg-white .border.border-gray-200 label.font-semibold {
     width: 100% !important;
     max-width: 100% !important;
     font-size: 24px !important;
@@ -54,7 +55,8 @@
     box-sizing: border-box !important;
   }
   
-  .fixed.inset-0.bg-white .border.border-gray-200 p {
+  .fixed.inset-0.bg-white .border.border-gray-200 p,
+  .fixed.inset-0.bg-white .border.border-gray-200 .text-gray-700 {
     width: 100% !important;
     max-width: 100% !important;
     font-size: 19px !important;
