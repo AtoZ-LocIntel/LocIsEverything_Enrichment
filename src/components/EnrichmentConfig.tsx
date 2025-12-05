@@ -1735,6 +1735,92 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     // Render modal only - this will cover the entire screen
     return (
       <div className="enrichment-config" style={{ position: 'relative', zIndex: 10001 }}>
+        {/* CRITICAL: Inline styles for mobile - these MUST work */}
+        <style>{`
+          @media (max-width: 767px) {
+            /* TEST: Make checkbox OBVIOUS - large and square */
+            .fixed.inset-0.bg-white button[data-enrichment-checkbox="true"],
+            .fixed.inset-0.bg-white .border.border-gray-200 button.enrichment-checkbox,
+            .fixed.inset-0.bg-white .flex button.enrichment-checkbox {
+              width: 50px !important;
+              height: 50px !important;
+              min-width: 50px !important;
+              min-height: 50px !important;
+              max-width: 50px !important;
+              max-height: 50px !important;
+              aspect-ratio: 1 !important;
+              flex-shrink: 0 !important;
+              box-sizing: border-box !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+            }
+            .fixed.inset-0.bg-white button[data-enrichment-checkbox="true"] svg {
+              width: 28px !important;
+              height: 28px !important;
+              min-width: 28px !important;
+              min-height: 28px !important;
+            }
+            .fixed.inset-0.bg-white .border.border-gray-200 > .flex > div.flex-1 {
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              flex: 1 1 100% !important;
+              box-sizing: border-box !important;
+            }
+            .fixed.inset-0.bg-white .border.border-gray-200 label {
+              width: 100% !important;
+              max-width: 100% !important;
+              font-size: 24px !important;
+              line-height: 1.6 !important;
+              margin-bottom: 16px !important;
+              padding: 0 !important;
+              display: block !important;
+              box-sizing: border-box !important;
+            }
+            .fixed.inset-0.bg-white .border.border-gray-200 p {
+              width: 100% !important;
+              max-width: 100% !important;
+              font-size: 19px !important;
+              line-height: 1.9 !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              display: block !important;
+              box-sizing: border-box !important;
+            }
+            .fixed.inset-0.bg-white .border.border-gray-200 .mt-4.pt-4.border-t {
+              width: 100% !important;
+              max-width: 100% !important;
+              padding: 16px 0 !important;
+              margin: 16px 0 0 0 !important;
+              box-sizing: border-box !important;
+            }
+            .fixed.inset-0.bg-white .border.border-gray-200 .mt-4.pt-4.border-t select,
+            .fixed.inset-0.bg-white .border.border-gray-200 .mt-4.pt-4.border-t input[type="number"] {
+              width: calc(100% - 90px) !important;
+              max-width: calc(100% - 90px) !important;
+              min-width: 180px !important;
+              box-sizing: border-box !important;
+              font-size: 18px !important;
+              padding: 12px !important;
+            }
+            .fixed.inset-0.bg-white .border.border-gray-200.rounded-lg {
+              width: 100% !important;
+              max-width: 100% !important;
+              padding: 28px !important;
+              margin-bottom: 24px !important;
+              box-sizing: border-box !important;
+            }
+            .fixed.inset-0.bg-white .border.border-gray-200 > .flex.flex-col {
+              width: 100% !important;
+              max-width: 100% !important;
+              gap: 24px !important;
+              box-sizing: border-box !important;
+            }
+          }
+        `}</style>
             <div 
           className="fixed inset-0 bg-white"
           style={{
@@ -2064,13 +2150,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                         ? 'bg-black border-black' 
                                         : 'bg-white border-gray-300'
                                     } ${isMobile ? 'mobile-checkbox' : 'w-4 h-4'}`}
-                                style={isMobile ? { 
-                                  width: '40px', 
-                                  height: '40px', 
-                                  minWidth: '40px', 
-                                  minHeight: '40px', 
-                                  maxWidth: '40px', 
-                                  maxHeight: '40px',
+                                style={window.innerWidth < 768 ? { 
+                                  width: '50px', 
+                                  height: '50px', 
+                                  minWidth: '50px', 
+                                  minHeight: '50px', 
+                                  maxWidth: '50px', 
+                                  maxHeight: '50px',
                                   aspectRatio: '1',
                                   flexShrink: '0',
                                   boxSizing: 'border-box',
@@ -2080,7 +2166,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 } as React.CSSProperties : {}}
                                   >
                                     {isSelected && (
-                                      <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={isMobile ? { width: '24px', height: '24px', minWidth: '24px', minHeight: '24px', flexShrink: '0' } as React.CSSProperties : {}} />
+                                      <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={window.innerWidth < 768 ? { width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', flexShrink: '0' } as React.CSSProperties : {}} />
                                     )}
                                   </button>
                               <div className={`flex-1 min-w-0 text-left w-full max-w-full ${isMobile ? 'space-y-3' : 'space-y-1'}`} style={isMobile ? { width: '100%', maxWidth: '100%', padding: '0', margin: '0', flex: '1 1 100%', minWidth: '0' } as React.CSSProperties : {}}>
