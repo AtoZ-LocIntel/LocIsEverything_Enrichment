@@ -2054,6 +2054,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => handleEnrichmentToggle(enrichment.id)}
+                                    data-enrichment-checkbox="true"
                                 className={`enrichment-checkbox flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 self-start ${
                                       isSelected 
                                         ? 'bg-black border-black' 
