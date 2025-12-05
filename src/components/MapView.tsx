@@ -209,6 +209,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_wildland_fire_direct_protection': { icon: '🔥', color: '#eab308', title: 'CA Wildland Fire Direct Protection Areas' },
   'ca_calvtp_treatment_areas': { icon: '🔥', color: '#fbbf24', title: 'CA CalVTP Treatment Areas' },
   'ca_postfire_damage_inspections': { icon: '🔥', color: '#dc2626', title: 'CA Post-Fire Damage Inspections (DINS)' },
+  'ca_medium_heavy_duty_infrastructure': { icon: '🚛', color: '#f97316', title: 'CA Medium & Heavy Duty Infrastructure' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -526,6 +527,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_wildland_fire_direct_protection_all' || // Skip CA Wildland Fire Direct Protection Areas array (handled separately for map drawing)
     key === 'ca_calvtp_treatment_areas_all' || // Skip CA CalVTP Treatment Areas array (handled separately for map drawing)
     key === 'ca_postfire_damage_inspections_all' || // Skip CA Post-Fire Damage Inspections array (handled separately for map drawing)
+    key === 'ca_medium_heavy_duty_infrastructure_all' || // Skip CA Medium and Heavy Duty Infrastructure array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -9986,6 +9988,106 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA Post-Fire Damage Inspections:', error);
+      }
+
+      // Draw CA Medium and Heavy Duty Infrastructure as point markers on the map
+      try {
+        if (enrichments.ca_medium_heavy_duty_infrastructure_all && Array.isArray(enrichments.ca_medium_heavy_duty_infrastructure_all)) {
+          let stationCount = 0;
+          enrichments.ca_medium_heavy_duty_infrastructure_all.forEach((station: any) => {
+            // Check for geometry with x/y (point geometry) or latitude/longitude fields
+            const lat = station.geometry?.y || station.Latitude || station.latitude || null;
+            const lon = station.geometry?.x || station.Longitude || station.longitude || null;
+            
+            if (lat !== null && lon !== null) {
+              try {
+                const chargingOrHydrogen = station.chargingOrHydrogen || station.Charging_or_Hydrogen || station.ChargingOrHydrogen || 'Unknown';
+                const address = station.address || station.Address || station.ADDRESS || null;
+                const chargerOrDispenserCount = station.chargerOrDispenserCount || station.Charger_or_Dispenser_Count || station.ChargerOrDispenserCount || null;
+                const nozzleCount = station.nozzleCount || station.Nozzle_Count || station.NozzleCount || null;
+                const fundingAgencies = station.fundingAgencies || station.Funding_Agencies || station.FundingAgencies || null;
+                const operator = station.operator || station.Operator || station.OPERATOR || null;
+                const eligible = station.eligible || station.Eligible || station.ELIGIBLE || null;
+                const liquidGaseous = station.liquidGaseous || station.Liquid_Gaseous || station.LiquidGaseous || null;
+                const chargingCapacity = station.chargingCapacity || station.Charging_Capacity || station.ChargingCapacity || null;
+                const maximumCharging = station.maximumCharging || station.Maximum_Charging || station.MaximumCharging || null;
+                const projectStatus = station.projectStatus || station.ProjectStatus || station.Project_Status || null;
+                const distance = station.distance_miles !== null && station.distance_miles !== undefined ? station.distance_miles : 0;
+                
+                // Determine icon color based on type
+                let iconColor = '#f97316'; // Orange default
+                if (chargingOrHydrogen && chargingOrHydrogen.toLowerCase().includes('hydrogen')) {
+                  iconColor = '#3b82f6'; // Blue for hydrogen
+                } else if (chargingOrHydrogen && chargingOrHydrogen.toLowerCase().includes('both')) {
+                  iconColor = '#8b5cf6'; // Purple for both
+                }
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚛', iconColor)
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚛 ${chargingOrHydrogen} Station
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${projectStatus ? `<div><strong>Status:</strong> ${projectStatus}</div>` : ''}
+                      ${operator ? `<div><strong>Operator:</strong> ${operator}</div>` : ''}
+                      ${chargerOrDispenserCount ? `<div><strong>Charger/Dispenser Count:</strong> ${chargerOrDispenserCount}</div>` : ''}
+                      ${nozzleCount ? `<div><strong>Nozzle Count:</strong> ${nozzleCount}</div>` : ''}
+                      ${chargingCapacity ? `<div><strong>Charging Capacity:</strong> ${chargingCapacity}</div>` : ''}
+                      ${maximumCharging ? `<div><strong>Maximum Charging:</strong> ${maximumCharging}</div>` : ''}
+                      ${liquidGaseous ? `<div><strong>Liquid/Gaseous:</strong> ${liquidGaseous}</div>` : ''}
+                      ${eligible ? `<div><strong>Eligible:</strong> ${eligible}</div>` : ''}
+                      ${fundingAgencies ? `<div><strong>Funding Agencies:</strong> ${fundingAgencies}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all station attributes (excluding internal fields)
+                const excludeFields = ['chargingOrHydrogen', 'Charging_or_Hydrogen', 'ChargingOrHydrogen', 'chargerOrDispenserCount', 'Charger_or_Dispenser_Count', 'ChargerOrDispenserCount', 'nozzleCount', 'Nozzle_Count', 'NozzleCount', 'address', 'Address', 'ADDRESS', 'latitude', 'Latitude', 'LATITUDE', 'longitude', 'Longitude', 'LONGITUDE', 'fundingAgencies', 'Funding_Agencies', 'FundingAgencies', 'operator', 'Operator', 'OPERATOR', 'eligible', 'Eligible', 'ELIGIBLE', 'liquidGaseous', 'Liquid_Gaseous', 'LiquidGaseous', 'chargingCapacity', 'Charging_Capacity', 'ChargingCapacity', 'maximumCharging', 'Maximum_Charging', 'MaximumCharging', 'projectStatus', 'ProjectStatus', 'Project_Status', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'GlobalID', 'GLOBALID'];
+                Object.entries(station).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                stationCount++;
+              } catch (error) {
+                console.error('Error drawing CA Medium and Heavy Duty Infrastructure marker:', error);
+              }
+            }
+          });
+          
+          if (stationCount > 0) {
+            if (!legendAccumulator['ca_medium_heavy_duty_infrastructure']) {
+              legendAccumulator['ca_medium_heavy_duty_infrastructure'] = {
+                icon: '🚛',
+                color: '#f97316',
+                title: 'CA Medium & Heavy Duty Infrastructure',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_medium_heavy_duty_infrastructure'].count += stationCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Medium and Heavy Duty Infrastructure:', error);
       }
 
       // Draw CA State Parks Entry Points

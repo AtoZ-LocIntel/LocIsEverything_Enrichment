@@ -71,6 +71,7 @@ import { getCAStateParksCampgroundsData } from '../adapters/caStateParksCampgrou
 import { getCAStateParksRecreationalRoutesData } from '../adapters/caStateParksRecreationalRoutes';
 import { getCAMarineOilTerminalsData } from '../adapters/caMarineOilTerminals';
 import { getCAPostfireDamageInspectionsData } from '../adapters/caPostfireDamageInspections';
+import { getCAMediumHeavyDutyInfrastructureData } from '../adapters/caMediumHeavyDutyInfrastructure';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1671,6 +1672,10 @@ export class EnrichmentService {
       // CA Post-Fire Damage Inspections (DINS) - Proximity query only
       case 'ca_postfire_damage_inspections':
         return await this.getCAPostfireDamageInspections(lat, lon, radius);
+      
+      // CA Medium and Heavy Duty Infrastructure - Proximity query only
+      case 'ca_medium_heavy_duty_infrastructure':
+        return await this.getCAMediumHeavyDutyInfrastructure(lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -7625,6 +7630,58 @@ out center;`;
       return {
         ca_postfire_damage_inspections_count: 0,
         ca_postfire_damage_inspections_all: []
+      };
+    }
+  }
+
+  private async getCAMediumHeavyDutyInfrastructure(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚛 Fetching CA Medium and Heavy Duty Infrastructure data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_medium_heavy_duty_infrastructure_count: 0,
+          ca_medium_heavy_duty_infrastructure_all: []
+        };
+      }
+      
+      const stations = await getCAMediumHeavyDutyInfrastructureData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      result.ca_medium_heavy_duty_infrastructure_count = stations.length;
+      result.ca_medium_heavy_duty_infrastructure_all = stations.map(station => ({
+        ...station.attributes,
+        stationId: station.stationId,
+        chargingOrHydrogen: station.chargingOrHydrogen,
+        chargerOrDispenserCount: station.chargerOrDispenserCount,
+        nozzleCount: station.nozzleCount,
+        address: station.address,
+        latitude: station.latitude,
+        longitude: station.longitude,
+        fundingAgencies: station.fundingAgencies,
+        operator: station.operator,
+        eligible: station.eligible,
+        liquidGaseous: station.liquidGaseous,
+        chargingCapacity: station.chargingCapacity,
+        maximumCharging: station.maximumCharging,
+        projectStatus: station.projectStatus,
+        geometry: station.geometry,
+        distance_miles: station.distance_miles
+      }));
+      
+      result.ca_medium_heavy_duty_infrastructure_summary = `Found ${stations.length} medium/heavy duty infrastructure station(s) within ${radius} miles.`;
+      
+      console.log(`✅ CA Medium and Heavy Duty Infrastructure data processed:`, {
+        totalCount: result.ca_medium_heavy_duty_infrastructure_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Medium and Heavy Duty Infrastructure data:', error);
+      return {
+        ca_medium_heavy_duty_infrastructure_count: 0,
+        ca_medium_heavy_duty_infrastructure_all: []
       };
     }
   }
