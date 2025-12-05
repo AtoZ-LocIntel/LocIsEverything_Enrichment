@@ -950,12 +950,13 @@ body.modal-open {
   
   .flex.items-start.space-x-3 button {
     flex-shrink: 0 !important;
-    width: 20px !important;
-    height: 20px !important;
-    min-width: 20px !important;
-    min-height: 20px !important;
-    max-width: 20px !important;
-    max-height: 20px !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    max-width: 28px !important;
+    max-height: 28px !important;
+    aspect-ratio: 1 !important;
   }
   
   /* Improve modal text layout on mobile - less vertical, more horizontal */
@@ -1023,8 +1024,14 @@ body.modal-open {
     align-self: flex-start !important;
     margin-bottom: 12px !important;
     margin-right: 0 !important;
-    width: 24px !important;
-    height: 24px !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    max-width: 28px !important;
+    max-height: 28px !important;
+    aspect-ratio: 1 !important;
+    flex-shrink: 0 !important;
   }
   
   .fixed.inset-0.bg-white .border.border-gray-200 > .flex > div,
@@ -1068,10 +1075,26 @@ body.modal-open {
     }
   }
   
-  /* Make checkbox smaller on mobile to give more space to text */
-  .fixed.inset-0.bg-white button.w-6 {
-    width: 24px !important;
-    height: 24px !important;
+  /* Make checkbox square and taller on mobile - ensure check mark is visible */
+  .fixed.inset-0.bg-white button.w-6,
+  .fixed.inset-0.bg-white button[class*="w-6"],
+  .fixed.inset-0.bg-white .border.border-gray-200 button,
+  .fixed.inset-0.bg-white .flex button {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    max-width: 28px !important;
+    max-height: 28px !important;
+    aspect-ratio: 1 !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Ensure check mark icon is properly sized for the larger checkbox */
+  .fixed.inset-0.bg-white button svg,
+  .fixed.inset-0.bg-white .border.border-gray-200 button svg {
+    width: 18px !important;
+    height: 18px !important;
     flex-shrink: 0 !important;
   }
   
