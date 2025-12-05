@@ -72,6 +72,7 @@ import { getCAStateParksRecreationalRoutesData } from '../adapters/caStateParksR
 import { getCAMarineOilTerminalsData } from '../adapters/caMarineOilTerminals';
 import { getCAPostfireDamageInspectionsData } from '../adapters/caPostfireDamageInspections';
 import { getCAMediumHeavyDutyInfrastructureData } from '../adapters/caMediumHeavyDutyInfrastructure';
+import { getCAFRAPFacilitiesData } from '../adapters/caFrapFacilities';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1676,6 +1677,10 @@ export class EnrichmentService {
       // CA Medium and Heavy Duty Infrastructure - Proximity query only
       case 'ca_medium_heavy_duty_infrastructure':
         return await this.getCAMediumHeavyDutyInfrastructure(lat, lon, radius);
+      
+      // CA FRAP Facilities - Proximity query only
+      case 'ca_frap_facilities':
+        return await this.getCAFRAPFacilities(lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -7682,6 +7687,62 @@ out center;`;
       return {
         ca_medium_heavy_duty_infrastructure_count: 0,
         ca_medium_heavy_duty_infrastructure_all: []
+      };
+    }
+  }
+
+  private async getCAFRAPFacilities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔥 Fetching CA FRAP Facilities data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_frap_facilities_count: 0,
+          ca_frap_facilities_all: []
+        };
+      }
+      
+      const facilities = await getCAFRAPFacilitiesData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      result.ca_frap_facilities_count = facilities.length;
+      result.ca_frap_facilities_all = facilities.map(facility => ({
+        ...facility.attributes,
+        facilityId: facility.facilityId,
+        facilityStatus: facility.facilityStatus,
+        name: facility.name,
+        cadName: facility.cadName,
+        aka: facility.aka,
+        type: facility.type,
+        unit: facility.unit,
+        cdfUnit: facility.cdfUnit,
+        county: facility.county,
+        owner: facility.owner,
+        funding: facility.funding,
+        staffing: facility.staffing,
+        address: facility.address,
+        city: facility.city,
+        zip: facility.zip,
+        phoneNum: facility.phoneNum,
+        latitude: facility.latitude,
+        longitude: facility.longitude,
+        geometry: facility.geometry,
+        distance_miles: facility.distance_miles
+      }));
+      
+      result.ca_frap_facilities_summary = `Found ${facilities.length} FRAP facility/facilities within ${radius} miles.`;
+      
+      console.log(`✅ CA FRAP Facilities data processed:`, {
+        totalCount: result.ca_frap_facilities_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA FRAP Facilities data:', error);
+      return {
+        ca_frap_facilities_count: 0,
+        ca_frap_facilities_all: []
       };
     }
   }

@@ -210,6 +210,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_calvtp_treatment_areas': { icon: '🔥', color: '#fbbf24', title: 'CA CalVTP Treatment Areas' },
   'ca_postfire_damage_inspections': { icon: '🔥', color: '#dc2626', title: 'CA Post-Fire Damage Inspections (DINS)' },
   'ca_medium_heavy_duty_infrastructure': { icon: '🚛', color: '#f97316', title: 'CA Medium & Heavy Duty Infrastructure' },
+  'ca_frap_facilities': { icon: '🚒', color: '#dc2626', title: 'CA FRAP Facilities' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -528,6 +529,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_calvtp_treatment_areas_all' || // Skip CA CalVTP Treatment Areas array (handled separately for map drawing)
     key === 'ca_postfire_damage_inspections_all' || // Skip CA Post-Fire Damage Inspections array (handled separately for map drawing)
     key === 'ca_medium_heavy_duty_infrastructure_all' || // Skip CA Medium and Heavy Duty Infrastructure array (handled separately for map drawing)
+    key === 'ca_frap_facilities_all' || // Skip CA FRAP Facilities array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -10088,6 +10090,114 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA Medium and Heavy Duty Infrastructure:', error);
+      }
+
+      // Draw CA FRAP Facilities as point markers on the map
+      try {
+        if (enrichments.ca_frap_facilities_all && Array.isArray(enrichments.ca_frap_facilities_all)) {
+          let facilityCount = 0;
+          enrichments.ca_frap_facilities_all.forEach((facility: any) => {
+            // Check for geometry with x/y (point geometry) or latitude/longitude fields
+            const lat = facility.geometry?.y || facility.LAT || facility.latitude || null;
+            const lon = facility.geometry?.x || facility.LON || facility.longitude || null;
+            
+            if (lat !== null && lon !== null) {
+              try {
+                const name = facility.name || facility.NAME || facility.Name || 'Unknown Facility';
+                const facilityStatus = facility.facilityStatus || facility.FACILITY_STATUS || facility.FacilityStatus || null;
+                const cadName = facility.cadName || facility.CAD_NAME || facility.CadName || null;
+                const aka = facility.aka || facility.AKA || facility.Aka || null;
+                const type = facility.type || facility.TYPE || facility.Type || null;
+                const unit = facility.unit || facility.UNIT || facility.Unit || null;
+                const cdfUnit = facility.cdfUnit || facility.CDF_UNIT || facility.CdfUnit || null;
+                const county = facility.county || facility.COUNTY || facility.County || null;
+                const owner = facility.owner || facility.OWNER || facility.Owner || null;
+                const funding = facility.funding || facility.FUNDING || facility.Funding || null;
+                const staffing = facility.staffing || facility.STAFFING || facility.Staffing || null;
+                const address = facility.address || facility.ADDRESS || facility.Address || null;
+                const city = facility.city || facility.CITY || facility.City || null;
+                const zip = facility.zip || facility.ZIP || facility.Zip || null;
+                const phoneNum = facility.phoneNum || facility.PHONE_NUM || facility.PhoneNum || facility.PHONE || facility.phone || null;
+                const distance = facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles : 0;
+                
+                // Use fire truck icon with red color for fire facilities
+                const iconColor = '#dc2626'; // Red for fire facilities
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚒', iconColor)
+                });
+                
+                // Build address string
+                let addressString = address || '';
+                if (city || zip) {
+                  const addressParts = [address, city, zip].filter(part => part);
+                  addressString = addressParts.join(', ');
+                }
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚒 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${facilityStatus ? `<div><strong>Status:</strong> ${facilityStatus}</div>` : ''}
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${cadName ? `<div><strong>CAD Name:</strong> ${cadName}</div>` : ''}
+                      ${aka ? `<div><strong>Also Known As:</strong> ${aka}</div>` : ''}
+                      ${addressString ? `<div><strong>Address:</strong> ${addressString}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${unit ? `<div><strong>Unit:</strong> ${unit}</div>` : ''}
+                      ${cdfUnit ? `<div><strong>CDF Unit:</strong> ${cdfUnit}</div>` : ''}
+                      ${owner ? `<div><strong>Owner:</strong> ${owner}</div>` : ''}
+                      ${funding ? `<div><strong>Funding:</strong> ${funding}</div>` : ''}
+                      ${staffing ? `<div><strong>Staffing:</strong> ${staffing}</div>` : ''}
+                      ${phoneNum ? `<div><strong>Phone:</strong> ${phoneNum}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all facility attributes (excluding internal fields)
+                const excludeFields = ['name', 'NAME', 'Name', 'facilityStatus', 'FACILITY_STATUS', 'FacilityStatus', 'cadName', 'CAD_NAME', 'CadName', 'aka', 'AKA', 'Aka', 'type', 'TYPE', 'Type', 'unit', 'UNIT', 'Unit', 'cdfUnit', 'CDF_UNIT', 'CdfUnit', 'county', 'COUNTY', 'County', 'owner', 'OWNER', 'Owner', 'funding', 'FUNDING', 'Funding', 'staffing', 'STAFFING', 'Staffing', 'address', 'ADDRESS', 'Address', 'city', 'CITY', 'City', 'zip', 'ZIP', 'Zip', 'ZIPCODE', 'zipCode', 'phoneNum', 'PHONE_NUM', 'PhoneNum', 'PHONE', 'phone', 'latitude', 'Latitude', 'LATITUDE', 'LAT', 'lat', 'longitude', 'Longitude', 'LONGITUDE', 'LON', 'lon', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'GlobalID', 'GLOBALID'];
+                Object.entries(facility).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                facilityCount++;
+              } catch (error) {
+                console.error('Error drawing CA FRAP Facility marker:', error);
+              }
+            }
+          });
+          
+          if (facilityCount > 0) {
+            if (!legendAccumulator['ca_frap_facilities']) {
+              legendAccumulator['ca_frap_facilities'] = {
+                icon: '🚒',
+                color: '#dc2626',
+                title: 'CA FRAP Facilities',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_frap_facilities'].count += facilityCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA FRAP Facilities:', error);
       }
 
       // Draw CA State Parks Entry Points
