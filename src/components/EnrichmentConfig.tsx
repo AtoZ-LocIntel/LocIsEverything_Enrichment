@@ -2341,6 +2341,62 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromVTSubCategories(false);
                               setActiveModal(null);
                               setViewingVTSubCategories(true);
+                            } else if (cameFromTXSubCategories) {
+                              setCameFromTXSubCategories(false);
+                              setActiveModal(null);
+                              setViewingTXSubCategories(true);
+                            } else if (cameFromNMSubCategories) {
+                              setCameFromNMSubCategories(false);
+                              setActiveModal(null);
+                              setViewingNMSubCategories(true);
+                            } else if (cameFromAZSubCategories) {
+                              setCameFromAZSubCategories(false);
+                              setActiveModal(null);
+                              setViewingAZSubCategories(true);
+                            } else if (cameFromAKSubCategories) {
+                              setCameFromAKSubCategories(false);
+                              setActiveModal(null);
+                              setViewingAKSubCategories(true);
+                            } else if (cameFromHISubCategories) {
+                              setCameFromHISubCategories(false);
+                              setActiveModal(null);
+                              setViewingHISubCategories(true);
+                            } else if (cameFromWASubCategories) {
+                              setCameFromWASubCategories(false);
+                              setActiveModal(null);
+                              setViewingWASubCategories(true);
+                            } else if (cameFromORSubCategories) {
+                              setCameFromORSubCategories(false);
+                              setActiveModal(null);
+                              setViewingORSubCategories(true);
+                            } else if (cameFromMTSubCategories) {
+                              setCameFromMTSubCategories(false);
+                              setActiveModal(null);
+                              setViewingMTSubCategories(true);
+                            } else if (cameFromWYSubCategories) {
+                              setCameFromWYSubCategories(false);
+                              setActiveModal(null);
+                              setViewingWYSubCategories(true);
+                            } else if (cameFromNVSubCategories) {
+                              setCameFromNVSubCategories(false);
+                              setActiveModal(null);
+                              setViewingNVSubCategories(true);
+                            } else if (cameFromIDSubCategories) {
+                              setCameFromIDSubCategories(false);
+                              setActiveModal(null);
+                              setViewingIDSubCategories(true);
+                            } else if (cameFromUTSubCategories) {
+                              setCameFromUTSubCategories(false);
+                              setActiveModal(null);
+                              setViewingUTSubCategories(true);
+                            } else if (cameFromCOSubCategories) {
+                              setCameFromCOSubCategories(false);
+                              setActiveModal(null);
+                              setViewingCOSubCategories(true);
+                            } else if (cameFromILSubCategories) {
+                              setCameFromILSubCategories(false);
+                              setActiveModal(null);
+                              setViewingILSubCategories(true);
                             } else {
                               // Go back to main configuration
                               setActiveModal(null);
