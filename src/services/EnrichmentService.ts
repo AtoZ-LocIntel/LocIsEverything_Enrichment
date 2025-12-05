@@ -61,6 +61,7 @@ import { getCAFirePerimetersRecentLargeData } from '../adapters/caFirePerimeters
 import { getCAFirePerimeters1950Data } from '../adapters/caFirePerimeters1950';
 import { getCALandOwnershipData } from '../adapters/caLandOwnership';
 import { getCAWildlandFireDirectProtectionData } from '../adapters/caWildlandFireDirectProtection';
+import { getCACalVTPTreatmentAreasData } from '../adapters/caCalVTPTreatmentAreas';
 import { getCAStateParksEntryPointsData } from '../adapters/caStateParksEntryPoints';
 import { getCAStateParksParkingLotsData } from '../adapters/caStateParksParkingLots';
 import { getCAStateParksBoundariesData } from '../adapters/caStateParksBoundaries';
@@ -1649,6 +1650,10 @@ export class EnrichmentService {
       // CA Wildland Fire Direct Protection Areas (CA Open Data Portal) - Point-in-polygon query only
       case 'ca_wildland_fire_direct_protection':
         return await this.getCAWildlandFireDirectProtection(lat, lon);
+      
+      // CA CalVTP Treatment Areas (CA Open Data Portal) - Point-in-polygon and proximity query
+      case 'ca_calvtp_treatment_areas':
+        return await this.getCACalVTPTreatmentAreas(lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -7334,6 +7339,63 @@ out center;`;
         ca_wildland_fire_direct_protection_containing: null,
         ca_wildland_fire_direct_protection_containing_message: 'Error fetching CA Wildland Fire Direct Protection Areas data',
         ca_wildland_fire_direct_protection_all: []
+      };
+    }
+  }
+
+  private async getCACalVTPTreatmentAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔥 Fetching CA CalVTP Treatment Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const treatmentAreas = await getCACalVTPTreatmentAreasData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_calvtp_treatment_areas_count = treatmentAreas.length;
+      result.ca_calvtp_treatment_areas_all = treatmentAreas.map(area => ({
+        ...area.attributes,
+        treatmentAreaId: area.treatmentAreaId,
+        projectId: area.projectId,
+        dateCompleted: area.dateCompleted,
+        treatmentType: area.treatmentType,
+        treatmentActivity: area.treatmentActivity,
+        treatmentAcres: area.treatmentAcres,
+        county: area.county,
+        fuelType: area.fuelType,
+        coastalZone: area.coastalZone,
+        grantType: area.grantType,
+        status: area.status,
+        affiliation: area.affiliation,
+        treatmentStage: area.treatmentStage,
+        contactName: area.contactName,
+        contactNumber: area.contactNumber,
+        contactEmail: area.contactEmail,
+        contactAddress: area.contactAddress,
+        comments: area.comments,
+        reviewed: area.reviewed,
+        distance_miles: area.distance_miles,
+        geometry: area.geometry
+      }));
+      
+      // Point-in-polygon result (distance_miles === 0)
+      const containingArea = treatmentAreas.find(a => a.distance_miles === 0);
+      if (containingArea) {
+        result.ca_calvtp_treatment_areas = containingArea.projectId || `Treatment Area ${containingArea.treatmentAreaId || 'Unknown'}`;
+        result.ca_calvtp_treatment_areas_project_id = containingArea.projectId || null;
+        result.ca_calvtp_treatment_areas_treatment_stage = containingArea.treatmentStage || null;
+        result.ca_calvtp_treatment_areas_treatment_acres = containingArea.treatmentAcres || null;
+      }
+      
+      console.log(`✅ CA CalVTP Treatment Areas data processed:`, {
+        totalCount: result.ca_calvtp_treatment_areas_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA CalVTP Treatment Areas data:', error);
+      return {
+        ca_calvtp_treatment_areas_count: 0,
+        ca_calvtp_treatment_areas_all: []
       };
     }
   }

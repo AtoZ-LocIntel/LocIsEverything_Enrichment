@@ -466,6 +466,9 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         if (key.includes('ca_highway_rest_areas') && key !== 'ca_highway_rest_areas_all') {
           return selectedEnrichments.includes('ca_highway_rest_areas');
         }
+        if (key.includes('ca_calvtp_treatment_areas') && key !== 'ca_calvtp_treatment_areas_all') {
+          return selectedEnrichments.includes('ca_calvtp_treatment_areas');
+        }
         
         return false;
       });

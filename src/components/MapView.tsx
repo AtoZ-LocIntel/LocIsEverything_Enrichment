@@ -206,6 +206,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_fire_perimeters_1950': { icon: '🔥', color: '#f97316', title: 'CA Fire Perimeters (1950+)' },
   'ca_land_ownership': { icon: '🏛️', color: '#6366f1', title: 'CA Land Ownership' },
   'ca_wildland_fire_direct_protection': { icon: '🔥', color: '#b91c1c', title: 'CA Wildland Fire Direct Protection Areas' },
+  'ca_calvtp_treatment_areas': { icon: '🔥', color: '#991b1b', title: 'CA CalVTP Treatment Areas' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -517,6 +518,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_fire_perimeters_1950_all' || // Skip CA Fire Perimeters (1950+) array (handled separately for map drawing)
     key === 'ca_land_ownership_all' || // Skip CA Land Ownership array (handled separately for map drawing)
     key === 'ca_wildland_fire_direct_protection_all' || // Skip CA Wildland Fire Direct Protection Areas array (handled separately for map drawing)
+    key === 'ca_calvtp_treatment_areas_all' || // Skip CA CalVTP Treatment Areas array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -9574,6 +9576,111 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA Wildland Fire Direct Protection Areas:', error);
+      }
+
+      // Draw CA CalVTP Treatment Areas as polygons on the map
+      try {
+        if (enrichments.ca_calvtp_treatment_areas_all && Array.isArray(enrichments.ca_calvtp_treatment_areas_all)) {
+          let treatmentAreaCount = 0;
+          enrichments.ca_calvtp_treatment_areas_all.forEach((area: any) => {
+            if (area.geometry && area.geometry.rings) {
+              try {
+                const rings = area.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latLngs = outerRing.map((coord: number[]) => [coord[1], coord[0]]);
+                  
+                  const projectId = area.projectId || area.Project_ID || area.project_id || 'Unknown Project';
+                  const treatmentStage = area.treatmentStage || area.TreatmentStage || area.treatment_stage || null;
+                  const treatmentAcres = area.treatmentAcres || area.Treatment_Acres || area.treatment_acres || null;
+                  const county = area.county || area.County || null;
+                  const fuelType = area.fuelType || area.Fuel_Type || area.fuel_type || null;
+                  const dateCompleted = area.dateCompleted || area.Date_Completed || area.date_completed || null;
+                  const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles : 0;
+                  
+                  const polygon = L.polygon(latLngs, {
+                    color: '#991b1b',
+                    fillColor: '#991b1b',
+                    fillOpacity: 0.3,
+                    weight: 2
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 10px 0; font-weight: bold; color: #991b1b;">🔥 ${projectId}</h3>
+                  `;
+                  
+                  if (treatmentStage) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Treatment Stage:</strong> ${treatmentStage}</p>`;
+                  }
+                  
+                  if (treatmentAcres) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Treatment Acres:</strong> ${treatmentAcres.toFixed(2)}</p>`;
+                  }
+                  
+                  if (county) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>County:</strong> ${county}</p>`;
+                  }
+                  
+                  if (fuelType) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Fuel Type:</strong> ${fuelType}</p>`;
+                  }
+                  
+                  if (dateCompleted) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Date Completed:</strong> ${dateCompleted}</p>`;
+                  }
+                  
+                  if (distance > 0) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</p>`;
+                  }
+                  
+                  // Add all other attributes
+                  const allAttributes = { ...area };
+                  delete allAttributes.geometry;
+                  delete allAttributes.projectId;
+                  delete allAttributes.treatmentStage;
+                  delete allAttributes.treatmentAcres;
+                  delete allAttributes.county;
+                  delete allAttributes.fuelType;
+                  delete allAttributes.dateCompleted;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.treatmentAreaId;
+                  
+                  const remainingAttributes = Object.entries(allAttributes)
+                    .filter(([, value]) => value !== null && value !== undefined && value !== '')
+                    .map(([attrKey, attrValue]) => `<p style="margin: 5px 0;"><strong>${formatPopupFieldName(attrKey)}:</strong> ${attrValue}</p>`)
+                    .join('');
+                  
+                  if (remainingAttributes) {
+                    popupContent += remainingAttributes;
+                  }
+                  
+                  popupContent += `</div>`;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  treatmentAreaCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA CalVTP Treatment Area polygon:', error);
+              }
+            }
+          });
+          
+          if (treatmentAreaCount > 0) {
+            if (!legendAccumulator['ca_calvtp_treatment_areas']) {
+              legendAccumulator['ca_calvtp_treatment_areas'] = {
+                icon: '🔥',
+                color: '#991b1b',
+                title: 'CA CalVTP Treatment Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_calvtp_treatment_areas'].count += treatmentAreaCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA CalVTP Treatment Areas:', error);
       }
 
       // Draw CA State Parks Entry Points

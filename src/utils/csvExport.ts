@@ -1908,6 +1908,76 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'CDFW BIOS'
         ]);
       });
+    } else if (key === 'ca_calvtp_treatment_areas_all' && Array.isArray(value)) {
+      // Handle CA CalVTP Treatment Areas - each treatment area gets its own row with all attributes
+      value.forEach((area: any) => {
+        const projectId = area.projectId || area.Project_ID || area.project_id || 'Unknown Project';
+        const treatmentStage = area.treatmentStage || area.TreatmentStage || area.treatment_stage || '';
+        const treatmentAcres = area.treatmentAcres || area.Treatment_Acres || area.treatment_acres || null;
+        const county = area.county || area.County || '';
+        const fuelType = area.fuelType || area.Fuel_Type || area.fuel_type || '';
+        const dateCompleted = area.dateCompleted || area.Date_Completed || area.date_completed || '';
+        const treatmentType = area.treatmentType || area.Treatment_Type || area.treatment_type || '';
+        const treatmentActivity = area.treatmentActivity || area.Treatment_Activity || area.treatment_activity || '';
+        const grantType = area.grantType || area.Grant_Type || area.grant_type || '';
+        const status = area.status || area.Status || '';
+        const affiliation = area.affiliation || area.Affiliation || '';
+        const contactName = area.contactName || area.ContactName || area.contact_name || '';
+        const contactNumber = area.contactNumber || area.ContactNumber || area.contact_number || '';
+        const contactEmail = area.contactEmail || area.ContactEmail || area.contact_email || '';
+        const contactAddress = area.contactAddress || area.ContactAddress || area.contact_address || '';
+        const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles.toFixed(2) : '0.00';
+        
+        const allAttributes = { ...area };
+        delete allAttributes.treatmentAreaId;
+        delete allAttributes.projectId;
+        delete allAttributes.treatmentStage;
+        delete allAttributes.treatmentAcres;
+        delete allAttributes.county;
+        delete allAttributes.fuelType;
+        delete allAttributes.dateCompleted;
+        delete allAttributes.treatmentType;
+        delete allAttributes.treatmentActivity;
+        delete allAttributes.grantType;
+        delete allAttributes.status;
+        delete allAttributes.affiliation;
+        delete allAttributes.contactName;
+        delete allAttributes.contactNumber;
+        delete allAttributes.contactEmail;
+        delete allAttributes.contactAddress;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA CalVTP Treatment Areas',
+          projectId,
+          treatmentStage || '',
+          treatmentAcres ? treatmentAcres.toFixed(2) : '',
+          county || '',
+          fuelType || '',
+          dateCompleted || '',
+          treatmentType || '',
+          treatmentActivity || '',
+          grantType || '',
+          status || '',
+          affiliation || '',
+          contactName || '',
+          contactNumber || '',
+          contactEmail || '',
+          contactAddress || '',
+          distance,
+          distance === '0.00' ? 'Within Treatment Area' : `Nearby Treatment Area (${distance} miles)`,
+          `${projectId}${treatmentStage ? ` - ${treatmentStage}` : ''}${county ? ` (${county})` : ''}`,
+          '',
+          attributesJson,
+          'CAL FIRE'
+        ]);
+      });
     } else if (key === 'ca_highway_rest_areas_all' && Array.isArray(value)) {
       // Handle CA Highway Rest Areas - each rest area gets its own row with all attributes
       value.forEach((restArea: any) => {

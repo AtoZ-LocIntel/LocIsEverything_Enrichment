@@ -328,7 +328,6 @@ function App() {
           selectedEnrichments={selectedEnrichments}
           onBackToSearch={handleBackToSearch}
           onDownloadCSV={handleDownloadCSV}
-          onViewMap={handleViewMap}
         />
       ) : viewMode === 'desktop-results' ? (
         <DesktopResultsView

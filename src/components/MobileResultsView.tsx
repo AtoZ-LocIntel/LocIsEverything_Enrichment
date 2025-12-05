@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, ArrowLeft, Map } from 'lucide-react';
+import { Download, ArrowLeft } from 'lucide-react';
 import { EnrichmentResult } from '../App';
 
 interface MobileResultsViewProps {
@@ -7,15 +7,13 @@ interface MobileResultsViewProps {
   selectedEnrichments: string[];
   onBackToSearch: () => void;
   onDownloadCSV: () => void;
-  onViewMap: () => void;
 }
 
 const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   result,
   selectedEnrichments,
   onBackToSearch,
-  onDownloadCSV,
-  onViewMap
+  onDownloadCSV
 }) => {
   const { location, enrichments } = result;
 
@@ -563,14 +561,6 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
           </button>
           
           <div className="flex items-center space-x-3">
-            <button
-              onClick={onViewMap}
-              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Map className="w-4 h-4" />
-              <span className="font-medium">Map View</span>
-            </button>
-            
             <button
               onClick={onDownloadCSV}
               className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"

@@ -878,6 +878,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           cost: "Free"
         },
         {
+          name: "CA CalVTP Treatment Areas",
+          description: "California CalVTP Treatment Areas (CAL FIRE) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
           name: "CA State Parks Entry Points",
           description: "California State Parks Entry Points - proximity queries up to 25 miles",
           coverage: "California",
