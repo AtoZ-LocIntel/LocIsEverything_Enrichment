@@ -4534,7 +4534,7 @@ export class EnrichmentService {
     if (id === "poi_grocery") return ["shop=supermarket", "shop=convenience"];
     if (id === "poi_restaurants") return ["amenity=restaurant", "amenity=fast_food"];
     if (id === "poi_banks") return ["amenity=bank", "amenity=atm"];
-    if (id === "poi_pharmacies") return ["shop=pharmacy"];
+    if (id === "poi_pharmacies") return ["shop=pharmacy", "amenity=pharmacy"];
     if (id === "poi_worship") return ["amenity=place_of_worship"];
     if (id === "poi_doctors_clinics") return ["amenity=clinic", "amenity=doctors"];
     if (id === "poi_dentists") return ["amenity=dentist"];
@@ -10524,13 +10524,58 @@ out center;`;
   private async getGasStations(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
       console.log(`⛽ Gas Stations query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
-      const radiusMeters = Math.round(radiusMiles * 1609.34);
-      const query = `[out:json];(node["amenity"="fuel"](around:${radiusMeters},${lat},${lon});way["amenity"="fuel"](around:${radiusMeters},${lat},${lon});relation["amenity"="fuel"](around:${radiusMeters},${lat},${lon}););out center;`;
-      const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
       
-      const elements = data.elements || [];
+      // Limit radius to prevent timeout - max 10 miles for gas stations
+      const maxRadiusMiles = Math.min(radiusMiles, 10);
+      const radiusMeters = Math.round(maxRadiusMiles * 1609.34);
+      
+      // Use POST request with timeout to avoid 504 errors
+      const query = `[out:json][timeout:25];
+(node["amenity"="fuel"](around:${radiusMeters},${lat},${lon});
+ way["amenity"="fuel"](around:${radiusMeters},${lat},${lon});
+ relation["amenity"="fuel"](around:${radiusMeters},${lat},${lon});
+);
+out center;`;
+
+      console.log(`⛽ Overpass query: ${query}`);
+
+      // Try Overpass API with POST and retry logic
+      let response;
+      try {
+        response = await fetchJSONSmart('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+      } catch (overpassError) {
+        console.warn(`⛽ Primary Overpass API failed, trying alternative server:`, overpassError);
+        // Try alternative Overpass server
+        try {
+          response = await fetchJSONSmart('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+        } catch (altError) {
+          console.warn(`⛽ Alternative Overpass API also failed:`, altError);
+          throw new Error('All Overpass API servers unavailable');
+        }
+      }
+
+      if (!response || !response.elements) {
+        console.warn(`⛽ Invalid response from Overpass API`);
+        return {
+          poi_gas_stations_summary: 'No gas stations found - invalid API response.',
+          poi_gas_stations_detailed: [],
+          poi_gas_stations_all: []
+        };
+      }
+
+      const elements = response.elements || [];
       console.log(`⛽ Overpass returned ${elements.length} gas station elements`);
       
       // Calculate distances and filter by radius
