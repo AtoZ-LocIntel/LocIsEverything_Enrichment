@@ -201,7 +201,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ct_huc_watersheds': { icon: '🌊', color: '#06b6d4', title: 'CT HUC Watershed Boundaries' },
   'ct_soils_parent_material': { icon: '🌱', color: '#a16207', title: 'CT Soils Parent Material Name' },
   'ca_power_outage_areas': { icon: '⚡', color: '#f59e0b', title: 'CA Power Outage Areas' },
-  'ca_fire_perimeters_all': { icon: '🔥', color: '#dc2626', title: 'CA Fire Perimeters (All)' },
+  'ca_fire_perimeters_all': { icon: '🔥', color: '#dc2626', title: 'Historical CA Fire Perimeters (All)' },
   'ca_fire_perimeters_recent_large': { icon: '🔥', color: '#ea580c', title: 'CA Recent Large Fire Perimeters' },
   'ca_fire_perimeters_1950': { icon: '🔥', color: '#f97316', title: 'CA Fire Perimeters (1950+)' },
   'ca_land_ownership': { icon: '🏛️', color: '#6366f1', title: 'CA Land Ownership' },
@@ -518,6 +518,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_fire_perimeters_1950_all' || // Skip CA Fire Perimeters (1950+) array (handled separately for map drawing)
     key === 'ca_land_ownership_all' || // Skip CA Land Ownership array (handled separately for map drawing)
     key === 'ca_cgs_landslide_zones_all' || // Skip CA CGS Landslide Zones array (handled separately for map drawing)
+    key === 'ca_cgs_liquefaction_zones_all' || // Skip CA CGS Liquefaction Zones array (handled separately for map drawing)
     key === 'ca_wildland_fire_direct_protection_all' || // Skip CA Wildland Fire Direct Protection Areas array (handled separately for map drawing)
     key === 'ca_calvtp_treatment_areas_all' || // Skip CA CalVTP Treatment Areas array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
@@ -9189,7 +9190,7 @@ const MapView: React.FC<MapViewProps> = ({
               legendAccumulator['ca_fire_perimeters_all'] = {
                 icon: '🔥',
                 color: '#dc2626',
-                title: 'CA Fire Perimeters (All)',
+                title: 'Historical CA Fire Perimeters (All)',
                 count: 0,
               };
             }
@@ -9551,6 +9552,115 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA CGS Landslide Zones:', error);
+      }
+
+      // Draw CA CGS Liquefaction Zones
+      try {
+        if (enrichments.ca_cgs_liquefaction_zones_all && Array.isArray(enrichments.ca_cgs_liquefaction_zones_all)) {
+          let liquefactionCount = 0;
+          enrichments.ca_cgs_liquefaction_zones_all.forEach((zone: any) => {
+            if (zone.geometry && zone.geometry.rings) {
+              try {
+                const rings = zone.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn('CA CGS Liquefaction Zone polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#10b981'; // Green for liquefaction zones (different from landslide amber)
+                  const weight = 2;
+
+                  const zoneName = zone.zoneName || zone.NAME || zone.name || zone.Name || 'Unknown Liquefaction Zone';
+                  const zoneType = zone.zoneType || zone.TYPE || zone.type || zone.Type || null;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌊 ${zoneName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${zoneType ? `<div><strong>Type:</strong> ${zoneType}</div>` : ''}
+                        ${zone.isContaining ? '<div style="color: #10b981; font-weight: 600; margin-top: 8px;">📍 Contains Location</div>' : ''}
+                        ${zone.distance_miles && zone.distance_miles > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${zone.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Check for link fields first and add them prominently
+                  const geoPdfLink = zone.GEOPDFLINK || zone.geopdflink || zone.GeoPdfLink || null;
+                  const reportLink = zone.REPORTLINK || zone.reportlink || zone.ReportLink || null;
+                  
+                  if (geoPdfLink || reportLink) {
+                    popupContent += `<div style="margin-bottom: 8px; padding: 8px; background-color: #f3f4f6; border-radius: 4px;">`;
+                    if (geoPdfLink) {
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>GeoPDF:</strong> <a href="${geoPdfLink}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline; word-break: break-all;">${geoPdfLink}</a></div>`;
+                    }
+                    if (reportLink) {
+                      popupContent += `<div><strong>Report:</strong> <a href="${reportLink}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline; word-break: break-all;">${reportLink}</a></div>`;
+                    }
+                    popupContent += `</div>`;
+                  }
+                  
+                  const excludeFields = ['liquefactionZoneId', 'liquefaction_zone_id', 'LIQUEFACTION_ZONE_ID', 'zoneName', 'zone_name', 'ZONE_NAME', 'zoneType', 'zone_type', 'ZONE_TYPE', 'isContaining', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'GEOPDFLINK', 'geopdflink', 'GeoPdfLink', 'REPORTLINK', 'reportlink', 'ReportLink'];
+                  Object.entries(zone).forEach(([key, value]) => {
+                    // Skip excluded fields and link fields (already handled above)
+                    if (excludeFields.includes(key) || 
+                        value === null || 
+                        value === undefined || 
+                        value === '') {
+                      return;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  liquefactionCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA CGS Liquefaction Zone polygon:', error);
+              }
+            }
+          });
+          
+          if (liquefactionCount > 0) {
+            if (!legendAccumulator['ca_cgs_liquefaction_zones']) {
+              legendAccumulator['ca_cgs_liquefaction_zones'] = {
+                icon: '🌊',
+                color: '#10b981',
+                title: 'CA CGS Liquefaction Zones',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_cgs_liquefaction_zones'].count += liquefactionCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA CGS Liquefaction Zones:', error);
       }
 
       // Draw CA Wildland Fire Direct Protection Areas
