@@ -158,6 +158,92 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // CRITICAL: Directly apply mobile styles to checkboxes after render
+  useEffect(() => {
+    if (!activeModal) return;
+    
+    const applyMobileStyles = () => {
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) return;
+      
+      // Find all checkbox buttons
+      const checkboxes = document.querySelectorAll('button[data-enrichment-checkbox="true"]');
+      console.log('🔍 Found checkboxes:', checkboxes.length);
+      
+      checkboxes.forEach((btn) => {
+        const button = btn as HTMLElement;
+        button.style.width = '50px';
+        button.style.height = '50px';
+        button.style.minWidth = '50px';
+        button.style.minHeight = '50px';
+        button.style.maxWidth = '50px';
+        button.style.maxHeight = '50px';
+        button.style.aspectRatio = '1';
+        button.style.flexShrink = '0';
+        button.style.boxSizing = 'border-box';
+        button.style.display = 'flex';
+        button.style.alignItems = 'center';
+        button.style.justifyContent = 'center';
+        
+        // Style the SVG inside
+        const svg = button.querySelector('svg');
+        if (svg) {
+          svg.style.width = '28px';
+          svg.style.height = '28px';
+          svg.style.minWidth = '28px';
+          svg.style.minHeight = '28px';
+        }
+      });
+      
+      // Style text containers
+      const textContainers = document.querySelectorAll('.fixed.inset-0.bg-white .border.border-gray-200 > .flex > div.flex-1');
+      textContainers.forEach((div) => {
+        const el = div as HTMLElement;
+        el.style.width = '100%';
+        el.style.maxWidth = '100%';
+        el.style.padding = '0';
+        el.style.margin = '0';
+      });
+      
+      // Style labels
+      const labels = document.querySelectorAll('.fixed.inset-0.bg-white .border.border-gray-200 label');
+      labels.forEach((label) => {
+        const el = label as HTMLElement;
+        el.style.width = '100%';
+        el.style.maxWidth = '100%';
+        el.style.fontSize = '24px';
+        el.style.lineHeight = '1.6';
+        el.style.marginBottom = '16px';
+      });
+      
+      // Style descriptions
+      const descriptions = document.querySelectorAll('.fixed.inset-0.bg-white .border.border-gray-200 p');
+      descriptions.forEach((p) => {
+        const el = p as HTMLElement;
+        el.style.width = '100%';
+        el.style.maxWidth = '100%';
+        el.style.fontSize = '19px';
+        el.style.lineHeight = '1.9';
+      });
+    };
+    
+    // Apply immediately and also after a short delay to catch late renders
+    applyMobileStyles();
+    const timeout = setTimeout(applyMobileStyles, 100);
+    const timeout2 = setTimeout(applyMobileStyles, 500);
+    
+    // Also apply on scroll/resize
+    window.addEventListener('scroll', applyMobileStyles);
+    window.addEventListener('resize', applyMobileStyles);
+    
+    return () => {
+      clearTimeout(timeout);
+      clearTimeout(timeout2);
+      window.removeEventListener('scroll', applyMobileStyles);
+      window.removeEventListener('resize', applyMobileStyles);
+    };
+  }, [activeModal]);
+
   // Handle modal body scroll prevention (desktop only)
   useEffect(() => {
     if (activeModal && !isMobile) {
