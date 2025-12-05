@@ -211,6 +211,90 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'Florida Open Data',
     description: 'Florida state open data services and layers',
     icon: 'FL.webp'
+  },
+  {
+    id: 'tx',
+    title: 'Texas Open Data',
+    description: 'Texas state open data services and layers',
+    icon: 'TX.webp'
+  },
+  {
+    id: 'nm',
+    title: 'New Mexico Open Data',
+    description: 'New Mexico state open data services and layers',
+    icon: 'NM.webp'
+  },
+  {
+    id: 'az',
+    title: 'Arizona Open Data',
+    description: 'Arizona state open data services and layers',
+    icon: 'AZ.webp'
+  },
+  {
+    id: 'ak',
+    title: 'Alaska Open Data',
+    description: 'Alaska state open data services and layers',
+    icon: 'AK.webp'
+  },
+  {
+    id: 'hi',
+    title: 'Hawaii Open Data',
+    description: 'Hawaii state open data services and layers',
+    icon: 'HI.webp'
+  },
+  {
+    id: 'wa',
+    title: 'Washington Open Data',
+    description: 'Washington state open data services and layers',
+    icon: 'WA.webp'
+  },
+  {
+    id: 'or',
+    title: 'Oregon Open Data',
+    description: 'Oregon state open data services and layers',
+    icon: 'OR.webp'
+  },
+  {
+    id: 'mt',
+    title: 'Montana Open Data',
+    description: 'Montana state open data services and layers',
+    icon: 'MT.webp'
+  },
+  {
+    id: 'wy',
+    title: 'Wyoming Open Data',
+    description: 'Wyoming state open data services and layers',
+    icon: 'WY.webp'
+  },
+  {
+    id: 'nv',
+    title: 'Nevada Open Data',
+    description: 'Nevada state open data services and layers',
+    icon: 'NV.webp'
+  },
+  {
+    id: 'id',
+    title: 'Idaho Open Data',
+    description: 'Idaho state open data services and layers',
+    icon: 'ID.webp'
+  },
+  {
+    id: 'ut',
+    title: 'Utah Open Data',
+    description: 'Utah state open data services and layers',
+    icon: 'UT.webp'
+  },
+  {
+    id: 'co',
+    title: 'Colorado Open Data',
+    description: 'Colorado state open data services and layers',
+    icon: 'CO.webp'
+  },
+  {
+    id: 'il',
+    title: 'Illinois Open Data',
+    description: 'Illinois state open data services and layers',
+    icon: 'IL.webp'
   }
 ];
 
