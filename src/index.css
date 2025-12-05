@@ -544,6 +544,20 @@ body.modal-open {
     align-self: flex-start !important;
   }
   
+  /* Force checkbox buttons to be square and tall on mobile */
+  .fixed.inset-0.bg-white .border.border-gray-200 button.enrichment-checkbox,
+  .fixed.inset-0.bg-white .flex > button.enrichment-checkbox,
+  .fixed.inset-0.bg-white .flex.flex-col > button.enrichment-checkbox {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+    aspect-ratio: 1 / 1 !important;
+    flex-shrink: 0 !important;
+  }
+  
   /* Ensure text container appears below checkbox with FULL WIDTH */
   .fixed.inset-0.bg-white .border.border-gray-200 > div.flex > div,
   .fixed.inset-0.bg-white .flex > div:not(:first-child),
@@ -1017,20 +1031,20 @@ body.modal-open {
     align-items: flex-start !important;
   }
   
-  .fixed.inset-0.bg-white .border.border-gray-200 > .flex > button,
-  .fixed.inset-0.bg-white .flex.flex-col > button,
-  .fixed.inset-0.bg-white .flex.flex-col.sm\\:flex-row > button {
+  .fixed.inset-0.bg-white .border.border-gray-200 > .flex > button.enrichment-checkbox,
+  .fixed.inset-0.bg-white .flex.flex-col > button.enrichment-checkbox,
+  .fixed.inset-0.bg-white .flex.flex-col.sm\\:flex-row > button.enrichment-checkbox {
     order: 1 !important;
     align-self: flex-start !important;
     margin-bottom: 12px !important;
     margin-right: 0 !important;
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    min-height: 28px !important;
-    max-width: 28px !important;
-    max-height: 28px !important;
-    aspect-ratio: 1 !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+    aspect-ratio: 1 / 1 !important;
     flex-shrink: 0 !important;
   }
   
@@ -1044,6 +1058,45 @@ body.modal-open {
     min-width: 0 !important;
     margin-left: 0 !important;
     padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  /* Make text containers in layer cards wider and taller on mobile */
+  .fixed.inset-0.bg-white .border.border-gray-200 > .flex > div.flex-1,
+  .fixed.inset-0.bg-white .flex.flex-col > div.flex-1,
+  .fixed.inset-0.bg-white .border.border-gray-200 .flex-1 {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Increase spacing and size for text in layer cards on mobile */
+  .fixed.inset-0.bg-white .border.border-gray-200 label,
+  .fixed.inset-0.bg-white .border.border-gray-200 .font-semibold {
+    font-size: 18px !important;
+    line-height: 1.5 !important;
+    margin-bottom: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .fixed.inset-0.bg-white .border.border-gray-200 p,
+  .fixed.inset-0.bg-white .border.border-gray-200 .text-sm,
+  .fixed.inset-0.bg-white .border.border-gray-200 .text-base {
+    font-size: 16px !important;
+    line-height: 1.75 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Increase padding in layer cards for more breathing room */
+  .fixed.inset-0.bg-white .border.border-gray-200.rounded-lg {
+    padding: 16px !important;
+    margin-bottom: 12px !important;
   }
   
   /* Force text to use full width on mobile - no more vertical stacking */
@@ -1056,7 +1109,7 @@ body.modal-open {
     word-break: break-word !important;
     overflow-wrap: break-word !important;
     hyphens: auto !important;
-    line-height: 1.6 !important;
+    line-height: 1.75 !important;
   }
   
   /* On desktop, reset order for horizontal layout */
@@ -1076,29 +1129,40 @@ body.modal-open {
   }
   
   /* Make checkbox square and taller on mobile - ensure check mark is visible */
-  /* Target all checkbox buttons in the enrichment config modal */
+  /* Target ALL buttons that look like checkboxes in the modal - maximum specificity */
   .fixed.inset-0.bg-white button.enrichment-checkbox,
   .fixed.inset-0.bg-white button.mobile-checkbox,
   .fixed.inset-0.bg-white .border.border-gray-200 button.enrichment-checkbox,
   .fixed.inset-0.bg-white .flex button.enrichment-checkbox,
   .fixed.inset-0.bg-white .flex.flex-col button.enrichment-checkbox,
-  .fixed.inset-0.bg-white button[class*="enrichment-checkbox"] {
+  .fixed.inset-0.bg-white button[class*="enrichment-checkbox"],
+  .fixed.inset-0.bg-white .border.border-gray-200 > .flex > button.enrichment-checkbox,
+  .fixed.inset-0.bg-white .flex.flex-col.sm\\:flex-row > button.enrichment-checkbox,
+  /* Also target buttons by their visual characteristics - rounded with border-2 */
+  .fixed.inset-0.bg-white .border.border-gray-200 button[class*="border-2"][class*="rounded"],
+  .fixed.inset-0.bg-white .flex button[class*="border-2"][class*="rounded"],
+  .fixed.inset-0.bg-white .border.border-gray-200 > .flex > button[class*="border-2"],
+  .fixed.inset-0.bg-white .flex.flex-col > button[class*="border-2"] {
     width: 32px !important;
     height: 32px !important;
     min-width: 32px !important;
     min-height: 32px !important;
     max-width: 32px !important;
     max-height: 32px !important;
-    aspect-ratio: 1 !important;
+    aspect-ratio: 1 / 1 !important;
     flex-shrink: 0 !important;
+    box-sizing: border-box !important;
   }
   
   /* Ensure check mark icon is properly sized for the larger checkbox */
   .fixed.inset-0.bg-white button.enrichment-checkbox svg,
   .fixed.inset-0.bg-white button.mobile-checkbox svg,
-  .fixed.inset-0.bg-white .border.border-gray-200 button.enrichment-checkbox svg {
+  .fixed.inset-0.bg-white .border.border-gray-200 button.enrichment-checkbox svg,
+  .fixed.inset-0.bg-white .flex button.enrichment-checkbox svg {
     width: 20px !important;
     height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
     flex-shrink: 0 !important;
   }
   

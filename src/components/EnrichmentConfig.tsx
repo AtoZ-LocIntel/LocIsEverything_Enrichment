@@ -2066,19 +2066,20 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   minHeight: '32px', 
                                   maxWidth: '32px', 
                                   maxHeight: '32px',
-                                  aspectRatio: '1',
-                                  flexShrink: '0'
-                                } : {}}
+                                  aspectRatio: '1 / 1',
+                                  flexShrink: '0',
+                                  boxSizing: 'border-box'
+                                } as React.CSSProperties : {}}
                                   >
                                     {isSelected && (
-                                      <Check className={`text-white ${isMobile ? 'w-6 h-6' : 'w-3 h-3'}`} />
+                                      <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={isMobile ? { width: '20px', height: '20px', minWidth: '20px', minHeight: '20px' } as React.CSSProperties : {}} />
                                     )}
                                   </button>
-                              <div className="flex-1 min-w-0 text-left space-y-1 w-full max-w-full">
-                                    <label htmlFor={enrichment.id} className="font-semibold text-gray-900 cursor-pointer block text-base sm:text-base break-words leading-relaxed w-full">
+                              <div className={`flex-1 min-w-0 text-left w-full max-w-full ${isMobile ? 'space-y-2' : 'space-y-1'}`}>
+                                    <label htmlFor={enrichment.id} className={`font-semibold text-gray-900 cursor-pointer block break-words leading-relaxed w-full ${isMobile ? 'text-lg' : 'text-base sm:text-base'}`}>
                                       {enrichment.label}
                                     </label>
-                                    <p className="text-sm sm:text-sm text-gray-700 break-words leading-relaxed whitespace-normal w-full">
+                                    <p className={`text-gray-700 break-words leading-relaxed whitespace-normal w-full ${isMobile ? 'text-base leading-6' : 'text-sm sm:text-sm'}`}>
                                       {enrichment.description}
                                     </p>
                                   </div>
