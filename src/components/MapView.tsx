@@ -219,6 +219,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_great_gray_owl_range': { icon: '🦉', color: '#374151', title: 'CA Great Gray Owl Range' },
   'ca_sandhill_crane_range': { icon: '🦩', color: '#059669', title: 'CA Sandhill Crane Range' },
   'ca_highway_rest_areas': { icon: '🚗', color: '#dc2626', title: 'CA Highway Rest Areas' },
+  'ca_marine_oil_terminals': { icon: '🛢️', color: '#1f2937', title: 'CA Marine Oil Terminals' },
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
@@ -534,6 +535,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_great_gray_owl_range_all' || // Skip CA Great Gray Owl Range array (handled separately for map drawing)
     key === 'ca_sandhill_crane_range_all' || // Skip CA Sandhill Crane Range array (handled separately for map drawing)
     key === 'ca_highway_rest_areas_all' || // Skip CA Highway Rest Areas array (handled separately for map drawing)
+    key === 'ca_marine_oil_terminals_all' || // Skip CA Marine Oil Terminals array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -10798,6 +10800,88 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA Highway Rest Areas:', error);
+      }
+
+      // Draw CA Marine Oil Terminals as point markers on the map
+      try {
+        if (enrichments.ca_marine_oil_terminals_all && Array.isArray(enrichments.ca_marine_oil_terminals_all)) {
+          let terminalCount = 0;
+          enrichments.ca_marine_oil_terminals_all.forEach((terminal: any) => {
+            // Check for geometry with x/y (point geometry)
+            const lat = terminal.geometry?.y || terminal.latitude || null;
+            const lon = terminal.geometry?.x || terminal.longitude || null;
+            
+            if (lat !== null && lon !== null) {
+              try {
+                const terminalName = terminal.terminalName || terminal.Terminal_Name || terminal.terminal_name || terminal.NAME || terminal.name || 'Unknown Terminal';
+                const wo = terminal.wo || terminal.WO_ || terminal.wo_ || null;
+                const woBerthId = terminal.woBerthId || terminal.WO_Berth_ID || terminal.wo_berth_id || null;
+                const city = terminal.city || terminal.City || terminal.CITY || null;
+                const county = terminal.county || terminal.County || terminal.COUNTY || null;
+                const displayName = terminal.displayName || terminal.DisplayName || terminal.display_name || null;
+                const distance = terminal.distance_miles !== null && terminal.distance_miles !== undefined ? terminal.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🛢️', '#1f2937')
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🛢️ ${terminalName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${displayName ? `<div><strong>Display Name:</strong> ${displayName}</div>` : ''}
+                      ${wo ? `<div><strong>WO:</strong> ${wo}</div>` : ''}
+                      ${woBerthId ? `<div><strong>Berth ID:</strong> ${woBerthId}</div>` : ''}
+                      ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all terminal attributes (excluding internal fields)
+                const excludeFields = ['terminalName', 'terminal_name', 'Terminal_Name', 'wo', 'WO_', 'wo_', 'woBerthId', 'WO_Berth_ID', 'wo_berth_id', 'city', 'City', 'CITY', 'county', 'County', 'COUNTY', 'displayName', 'DisplayName', 'display_name', 'latitude', 'Latitude', 'LATITUDE', 'longitude', 'Longitude', 'LONGITUDE', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'GlobalID'];
+                Object.entries(terminal).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                terminalCount++;
+              } catch (error) {
+                console.error('Error drawing CA Marine Oil Terminal marker:', error);
+              }
+            }
+          });
+          
+          if (terminalCount > 0) {
+            if (!legendAccumulator['ca_marine_oil_terminals']) {
+              legendAccumulator['ca_marine_oil_terminals'] = {
+                icon: '🛢️',
+                color: '#1f2937',
+                title: 'CA Marine Oil Terminals',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_marine_oil_terminals'].count += terminalCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Marine Oil Terminals:', error);
       }
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)

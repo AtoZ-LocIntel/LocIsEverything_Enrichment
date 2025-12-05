@@ -69,6 +69,7 @@ import { getCAStateParksParkingLotsData } from '../adapters/caStateParksParkingL
 import { getCAStateParksBoundariesData } from '../adapters/caStateParksBoundaries';
 import { getCAStateParksCampgroundsData } from '../adapters/caStateParksCampgrounds';
 import { getCAStateParksRecreationalRoutesData } from '../adapters/caStateParksRecreationalRoutes';
+import { getCAMarineOilTerminalsData } from '../adapters/caMarineOilTerminals';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1704,6 +1705,10 @@ export class EnrichmentService {
       
       case 'ca_highway_rest_areas':
         return await this.getCAHighwayRestAreas(lat, lon, radius);
+      
+      // CA Marine Oil Terminals (CA State) - Proximity query only
+      case 'ca_marine_oil_terminals':
+        return await this.getCAMarineOilTerminals(lat, lon, radius);
       
       // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
       case 'de_state_forest':
@@ -8074,6 +8079,53 @@ out center;`;
       return {
         ca_highway_rest_areas_count: 0,
         ca_highway_rest_areas_all: []
+      };
+    }
+  }
+
+  private async getCAMarineOilTerminals(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛢️ Fetching CA Marine Oil Terminals data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_marine_oil_terminals_count: 0,
+          ca_marine_oil_terminals_all: []
+        };
+      }
+      
+      const terminals = await getCAMarineOilTerminalsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      result.ca_marine_oil_terminals_count = terminals.length;
+      result.ca_marine_oil_terminals_all = terminals.map(terminal => ({
+        ...terminal.attributes,
+        terminalId: terminal.terminalId,
+        terminalName: terminal.terminalName,
+        wo: terminal.wo,
+        woBerthId: terminal.woBerthId,
+        city: terminal.city,
+        county: terminal.county,
+        displayName: terminal.displayName,
+        latitude: terminal.latitude,
+        longitude: terminal.longitude,
+        geometry: terminal.geometry,
+        distance_miles: terminal.distance_miles
+      }));
+      
+      result.ca_marine_oil_terminals_summary = `Found ${terminals.length} marine oil terminal(s) within ${radius} miles.`;
+      
+      console.log(`✅ CA Marine Oil Terminals data processed:`, {
+        totalCount: result.ca_marine_oil_terminals_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Marine Oil Terminals data:', error);
+      return {
+        ca_marine_oil_terminals_count: 0,
+        ca_marine_oil_terminals_all: []
       };
     }
   }
