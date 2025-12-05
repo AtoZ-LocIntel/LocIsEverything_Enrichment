@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Settings, TreePine, Check, ArrowLeft } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
@@ -9,6 +9,7 @@ interface EnrichmentConfigProps {
   onPoiRadiiChange: (radii: Record<string, number>) => void;
   onViewCategory?: (category: EnrichmentCategory) => void;
   onModalStateChange?: (isModalOpen: boolean) => void;
+  onTotalLayersChange?: (count: number) => void;
 }
 
 interface EnrichmentCategory {
@@ -87,7 +88,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   poiRadii, 
   onPoiRadiiChange,
   onViewCategory,
-  onModalStateChange
+  onModalStateChange,
+  onTotalLayersChange
 }) => {
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -105,6 +107,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [viewingDCSubCategories, setViewingDCSubCategories] = useState(false);
   const [viewingVASubCategories, setViewingVASubCategories] = useState(false);
   const [viewingFLSubCategories, setViewingFLSubCategories] = useState(false);
+  const [viewingNYSubCategories, setViewingNYSubCategories] = useState(false);
+  const [viewingPASubCategories, setViewingPASubCategories] = useState(false);
+  const [viewingRISubCategories, setViewingRISubCategories] = useState(false);
+  const [viewingVTSubCategories, setViewingVTSubCategories] = useState(false);
   const [cameFromNHSubCategories, setCameFromNHSubCategories] = useState(false);
   const [cameFromMASubCategories, setCameFromMASubCategories] = useState(false);
   const [cameFromCTSubCategories, setCameFromCTSubCategories] = useState(false);
@@ -119,13 +125,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [cameFromDCSubCategories, setCameFromDCSubCategories] = useState(false);
   const [cameFromVASubCategories, setCameFromVASubCategories] = useState(false);
   const [cameFromFLSubCategories, setCameFromFLSubCategories] = useState(false);
+  const [cameFromNYSubCategories, setCameFromNYSubCategories] = useState(false);
+  const [cameFromPASubCategories, setCameFromPASubCategories] = useState(false);
+  const [cameFromRISubCategories, setCameFromRISubCategories] = useState(false);
+  const [cameFromVTSubCategories, setCameFromVTSubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories || viewingNYSubCategories || viewingPASubCategories || viewingRISubCategories || viewingVTSubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
@@ -591,6 +601,30 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       window.removeEventListener('customPOIAdded', handleCustomPOIAdded);
     };
   }, []);
+
+  // Calculate total count of all open data layers dynamically
+  const totalLayersCount = useMemo(() => {
+    let total = 0;
+    enrichmentCategories.forEach(category => {
+      // Count direct enrichments
+      total += category.enrichments.length;
+      
+      // Count sub-category enrichments
+      if (category.subCategories && category.subCategories.length > 0) {
+        category.subCategories.forEach(subCategory => {
+          total += subCategory.enrichments.length;
+        });
+      }
+    });
+    return total;
+  }, [enrichmentCategories]);
+
+  // Notify parent of total layers count when it changes
+  useEffect(() => {
+    if (onTotalLayersChange && totalLayersCount > 0) {
+      onTotalLayersChange(totalLayersCount);
+    }
+  }, [totalLayersCount, onTotalLayersChange]);
 
   // Mobile navigation functions - removed since mobile view is disabled
 
@@ -1290,8 +1324,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     );
                   })
                 ) : (
-                  <div className="col-span-2 text-center text-gray-500 py-8">
-                    <p>No sub-categories available yet. Sub-categories will appear here as layers are added.</p>
+                  <div className="col-span-2 text-center py-8">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-md mx-auto">
+                      <div className="text-4xl mb-4">🚧</div>
+                      <p className="text-lg font-semibold text-blue-900 mb-2">Open Data Sources Coming Soon!</p>
+                      <p className="text-sm text-blue-700">We're working on adding data layers for this state. Check back soon for updates!</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1557,6 +1595,51 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     setCameFromFLSubCategories
   );
   if (flSubCategoriesPage) return flSubCategoriesPage;
+
+  const wvSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingWVSubCategories,
+    setViewingWVSubCategories,
+    'wv',
+    'West Virginia Open Data',
+    setCameFromWVSubCategories
+  );
+  if (wvSubCategoriesPage) return wvSubCategoriesPage;
+
+  const nySubCategoriesPage = renderStateSubCategoriesPage(
+    viewingNYSubCategories,
+    setViewingNYSubCategories,
+    'ny',
+    'New York Open Data',
+    setCameFromNYSubCategories
+  );
+  if (nySubCategoriesPage) return nySubCategoriesPage;
+
+  const paSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingPASubCategories,
+    setViewingPASubCategories,
+    'pa',
+    'Pennsylvania Open Data',
+    setCameFromPASubCategories
+  );
+  if (paSubCategoriesPage) return paSubCategoriesPage;
+
+  const riSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingRISubCategories,
+    setViewingRISubCategories,
+    'ri',
+    'Rhode Island Open Data',
+    setCameFromRISubCategories
+  );
+  if (riSubCategoriesPage) return riSubCategoriesPage;
+
+  const vtSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingVTSubCategories,
+    setViewingVTSubCategories,
+    'vt',
+    'Vermont Open Data',
+    setCameFromVTSubCategories
+  );
+  if (vtSubCategoriesPage) return vtSubCategoriesPage;
 
   // If viewing NH sub-categories, show full page with round icons
   if (viewingNHSubCategories) {
@@ -1887,6 +1970,22 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromFLSubCategories(false);
                               setActiveModal(null);
                               setViewingFLSubCategories(true);
+                            } else if (cameFromNYSubCategories) {
+                              setCameFromNYSubCategories(false);
+                              setActiveModal(null);
+                              setViewingNYSubCategories(true);
+                            } else if (cameFromPASubCategories) {
+                              setCameFromPASubCategories(false);
+                              setActiveModal(null);
+                              setViewingPASubCategories(true);
+                            } else if (cameFromRISubCategories) {
+                              setCameFromRISubCategories(false);
+                              setActiveModal(null);
+                              setViewingRISubCategories(true);
+                            } else if (cameFromVTSubCategories) {
+                              setCameFromVTSubCategories(false);
+                              setActiveModal(null);
+                              setViewingVTSubCategories(true);
                             } else {
                               // Go back to main configuration
                               setActiveModal(null);
@@ -2129,32 +2228,32 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setViewingDESubCategories(true);
                       } else if (category.id === 'nj' && category.subCategories && category.subCategories.length > 0) {
                         setViewingNJSubCategories(true);
-                      } else if (category.id === 'wv' && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'wv') {
                         setViewingWVSubCategories(true);
                       } else if (category.id === 'ca' && category.subCategories && category.subCategories.length > 0) {
                         setViewingCASubCategories(true);
-                      } else if (category.id === 'ga' && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'ga') {
                         setViewingGASubCategories(true);
-                      } else if (category.id === 'sc' && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'sc') {
                         setViewingSCSubCategories(true);
-                      } else if (category.id === 'nc' && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'nc') {
                         setViewingNCSubCategories(true);
-                      } else if (category.id === 'md' && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'md') {
                         setViewingMDSubCategories(true);
-                      } else if (category.id === 'dc' && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'dc') {
                         setViewingDCSubCategories(true);
-                      } else if (category.id === 'va' && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'va') {
                         setViewingVASubCategories(true);
-                      } else if (category.id === 'fl' && category.subCategories && category.subCategories.length > 0) {
+                      } else if (category.id === 'fl') {
                         setViewingFLSubCategories(true);
-                      } else if ((category.id === 'ri' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'pa') && category.subCategories && category.subCategories.length > 0) {
-                        // For other states with sub-categories, use onViewCategory (they'll be handled like regular categories for now)
-                        // When sub-categories are added, we can add specific state handlers similar to NH/MA
-                        if (onViewCategory) {
-                          onViewCategory(category);
-                        } else {
-                          setActiveModal(category.id);
-                        }
+                      } else if (category.id === 'ny') {
+                        setViewingNYSubCategories(true);
+                      } else if (category.id === 'pa') {
+                        setViewingPASubCategories(true);
+                      } else if (category.id === 'ri') {
+                        setViewingRISubCategories(true);
+                      } else if (category.id === 'vt') {
+                        setViewingVTSubCategories(true);
                       } else {
                         // Always use modal view for other categories
                         if (onViewCategory) {

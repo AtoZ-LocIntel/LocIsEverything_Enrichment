@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 
 import Header from './components/Header';
@@ -16,6 +16,7 @@ import DonateModal from './components/DonateModal';
 import { EnrichmentService } from './services/EnrichmentService';
 import { GeocodeResult } from './lib/types';
 import { Heart } from 'lucide-react';
+import { poiConfigManager } from './lib/poiConfig';
 
 export type ViewMode = 'config' | 'map' | 'mobile-results' | 'desktop-results' | 'data-sources' | 'enrichment-category';
 
@@ -38,7 +39,7 @@ function App() {
   const [searchInput, setSearchInput] = useState<string>('3050 Coast Rd, Santa Cruz, CA 95060');
   const [showDonate, setShowDonate] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-
+  const [totalLayersCount, setTotalLayersCount] = useState(0);
 
   // Detect mobile device
   useEffect(() => {
@@ -242,6 +243,21 @@ function App() {
               <h2 className="text-2xl sm:text-3xl font-bold text-gradient mb-3">
                 Open Location Intelligence built on Open Data
               </h2>
+              
+              {/* Dynamic Layer Count Badge */}
+              {totalLayersCount > 0 && (
+                <div className="inline-flex items-center justify-center px-4 py-2 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                  <span className="text-white font-bold text-lg sm:text-xl mr-2">📊</span>
+                  <span className="text-white font-semibold text-sm sm:text-base">
+                    <span className="font-bold text-lg sm:text-xl">{totalLayersCount.toLocaleString()}</span> Open Data Layers Available
+                  </span>
+                  <span className="ml-2 text-white text-xs opacity-90 flex items-center">
+                    <span className="inline-block w-2 h-2 bg-green-400 rounded-full mr-1.5 animate-pulse"></span>
+                    <span className="italic">growing</span>
+                  </span>
+                </div>
+              )}
+              
               <p className="text-lg sm:text-xl text-gray-300">
                 Comprehensive location and address enrichment platform using open data sources in real-time and on-demand.
               </p>
@@ -306,6 +322,7 @@ function App() {
               onPoiRadiiChange={setPoiRadii}
               onViewCategory={handleViewEnrichmentCategory}
               onModalStateChange={setIsCategoryModalOpen}
+              onTotalLayersChange={setTotalLayersCount}
             />
 
             {/* Mobile Donate Button - Only visible on mobile at bottom of page */}
