@@ -453,6 +453,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ca_brush_rabbit_range', label: 'CA Brush Rabbit Range', description: 'CA Open Data Portal - California Brush Rabbit Range (CDFW BIOS) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
   { id: 'ca_great_gray_owl_range', label: 'CA Great Gray Owl Range', description: 'CA Open Data Portal - California Great Gray Owl Range (CDFW BIOS) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
   { id: 'ca_sandhill_crane_range', label: 'CA Sandhill Crane Range', description: 'CA Open Data Portal - California Sandhill Crane Range (CDFW BIOS) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ca', section: 'ca' },
+  { id: 'ca_highway_rest_areas', label: 'CA Highway Rest Areas', description: 'CA Open Data Portal - California Highway Rest Areas (Caltrans GIS) for proximity queries', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'ca', section: 'ca' },
   
   // Delaware FirstMap layers
   { id: 'de_parcels', label: 'DE State Parcels', description: 'DE FirstMap - Delaware state parcels with ownership information for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.3, maxRadius: 1.0, category: 'de', section: 'de' },

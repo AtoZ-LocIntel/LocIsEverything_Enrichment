@@ -70,6 +70,7 @@ import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
 import { getCAGreatGrayOwlRangeData } from '../adapters/caGreatGrayOwlRange';
 import { getCASandhillCraneRangeData } from '../adapters/caSandhillCraneRange';
+import { getCAHighwayRestAreasData } from '../adapters/caHighwayRestAreas';
 import { getDEStateForestData } from '../adapters/deStateForest';
 import { getDEPinePlantationData } from '../adapters/dePinePlantations';
 import { getDEUrbanTreeCanopyData } from '../adapters/deUrbanTreeCanopy';
@@ -1680,6 +1681,9 @@ export class EnrichmentService {
       
       case 'ca_sandhill_crane_range':
         return await this.getCASandhillCraneRange(lat, lon, radius);
+      
+      case 'ca_highway_rest_areas':
+        return await this.getCAHighwayRestAreas(lat, lon, radius);
       
       // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
       case 'de_state_forest':
@@ -7762,6 +7766,42 @@ out center;`;
       return {
         ca_sandhill_crane_range_count: 0,
         ca_sandhill_crane_range_all: []
+      };
+    }
+  }
+
+  private async getCAHighwayRestAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚗 Fetching CA Highway Rest Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const restAreas = await getCAHighwayRestAreasData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_highway_rest_areas_count = restAreas.length;
+      result.ca_highway_rest_areas_all = restAreas.map(restArea => ({
+        ...restArea.attributes,
+        restAreaId: restArea.restAreaId,
+        name: restArea.name,
+        route: restArea.route,
+        direction: restArea.direction,
+        county: restArea.county,
+        city: restArea.city,
+        amenities: restArea.amenities,
+        distance_miles: restArea.distance_miles,
+        geometry: restArea.geometry
+      }));
+      
+      console.log(`✅ CA Highway Rest Areas data processed:`, {
+        totalCount: result.ca_highway_rest_areas_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Highway Rest Areas data:', error);
+      return {
+        ca_highway_rest_areas_count: 0,
+        ca_highway_rest_areas_all: []
       };
     }
   }

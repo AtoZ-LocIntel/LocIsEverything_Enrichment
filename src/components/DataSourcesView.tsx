@@ -939,6 +939,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "California",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "CA Highway Rest Areas",
+          description: "California Highway Rest Areas (Caltrans GIS) - proximity queries up to 50 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

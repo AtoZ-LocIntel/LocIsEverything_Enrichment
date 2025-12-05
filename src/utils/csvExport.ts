@@ -1908,6 +1908,49 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'CDFW BIOS'
         ]);
       });
+    } else if (key === 'ca_highway_rest_areas_all' && Array.isArray(value)) {
+      // Handle CA Highway Rest Areas - each rest area gets its own row with all attributes
+      value.forEach((restArea: any) => {
+        const name = restArea.name || restArea.Name || restArea.NAME || restArea.REST_AREA_NAME || restArea.rest_area_name || 'Unknown Rest Area';
+        const route = restArea.route || restArea.Route || restArea.ROUTE || '';
+        const direction = restArea.direction || restArea.Direction || restArea.DIRECTION || '';
+        const county = restArea.county || restArea.County || restArea.COUNTY || '';
+        const city = restArea.city || restArea.City || restArea.CITY || '';
+        const amenities = restArea.amenities || restArea.Amenities || restArea.AMENITIES || '';
+        const distance = restArea.distance_miles !== null && restArea.distance_miles !== undefined ? restArea.distance_miles.toFixed(2) : '0.00';
+        
+        const allAttributes = { ...restArea };
+        delete allAttributes.restAreaId;
+        delete allAttributes.name;
+        delete allAttributes.route;
+        delete allAttributes.direction;
+        delete allAttributes.county;
+        delete allAttributes.city;
+        delete allAttributes.amenities;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Highway Rest Areas',
+          name,
+          route || '',
+          direction || '',
+          county || '',
+          city || '',
+          amenities || '',
+          distance,
+          distance === '0.00' ? 'At Rest Area' : `Nearby Rest Area (${distance} miles)`,
+          `${name}${route ? ` - Route ${route}` : ''}${direction ? ` ${direction}` : ''}`,
+          '',
+          attributesJson,
+          'Caltrans GIS'
+        ]);
+      });
     } else if (key === 'de_child_care_centers_all' && Array.isArray(value)) {
       // Handle DE Child Care Centers - each center gets its own row with all attributes
       value.forEach((center: any) => {

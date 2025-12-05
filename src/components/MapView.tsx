@@ -215,6 +215,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_brush_rabbit_range': { icon: '🐰', color: '#92400e', title: 'CA Brush Rabbit Range' },
   'ca_great_gray_owl_range': { icon: '🦉', color: '#374151', title: 'CA Great Gray Owl Range' },
   'ca_sandhill_crane_range': { icon: '🦩', color: '#059669', title: 'CA Sandhill Crane Range' },
+  'ca_highway_rest_areas': { icon: '🚗', color: '#dc2626', title: 'CA Highway Rest Areas' },
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
@@ -525,6 +526,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_brush_rabbit_range_all' || // Skip CA Brush Rabbit Range array (handled separately for map drawing)
     key === 'ca_great_gray_owl_range_all' || // Skip CA Great Gray Owl Range array (handled separately for map drawing)
     key === 'ca_sandhill_crane_range_all' || // Skip CA Sandhill Crane Range array (handled separately for map drawing)
+    key === 'ca_highway_rest_areas_all' || // Skip CA Highway Rest Areas array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -10328,6 +10330,69 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA Sandhill Crane Range:', error);
+      }
+
+      // Draw CA Highway Rest Areas as point markers on the map
+      try {
+        if (enrichments.ca_highway_rest_areas_all && Array.isArray(enrichments.ca_highway_rest_areas_all)) {
+          let restAreaCount = 0;
+          enrichments.ca_highway_rest_areas_all.forEach((restArea: any) => {
+            if (restArea.geometry && restArea.geometry.x && restArea.geometry.y) {
+              try {
+                const lat = restArea.geometry.y;
+                const lon = restArea.geometry.x;
+                
+                const name = restArea.name || restArea.Name || restArea.NAME || restArea.REST_AREA_NAME || restArea.rest_area_name || 'Unknown Rest Area';
+                const route = restArea.route || restArea.Route || restArea.ROUTE || null;
+                const direction = restArea.direction || restArea.Direction || restArea.DIRECTION || null;
+                const county = restArea.county || restArea.County || restArea.COUNTY || null;
+                const city = restArea.city || restArea.City || restArea.CITY || null;
+                const amenities = restArea.amenities || restArea.Amenities || restArea.AMENITIES || null;
+                const distance = restArea.distance_miles !== null && restArea.distance_miles !== undefined ? restArea.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚗', '#dc2626')
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚗 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${route ? `<div><strong>Route:</strong> ${route}</div>` : ''}
+                      ${direction ? `<div><strong>Direction:</strong> ${direction}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                      ${amenities ? `<div><strong>Amenities:</strong> ${amenities}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(map);
+                restAreaCount++;
+              } catch (error) {
+                console.error('Error drawing CA Highway Rest Area marker:', error);
+              }
+            }
+          });
+          
+          if (restAreaCount > 0) {
+            if (!legendAccumulator['ca_highway_rest_areas']) {
+              legendAccumulator['ca_highway_rest_areas'] = {
+                icon: '🚗',
+                color: '#dc2626',
+                title: 'CA Highway Rest Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_highway_rest_areas'].count += restAreaCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Highway Rest Areas:', error);
       }
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)

@@ -463,6 +463,9 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         if (key.includes('ca_sandhill_crane_range') && key !== 'ca_sandhill_crane_range_all') {
           return selectedEnrichments.includes('ca_sandhill_crane_range');
         }
+        if (key.includes('ca_highway_rest_areas') && key !== 'ca_highway_rest_areas_all') {
+          return selectedEnrichments.includes('ca_highway_rest_areas');
+        }
         
         return false;
       });
