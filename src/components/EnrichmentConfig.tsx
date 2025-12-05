@@ -2060,19 +2060,31 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     type="button"
                                     onClick={() => handleEnrichmentToggle(enrichment.id)}
                                     data-enrichment-checkbox="true"
+                                    data-test-mobile="true"
                                 className={`enrichment-checkbox flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 self-start ${
                                       isSelected 
                                         ? 'bg-black border-black' 
                                         : 'bg-white border-gray-300'
-                                    } ${isMobile ? 'mobile-checkbox' : 'w-4 h-4'}`}
-                                style={isMobile ? { 
-                                  width: '50px', 
-                                  height: '50px', 
-                                  minWidth: '50px', 
-                                  minHeight: '50px', 
-                                  aspectRatio: '1',
-                                  flexShrink: '0',
-                                } as React.CSSProperties : {}}
+                                    }`}
+                                style={(() => {
+                                  const isMobileWidth = typeof window !== 'undefined' && window.innerWidth < 768;
+                                  return isMobileWidth ? { 
+                                    width: '50px', 
+                                    height: '50px', 
+                                    minWidth: '50px', 
+                                    minHeight: '50px', 
+                                    maxWidth: '50px',
+                                    maxHeight: '50px',
+                                    aspectRatio: '1',
+                                    flexShrink: '0',
+                                    boxSizing: 'border-box',
+                                  } as React.CSSProperties : {
+                                    width: '16px',
+                                    height: '16px',
+                                    minWidth: '16px',
+                                    minHeight: '16px',
+                                  } as React.CSSProperties;
+                                })()}
                                   >
                                     {isSelected && (
                                       <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={isMobile ? { width: '28px', height: '28px', flexShrink: '0' } as React.CSSProperties : {}} />

@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+// CRITICAL: mobile-fixes.css MUST load last to override everything
 import './mobile-fixes.css'
 
 // Cache-busting mechanism for assets

@@ -3,10 +3,20 @@
    This file contains fixes that MUST work
    ============================================ */
 
+/* CRITICAL: This file MUST load last to override everything */
+/* Apply styles with maximum specificity and universal selectors */
 @media (max-width: 767px) {
-  /* TEST: Make checkbox OBVIOUSLY different - 50px square, bright red border */
+  /* CRITICAL: Target checkbox with every possible selector combination */
+  button[data-enrichment-checkbox="true"],
+  button[data-enrichment-checkbox="true"].enrichment-checkbox,
+  .enrichment-config button[data-enrichment-checkbox="true"],
   .fixed.inset-0.bg-white button[data-enrichment-checkbox="true"],
-  .fixed.inset-0.bg-white .border.border-gray-200 button[data-enrichment-checkbox="true"] {
+  .fixed.inset-0.bg-white .border.border-gray-200 button[data-enrichment-checkbox="true"],
+  .fixed.inset-0.bg-white button.enrichment-checkbox,
+  .border.border-gray-200 button.enrichment-checkbox,
+  .border.border-gray-200 button[data-enrichment-checkbox="true"],
+  div.flex button[data-enrichment-checkbox="true"],
+  div.flex.flex-col button[data-enrichment-checkbox="true"] {
     width: 50px !important;
     height: 50px !important;
     min-width: 50px !important;
