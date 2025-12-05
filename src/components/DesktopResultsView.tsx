@@ -448,6 +448,21 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         if (key.includes('ca_state_parks_campgrounds') && key !== 'ca_state_parks_campgrounds_all') {
           return selectedEnrichments.includes('ca_state_parks_campgrounds');
         }
+        if (key.includes('ca_condor_range') && key !== 'ca_condor_range_all') {
+          return selectedEnrichments.includes('ca_condor_range');
+        }
+        if (key.includes('ca_black_bear_range') && key !== 'ca_black_bear_range_all') {
+          return selectedEnrichments.includes('ca_black_bear_range');
+        }
+        if (key.includes('ca_brush_rabbit_range') && key !== 'ca_brush_rabbit_range_all') {
+          return selectedEnrichments.includes('ca_brush_rabbit_range');
+        }
+        if (key.includes('ca_great_gray_owl_range') && key !== 'ca_great_gray_owl_range_all') {
+          return selectedEnrichments.includes('ca_great_gray_owl_range');
+        }
+        if (key.includes('ca_sandhill_crane_range') && key !== 'ca_sandhill_crane_range_all') {
+          return selectedEnrichments.includes('ca_sandhill_crane_range');
+        }
         
         return false;
       });

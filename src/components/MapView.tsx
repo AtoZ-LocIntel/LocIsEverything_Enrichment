@@ -210,6 +210,11 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
   'ca_state_parks_campgrounds': { icon: '⛺', color: '#f59e0b', title: 'CA State Parks Campgrounds' },
+  'ca_condor_range': { icon: '🦅', color: '#7c3aed', title: 'CA Condor Range' },
+  'ca_black_bear_range': { icon: '🐻', color: '#1f2937', title: 'CA Black Bear Range' },
+  'ca_brush_rabbit_range': { icon: '🐰', color: '#92400e', title: 'CA Brush Rabbit Range' },
+  'ca_great_gray_owl_range': { icon: '🦉', color: '#374151', title: 'CA Great Gray Owl Range' },
+  'ca_sandhill_crane_range': { icon: '🦩', color: '#059669', title: 'CA Sandhill Crane Range' },
   'de_state_forest': { icon: '🌲', color: '#16a34a', title: 'DE State Forest' },
   'de_pine_plantations': { icon: '🌲', color: '#15803d', title: 'DE Pine Plantations' },
   'de_child_care_centers': { icon: '🏫', color: '#f59e0b', title: 'DE Child Care Centers' },
@@ -515,6 +520,11 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
     key === 'ca_state_parks_campgrounds_all' || // Skip CA State Parks Campgrounds array (handled separately for map drawing)
+    key === 'ca_condor_range_all' || // Skip CA Condor Range array (handled separately for map drawing)
+    key === 'ca_black_bear_range_all' || // Skip CA Black Bear Range array (handled separately for map drawing)
+    key === 'ca_brush_rabbit_range_all' || // Skip CA Brush Rabbit Range array (handled separately for map drawing)
+    key === 'ca_great_gray_owl_range_all' || // Skip CA Great Gray Owl Range array (handled separately for map drawing)
+    key === 'ca_sandhill_crane_range_all' || // Skip CA Sandhill Crane Range array (handled separately for map drawing)
     key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
   );
 
@@ -9827,6 +9837,497 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing CA State Parks Campgrounds:', error);
+      }
+
+      // Draw CA Condor Range as polygons on the map
+      try {
+        if (enrichments.ca_condor_range_all && Array.isArray(enrichments.ca_condor_range_all)) {
+          let rangeCount = 0;
+          enrichments.ca_condor_range_all.forEach((range: any) => {
+            if (range.geometry && range.geometry.rings) {
+              try {
+                const rings = range.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latLngs = outerRing.map((coord: number[]) => [coord[1], coord[0]]);
+                  
+                  const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+                  const commonName = range.commonName || range.CName || range.cname || null;
+                  const scientificName = range.scientificName || range.SName || range.sname || null;
+                  const symbol = range.symbol || range.Symbol || null;
+                  const occYears = range.occYears || range.Occ_Years || range.OccYears || null;
+                  const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles : 0;
+                  
+                  const polygon = L.polygon(latLngs, {
+                    color: '#7c3aed',
+                    fillColor: '#7c3aed',
+                    fillOpacity: 0.3,
+                    weight: 2
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 10px 0; font-weight: bold; color: #7c3aed;">🦅 ${shapeName}</h3>
+                  `;
+                  
+                  if (commonName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Common Name:</strong> ${commonName}</p>`;
+                  }
+                  
+                  if (scientificName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Scientific Name:</strong> ${scientificName}</p>`;
+                  }
+                  
+                  if (symbol) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Symbol:</strong> ${symbol}</p>`;
+                  }
+                  
+                  if (occYears) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Occurrence Years:</strong> ${occYears}</p>`;
+                  }
+                  
+                  if (distance > 0) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</p>`;
+                  }
+                  
+                  // Add all other attributes
+                  const allAttributes = { ...range };
+                  delete allAttributes.geometry;
+                  delete allAttributes.shapeName;
+                  delete allAttributes.commonName;
+                  delete allAttributes.scientificName;
+                  delete allAttributes.symbol;
+                  delete allAttributes.occYears;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.rangeId;
+                  
+                  const remainingAttributes = Object.entries(allAttributes)
+                    .filter(([, value]) => value !== null && value !== undefined && value !== '')
+                    .map(([attrKey, attrValue]) => `<p style="margin: 5px 0;"><strong>${formatPopupFieldName(attrKey)}:</strong> ${attrValue}</p>`)
+                    .join('');
+                  
+                  if (remainingAttributes) {
+                    popupContent += remainingAttributes;
+                  }
+                  
+                  popupContent += `</div>`;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  rangeCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Condor Range polygon:', error);
+              }
+            }
+          });
+          
+          if (rangeCount > 0) {
+            if (!legendAccumulator['ca_condor_range']) {
+              legendAccumulator['ca_condor_range'] = {
+                icon: '🦅',
+                color: '#7c3aed',
+                title: 'CA Condor Range',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_condor_range'].count += rangeCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Condor Range:', error);
+      }
+
+      // Draw CA Black Bear Range as polygons on the map
+      try {
+        if (enrichments.ca_black_bear_range_all && Array.isArray(enrichments.ca_black_bear_range_all)) {
+          let rangeCount = 0;
+          enrichments.ca_black_bear_range_all.forEach((range: any) => {
+            if (range.geometry && range.geometry.rings) {
+              try {
+                const rings = range.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latLngs = outerRing.map((coord: number[]) => [coord[1], coord[0]]);
+                  
+                  const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+                  const commonName = range.commonName || range.CName || range.cname || null;
+                  const scientificName = range.scientificName || range.SName || range.sname || null;
+                  const symbol = range.symbol || range.Symbol || null;
+                  const occYears = range.occYears || range.Occ_Years || range.OccYears || null;
+                  const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles : 0;
+                  
+                  const polygon = L.polygon(latLngs, {
+                    color: '#1f2937',
+                    fillColor: '#1f2937',
+                    fillOpacity: 0.3,
+                    weight: 2
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 10px 0; font-weight: bold; color: #1f2937;">🐻 ${shapeName}</h3>
+                  `;
+                  
+                  if (commonName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Common Name:</strong> ${commonName}</p>`;
+                  }
+                  
+                  if (scientificName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Scientific Name:</strong> ${scientificName}</p>`;
+                  }
+                  
+                  if (symbol) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Symbol:</strong> ${symbol}</p>`;
+                  }
+                  
+                  if (occYears) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Occurrence Years:</strong> ${occYears}</p>`;
+                  }
+                  
+                  if (distance > 0) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</p>`;
+                  }
+                  
+                  const allAttributes = { ...range };
+                  delete allAttributes.geometry;
+                  delete allAttributes.shapeName;
+                  delete allAttributes.commonName;
+                  delete allAttributes.scientificName;
+                  delete allAttributes.symbol;
+                  delete allAttributes.occYears;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.rangeId;
+                  
+                  const remainingAttributes = Object.entries(allAttributes)
+                    .filter(([, value]) => value !== null && value !== undefined && value !== '')
+                    .map(([attrKey, attrValue]) => `<p style="margin: 5px 0;"><strong>${formatPopupFieldName(attrKey)}:</strong> ${attrValue}</p>`)
+                    .join('');
+                  
+                  if (remainingAttributes) {
+                    popupContent += remainingAttributes;
+                  }
+                  
+                  popupContent += `</div>`;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  rangeCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Black Bear Range polygon:', error);
+              }
+            }
+          });
+          
+          if (rangeCount > 0) {
+            if (!legendAccumulator['ca_black_bear_range']) {
+              legendAccumulator['ca_black_bear_range'] = {
+                icon: '🐻',
+                color: '#1f2937',
+                title: 'CA Black Bear Range',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_black_bear_range'].count += rangeCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Black Bear Range:', error);
+      }
+
+      // Draw CA Brush Rabbit Range as polygons on the map
+      try {
+        if (enrichments.ca_brush_rabbit_range_all && Array.isArray(enrichments.ca_brush_rabbit_range_all)) {
+          let rangeCount = 0;
+          enrichments.ca_brush_rabbit_range_all.forEach((range: any) => {
+            if (range.geometry && range.geometry.rings) {
+              try {
+                const rings = range.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latLngs = outerRing.map((coord: number[]) => [coord[1], coord[0]]);
+                  
+                  const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+                  const commonName = range.commonName || range.CName || range.cname || null;
+                  const scientificName = range.scientificName || range.SName || range.sname || null;
+                  const symbol = range.symbol || range.Symbol || null;
+                  const occYears = range.occYears || range.Occ_Years || range.OccYears || null;
+                  const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles : 0;
+                  
+                  const polygon = L.polygon(latLngs, {
+                    color: '#92400e',
+                    fillColor: '#92400e',
+                    fillOpacity: 0.3,
+                    weight: 2
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 10px 0; font-weight: bold; color: #92400e;">🐰 ${shapeName}</h3>
+                  `;
+                  
+                  if (commonName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Common Name:</strong> ${commonName}</p>`;
+                  }
+                  
+                  if (scientificName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Scientific Name:</strong> ${scientificName}</p>`;
+                  }
+                  
+                  if (symbol) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Symbol:</strong> ${symbol}</p>`;
+                  }
+                  
+                  if (occYears) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Occurrence Years:</strong> ${occYears}</p>`;
+                  }
+                  
+                  if (distance > 0) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</p>`;
+                  }
+                  
+                  const allAttributes = { ...range };
+                  delete allAttributes.geometry;
+                  delete allAttributes.shapeName;
+                  delete allAttributes.commonName;
+                  delete allAttributes.scientificName;
+                  delete allAttributes.symbol;
+                  delete allAttributes.occYears;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.rangeId;
+                  
+                  const remainingAttributes = Object.entries(allAttributes)
+                    .filter(([, value]) => value !== null && value !== undefined && value !== '')
+                    .map(([attrKey, attrValue]) => `<p style="margin: 5px 0;"><strong>${formatPopupFieldName(attrKey)}:</strong> ${attrValue}</p>`)
+                    .join('');
+                  
+                  if (remainingAttributes) {
+                    popupContent += remainingAttributes;
+                  }
+                  
+                  popupContent += `</div>`;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  rangeCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Brush Rabbit Range polygon:', error);
+              }
+            }
+          });
+          
+          if (rangeCount > 0) {
+            if (!legendAccumulator['ca_brush_rabbit_range']) {
+              legendAccumulator['ca_brush_rabbit_range'] = {
+                icon: '🐰',
+                color: '#92400e',
+                title: 'CA Brush Rabbit Range',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_brush_rabbit_range'].count += rangeCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Brush Rabbit Range:', error);
+      }
+
+      // Draw CA Great Gray Owl Range as polygons on the map
+      try {
+        if (enrichments.ca_great_gray_owl_range_all && Array.isArray(enrichments.ca_great_gray_owl_range_all)) {
+          let rangeCount = 0;
+          enrichments.ca_great_gray_owl_range_all.forEach((range: any) => {
+            if (range.geometry && range.geometry.rings) {
+              try {
+                const rings = range.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latLngs = outerRing.map((coord: number[]) => [coord[1], coord[0]]);
+                  
+                  const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+                  const commonName = range.commonName || range.CName || range.cname || null;
+                  const scientificName = range.scientificName || range.SName || range.sname || null;
+                  const symbol = range.symbol || range.Symbol || null;
+                  const occYears = range.occYears || range.Occ_Years || range.OccYears || null;
+                  const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles : 0;
+                  
+                  const polygon = L.polygon(latLngs, {
+                    color: '#374151',
+                    fillColor: '#374151',
+                    fillOpacity: 0.3,
+                    weight: 2
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 10px 0; font-weight: bold; color: #374151;">🦉 ${shapeName}</h3>
+                  `;
+                  
+                  if (commonName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Common Name:</strong> ${commonName}</p>`;
+                  }
+                  
+                  if (scientificName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Scientific Name:</strong> ${scientificName}</p>`;
+                  }
+                  
+                  if (symbol) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Symbol:</strong> ${symbol}</p>`;
+                  }
+                  
+                  if (occYears) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Occurrence Years:</strong> ${occYears}</p>`;
+                  }
+                  
+                  if (distance > 0) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</p>`;
+                  }
+                  
+                  const allAttributes = { ...range };
+                  delete allAttributes.geometry;
+                  delete allAttributes.shapeName;
+                  delete allAttributes.commonName;
+                  delete allAttributes.scientificName;
+                  delete allAttributes.symbol;
+                  delete allAttributes.occYears;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.rangeId;
+                  
+                  const remainingAttributes = Object.entries(allAttributes)
+                    .filter(([, value]) => value !== null && value !== undefined && value !== '')
+                    .map(([attrKey, attrValue]) => `<p style="margin: 5px 0;"><strong>${formatPopupFieldName(attrKey)}:</strong> ${attrValue}</p>`)
+                    .join('');
+                  
+                  if (remainingAttributes) {
+                    popupContent += remainingAttributes;
+                  }
+                  
+                  popupContent += `</div>`;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  rangeCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Great Gray Owl Range polygon:', error);
+              }
+            }
+          });
+          
+          if (rangeCount > 0) {
+            if (!legendAccumulator['ca_great_gray_owl_range']) {
+              legendAccumulator['ca_great_gray_owl_range'] = {
+                icon: '🦉',
+                color: '#374151',
+                title: 'CA Great Gray Owl Range',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_great_gray_owl_range'].count += rangeCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Great Gray Owl Range:', error);
+      }
+
+      // Draw CA Sandhill Crane Range as polygons on the map
+      try {
+        if (enrichments.ca_sandhill_crane_range_all && Array.isArray(enrichments.ca_sandhill_crane_range_all)) {
+          let rangeCount = 0;
+          enrichments.ca_sandhill_crane_range_all.forEach((range: any) => {
+            if (range.geometry && range.geometry.rings) {
+              try {
+                const rings = range.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latLngs = outerRing.map((coord: number[]) => [coord[1], coord[0]]);
+                  
+                  const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+                  const commonName = range.commonName || range.CName || range.cname || null;
+                  const scientificName = range.scientificName || range.SName || range.sname || null;
+                  const symbol = range.symbol || range.Symbol || null;
+                  const occYears = range.occYears || range.Occ_Years || range.OccYears || null;
+                  const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles : 0;
+                  
+                  const polygon = L.polygon(latLngs, {
+                    color: '#059669',
+                    fillColor: '#059669',
+                    fillOpacity: 0.3,
+                    weight: 2
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 10px 0; font-weight: bold; color: #059669;">🦩 ${shapeName}</h3>
+                  `;
+                  
+                  if (commonName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Common Name:</strong> ${commonName}</p>`;
+                  }
+                  
+                  if (scientificName) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Scientific Name:</strong> ${scientificName}</p>`;
+                  }
+                  
+                  if (symbol) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Symbol:</strong> ${symbol}</p>`;
+                  }
+                  
+                  if (occYears) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Occurrence Years:</strong> ${occYears}</p>`;
+                  }
+                  
+                  if (distance > 0) {
+                    popupContent += `<p style="margin: 5px 0;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</p>`;
+                  }
+                  
+                  const allAttributes = { ...range };
+                  delete allAttributes.geometry;
+                  delete allAttributes.shapeName;
+                  delete allAttributes.commonName;
+                  delete allAttributes.scientificName;
+                  delete allAttributes.symbol;
+                  delete allAttributes.occYears;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.rangeId;
+                  
+                  const remainingAttributes = Object.entries(allAttributes)
+                    .filter(([, value]) => value !== null && value !== undefined && value !== '')
+                    .map(([attrKey, attrValue]) => `<p style="margin: 5px 0;"><strong>${formatPopupFieldName(attrKey)}:</strong> ${attrValue}</p>`)
+                    .join('');
+                  
+                  if (remainingAttributes) {
+                    popupContent += remainingAttributes;
+                  }
+                  
+                  popupContent += `</div>`;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  rangeCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Sandhill Crane Range polygon:', error);
+              }
+            }
+          });
+          
+          if (rangeCount > 0) {
+            if (!legendAccumulator['ca_sandhill_crane_range']) {
+              legendAccumulator['ca_sandhill_crane_range'] = {
+                icon: '🦩',
+                color: '#059669',
+                title: 'CA Sandhill Crane Range',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_sandhill_crane_range'].count += rangeCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Sandhill Crane Range:', error);
       }
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)

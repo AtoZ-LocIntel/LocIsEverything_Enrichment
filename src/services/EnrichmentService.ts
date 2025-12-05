@@ -65,6 +65,11 @@ import { getCAStateParksEntryPointsData } from '../adapters/caStateParksEntryPoi
 import { getCAStateParksParkingLotsData } from '../adapters/caStateParksParkingLots';
 import { getCAStateParksBoundariesData } from '../adapters/caStateParksBoundaries';
 import { getCAStateParksCampgroundsData } from '../adapters/caStateParksCampgrounds';
+import { getCACondorRangeData } from '../adapters/caCondorRange';
+import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
+import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
+import { getCAGreatGrayOwlRangeData } from '../adapters/caGreatGrayOwlRange';
+import { getCASandhillCraneRangeData } from '../adapters/caSandhillCraneRange';
 import { getDEStateForestData } from '../adapters/deStateForest';
 import { getDEPinePlantationData } from '../adapters/dePinePlantations';
 import { getDEUrbanTreeCanopyData } from '../adapters/deUrbanTreeCanopy';
@@ -1659,6 +1664,22 @@ export class EnrichmentService {
       // CA State Parks Campgrounds (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_campgrounds':
         return await this.getCAStateParksCampgrounds(lat, lon, radius);
+      
+      // CA Condor Range (CDFW BIOS) - Point-in-polygon and proximity query
+      case 'ca_condor_range':
+        return await this.getCACondorRange(lat, lon, radius);
+      
+      case 'ca_black_bear_range':
+        return await this.getCABlackBearRange(lat, lon, radius);
+      
+      case 'ca_brush_rabbit_range':
+        return await this.getCABrushRabbitRange(lat, lon, radius);
+      
+      case 'ca_great_gray_owl_range':
+        return await this.getCAGreatGrayOwlRange(lat, lon, radius);
+      
+      case 'ca_sandhill_crane_range':
+        return await this.getCASandhillCraneRange(lat, lon, radius);
       
       // DE State Forest (DE FirstMap) - Point-in-polygon and proximity query
       case 'de_state_forest':
@@ -7515,6 +7536,232 @@ out center;`;
       return {
         ca_state_parks_campgrounds_count: 0,
         ca_state_parks_campgrounds_all: []
+      };
+    }
+  }
+
+  // CA Condor Range (CDFW BIOS) - Point-in-polygon and proximity query
+  private async getCACondorRange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🦅 Fetching CA Condor Range data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const ranges = await getCACondorRangeData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_condor_range_count = ranges.length;
+      result.ca_condor_range_all = ranges.map(range => ({
+        ...range.attributes,
+        rangeId: range.rangeId,
+        shapeName: range.shapeName,
+        commonName: range.commonName,
+        scientificName: range.scientificName,
+        symbol: range.symbol,
+        occYears: range.occYears,
+        rangeStart: range.rangeStart,
+        rangeEnd: range.rangeEnd,
+        distance_miles: range.distance_miles,
+        geometry: range.geometry
+      }));
+      
+      // Point-in-polygon result (distance_miles === 0)
+      const containingRange = ranges.find(r => r.distance_miles === 0);
+      if (containingRange) {
+        result.ca_condor_range = containingRange.shapeName || containingRange.commonName || 'California Condor Range';
+        result.ca_condor_range_symbol = containingRange.symbol || null;
+        result.ca_condor_range_occ_years = containingRange.occYears || null;
+      }
+      
+      console.log(`✅ CA Condor Range data processed:`, {
+        totalCount: result.ca_condor_range_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Condor Range data:', error);
+      return {
+        ca_condor_range_count: 0,
+        ca_condor_range_all: []
+      };
+    }
+  }
+
+  private async getCABlackBearRange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐻 Fetching CA Black Bear Range data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const ranges = await getCABlackBearRangeData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_black_bear_range_count = ranges.length;
+      result.ca_black_bear_range_all = ranges.map(range => ({
+        ...range.attributes,
+        rangeId: range.rangeId,
+        shapeName: range.shapeName,
+        commonName: range.commonName,
+        scientificName: range.scientificName,
+        symbol: range.symbol,
+        occYears: range.occYears,
+        rangeStart: range.rangeStart,
+        rangeEnd: range.rangeEnd,
+        distance_miles: range.distance_miles,
+        geometry: range.geometry
+      }));
+      
+      // Point-in-polygon result (distance_miles === 0)
+      const containingRange = ranges.find(r => r.distance_miles === 0);
+      if (containingRange) {
+        result.ca_black_bear_range = containingRange.shapeName || containingRange.commonName || 'California Black Bear Range';
+        result.ca_black_bear_range_symbol = containingRange.symbol || null;
+        result.ca_black_bear_range_occ_years = containingRange.occYears || null;
+      }
+      
+      console.log(`✅ CA Black Bear Range data processed:`, {
+        totalCount: result.ca_black_bear_range_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Black Bear Range data:', error);
+      return {
+        ca_black_bear_range_count: 0,
+        ca_black_bear_range_all: []
+      };
+    }
+  }
+
+  private async getCABrushRabbitRange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐰 Fetching CA Brush Rabbit Range data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const ranges = await getCABrushRabbitRangeData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_brush_rabbit_range_count = ranges.length;
+      result.ca_brush_rabbit_range_all = ranges.map(range => ({
+        ...range.attributes,
+        rangeId: range.rangeId,
+        shapeName: range.shapeName,
+        commonName: range.commonName,
+        scientificName: range.scientificName,
+        symbol: range.symbol,
+        occYears: range.occYears,
+        rangeStart: range.rangeStart,
+        rangeEnd: range.rangeEnd,
+        distance_miles: range.distance_miles,
+        geometry: range.geometry
+      }));
+      
+      // Point-in-polygon result (distance_miles === 0)
+      const containingRange = ranges.find(r => r.distance_miles === 0);
+      if (containingRange) {
+        result.ca_brush_rabbit_range = containingRange.shapeName || containingRange.commonName || 'California Brush Rabbit Range';
+        result.ca_brush_rabbit_range_symbol = containingRange.symbol || null;
+        result.ca_brush_rabbit_range_occ_years = containingRange.occYears || null;
+      }
+      
+      console.log(`✅ CA Brush Rabbit Range data processed:`, {
+        totalCount: result.ca_brush_rabbit_range_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Brush Rabbit Range data:', error);
+      return {
+        ca_brush_rabbit_range_count: 0,
+        ca_brush_rabbit_range_all: []
+      };
+    }
+  }
+
+  private async getCAGreatGrayOwlRange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🦉 Fetching CA Great Gray Owl Range data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const ranges = await getCAGreatGrayOwlRangeData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_great_gray_owl_range_count = ranges.length;
+      result.ca_great_gray_owl_range_all = ranges.map(range => ({
+        ...range.attributes,
+        rangeId: range.rangeId,
+        shapeName: range.shapeName,
+        commonName: range.commonName,
+        scientificName: range.scientificName,
+        symbol: range.symbol,
+        occYears: range.occYears,
+        rangeStart: range.rangeStart,
+        rangeEnd: range.rangeEnd,
+        distance_miles: range.distance_miles,
+        geometry: range.geometry
+      }));
+      
+      // Point-in-polygon result (distance_miles === 0)
+      const containingRange = ranges.find(r => r.distance_miles === 0);
+      if (containingRange) {
+        result.ca_great_gray_owl_range = containingRange.shapeName || containingRange.commonName || 'California Great Gray Owl Range';
+        result.ca_great_gray_owl_range_symbol = containingRange.symbol || null;
+        result.ca_great_gray_owl_range_occ_years = containingRange.occYears || null;
+      }
+      
+      console.log(`✅ CA Great Gray Owl Range data processed:`, {
+        totalCount: result.ca_great_gray_owl_range_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Great Gray Owl Range data:', error);
+      return {
+        ca_great_gray_owl_range_count: 0,
+        ca_great_gray_owl_range_all: []
+      };
+    }
+  }
+
+  private async getCASandhillCraneRange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🦩 Fetching CA Sandhill Crane Range data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const ranges = await getCASandhillCraneRangeData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      result.ca_sandhill_crane_range_count = ranges.length;
+      result.ca_sandhill_crane_range_all = ranges.map(range => ({
+        ...range.attributes,
+        rangeId: range.rangeId,
+        shapeName: range.shapeName,
+        commonName: range.commonName,
+        scientificName: range.scientificName,
+        symbol: range.symbol,
+        occYears: range.occYears,
+        rangeStart: range.rangeStart,
+        rangeEnd: range.rangeEnd,
+        distance_miles: range.distance_miles,
+        geometry: range.geometry
+      }));
+      
+      // Point-in-polygon result (distance_miles === 0)
+      const containingRange = ranges.find(r => r.distance_miles === 0);
+      if (containingRange) {
+        result.ca_sandhill_crane_range = containingRange.shapeName || containingRange.commonName || 'California Sandhill Crane Range';
+        result.ca_sandhill_crane_range_symbol = containingRange.symbol || null;
+        result.ca_sandhill_crane_range_occ_years = containingRange.occYears || null;
+      }
+      
+      console.log(`✅ CA Sandhill Crane Range data processed:`, {
+        totalCount: result.ca_sandhill_crane_range_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Sandhill Crane Range data:', error);
+      return {
+        ca_sandhill_crane_range_count: 0,
+        ca_sandhill_crane_range_all: []
       };
     }
   }

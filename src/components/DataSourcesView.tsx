@@ -904,6 +904,41 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "California",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "CA Condor Range",
+          description: "California Condor Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Black Bear Range",
+          description: "California Black Bear Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Brush Rabbit Range",
+          description: "California Brush Rabbit Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Great Gray Owl Range",
+          description: "California Great Gray Owl Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Sandhill Crane Range",
+          description: "California Sandhill Crane Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },

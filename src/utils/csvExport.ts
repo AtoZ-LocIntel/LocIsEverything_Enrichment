@@ -1678,6 +1678,236 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'CA Open Data Portal'
         ]);
       });
+    } else if (key === 'ca_condor_range_all' && Array.isArray(value)) {
+      // Handle CA Condor Range - each range gets its own row with all attributes
+      value.forEach((range: any) => {
+        const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+        const commonName = range.commonName || range.CName || range.cname || '';
+        const scientificName = range.scientificName || range.SName || range.sname || '';
+        const symbol = range.symbol || range.Symbol || '';
+        const occYears = range.occYears || range.Occ_Years || range.OccYears || '';
+        const rangeStart = range.rangeStart || range.RangeStart || range.range_start || '';
+        const rangeEnd = range.rangeEnd || range.RangeEnd || range.range_end || '';
+        const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles.toFixed(2) : '0.00';
+        
+        const allAttributes = { ...range };
+        delete allAttributes.rangeId;
+        delete allAttributes.shapeName;
+        delete allAttributes.commonName;
+        delete allAttributes.scientificName;
+        delete allAttributes.symbol;
+        delete allAttributes.occYears;
+        delete allAttributes.rangeStart;
+        delete allAttributes.rangeEnd;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Condor Range',
+          shapeName,
+          commonName || '',
+          scientificName || '',
+          symbol || '',
+          occYears || '',
+          rangeStart || '',
+          rangeEnd || '',
+          distance,
+          distance === '0.00' ? 'Within Range' : `Nearby Range (${distance} miles)`,
+          `${shapeName}${commonName ? ` - ${commonName}` : ''}${scientificName ? ` (${scientificName})` : ''}`,
+          '',
+          attributesJson,
+          'CDFW BIOS'
+        ]);
+      });
+    } else if (key === 'ca_black_bear_range_all' && Array.isArray(value)) {
+      // Handle CA Black Bear Range - each range gets its own row with all attributes
+      value.forEach((range: any) => {
+        const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+        const commonName = range.commonName || range.CName || range.cname || '';
+        const scientificName = range.scientificName || range.SName || range.sname || '';
+        const symbol = range.symbol || range.Symbol || '';
+        const occYears = range.occYears || range.Occ_Years || range.OccYears || '';
+        const rangeStart = range.rangeStart || range.RangeStart || range.range_start || '';
+        const rangeEnd = range.rangeEnd || range.RangeEnd || range.range_end || '';
+        const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles.toFixed(2) : '0.00';
+        
+        const allAttributes = { ...range };
+        delete allAttributes.rangeId;
+        delete allAttributes.shapeName;
+        delete allAttributes.commonName;
+        delete allAttributes.scientificName;
+        delete allAttributes.symbol;
+        delete allAttributes.occYears;
+        delete allAttributes.rangeStart;
+        delete allAttributes.rangeEnd;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Black Bear Range',
+          shapeName,
+          commonName || '',
+          scientificName || '',
+          symbol || '',
+          occYears || '',
+          rangeStart || '',
+          rangeEnd || '',
+          distance,
+          distance === '0.00' ? 'Within Range' : `Nearby Range (${distance} miles)`,
+          `${shapeName}${commonName ? ` - ${commonName}` : ''}${scientificName ? ` (${scientificName})` : ''}`,
+          '',
+          attributesJson,
+          'CDFW BIOS'
+        ]);
+      });
+    } else if (key === 'ca_brush_rabbit_range_all' && Array.isArray(value)) {
+      // Handle CA Brush Rabbit Range - each range gets its own row with all attributes
+      value.forEach((range: any) => {
+        const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+        const commonName = range.commonName || range.CName || range.cname || '';
+        const scientificName = range.scientificName || range.SName || range.sname || '';
+        const symbol = range.symbol || range.Symbol || '';
+        const occYears = range.occYears || range.Occ_Years || range.OccYears || '';
+        const rangeStart = range.rangeStart || range.RangeStart || range.range_start || '';
+        const rangeEnd = range.rangeEnd || range.RangeEnd || range.range_end || '';
+        const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles.toFixed(2) : '0.00';
+        
+        const allAttributes = { ...range };
+        delete allAttributes.rangeId;
+        delete allAttributes.shapeName;
+        delete allAttributes.commonName;
+        delete allAttributes.scientificName;
+        delete allAttributes.symbol;
+        delete allAttributes.occYears;
+        delete allAttributes.rangeStart;
+        delete allAttributes.rangeEnd;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Brush Rabbit Range',
+          shapeName,
+          commonName || '',
+          scientificName || '',
+          symbol || '',
+          occYears || '',
+          rangeStart || '',
+          rangeEnd || '',
+          distance,
+          distance === '0.00' ? 'Within Range' : `Nearby Range (${distance} miles)`,
+          `${shapeName}${commonName ? ` - ${commonName}` : ''}${scientificName ? ` (${scientificName})` : ''}`,
+          '',
+          attributesJson,
+          'CDFW BIOS'
+        ]);
+      });
+    } else if (key === 'ca_great_gray_owl_range_all' && Array.isArray(value)) {
+      // Handle CA Great Gray Owl Range - each range gets its own row with all attributes
+      value.forEach((range: any) => {
+        const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+        const commonName = range.commonName || range.CName || range.cname || '';
+        const scientificName = range.scientificName || range.SName || range.sname || '';
+        const symbol = range.symbol || range.Symbol || '';
+        const occYears = range.occYears || range.Occ_Years || range.OccYears || '';
+        const rangeStart = range.rangeStart || range.RangeStart || range.range_start || '';
+        const rangeEnd = range.rangeEnd || range.RangeEnd || range.range_end || '';
+        const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles.toFixed(2) : '0.00';
+        
+        const allAttributes = { ...range };
+        delete allAttributes.rangeId;
+        delete allAttributes.shapeName;
+        delete allAttributes.commonName;
+        delete allAttributes.scientificName;
+        delete allAttributes.symbol;
+        delete allAttributes.occYears;
+        delete allAttributes.rangeStart;
+        delete allAttributes.rangeEnd;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Great Gray Owl Range',
+          shapeName,
+          commonName || '',
+          scientificName || '',
+          symbol || '',
+          occYears || '',
+          rangeStart || '',
+          rangeEnd || '',
+          distance,
+          distance === '0.00' ? 'Within Range' : `Nearby Range (${distance} miles)`,
+          `${shapeName}${commonName ? ` - ${commonName}` : ''}${scientificName ? ` (${scientificName})` : ''}`,
+          '',
+          attributesJson,
+          'CDFW BIOS'
+        ]);
+      });
+    } else if (key === 'ca_sandhill_crane_range_all' && Array.isArray(value)) {
+      // Handle CA Sandhill Crane Range - each range gets its own row with all attributes
+      value.forEach((range: any) => {
+        const shapeName = range.shapeName || range.Shape_Name || range.ShapeName || 'Unknown Range';
+        const commonName = range.commonName || range.CName || range.cname || '';
+        const scientificName = range.scientificName || range.SName || range.sname || '';
+        const symbol = range.symbol || range.Symbol || '';
+        const occYears = range.occYears || range.Occ_Years || range.OccYears || '';
+        const rangeStart = range.rangeStart || range.RangeStart || range.range_start || '';
+        const rangeEnd = range.rangeEnd || range.RangeEnd || range.range_end || '';
+        const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles.toFixed(2) : '0.00';
+        
+        const allAttributes = { ...range };
+        delete allAttributes.rangeId;
+        delete allAttributes.shapeName;
+        delete allAttributes.commonName;
+        delete allAttributes.scientificName;
+        delete allAttributes.symbol;
+        delete allAttributes.occYears;
+        delete allAttributes.rangeStart;
+        delete allAttributes.rangeEnd;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat,
+          location.lon,
+          '',
+          'CA Sandhill Crane Range',
+          shapeName,
+          commonName || '',
+          scientificName || '',
+          symbol || '',
+          occYears || '',
+          rangeStart || '',
+          rangeEnd || '',
+          distance,
+          distance === '0.00' ? 'Within Range' : `Nearby Range (${distance} miles)`,
+          `${shapeName}${commonName ? ` - ${commonName}` : ''}${scientificName ? ` (${scientificName})` : ''}`,
+          '',
+          attributesJson,
+          'CDFW BIOS'
+        ]);
+      });
     } else if (key === 'de_child_care_centers_all' && Array.isArray(value)) {
       // Handle DE Child Care Centers - each center gets its own row with all attributes
       value.forEach((center: any) => {
