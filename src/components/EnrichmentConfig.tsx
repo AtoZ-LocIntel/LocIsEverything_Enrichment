@@ -521,7 +521,19 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             isPOI: poi.isPOI,
             defaultRadius: poi.defaultRadius,
             category: poi.category
-          }));
+          })).sort((a, b) => {
+            // Sort hazards layers to the top, then basemaps/grids, then others
+            const aIsHazard = a.id.includes('hazard') || a.id.includes('fault') || a.id.includes('tsunami') || a.id.includes('landslide') || a.id.includes('liquefaction') || a.id.includes('flood') || a.id.includes('dam_inundation');
+            const bIsHazard = b.id.includes('hazard') || b.id.includes('fault') || b.id.includes('tsunami') || b.id.includes('landslide') || b.id.includes('liquefaction') || b.id.includes('flood') || b.id.includes('dam_inundation');
+            const aIsBasemapGrid = a.id.includes('us_national_grid') || a.id.includes('usng_') || a.id.includes('township_range');
+            const bIsBasemapGrid = b.id.includes('us_national_grid') || b.id.includes('usng_') || b.id.includes('township_range');
+            
+            if (aIsHazard && !bIsHazard) return -1;
+            if (!aIsHazard && bIsHazard) return 1;
+            if (aIsBasemapGrid && !bIsBasemapGrid && !bIsHazard) return -1;
+            if (!aIsBasemapGrid && bIsBasemapGrid && !aIsHazard) return 1;
+            return a.label.localeCompare(b.label);
+          });
           
           // Define CA sub-categories (organized by data source)
           const caSubCategories: EnrichmentCategory[] = [

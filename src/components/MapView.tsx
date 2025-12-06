@@ -230,6 +230,32 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_school_district_boundaries': { icon: '🏫', color: '#3b82f6', title: 'LA County School District Boundaries' },
   'la_county_metro_lines': { icon: '🚇', color: '#7c3aed', title: 'LA County MTA Metro Lines' },
   'la_county_street_inventory': { icon: '🛣️', color: '#64748b', title: 'LA County Street Inventory' },
+  // LA County Hazards
+  'la_county_fire_hazards': { icon: '🔥', color: '#dc2626', title: 'LA County Fire Hazards' },
+  'la_county_fire_hazard_responsibility_areas': { icon: '🔥', color: '#ef4444', title: 'LA County Fire Hazard Responsibility Areas' },
+  'la_county_fire_hazard_severity_zones': { icon: '🔥', color: '#f97316', title: 'LA County Fire Hazard Severity Zones' },
+  'la_county_fire_hazard_severity_zones_lra': { icon: '🔥', color: '#f97316', title: 'LA County Fire Hazard Severity Zones LRA' },
+  'la_county_fire_hazard_severity_zones_sra': { icon: '🔥', color: '#f97316', title: 'LA County Fire Hazard Severity Zones SRA' },
+  'la_county_earthquake_hazards': { icon: '🌍', color: '#7c2d12', title: 'LA County Earthquake Hazards' },
+  'la_county_alquist_priolo_fault_traces': { icon: '⚡', color: '#991b1b', title: 'LA County Alquist-Priolo Fault Traces' },
+  'la_county_alquist_priolo_fault_zones': { icon: '⚡', color: '#b91c1c', title: 'LA County Alquist-Priolo Fault Zones' },
+  'la_county_usgs_faults': { icon: '⚡', color: '#dc2626', title: 'LA County USGS Faults' },
+  'la_county_tsunami_inundation_runup_line': { icon: '🌊', color: '#0ea5e9', title: 'LA County Tsunami Inundation Runup Line' },
+  'la_county_tsunami_inundation_zones': { icon: '🌊', color: '#0284c7', title: 'LA County Tsunami Inundation Zones' },
+  'la_county_landslide_zones': { icon: '⛰️', color: '#a16207', title: 'LA County Landslide Zones' },
+  'la_county_liquefaction_zones': { icon: '🌋', color: '#ca8a04', title: 'LA County Liquefaction Zones' },
+  'la_county_flood_hazards': { icon: '💧', color: '#0ea5e9', title: 'LA County Flood Hazards' },
+  'la_county_100_year_flood_plain': { icon: '💧', color: '#0284c7', title: 'LA County 100-Year Flood Plain' },
+  'la_county_500_year_flood_plain': { icon: '💧', color: '#0369a1', title: 'LA County 500-Year Flood Plain' },
+  'la_county_dam_inundation_eta': { icon: '🏗️', color: '#1e40af', title: 'LA County Dam Inundation ETA' },
+  'la_county_dam_inundation_areas': { icon: '🏗️', color: '#1e3a8a', title: 'LA County Dam Inundation Areas' },
+  // LA County Basemaps and Grids
+  'la_county_us_national_grid': { icon: '🗺️', color: '#6366f1', title: 'LA County US National Grid' },
+  'la_county_usng_100k': { icon: '🗺️', color: '#818cf8', title: 'LA County USNG 100K' },
+  'la_county_usng_10000m': { icon: '🗺️', color: '#a78bfa', title: 'LA County USNG 10000M' },
+  'la_county_usng_1000m': { icon: '🗺️', color: '#c084fc', title: 'LA County USNG 1000M' },
+  'la_county_usng_100m': { icon: '🗺️', color: '#d8b4fe', title: 'LA County USNG 100M' },
+  'la_county_township_range_section_rancho_boundaries': { icon: '📐', color: '#4b5563', title: 'LA County Township Range Section Rancho Boundaries' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -568,6 +594,30 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
     key === 'la_county_metro_lines_all' || // Skip LA County Metro Lines array (handled separately for map drawing)
     key === 'la_county_street_inventory_all' || // Skip LA County Street Inventory array (handled separately for map drawing)
+    key === 'la_county_fire_hazards_all' || // Skip LA County Hazards arrays (handled separately for map drawing)
+    key === 'la_county_fire_hazard_responsibility_areas_all' ||
+    key === 'la_county_fire_hazard_severity_zones_all' ||
+    key === 'la_county_fire_hazard_severity_zones_lra_all' ||
+    key === 'la_county_fire_hazard_severity_zones_sra_all' ||
+    key === 'la_county_earthquake_hazards_all' ||
+    key === 'la_county_alquist_priolo_fault_traces_all' ||
+    key === 'la_county_alquist_priolo_fault_zones_all' ||
+    key === 'la_county_usgs_faults_all' ||
+    key === 'la_county_tsunami_inundation_runup_line_all' ||
+    key === 'la_county_tsunami_inundation_zones_all' ||
+    key === 'la_county_landslide_zones_all' ||
+    key === 'la_county_liquefaction_zones_all' ||
+    key === 'la_county_flood_hazards_all' ||
+    key === 'la_county_100_year_flood_plain_all' ||
+    key === 'la_county_500_year_flood_plain_all' ||
+    key === 'la_county_dam_inundation_eta_all' ||
+    key === 'la_county_dam_inundation_areas_all' ||
+    key === 'la_county_us_national_grid_all' || // Skip LA County Basemaps and Grids arrays (handled separately for map drawing)
+    key === 'la_county_usng_100k_all' ||
+    key === 'la_county_usng_10000m_all' ||
+    key === 'la_county_usng_1000m_all' ||
+    key === 'la_county_usng_100m_all' ||
+    key === 'la_county_township_range_section_rancho_boundaries_all' ||
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -11524,6 +11574,322 @@ const MapView: React.FC<MapViewProps> = ({
       } catch (error) {
         console.error('Error processing LA County Street Inventory:', error);
       }
+
+      // Draw LA County Hazards layers
+      const laCountyHazardsLayers = [
+        { key: 'la_county_fire_hazards_all', layerId: 0, icon: '🔥', color: '#dc2626', title: 'LA County Fire Hazards', isPoint: true },
+        { key: 'la_county_fire_hazard_responsibility_areas_all', layerId: 1, icon: '🔥', color: '#ef4444', title: 'LA County Fire Hazard Responsibility Areas', isPoint: false },
+        { key: 'la_county_fire_hazard_severity_zones_all', layerId: 2, icon: '🔥', color: '#f97316', title: 'LA County Fire Hazard Severity Zones', isPoint: false },
+        { key: 'la_county_fire_hazard_severity_zones_lra_all', layerId: 18, icon: '🔥', color: '#f97316', title: 'LA County Fire Hazard Severity Zones LRA', isPoint: false },
+        { key: 'la_county_fire_hazard_severity_zones_sra_all', layerId: 19, icon: '🔥', color: '#f97316', title: 'LA County Fire Hazard Severity Zones SRA', isPoint: false },
+        { key: 'la_county_earthquake_hazards_all', layerId: 3, icon: '🌍', color: '#7c2d12', title: 'LA County Earthquake Hazards', isPoint: true },
+        { key: 'la_county_alquist_priolo_fault_traces_all', layerId: 4, icon: '⚡', color: '#991b1b', title: 'LA County Alquist-Priolo Fault Traces', isPoint: false, isLine: true },
+        { key: 'la_county_alquist_priolo_fault_zones_all', layerId: 5, icon: '⚡', color: '#b91c1c', title: 'LA County Alquist-Priolo Fault Zones', isPoint: false },
+        { key: 'la_county_usgs_faults_all', layerId: 17, icon: '⚡', color: '#dc2626', title: 'LA County USGS Faults', isPoint: false, isLine: true },
+        { key: 'la_county_tsunami_inundation_runup_line_all', layerId: 6, icon: '🌊', color: '#0ea5e9', title: 'LA County Tsunami Inundation Runup Line', isPoint: false, isLine: true },
+        { key: 'la_county_tsunami_inundation_zones_all', layerId: 7, icon: '🌊', color: '#0284c7', title: 'LA County Tsunami Inundation Zones', isPoint: false },
+        { key: 'la_county_landslide_zones_all', layerId: 8, icon: '⛰️', color: '#a16207', title: 'LA County Landslide Zones', isPoint: false },
+        { key: 'la_county_liquefaction_zones_all', layerId: 9, icon: '🌋', color: '#ca8a04', title: 'LA County Liquefaction Zones', isPoint: false },
+        { key: 'la_county_flood_hazards_all', layerId: 10, icon: '💧', color: '#0ea5e9', title: 'LA County Flood Hazards', isPoint: true },
+        { key: 'la_county_100_year_flood_plain_all', layerId: 11, icon: '💧', color: '#0284c7', title: 'LA County 100-Year Flood Plain', isPoint: false },
+        { key: 'la_county_500_year_flood_plain_all', layerId: 12, icon: '💧', color: '#0369a1', title: 'LA County 500-Year Flood Plain', isPoint: false },
+        { key: 'la_county_dam_inundation_eta_all', layerId: 13, icon: '🏗️', color: '#1e40af', title: 'LA County Dam Inundation ETA', isPoint: false, isLine: true },
+        { key: 'la_county_dam_inundation_areas_all', layerId: 14, icon: '🏗️', color: '#1e3a8a', title: 'LA County Dam Inundation Areas', isPoint: false }
+      ];
+
+      laCountyHazardsLayers.forEach(({ key, layerId, icon, color, title, isPoint, isLine }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((hazard: any) => {
+              try {
+                const geometry = hazard.geometry;
+                const isContaining = hazard.isContaining;
+                const distance = hazard.distance_miles !== null && hazard.distance_miles !== undefined ? hazard.distance_miles : 0;
+                const hazardId = hazard.hazardId || hazard.OBJECTID || hazard.objectid || 'Unknown';
+                
+                // Check for point geometry (either from geometry.x/y or from attributes)
+                const pointLat = isPoint ? (geometry?.y || geometry?.latitude || hazard.latitude || hazard.LATITUDE || hazard.lat || hazard.LAT) : null;
+                const pointLon = isPoint ? (geometry?.x || geometry?.longitude || hazard.longitude || hazard.LONGITUDE || hazard.lon || hazard.LON) : null;
+                
+                if (isPoint && pointLat !== null && pointLat !== undefined && pointLon !== null && pointLon !== undefined) {
+                  // Point geometry
+                  const lat = pointLat;
+                  const lon = pointLon;
+                  
+                  const marker = L.marker([lat, lon], {
+                    icon: createPOIIcon(icon, color)
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${title}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${hazardId ? `<div><strong>Hazard ID:</strong> ${hazardId}</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['hazardId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                  Object.entries(hazard).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  marker.bindPopup(popupContent);
+                  marker.addTo(primary);
+                  bounds.extend([lat, lon]);
+                  featureCount++;
+                } else if (isLine && geometry && geometry.paths) {
+                  // Polyline geometry
+                  const paths = geometry.paths;
+                  if (paths && paths.length > 0) {
+                    paths.forEach((path: number[][]) => {
+                      const latlngs = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+                      
+                      const polyline = L.polyline(latlngs, {
+                        color: color,
+                        weight: 3,
+                        opacity: 0.8,
+                        smoothFactor: 1
+                      });
+                      
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            ${icon} ${title}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${hazardId ? `<div><strong>Hazard ID:</strong> ${hazardId}</div>` : ''}
+                            ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                          </div>
+                          <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      `;
+                      
+                      const excludeFields = ['hazardId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                      Object.entries(hazard).forEach(([key, value]) => {
+                        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                          if (typeof value === 'object' && !Array.isArray(value)) {
+                            return;
+                          }
+                          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                          popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                        }
+                      });
+                      
+                      popupContent += `
+                          </div>
+                        </div>
+                      `;
+                      
+                      polyline.bindPopup(popupContent);
+                      polyline.addTo(primary);
+                      const polylineBounds = L.latLngBounds(latlngs);
+                      bounds.extend(polylineBounds);
+                    });
+                    featureCount++;
+                  }
+                } else if (!isPoint && geometry && geometry.rings) {
+                  // Polygon geometry
+                  const rings = geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc'); // Lighter if not containing
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.2
+                    });
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${hazardId ? `<div><strong>Hazard ID:</strong> ${hazardId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #dc2626; font-weight: 600; margin-top: 8px;">⚠️ Location is within this hazard area</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['hazardId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                    Object.entries(hazard).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing ${title} feature:`, error);
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
+      // Draw LA County Basemaps and Grids layers
+      const laCountyBasemapsGridsLayers = [
+        { key: 'la_county_us_national_grid_all', layerId: 0, icon: '🗺️', color: '#6366f1', title: 'LA County US National Grid' },
+        { key: 'la_county_usng_100k_all', layerId: 1, icon: '🗺️', color: '#818cf8', title: 'LA County USNG 100K' },
+        { key: 'la_county_usng_10000m_all', layerId: 2, icon: '🗺️', color: '#a78bfa', title: 'LA County USNG 10000M' },
+        { key: 'la_county_usng_1000m_all', layerId: 3, icon: '🗺️', color: '#c084fc', title: 'LA County USNG 1000M' },
+        { key: 'la_county_usng_100m_all', layerId: 4, icon: '🗺️', color: '#d8b4fe', title: 'LA County USNG 100M' },
+        { key: 'la_county_township_range_section_rancho_boundaries_all', layerId: 8, icon: '📐', color: '#4b5563', title: 'LA County Township Range Section Rancho Boundaries' }
+      ];
+
+      laCountyBasemapsGridsLayers.forEach(({ key, layerId, icon, color, title }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((grid: any) => {
+              if (grid.geometry && grid.geometry.rings) {
+                try {
+                  const rings = grid.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const isContaining = grid.isContaining;
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    const gridId = grid.gridId || grid.OBJECTID || grid.objectid || 'Unknown';
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${gridId ? `<div><strong>Grid ID:</strong> ${gridId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this grid/boundary</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['gridId', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                    Object.entries(grid).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error drawing ${title} polygon:`, error);
+                }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
 
       // Draw CA State Parks Entry Points
       try {

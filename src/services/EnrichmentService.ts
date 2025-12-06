@@ -86,6 +86,8 @@ import { getLACountyHousingLeadRiskData } from '../adapters/laCountyHousingLeadR
 import { getLACountySchoolDistrictBoundariesData } from '../adapters/laCountySchoolDistrictBoundaries';
 import { getLACountyMetroLinesData } from '../adapters/laCountyMetroLines';
 import { getLACountyStreetInventoryData } from '../adapters/laCountyStreetInventory';
+import { getLACountyHazardsData } from '../adapters/laCountyHazards';
+import { getLACountyBasemapsGridsData } from '../adapters/laCountyBasemapsGrids';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1726,6 +1728,58 @@ export class EnrichmentService {
       // LA County Points of Interest - Proximity query only (up to 25 miles)
       case 'la_county_arts_recreation':
         return await this.getLACountyArtsRecreation(lat, lon, radius);
+      // LA County Hazards - grouped together at top
+      case 'la_county_fire_hazards':
+        return await this.getLACountyHazards(0, lat, lon, radius);
+      case 'la_county_fire_hazard_responsibility_areas':
+        return await this.getLACountyHazards(1, lat, lon, radius);
+      case 'la_county_fire_hazard_severity_zones':
+        return await this.getLACountyHazards(2, lat, lon, radius);
+      case 'la_county_fire_hazard_severity_zones_lra':
+        return await this.getLACountyHazards(18, lat, lon, radius);
+      case 'la_county_fire_hazard_severity_zones_sra':
+        return await this.getLACountyHazards(19, lat, lon, radius);
+      case 'la_county_earthquake_hazards':
+        return await this.getLACountyHazards(3, lat, lon, radius);
+      case 'la_county_alquist_priolo_fault_traces':
+        return await this.getLACountyHazards(4, lat, lon, radius);
+      case 'la_county_alquist_priolo_fault_zones':
+        return await this.getLACountyHazards(5, lat, lon, radius);
+      case 'la_county_usgs_faults':
+        return await this.getLACountyHazards(17, lat, lon, radius);
+      case 'la_county_tsunami_inundation_runup_line':
+        return await this.getLACountyHazards(6, lat, lon, radius);
+      case 'la_county_tsunami_inundation_zones':
+        return await this.getLACountyHazards(7, lat, lon, radius);
+      case 'la_county_landslide_zones':
+        return await this.getLACountyHazards(8, lat, lon, radius);
+      case 'la_county_liquefaction_zones':
+        return await this.getLACountyHazards(9, lat, lon, radius);
+      case 'la_county_flood_hazards':
+        return await this.getLACountyHazards(10, lat, lon, radius);
+      case 'la_county_100_year_flood_plain':
+        return await this.getLACountyHazards(11, lat, lon, radius);
+      case 'la_county_500_year_flood_plain':
+        return await this.getLACountyHazards(12, lat, lon, radius);
+      case 'la_county_dam_inundation_eta':
+        return await this.getLACountyHazards(13, lat, lon, radius);
+      case 'la_county_dam_inundation_areas':
+        return await this.getLACountyHazards(14, lat, lon, radius);
+      
+      // LA County Basemaps and Grids - Point-in-polygon query only
+      case 'la_county_us_national_grid':
+        return await this.getLACountyBasemapsGrids(0, lat, lon);
+      case 'la_county_usng_100k':
+        return await this.getLACountyBasemapsGrids(1, lat, lon);
+      case 'la_county_usng_10000m':
+        return await this.getLACountyBasemapsGrids(2, lat, lon);
+      case 'la_county_usng_1000m':
+        return await this.getLACountyBasemapsGrids(3, lat, lon);
+      case 'la_county_usng_100m':
+        return await this.getLACountyBasemapsGrids(4, lat, lon);
+      case 'la_county_township_range_section_rancho_boundaries':
+        return await this.getLACountyBasemapsGrids(8, lat, lon);
+      
       case 'la_county_education':
         return await this.getLACountyEducation(lat, lon, radius);
       case 'la_county_hospitals':
@@ -8732,6 +8786,209 @@ out center;`;
       return {
         la_county_street_inventory_count: 0,
         la_county_street_inventory_all: []
+      };
+    }
+  }
+
+  private async getLACountyHazards(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        0: 'fire_hazards',
+        1: 'fire_hazard_responsibility_areas',
+        2: 'fire_hazard_severity_zones',
+        3: 'earthquake_hazards',
+        4: 'alquist_priolo_fault_traces',
+        5: 'alquist_priolo_fault_zones',
+        6: 'tsunami_inundation_runup_line',
+        7: 'tsunami_inundation_zones',
+        8: 'landslide_zones',
+        9: 'liquefaction_zones',
+        10: 'flood_hazards',
+        11: '100_year_flood_plain',
+        12: '500_year_flood_plain',
+        13: 'dam_inundation_eta',
+        14: 'dam_inundation_areas',
+        17: 'usgs_faults',
+        18: 'fire_hazard_severity_zones_lra',
+        19: 'fire_hazard_severity_zones_sra'
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'Fire Hazards',
+        1: 'Fire Hazard Responsibility Areas',
+        2: 'Fire Hazard Severity Zones',
+        3: 'Earthquake Hazards',
+        4: 'Alquist-Priolo Fault Traces',
+        5: 'Alquist-Priolo Fault Zones',
+        6: 'Tsunami Inundation Runup Line',
+        7: 'Tsunami Inundation Zones',
+        8: 'Landslide Zones',
+        9: 'Liquefaction Zones',
+        10: 'Flood Hazards',
+        11: '100-Year Flood Plain',
+        12: '500-Year Flood Plain',
+        13: 'Dam Inundation ETA',
+        14: 'Dam Inundation Areas',
+        17: 'USGS Faults',
+        18: 'Fire Hazard Severity Zones LRA',
+        19: 'Fire Hazard Severity Zones SRA'
+      };
+      
+      const key = layerKeyMap[layerId] || `hazards_layer_${layerId}`;
+      const layerName = layerNames[layerId] || `Hazards Layer ${layerId}`;
+      
+      console.log(`⚠️ Fetching LA County ${layerName} data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const hazards = await getLACountyHazardsData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (hazards.length === 0) {
+        result[`la_county_${key}_containing`] = null;
+        result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+      } else {
+        // Get the first containing feature (should typically be only one for point-in-polygon)
+        const containingFeature = hazards.find(h => h.isContaining) || hazards[0];
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`la_county_${key}_containing`] = containingFeature.hazardId || 'Unknown';
+          result[`la_county_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.hazardId || 'Unknown'}`;
+        } else {
+          result[`la_county_${key}_containing`] = null;
+          result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`la_county_${key}_count`] = hazards.length;
+        result[`la_county_${key}_all`] = hazards.map(hazard => ({
+          ...hazard.attributes,
+          hazardId: hazard.hazardId,
+          geometry: hazard.geometry,
+          distance_miles: hazard.distance_miles,
+          isContaining: hazard.isContaining
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${hazards.length} ${layerName.toLowerCase()} feature(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ LA County ${layerName} data processed:`, {
+        totalCount: result[`la_county_${key}_count`],
+        containing: result[`la_county_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Hazards Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'fire_hazards',
+        1: 'fire_hazard_responsibility_areas',
+        2: 'fire_hazard_severity_zones',
+        3: 'earthquake_hazards',
+        4: 'alquist_priolo_fault_traces',
+        5: 'alquist_priolo_fault_zones',
+        6: 'tsunami_inundation_runup_line',
+        7: 'tsunami_inundation_zones',
+        8: 'landslide_zones',
+        9: 'liquefaction_zones',
+        10: 'flood_hazards',
+        11: '100_year_flood_plain',
+        12: '500_year_flood_plain',
+        13: 'dam_inundation_eta',
+        14: 'dam_inundation_areas',
+        17: 'usgs_faults',
+        18: 'fire_hazard_severity_zones_lra',
+        19: 'fire_hazard_severity_zones_sra'
+      };
+      const key = layerKeyMap[layerId] || `hazards_layer_${layerId}`;
+      return {
+        [`la_county_${key}_containing`]: null,
+        [`la_county_${key}_containing_message`]: 'Error querying hazards',
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getLACountyBasemapsGrids(layerId: number, lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        0: 'us_national_grid',
+        1: 'usng_100k',
+        2: 'usng_10000m',
+        3: 'usng_1000m',
+        4: 'usng_100m',
+        8: 'township_range_section_rancho_boundaries'
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'US National Grid',
+        1: 'USNG 100K',
+        2: 'USNG 10000M',
+        3: 'USNG 1000M',
+        4: 'USNG 100M',
+        8: 'Township Range Section Rancho Boundaries'
+      };
+      
+      const key = layerKeyMap[layerId] || `basemap_grid_${layerId}`;
+      const layerName = layerNames[layerId] || `Basemap/Grid Layer ${layerId}`;
+      
+      console.log(`🗺️ Fetching LA County ${layerName} data for [${lat}, ${lon}]`);
+      
+      const grids = await getLACountyBasemapsGridsData(layerId, lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      if (grids.length === 0) {
+        result[`la_county_${key}_containing`] = null;
+        result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+      } else {
+        // Get the first containing feature (should typically be only one for point-in-polygon)
+        const containingFeature = grids.find(g => g.isContaining) || grids[0];
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`la_county_${key}_containing`] = containingFeature.gridId || 'Unknown';
+          result[`la_county_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.gridId || 'Unknown'}`;
+        } else {
+          result[`la_county_${key}_containing`] = null;
+          result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`la_county_${key}_count`] = grids.length;
+        result[`la_county_${key}_all`] = grids.map(grid => ({
+          ...grid.attributes,
+          gridId: grid.gridId,
+          geometry: grid.geometry,
+          isContaining: grid.isContaining
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${grids.length} ${layerName.toLowerCase()} feature(s) containing the point.`;
+      }
+      
+      console.log(`✅ LA County ${layerName} data processed:`, {
+        totalCount: result[`la_county_${key}_count`],
+        containing: result[`la_county_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Basemaps and Grids Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'us_national_grid',
+        1: 'usng_100k',
+        2: 'usng_10000m',
+        3: 'usng_1000m',
+        4: 'usng_100m',
+        8: 'township_range_section_rancho_boundaries'
+      };
+      const key = layerKeyMap[layerId] || `basemap_grid_${layerId}`;
+      return {
+        [`la_county_${key}_containing`]: null,
+        [`la_county_${key}_containing_message`]: 'Error querying basemaps and grids',
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: []
       };
     }
   }

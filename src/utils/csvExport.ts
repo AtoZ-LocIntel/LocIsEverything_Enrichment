@@ -350,7 +350,31 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
         key === 'la_county_metro_lines_all' ||
-        key === 'la_county_street_inventory_all') { // Skip _all arrays (handled separately)
+        key === 'la_county_street_inventory_all' || // Skip LA County Hazards arrays (handled separately)
+        key === 'la_county_fire_hazards_all' ||
+        key === 'la_county_fire_hazard_responsibility_areas_all' ||
+        key === 'la_county_fire_hazard_severity_zones_all' ||
+        key === 'la_county_fire_hazard_severity_zones_lra_all' ||
+        key === 'la_county_fire_hazard_severity_zones_sra_all' ||
+        key === 'la_county_earthquake_hazards_all' ||
+        key === 'la_county_alquist_priolo_fault_traces_all' ||
+        key === 'la_county_alquist_priolo_fault_zones_all' ||
+        key === 'la_county_usgs_faults_all' ||
+        key === 'la_county_tsunami_inundation_runup_line_all' ||
+        key === 'la_county_tsunami_inundation_zones_all' ||
+        key === 'la_county_landslide_zones_all' ||
+        key === 'la_county_liquefaction_zones_all' ||
+        key === 'la_county_flood_hazards_all' ||
+        key === 'la_county_100_year_flood_plain_all' ||
+        key === 'la_county_500_year_flood_plain_all' ||
+        key === 'la_county_dam_inundation_eta_all' ||
+        key === 'la_county_dam_inundation_areas_all' || // Skip LA County Basemaps and Grids arrays (handled separately)
+        key === 'la_county_us_national_grid_all' ||
+        key === 'la_county_usng_100k_all' ||
+        key === 'la_county_usng_10000m_all' ||
+        key === 'la_county_usng_1000m_all' ||
+        key === 'la_county_usng_100m_all' ||
+        key === 'la_county_township_range_section_rancho_boundaries_all') { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -5683,6 +5707,107 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'LA County StreetsLA'
+        ]);
+      });
+    }
+    
+    // Add LA County Basemaps and Grids data rows
+    const basemapsGridsLayerMap: Record<string, { name: string, icon: string }> = {
+      'la_county_us_national_grid_all': { name: 'LA_COUNTY_US_NATIONAL_GRID', icon: '🗺️' },
+      'la_county_usng_100k_all': { name: 'LA_COUNTY_USNG_100K', icon: '🗺️' },
+      'la_county_usng_10000m_all': { name: 'LA_COUNTY_USNG_10000M', icon: '🗺️' },
+      'la_county_usng_1000m_all': { name: 'LA_COUNTY_USNG_1000M', icon: '🗺️' },
+      'la_county_usng_100m_all': { name: 'LA_COUNTY_USNG_100M', icon: '🗺️' },
+      'la_county_township_range_section_rancho_boundaries_all': { name: 'LA_COUNTY_TOWNSHIP_RANGE_SECTION_RANCHO_BOUNDARIES', icon: '📐' }
+    };
+    
+    if (basemapsGridsLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = basemapsGridsLayerMap[key];
+      value.forEach((grid: any) => {
+        const gridId = grid.gridId || grid.OBJECTID || grid.objectid || 'Unknown';
+        const distance = grid.isContaining ? '0.00' : '';
+        
+        const allAttributes = { ...grid };
+        delete allAttributes.gridId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Public GIS',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          `${layerInfo.icon} Grid ${gridId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          grid.isContaining ? 'Within Grid/Boundary' : 'Nearby Grid/Boundary',
+          attributesJson,
+          '',
+          '',
+          'LA County Public GIS'
+        ]);
+      });
+    }
+    
+    // Add LA County Hazards data rows
+    const hazardsLayerMap: Record<string, { name: string, icon: string }> = {
+      'la_county_fire_hazards_all': { name: 'LA_COUNTY_FIRE_HAZARDS', icon: '🔥' },
+      'la_county_fire_hazard_responsibility_areas_all': { name: 'LA_COUNTY_FIRE_HAZARD_RESPONSIBILITY_AREAS', icon: '🔥' },
+      'la_county_fire_hazard_severity_zones_all': { name: 'LA_COUNTY_FIRE_HAZARD_SEVERITY_ZONES', icon: '🔥' },
+      'la_county_fire_hazard_severity_zones_lra_all': { name: 'LA_COUNTY_FIRE_HAZARD_SEVERITY_ZONES_LRA', icon: '🔥' },
+      'la_county_fire_hazard_severity_zones_sra_all': { name: 'LA_COUNTY_FIRE_HAZARD_SEVERITY_ZONES_SRA', icon: '🔥' },
+      'la_county_earthquake_hazards_all': { name: 'LA_COUNTY_EARTHQUAKE_HAZARDS', icon: '🌍' },
+      'la_county_alquist_priolo_fault_traces_all': { name: 'LA_COUNTY_ALQUIST_PRIOLO_FAULT_TRACES', icon: '⚡' },
+      'la_county_alquist_priolo_fault_zones_all': { name: 'LA_COUNTY_ALQUIST_PRIOLO_FAULT_ZONES', icon: '⚡' },
+      'la_county_usgs_faults_all': { name: 'LA_COUNTY_USGS_FAULTS', icon: '⚡' },
+      'la_county_tsunami_inundation_runup_line_all': { name: 'LA_COUNTY_TSUNAMI_INUNDATION_RUNUP_LINE', icon: '🌊' },
+      'la_county_tsunami_inundation_zones_all': { name: 'LA_COUNTY_TSUNAMI_INUNDATION_ZONES', icon: '🌊' },
+      'la_county_landslide_zones_all': { name: 'LA_COUNTY_LANDSLIDE_ZONES', icon: '⛰️' },
+      'la_county_liquefaction_zones_all': { name: 'LA_COUNTY_LIQUEFACTION_ZONES', icon: '🌋' },
+      'la_county_flood_hazards_all': { name: 'LA_COUNTY_FLOOD_HAZARDS', icon: '💧' },
+      'la_county_100_year_flood_plain_all': { name: 'LA_COUNTY_100_YEAR_FLOOD_PLAIN', icon: '💧' },
+      'la_county_500_year_flood_plain_all': { name: 'LA_COUNTY_500_YEAR_FLOOD_PLAIN', icon: '💧' },
+      'la_county_dam_inundation_eta_all': { name: 'LA_COUNTY_DAM_INUNDATION_ETA', icon: '🏗️' },
+      'la_county_dam_inundation_areas_all': { name: 'LA_COUNTY_DAM_INUNDATION_AREAS', icon: '🏗️' }
+    };
+    
+    if (hazardsLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = hazardsLayerMap[key];
+      value.forEach((hazard: any) => {
+        const hazardId = hazard.hazardId || hazard.OBJECTID || hazard.objectid || 'Unknown';
+        const distance = hazard.distance_miles !== null && hazard.distance_miles !== undefined ? hazard.distance_miles.toFixed(2) : (hazard.isContaining ? '0.00' : '');
+        
+        const allAttributes = { ...hazard };
+        delete allAttributes.hazardId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Public GIS',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          `${layerInfo.icon} Hazard ${hazardId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          hazard.isContaining ? 'Within Hazard Area' : `Nearby Hazard (${distance} miles)`,
+          attributesJson,
+          '',
+          '',
+          'LA County Public GIS'
         ]);
       });
     }

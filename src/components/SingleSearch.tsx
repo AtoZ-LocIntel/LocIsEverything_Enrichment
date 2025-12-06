@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Loader2, Lightbulb, X } from 'lucide-react';
+import { Search, Loader2, Lightbulb, X, Info } from 'lucide-react';
 
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
@@ -14,6 +14,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
 
   const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [showProTips, setShowProTips] = useState(false);
+  const [showDataDisclaimer, setShowDataDisclaimer] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,22 +50,34 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
               </div>
             </div>
             
-            {/* Pro Tips Lightbulb */}
-            <button
-              onClick={() => setShowProTips(!showProTips)}
-              className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
-              title="Pro Tips"
-            >
-              <Lightbulb className="w-5 h-5" />
-            </button>
+            {/* Icons: Data Disclaimer and Pro Tips */}
+            <div className="flex items-center space-x-2">
+              {/* Data Disclaimer Info Icon */}
+              <button
+                onClick={() => setShowDataDisclaimer(!showDataDisclaimer)}
+                className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
+                title="Data Service Disclaimer"
+              >
+                <Info className="w-5 h-5" />
+              </button>
+              
+              {/* Pro Tips Lightbulb */}
+              <button
+                onClick={() => setShowProTips(!showProTips)}
+                className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
+                title="Pro Tips"
+              >
+                <Lightbulb className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
         
         <div className="card-body">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="address" className="form-label text-white">
-                Search by Address or Lat/Long
+              <label htmlFor="address" className="form-label text-white text-sm sm:text-base">
+                Search by Address, Zip, City, POI, or Lat/Long
               </label>
               <div className="relative">
                 <input
@@ -106,7 +119,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
               ) : (
                 <>
                   <Search className="w-5 h-5" />
-                  <span>Search by Address or Lat/Long</span>
+                  <span className="text-sm sm:text-base">Search by Address, Zip, City, POI, or Lat/Long</span>
                 </>
               )}
             </button>
@@ -145,6 +158,49 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
           </form>
         </div>
       </div>
+
+      {/* Data Service Disclaimer Modal */}
+      {showDataDisclaimer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <Info className="w-5 h-5 text-blue-500" />
+                <span>Data Service Disclaimer</span>
+              </h3>
+              <button
+                onClick={() => setShowDataDisclaimer(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="text-sm text-gray-700 space-y-3">
+                <p>
+                  This application leverages <strong>open data services</strong> from various public sources and third-party providers.
+                </p>
+                <p className="font-semibold text-gray-900">
+                  ⚠️ Important: This application makes <strong>no claim whatsoever</strong> that these services will be working at any given time. We have no control over the availability, reliability, or uptime of these external data services.
+                </p>
+                <p className="text-xs text-gray-600 pt-2 border-t border-gray-200">
+                  If a data service is temporarily unavailable or experiencing issues, some enrichment queries may fail. This is outside of our control and is a limitation of relying on external open data sources.
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowDataDisclaimer(false)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Understood
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Pro Tips Modal - Outside of card structure */}
       {showProTips && (
