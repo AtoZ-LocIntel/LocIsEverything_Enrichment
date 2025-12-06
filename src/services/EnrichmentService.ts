@@ -84,6 +84,7 @@ import { getLACountyArtsRecreationData, getLACountyEducationData, getLACountyHos
 import { getLACountyHistoricCulturalMonumentsData } from '../adapters/laCountyHistoricCulturalMonuments';
 import { getLACountyHousingLeadRiskData } from '../adapters/laCountyHousingLeadRisk';
 import { getLACountySchoolDistrictBoundariesData } from '../adapters/laCountySchoolDistrictBoundaries';
+import { getLACountyMetroLinesData } from '../adapters/laCountyMetroLines';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1748,6 +1749,10 @@ export class EnrichmentService {
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
         return await this.getLACountySchoolDistrictBoundaries(lat, lon);
+      
+      // LA County MTA Metro Lines - Proximity query only (max 25 miles)
+      case 'la_county_metro_lines':
+        return await this.getLACountyMetroLines(lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -8631,6 +8636,48 @@ out center;`;
         la_county_school_district_boundaries_containing_message: 'Error querying school district boundaries',
         la_county_school_district_boundaries_count: 0,
         la_county_school_district_boundaries_all: []
+      };
+    }
+  }
+
+  private async getLACountyMetroLines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚇 Fetching LA County MTA Metro Lines data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_metro_lines_count: 0,
+          la_county_metro_lines_all: []
+        };
+      }
+      
+      const lines = await getLACountyMetroLinesData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_metro_lines_count = lines.length;
+      result.la_county_metro_lines_all = lines.map(line => ({
+        ...line.attributes,
+        lineId: line.lineId,
+        name: line.name,
+        label: line.label,
+        status: line.status,
+        type: line.type,
+        shapeLength: line.shapeLength,
+        geometry: line.geometry,
+        distance_miles: line.distance_miles
+      }));
+      result.la_county_metro_lines_summary = `Found ${lines.length} metro line(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Metro Lines data processed:`, {
+        totalCount: result.la_county_metro_lines_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County MTA Metro Lines data:', error);
+      return {
+        la_county_metro_lines_count: 0,
+        la_county_metro_lines_all: []
       };
     }
   }

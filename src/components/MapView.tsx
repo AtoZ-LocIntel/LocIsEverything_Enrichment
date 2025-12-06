@@ -228,6 +228,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_historic_cultural_monuments': { icon: '🏛️', color: '#a855f7', title: 'LA County Historic Cultural Monuments' },
   'la_county_housing_lead_risk': { icon: '🏠', color: '#dc2626', title: 'LA County Housing with Potential Lead Risk' },
   'la_county_school_district_boundaries': { icon: '🏫', color: '#3b82f6', title: 'LA County School District Boundaries' },
+  'la_county_metro_lines': { icon: '🚇', color: '#7c3aed', title: 'LA County MTA Metro Lines' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -564,6 +565,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
+    key === 'la_county_metro_lines_all' || // Skip LA County Metro Lines array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -11305,6 +11307,106 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing LA County School District Boundaries:', error);
+      }
+
+      // Draw LA County MTA Metro Lines as polylines on the map
+      try {
+        if (enrichments.la_county_metro_lines_all && Array.isArray(enrichments.la_county_metro_lines_all)) {
+          let lineCount = 0;
+          enrichments.la_county_metro_lines_all.forEach((line: any) => {
+            if (line.geometry && line.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = line.geometry.paths;
+                if (paths && paths.length > 0) {
+                  lineCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const lineName = line.name || line.NAME || line.Name || 'Unknown Line';
+                    const lineLabel = line.label || line.LABEL || line.Label || null;
+                    const status = line.status || line.STATUS || line.Status || null;
+                    const type = line.type || line.TYPE || line.Type || null;
+                    const shapeLength = line.shapeLength || line.Shape__Length || line.shape_length || null;
+                    const lineId = line.lineId || line.OBJECTID || line.objectid || null;
+                    const distance = line.distance_miles !== null && line.distance_miles !== undefined ? line.distance_miles : 0;
+
+                    // Create polyline with purple color for metro lines
+                    const polyline = L.polyline(latlngs, {
+                      color: '#7c3aed', // Purple color for metro lines
+                      weight: 4,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all line attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🚇 ${lineName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${lineLabel ? `<div><strong>Label:</strong> ${lineLabel}</div>` : ''}
+                          ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                          ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                          ${lineId ? `<div><strong>Line ID:</strong> ${lineId}</div>` : ''}
+                          ${shapeLength !== null && shapeLength !== undefined ? `<div><strong>Length:</strong> ${shapeLength.toFixed(2)} meters</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all line attributes (excluding internal fields)
+                    const excludeFields = ['lineId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'NAME', 'Name', 'label', 'LABEL', 'Label', 'status', 'STATUS', 'Status', 'type', 'TYPE', 'Type', 'shapeLength', 'Shape__Length', 'shape_length'];
+                    Object.entries(line).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing LA County Metro Line polyline:', error);
+              }
+            }
+          });
+          
+          if (lineCount > 0) {
+            if (!legendAccumulator['la_county_metro_lines']) {
+              legendAccumulator['la_county_metro_lines'] = {
+                icon: '🚇',
+                color: '#7c3aed',
+                title: 'LA County MTA Metro Lines',
+                count: 0,
+              };
+            }
+            legendAccumulator['la_county_metro_lines'].count += lineCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing LA County MTA Metro Lines:', error);
       }
 
       // Draw CA State Parks Entry Points
