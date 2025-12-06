@@ -643,33 +643,6 @@ body.modal-open {
     @apply z-30;
   }
   
-  /* Ensure SingleSearch header content is visible on mobile */
-  .single-search .card-header > div {
-    display: flex !important;
-    width: 100% !important;
-  }
-  
-  .single-search .card-header > div > div:first-child {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .single-search .card-header img {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .single-search .card-header h3,
-  .single-search .card-header p {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
   /* Stack elements vertically on mobile */
   .mobile-stack {
     @apply flex-col space-y-4;
