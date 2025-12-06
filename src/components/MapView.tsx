@@ -226,6 +226,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_public_safety': { icon: '🚨', color: '#dc2626', title: 'LA County Public Safety' },
   'la_county_transportation': { icon: '🚌', color: '#f59e0b', title: 'LA County Transportation' },
   'la_county_historic_cultural_monuments': { icon: '🏛️', color: '#a855f7', title: 'LA County Historic Cultural Monuments' },
+  'la_county_housing_lead_risk': { icon: '🏠', color: '#dc2626', title: 'LA County Housing with Potential Lead Risk' },
+  'la_county_school_district_boundaries': { icon: '🏫', color: '#3b82f6', title: 'LA County School District Boundaries' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -560,6 +562,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_public_safety_all' || // Skip LA County Public Safety array (handled separately for map drawing)
     key === 'la_county_transportation_all' || // Skip LA County Transportation array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
+    key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
+    key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -11091,6 +11095,216 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing LA County Historic Cultural Monuments:', error);
+      }
+
+      // Draw LA County Housing with Potential Lead Risk as polygons on the map
+      try {
+        if (enrichments.la_county_housing_lead_risk_all && Array.isArray(enrichments.la_county_housing_lead_risk_all)) {
+          let housingAreaCount = 0;
+          enrichments.la_county_housing_lead_risk_all.forEach((area: any) => {
+            if (area.geometry && area.geometry.rings) {
+              try {
+                const rings = area.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('LA County Housing Lead Risk polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = area.isContaining;
+                  const color = isContaining ? '#dc2626' : '#ef4444'; // Red for lead risk
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const ct20 = area.ct20 || area.CT20 || area.Ct20 || null;
+                  const housingRisk = area.housingRisk !== null && area.housingRisk !== undefined 
+                                     ? parseFloat(area.housingRisk.toString())
+                                     : (area.housing_risk !== null && area.housing_risk !== undefined
+                                        ? parseFloat(area.housing_risk.toString())
+                                        : null);
+                  const laCity = area.laCity || area.la_city || area.LA_CITY || area.LaCity || null;
+                  const housingId = area.housingId || area.OBJECTID || area.objectid || null;
+                  const shapeArea = area.shapeArea || area.Shape__Area || area.shape_area || null;
+                  const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏠 Housing with Potential Lead Risk
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${ct20 ? `<div><strong>Census Tract (2020):</strong> ${ct20}</div>` : ''}
+                        ${housingRisk !== null && housingRisk !== undefined ? `<div><strong>Housing Risk:</strong> ${housingRisk.toFixed(1)}%</div>` : ''}
+                        ${laCity ? `<div><strong>LA City:</strong> ${laCity}</div>` : ''}
+                        ${housingId ? `<div><strong>Area ID:</strong> ${housingId}</div>` : ''}
+                        ${shapeArea !== null && shapeArea !== undefined ? `<div><strong>Area:</strong> ${shapeArea.toFixed(2)} sq units</div>` : ''}
+                        ${isContaining ? `<div style="color: #dc2626; font-weight: 600; margin-top: 8px;">⚠️ Location is within this lead risk area</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all area attributes (excluding internal fields)
+                  const excludeFields = ['housingId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'ct20', 'CT20', 'Ct20', 'housingRisk', 'housing_risk', 'HousingRisk', 'laCity', 'la_city', 'LA_CITY', 'LaCity', 'shapeArea', 'Shape__Area', 'shape_area', 'shapeLength', 'Shape__Length', 'shape_length', 'isContaining'];
+                  Object.entries(area).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  housingAreaCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing LA County Housing Lead Risk polygon:', error);
+              }
+            }
+          });
+          
+          if (housingAreaCount > 0) {
+            if (!legendAccumulator['la_county_housing_lead_risk']) {
+              legendAccumulator['la_county_housing_lead_risk'] = {
+                icon: '🏠',
+                color: '#dc2626',
+                title: 'LA County Housing with Potential Lead Risk',
+                count: 0,
+              };
+            }
+            legendAccumulator['la_county_housing_lead_risk'].count += housingAreaCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing LA County Housing with Potential Lead Risk:', error);
+      }
+
+      // Draw LA County School District Boundaries as polygons on the map
+      try {
+        if (enrichments.la_county_school_district_boundaries_all && Array.isArray(enrichments.la_county_school_district_boundaries_all)) {
+          let districtCount = 0;
+          enrichments.la_county_school_district_boundaries_all.forEach((district: any) => {
+            if (district.geometry && district.geometry.rings) {
+              try {
+                const rings = district.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('LA County School District Boundary polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = district.isContaining;
+                  const color = isContaining ? '#3b82f6' : '#60a5fa'; // Blue for school districts
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const districtName = district.districtName || district.LABEL || district.label || district.Label || null;
+                  const districtCode = district.districtCode || district.ABBR || district.abbr || district.Abbr || null;
+                  const districtType = district.districtType || district.DISTRICT_TYPE || district.district_type || district.DistrictType || null;
+                  const districtId = district.districtId || district.OBJECTID || district.objectid || null;
+                  const shapeArea = district.shapeArea || district.Shape__Area || district.shape_area || null;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏫 School District Boundary
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${districtName ? `<div><strong>District Name:</strong> ${districtName}</div>` : ''}
+                        ${districtCode ? `<div><strong>District Code:</strong> ${districtCode}</div>` : ''}
+                        ${districtType ? `<div><strong>District Type:</strong> ${districtType}</div>` : ''}
+                        ${districtId ? `<div><strong>District ID:</strong> ${districtId}</div>` : ''}
+                        ${shapeArea !== null && shapeArea !== undefined ? `<div><strong>Area:</strong> ${shapeArea.toFixed(2)} sq units</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this school district</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all district attributes (excluding internal fields)
+                  const excludeFields = ['districtId', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'districtName', 'LABEL', 'label', 'Label', 'districtCode', 'ABBR', 'abbr', 'Abbr', 'districtType', 'DISTRICT_TYPE', 'district_type', 'DistrictType', 'shapeArea', 'Shape__Area', 'shape_area', 'shapeLength', 'Shape__Length', 'shape_length', 'isContaining'];
+                  Object.entries(district).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  districtCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing LA County School District Boundary polygon:', error);
+              }
+            }
+          });
+          
+          if (districtCount > 0) {
+            if (!legendAccumulator['la_county_school_district_boundaries']) {
+              legendAccumulator['la_county_school_district_boundaries'] = {
+                icon: '🏫',
+                color: '#3b82f6',
+                title: 'LA County School District Boundaries',
+                count: 0,
+              };
+            }
+            legendAccumulator['la_county_school_district_boundaries'].count += districtCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing LA County School District Boundaries:', error);
       }
 
       // Draw CA State Parks Entry Points

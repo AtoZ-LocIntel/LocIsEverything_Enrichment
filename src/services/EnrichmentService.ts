@@ -82,6 +82,8 @@ import { getCAEcoRegionsData } from '../adapters/caEcoRegions';
 import { getCALosAngelesZoningData } from '../adapters/caLosAngelesZoning';
 import { getLACountyArtsRecreationData, getLACountyEducationData, getLACountyHospitalsData, getLACountyMunicipalServicesData, getLACountyPhysicalFeaturesData, getLACountyPublicSafetyData, getLACountyTransportationData } from '../adapters/laCountyPOI';
 import { getLACountyHistoricCulturalMonumentsData } from '../adapters/laCountyHistoricCulturalMonuments';
+import { getLACountyHousingLeadRiskData } from '../adapters/laCountyHousingLeadRisk';
+import { getLACountySchoolDistrictBoundariesData } from '../adapters/laCountySchoolDistrictBoundaries';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1738,6 +1740,14 @@ export class EnrichmentService {
       // LA County Historic Cultural Monuments - Point-in-polygon and proximity query (max 25 miles)
       case 'la_county_historic_cultural_monuments':
         return await this.getLACountyHistoricCulturalMonuments(lat, lon, radius);
+      
+      // LA County Housing with Potential Lead Risk - Point-in-polygon and proximity query (max 5 miles)
+      case 'la_county_housing_lead_risk':
+        return await this.getLACountyHousingLeadRisk(lat, lon, radius);
+      
+      // LA County School District Boundaries - Point-in-polygon query only
+      case 'la_county_school_district_boundaries':
+        return await this.getLACountySchoolDistrictBoundaries(lat, lon);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -8504,6 +8514,123 @@ out center;`;
         la_county_historic_cultural_monuments_containing_message: 'Error querying historic cultural monuments',
         la_county_historic_cultural_monuments_count: 0,
         la_county_historic_cultural_monuments_all: []
+      };
+    }
+  }
+
+  private async getLACountyHousingLeadRisk(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏠 Fetching LA County Housing with Potential Lead Risk data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const housingAreas = await getLACountyHousingLeadRiskData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      if (housingAreas.length === 0) {
+        result.la_county_housing_lead_risk_containing = null;
+        result.la_county_housing_lead_risk_containing_message = 'No housing lead risk area found containing this location';
+        result.la_county_housing_lead_risk_count = 0;
+        result.la_county_housing_lead_risk_all = [];
+      } else {
+        // Get the first containing area (should typically be only one for point-in-polygon)
+        const containingArea = housingAreas.find(a => a.isContaining) || housingAreas[0];
+        
+        if (containingArea && containingArea.isContaining) {
+          result.la_county_housing_lead_risk_containing = containingArea.ct20 || containingArea.housingId || 'Unknown Area';
+          result.la_county_housing_lead_risk_containing_message = `Location is within housing lead risk area: Census Tract ${containingArea.ct20 || containingArea.housingId || 'Unknown'} (Risk: ${containingArea.housingRisk !== null ? containingArea.housingRisk.toFixed(1) : 'N/A'}%)`;
+        } else {
+          result.la_county_housing_lead_risk_containing = null;
+          result.la_county_housing_lead_risk_containing_message = 'No housing lead risk area found containing this location';
+        }
+        
+        result.la_county_housing_lead_risk_count = housingAreas.length;
+        result.la_county_housing_lead_risk_all = housingAreas.map(area => ({
+          ...area.attributes,
+          housingId: area.housingId,
+          ct20: area.ct20,
+          housingRisk: area.housingRisk,
+          laCity: area.laCity,
+          shapeArea: area.shapeArea,
+          shapeLength: area.shapeLength,
+          geometry: area.geometry,
+          distance_miles: area.distance_miles,
+          isContaining: area.isContaining
+        }));
+        
+        result.la_county_housing_lead_risk_summary = `Found ${housingAreas.length} housing lead risk area(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ LA County Housing Lead Risk data processed:`, {
+        totalCount: result.la_county_housing_lead_risk_count,
+        containing: result.la_county_housing_lead_risk_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Housing with Potential Lead Risk data:', error);
+      return {
+        la_county_housing_lead_risk_containing: null,
+        la_county_housing_lead_risk_containing_message: 'Error querying housing lead risk areas',
+        la_county_housing_lead_risk_count: 0,
+        la_county_housing_lead_risk_all: []
+      };
+    }
+  }
+
+  private async getLACountySchoolDistrictBoundaries(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏫 Fetching LA County School District Boundaries data for [${lat}, ${lon}]`);
+      
+      const districts = await getLACountySchoolDistrictBoundariesData(lat, lon);
+      
+      const result: Record<string, any> = {};
+
+      if (districts.length === 0) {
+        result.la_county_school_district_boundaries_containing = null;
+        result.la_county_school_district_boundaries_containing_message = 'No school district boundary found containing this location';
+        result.la_county_school_district_boundaries_count = 0;
+        result.la_county_school_district_boundaries_all = [];
+      } else {
+        // Get the first containing district (should typically be only one for point-in-polygon)
+        const containingDistrict = districts.find(d => d.isContaining) || districts[0];
+        
+        if (containingDistrict && containingDistrict.isContaining) {
+          result.la_county_school_district_boundaries_containing = containingDistrict.districtName || containingDistrict.districtCode || containingDistrict.districtId || 'Unknown District';
+          result.la_county_school_district_boundaries_containing_message = `Location is within school district: ${containingDistrict.districtName || containingDistrict.districtCode || containingDistrict.districtId || 'Unknown'}`;
+        } else {
+          result.la_county_school_district_boundaries_containing = null;
+          result.la_county_school_district_boundaries_containing_message = 'No school district boundary found containing this location';
+        }
+        
+        result.la_county_school_district_boundaries_count = districts.length;
+        result.la_county_school_district_boundaries_all = districts.map(district => ({
+          ...district.attributes,
+          districtId: district.districtId,
+          districtName: district.districtName,
+          districtCode: district.districtCode,
+          districtType: district.districtType,
+          shapeArea: district.shapeArea,
+          shapeLength: district.shapeLength,
+          geometry: district.geometry,
+          isContaining: district.isContaining
+        }));
+        
+        result.la_county_school_district_boundaries_summary = `Found ${districts.length} school district boundary(ies) containing the point.`;
+      }
+      
+      console.log(`✅ LA County School District Boundaries data processed:`, {
+        totalCount: result.la_county_school_district_boundaries_count,
+        containing: result.la_county_school_district_boundaries_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County School District Boundaries data:', error);
+      return {
+        la_county_school_district_boundaries_containing: null,
+        la_county_school_district_boundaries_containing_message: 'Error querying school district boundaries',
+        la_county_school_district_boundaries_count: 0,
+        la_county_school_district_boundaries_all: []
       };
     }
   }
