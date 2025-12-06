@@ -9,7 +9,7 @@ interface SingleSearchProps {
   onSearchInputChange: (value: string) => void;
 }
 
-const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, searchInput, onSearchInputChange }) => {
+const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, searchInput, onSearchInputChange, isMobile = false }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [isLocationLoading, setIsLocationLoading] = useState(false);
@@ -52,14 +52,16 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             
             {/* Icons: Data Disclaimer (desktop only) and Pro Tips */}
             <div className="flex items-center space-x-2">
-              {/* Data Disclaimer Info Icon - Desktop only */}
-              <button
-                onClick={() => setShowDataDisclaimer(!showDataDisclaimer)}
-                className="hidden md:block p-2 text-blue-400 hover:text-blue-300 transition-colors"
-                title="Data Service Disclaimer"
-              >
-                <Info className="w-5 h-5" />
-              </button>
+              {/* Data Disclaimer Info Icon - Desktop only (conditionally rendered, not just hidden) */}
+              {!isMobile && (
+                <button
+                  onClick={() => setShowDataDisclaimer(!showDataDisclaimer)}
+                  className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
+                  title="Data Service Disclaimer"
+                >
+                  <Info className="w-5 h-5" />
+                </button>
+              )}
               
               {/* Pro Tips Lightbulb */}
               <button
