@@ -35,39 +35,39 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
     <>
       <div className="single-search card">
         <div className="card-header">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg flex items-center justify-center">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <img 
                   src="/assets/new-logo.webp"
                   alt="The Location Is Everything Co Logo" 
                   className="w-16 h-16 lg:w-20 lg:h-20 object-contain"
                 />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Single Location Search</h3>
-                <p className="text-sm text-gray-200">Search from your location or enter an address</p>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-lg sm:text-xl font-bold text-white truncate" style={{ fontFamily: 'Quicksand, sans-serif' }}>Single Location Search</h3>
+                <p className="text-xs sm:text-sm text-gray-200 line-clamp-2">Search from your location or enter an address</p>
               </div>
             </div>
             
             {/* Icons: Data Disclaimer and Pro Tips */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
               {/* Data Disclaimer Info Icon */}
               <button
                 onClick={() => setShowDataDisclaimer(!showDataDisclaimer)}
-                className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
+                className="p-1.5 sm:p-2 text-blue-400 hover:text-blue-300 transition-colors flex-shrink-0"
                 title="Data Service Disclaimer"
               >
-                <Info className="w-5 h-5" />
+                <Info className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               
               {/* Pro Tips Lightbulb */}
               <button
                 onClick={() => setShowProTips(!showProTips)}
-                className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
+                className="p-1.5 sm:p-2 text-yellow-400 hover:text-yellow-300 transition-colors flex-shrink-0"
                 title="Pro Tips"
               >
-                <Lightbulb className="w-5 h-5" />
+                <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>
