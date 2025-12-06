@@ -36,17 +36,17 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
       <div className="single-search card">
         <div className="card-header">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
-            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 overflow-hidden">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <img 
                   src="/assets/new-logo.webp"
                   alt="The Location Is Everything Co Logo" 
-                  className="w-16 h-16 lg:w-20 lg:h-20 object-contain"
+                  className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 object-contain"
                 />
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-lg sm:text-xl font-bold text-white truncate" style={{ fontFamily: 'Quicksand, sans-serif' }}>Single Location Search</h3>
-                <p className="text-xs sm:text-sm text-gray-200 line-clamp-2">Search from your location or enter an address</p>
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <h3 className="text-base sm:text-lg lg:text-xl font-bold text-white break-words" style={{ fontFamily: 'Quicksand, sans-serif' }}>Single Location Search</h3>
+                <p className="text-xs sm:text-sm text-gray-200 break-words">Search from your location or enter an address</p>
               </div>
             </div>
             
