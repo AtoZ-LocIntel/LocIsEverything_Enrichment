@@ -225,6 +225,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_physical_features': { icon: '🏔️', color: '#10b981', title: 'LA County Physical Features' },
   'la_county_public_safety': { icon: '🚨', color: '#dc2626', title: 'LA County Public Safety' },
   'la_county_transportation': { icon: '🚌', color: '#f59e0b', title: 'LA County Transportation' },
+  'la_county_historic_cultural_monuments': { icon: '🏛️', color: '#a855f7', title: 'LA County Historic Cultural Monuments' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -558,6 +559,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_physical_features_all' || // Skip LA County Physical Features array (handled separately for map drawing)
     key === 'la_county_public_safety_all' || // Skip LA County Public Safety array (handled separately for map drawing)
     key === 'la_county_transportation_all' || // Skip LA County Transportation array (handled separately for map drawing)
+    key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -10978,6 +10980,118 @@ const MapView: React.FC<MapViewProps> = ({
           console.error(`Error processing ${title}:`, error);
         }
       });
+
+      // Draw LA County Historic Cultural Monuments as polygons on the map
+      try {
+        if (enrichments.la_county_historic_cultural_monuments_all && Array.isArray(enrichments.la_county_historic_cultural_monuments_all)) {
+          let monumentCount = 0;
+          enrichments.la_county_historic_cultural_monuments_all.forEach((monument: any) => {
+            if (monument.geometry && monument.geometry.rings) {
+              try {
+                const rings = monument.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('LA County Historic Cultural Monument polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = monument.isContaining;
+                  const color = isContaining ? '#a855f7' : '#c084fc'; // Purple for monuments
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const name = monument.name || monument.NAME || monument.Name || 'Unknown Monument';
+                  const monumentId = monument.monumentId || monument.OBJECTID || monument.objectid || null;
+                  const histType = monument.histType || monument.HIST_TYPE || monument.hist_type || null;
+                  const mntType = monument.mntType || monument.MNT_TYPE || monument.mnt_type || null;
+                  const mntNum = monument.mntNum || monument.MNT_NUM || monument.mnt_num || null;
+                  const location = monument.location || monument.LOCATION || monument.Location || null;
+                  const dateActive = monument.dateActive || monument.DATE_ACTIVE || monument.date_active || null;
+                  const notes = monument.notes || monument.NOTES || monument.Notes || null;
+                  const shapeArea = monument.shapeArea || monument.Shape__Area || monument.shape_area || null;
+                  const distance = monument.distance_miles !== null && monument.distance_miles !== undefined ? monument.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏛️ Historic Cultural Monument
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${name ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                        ${monumentId ? `<div><strong>Monument ID:</strong> ${monumentId}</div>` : ''}
+                        ${mntNum ? `<div><strong>Monument Number:</strong> ${mntNum}</div>` : ''}
+                        ${histType ? `<div><strong>Historic Type:</strong> ${histType}</div>` : ''}
+                        ${mntType ? `<div><strong>Monument Type:</strong> ${mntType}</div>` : ''}
+                        ${location ? `<div><strong>Location:</strong> ${location}</div>` : ''}
+                        ${dateActive ? `<div><strong>Date Active:</strong> ${dateActive}</div>` : ''}
+                        ${notes ? `<div><strong>Notes:</strong> ${notes}</div>` : ''}
+                        ${shapeArea !== null && shapeArea !== undefined ? `<div><strong>Area:</strong> ${shapeArea.toFixed(2)} sq units</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this monument</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all monument attributes (excluding internal fields)
+                  const excludeFields = ['monumentId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'NAME', 'Name', 'histType', 'HIST_TYPE', 'hist_type', 'mntType', 'MNT_TYPE', 'mnt_type', 'mntNum', 'MNT_NUM', 'mnt_num', 'location', 'LOCATION', 'Location', 'dateActive', 'DATE_ACTIVE', 'date_active', 'notes', 'NOTES', 'Notes', 'shapeArea', 'Shape__Area', 'shape_area', 'shapeLength', 'Shape__Length', 'shape_length', 'isContaining'];
+                  Object.entries(monument).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  monumentCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing LA County Historic Cultural Monument polygon:', error);
+              }
+            }
+          });
+          
+          if (monumentCount > 0) {
+            if (!legendAccumulator['la_county_historic_cultural_monuments']) {
+              legendAccumulator['la_county_historic_cultural_monuments'] = {
+                icon: '🏛️',
+                color: '#a855f7',
+                title: 'LA County Historic Cultural Monuments',
+                count: 0,
+              };
+            }
+            legendAccumulator['la_county_historic_cultural_monuments'].count += monumentCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing LA County Historic Cultural Monuments:', error);
+      }
 
       // Draw CA State Parks Entry Points
       try {

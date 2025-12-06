@@ -81,6 +81,7 @@ import { getCAOilGasWellsData } from '../adapters/caOilGasWells';
 import { getCAEcoRegionsData } from '../adapters/caEcoRegions';
 import { getCALosAngelesZoningData } from '../adapters/caLosAngelesZoning';
 import { getLACountyArtsRecreationData, getLACountyEducationData, getLACountyHospitalsData, getLACountyMunicipalServicesData, getLACountyPhysicalFeaturesData, getLACountyPublicSafetyData, getLACountyTransportationData } from '../adapters/laCountyPOI';
+import { getLACountyHistoricCulturalMonumentsData } from '../adapters/laCountyHistoricCulturalMonuments';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1733,6 +1734,10 @@ export class EnrichmentService {
         return await this.getLACountyPublicSafety(lat, lon, radius);
       case 'la_county_transportation':
         return await this.getLACountyTransportation(lat, lon, radius);
+      
+      // LA County Historic Cultural Monuments - Point-in-polygon and proximity query (max 25 miles)
+      case 'la_county_historic_cultural_monuments':
+        return await this.getLACountyHistoricCulturalMonuments(lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -8436,6 +8441,69 @@ out center;`;
       return {
         la_county_transportation_count: 0,
         la_county_transportation_all: []
+      };
+    }
+  }
+
+  private async getLACountyHistoricCulturalMonuments(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching LA County Historic Cultural Monuments data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const monuments = await getLACountyHistoricCulturalMonumentsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      if (monuments.length === 0) {
+        result.la_county_historic_cultural_monuments_containing = null;
+        result.la_county_historic_cultural_monuments_containing_message = 'No historic cultural monument found containing this location';
+        result.la_county_historic_cultural_monuments_count = 0;
+        result.la_county_historic_cultural_monuments_all = [];
+      } else {
+        // Get the first containing monument (should typically be only one for point-in-polygon)
+        const containingMonument = monuments.find(m => m.isContaining) || monuments[0];
+        
+        if (containingMonument && containingMonument.isContaining) {
+          result.la_county_historic_cultural_monuments_containing = containingMonument.name || containingMonument.monumentId || 'Unknown Monument';
+          result.la_county_historic_cultural_monuments_containing_message = `Location is within historic cultural monument: ${containingMonument.name || containingMonument.monumentId || 'Unknown'}`;
+        } else {
+          result.la_county_historic_cultural_monuments_containing = null;
+          result.la_county_historic_cultural_monuments_containing_message = 'No historic cultural monument found containing this location';
+        }
+        
+        result.la_county_historic_cultural_monuments_count = monuments.length;
+        result.la_county_historic_cultural_monuments_all = monuments.map(monument => ({
+          ...monument.attributes,
+          monumentId: monument.monumentId,
+          histType: monument.histType,
+          mntType: monument.mntType,
+          mntNum: monument.mntNum,
+          name: monument.name,
+          location: monument.location,
+          dateActive: monument.dateActive,
+          notes: monument.notes,
+          shapeArea: monument.shapeArea,
+          shapeLength: monument.shapeLength,
+          geometry: monument.geometry,
+          distance_miles: monument.distance_miles,
+          isContaining: monument.isContaining
+        }));
+        
+        result.la_county_historic_cultural_monuments_summary = `Found ${monuments.length} historic cultural monument(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ LA County Historic Cultural Monuments data processed:`, {
+        totalCount: result.la_county_historic_cultural_monuments_count,
+        containing: result.la_county_historic_cultural_monuments_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Historic Cultural Monuments data:', error);
+      return {
+        la_county_historic_cultural_monuments_containing: null,
+        la_county_historic_cultural_monuments_containing_message: 'Error querying historic cultural monuments',
+        la_county_historic_cultural_monuments_count: 0,
+        la_county_historic_cultural_monuments_all: []
       };
     }
   }
