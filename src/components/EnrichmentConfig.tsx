@@ -501,9 +501,20 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         
         if (section.id === 'ca') {
-          // Get CA Open Data Portal enrichments (filter POIs where section is 'ca')
-          const caOpenDataPortalPOIs = poiTypes.filter(poi => poi.section === 'ca');
+          // Get CA Open Data Portal enrichments (filter POIs where section is 'ca' but exclude LA County layers)
+          const caOpenDataPortalPOIs = poiTypes.filter(poi => poi.section === 'ca' && !poi.id.startsWith('la_county_'));
           const caOpenDataPortalEnrichments = caOpenDataPortalPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Get LA County enrichments (filter POIs where section is 'ca' and id starts with 'la_county_')
+          const laCountyPOIs = poiTypes.filter(poi => poi.section === 'ca' && poi.id.startsWith('la_county_'));
+          const laCountyEnrichments = laCountyPOIs.map(poi => ({
             id: poi.id,
             label: poi.label,
             description: poi.description,
@@ -520,6 +531,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               icon: <img src="/assets/CAopendataportal.webp" alt="CA Open Data Portal" className="w-full h-full object-cover rounded-full" />,
               description: 'California Open Data Portal data layers',
               enrichments: caOpenDataPortalEnrichments
+            },
+            {
+              id: 'la_county',
+              title: 'Los Angeles County',
+              icon: <img src="/assets/LACounty.webp" alt="Los Angeles County" className="w-full h-full object-cover rounded-full" />,
+              description: 'Los Angeles County Points of Interest',
+              enrichments: laCountyEnrichments
             }
           ];
           

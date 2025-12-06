@@ -73,6 +73,14 @@ import { getCAMarineOilTerminalsData } from '../adapters/caMarineOilTerminals';
 import { getCAPostfireDamageInspectionsData } from '../adapters/caPostfireDamageInspections';
 import { getCAMediumHeavyDutyInfrastructureData } from '../adapters/caMediumHeavyDutyInfrastructure';
 import { getCAFRAPFacilitiesData } from '../adapters/caFrapFacilities';
+import { getCASolarFootprintsData } from '../adapters/caSolarFootprints';
+import { getCANaturalGasServiceAreasData } from '../adapters/caNaturalGasServiceAreas';
+import { getCAPLSSSectionsData } from '../adapters/caPlssSections';
+import { getCAGeothermalWellsData } from '../adapters/caGeothermalWells';
+import { getCAOilGasWellsData } from '../adapters/caOilGasWells';
+import { getCAEcoRegionsData } from '../adapters/caEcoRegions';
+import { getCALosAngelesZoningData } from '../adapters/caLosAngelesZoning';
+import { getLACountyArtsRecreationData, getLACountyEducationData, getLACountyHospitalsData, getLACountyMunicipalServicesData, getLACountyPhysicalFeaturesData, getLACountyPublicSafetyData, getLACountyTransportationData } from '../adapters/laCountyPOI';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1681,6 +1689,50 @@ export class EnrichmentService {
       // CA FRAP Facilities - Proximity query only
       case 'ca_frap_facilities':
         return await this.getCAFRAPFacilities(lat, lon, radius);
+      
+      // CA Solar Footprints - Proximity query only
+      case 'ca_solar_footprints':
+        return await this.getCASolarFootprints(lat, lon, radius);
+      
+      // CA Natural Gas Service Areas - Point-in-polygon query only
+      case 'ca_natural_gas_service_areas':
+        return await this.getCANaturalGasServiceAreas(lat, lon);
+      
+      // CA PLSS Sections - Point-in-polygon query only
+      case 'ca_plss_sections':
+        return await this.getCAPLSSSections(lat, lon);
+      
+      // CA Geothermal Wells - Proximity query only
+      case 'ca_geothermal_wells':
+        return await this.getCAGeothermalWells(lat, lon, radius);
+      
+      // CA Oil and Gas Wells - Proximity query only
+      case 'ca_oil_gas_wells':
+        return await this.getCAOilGasWells(lat, lon, radius);
+      
+      // CA Eco Regions - Point-in-polygon query only
+      case 'ca_eco_regions':
+        return await this.getCAEcoRegions(lat, lon);
+      
+      // City of Los Angeles Zoning - Point-in-polygon and proximity query (max 1 mile)
+      case 'ca_la_zoning':
+        return await this.getCALosAngelesZoning(lat, lon, radius);
+      
+      // LA County Points of Interest - Proximity query only (up to 25 miles)
+      case 'la_county_arts_recreation':
+        return await this.getLACountyArtsRecreation(lat, lon, radius);
+      case 'la_county_education':
+        return await this.getLACountyEducation(lat, lon, radius);
+      case 'la_county_hospitals':
+        return await this.getLACountyHospitals(lat, lon, radius);
+      case 'la_county_municipal_services':
+        return await this.getLACountyMunicipalServices(lat, lon, radius);
+      case 'la_county_physical_features':
+        return await this.getLACountyPhysicalFeatures(lat, lon, radius);
+      case 'la_county_public_safety':
+        return await this.getLACountyPublicSafety(lat, lon, radius);
+      case 'la_county_transportation':
+        return await this.getLACountyTransportation(lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -7743,6 +7795,647 @@ out center;`;
       return {
         ca_frap_facilities_count: 0,
         ca_frap_facilities_all: []
+      };
+    }
+  }
+
+  private async getCASolarFootprints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`☀️ Fetching CA Solar Footprints data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_solar_footprints_count: 0,
+          ca_solar_footprints_all: []
+        };
+      }
+      
+      const footprints = await getCASolarFootprintsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      result.ca_solar_footprints_count = footprints.length;
+      result.ca_solar_footprints_all = footprints.map(footprint => ({
+        ...footprint.attributes,
+        footprintId: footprint.footprintId,
+        countyName: footprint.countyName,
+        acres: footprint.acres,
+        type: footprint.type,
+        urbanRural: footprint.urbanRural,
+        combinedClass: footprint.combinedClass,
+        distSubGTET100Miles: footprint.distSubGTET100Miles,
+        percentileGTET100Miles: footprint.percentileGTET100Miles,
+        nameSubGTET100: footprint.nameSubGTET100,
+        hifldIdSubGTET100: footprint.hifldIdSubGTET100,
+        distSubGTET200Miles: footprint.distSubGTET200Miles,
+        percentileGTET200Miles: footprint.percentileGTET200Miles,
+        nameSubGTET200: footprint.nameSubGTET200,
+        hifldIdSubGTET200: footprint.hifldIdSubGTET200,
+        distSubCAISOMiles: footprint.distSubCAISOMiles,
+        percentileGTETCAISOMiles: footprint.percentileGTETCAISOMiles,
+        nameSubCASIO: footprint.nameSubCASIO,
+        hifldIdSubCAISO: footprint.hifldIdSubCAISO,
+        solarTechnoeconomicIntersec: footprint.solarTechnoeconomicIntersec,
+        shapeArea: footprint.shapeArea,
+        shapeLength: footprint.shapeLength,
+        geometry: footprint.geometry,
+        distance_miles: footprint.distance_miles,
+        isContaining: footprint.isContaining
+      }));
+      
+      result.ca_solar_footprints_summary = `Found ${footprints.length} solar footprint(s) within ${radius} miles.`;
+      
+      console.log(`✅ CA Solar Footprints data processed:`, {
+        totalCount: result.ca_solar_footprints_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Solar Footprints data:', error);
+      return {
+        ca_solar_footprints_count: 0,
+        ca_solar_footprints_all: []
+      };
+    }
+  }
+
+  private async getCANaturalGasServiceAreas(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛽ Fetching CA Natural Gas Service Areas data for [${lat}, ${lon}]`);
+      
+      const serviceAreas = await getCANaturalGasServiceAreasData(lat, lon);
+      
+      const result: Record<string, any> = {};
+
+      if (serviceAreas.length === 0) {
+        result.ca_natural_gas_service_areas_containing = null;
+        result.ca_natural_gas_service_areas_containing_message = 'No natural gas service area found containing this location';
+        result.ca_natural_gas_service_areas_count = 0;
+        result.ca_natural_gas_service_areas_all = [];
+      } else {
+        // Get the first containing service area (should typically be only one)
+        const containingArea = serviceAreas[0];
+        
+        result.ca_natural_gas_service_areas_containing = containingArea.serviceAreaId || 'Unknown Service Area';
+        result.ca_natural_gas_service_areas_containing_message = `Location is within natural gas service area: ${containingArea.serviceAreaId || 'Unknown'}`;
+        result.ca_natural_gas_service_areas_count = serviceAreas.length;
+        result.ca_natural_gas_service_areas_all = serviceAreas.map(area => ({
+          ...area.attributes,
+          serviceAreaId: area.serviceAreaId,
+          geometry: area.geometry,
+          isContaining: area.isContaining
+        }));
+      }
+      
+      console.log(`✅ CA Natural Gas Service Areas data processed:`, {
+        totalCount: result.ca_natural_gas_service_areas_count,
+        containing: result.ca_natural_gas_service_areas_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Natural Gas Service Areas data:', error);
+      return {
+        ca_natural_gas_service_areas_containing: null,
+        ca_natural_gas_service_areas_containing_message: 'Error querying natural gas service areas',
+        ca_natural_gas_service_areas_count: 0,
+        ca_natural_gas_service_areas_all: []
+      };
+    }
+  }
+
+  private async getCAPLSSSections(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Fetching CA PLSS Sections data for [${lat}, ${lon}]`);
+      
+      const sections = await getCAPLSSSectionsData(lat, lon);
+      
+      const result: Record<string, any> = {};
+
+      if (sections.length === 0) {
+        result.ca_plss_sections_containing = null;
+        result.ca_plss_sections_containing_message = 'No PLSS section found containing this location';
+        result.ca_plss_sections_township = null;
+        result.ca_plss_sections_range = null;
+        result.ca_plss_sections_section = null;
+        result.ca_plss_sections_meridian = null;
+        result.ca_plss_sections_count = 0;
+        result.ca_plss_sections_all = [];
+      } else {
+        // Get the first containing section (should typically be only one)
+        const containingSection = sections[0];
+        
+        // Format Township and Range for summary form
+        const township = containingSection.township || null;
+        const range = containingSection.range || null;
+        const section = containingSection.section || null;
+        const meridian = containingSection.meridian || null;
+        
+        // Create formatted string for summary
+        let plssString = '';
+        if (township && range) {
+          plssString = `T${township} R${range}`;
+          if (section) {
+            plssString += ` S${section}`;
+          }
+          if (meridian) {
+            plssString += ` ${meridian}`;
+          }
+        } else {
+          plssString = containingSection.sectionId || 'Unknown Section';
+        }
+        
+        result.ca_plss_sections_containing = plssString;
+        result.ca_plss_sections_containing_message = `Location is within PLSS section: ${plssString}`;
+        result.ca_plss_sections_township = township;
+        result.ca_plss_sections_range = range;
+        result.ca_plss_sections_section = section;
+        result.ca_plss_sections_meridian = meridian;
+        result.ca_plss_sections_count = sections.length;
+        result.ca_plss_sections_all = sections.map(sec => ({
+          ...sec.attributes,
+          sectionId: sec.sectionId,
+          township: sec.township,
+          range: sec.range,
+          section: sec.section,
+          meridian: sec.meridian,
+          geometry: sec.geometry,
+          isContaining: sec.isContaining
+        }));
+      }
+      
+      console.log(`✅ CA PLSS Sections data processed:`, {
+        totalCount: result.ca_plss_sections_count,
+        township: result.ca_plss_sections_township,
+        range: result.ca_plss_sections_range,
+        section: result.ca_plss_sections_section
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA PLSS Sections data:', error);
+      return {
+        ca_plss_sections_containing: null,
+        ca_plss_sections_containing_message: 'Error querying PLSS sections',
+        ca_plss_sections_township: null,
+        ca_plss_sections_range: null,
+        ca_plss_sections_section: null,
+        ca_plss_sections_meridian: null,
+        ca_plss_sections_count: 0,
+        ca_plss_sections_all: []
+      };
+    }
+  }
+
+  private async getCAGeothermalWells(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌋 Fetching CA Geothermal Wells data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_geothermal_wells_count: 0,
+          ca_geothermal_wells_all: []
+        };
+      }
+      
+      const wells = await getCAGeothermalWellsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      result.ca_geothermal_wells_count = wells.length;
+      result.ca_geothermal_wells_all = wells.map(well => ({
+        ...well.attributes,
+        wellId: well.wellId,
+        geometry: well.geometry,
+        distance_miles: well.distance_miles
+      }));
+      
+      result.ca_geothermal_wells_summary = `Found ${wells.length} geothermal well(s) within ${radius} miles.`;
+      
+      console.log(`✅ CA Geothermal Wells data processed:`, {
+        totalCount: result.ca_geothermal_wells_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Geothermal Wells data:', error);
+      return {
+        ca_geothermal_wells_count: 0,
+        ca_geothermal_wells_all: []
+      };
+    }
+  }
+
+  private async getCAOilGasWells(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛢️ Fetching CA Oil and Gas Wells data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          ca_oil_gas_wells_count: 0,
+          ca_oil_gas_wells_all: []
+        };
+      }
+      
+      const wells = await getCAOilGasWellsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      result.ca_oil_gas_wells_count = wells.length;
+      result.ca_oil_gas_wells_all = wells.map(well => ({
+        ...well.attributes,
+        wellId: well.wellId,
+        geometry: well.geometry,
+        distance_miles: well.distance_miles
+      }));
+      
+      result.ca_oil_gas_wells_summary = `Found ${wells.length} oil and gas well(s) within ${radius} miles.`;
+      
+      console.log(`✅ CA Oil and Gas Wells data processed:`, {
+        totalCount: result.ca_oil_gas_wells_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Oil and Gas Wells data:', error);
+      return {
+        ca_oil_gas_wells_count: 0,
+        ca_oil_gas_wells_all: []
+      };
+    }
+  }
+
+  private async getCAEcoRegions(lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌿 Fetching CA Eco Regions data for [${lat}, ${lon}]`);
+      
+      const regions = await getCAEcoRegionsData(lat, lon);
+      
+      const result: Record<string, any> = {};
+
+      if (regions.length === 0) {
+        result.ca_eco_regions_containing = null;
+        result.ca_eco_regions_containing_message = 'No eco region found containing this location';
+        result.ca_eco_regions_count = 0;
+        result.ca_eco_regions_all = [];
+      } else {
+        // Get the first containing region (should typically be only one)
+        const containingRegion = regions[0];
+        
+        // Extract common ecoregion fields
+        const usL3Code = containingRegion.attributes.US_L3CODE || 
+                        containingRegion.attributes.us_l3code ||
+                        containingRegion.attributes.US_L3_CODE ||
+                        null;
+        
+        const usL3Name = containingRegion.attributes.US_L3NAME || 
+                        containingRegion.attributes.us_l3name ||
+                        containingRegion.attributes.US_L3_NAME ||
+                        null;
+        
+        const regionName = usL3Name || usL3Code || containingRegion.regionId || 'Unknown Region';
+        
+        result.ca_eco_regions_containing = regionName;
+        result.ca_eco_regions_containing_message = `Location is within eco region: ${regionName}`;
+        result.ca_eco_regions_us_l3_code = usL3Code;
+        result.ca_eco_regions_us_l3_name = usL3Name;
+        result.ca_eco_regions_count = regions.length;
+        result.ca_eco_regions_all = regions.map(region => ({
+          ...region.attributes,
+          regionId: region.regionId,
+          geometry: region.geometry,
+          isContaining: region.isContaining
+        }));
+      }
+      
+      console.log(`✅ CA Eco Regions data processed:`, {
+        totalCount: result.ca_eco_regions_count,
+        containing: result.ca_eco_regions_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CA Eco Regions data:', error);
+      return {
+        ca_eco_regions_containing: null,
+        ca_eco_regions_containing_message: 'Error querying eco regions',
+        ca_eco_regions_us_l3_code: null,
+        ca_eco_regions_us_l3_name: null,
+        ca_eco_regions_count: 0,
+        ca_eco_regions_all: []
+      };
+    }
+  }
+
+  private async getCALosAngelesZoning(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏙️ Fetching City of Los Angeles Zoning data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const zones = await getCALosAngelesZoningData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      if (zones.length === 0) {
+        result.ca_la_zoning_containing = null;
+        result.ca_la_zoning_containing_message = 'No zoning polygon found containing this location';
+        result.ca_la_zoning_count = 0;
+        result.ca_la_zoning_all = [];
+      } else {
+        // Get the first containing zone (should typically be only one for point-in-polygon)
+        const containingZone = zones.find(z => z.isContaining) || zones[0];
+        
+        if (containingZone && containingZone.isContaining) {
+          result.ca_la_zoning_containing = containingZone.zoningId || 'Unknown Zone';
+          result.ca_la_zoning_containing_message = `Location is within zoning: ${containingZone.zoningId || 'Unknown'}`;
+        } else {
+          result.ca_la_zoning_containing = null;
+          result.ca_la_zoning_containing_message = 'No zoning polygon found containing this location';
+        }
+        
+        result.ca_la_zoning_count = zones.length;
+        result.ca_la_zoning_all = zones.map(zone => ({
+          ...zone.attributes,
+          zoningId: zone.zoningId,
+          geometry: zone.geometry,
+          distance_miles: zone.distance_miles,
+          isContaining: zone.isContaining
+        }));
+        
+        result.ca_la_zoning_summary = `Found ${zones.length} zoning polygon(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ City of Los Angeles Zoning data processed:`, {
+        totalCount: result.ca_la_zoning_count,
+        containing: result.ca_la_zoning_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching City of Los Angeles Zoning data:', error);
+      return {
+        ca_la_zoning_containing: null,
+        ca_la_zoning_containing_message: 'Error querying zoning polygons',
+        ca_la_zoning_count: 0,
+        ca_la_zoning_all: []
+      };
+    }
+  }
+
+  private async getLACountyArtsRecreation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🎨 Fetching LA County Arts and Recreation data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_arts_recreation_count: 0,
+          la_county_arts_recreation_all: []
+        };
+      }
+      
+      const pois = await getLACountyArtsRecreationData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_arts_recreation_count = pois.length;
+      result.la_county_arts_recreation_all = pois.map(poi => ({
+        ...poi.attributes,
+        poiId: poi.poiId,
+        geometry: poi.geometry,
+        distance_miles: poi.distance_miles
+      }));
+      result.la_county_arts_recreation_summary = `Found ${pois.length} arts and recreation POI(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Arts and Recreation data processed:`, {
+        totalCount: result.la_county_arts_recreation_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Arts and Recreation data:', error);
+      return {
+        la_county_arts_recreation_count: 0,
+        la_county_arts_recreation_all: []
+      };
+    }
+  }
+
+  private async getLACountyEducation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🎓 Fetching LA County Education data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_education_count: 0,
+          la_county_education_all: []
+        };
+      }
+      
+      const pois = await getLACountyEducationData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_education_count = pois.length;
+      result.la_county_education_all = pois.map(poi => ({
+        ...poi.attributes,
+        poiId: poi.poiId,
+        geometry: poi.geometry,
+        distance_miles: poi.distance_miles
+      }));
+      result.la_county_education_summary = `Found ${pois.length} education POI(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Education data processed:`, {
+        totalCount: result.la_county_education_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Education data:', error);
+      return {
+        la_county_education_count: 0,
+        la_county_education_all: []
+      };
+    }
+  }
+
+  private async getLACountyHospitals(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏥 Fetching LA County Hospitals data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_hospitals_count: 0,
+          la_county_hospitals_all: []
+        };
+      }
+      
+      const pois = await getLACountyHospitalsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_hospitals_count = pois.length;
+      result.la_county_hospitals_all = pois.map(poi => ({
+        ...poi.attributes,
+        poiId: poi.poiId,
+        geometry: poi.geometry,
+        distance_miles: poi.distance_miles
+      }));
+      result.la_county_hospitals_summary = `Found ${pois.length} hospital(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Hospitals data processed:`, {
+        totalCount: result.la_county_hospitals_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Hospitals data:', error);
+      return {
+        la_county_hospitals_count: 0,
+        la_county_hospitals_all: []
+      };
+    }
+  }
+
+  private async getLACountyMunicipalServices(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching LA County Municipal Services data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_municipal_services_count: 0,
+          la_county_municipal_services_all: []
+        };
+      }
+      
+      const pois = await getLACountyMunicipalServicesData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_municipal_services_count = pois.length;
+      result.la_county_municipal_services_all = pois.map(poi => ({
+        ...poi.attributes,
+        poiId: poi.poiId,
+        geometry: poi.geometry,
+        distance_miles: poi.distance_miles
+      }));
+      result.la_county_municipal_services_summary = `Found ${pois.length} municipal service(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Municipal Services data processed:`, {
+        totalCount: result.la_county_municipal_services_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Municipal Services data:', error);
+      return {
+        la_county_municipal_services_count: 0,
+        la_county_municipal_services_all: []
+      };
+    }
+  }
+
+  private async getLACountyPhysicalFeatures(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏔️ Fetching LA County Physical Features data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_physical_features_count: 0,
+          la_county_physical_features_all: []
+        };
+      }
+      
+      const pois = await getLACountyPhysicalFeaturesData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_physical_features_count = pois.length;
+      result.la_county_physical_features_all = pois.map(poi => ({
+        ...poi.attributes,
+        poiId: poi.poiId,
+        geometry: poi.geometry,
+        distance_miles: poi.distance_miles
+      }));
+      result.la_county_physical_features_summary = `Found ${pois.length} physical feature(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Physical Features data processed:`, {
+        totalCount: result.la_county_physical_features_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Physical Features data:', error);
+      return {
+        la_county_physical_features_count: 0,
+        la_county_physical_features_all: []
+      };
+    }
+  }
+
+  private async getLACountyPublicSafety(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚨 Fetching LA County Public Safety data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_public_safety_count: 0,
+          la_county_public_safety_all: []
+        };
+      }
+      
+      const pois = await getLACountyPublicSafetyData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_public_safety_count = pois.length;
+      result.la_county_public_safety_all = pois.map(poi => ({
+        ...poi.attributes,
+        poiId: poi.poiId,
+        geometry: poi.geometry,
+        distance_miles: poi.distance_miles
+      }));
+      result.la_county_public_safety_summary = `Found ${pois.length} public safety POI(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Public Safety data processed:`, {
+        totalCount: result.la_county_public_safety_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Public Safety data:', error);
+      return {
+        la_county_public_safety_count: 0,
+        la_county_public_safety_all: []
+      };
+    }
+  }
+
+  private async getLACountyTransportation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚌 Fetching LA County Transportation data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_transportation_count: 0,
+          la_county_transportation_all: []
+        };
+      }
+      
+      const pois = await getLACountyTransportationData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_transportation_count = pois.length;
+      result.la_county_transportation_all = pois.map(poi => ({
+        ...poi.attributes,
+        poiId: poi.poiId,
+        geometry: poi.geometry,
+        distance_miles: poi.distance_miles
+      }));
+      result.la_county_transportation_summary = `Found ${pois.length} transportation POI(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Transportation data processed:`, {
+        totalCount: result.la_county_transportation_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Transportation data:', error);
+      return {
+        la_county_transportation_count: 0,
+        la_county_transportation_all: []
       };
     }
   }

@@ -211,6 +211,20 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_postfire_damage_inspections': { icon: '🔥', color: '#dc2626', title: 'CA Post-Fire Damage Inspections (DINS)' },
   'ca_medium_heavy_duty_infrastructure': { icon: '🚛', color: '#f97316', title: 'CA Medium & Heavy Duty Infrastructure' },
   'ca_frap_facilities': { icon: '🚒', color: '#dc2626', title: 'CA Facilities for Wildland Fire Protection' },
+  'ca_solar_footprints': { icon: '☀️', color: '#fbbf24', title: 'CA Solar Footprints' },
+  'ca_natural_gas_service_areas': { icon: '⛽', color: '#8b5cf6', title: 'CA Natural Gas Service Areas' },
+  'ca_plss_sections': { icon: '🗺️', color: '#6366f1', title: 'CA Public Land Survey Sections' },
+  'ca_geothermal_wells': { icon: '🌋', color: '#ea580c', title: 'CA Geothermal Wells' },
+  'ca_oil_gas_wells': { icon: '🛢️', color: '#1f2937', title: 'CA Oil and Gas Wells' },
+  'ca_eco_regions': { icon: '🌿', color: '#16a34a', title: 'CA Eco Regions' },
+  'ca_la_zoning': { icon: '🏙️', color: '#7c3aed', title: 'City of Los Angeles Zoning' },
+  'la_county_arts_recreation': { icon: '🎨', color: '#ec4899', title: 'LA County Arts and Recreation' },
+  'la_county_education': { icon: '🎓', color: '#3b82f6', title: 'LA County Education' },
+  'la_county_hospitals': { icon: '🏥', color: '#ef4444', title: 'LA County Hospitals' },
+  'la_county_municipal_services': { icon: '🏛️', color: '#6366f1', title: 'LA County Municipal Services' },
+  'la_county_physical_features': { icon: '🏔️', color: '#10b981', title: 'LA County Physical Features' },
+  'la_county_public_safety': { icon: '🚨', color: '#dc2626', title: 'LA County Public Safety' },
+  'la_county_transportation': { icon: '🚌', color: '#f59e0b', title: 'LA County Transportation' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -530,6 +544,20 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_postfire_damage_inspections_all' || // Skip CA Post-Fire Damage Inspections array (handled separately for map drawing)
     key === 'ca_medium_heavy_duty_infrastructure_all' || // Skip CA Medium and Heavy Duty Infrastructure array (handled separately for map drawing)
     key === 'ca_frap_facilities_all' || // Skip CA FRAP Facilities array (handled separately for map drawing)
+    key === 'ca_solar_footprints_all' || // Skip CA Solar Footprints array (handled separately for map drawing)
+    key === 'ca_natural_gas_service_areas_all' || // Skip CA Natural Gas Service Areas array (handled separately for map drawing)
+    key === 'ca_plss_sections_all' || // Skip CA PLSS Sections array (handled separately for map drawing)
+    key === 'ca_geothermal_wells_all' || // Skip CA Geothermal Wells array (handled separately for map drawing)
+    key === 'ca_oil_gas_wells_all' || // Skip CA Oil and Gas Wells array (handled separately for map drawing)
+    key === 'ca_eco_regions_all' || // Skip CA Eco Regions array (handled separately for map drawing)
+    key === 'ca_la_zoning_all' || // Skip City of Los Angeles Zoning array (handled separately for map drawing)
+    key === 'la_county_arts_recreation_all' || // Skip LA County Arts and Recreation array (handled separately for map drawing)
+    key === 'la_county_education_all' || // Skip LA County Education array (handled separately for map drawing)
+    key === 'la_county_hospitals_all' || // Skip LA County Hospitals array (handled separately for map drawing)
+    key === 'la_county_municipal_services_all' || // Skip LA County Municipal Services array (handled separately for map drawing)
+    key === 'la_county_physical_features_all' || // Skip LA County Physical Features array (handled separately for map drawing)
+    key === 'la_county_public_safety_all' || // Skip LA County Public Safety array (handled separately for map drawing)
+    key === 'la_county_transportation_all' || // Skip LA County Transportation array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -10199,6 +10227,757 @@ const MapView: React.FC<MapViewProps> = ({
       } catch (error) {
         console.error('Error processing CA FRAP Facilities:', error);
       }
+
+      // Draw CA Solar Footprints as polygons on the map
+      try {
+        if (enrichments.ca_solar_footprints_all && Array.isArray(enrichments.ca_solar_footprints_all)) {
+          let footprintCount = 0;
+          enrichments.ca_solar_footprints_all.forEach((footprint: any) => {
+            if (footprint.geometry && footprint.geometry.rings) {
+              try {
+                const rings = footprint.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('CA Solar Footprint polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = footprint.isContaining;
+                  const color = isContaining ? '#fbbf24' : '#fcd34d'; // Yellow/amber for solar
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const countyName = footprint.countyName || footprint.COUNTYNAME || footprint.CountyName || '';
+                  const acres = footprint.acres || footprint.Acres;
+                  const type = footprint.type || footprint.Type || footprint.TYPE || 'Unknown';
+                  const urbanRural = footprint.urbanRural || footprint.Urban_Rural || footprint.UrbanRural || null;
+                  const combinedClass = footprint.combinedClass || footprint.Combined_Class || footprint.CombinedClass || null;
+                  const distance = footprint.distance_miles !== null && footprint.distance_miles !== undefined ? footprint.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ☀️ Solar Footprint
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                        ${combinedClass ? `<div><strong>Class:</strong> ${combinedClass}</div>` : ''}
+                        ${urbanRural ? `<div><strong>Urban/Rural:</strong> ${urbanRural}</div>` : ''}
+                        ${countyName ? `<div><strong>County:</strong> ${countyName}</div>` : ''}
+                        ${acres !== null && acres !== undefined ? `<div><strong>Acres:</strong> ${acres.toFixed(2)}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this solar footprint</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all footprint attributes (excluding internal fields)
+                  const excludeFields = ['countyName', 'COUNTYNAME', 'CountyName', 'COUNTY', 'county', 'acres', 'Acres', 'ACRES', 'type', 'Type', 'TYPE', 'urbanRural', 'Urban_Rural', 'UrbanRural', 'URBAN_RURAL', 'combinedClass', 'Combined_Class', 'CombinedClass', 'COMBINED_CLASS', 'geometry', 'distance_miles', 'isContaining', 'FID', 'fid', 'OBJECTID', 'objectid', 'GlobalID', 'GLOBALID'];
+                  Object.entries(footprint).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds.getNorthEast());
+                  bounds.extend(polygonBounds.getSouthWest());
+                  
+                  footprintCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Solar Footprint polygon:', error);
+              }
+            }
+          });
+          
+          if (footprintCount > 0) {
+            if (!legendAccumulator['ca_solar_footprints']) {
+              legendAccumulator['ca_solar_footprints'] = {
+                icon: '☀️',
+                color: '#fbbf24',
+                title: 'CA Solar Footprints',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_solar_footprints'].count += footprintCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Solar Footprints:', error);
+      }
+
+      // Draw CA Natural Gas Service Areas as polygons on the map
+      try {
+        if (enrichments.ca_natural_gas_service_areas_all && Array.isArray(enrichments.ca_natural_gas_service_areas_all)) {
+          let serviceAreaCount = 0;
+          enrichments.ca_natural_gas_service_areas_all.forEach((area: any) => {
+            if (area.geometry && area.geometry.rings) {
+              try {
+                const rings = area.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('CA Natural Gas Service Area polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = area.isContaining;
+                  const color = isContaining ? '#8b5cf6' : '#a78bfa'; // Purple for natural gas
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const serviceAreaId = area.serviceAreaId || area.OBJECTID || area.objectid || 'Unknown';
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ⛽ Natural Gas Service Area
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${serviceAreaId ? `<div><strong>Service Area ID:</strong> ${serviceAreaId}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this service area</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all service area attributes (excluding internal fields)
+                  const excludeFields = ['serviceAreaId', 'OBJECTID', 'objectid', 'geometry', 'isContaining', 'FID', 'fid', 'GlobalID', 'GLOBALID'];
+                  Object.entries(area).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds.getNorthEast());
+                  bounds.extend(polygonBounds.getSouthWest());
+                  
+                  serviceAreaCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Natural Gas Service Area polygon:', error);
+              }
+            }
+          });
+          
+          if (serviceAreaCount > 0) {
+            if (!legendAccumulator['ca_natural_gas_service_areas']) {
+              legendAccumulator['ca_natural_gas_service_areas'] = {
+                icon: '⛽',
+                color: '#8b5cf6',
+                title: 'CA Natural Gas Service Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_natural_gas_service_areas'].count += serviceAreaCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Natural Gas Service Areas:', error);
+      }
+
+      // Draw CA PLSS Sections as polygons on the map
+      try {
+        if (enrichments.ca_plss_sections_all && Array.isArray(enrichments.ca_plss_sections_all)) {
+          let sectionCount = 0;
+          enrichments.ca_plss_sections_all.forEach((section: any) => {
+            if (section.geometry && section.geometry.rings) {
+              try {
+                const rings = section.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('CA PLSS Section polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = section.isContaining;
+                  const color = isContaining ? '#6366f1' : '#818cf8'; // Indigo for PLSS
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const township = section.township || section.TOWNSHIP || section.Township || null;
+                  const range = section.range || section.RANGE || section.Range || null;
+                  const sectionNum = section.section || section.SECTION || section.Section || null;
+                  const meridian = section.meridian || section.MERIDIAN || section.Meridian || null;
+                  const sectionId = section.sectionId || section.OBJECTID || section.objectid || 'Unknown';
+                  
+                  // Format PLSS string
+                  let plssString = '';
+                  if (township && range) {
+                    plssString = `T${township} R${range}`;
+                    if (sectionNum) {
+                      plssString += ` S${sectionNum}`;
+                    }
+                    if (meridian) {
+                      plssString += ` ${meridian}`;
+                    }
+                  } else {
+                    plssString = sectionId.toString();
+                  }
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🗺️ PLSS Section
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${plssString ? `<div><strong>PLSS:</strong> ${plssString}</div>` : ''}
+                        ${township ? `<div><strong>Township:</strong> ${township}</div>` : ''}
+                        ${range ? `<div><strong>Range:</strong> ${range}</div>` : ''}
+                        ${sectionNum ? `<div><strong>Section:</strong> ${sectionNum}</div>` : ''}
+                        ${meridian ? `<div><strong>Meridian:</strong> ${meridian}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this section</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all section attributes (excluding internal fields)
+                  const excludeFields = ['sectionId', 'township', 'TOWNSHIP', 'Township', 'TWP', 'Twp', 'twp', 'range', 'RANGE', 'Range', 'RNG', 'Rng', 'rng', 'section', 'SECTION', 'Section', 'SEC', 'Sec', 'sec', 'meridian', 'MERIDIAN', 'Meridian', 'MER', 'Mer', 'mer', 'geometry', 'isContaining', 'OBJECTID', 'objectid', 'FID', 'fid', 'GlobalID', 'GLOBALID'];
+                  Object.entries(section).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds.getNorthEast());
+                  bounds.extend(polygonBounds.getSouthWest());
+                  
+                  sectionCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA PLSS Section polygon:', error);
+              }
+            }
+          });
+          
+          if (sectionCount > 0) {
+            if (!legendAccumulator['ca_plss_sections']) {
+              legendAccumulator['ca_plss_sections'] = {
+                icon: '🗺️',
+                color: '#6366f1',
+                title: 'CA Public Land Survey Sections',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_plss_sections'].count += sectionCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA PLSS Sections:', error);
+      }
+
+      // Draw CA Geothermal Wells as point markers on the map
+      try {
+        if (enrichments.ca_geothermal_wells_all && Array.isArray(enrichments.ca_geothermal_wells_all)) {
+          let wellCount = 0;
+          enrichments.ca_geothermal_wells_all.forEach((well: any) => {
+            // Check for geometry with x/y (point geometry) or latitude/longitude fields
+            const lat = well.geometry?.y || well.LATITUDE || well.latitude || well.LAT || well.lat || null;
+            const lon = well.geometry?.x || well.LONGITUDE || well.longitude || well.LON || well.lon || null;
+            
+            if (lat !== null && lon !== null) {
+              try {
+                const wellId = well.wellId || well.WELL_ID || well.Well_ID || well.well_id || well.API || well.api || well.OBJECTID || well.objectid || 'Unknown';
+                const distance = well.distance_miles !== null && well.distance_miles !== undefined ? well.distance_miles : 0;
+                
+                // Use volcano/geothermal icon with orange color
+                const iconColor = '#ea580c'; // Orange for geothermal
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🌋', iconColor)
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌋 Geothermal Well
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${wellId ? `<div><strong>Well ID:</strong> ${wellId}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all well attributes (excluding internal fields)
+                const excludeFields = ['wellId', 'WELL_ID', 'Well_ID', 'well_id', 'API', 'api', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'GlobalID', 'GLOBALID', 'LATITUDE', 'latitude', 'LAT', 'lat', 'LONGITUDE', 'longitude', 'LON', 'lon'];
+                Object.entries(well).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                wellCount++;
+              } catch (error) {
+                console.error('Error drawing CA Geothermal Well marker:', error);
+              }
+            }
+          });
+          
+          if (wellCount > 0) {
+            if (!legendAccumulator['ca_geothermal_wells']) {
+              legendAccumulator['ca_geothermal_wells'] = {
+                icon: '🌋',
+                color: '#ea580c',
+                title: 'CA Geothermal Wells',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_geothermal_wells'].count += wellCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Geothermal Wells:', error);
+      }
+
+      // Draw CA Oil and Gas Wells as point markers on the map
+      try {
+        if (enrichments.ca_oil_gas_wells_all && Array.isArray(enrichments.ca_oil_gas_wells_all)) {
+          let wellCount = 0;
+          enrichments.ca_oil_gas_wells_all.forEach((well: any) => {
+            // Check for geometry with x/y (point geometry) or latitude/longitude fields
+            const lat = well.geometry?.y || well.LATITUDE || well.latitude || well.LAT || well.lat || null;
+            const lon = well.geometry?.x || well.LONGITUDE || well.longitude || well.LON || well.lon || null;
+            
+            if (lat !== null && lon !== null) {
+              try {
+                const wellId = well.wellId || well.WELL_ID || well.Well_ID || well.well_id || well.API || well.api || well.OBJECTID || well.objectid || 'Unknown';
+                const distance = well.distance_miles !== null && well.distance_miles !== undefined ? well.distance_miles : 0;
+                
+                // Use oil/gas icon with dark gray/black color
+                const iconColor = '#1f2937'; // Dark gray/black for oil and gas
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🛢️', iconColor)
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🛢️ Oil and Gas Well
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${wellId ? `<div><strong>Well ID:</strong> ${wellId}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all well attributes (excluding internal fields)
+                const excludeFields = ['wellId', 'WELL_ID', 'Well_ID', 'well_id', 'API', 'api', 'geometry', 'distance_miles', 'FID', 'fid', 'OBJECTID', 'objectid', 'GlobalID', 'GLOBALID', 'LATITUDE', 'latitude', 'LAT', 'lat', 'LONGITUDE', 'longitude', 'LON', 'lon'];
+                Object.entries(well).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                wellCount++;
+              } catch (error) {
+                console.error('Error drawing CA Oil and Gas Well marker:', error);
+              }
+            }
+          });
+          
+          if (wellCount > 0) {
+            if (!legendAccumulator['ca_oil_gas_wells']) {
+              legendAccumulator['ca_oil_gas_wells'] = {
+                icon: '🛢️',
+                color: '#1f2937',
+                title: 'CA Oil and Gas Wells',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_oil_gas_wells'].count += wellCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Oil and Gas Wells:', error);
+      }
+
+      // Draw CA Eco Regions as polygons on the map
+      try {
+        if (enrichments.ca_eco_regions_all && Array.isArray(enrichments.ca_eco_regions_all)) {
+          let regionCount = 0;
+          enrichments.ca_eco_regions_all.forEach((region: any) => {
+            if (region.geometry && region.geometry.rings) {
+              try {
+                const rings = region.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('CA Eco Region polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = region.isContaining;
+                  const color = isContaining ? '#16a34a' : '#22c55e'; // Green for eco regions
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const usL3Code = region.US_L3CODE || region.us_l3code || region.US_L3_CODE || null;
+                  const usL3Name = region.US_L3NAME || region.us_l3name || region.US_L3_NAME || null;
+                  const regionId = region.regionId || region.OBJECTID || region.objectid || 'Unknown';
+                  const regionName = usL3Name || usL3Code || regionId.toString();
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌿 Eco Region
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${regionName ? `<div><strong>Region:</strong> ${regionName}</div>` : ''}
+                        ${usL3Code ? `<div><strong>L3 Code:</strong> ${usL3Code}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this eco region</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all region attributes (excluding internal fields)
+                  const excludeFields = ['regionId', 'US_L3CODE', 'us_l3code', 'US_L3_CODE', 'US_L3NAME', 'us_l3name', 'US_L3_NAME', 'geometry', 'isContaining', 'OBJECTID', 'objectid', 'FID', 'fid', 'GlobalID', 'GLOBALID'];
+                  Object.entries(region).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds.getNorthEast());
+                  bounds.extend(polygonBounds.getSouthWest());
+                  
+                  regionCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing CA Eco Region polygon:', error);
+              }
+            }
+          });
+          
+          if (regionCount > 0) {
+            if (!legendAccumulator['ca_eco_regions']) {
+              legendAccumulator['ca_eco_regions'] = {
+                icon: '🌿',
+                color: '#16a34a',
+                title: 'CA Eco Regions',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_eco_regions'].count += regionCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing CA Eco Regions:', error);
+      }
+
+      // Draw City of Los Angeles Zoning as polygons on the map
+      try {
+        if (enrichments.ca_la_zoning_all && Array.isArray(enrichments.ca_la_zoning_all)) {
+          let zoningCount = 0;
+          enrichments.ca_la_zoning_all.forEach((zone: any) => {
+            if (zone.geometry && zone.geometry.rings) {
+              try {
+                const rings = zone.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('City of Los Angeles Zoning polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = zone.isContaining;
+                  const color = isContaining ? '#7c3aed' : '#a78bfa'; // Purple for zoning
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const zoningId = zone.zoningId || zone.OBJECTID || zone.objectid || 'Unknown';
+                  const distance = zone.distance_miles !== null && zone.distance_miles !== undefined ? zone.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏙️ Zoning Polygon
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${zoningId ? `<div><strong>Zoning ID:</strong> ${zoningId}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this zoning polygon</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all zoning attributes (excluding internal fields)
+                  const excludeFields = ['zoningId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'isContaining', 'FID', 'fid', 'GlobalID', 'GLOBALID'];
+                  Object.entries(zone).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds.getNorthEast());
+                  bounds.extend(polygonBounds.getSouthWest());
+                  
+                  zoningCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing City of Los Angeles Zoning polygon:', error);
+              }
+            }
+          });
+          
+          if (zoningCount > 0) {
+            if (!legendAccumulator['ca_la_zoning']) {
+              legendAccumulator['ca_la_zoning'] = {
+                icon: '🏙️',
+                color: '#7c3aed',
+                title: 'City of Los Angeles Zoning',
+                count: 0,
+              };
+            }
+            legendAccumulator['ca_la_zoning'].count += zoningCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing City of Los Angeles Zoning:', error);
+      }
+
+      // Draw LA County Points of Interest as point markers on the map
+      const laCountyPOILayers = [
+        { key: 'la_county_arts_recreation_all', icon: '🎨', color: '#ec4899', title: 'LA County Arts and Recreation' },
+        { key: 'la_county_education_all', icon: '🎓', color: '#3b82f6', title: 'LA County Education' },
+        { key: 'la_county_hospitals_all', icon: '🏥', color: '#ef4444', title: 'LA County Hospitals' },
+        { key: 'la_county_municipal_services_all', icon: '🏛️', color: '#6366f1', title: 'LA County Municipal Services' },
+        { key: 'la_county_physical_features_all', icon: '🏔️', color: '#10b981', title: 'LA County Physical Features' },
+        { key: 'la_county_public_safety_all', icon: '🚨', color: '#dc2626', title: 'LA County Public Safety' },
+        { key: 'la_county_transportation_all', icon: '🚌', color: '#f59e0b', title: 'LA County Transportation' }
+      ];
+
+      laCountyPOILayers.forEach(({ key, icon, color, title }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let poiCount = 0;
+            enrichments[key].forEach((poi: any) => {
+              // Check for geometry with x/y (point geometry) or latitude/longitude fields
+              const lat = poi.geometry?.y || poi.LATITUDE || poi.latitude || poi.LAT || poi.lat || null;
+              const lon = poi.geometry?.x || poi.LONGITUDE || poi.longitude || poi.LON || poi.lon || null;
+              
+              if (lat !== null && lon !== null) {
+                try {
+                  const poiId = poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown';
+                  const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles : 0;
+                  
+                  const marker = L.marker([lat, lon], {
+                    icon: createPOIIcon(icon, color)
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${title}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${poiId ? `<div><strong>POI ID:</strong> ${poiId}</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all POI attributes (excluding internal fields)
+                  const excludeFields = ['poiId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'LATITUDE', 'latitude', 'LAT', 'lat', 'LONGITUDE', 'longitude', 'LON', 'lon'];
+                  Object.entries(poi).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  marker.bindPopup(popupContent);
+                  marker.addTo(primary);
+                  bounds.extend([lat, lon]);
+                  poiCount++;
+                } catch (error) {
+                  console.error(`Error drawing ${title} marker:`, error);
+                }
+              }
+            });
+            
+            if (poiCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += poiCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
 
       // Draw CA State Parks Entry Points
       try {
