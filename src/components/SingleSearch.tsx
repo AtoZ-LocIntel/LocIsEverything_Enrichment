@@ -4,12 +4,11 @@ import { Search, Loader2, Lightbulb, X } from 'lucide-react';
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
   onLocationSearch?: () => Promise<void>;
-  isMobile?: boolean;
   searchInput: string;
   onSearchInputChange: (value: string) => void;
 }
 
-const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, searchInput, onSearchInputChange, isMobile = false }) => {
+const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, searchInput, onSearchInputChange }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [isLocationLoading, setIsLocationLoading] = useState(false);

@@ -299,7 +299,6 @@ function App() {
                 <SingleSearch 
                   onSearch={handleSingleSearch} 
                   onLocationSearch={handleLocationSearch}
-                  isMobile={isMobile}
                   searchInput={searchInput}
                   onSearchInputChange={setSearchInput}
                 />
