@@ -5545,7 +5545,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     } else if (key === 'la_county_historic_cultural_monuments_all' && Array.isArray(value)) {
       value.forEach((monument: any) => {
         const name = monument.name || monument.NAME || monument.Name || 'Unknown Monument';
-        const monumentId = monument.monumentId || monument.OBJECTID || monument.objectid || '';
         const distance = monument.distance_miles !== null && monument.distance_miles !== undefined ? monument.distance_miles.toFixed(2) : (monument.isContaining ? '0.00' : '');
         
         const allAttributes = { ...monument };
@@ -5611,7 +5610,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     } else if (key === 'la_county_school_district_boundaries_all' && Array.isArray(value)) {
       value.forEach((district: any) => {
         const districtName = district.districtName || district.LABEL || district.label || district.Name || district.NAME || 'Unknown District';
-        const districtCode = district.districtCode || district.ABBR || district.abbr || '';
         const distance = district.isContaining ? '0.00' : '';
         
         const allAttributes = { ...district };

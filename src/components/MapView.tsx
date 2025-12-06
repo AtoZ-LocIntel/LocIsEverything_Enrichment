@@ -11597,7 +11597,7 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'la_county_dam_inundation_areas_all', layerId: 14, icon: '🏗️', color: '#1e3a8a', title: 'LA County Dam Inundation Areas', isPoint: false }
       ];
 
-      laCountyHazardsLayers.forEach(({ key, layerId, icon, color, title, isPoint, isLine }) => {
+      laCountyHazardsLayers.forEach(({ key, icon, color, title, isPoint, isLine }) => {
         try {
           if (enrichments[key] && Array.isArray(enrichments[key])) {
             let featureCount = 0;
@@ -11799,7 +11799,7 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'la_county_township_range_section_rancho_boundaries_all', layerId: 8, icon: '📐', color: '#4b5563', title: 'LA County Township Range Section Rancho Boundaries' }
       ];
 
-      laCountyBasemapsGridsLayers.forEach(({ key, layerId, icon, color, title }) => {
+      laCountyBasemapsGridsLayers.forEach(({ key, icon, color, title }) => {
         try {
           if (enrichments[key] && Array.isArray(enrichments[key])) {
             let featureCount = 0;
