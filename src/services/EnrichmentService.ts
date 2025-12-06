@@ -85,6 +85,7 @@ import { getLACountyHistoricCulturalMonumentsData } from '../adapters/laCountyHi
 import { getLACountyHousingLeadRiskData } from '../adapters/laCountyHousingLeadRisk';
 import { getLACountySchoolDistrictBoundariesData } from '../adapters/laCountySchoolDistrictBoundaries';
 import { getLACountyMetroLinesData } from '../adapters/laCountyMetroLines';
+import { getLACountyStreetInventoryData } from '../adapters/laCountyStreetInventory';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1753,6 +1754,10 @@ export class EnrichmentService {
       // LA County MTA Metro Lines - Proximity query only (max 25 miles)
       case 'la_county_metro_lines':
         return await this.getLACountyMetroLines(lat, lon, radius);
+      
+      // LA County Street Inventory - Proximity query only (max 5 miles)
+      case 'la_county_street_inventory':
+        return await this.getLACountyStreetInventory(lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -8678,6 +8683,55 @@ out center;`;
       return {
         la_county_metro_lines_count: 0,
         la_county_metro_lines_all: []
+      };
+    }
+  }
+
+  private async getLACountyStreetInventory(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching LA County Street Inventory data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_street_inventory_count: 0,
+          la_county_street_inventory_all: []
+        };
+      }
+      
+      const streets = await getLACountyStreetInventoryData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_street_inventory_count = streets.length;
+      result.la_county_street_inventory_all = streets.map(street => ({
+        ...street.attributes,
+        streetId: street.streetId,
+        sectId: street.sectId,
+        streetName: street.streetName,
+        streetDir: street.streetDir,
+        streetType: street.streetType,
+        streetFrom: street.streetFrom,
+        streetTo: street.streetTo,
+        streetSurface: street.streetSurface,
+        streetLength: street.streetLength,
+        streetWidth: street.streetWidth,
+        pciStatus: street.pciStatus,
+        ncName: street.ncName,
+        shapeLength: street.shapeLength,
+        geometry: street.geometry,
+        distance_miles: street.distance_miles
+      }));
+      result.la_county_street_inventory_summary = `Found ${streets.length} street segment(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Street Inventory data processed:`, {
+        totalCount: result.la_county_street_inventory_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Street Inventory data:', error);
+      return {
+        la_county_street_inventory_count: 0,
+        la_county_street_inventory_all: []
       };
     }
   }

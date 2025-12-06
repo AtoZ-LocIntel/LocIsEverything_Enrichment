@@ -229,6 +229,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_housing_lead_risk': { icon: '🏠', color: '#dc2626', title: 'LA County Housing with Potential Lead Risk' },
   'la_county_school_district_boundaries': { icon: '🏫', color: '#3b82f6', title: 'LA County School District Boundaries' },
   'la_county_metro_lines': { icon: '🚇', color: '#7c3aed', title: 'LA County MTA Metro Lines' },
+  'la_county_street_inventory': { icon: '🛣️', color: '#64748b', title: 'LA County Street Inventory' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -566,6 +567,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
     key === 'la_county_metro_lines_all' || // Skip LA County Metro Lines array (handled separately for map drawing)
+    key === 'la_county_street_inventory_all' || // Skip LA County Street Inventory array (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -11407,6 +11409,120 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing LA County MTA Metro Lines:', error);
+      }
+
+      // Draw LA County Street Inventory as polylines on the map
+      try {
+        if (enrichments.la_county_street_inventory_all && Array.isArray(enrichments.la_county_street_inventory_all)) {
+          let streetCount = 0;
+          enrichments.la_county_street_inventory_all.forEach((street: any) => {
+            if (street.geometry && street.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = street.geometry.paths;
+                if (paths && paths.length > 0) {
+                  streetCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const streetName = street.streetName || street.ST_NAME || street.st_name || street.Name || street.NAME || 'Unknown Street';
+                    const streetDir = street.streetDir || street.ST_DIR || street.st_dir || street.Dir || street.DIR || null;
+                    const streetType = street.streetType || street.ST_TYPE || street.st_type || street.Type || street.TYPE || null;
+                    const streetFrom = street.streetFrom || street.ST_FROM || street.st_from || street.From || street.FROM || null;
+                    const streetTo = street.streetTo || street.ST_TO || street.st_to || street.To || street.TO || null;
+                    const streetSurface = street.streetSurface || street.ST_SURFACE || street.st_surface || street.Surface || street.SURFACE || null;
+                    const pciStatus = street.pciStatus || street.PCI_STATUS || street.pci_status || street.PciStatus || street.Status || street.STATUS || null;
+                    const ncName = street.ncName || street.NC_NAME || street.nc_name || street.NcName || street.NCNAME || null;
+                    const sectId = street.sectId || street.SECT_ID || street.sect_id || null;
+                    const streetLength = street.streetLength || street.ST_LENGTH || street.st_length || null;
+                    const streetWidth = street.streetWidth || street.ST_WIDTH || street.st_width || null;
+                    const shapeLength = street.shapeLength || street.Shape__Length || street.shape_length || null;
+                    const streetId = street.streetId || street.OBJECTID || street.objectid || null;
+                    const distance = street.distance_miles !== null && street.distance_miles !== undefined ? street.distance_miles : 0;
+
+                    // Build full street name
+                    const fullStreetName = [streetDir, streetName, streetType].filter(Boolean).join(' ').trim() || streetName;
+
+                    // Create polyline with gray color for street inventory
+                    const polyline = L.polyline(latlngs, {
+                      color: '#64748b', // Slate gray color for streets
+                      weight: 3,
+                      opacity: 0.7,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all street attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🛣️ ${fullStreetName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${streetFrom && streetTo ? `<div><strong>From:</strong> ${streetFrom} <strong>To:</strong> ${streetTo}</div>` : ''}
+                          ${streetSurface ? `<div><strong>Surface:</strong> ${streetSurface}</div>` : ''}
+                          ${pciStatus ? `<div><strong>PCI Status:</strong> ${pciStatus}</div>` : ''}
+                          ${ncName ? `<div><strong>Neighborhood:</strong> ${ncName}</div>` : ''}
+                          ${sectId ? `<div><strong>Section ID:</strong> ${sectId}</div>` : ''}
+                          ${streetLength !== null && streetLength !== undefined ? `<div><strong>Length:</strong> ${streetLength} ft</div>` : ''}
+                          ${streetWidth !== null && streetWidth !== undefined ? `<div><strong>Width:</strong> ${streetWidth} ft</div>` : ''}
+                          ${shapeLength !== null && shapeLength !== undefined ? `<div><strong>Shape Length:</strong> ${shapeLength.toFixed(2)} meters</div>` : ''}
+                          ${streetId ? `<div><strong>Street ID:</strong> ${streetId}</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all street attributes (excluding internal fields)
+                    const excludeFields = ['streetId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'sectId', 'SECT_ID', 'sect_id', 'streetName', 'ST_NAME', 'st_name', 'Name', 'NAME', 'streetDir', 'ST_DIR', 'st_dir', 'Dir', 'DIR', 'streetType', 'ST_TYPE', 'st_type', 'Type', 'TYPE', 'streetFrom', 'ST_FROM', 'st_from', 'From', 'FROM', 'streetTo', 'ST_TO', 'st_to', 'To', 'TO', 'streetSurface', 'ST_SURFACE', 'st_surface', 'Surface', 'SURFACE', 'streetLength', 'ST_LENGTH', 'st_length', 'streetWidth', 'ST_WIDTH', 'st_width', 'pciStatus', 'PCI_STATUS', 'pci_status', 'PciStatus', 'Status', 'STATUS', 'ncName', 'NC_NAME', 'nc_name', 'NcName', 'NCNAME', 'ncname', 'shapeLength', 'Shape__Length', 'shape_length'];
+                    Object.entries(street).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing LA County Street Inventory polyline:', error);
+              }
+            }
+          });
+          
+          if (streetCount > 0) {
+            if (!legendAccumulator['la_county_street_inventory']) {
+              legendAccumulator['la_county_street_inventory'] = {
+                icon: '🛣️',
+                color: '#64748b',
+                title: 'LA County Street Inventory',
+                count: 0,
+              };
+            }
+            legendAccumulator['la_county_street_inventory'].count += streetCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing LA County Street Inventory:', error);
       }
 
       // Draw CA State Parks Entry Points

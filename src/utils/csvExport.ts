@@ -338,7 +338,19 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'de_trails_pathways_all' ||
         key === 'de_seasonal_restricted_areas_all' ||
         key === 'de_permanent_restricted_areas_all' ||
-        key === 'de_wildlife_area_boundaries_all') { // Skip _all arrays (handled separately)
+        key === 'de_wildlife_area_boundaries_all' || // Skip _all arrays (handled separately)
+        key === 'la_county_arts_recreation_all' || // Skip LA County arrays (handled separately)
+        key === 'la_county_education_all' ||
+        key === 'la_county_hospitals_all' ||
+        key === 'la_county_municipal_services_all' ||
+        key === 'la_county_physical_features_all' ||
+        key === 'la_county_public_safety_all' ||
+        key === 'la_county_transportation_all' ||
+        key === 'la_county_historic_cultural_monuments_all' ||
+        key === 'la_county_housing_lead_risk_all' ||
+        key === 'la_county_school_district_boundaries_all' ||
+        key === 'la_county_metro_lines_all' ||
+        key === 'la_county_street_inventory_all') { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -5270,6 +5282,407 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'CT Geodata Portal'
+        ]);
+      });
+    }
+    
+    // Add LA County POI data rows
+    if (key === 'la_county_arts_recreation_all' && Array.isArray(value)) {
+      value.forEach((poi: any) => {
+        const poiId = poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown';
+        const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toFixed(2) : '';
+        const lat = poi.geometry?.y || poi.LATITUDE || poi.latitude || poi.LAT || poi.lat || '';
+        const lon = poi.geometry?.x || poi.LONGITUDE || poi.longitude || poi.LON || poi.lon || '';
+        
+        const allAttributes = { ...poi };
+        delete allAttributes.poiId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County GeoHub',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_ARTS_RECREATION',
+          `POI ${poiId}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Arts and Recreation',
+          attributesJson,
+          '',
+          '',
+          'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_education_all' && Array.isArray(value)) {
+      value.forEach((poi: any) => {
+        const poiId = poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown';
+        const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toFixed(2) : '';
+        const lat = poi.geometry?.y || poi.LATITUDE || poi.latitude || poi.LAT || poi.lat || '';
+        const lon = poi.geometry?.x || poi.LONGITUDE || poi.longitude || poi.LON || poi.lon || '';
+        
+        const allAttributes = { ...poi };
+        delete allAttributes.poiId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County GeoHub',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_EDUCATION',
+          `POI ${poiId}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Education',
+          attributesJson,
+          '',
+          '',
+          'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_hospitals_all' && Array.isArray(value)) {
+      value.forEach((poi: any) => {
+        const poiId = poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown';
+        const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toFixed(2) : '';
+        const lat = poi.geometry?.y || poi.LATITUDE || poi.latitude || poi.LAT || poi.lat || '';
+        const lon = poi.geometry?.x || poi.LONGITUDE || poi.longitude || poi.LON || poi.lon || '';
+        
+        const allAttributes = { ...poi };
+        delete allAttributes.poiId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County GeoHub',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_HOSPITALS',
+          `POI ${poiId}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Hospitals',
+          attributesJson,
+          '',
+          '',
+          'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_municipal_services_all' && Array.isArray(value)) {
+      value.forEach((poi: any) => {
+        const poiId = poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown';
+        const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toFixed(2) : '';
+        const lat = poi.geometry?.y || poi.LATITUDE || poi.latitude || poi.LAT || poi.lat || '';
+        const lon = poi.geometry?.x || poi.LONGITUDE || poi.longitude || poi.LON || poi.lon || '';
+        
+        const allAttributes = { ...poi };
+        delete allAttributes.poiId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County GeoHub',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_MUNICIPAL_SERVICES',
+          `POI ${poiId}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Municipal Services',
+          attributesJson,
+          '',
+          '',
+          'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_physical_features_all' && Array.isArray(value)) {
+      value.forEach((poi: any) => {
+        const poiId = poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown';
+        const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toFixed(2) : '';
+        const lat = poi.geometry?.y || poi.LATITUDE || poi.latitude || poi.LAT || poi.lat || '';
+        const lon = poi.geometry?.x || poi.LONGITUDE || poi.longitude || poi.LON || poi.lon || '';
+        
+        const allAttributes = { ...poi };
+        delete allAttributes.poiId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County GeoHub',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_PHYSICAL_FEATURES',
+          `POI ${poiId}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Physical Features',
+          attributesJson,
+          '',
+          '',
+          'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_public_safety_all' && Array.isArray(value)) {
+      value.forEach((poi: any) => {
+        const poiId = poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown';
+        const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toFixed(2) : '';
+        const lat = poi.geometry?.y || poi.LATITUDE || poi.latitude || poi.LAT || poi.lat || '';
+        const lon = poi.geometry?.x || poi.LONGITUDE || poi.longitude || poi.LON || poi.lon || '';
+        
+        const allAttributes = { ...poi };
+        delete allAttributes.poiId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County GeoHub',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_PUBLIC_SAFETY',
+          `POI ${poiId}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Public Safety',
+          attributesJson,
+          '',
+          '',
+          'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_transportation_all' && Array.isArray(value)) {
+      value.forEach((poi: any) => {
+        const poiId = poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown';
+        const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toFixed(2) : '';
+        const lat = poi.geometry?.y || poi.LATITUDE || poi.latitude || poi.LAT || poi.lat || '';
+        const lon = poi.geometry?.x || poi.LONGITUDE || poi.longitude || poi.LON || poi.lon || '';
+        
+        const allAttributes = { ...poi };
+        delete allAttributes.poiId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County GeoHub',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_TRANSPORTATION',
+          `POI ${poiId}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Transportation',
+          attributesJson,
+          '',
+          '',
+          'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_historic_cultural_monuments_all' && Array.isArray(value)) {
+      value.forEach((monument: any) => {
+        const name = monument.name || monument.NAME || monument.Name || 'Unknown Monument';
+        const monumentId = monument.monumentId || monument.OBJECTID || monument.objectid || '';
+        const distance = monument.distance_miles !== null && monument.distance_miles !== undefined ? monument.distance_miles.toFixed(2) : (monument.isContaining ? '0.00' : '');
+        
+        const allAttributes = { ...monument };
+        delete allAttributes.monumentId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Los Angeles',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_HISTORIC_CULTURAL_MONUMENTS',
+          name,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          monument.isContaining ? 'Within Monument' : `Nearby Monument (${distance} miles)`,
+          attributesJson,
+          '',
+          '',
+          'City of Los Angeles'
+        ]);
+      });
+    } else if (key === 'la_county_housing_lead_risk_all' && Array.isArray(value)) {
+      value.forEach((area: any) => {
+        const ct20 = area.ct20 || area.CT20 || area.Ct20 || 'Unknown';
+        const housingRisk = area.housingRisk !== null && area.housingRisk !== undefined ? area.housingRisk.toFixed(1) : 'N/A';
+        const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles.toFixed(2) : (area.isContaining ? '0.00' : '');
+        
+        const allAttributes = { ...area };
+        delete allAttributes.housingId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County GeoHub',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_HOUSING_LEAD_RISK',
+          `Census Tract ${ct20} (Risk: ${housingRisk}%)`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          area.isContaining ? 'Within Risk Area' : `Nearby Risk Area (${distance} miles)`,
+          attributesJson,
+          '',
+          '',
+          'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_school_district_boundaries_all' && Array.isArray(value)) {
+      value.forEach((district: any) => {
+        const districtName = district.districtName || district.LABEL || district.label || district.Name || district.NAME || 'Unknown District';
+        const districtCode = district.districtCode || district.ABBR || district.abbr || '';
+        const distance = district.isContaining ? '0.00' : '';
+        
+        const allAttributes = { ...district };
+        delete allAttributes.districtId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County GeoHub',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_SCHOOL_DISTRICT_BOUNDARIES',
+          districtName,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          district.isContaining ? 'Within District' : 'Nearby District',
+          attributesJson,
+          '',
+          '',
+          'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_metro_lines_all' && Array.isArray(value)) {
+      value.forEach((line: any) => {
+        const name = line.name || line.NAME || line.Name || 'Unknown Line';
+        const label = line.label || line.LABEL || line.Label || '';
+        const status = line.status || line.STATUS || line.Status || '';
+        const type = line.type || line.TYPE || line.Type || '';
+        const distance = line.distance_miles !== null && line.distance_miles !== undefined ? line.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...line };
+        delete allAttributes.lineId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Metro',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_METRO_LINES',
+          `${name}${label ? ` (${label})` : ''}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          `${type || 'Metro'}${status ? ` - ${status}` : ''}`,
+          attributesJson,
+          '',
+          '',
+          'LA County Metro'
+        ]);
+      });
+    } else if (key === 'la_county_street_inventory_all' && Array.isArray(value)) {
+      value.forEach((street: any) => {
+        const streetName = street.streetName || street.ST_NAME || street.st_name || street.Name || street.NAME || 'Unknown Street';
+        const streetDir = street.streetDir || street.ST_DIR || street.st_dir || '';
+        const streetType = street.streetType || street.ST_TYPE || street.st_type || '';
+        const fullStreetName = [streetDir, streetName, streetType].filter(Boolean).join(' ').trim() || streetName;
+        const pciStatus = street.pciStatus || street.PCI_STATUS || street.pci_status || '';
+        const distance = street.distance_miles !== null && street.distance_miles !== undefined ? street.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...street };
+        delete allAttributes.streetId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County StreetsLA',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_STREET_INVENTORY',
+          fullStreetName,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          pciStatus ? `PCI Status: ${pciStatus}` : 'Street Segment',
+          attributesJson,
+          '',
+          '',
+          'LA County StreetsLA'
         ]);
       });
     }
