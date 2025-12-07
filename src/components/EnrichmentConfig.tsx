@@ -529,6 +529,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             const bIsBasemapGrid = b.id.includes('us_national_grid') || b.id.includes('usng_') || b.id.includes('township_range');
             const aIsHydrology = a.id.includes('hydrology');
             const bIsHydrology = b.id.includes('hydrology');
+            const aIsInfrastructure = a.id.includes('infrastructure');
+            const bIsInfrastructure = b.id.includes('infrastructure');
+            const aIsAdminBoundaries = a.id.includes('admin_boundaries');
+            const bIsAdminBoundaries = b.id.includes('admin_boundaries');
+            const aIsElevation = a.id.includes('elevation');
+            const bIsElevation = b.id.includes('elevation');
             
             if (aIsHazard && !bIsHazard) return -1;
             if (!aIsHazard && bIsHazard) return 1;
@@ -536,6 +542,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             if (!aIsBasemapGrid && bIsBasemapGrid && !aIsHazard) return 1;
             if (aIsHydrology && !bIsHydrology && !bIsHazard && !bIsBasemapGrid) return -1;
             if (!aIsHydrology && bIsHydrology && !aIsHazard && !aIsBasemapGrid) return 1;
+            if (aIsInfrastructure && !bIsInfrastructure && !bIsHazard && !bIsBasemapGrid && !bIsHydrology) return -1;
+            if (!aIsInfrastructure && bIsInfrastructure && !aIsHazard && !aIsBasemapGrid && !aIsHydrology) return 1;
+            if (aIsAdminBoundaries && !bIsAdminBoundaries && !bIsHazard && !bIsBasemapGrid && !bIsHydrology && !bIsInfrastructure) return -1;
+            if (!aIsAdminBoundaries && bIsAdminBoundaries && !aIsHazard && !aIsBasemapGrid && !aIsHydrology && !aIsInfrastructure) return 1;
+            if (aIsElevation && !bIsElevation && !bIsHazard && !bIsBasemapGrid && !bIsHydrology && !bIsInfrastructure && !bIsAdminBoundaries) return -1;
+            if (!aIsElevation && bIsElevation && !aIsHazard && !aIsBasemapGrid && !aIsHydrology && !aIsInfrastructure && !aIsAdminBoundaries) return 1;
             return a.label.localeCompare(b.label);
           });
           

@@ -375,7 +375,11 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'la_county_usng_1000m_all' ||
         key === 'la_county_usng_100m_all' ||
         key === 'la_county_township_range_section_rancho_boundaries_all' || // Skip LA County Hydrology arrays (handled separately)
-        (key.startsWith('la_county_hydrology_') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
+        (key.startsWith('la_county_hydrology_') && key.endsWith('_all')) || // Skip LA County Infrastructure arrays (handled separately)
+        (key.startsWith('la_county_infrastructure_') && key.endsWith('_all')) || // Skip LA County Administrative Boundaries arrays (handled separately)
+        (key.startsWith('la_county_admin_boundaries_') && key.endsWith('_all')) || // Skip LA County Elevation arrays (handled separately)
+        (key.startsWith('la_county_elevation_') && key.endsWith('_all')) || // Skip LA County Elevation raster flags (handled separately)
+        (key.startsWith('la_county_elevation_') && key.endsWith('_enabled'))) { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -5720,8 +5724,117 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'la_county_township_range_section_rancho_boundaries_all': { name: 'LA_COUNTY_TOWNSHIP_RANGE_SECTION_RANCHO_BOUNDARIES', icon: '📐' }
     };
     
-    // LA County Hydrology - Generic handler for all 72 layers
-    if (key.startsWith('la_county_hydrology_') && key.endsWith('_all') && Array.isArray(value)) {
+    // LA County Elevation - Generic handler for all elevation layers
+    if (key.startsWith('la_county_elevation_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
+      value.forEach((elevation: any) => {
+        const elevationId = elevation.elevationId || elevation.ELEVATION || elevation.Elevation || elevation.CONTOUR || elevation.Contour || 'Unknown';
+        const distance = elevation.distance_miles !== null && elevation.distance_miles !== undefined ? elevation.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...elevation };
+        delete allAttributes.elevationId;
+        delete allAttributes.ELEVATION;
+        delete allAttributes.Elevation;
+        delete allAttributes.elevation;
+        delete allAttributes.CONTOUR;
+        delete allAttributes.Contour;
+        delete allAttributes.contour;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Public GIS',
+          (location.confidence || 'N/A').toString(),
+          `LA_COUNTY_${layerName}`,
+          `⛰️ Elevation ${elevationId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Nearby',
+          attributesJson,
+          '',
+          '',
+          'LA County Public GIS'
+        ]);
+      });
+    } else if (key.startsWith('la_county_admin_boundaries_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
+      value.forEach((boundary: any) => {
+        const boundaryId = boundary.boundaryId || boundary.NAME || boundary.Name || boundary.name || boundary.OBJECTID || boundary.objectid || 'Unknown';
+        const distance = boundary.distance_miles !== null && boundary.distance_miles !== undefined ? boundary.distance_miles.toFixed(2) : (boundary.isContaining ? '0.00' : '');
+        
+        const allAttributes = { ...boundary };
+        delete allAttributes.boundaryId;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.name;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Public GIS',
+          (location.confidence || 'N/A').toString(),
+          `LA_COUNTY_${layerName}`,
+          `🗺️ Administrative Boundary ${boundaryId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          boundary.isContaining ? 'Within Boundary' : 'Nearby Boundary',
+          attributesJson,
+          '',
+          '',
+          'LA County Public GIS'
+        ]);
+      });
+    } else if (key.startsWith('la_county_infrastructure_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
+      value.forEach((infrastructure: any) => {
+        const infrastructureId = infrastructure.infrastructureId || infrastructure.LACO || infrastructure.laco || infrastructure.OBJECTID || infrastructure.objectid || 'Unknown';
+        const distance = infrastructure.distance_miles !== null && infrastructure.distance_miles !== undefined ? infrastructure.distance_miles.toFixed(2) : (infrastructure.isContaining ? '0.00' : '');
+        
+        const allAttributes = { ...infrastructure };
+        delete allAttributes.infrastructureId;
+        delete allAttributes.LACO;
+        delete allAttributes.laco;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Public GIS',
+          (location.confidence || 'N/A').toString(),
+          `LA_COUNTY_${layerName}`,
+          `🏛️ Infrastructure Feature ${infrastructureId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          infrastructure.isContaining ? 'Within Feature' : 'Nearby Feature',
+          attributesJson,
+          '',
+          '',
+          'LA County Public GIS'
+        ]);
+      });
+    } else if (key.startsWith('la_county_hydrology_') && key.endsWith('_all') && Array.isArray(value)) {
       const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
       value.forEach((hydrology: any) => {
         const hydrologyId = hydrology.hydrologyId || hydrology.OBJECTID || hydrology.objectid || 'Unknown';

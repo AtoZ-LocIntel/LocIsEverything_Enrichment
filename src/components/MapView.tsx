@@ -619,6 +619,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_usng_100m_all' ||
     key === 'la_county_township_range_section_rancho_boundaries_all' ||
     key.startsWith('la_county_hydrology_') && key.endsWith('_all') || // Skip LA County Hydrology arrays (handled separately for map drawing)
+    key.startsWith('la_county_infrastructure_') && key.endsWith('_all') || // Skip LA County Infrastructure arrays (handled separately for map drawing)
+    key.startsWith('la_county_admin_boundaries_') && key.endsWith('_all') || // Skip LA County Administrative Boundaries arrays (handled separately for map drawing)
+    key.startsWith('la_county_elevation_') && key.endsWith('_all') || // Skip LA County Elevation arrays (handled separately for map drawing)
+    key.startsWith('la_county_elevation_') && key.endsWith('_enabled') || // Skip LA County Elevation raster layer flags (handled separately)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -12163,6 +12167,544 @@ const MapView: React.FC<MapViewProps> = ({
         }
       });
 
+      // Draw LA County Infrastructure layers
+      const laCountyInfrastructureLayers = [
+        { key: 'la_county_infrastructure_county_facilities_all', layerId: 0, icon: '🏛️', color: '#7c3aed', title: 'LA County Facilities', isPoint: true },
+        { key: 'la_county_infrastructure_county_buildings_all', layerId: 1, icon: '🏢', color: '#8b5cf6', title: 'LA County-owned Buildings', isPoint: false },
+        { key: 'la_county_infrastructure_schools_all', layerId: 2, icon: '🏫', color: '#a78bfa', title: 'LA County Schools', isPoint: false },
+        { key: 'la_county_infrastructure_county_parcels_all', layerId: 3, icon: '📋', color: '#c084fc', title: 'LA County-owned Parcels', isPoint: false },
+        { key: 'la_county_infrastructure_government_parcels_all', layerId: 4, icon: '📋', color: '#d8b4fe', title: 'LA County Government-owned Parcels', isPoint: false }
+      ];
+
+      laCountyInfrastructureLayers.forEach(({ key, layerId, icon, color, title, isPoint }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((infrastructure: any) => {
+              try {
+                const geometry = infrastructure.geometry;
+                const isContaining = infrastructure.isContaining;
+                const distance = infrastructure.distance_miles !== null && infrastructure.distance_miles !== undefined ? infrastructure.distance_miles : 0;
+                const infrastructureId = infrastructure.infrastructureId || infrastructure.LACO || infrastructure.laco || infrastructure.OBJECTID || infrastructure.objectid || 'Unknown';
+                
+                // Check for point geometry
+                const pointLat = isPoint ? (geometry?.y || geometry?.latitude || infrastructure.latitude || infrastructure.LATITUDE || infrastructure.lat || infrastructure.LAT) : null;
+                const pointLon = isPoint ? (geometry?.x || geometry?.longitude || infrastructure.longitude || infrastructure.LONGITUDE || infrastructure.lon || infrastructure.LON) : null;
+                
+                if (isPoint && pointLat !== null && pointLat !== undefined && pointLon !== null && pointLon !== undefined) {
+                  // Point geometry
+                  const lat = pointLat;
+                  const lon = pointLon;
+                  
+                  const marker = L.marker([lat, lon], {
+                    icon: createPOIIcon(icon, color)
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${title}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${infrastructureId ? `<div><strong>ID:</strong> ${infrastructureId}</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['infrastructureId', 'LACO', 'laco', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                  Object.entries(infrastructure).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  marker.bindPopup(popupContent);
+                  marker.addTo(primary);
+                  bounds.extend([lat, lon]);
+                  featureCount++;
+                } else if (geometry && geometry.rings) {
+                  // Polygon geometry
+                  const rings = geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${infrastructureId ? `<div><strong>ID:</strong> ${infrastructureId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this feature</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['infrastructureId', 'LACO', 'laco', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                    Object.entries(infrastructure).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing ${title} feature:`, error);
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
+      // Draw LA County Administrative Boundaries layers
+      const laCountyAdminBoundariesLayers = [
+        { key: 'la_county_admin_boundaries_isd_facilities_all', layerId: 24, icon: '🏢', color: '#6366f1', title: 'LA County ISD Facilities Operations Service Maintenance Districts' },
+        { key: 'la_county_admin_boundaries_school_districts_all', layerId: 0, icon: '🏫', color: '#7c3aed', title: 'LA County School District Boundaries' },
+        { key: 'la_county_admin_boundaries_park_planning_areas_all', layerId: 1, icon: '🏞️', color: '#8b5cf6', title: 'LA County Park Planning Areas' },
+        { key: 'la_county_admin_boundaries_dcfs_office_all', layerId: 2, icon: '🏛️', color: '#a78bfa', title: 'LA County DCFS Office Boundaries' },
+        { key: 'la_county_admin_boundaries_health_districts_2022_all', layerId: 22, icon: '🏥', color: '#c084fc', title: 'LA County Health Districts (2022)' },
+        { key: 'la_county_admin_boundaries_health_districts_2012_all', layerId: 3, icon: '🏥', color: '#c084fc', title: 'LA County Health Districts (2012)' },
+        { key: 'la_county_admin_boundaries_service_planning_areas_2022_all', layerId: 23, icon: '🗺️', color: '#d8b4fe', title: 'LA County Service Planning Areas (2022)' },
+        { key: 'la_county_admin_boundaries_service_planning_areas_2012_all', layerId: 4, icon: '🗺️', color: '#d8b4fe', title: 'LA County Service Planning Areas (2012)' },
+        { key: 'la_county_admin_boundaries_disaster_management_areas_all', layerId: 18, icon: '⚠️', color: '#e879f9', title: 'LA County Disaster Management Areas' },
+        { key: 'la_county_admin_boundaries_zipcodes_all', layerId: 5, icon: '📮', color: '#f0abfc', title: 'LA County Zipcodes' },
+        { key: 'la_county_admin_boundaries_regional_centers_all', layerId: 6, icon: '📍', color: '#f5d0fe', title: 'LA County Regional Centers (2014)' },
+        { key: 'la_county_admin_boundaries_public_safety_all', layerId: 7, icon: '🚨', color: '#fae8ff', title: 'LA County Public Safety' },
+        { key: 'la_county_admin_boundaries_reporting_districts_all', layerId: 8, icon: '📊', color: '#fce7f3', title: 'LA County Reporting Districts' },
+        { key: 'la_county_admin_boundaries_station_boundaries_all', layerId: 9, icon: '🚓', color: '#fdf2f8', title: 'LA County Station Boundaries' },
+        { key: 'la_county_admin_boundaries_fire_station_boundaries_all', layerId: 19, icon: '🚒', color: '#fef3c7', title: 'LA County Fire Station Boundaries' },
+        { key: 'la_county_admin_boundaries_psap_boundaries_all', layerId: 20, icon: '📞', color: '#fde68a', title: 'LA County PSAP Boundaries' },
+        { key: 'la_county_admin_boundaries_library_all', layerId: 10, icon: '📚', color: '#fcd34d', title: 'LA County Library' },
+        { key: 'la_county_admin_boundaries_library_planning_areas_all', layerId: 11, icon: '📚', color: '#fbbf24', title: 'LA County Library Planning Areas' },
+        { key: 'la_county_admin_boundaries_library_service_areas_all', layerId: 12, icon: '📚', color: '#f59e0b', title: 'LA County Library Service Areas' },
+        { key: 'la_county_admin_boundaries_state_enterprise_zones_all', layerId: 16, icon: '💼', color: '#d97706', title: 'LA County State Enterprise Zones' },
+        { key: 'la_county_admin_boundaries_animal_care_control_all', layerId: 21, icon: '🐾', color: '#92400e', title: 'LA County Animal Care and Control Service Areas' }
+      ];
+
+      laCountyAdminBoundariesLayers.forEach(({ key, layerId, icon, color, title }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((boundary: any) => {
+              if (boundary.geometry && boundary.geometry.rings) {
+                try {
+                  const rings = boundary.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const isContaining = boundary.isContaining;
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    const boundaryId = boundary.boundaryId || boundary.NAME || boundary.Name || boundary.name || boundary.OBJECTID || boundary.objectid || 'Unknown';
+                    const distance = boundary.distance_miles !== null && boundary.distance_miles !== undefined ? boundary.distance_miles : 0;
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${boundaryId ? `<div><strong>Boundary ID:</strong> ${boundaryId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this boundary</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['boundaryId', 'NAME', 'Name', 'name', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                    Object.entries(boundary).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error drawing ${title} polygon:`, error);
+                }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
+      // Draw LA County Elevation layers (contours and points)
+      const laCountyElevationLayers = [
+        { key: 'la_county_elevation_contours_l4_all', layerId: 10, icon: '⛰️', color: '#8b5cf6', title: 'LA County Contours L4', isLine: true },
+        { key: 'la_county_elevation_contours_1000ft_l4_all', layerId: 11, icon: '⛰️', color: '#7c3aed', title: 'LA County LARIAC Contours 1000FT L4', isLine: true },
+        { key: 'la_county_elevation_contours_250ft_l4_all', layerId: 12, icon: '⛰️', color: '#6366f1', title: 'LA County LARIAC Contours 250FT L4', isLine: true },
+        { key: 'la_county_elevation_contours_50ft_l4_all', layerId: 13, icon: '⛰️', color: '#5b21b6', title: 'LA County LARIAC Contours 50FT L4', isLine: true },
+        { key: 'la_county_elevation_contours_10ft_l4_all', layerId: 14, icon: '⛰️', color: '#4c1d95', title: 'LA County LARIAC Contours 10FT L4', isLine: true },
+        { key: 'la_county_elevation_contours_2ft_l4_all', layerId: 15, icon: '⛰️', color: '#3b0764', title: 'LA County LARIAC Contours 2FT L4', isLine: true },
+        { key: 'la_county_elevation_contours_1ft_l4_all', layerId: 16, icon: '⛰️', color: '#2e1065', title: 'LA County LARIAC Contours 1FT L4', isLine: true },
+        { key: 'la_county_elevation_contours_all', layerId: 0, icon: '⛰️', color: '#a78bfa', title: 'LA County Contours', isLine: true },
+        { key: 'la_county_elevation_contours_250ft_all', layerId: 1, icon: '⛰️', color: '#9333ea', title: 'LA County LARIAC Contours 250ft', isLine: true },
+        { key: 'la_county_elevation_contours_50ft_all', layerId: 2, icon: '⛰️', color: '#7e22ce', title: 'LA County LARIAC Contours 50ft', isLine: true },
+        { key: 'la_county_elevation_contours_10ft_all', layerId: 3, icon: '⛰️', color: '#6b21a8', title: 'LA County LARIAC Contours 10ft', isLine: true },
+        { key: 'la_county_elevation_points_all', layerId: 9, icon: '📍', color: '#ec4899', title: 'LA County Elevation Points', isLine: false }
+      ];
+
+      laCountyElevationLayers.forEach(({ key, layerId, icon, color, title, isLine }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((elevation: any) => {
+              if (isLine && elevation.geometry && elevation.geometry.paths) {
+                // Draw contour lines (polylines)
+                try {
+                  const paths = elevation.geometry.paths;
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 2) {
+                      return;
+                    }
+                    
+                    const polyline = L.polyline(latlngs, {
+                      color: color,
+                      weight: 2,
+                      opacity: 0.7
+                    });
+                    
+                    const elevationId = elevation.elevationId || elevation.ELEVATION || elevation.Elevation || elevation.CONTOUR || elevation.Contour || 'Unknown';
+                    const distance = elevation.distance_miles !== null && elevation.distance_miles !== undefined ? elevation.distance_miles : 0;
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${elevationId ? `<div><strong>Elevation/Contour:</strong> ${elevationId}</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['elevationId', 'ELEVATION', 'Elevation', 'elevation', 'CONTOUR', 'Contour', 'contour', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID'];
+                    Object.entries(elevation).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                    featureCount++;
+                  });
+                } catch (error) {
+                  console.error(`Error drawing ${title} polyline:`, error);
+                }
+              } else if (!isLine && elevation.geometry && elevation.geometry.x !== undefined && elevation.geometry.y !== undefined) {
+                // Draw elevation points
+                try {
+                  const pointLat = elevation.geometry.y;
+                  const pointLon = elevation.geometry.x;
+                  
+                  const marker = L.marker([pointLat, pointLon], {
+                    icon: L.divIcon({
+                      className: 'custom-marker-icon',
+                      html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px;">${icon}</div>`,
+                      iconSize: [20, 20],
+                      iconAnchor: [10, 10]
+                    })
+                  });
+                  
+                  const elevationId = elevation.elevationId || elevation.ELEVATION || elevation.Elevation || 'Unknown';
+                  const distance = elevation.distance_miles !== null && elevation.distance_miles !== undefined ? elevation.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${title}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${elevationId ? `<div><strong>Elevation:</strong> ${elevationId}</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['elevationId', 'ELEVATION', 'Elevation', 'elevation', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID'];
+                  Object.entries(elevation).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  marker.bindPopup(popupContent);
+                  marker.addTo(primary);
+                  bounds.extend([pointLat, pointLon]);
+                  featureCount++;
+                } catch (error) {
+                  console.error(`Error drawing ${title} point:`, error);
+                }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
+      // Add raster layers for visualization (if enabled)
+      // Use ArcGIS MapServer export endpoint with proper coordinate system
+      const rasterLayers = [
+        { key: 'la_county_elevation_raster_enabled', layerId: 5, title: 'LA County Elevation Data (Raster)', icon: '🗺️', color: '#8b5cf6' },
+        { key: 'la_county_elevation_hillshade_enabled', layerId: 6, title: 'LA County LARIAC Hillshade (2006)', icon: '⛰️', color: '#7c3aed' },
+        { key: 'la_county_elevation_dem_enabled', layerId: 7, title: 'LA County LARIAC Digital Elevation Model (2006)', icon: '🏔️', color: '#6366f1' },
+        { key: 'la_county_elevation_dsm_enabled', layerId: 8, title: 'LA County LARIAC Digital Surface Model (2006)', icon: '⛰️', color: '#5b21b6' }
+      ];
+
+      rasterLayers.forEach(({ key, layerId, title, icon, color }) => {
+        try {
+          if (enrichments[key] && map && map.getBounds) {
+            const mapBounds = map.getBounds();
+            const sw = mapBounds.getSouthWest();
+            const ne = mapBounds.getNorthEast();
+            
+            // Get map container size for image size
+            const mapSize = map.getSize();
+            const imageWidth = Math.max(512, Math.min(2048, mapSize.x || 1024));
+            const imageHeight = Math.max(512, Math.min(2048, mapSize.y || 1024));
+            
+            // Service uses spatial reference 2229 (California State Plane Zone 5)
+            // But we'll request in 4326 and let ArcGIS transform, or try Web Mercator (3857)
+            // Format: minX,minY,maxX,maxY
+            const bbox4326 = `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`;
+            
+            // Convert to Web Mercator (3857) - standard for web maps
+            const toWebMercator = (lat: number, lon: number) => {
+              const x = lon * 20037508.34 / 180;
+              let y = Math.log(Math.tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180);
+              y = y * 20037508.34 / 180;
+              return { x, y };
+            };
+            
+            const swMerc = toWebMercator(sw.lat, sw.lng);
+            const neMerc = toWebMercator(ne.lat, ne.lng);
+            const bbox3857 = `${swMerc.x},${swMerc.y},${neMerc.x},${neMerc.y}`;
+            
+            // Try Web Mercator first (most reliable for web maps)
+            let exportUrl = `https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/Elevation/MapServer/export?bbox=${bbox3857}&bboxSR=3857&imageSR=3857&size=${imageWidth},${imageHeight}&f=image&layers=show:${layerId}&transparent=true&format=png`;
+            
+            console.log(`🗺️ Adding ${title} raster layer (Layer ${layerId})`);
+            console.log(`   Map bounds:`, { sw: sw, ne: ne });
+            console.log(`   Image size:`, { width: imageWidth, height: imageHeight });
+            console.log(`   Export URL:`, exportUrl);
+            
+            // Create ImageOverlay with current map bounds
+            const imageOverlay = L.imageOverlay(exportUrl, mapBounds, {
+              opacity: 0.7,
+              zIndex: 100,
+              attribution: 'LA County Public GIS',
+              interactive: false
+            });
+            
+            // Add error handler - if Web Mercator fails, try WGS84
+            imageOverlay.on('error', (e: any) => {
+              console.warn(`⚠️ Web Mercator export failed for ${title}, trying WGS84...`);
+              
+              // Fallback to WGS84
+              const fallbackUrl = `https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/Elevation/MapServer/export?bbox=${bbox4326}&bboxSR=4326&imageSR=4326&size=${imageWidth},${imageHeight}&f=image&layers=show:${layerId}&transparent=true&format=png`;
+              
+              // Remove failed overlay and try again
+              if (imageOverlay._map) {
+                imageOverlay.remove();
+              }
+              
+              const fallbackOverlay = L.imageOverlay(fallbackUrl, mapBounds, {
+                opacity: 0.7,
+                zIndex: 100,
+                attribution: 'LA County Public GIS',
+                interactive: false
+              });
+              
+              fallbackOverlay.on('error', (err: any) => {
+                console.error(`❌ Failed to load ${title} raster image with both coordinate systems:`, err);
+              });
+              
+              fallbackOverlay.on('load', () => {
+                console.log(`✅ Successfully loaded ${title} raster image using WGS84 fallback`);
+              });
+              
+              fallbackOverlay.addTo(map);
+            });
+            
+            imageOverlay.on('load', () => {
+              console.log(`✅ Successfully loaded ${title} raster image using Web Mercator`);
+            });
+            
+            imageOverlay.addTo(map);
+            
+            // Add to legend
+            const legendKey = key.replace('_enabled', '');
+            if (!legendAccumulator[legendKey]) {
+              legendAccumulator[legendKey] = {
+                icon: icon,
+                color: color,
+                title: title,
+                count: 1, // Raster layers show as enabled
+              };
+            }
+            
+            console.log(`✅ Added ${title} raster layer to map`);
+          } else {
+            console.log(`⚠️ ${title} not enabled or map not ready:`, { 
+              enabled: enrichments[key], 
+              hasMap: !!map,
+              hasGetBounds: map && typeof map.getBounds === 'function',
+              mapReady: map !== null
+            });
+          }
+        } catch (error) {
+          console.error(`❌ Error adding ${title} raster layer:`, error);
+        }
+      });
+
       // Draw CA State Parks Entry Points
       try {
         if (enrichments.ca_state_parks_entry_points_all && Array.isArray(enrichments.ca_state_parks_entry_points_all)) {
@@ -13485,28 +14027,28 @@ const MapView: React.FC<MapViewProps> = ({
         
         {/* Dynamic Legend - Always show when there are legend items (Desktop only) */}
         {legendItems.length > 0 && (
-          <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-4 max-w-xs z-10">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Map Legend</h4>
-            <div className="space-y-2">
+          <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-6 max-w-md z-10">
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">Map Legend</h4>
+            <div className="space-y-3">
               {legendItems.map((item, index) => (
                 <div key={index}>
-                  <div className="flex items-center space-x-2 text-xs">
+                  <div className="flex items-center space-x-3 text-base">
                     <div 
-                      className="w-4 h-4 rounded-full flex items-center justify-center text-xs"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-base"
                       style={{ backgroundColor: item.color }}
                     >
                       {item.icon}
                     </div>
-                    <span className="text-gray-700">{item.title}</span>
+                    <span className="text-gray-700 font-medium">{item.title}</span>
                     <span className="text-gray-500">({item.count})</span>
                   </div>
                   {/* Show ranges for broadband layer */}
                   {item.ranges && item.ranges.length > 0 && (
-                    <div className="ml-6 mt-1 space-y-1">
+                    <div className="ml-11 mt-2 space-y-2">
                       {item.ranges.map((range, rangeIndex) => (
-                        <div key={rangeIndex} className="flex items-center space-x-2 text-xs">
+                        <div key={rangeIndex} className="flex items-center space-x-3 text-sm">
                           <div 
-                            className="w-3 h-3 rounded flex-shrink-0"
+                            className="w-4 h-4 rounded flex-shrink-0"
                             style={{ backgroundColor: range.color }}
                           />
                           <span className="text-gray-600">{range.label}</span>

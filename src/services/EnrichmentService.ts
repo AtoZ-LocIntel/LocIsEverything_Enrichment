@@ -89,6 +89,9 @@ import { getLACountyStreetInventoryData } from '../adapters/laCountyStreetInvent
 import { getLACountyHazardsData } from '../adapters/laCountyHazards';
 import { getLACountyBasemapsGridsData } from '../adapters/laCountyBasemapsGrids';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
+import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
+import { getLACountyAdministrativeBoundariesData } from '../adapters/laCountyAdministrativeBoundaries';
+import { getLACountyElevationData } from '../adapters/laCountyElevation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1924,6 +1927,100 @@ export class EnrichmentService {
         return await this.getLACountyHydrology(70, lat, lon, radius);
       case 'la_county_hydrology_embankment':
         return await this.getLACountyHydrology(71, lat, lon, radius);
+      
+      // LA County Infrastructure - All 5 layers
+      case 'la_county_infrastructure_county_facilities':
+        return await this.getLACountyInfrastructure(0, lat, lon, radius);
+      case 'la_county_infrastructure_county_buildings':
+        return await this.getLACountyInfrastructure(1, lat, lon, radius);
+      case 'la_county_infrastructure_schools':
+        return await this.getLACountyInfrastructure(2, lat, lon, radius);
+      case 'la_county_infrastructure_county_parcels':
+        return await this.getLACountyInfrastructure(3, lat, lon, radius);
+      case 'la_county_infrastructure_government_parcels':
+        return await this.getLACountyInfrastructure(4, lat, lon, radius);
+      
+      // LA County Administrative Boundaries - All 21 layers
+      case 'la_county_admin_boundaries_isd_facilities':
+        return await this.getLACountyAdministrativeBoundaries(24, lat, lon, radius);
+      case 'la_county_admin_boundaries_school_districts':
+        return await this.getLACountyAdministrativeBoundaries(0, lat, lon, radius);
+      case 'la_county_admin_boundaries_park_planning_areas':
+        return await this.getLACountyAdministrativeBoundaries(1, lat, lon, radius);
+      case 'la_county_admin_boundaries_dcfs_office':
+        return await this.getLACountyAdministrativeBoundaries(2, lat, lon, radius);
+      case 'la_county_admin_boundaries_health_districts_2022':
+        return await this.getLACountyAdministrativeBoundaries(22, lat, lon, radius);
+      case 'la_county_admin_boundaries_health_districts_2012':
+        return await this.getLACountyAdministrativeBoundaries(3, lat, lon, radius);
+      case 'la_county_admin_boundaries_service_planning_areas_2022':
+        return await this.getLACountyAdministrativeBoundaries(23, lat, lon, radius);
+      case 'la_county_admin_boundaries_service_planning_areas_2012':
+        return await this.getLACountyAdministrativeBoundaries(4, lat, lon, radius);
+      case 'la_county_admin_boundaries_disaster_management_areas':
+        return await this.getLACountyAdministrativeBoundaries(18, lat, lon, radius);
+      case 'la_county_admin_boundaries_zipcodes':
+        return await this.getLACountyAdministrativeBoundaries(5, lat, lon, radius);
+      case 'la_county_admin_boundaries_regional_centers':
+        return await this.getLACountyAdministrativeBoundaries(6, lat, lon, radius);
+      case 'la_county_admin_boundaries_public_safety':
+        return await this.getLACountyAdministrativeBoundaries(7, lat, lon, radius);
+      case 'la_county_admin_boundaries_reporting_districts':
+        return await this.getLACountyAdministrativeBoundaries(8, lat, lon, radius);
+      case 'la_county_admin_boundaries_station_boundaries':
+        return await this.getLACountyAdministrativeBoundaries(9, lat, lon, radius);
+      case 'la_county_admin_boundaries_fire_station_boundaries':
+        return await this.getLACountyAdministrativeBoundaries(19, lat, lon, radius);
+      case 'la_county_admin_boundaries_psap_boundaries':
+        return await this.getLACountyAdministrativeBoundaries(20, lat, lon, radius);
+      case 'la_county_admin_boundaries_library':
+        return await this.getLACountyAdministrativeBoundaries(10, lat, lon, radius);
+      case 'la_county_admin_boundaries_library_planning_areas':
+        return await this.getLACountyAdministrativeBoundaries(11, lat, lon, radius);
+      case 'la_county_admin_boundaries_library_service_areas':
+        return await this.getLACountyAdministrativeBoundaries(12, lat, lon, radius);
+      case 'la_county_admin_boundaries_state_enterprise_zones':
+        return await this.getLACountyAdministrativeBoundaries(16, lat, lon, radius);
+      case 'la_county_admin_boundaries_animal_care_control':
+        return await this.getLACountyAdministrativeBoundaries(21, lat, lon, radius);
+      
+      // LA County Elevation - Contour lines and elevation points (raster layers handled separately)
+      case 'la_county_elevation_contours_l4':
+        return await this.getLACountyElevation(10, lat, lon, radius);
+      case 'la_county_elevation_contours_1000ft_l4':
+        return await this.getLACountyElevation(11, lat, lon, radius);
+      case 'la_county_elevation_contours_250ft_l4':
+        return await this.getLACountyElevation(12, lat, lon, radius);
+      case 'la_county_elevation_contours_50ft_l4':
+        return await this.getLACountyElevation(13, lat, lon, radius);
+      case 'la_county_elevation_contours_10ft_l4':
+        return await this.getLACountyElevation(14, lat, lon, radius);
+      case 'la_county_elevation_contours_2ft_l4':
+        return await this.getLACountyElevation(15, lat, lon, radius);
+      case 'la_county_elevation_contours_1ft_l4':
+        return await this.getLACountyElevation(16, lat, lon, radius);
+      case 'la_county_elevation_contours':
+        return await this.getLACountyElevation(0, lat, lon, radius);
+      case 'la_county_elevation_contours_250ft':
+        return await this.getLACountyElevation(1, lat, lon, radius);
+      case 'la_county_elevation_contours_50ft':
+        return await this.getLACountyElevation(2, lat, lon, radius);
+      case 'la_county_elevation_contours_10ft':
+        return await this.getLACountyElevation(3, lat, lon, radius);
+      case 'la_county_elevation_raster':
+        // Raster layer - visualization only, no queryable data
+        return { la_county_elevation_raster_enabled: true, la_county_elevation_raster_message: 'Raster layer enabled for visualization' };
+      case 'la_county_elevation_hillshade':
+        // Raster layer - visualization only, no queryable data
+        return { la_county_elevation_hillshade_enabled: true, la_county_elevation_hillshade_message: 'Raster layer enabled for visualization' };
+      case 'la_county_elevation_dem':
+        // Raster layer - visualization only, no queryable data
+        return { la_county_elevation_dem_enabled: true, la_county_elevation_dem_message: 'Raster layer enabled for visualization' };
+      case 'la_county_elevation_dsm':
+        // Raster layer - visualization only, no queryable data
+        return { la_county_elevation_dsm_enabled: true, la_county_elevation_dsm_message: 'Raster layer enabled for visualization' };
+      case 'la_county_elevation_points':
+        return await this.getLACountyElevation(9, lat, lon, radius);
       
       case 'la_county_education':
         return await this.getLACountyEducation(lat, lon, radius);
@@ -9254,6 +9351,302 @@ out center;`;
         [`la_county_${key}_containing_message`]: 'Error querying hydrology',
         [`la_county_${key}_count`]: 0,
         [`la_county_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getLACountyInfrastructure(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        0: 'infrastructure_county_facilities',
+        1: 'infrastructure_county_buildings',
+        2: 'infrastructure_schools',
+        3: 'infrastructure_county_parcels',
+        4: 'infrastructure_government_parcels'
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'County Facilities',
+        1: 'County-owned Buildings',
+        2: 'Schools',
+        3: 'County-owned Parcels',
+        4: 'Government-owned Parcels'
+      };
+      
+      const key = layerKeyMap[layerId] || `infrastructure_${layerId}`;
+      const layerName = layerNames[layerId] || `Infrastructure Layer ${layerId}`;
+      
+      console.log(`🏛️ Fetching LA County ${layerName} data for [${lat}, ${lon}]`);
+      
+      const infrastructureFeatures = await getLACountyInfrastructureData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (infrastructureFeatures.length === 0) {
+        result[`la_county_${key}_containing`] = null;
+        result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found`;
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+      } else {
+        // Get the first containing feature (for point-in-polygon)
+        const containingFeature = infrastructureFeatures.find(i => i.isContaining);
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`la_county_${key}_containing`] = containingFeature.infrastructureId || 'Unknown';
+          result[`la_county_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.infrastructureId || 'Unknown'}`;
+        } else {
+          result[`la_county_${key}_containing`] = null;
+          result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`la_county_${key}_count`] = infrastructureFeatures.length;
+        result[`la_county_${key}_all`] = infrastructureFeatures.map(feature => ({
+          ...feature.attributes,
+          infrastructureId: feature.infrastructureId,
+          geometry: feature.geometry,
+          isContaining: feature.isContaining,
+          distance_miles: feature.distance_miles
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${infrastructureFeatures.length} ${layerName.toLowerCase()} feature(s)${containingFeature ? ' containing the point' : ' within proximity'}.`;
+      }
+      
+      console.log(`✅ LA County ${layerName} data processed:`, {
+        totalCount: result[`la_county_${key}_count`],
+        containing: result[`la_county_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Infrastructure Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'infrastructure_county_facilities',
+        1: 'infrastructure_county_buildings',
+        2: 'infrastructure_schools',
+        3: 'infrastructure_county_parcels',
+        4: 'infrastructure_government_parcels'
+      };
+      const key = layerKeyMap[layerId] || `infrastructure_${layerId}`;
+      return {
+        [`la_county_${key}_containing`]: null,
+        [`la_county_${key}_containing_message`]: 'Error querying infrastructure',
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getLACountyAdministrativeBoundaries(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        24: 'admin_boundaries_isd_facilities',
+        0: 'admin_boundaries_school_districts',
+        1: 'admin_boundaries_park_planning_areas',
+        2: 'admin_boundaries_dcfs_office',
+        22: 'admin_boundaries_health_districts_2022',
+        3: 'admin_boundaries_health_districts_2012',
+        23: 'admin_boundaries_service_planning_areas_2022',
+        4: 'admin_boundaries_service_planning_areas_2012',
+        18: 'admin_boundaries_disaster_management_areas',
+        5: 'admin_boundaries_zipcodes',
+        6: 'admin_boundaries_regional_centers',
+        7: 'admin_boundaries_public_safety',
+        8: 'admin_boundaries_reporting_districts',
+        9: 'admin_boundaries_station_boundaries',
+        19: 'admin_boundaries_fire_station_boundaries',
+        20: 'admin_boundaries_psap_boundaries',
+        10: 'admin_boundaries_library',
+        11: 'admin_boundaries_library_planning_areas',
+        12: 'admin_boundaries_library_service_areas',
+        16: 'admin_boundaries_state_enterprise_zones',
+        21: 'admin_boundaries_animal_care_control'
+      };
+      
+      const layerNames: Record<number, string> = {
+        24: 'ISD Facilities Operations Service Maintenance Districts',
+        0: 'School District Boundaries',
+        1: 'Park Planning Areas',
+        2: 'DCFS Office Boundaries',
+        22: 'Health Districts (2022)',
+        3: 'Health Districts (2012)',
+        23: 'Service Planning Areas (2022)',
+        4: 'Service Planning Areas (2012)',
+        18: 'Disaster Management Areas',
+        5: 'Zipcodes',
+        6: 'Regional Centers (2014)',
+        7: 'Public Safety',
+        8: 'Reporting Districts',
+        9: 'Station Boundaries',
+        19: 'Fire Station Boundaries',
+        20: 'PSAP Boundaries',
+        10: 'Library',
+        11: 'Library Planning Areas',
+        12: 'Library Service Areas',
+        16: 'State Enterprise Zones',
+        21: 'Animal Care and Control Service Areas'
+      };
+      
+      const key = layerKeyMap[layerId] || `admin_boundaries_${layerId}`;
+      const layerName = layerNames[layerId] || `Administrative Boundary Layer ${layerId}`;
+      
+      console.log(`🗺️ Fetching LA County ${layerName} data for [${lat}, ${lon}]`);
+      
+      const boundaryFeatures = await getLACountyAdministrativeBoundariesData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (boundaryFeatures.length === 0) {
+        result[`la_county_${key}_containing`] = null;
+        result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found`;
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+      } else {
+        // Get the first containing feature (for point-in-polygon)
+        const containingFeature = boundaryFeatures.find(b => b.isContaining);
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`la_county_${key}_containing`] = containingFeature.boundaryId || 'Unknown';
+          result[`la_county_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.boundaryId || 'Unknown'}`;
+        } else {
+          result[`la_county_${key}_containing`] = null;
+          result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`la_county_${key}_count`] = boundaryFeatures.length;
+        result[`la_county_${key}_all`] = boundaryFeatures.map(feature => ({
+          ...feature.attributes,
+          boundaryId: feature.boundaryId,
+          geometry: feature.geometry,
+          isContaining: feature.isContaining,
+          distance_miles: feature.distance_miles
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${boundaryFeatures.length} ${layerName.toLowerCase()} feature(s)${containingFeature ? ' containing the point' : ' within proximity'}.`;
+      }
+      
+      console.log(`✅ LA County ${layerName} data processed:`, {
+        totalCount: result[`la_county_${key}_count`],
+        containing: result[`la_county_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Administrative Boundaries Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        24: 'admin_boundaries_isd_facilities',
+        0: 'admin_boundaries_school_districts',
+        1: 'admin_boundaries_park_planning_areas',
+        2: 'admin_boundaries_dcfs_office',
+        22: 'admin_boundaries_health_districts_2022',
+        3: 'admin_boundaries_health_districts_2012',
+        23: 'admin_boundaries_service_planning_areas_2022',
+        4: 'admin_boundaries_service_planning_areas_2012',
+        18: 'admin_boundaries_disaster_management_areas',
+        5: 'admin_boundaries_zipcodes',
+        6: 'admin_boundaries_regional_centers',
+        7: 'admin_boundaries_public_safety',
+        8: 'admin_boundaries_reporting_districts',
+        9: 'admin_boundaries_station_boundaries',
+        19: 'admin_boundaries_fire_station_boundaries',
+        20: 'admin_boundaries_psap_boundaries',
+        10: 'admin_boundaries_library',
+        11: 'admin_boundaries_library_planning_areas',
+        12: 'admin_boundaries_library_service_areas',
+        16: 'admin_boundaries_state_enterprise_zones',
+        21: 'admin_boundaries_animal_care_control'
+      };
+      const key = layerKeyMap[layerId] || `admin_boundaries_${layerId}`;
+      return {
+        [`la_county_${key}_containing`]: null,
+        [`la_county_${key}_containing_message`]: 'Error querying administrative boundaries',
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getLACountyElevation(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        10: 'elevation_contours_l4',
+        11: 'elevation_contours_1000ft_l4',
+        12: 'elevation_contours_250ft_l4',
+        13: 'elevation_contours_50ft_l4',
+        14: 'elevation_contours_10ft_l4',
+        15: 'elevation_contours_2ft_l4',
+        16: 'elevation_contours_1ft_l4',
+        0: 'elevation_contours',
+        1: 'elevation_contours_250ft',
+        2: 'elevation_contours_50ft',
+        3: 'elevation_contours_10ft',
+        9: 'elevation_points'
+      };
+      
+      const layerNames: Record<number, string> = {
+        10: 'Contours L4',
+        11: 'LARIAC Contours 1000FT L4',
+        12: 'LARIAC Contours 250FT L4',
+        13: 'LARIAC Contours 50FT L4',
+        14: 'LARIAC Contours 10FT L4',
+        15: 'LARIAC Contours 2FT L4',
+        16: 'LARIAC Contours 1FT L4',
+        0: 'Contours',
+        1: 'LARIAC Contours 250ft',
+        2: 'LARIAC Contours 50ft',
+        3: 'LARIAC Contours 10ft',
+        9: 'Elevation Points (For Profile Tool)'
+      };
+      
+      const key = layerKeyMap[layerId] || `elevation_${layerId}`;
+      const layerName = layerNames[layerId] || `Elevation Layer ${layerId}`;
+      
+      console.log(`🗺️ Fetching LA County ${layerName} data for [${lat}, ${lon}]`);
+      
+      const elevationFeatures = await getLACountyElevationData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (elevationFeatures.length === 0) {
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+        result[`la_county_${key}_message`] = `No ${layerName.toLowerCase()} found within the specified radius`;
+      } else {
+        result[`la_county_${key}_count`] = elevationFeatures.length;
+        result[`la_county_${key}_all`] = elevationFeatures.map(feature => ({
+          ...feature.attributes,
+          elevationId: feature.elevationId,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles
+        }));
+        result[`la_county_${key}_message`] = `Found ${elevationFeatures.length} ${layerName.toLowerCase()} feature(s) within proximity.`;
+      }
+      
+      console.log(`✅ LA County ${layerName} data processed:`, {
+        totalCount: result[`la_county_${key}_count`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Elevation Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        10: 'elevation_contours_l4',
+        11: 'elevation_contours_1000ft_l4',
+        12: 'elevation_contours_250ft_l4',
+        13: 'elevation_contours_50ft_l4',
+        14: 'elevation_contours_10ft_l4',
+        15: 'elevation_contours_2ft_l4',
+        16: 'elevation_contours_1ft_l4',
+        0: 'elevation_contours',
+        1: 'elevation_contours_250ft',
+        2: 'elevation_contours_50ft',
+        3: 'elevation_contours_10ft',
+        9: 'elevation_points'
+      };
+      const key = layerKeyMap[layerId] || `elevation_${layerId}`;
+      return {
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: [],
+        [`la_county_${key}_message`]: 'Error querying elevation data'
       };
     }
   }
