@@ -2488,8 +2488,50 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           <p className="text-sm mt-2">Layers will be added soon.</p>
                           <p className="text-xs mt-2 text-gray-400">Debug: Category ID: {category.id}, Enrichments: {categoryEnrichments.length}</p>
                         </div>
-                      ) : (
-                        categoryEnrichments.map((enrichment) => {
+                      ) : (() => {
+                        // For LA County (ca sub-category), group by subCategory
+                        const isLACounty = category.id === 'ca' && categoryEnrichments.some(e => e.id.startsWith('la_county_'));
+                        
+                        if (isLACounty) {
+                          // Group enrichments by subCategory
+                          const groupedBySubCategory: Record<string, typeof categoryEnrichments> = {};
+                          const categoryOrder = [
+                            'Hazards',
+                            'Basemaps & Grids',
+                            'Hydrology',
+                            'Infrastructure',
+                            'Administrative Boundaries',
+                            'Elevation',
+                            'Demographics',
+                            'Points of Interest',
+                            'Cultural & Historic',
+                            'Housing & Health',
+                            'Transportation'
+                          ];
+                          
+                          categoryEnrichments.forEach(enrichment => {
+                            const subCat = enrichment.subCategory || 'Other';
+                            if (!groupedBySubCategory[subCat]) {
+                              groupedBySubCategory[subCat] = [];
+                            }
+                            groupedBySubCategory[subCat].push(enrichment);
+                          });
+                          
+                          // Sort each group alphabetically
+                          Object.keys(groupedBySubCategory).forEach(key => {
+                            groupedBySubCategory[key].sort((a, b) => a.label.localeCompare(b.label));
+                          });
+                          
+                          return (
+                            <>
+                              {categoryOrder
+                                .filter(cat => groupedBySubCategory[cat])
+                                .map(subCategory => (
+                                  <div key={subCategory} className="space-y-3 sm:space-y-4">
+                                    <h3 className="text-base sm:text-lg font-bold text-gray-900 pt-2 pb-1 border-b border-gray-300">
+                                      {subCategory}
+                                    </h3>
+                                    {groupedBySubCategory[subCategory].map((enrichment) => {
                             const isSelected = selectedEnrichments.includes(enrichment.id);
                             const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
                             const maxRadius = getMaxRadius(enrichment.id);
@@ -2628,13 +2670,299 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             })()}
                               </div>
                             );
-                          })
-                                )}
+                          })}
+                                  </div>
+                                ))
+                              }
+                              {/* Handle any "Other" category layers */}
+                              {groupedBySubCategory['Other'] && groupedBySubCategory['Other'].length > 0 && (
+                                <div className="space-y-3 sm:space-y-4">
+                                  <h3 className="text-base sm:text-lg font-bold text-gray-900 pt-2 pb-1 border-b border-gray-300">
+                                    Other
+                                  </h3>
+                                  {groupedBySubCategory['Other'].map((enrichment) => {
+                                    const isSelected = selectedEnrichments.includes(enrichment.id);
+                                    const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
+                                    const maxRadius = getMaxRadius(enrichment.id);
+                                    const minRadius = enrichment.id === 'poi_aurora_viewing_sites' ? 5 : 0.1;
+                                    const formatMiles = (value: number) => Number.isInteger(value) ? value.toString() : value.toFixed(1);
+                                    const radiusLabel = (() => {
+                                      if (enrichment.id === 'poi_earthquakes') return '25 miles (earthquakes)';
+                                      if (enrichment.id === 'poi_volcanoes') return '50 miles (volcanoes)';
+                                      if (enrichment.id === 'poi_wildfires') return '50 miles (wildfires)';
+                                      if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
+                                      if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
+                                      if (enrichment.id === 'nh_parcels') return '0.3 miles';
+                                      if (enrichment.id === 'nj_parcels') return '0.3 miles';
+                                      if (enrichment.id === 'ma_parcels') return '0.3 miles';
+                                      if (enrichment.id === 'ct_building_footprints') return '0.3 miles';
+                                      return '5 miles';
+                                    })();
+
+                                    return (
+                                      <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 w-full max-w-full" style={isMobile ? { padding: '24px', marginBottom: '20px', width: '100%', maxWidth: '100%', boxSizing: 'border-box' } as React.CSSProperties : {}}>
+                                        <div className={`flex ${isMobile ? 'flex-col items-start space-y-4 space-x-0' : 'flex-row sm:items-start'} gap-3 w-full max-w-full`}>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleEnrichmentToggle(enrichment.id)}
+                                            data-enrichment-checkbox="true"
+                                            data-test-mobile="true"
+                                            className={`enrichment-checkbox flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 self-start ${
+                                              isSelected 
+                                                ? 'bg-black border-black' 
+                                                : 'bg-white border-gray-300'
+                                            }`}
+                                            style={(() => {
+                                              const isMobileWidth = typeof window !== 'undefined' && window.innerWidth < 768;
+                                              return isMobileWidth ? { 
+                                                width: '50px', 
+                                                height: '50px', 
+                                                minWidth: '50px', 
+                                                minHeight: '50px', 
+                                                maxWidth: '50px',
+                                                maxHeight: '50px',
+                                                aspectRatio: '1',
+                                                flexShrink: '0',
+                                                boxSizing: 'border-box',
+                                              } as React.CSSProperties : {
+                                                width: '16px',
+                                                height: '16px',
+                                                minWidth: '16px',
+                                                minHeight: '16px',
+                                              } as React.CSSProperties;
+                                            })()}
+                                          >
+                                            {isSelected && (
+                                              <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={isMobile ? { width: '28px', height: '28px', flexShrink: '0' } as React.CSSProperties : {}} />
+                                            )}
+                                          </button>
+                                          <div className={`flex-1 min-w-0 text-left w-full max-w-full ${isMobile ? 'space-y-3 pt-3' : 'space-y-1'}`} style={isMobile ? { width: '100%', maxWidth: '100%', flex: '1 1 100%' } as React.CSSProperties : {}}>
+                                            <label htmlFor={enrichment.id} className={`font-semibold text-gray-900 cursor-pointer block break-words w-full ${isMobile ? 'text-2xl leading-9' : 'text-base sm:text-base leading-relaxed'}`} style={isMobile ? { width: '100%', maxWidth: '100%', display: 'block' } as React.CSSProperties : {}}>
+                                              {enrichment.label}
+                                            </label>
+                                            <p className={`text-gray-700 break-words whitespace-normal w-full ${isMobile ? 'text-xl leading-8' : 'text-sm sm:text-sm leading-relaxed'}`} style={isMobile ? { width: '100%', maxWidth: '100%', margin: '0', padding: '0', display: 'block' } as React.CSSProperties : {}}>
+                                              {enrichment.description}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        {enrichment.isPOI && isSelected && (() => {
+                                          const isNHParcels = enrichment.id === 'nh_parcels';
+                                          const isNJParcels = enrichment.id === 'nj_parcels';
+                                          const isMAParcels = enrichment.id === 'ma_parcels';
+                                          const isCTBuildingFootprints = enrichment.id === 'ct_building_footprints';
+                                          const isLACountyLeadRisk = enrichment.id === 'la_county_housing_lead_risk';
+                                          const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
+                                          const radiusOptions = isNHParcels || isNJParcels
+                                            ? [0.25, 0.50, 0.75, 1.0]
+                                            : isMAParcels
+                                            ? [0.3, 0.5, 0.75, 1.0]
+                                            : isCTBuildingFootprints
+                                            ? [0.25, 0.50, 0.75, 1.0]
+                                            : isLACountyLeadRisk
+                                            ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+                                            : isLAStreetInventory
+                                            ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+                                            : enrichment.id === 'poi_aurora_viewing_sites'
+                                            ? [5, 10, 25, 50, 100]
+                                            : null;
+                                          
+                                          return (
+                                            <div className="mt-4 pt-4 border-t border-gray-100" style={isMobile ? { width: '100%', maxWidth: '100%', marginTop: '16px', paddingTop: '16px', boxSizing: 'border-box' } as React.CSSProperties : {}}>
+                                              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3" style={isMobile ? { width: '100%', maxWidth: '100%', boxSizing: 'border-box' } as React.CSSProperties : {}}>
+                                                <p className="text-xs text-amber-700" style={isMobile ? { width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                                                  ⚠️ Recommended range: {radiusLabel} (for performance & accuracy)
+                                                </p>
+                                              </div>
+                                              <div className="flex flex-col gap-3 mt-4 w-full max-w-full" style={isMobile ? { width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                                                <label className="text-sm font-medium text-black w-full" style={isMobile ? { width: '100%', fontSize: '16px' } as React.CSSProperties : {}}>Search Radius:</label>
+                                                <div className="flex items-center gap-2 w-full max-w-full" style={isMobile ? { width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                                                  {radiusOptions ? (
+                                                    <select
+                                                      value={currentRadius}
+                                                      onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value))}
+                                                      className={`px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 ${isMobile ? 'w-full flex-grow' : 'w-32 sm:w-28 flex-shrink-0'}`}
+                                                      style={isMobile ? { width: '100%', maxWidth: '100%', minWidth: '150px' } as React.CSSProperties : { maxWidth: 'calc(100% - 60px)' }}
+                                                    >
+                                                      {radiusOptions.map(option => (
+                                                        <option key={option} value={option}>
+                                                          {formatMiles(option)} {option === 1 ? 'mile' : 'miles'}
+                                                        </option>
+                                                      ))}
+                                                    </select>
+                                                  ) : (
+                                                    <input
+                                                      type="number"
+                                                      min={minRadius}
+                                                      max={maxRadius}
+                                                      step={enrichment.id === 'poi_aurora_viewing_sites' ? 1 : 0.1}
+                                                      value={currentRadius}
+                                                      onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
+                                                      className={`px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center ${isMobile ? 'w-full flex-grow' : 'w-24 sm:w-20 flex-shrink-0'}`}
+                                                      style={isMobile ? { width: '100%', maxWidth: '100%', minWidth: '150px' } as React.CSSProperties : { maxWidth: 'calc(100% - 60px)' }}
+                                                    />
+                                                  )}
+                                                  <span className="text-sm text-black whitespace-nowrap flex-shrink-0" style={isMobile ? { fontSize: '16px' } as React.CSSProperties : {}}>miles</span>
+                                                </div>
+                                              </div>
+                                              {!radiusOptions && (currentRadius > maxRadius || currentRadius < minRadius) && (
+                                                <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                                                  Please stay between {formatMiles(minRadius)} and {formatMiles(maxRadius)} miles
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })()}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </>
+                          );
+                        } else {
+                          // Regular (non-LA County) rendering - existing code
+                          return categoryEnrichments.map((enrichment) => {
+                            const isSelected = selectedEnrichments.includes(enrichment.id);
+                            const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius;
+                            const maxRadius = getMaxRadius(enrichment.id);
+                            const minRadius = enrichment.id === 'poi_aurora_viewing_sites' ? 5 : 0.1;
+                            const formatMiles = (value: number) => Number.isInteger(value) ? value.toString() : value.toFixed(1);
+                            const radiusLabel = (() => {
+                              if (enrichment.id === 'poi_earthquakes') return '25 miles (earthquakes)';
+                              if (enrichment.id === 'poi_volcanoes') return '50 miles (volcanoes)';
+                              if (enrichment.id === 'poi_wildfires') return '50 miles (wildfires)';
+                              if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
+                              if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
+                              if (enrichment.id === 'nh_parcels') return '0.3 miles';
+                              if (enrichment.id === 'nj_parcels') return '0.3 miles';
+                              if (enrichment.id === 'ma_parcels') return '0.3 miles';
+                              if (enrichment.id === 'ct_building_footprints') return '0.3 miles';
+                              return '5 miles';
+                            })();
+
+                            return (
+                              <div key={enrichment.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 w-full max-w-full" style={isMobile ? { padding: '24px', marginBottom: '20px', width: '100%', maxWidth: '100%', boxSizing: 'border-box' } as React.CSSProperties : {}}>
+                                <div className={`flex ${isMobile ? 'flex-col items-start space-y-4 space-x-0' : 'flex-row sm:items-start'} gap-3 w-full max-w-full`}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEnrichmentToggle(enrichment.id)}
+                                    data-enrichment-checkbox="true"
+                                    data-test-mobile="true"
+                                    className={`enrichment-checkbox flex-shrink-0 border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200 self-start ${
+                                      isSelected 
+                                        ? 'bg-black border-black' 
+                                        : 'bg-white border-gray-300'
+                                    }`}
+                                    style={(() => {
+                                      const isMobileWidth = typeof window !== 'undefined' && window.innerWidth < 768;
+                                      return isMobileWidth ? { 
+                                        width: '50px', 
+                                        height: '50px', 
+                                        minWidth: '50px', 
+                                        minHeight: '50px', 
+                                        maxWidth: '50px',
+                                        maxHeight: '50px',
+                                        aspectRatio: '1',
+                                        flexShrink: '0',
+                                        boxSizing: 'border-box',
+                                      } as React.CSSProperties : {
+                                        width: '16px',
+                                        height: '16px',
+                                        minWidth: '16px',
+                                        minHeight: '16px',
+                                      } as React.CSSProperties;
+                                    })()}
+                                  >
+                                    {isSelected && (
+                                      <Check className={`text-white ${isMobile ? 'w-5 h-5' : 'w-3 h-3'}`} style={isMobile ? { width: '28px', height: '28px', flexShrink: '0' } as React.CSSProperties : {}} />
+                                    )}
+                                  </button>
+                                  <div className={`flex-1 min-w-0 text-left w-full max-w-full ${isMobile ? 'space-y-3 pt-3' : 'space-y-1'}`} style={isMobile ? { width: '100%', maxWidth: '100%', flex: '1 1 100%' } as React.CSSProperties : {}}>
+                                    <label htmlFor={enrichment.id} className={`font-semibold text-gray-900 cursor-pointer block break-words w-full ${isMobile ? 'text-2xl leading-9' : 'text-base sm:text-base leading-relaxed'}`} style={isMobile ? { width: '100%', maxWidth: '100%', display: 'block' } as React.CSSProperties : {}}>
+                                      {enrichment.label}
+                                    </label>
+                                    <p className={`text-gray-700 break-words whitespace-normal w-full ${isMobile ? 'text-xl leading-8' : 'text-sm sm:text-sm leading-relaxed'}`} style={isMobile ? { width: '100%', maxWidth: '100%', margin: '0', padding: '0', display: 'block' } as React.CSSProperties : {}}>
+                                      {enrichment.description}
+                                    </p>
+                                  </div>
+                                </div>
+                                {enrichment.isPOI && isSelected && (() => {
+                                  const isNHParcels = enrichment.id === 'nh_parcels';
+                                  const isNJParcels = enrichment.id === 'nj_parcels';
+                                  const isMAParcels = enrichment.id === 'ma_parcels';
+                                  const isCTBuildingFootprints = enrichment.id === 'ct_building_footprints';
+                                  const isLACountyLeadRisk = enrichment.id === 'la_county_housing_lead_risk';
+                                  const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
+                                  const radiusOptions = isNHParcels || isNJParcels
+                                    ? [0.25, 0.50, 0.75, 1.0]
+                                    : isMAParcels
+                                    ? [0.3, 0.5, 0.75, 1.0]
+                                    : isCTBuildingFootprints
+                                    ? [0.25, 0.50, 0.75, 1.0]
+                                    : isLACountyLeadRisk
+                                    ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+                                    : isLAStreetInventory
+                                    ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+                                    : enrichment.id === 'poi_aurora_viewing_sites'
+                                    ? [5, 10, 25, 50, 100]
+                                    : null;
+                                  
+                                  return (
+                                    <div className="mt-4 pt-4 border-t border-gray-100" style={isMobile ? { width: '100%', maxWidth: '100%', marginTop: '16px', paddingTop: '16px', boxSizing: 'border-box' } as React.CSSProperties : {}}>
+                                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3" style={isMobile ? { width: '100%', maxWidth: '100%', boxSizing: 'border-box' } as React.CSSProperties : {}}>
+                                        <p className="text-xs text-amber-700" style={isMobile ? { width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                                          ⚠️ Recommended range: {radiusLabel} (for performance & accuracy)
+                                        </p>
+                                      </div>
+                                      <div className="flex flex-col gap-3 mt-4 w-full max-w-full" style={isMobile ? { width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                                        <label className="text-sm font-medium text-black w-full" style={isMobile ? { width: '100%', fontSize: '16px' } as React.CSSProperties : {}}>Search Radius:</label>
+                                        <div className="flex items-center gap-2 w-full max-w-full" style={isMobile ? { width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                                          {radiusOptions ? (
+                                            <select
+                                              value={currentRadius}
+                                              onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value))}
+                                              className={`px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 ${isMobile ? 'w-full flex-grow' : 'w-32 sm:w-28 flex-shrink-0'}`}
+                                              style={isMobile ? { width: '100%', maxWidth: '100%', minWidth: '150px' } as React.CSSProperties : { maxWidth: 'calc(100% - 60px)' }}
+                                            >
+                                              {radiusOptions.map(option => (
+                                                <option key={option} value={option}>
+                                                  {formatMiles(option)} {option === 1 ? 'mile' : 'miles'}
+                                                </option>
+                                              ))}
+                                            </select>
+                                          ) : (
+                                            <input
+                                              type="number"
+                                              min={minRadius}
+                                              max={maxRadius}
+                                              step={enrichment.id === 'poi_aurora_viewing_sites' ? 1 : 0.1}
+                                              value={currentRadius}
+                                              onChange={(e) => handleRadiusChange(enrichment.id, parseFloat(e.target.value) || 0)}
+                                              className={`px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 text-center ${isMobile ? 'w-full flex-grow' : 'w-24 sm:w-20 flex-shrink-0'}`}
+                                              style={isMobile ? { width: '100%', maxWidth: '100%', minWidth: '150px' } as React.CSSProperties : { maxWidth: 'calc(100% - 60px)' }}
+                                            />
+                                          )}
+                                          <span className="text-sm text-black whitespace-nowrap flex-shrink-0" style={isMobile ? { fontSize: '16px' } as React.CSSProperties : {}}>miles</span>
+                                        </div>
+                                      </div>
+                                      {!radiusOptions && (currentRadius > maxRadius || currentRadius < minRadius) && (
+                                        <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                                          Please stay between {formatMiles(minRadius)} and {formatMiles(maxRadius)} miles
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
                               </div>
-                  </div>
-                </>
                             );
-            })()}
+                          });
+                        }
+                      })()}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
                         </div>
                       </div>
       </div>
