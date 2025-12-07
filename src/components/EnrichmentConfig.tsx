@@ -535,6 +535,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             const bIsAdminBoundaries = b.id.includes('admin_boundaries');
             const aIsElevation = a.id.includes('elevation');
             const bIsElevation = b.id.includes('elevation');
+            const aIsDemographics = a.id.includes('demographics');
+            const bIsDemographics = b.id.includes('demographics');
             
             if (aIsHazard && !bIsHazard) return -1;
             if (!aIsHazard && bIsHazard) return 1;
@@ -548,6 +550,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             if (!aIsAdminBoundaries && bIsAdminBoundaries && !aIsHazard && !aIsBasemapGrid && !aIsHydrology && !aIsInfrastructure) return 1;
             if (aIsElevation && !bIsElevation && !bIsHazard && !bIsBasemapGrid && !bIsHydrology && !bIsInfrastructure && !bIsAdminBoundaries) return -1;
             if (!aIsElevation && bIsElevation && !aIsHazard && !aIsBasemapGrid && !aIsHydrology && !aIsInfrastructure && !aIsAdminBoundaries) return 1;
+            if (aIsDemographics && !bIsDemographics && !bIsHazard && !bIsBasemapGrid && !bIsHydrology && !bIsInfrastructure && !bIsAdminBoundaries && !bIsElevation) return -1;
+            if (!aIsDemographics && bIsDemographics && !aIsHazard && !aIsBasemapGrid && !aIsHydrology && !aIsInfrastructure && !aIsAdminBoundaries && !aIsElevation) return 1;
             return a.label.localeCompare(b.label);
           });
           

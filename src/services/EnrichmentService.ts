@@ -92,6 +92,7 @@ import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
 import { getLACountyAdministrativeBoundariesData } from '../adapters/laCountyAdministrativeBoundaries';
 import { getLACountyElevationData } from '../adapters/laCountyElevation';
+import { getLACountyDemographicsData } from '../adapters/laCountyDemographics';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2021,6 +2022,42 @@ export class EnrichmentService {
         return { la_county_elevation_dsm_enabled: true, la_county_elevation_dsm_message: 'Raster layer enabled for visualization' };
       case 'la_county_elevation_points':
         return await this.getLACountyElevation(9, lat, lon, radius);
+      
+      // LA County Demographics - All 17 layers
+      case 'la_county_demographics_2020_census':
+        return await this.getLACountyDemographics(13, lat, lon, radius);
+      case 'la_county_demographics_2020_tracts':
+        return await this.getLACountyDemographics(14, lat, lon, radius);
+      case 'la_county_demographics_2020_block_groups':
+        return await this.getLACountyDemographics(15, lat, lon, radius);
+      case 'la_county_demographics_2020_blocks':
+        return await this.getLACountyDemographics(16, lat, lon, radius);
+      case 'la_county_demographics_2018_estimates':
+        return await this.getLACountyDemographics(10, lat, lon, radius);
+      case 'la_county_demographics_2018_population_poverty':
+        return await this.getLACountyDemographics(11, lat, lon, radius);
+      case 'la_county_demographics_2018_median_income':
+        return await this.getLACountyDemographics(12, lat, lon, radius);
+      case 'la_county_demographics_2010_census':
+        return await this.getLACountyDemographics(0, lat, lon, radius);
+      case 'la_county_demographics_2010_tracts':
+        return await this.getLACountyDemographics(1, lat, lon, radius);
+      case 'la_county_demographics_2010_block_groups':
+        return await this.getLACountyDemographics(2, lat, lon, radius);
+      case 'la_county_demographics_2010_blocks':
+        return await this.getLACountyDemographics(3, lat, lon, radius);
+      case 'la_county_demographics_2000_census':
+        return await this.getLACountyDemographics(4, lat, lon, radius);
+      case 'la_county_demographics_2000_tracts':
+        return await this.getLACountyDemographics(5, lat, lon, radius);
+      case 'la_county_demographics_2000_block_groups':
+        return await this.getLACountyDemographics(6, lat, lon, radius);
+      case 'la_county_demographics_2000_blocks':
+        return await this.getLACountyDemographics(7, lat, lon, radius);
+      case 'la_county_demographics_1990_census':
+        return await this.getLACountyDemographics(8, lat, lon, radius);
+      case 'la_county_demographics_1990_tracts':
+        return await this.getLACountyDemographics(9, lat, lon, radius);
       
       case 'la_county_education':
         return await this.getLACountyEducation(lat, lon, radius);
@@ -9647,6 +9684,123 @@ out center;`;
         [`la_county_${key}_count`]: 0,
         [`la_county_${key}_all`]: [],
         [`la_county_${key}_message`]: 'Error querying elevation data'
+      };
+    }
+  }
+
+  private async getLACountyDemographics(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        13: 'demographics_2020_census',
+        14: 'demographics_2020_tracts',
+        15: 'demographics_2020_block_groups',
+        16: 'demographics_2020_blocks',
+        10: 'demographics_2018_estimates',
+        11: 'demographics_2018_population_poverty',
+        12: 'demographics_2018_median_income',
+        0: 'demographics_2010_census',
+        1: 'demographics_2010_tracts',
+        2: 'demographics_2010_block_groups',
+        3: 'demographics_2010_blocks',
+        4: 'demographics_2000_census',
+        5: 'demographics_2000_tracts',
+        6: 'demographics_2000_block_groups',
+        7: 'demographics_2000_blocks',
+        8: 'demographics_1990_census',
+        9: 'demographics_1990_tracts'
+      };
+      
+      const layerNames: Record<number, string> = {
+        13: '2020 Census',
+        14: '2020 Census Tracts',
+        15: '2020 Census Block Groups',
+        16: '2020 Census Blocks',
+        10: '2018 Estimates',
+        11: '2018 Population and Poverty by Tract',
+        12: '2018 Median Household Income by Tract',
+        0: '2010 Census',
+        1: '2010 Census Data by Tract',
+        2: '2010 Census Block Groups (Geography Only)',
+        3: '2010 Census Data By Block',
+        4: '2000 Census',
+        5: '2000 Census Tracts',
+        6: '2000 Census Block Groups',
+        7: '2000 Census Blocks',
+        8: '1990 Census',
+        9: '1990 Census Tracts'
+      };
+      
+      const key = layerKeyMap[layerId] || `demographics_${layerId}`;
+      const layerName = layerNames[layerId] || `Demographics Layer ${layerId}`;
+      
+      console.log(`🗺️ Fetching LA County ${layerName} data for [${lat}, ${lon}]`);
+      
+      const demographicFeatures = await getLACountyDemographicsData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (demographicFeatures.length === 0) {
+        result[`la_county_${key}_containing`] = null;
+        result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found`;
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+      } else {
+        // Get the first containing feature (for point-in-polygon)
+        const containingFeature = demographicFeatures.find(d => d.isContaining);
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`la_county_${key}_containing`] = containingFeature.demographicId || 'Unknown';
+          result[`la_county_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.demographicId || 'Unknown'}`;
+        } else {
+          result[`la_county_${key}_containing`] = null;
+          result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`la_county_${key}_count`] = demographicFeatures.length;
+        result[`la_county_${key}_all`] = demographicFeatures.map(feature => ({
+          ...feature.attributes,
+          demographicId: feature.demographicId,
+          geometry: feature.geometry,
+          isContaining: feature.isContaining,
+          distance_miles: feature.distance_miles
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${demographicFeatures.length} ${layerName.toLowerCase()} feature(s)${containingFeature ? ' containing the point' : ' within proximity'}.`;
+      }
+      
+      console.log(`✅ LA County ${layerName} data processed:`, {
+        totalCount: result[`la_county_${key}_count`],
+        containing: result[`la_county_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Demographics Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        13: 'demographics_2020_census',
+        14: 'demographics_2020_tracts',
+        15: 'demographics_2020_block_groups',
+        16: 'demographics_2020_blocks',
+        10: 'demographics_2018_estimates',
+        11: 'demographics_2018_population_poverty',
+        12: 'demographics_2018_median_income',
+        0: 'demographics_2010_census',
+        1: 'demographics_2010_tracts',
+        2: 'demographics_2010_block_groups',
+        3: 'demographics_2010_blocks',
+        4: 'demographics_2000_census',
+        5: 'demographics_2000_tracts',
+        6: 'demographics_2000_block_groups',
+        7: 'demographics_2000_blocks',
+        8: 'demographics_1990_census',
+        9: 'demographics_1990_tracts'
+      };
+      const key = layerKeyMap[layerId] || `demographics_${layerId}`;
+      return {
+        [`la_county_${key}_containing`]: null,
+        [`la_county_${key}_containing_message`]: 'Error querying demographics',
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: []
       };
     }
   }

@@ -379,7 +379,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('la_county_infrastructure_') && key.endsWith('_all')) || // Skip LA County Administrative Boundaries arrays (handled separately)
         (key.startsWith('la_county_admin_boundaries_') && key.endsWith('_all')) || // Skip LA County Elevation arrays (handled separately)
         (key.startsWith('la_county_elevation_') && key.endsWith('_all')) || // Skip LA County Elevation raster flags (handled separately)
-        (key.startsWith('la_county_elevation_') && key.endsWith('_enabled'))) { // Skip _all arrays (handled separately)
+        (key.startsWith('la_county_elevation_') && key.endsWith('_enabled')) || // Skip LA County Demographics arrays (handled separately)
+        (key.startsWith('la_county_demographics_') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -5724,8 +5725,49 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'la_county_township_range_section_rancho_boundaries_all': { name: 'LA_COUNTY_TOWNSHIP_RANGE_SECTION_RANCHO_BOUNDARIES', icon: '📐' }
     };
     
-    // LA County Elevation - Generic handler for all elevation layers
-    if (key.startsWith('la_county_elevation_') && key.endsWith('_all') && Array.isArray(value)) {
+    // LA County Demographics - Generic handler for all 17 layers
+    if (key.startsWith('la_county_demographics_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
+      value.forEach((demographic: any) => {
+        const demographicId = demographic.demographicId || demographic.GEOID || demographic.geoid || demographic.TRACT || demographic.tract || demographic.BLOCK_GROUP || demographic.block_group || demographic.BLOCK || demographic.block || 'Unknown';
+        const distance = demographic.distance_miles !== null && demographic.distance_miles !== undefined ? demographic.distance_miles.toFixed(2) : (demographic.isContaining ? '0.00' : '');
+        
+        const allAttributes = { ...demographic };
+        delete allAttributes.demographicId;
+        delete allAttributes.GEOID;
+        delete allAttributes.geoid;
+        delete allAttributes.TRACT;
+        delete allAttributes.tract;
+        delete allAttributes.BLOCK_GROUP;
+        delete allAttributes.block_group;
+        delete allAttributes.BLOCK;
+        delete allAttributes.block;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Public GIS',
+          (location.confidence || 'N/A').toString(),
+          `LA_COUNTY_${layerName}`,
+          `📊 Demographic ${demographicId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          demographic.isContaining ? 'Within Boundary' : 'Nearby Boundary',
+          attributesJson,
+          '',
+          '',
+          'LA County Public GIS'
+        ]);
+      });
+    } else if (key.startsWith('la_county_elevation_') && key.endsWith('_all') && Array.isArray(value)) {
       const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
       value.forEach((elevation: any) => {
         const elevationId = elevation.elevationId || elevation.ELEVATION || elevation.Elevation || elevation.CONTOUR || elevation.Contour || 'Unknown';

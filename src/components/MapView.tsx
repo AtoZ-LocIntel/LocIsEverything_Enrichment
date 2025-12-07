@@ -623,6 +623,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key.startsWith('la_county_admin_boundaries_') && key.endsWith('_all') || // Skip LA County Administrative Boundaries arrays (handled separately for map drawing)
     key.startsWith('la_county_elevation_') && key.endsWith('_all') || // Skip LA County Elevation arrays (handled separately for map drawing)
     key.startsWith('la_county_elevation_') && key.endsWith('_enabled') || // Skip LA County Elevation raster layer flags (handled separately)
+    key.startsWith('la_county_demographics_') && key.endsWith('_all') || // Skip LA County Demographics arrays (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -11971,7 +11972,7 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'la_county_hydrology_embankment_all', layerId: 71, icon: '⛰️', color: '#0ea5e9', title: 'LA County Embankment', isPoint: false }
       ];
 
-      laCountyHydrologyLayers.forEach(({ key, layerId, icon, color, title, isPoint, isLine }) => {
+      laCountyHydrologyLayers.forEach(({ key, icon, color, title, isPoint, isLine }) => {
         try {
           if (enrichments[key] && Array.isArray(enrichments[key])) {
             let featureCount = 0;
@@ -12176,7 +12177,7 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'la_county_infrastructure_government_parcels_all', layerId: 4, icon: '📋', color: '#d8b4fe', title: 'LA County Government-owned Parcels', isPoint: false }
       ];
 
-      laCountyInfrastructureLayers.forEach(({ key, layerId, icon, color, title, isPoint }) => {
+      laCountyInfrastructureLayers.forEach(({ key, icon, color, title, isPoint }) => {
         try {
           if (enrichments[key] && Array.isArray(enrichments[key])) {
             let featureCount = 0;
@@ -12342,7 +12343,7 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'la_county_admin_boundaries_animal_care_control_all', layerId: 21, icon: '🐾', color: '#92400e', title: 'LA County Animal Care and Control Service Areas' }
       ];
 
-      laCountyAdminBoundariesLayers.forEach(({ key, layerId, icon, color, title }) => {
+      laCountyAdminBoundariesLayers.forEach(({ key, icon, color, title }) => {
         try {
           if (enrichments[key] && Array.isArray(enrichments[key])) {
             let featureCount = 0;
@@ -12452,7 +12453,7 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'la_county_elevation_points_all', layerId: 9, icon: '📍', color: '#ec4899', title: 'LA County Elevation Points', isLine: false }
       ];
 
-      laCountyElevationLayers.forEach(({ key, layerId, icon, color, title, isLine }) => {
+      laCountyElevationLayers.forEach(({ key, icon, color, title, isLine }) => {
         try {
           if (enrichments[key] && Array.isArray(enrichments[key])) {
             let featureCount = 0;
@@ -12645,14 +12646,14 @@ const MapView: React.FC<MapViewProps> = ({
             });
             
             // Add error handler - if Web Mercator fails, try WGS84
-            imageOverlay.on('error', (e: any) => {
+            imageOverlay.on('error', () => {
               console.warn(`⚠️ Web Mercator export failed for ${title}, trying WGS84...`);
               
               // Fallback to WGS84
               const fallbackUrl = `https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/Elevation/MapServer/export?bbox=${bbox4326}&bboxSR=4326&imageSR=4326&size=${imageWidth},${imageHeight}&f=image&layers=show:${layerId}&transparent=true&format=png`;
               
               // Remove failed overlay and try again
-              if (imageOverlay._map) {
+              if (map.hasLayer(imageOverlay)) {
                 imageOverlay.remove();
               }
               
@@ -12702,6 +12703,121 @@ const MapView: React.FC<MapViewProps> = ({
           }
         } catch (error) {
           console.error(`❌ Error adding ${title} raster layer:`, error);
+        }
+      });
+
+      // Draw LA County Demographics layers
+      const laCountyDemographicsLayers = [
+        { key: 'la_county_demographics_2020_census_all', layerId: 13, icon: '📊', color: '#8b5cf6', title: 'LA County 2020 Census' },
+        { key: 'la_county_demographics_2020_tracts_all', layerId: 14, icon: '📊', color: '#7c3aed', title: 'LA County 2020 Census Tracts' },
+        { key: 'la_county_demographics_2020_block_groups_all', layerId: 15, icon: '📊', color: '#6366f1', title: 'LA County 2020 Census Block Groups' },
+        { key: 'la_county_demographics_2020_blocks_all', layerId: 16, icon: '📊', color: '#5b21b6', title: 'LA County 2020 Census Blocks' },
+        { key: 'la_county_demographics_2018_estimates_all', layerId: 10, icon: '📈', color: '#4c1d95', title: 'LA County 2018 Estimates' },
+        { key: 'la_county_demographics_2018_population_poverty_all', layerId: 11, icon: '📈', color: '#3b0764', title: 'LA County 2018 Population and Poverty by Tract' },
+        { key: 'la_county_demographics_2018_median_income_all', layerId: 12, icon: '📈', color: '#2e1065', title: 'LA County 2018 Median Household Income by Tract' },
+        { key: 'la_county_demographics_2010_census_all', layerId: 0, icon: '📋', color: '#a78bfa', title: 'LA County 2010 Census' },
+        { key: 'la_county_demographics_2010_tracts_all', layerId: 1, icon: '📋', color: '#9333ea', title: 'LA County 2010 Census Data by Tract' },
+        { key: 'la_county_demographics_2010_block_groups_all', layerId: 2, icon: '📋', color: '#7e22ce', title: 'LA County 2010 Census Block Groups' },
+        { key: 'la_county_demographics_2010_blocks_all', layerId: 3, icon: '📋', color: '#6b21a8', title: 'LA County 2010 Census Data By Block' },
+        { key: 'la_county_demographics_2000_census_all', layerId: 4, icon: '📄', color: '#ec4899', title: 'LA County 2000 Census' },
+        { key: 'la_county_demographics_2000_tracts_all', layerId: 5, icon: '📄', color: '#db2777', title: 'LA County 2000 Census Tracts' },
+        { key: 'la_county_demographics_2000_block_groups_all', layerId: 6, icon: '📄', color: '#be185d', title: 'LA County 2000 Census Block Groups' },
+        { key: 'la_county_demographics_2000_blocks_all', layerId: 7, icon: '📄', color: '#9f1239', title: 'LA County 2000 Census Blocks' },
+        { key: 'la_county_demographics_1990_census_all', layerId: 8, icon: '📜', color: '#f472b6', title: 'LA County 1990 Census' },
+        { key: 'la_county_demographics_1990_tracts_all', layerId: 9, icon: '📜', color: '#f43f5e', title: 'LA County 1990 Census Tracts' }
+      ];
+
+      laCountyDemographicsLayers.forEach(({ key, icon, color, title }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((demographic: any) => {
+              if (demographic.geometry && demographic.geometry.rings) {
+                try {
+                  const rings = demographic.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const isContaining = demographic.isContaining;
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    const demographicId = demographic.demographicId || demographic.GEOID || demographic.geoid || demographic.TRACT || demographic.tract || demographic.BLOCK_GROUP || demographic.block_group || demographic.BLOCK || demographic.block || demographic.OBJECTID || demographic.objectid || 'Unknown';
+                    const distance = demographic.distance_miles !== null && demographic.distance_miles !== undefined ? demographic.distance_miles : 0;
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${demographicId ? `<div><strong>ID:</strong> ${demographicId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this boundary</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['demographicId', 'GEOID', 'geoid', 'TRACT', 'tract', 'BLOCK_GROUP', 'block_group', 'BLOCK', 'block', 'NAME', 'Name', 'name', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                    Object.entries(demographic).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error drawing ${title} polygon:`, error);
+                }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
         }
       });
 
