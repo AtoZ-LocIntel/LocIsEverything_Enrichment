@@ -28,6 +28,7 @@ interface EnrichmentItem {
   isPOI: boolean;
   defaultRadius: number;
   category: string;
+  subCategory?: string; // For organizing layers within a section (e.g., LA County categories)
 }
 
 // Core enrichments (non-POI)
