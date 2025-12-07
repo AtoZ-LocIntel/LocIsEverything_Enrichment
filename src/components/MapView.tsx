@@ -618,6 +618,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_usng_1000m_all' ||
     key === 'la_county_usng_100m_all' ||
     key === 'la_county_township_range_section_rancho_boundaries_all' ||
+    key.startsWith('la_county_hydrology_') && key.endsWith('_all') || // Skip LA County Hydrology arrays (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -11870,6 +11871,277 @@ const MapView: React.FC<MapViewProps> = ({
                 } catch (error) {
                   console.error(`Error drawing ${title} polygon:`, error);
                 }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
+      // Draw LA County Hydrology layers
+      const laCountyHydrologyLayers = [
+        { key: 'la_county_hydrology_complete_all', layerId: 0, icon: '💧', color: '#0ea5e9', title: 'LA County Hydrology (Complete)', isPoint: false },
+        { key: 'la_county_hydrology_lakes_all', layerId: 2, icon: '🏞️', color: '#0284c7', title: 'LA County Lakes', isPoint: false },
+        { key: 'la_county_hydrology_streams_rivers_all', layerId: 3, icon: '🌊', color: '#0369a1', title: 'LA County Streams and Rivers', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_watershed_boundaries_all', layerId: 4, icon: '🗺️', color: '#075985', title: 'LA County Watershed Boundaries', isPoint: false },
+        { key: 'la_county_hydrology_wbd_hu12_all', layerId: 5, icon: '🗺️', color: '#0c4a6e', title: 'LA County WBD HU12', isPoint: false },
+        { key: 'la_county_hydrology_wbd_hu10_all', layerId: 6, icon: '🗺️', color: '#082f49', title: 'LA County WBD HU10', isPoint: false },
+        { key: 'la_county_hydrology_wbd_hu8_all', layerId: 7, icon: '🗺️', color: '#164e63', title: 'LA County WBD HU8', isPoint: false },
+        { key: 'la_county_hydrology_simpler_all', layerId: 8, icon: '💧', color: '#0891b2', title: 'LA County Hydrology (Simpler)', isPoint: false },
+        { key: 'la_county_hydrology_lakes_simpler_all', layerId: 9, icon: '🏞️', color: '#0e7490', title: 'LA County Lakes (Simpler)', isPoint: false },
+        { key: 'la_county_hydrology_nhd_streams_all', layerId: 10, icon: '🌊', color: '#155e75', title: 'LA County NHD Streams', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_storm_drain_network_all', layerId: 11, icon: '🌧️', color: '#164e63', title: 'LA County Storm Drain Network', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_inlets_outlets_all', layerId: 12, icon: '🚰', color: '#1e40af', title: 'LA County Inlets/Outlets', isPoint: true },
+        { key: 'la_county_hydrology_maintenance_holes_all', layerId: 13, icon: '🕳️', color: '#1e3a8a', title: 'LA County Maintenance Holes', isPoint: true },
+        { key: 'la_county_hydrology_maintenance_holes_lacfcd_all', layerId: 14, icon: '🕳️', color: '#1e3a8a', title: 'LA County Maintenance Holes (LACFCD)', isPoint: true },
+        { key: 'la_county_hydrology_maintenance_holes_city_all', layerId: 15, icon: '🕳️', color: '#1e3a8a', title: 'LA County Maintenance Holes (City)', isPoint: true },
+        { key: 'la_county_hydrology_maintenance_holes_unknown_all', layerId: 16, icon: '🕳️', color: '#1e3a8a', title: 'LA County Maintenance Holes (Unknown)', isPoint: true },
+        { key: 'la_county_hydrology_basins_all', layerId: 17, icon: '🏗️', color: '#2563eb', title: 'LA County Basins', isPoint: false },
+        { key: 'la_county_hydrology_debris_basins_lacfcd_all', layerId: 18, icon: '🏗️', color: '#2563eb', title: 'LA County Debris Basins (LACFCD)', isPoint: false },
+        { key: 'la_county_hydrology_debris_basins_city_all', layerId: 19, icon: '🏗️', color: '#2563eb', title: 'LA County Debris Basins (City)', isPoint: false },
+        { key: 'la_county_hydrology_debris_basins_caltrans_all', layerId: 20, icon: '🏗️', color: '#2563eb', title: 'LA County Debris Basins (Caltrans)', isPoint: false },
+        { key: 'la_county_hydrology_debris_basins_unknown_all', layerId: 21, icon: '🏗️', color: '#2563eb', title: 'LA County Debris Basins (Unknown)', isPoint: false },
+        { key: 'la_county_hydrology_catch_basins_all', layerId: 22, icon: '🏗️', color: '#3b82f6', title: 'LA County Catch Basins', isPoint: false },
+        { key: 'la_county_hydrology_catch_basins_lacfcd_all', layerId: 23, icon: '🏗️', color: '#3b82f6', title: 'LA County Catch Basins (LACFCD)', isPoint: false },
+        { key: 'la_county_hydrology_catch_basins_city_all', layerId: 24, icon: '🏗️', color: '#3b82f6', title: 'LA County Catch Basins (City)', isPoint: false },
+        { key: 'la_county_hydrology_catch_basins_rmd_all', layerId: 25, icon: '🏗️', color: '#3b82f6', title: 'LA County Catch Basins (RMD)', isPoint: false },
+        { key: 'la_county_hydrology_catch_basins_others_all', layerId: 26, icon: '🏗️', color: '#3b82f6', title: 'LA County Catch Basins (Others)', isPoint: false },
+        { key: 'la_county_hydrology_catch_basins_caltrans_all', layerId: 27, icon: '🏗️', color: '#3b82f6', title: 'LA County Catch Basins (Caltrans)', isPoint: false },
+        { key: 'la_county_hydrology_catch_basins_unknown_all', layerId: 28, icon: '🏗️', color: '#3b82f6', title: 'LA County Catch Basins (Unknown)', isPoint: false },
+        { key: 'la_county_hydrology_low_flow_diversion_all', layerId: 29, icon: '🌊', color: '#60a5fa', title: 'LA County Low Flow Diversion', isPoint: false },
+        { key: 'la_county_hydrology_lfd_lacfcd_all', layerId: 30, icon: '🌊', color: '#60a5fa', title: 'LA County LFD (LACFCD)', isPoint: false },
+        { key: 'la_county_hydrology_lfd_city_all', layerId: 31, icon: '🌊', color: '#60a5fa', title: 'LA County LFD (City)', isPoint: false },
+        { key: 'la_county_hydrology_lfd_unknown_all', layerId: 32, icon: '🌊', color: '#60a5fa', title: 'LA County LFD (Unknown)', isPoint: false },
+        { key: 'la_county_hydrology_pump_stations_all', layerId: 33, icon: '⚙️', color: '#93c5fd', title: 'LA County Pump Stations', isPoint: true },
+        { key: 'la_county_hydrology_pump_stations_completed_all', layerId: 34, icon: '⚙️', color: '#93c5fd', title: 'LA County Pump Stations (Completed)', isPoint: true },
+        { key: 'la_county_hydrology_pump_stations_city_la_all', layerId: 35, icon: '⚙️', color: '#93c5fd', title: 'LA County Pump Stations (City of LA)', isPoint: true },
+        { key: 'la_county_hydrology_pump_stations_investigate_all', layerId: 36, icon: '⚙️', color: '#93c5fd', title: 'LA County Pump Stations (To Investigate)', isPoint: true },
+        { key: 'la_county_hydrology_channels_all', layerId: 37, icon: '🏞️', color: '#bfdbfe', title: 'LA County Channels', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_channels_lacfcd_all', layerId: 38, icon: '🏞️', color: '#bfdbfe', title: 'LA County Channels (LACFCD)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_channels_city_all', layerId: 39, icon: '🏞️', color: '#bfdbfe', title: 'LA County Channels (City)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_channels_usace_all', layerId: 40, icon: '🏞️', color: '#bfdbfe', title: 'LA County Channels (USACE)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_channels_caltrans_all', layerId: 41, icon: '🏞️', color: '#bfdbfe', title: 'LA County Channels (Caltrans)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_channels_unknown_all', layerId: 42, icon: '🏞️', color: '#bfdbfe', title: 'LA County Channels (Unknown)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_drains_all', layerId: 43, icon: '🌧️', color: '#dbeafe', title: 'LA County Drains', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_drains_lacfcd_all', layerId: 44, icon: '🌧️', color: '#dbeafe', title: 'LA County Drains (LACFCD)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_drains_city_all', layerId: 45, icon: '🌧️', color: '#dbeafe', title: 'LA County Drains (City)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_drains_road_all', layerId: 46, icon: '🌧️', color: '#dbeafe', title: 'LA County Drains (Road)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_drains_metro_parks_all', layerId: 47, icon: '🌧️', color: '#dbeafe', title: 'LA County Drains (Metro/Parks)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_drains_private_all', layerId: 48, icon: '🌧️', color: '#dbeafe', title: 'LA County Drains (Private)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_drains_caltrans_all', layerId: 49, icon: '🌧️', color: '#dbeafe', title: 'LA County Drains (Caltrans)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_drains_unknown_all', layerId: 50, icon: '🌧️', color: '#dbeafe', title: 'LA County Drains (Unknown)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_laterals_all', layerId: 51, icon: '🌊', color: '#eff6ff', title: 'LA County Laterals', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_laterals_lacfcd_all', layerId: 52, icon: '🌊', color: '#eff6ff', title: 'LA County Laterals (LACFCD)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_laterals_city_all', layerId: 53, icon: '🌊', color: '#eff6ff', title: 'LA County Laterals (City)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_laterals_road_all', layerId: 54, icon: '🌊', color: '#eff6ff', title: 'LA County Laterals (Road)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_laterals_metro_parks_all', layerId: 55, icon: '🌊', color: '#eff6ff', title: 'LA County Laterals (Metro/Parks)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_laterals_private_all', layerId: 56, icon: '🌊', color: '#eff6ff', title: 'LA County Laterals (Private)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_laterals_caltrans_all', layerId: 57, icon: '🌊', color: '#eff6ff', title: 'LA County Laterals (Caltrans)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_laterals_unknown_all', layerId: 58, icon: '🌊', color: '#eff6ff', title: 'LA County Laterals (Unknown)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_culverts_all', layerId: 59, icon: '🚇', color: '#f0f9ff', title: 'LA County Culverts', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_culverts_completed_all', layerId: 60, icon: '🚇', color: '#f0f9ff', title: 'LA County Culverts (Completed)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_culverts_investigate_all', layerId: 61, icon: '🚇', color: '#f0f9ff', title: 'LA County Culverts (To Investigate)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_culverts_city_la_all', layerId: 62, icon: '🚇', color: '#f0f9ff', title: 'LA County Culverts (City of LA)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_permitted_connections_all', layerId: 63, icon: '🔌', color: '#e0f2fe', title: 'LA County Permitted Connections', isPoint: true },
+        { key: 'la_county_hydrology_force_mains_all', layerId: 64, icon: '💧', color: '#bae6fd', title: 'LA County Force Mains', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_force_mains_completed_all', layerId: 65, icon: '💧', color: '#bae6fd', title: 'LA County Force Mains (Completed)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_force_mains_investigate_all', layerId: 66, icon: '💧', color: '#bae6fd', title: 'LA County Force Mains (To Investigate)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_force_mains_city_la_all', layerId: 67, icon: '💧', color: '#bae6fd', title: 'LA County Force Mains (City of LA)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_force_mains_caltrans_all', layerId: 68, icon: '💧', color: '#bae6fd', title: 'LA County Force Mains (Caltrans)', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_natural_drainage_all', layerId: 69, icon: '🌿', color: '#7dd3fc', title: 'LA County Natural Drainage', isPoint: false },
+        { key: 'la_county_hydrology_pseudo_line_all', layerId: 70, icon: '📏', color: '#38bdf8', title: 'LA County Pseudo Line', isPoint: false, isLine: true },
+        { key: 'la_county_hydrology_embankment_all', layerId: 71, icon: '⛰️', color: '#0ea5e9', title: 'LA County Embankment', isPoint: false }
+      ];
+
+      laCountyHydrologyLayers.forEach(({ key, layerId, icon, color, title, isPoint, isLine }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((hydrology: any) => {
+              try {
+                const geometry = hydrology.geometry;
+                const isContaining = hydrology.isContaining;
+                const distance = hydrology.distance_miles !== null && hydrology.distance_miles !== undefined ? hydrology.distance_miles : 0;
+                const hydrologyId = hydrology.hydrologyId || hydrology.OBJECTID || hydrology.objectid || 'Unknown';
+                
+                // Check for point geometry (either from geometry.x/y or from attributes)
+                const pointLat = isPoint ? (geometry?.y || geometry?.latitude || hydrology.latitude || hydrology.LATITUDE || hydrology.lat || hydrology.LAT) : null;
+                const pointLon = isPoint ? (geometry?.x || geometry?.longitude || hydrology.longitude || hydrology.LONGITUDE || hydrology.lon || hydrology.LON) : null;
+                
+                if (isPoint && pointLat !== null && pointLat !== undefined && pointLon !== null && pointLon !== undefined) {
+                  // Point geometry
+                  const lat = pointLat;
+                  const lon = pointLon;
+                  
+                  const marker = L.marker([lat, lon], {
+                    icon: createPOIIcon(icon, color)
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${title}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${hydrologyId ? `<div><strong>ID:</strong> ${hydrologyId}</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['hydrologyId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                  Object.entries(hydrology).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  marker.bindPopup(popupContent);
+                  marker.addTo(primary);
+                  bounds.extend([lat, lon]);
+                  featureCount++;
+                } else if (isLine && (geometry?.paths || geometry?.rings)) {
+                  // Line geometry
+                  const paths = geometry.paths || (geometry.rings ? geometry.rings : []);
+                  if (paths && paths.length > 0) {
+                    paths.forEach((path: number[][]) => {
+                      const latlngs = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+                      
+                      if (latlngs.length < 2) {
+                        console.warn(`${title} line has less than 2 coordinates, skipping`);
+                        return;
+                      }
+                      
+                      const polyline = L.polyline(latlngs, {
+                        color: color,
+                        weight: 3,
+                        opacity: 0.8
+                      });
+                      
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            ${icon} ${title}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${hydrologyId ? `<div><strong>ID:</strong> ${hydrologyId}</div>` : ''}
+                            ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                          </div>
+                          <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      `;
+                      
+                      const excludeFields = ['hydrologyId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                      Object.entries(hydrology).forEach(([key, value]) => {
+                        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                          if (typeof value === 'object' && !Array.isArray(value)) {
+                            return;
+                          }
+                          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                          popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                        }
+                      });
+                      
+                      popupContent += `
+                          </div>
+                        </div>
+                      `;
+                      
+                      polyline.bindPopup(popupContent);
+                      polyline.addTo(primary);
+                      const polylineBounds = L.latLngBounds(latlngs);
+                      bounds.extend(polylineBounds);
+                      featureCount++;
+                    });
+                  }
+                } else if (geometry && geometry.rings) {
+                  // Polygon geometry
+                  const rings = geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${hydrologyId ? `<div><strong>ID:</strong> ${hydrologyId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this feature</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['hydrologyId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                    Object.entries(hydrology).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing ${title} feature:`, error);
               }
             });
             

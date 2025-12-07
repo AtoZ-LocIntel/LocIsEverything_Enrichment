@@ -88,6 +88,7 @@ import { getLACountyMetroLinesData } from '../adapters/laCountyMetroLines';
 import { getLACountyStreetInventoryData } from '../adapters/laCountyStreetInventory';
 import { getLACountyHazardsData } from '../adapters/laCountyHazards';
 import { getLACountyBasemapsGridsData } from '../adapters/laCountyBasemapsGrids';
+import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1779,6 +1780,150 @@ export class EnrichmentService {
         return await this.getLACountyBasemapsGrids(4, lat, lon);
       case 'la_county_township_range_section_rancho_boundaries':
         return await this.getLACountyBasemapsGrids(8, lat, lon);
+      
+      // LA County Hydrology - All 72 layers
+      case 'la_county_hydrology_complete':
+        return await this.getLACountyHydrology(0, lat, lon, radius);
+      case 'la_county_hydrology_lakes':
+        return await this.getLACountyHydrology(2, lat, lon, radius);
+      case 'la_county_hydrology_streams_rivers':
+        return await this.getLACountyHydrology(3, lat, lon, radius);
+      case 'la_county_hydrology_watershed_boundaries':
+        return await this.getLACountyHydrology(4, lat, lon, radius);
+      case 'la_county_hydrology_wbd_hu12':
+        return await this.getLACountyHydrology(5, lat, lon, radius);
+      case 'la_county_hydrology_wbd_hu10':
+        return await this.getLACountyHydrology(6, lat, lon, radius);
+      case 'la_county_hydrology_wbd_hu8':
+        return await this.getLACountyHydrology(7, lat, lon, radius);
+      case 'la_county_hydrology_simpler':
+        return await this.getLACountyHydrology(8, lat, lon, radius);
+      case 'la_county_hydrology_lakes_simpler':
+        return await this.getLACountyHydrology(9, lat, lon, radius);
+      case 'la_county_hydrology_nhd_streams':
+        return await this.getLACountyHydrology(10, lat, lon, radius);
+      case 'la_county_hydrology_storm_drain_network':
+        return await this.getLACountyHydrology(11, lat, lon, radius);
+      case 'la_county_hydrology_inlets_outlets':
+        return await this.getLACountyHydrology(12, lat, lon, radius);
+      case 'la_county_hydrology_maintenance_holes':
+        return await this.getLACountyHydrology(13, lat, lon, radius);
+      case 'la_county_hydrology_maintenance_holes_lacfcd':
+        return await this.getLACountyHydrology(14, lat, lon, radius);
+      case 'la_county_hydrology_maintenance_holes_city':
+        return await this.getLACountyHydrology(15, lat, lon, radius);
+      case 'la_county_hydrology_maintenance_holes_unknown':
+        return await this.getLACountyHydrology(16, lat, lon, radius);
+      case 'la_county_hydrology_basins':
+        return await this.getLACountyHydrology(17, lat, lon, radius);
+      case 'la_county_hydrology_debris_basins_lacfcd':
+        return await this.getLACountyHydrology(18, lat, lon, radius);
+      case 'la_county_hydrology_debris_basins_city':
+        return await this.getLACountyHydrology(19, lat, lon, radius);
+      case 'la_county_hydrology_debris_basins_caltrans':
+        return await this.getLACountyHydrology(20, lat, lon, radius);
+      case 'la_county_hydrology_debris_basins_unknown':
+        return await this.getLACountyHydrology(21, lat, lon, radius);
+      case 'la_county_hydrology_catch_basins':
+        return await this.getLACountyHydrology(22, lat, lon, radius);
+      case 'la_county_hydrology_catch_basins_lacfcd':
+        return await this.getLACountyHydrology(23, lat, lon, radius);
+      case 'la_county_hydrology_catch_basins_city':
+        return await this.getLACountyHydrology(24, lat, lon, radius);
+      case 'la_county_hydrology_catch_basins_rmd':
+        return await this.getLACountyHydrology(25, lat, lon, radius);
+      case 'la_county_hydrology_catch_basins_others':
+        return await this.getLACountyHydrology(26, lat, lon, radius);
+      case 'la_county_hydrology_catch_basins_caltrans':
+        return await this.getLACountyHydrology(27, lat, lon, radius);
+      case 'la_county_hydrology_catch_basins_unknown':
+        return await this.getLACountyHydrology(28, lat, lon, radius);
+      case 'la_county_hydrology_low_flow_diversion':
+        return await this.getLACountyHydrology(29, lat, lon, radius);
+      case 'la_county_hydrology_lfd_lacfcd':
+        return await this.getLACountyHydrology(30, lat, lon, radius);
+      case 'la_county_hydrology_lfd_city':
+        return await this.getLACountyHydrology(31, lat, lon, radius);
+      case 'la_county_hydrology_lfd_unknown':
+        return await this.getLACountyHydrology(32, lat, lon, radius);
+      case 'la_county_hydrology_pump_stations':
+        return await this.getLACountyHydrology(33, lat, lon, radius);
+      case 'la_county_hydrology_pump_stations_completed':
+        return await this.getLACountyHydrology(34, lat, lon, radius);
+      case 'la_county_hydrology_pump_stations_city_la':
+        return await this.getLACountyHydrology(35, lat, lon, radius);
+      case 'la_county_hydrology_pump_stations_investigate':
+        return await this.getLACountyHydrology(36, lat, lon, radius);
+      case 'la_county_hydrology_channels':
+        return await this.getLACountyHydrology(37, lat, lon, radius);
+      case 'la_county_hydrology_channels_lacfcd':
+        return await this.getLACountyHydrology(38, lat, lon, radius);
+      case 'la_county_hydrology_channels_city':
+        return await this.getLACountyHydrology(39, lat, lon, radius);
+      case 'la_county_hydrology_channels_usace':
+        return await this.getLACountyHydrology(40, lat, lon, radius);
+      case 'la_county_hydrology_channels_caltrans':
+        return await this.getLACountyHydrology(41, lat, lon, radius);
+      case 'la_county_hydrology_channels_unknown':
+        return await this.getLACountyHydrology(42, lat, lon, radius);
+      case 'la_county_hydrology_drains':
+        return await this.getLACountyHydrology(43, lat, lon, radius);
+      case 'la_county_hydrology_drains_lacfcd':
+        return await this.getLACountyHydrology(44, lat, lon, radius);
+      case 'la_county_hydrology_drains_city':
+        return await this.getLACountyHydrology(45, lat, lon, radius);
+      case 'la_county_hydrology_drains_road':
+        return await this.getLACountyHydrology(46, lat, lon, radius);
+      case 'la_county_hydrology_drains_metro_parks':
+        return await this.getLACountyHydrology(47, lat, lon, radius);
+      case 'la_county_hydrology_drains_private':
+        return await this.getLACountyHydrology(48, lat, lon, radius);
+      case 'la_county_hydrology_drains_caltrans':
+        return await this.getLACountyHydrology(49, lat, lon, radius);
+      case 'la_county_hydrology_drains_unknown':
+        return await this.getLACountyHydrology(50, lat, lon, radius);
+      case 'la_county_hydrology_laterals':
+        return await this.getLACountyHydrology(51, lat, lon, radius);
+      case 'la_county_hydrology_laterals_lacfcd':
+        return await this.getLACountyHydrology(52, lat, lon, radius);
+      case 'la_county_hydrology_laterals_city':
+        return await this.getLACountyHydrology(53, lat, lon, radius);
+      case 'la_county_hydrology_laterals_road':
+        return await this.getLACountyHydrology(54, lat, lon, radius);
+      case 'la_county_hydrology_laterals_metro_parks':
+        return await this.getLACountyHydrology(55, lat, lon, radius);
+      case 'la_county_hydrology_laterals_private':
+        return await this.getLACountyHydrology(56, lat, lon, radius);
+      case 'la_county_hydrology_laterals_caltrans':
+        return await this.getLACountyHydrology(57, lat, lon, radius);
+      case 'la_county_hydrology_laterals_unknown':
+        return await this.getLACountyHydrology(58, lat, lon, radius);
+      case 'la_county_hydrology_culverts':
+        return await this.getLACountyHydrology(59, lat, lon, radius);
+      case 'la_county_hydrology_culverts_completed':
+        return await this.getLACountyHydrology(60, lat, lon, radius);
+      case 'la_county_hydrology_culverts_investigate':
+        return await this.getLACountyHydrology(61, lat, lon, radius);
+      case 'la_county_hydrology_culverts_city_la':
+        return await this.getLACountyHydrology(62, lat, lon, radius);
+      case 'la_county_hydrology_permitted_connections':
+        return await this.getLACountyHydrology(63, lat, lon, radius);
+      case 'la_county_hydrology_force_mains':
+        return await this.getLACountyHydrology(64, lat, lon, radius);
+      case 'la_county_hydrology_force_mains_completed':
+        return await this.getLACountyHydrology(65, lat, lon, radius);
+      case 'la_county_hydrology_force_mains_investigate':
+        return await this.getLACountyHydrology(66, lat, lon, radius);
+      case 'la_county_hydrology_force_mains_city_la':
+        return await this.getLACountyHydrology(67, lat, lon, radius);
+      case 'la_county_hydrology_force_mains_caltrans':
+        return await this.getLACountyHydrology(68, lat, lon, radius);
+      case 'la_county_hydrology_natural_drainage':
+        return await this.getLACountyHydrology(69, lat, lon, radius);
+      case 'la_county_hydrology_pseudo_line':
+        return await this.getLACountyHydrology(70, lat, lon, radius);
+      case 'la_county_hydrology_embankment':
+        return await this.getLACountyHydrology(71, lat, lon, radius);
       
       case 'la_county_education':
         return await this.getLACountyEducation(lat, lon, radius);
@@ -8987,6 +9132,126 @@ out center;`;
       return {
         [`la_county_${key}_containing`]: null,
         [`la_county_${key}_containing_message`]: 'Error querying basemaps and grids',
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getLACountyHydrology(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        0: 'hydrology_complete', 2: 'hydrology_lakes', 3: 'hydrology_streams_rivers', 4: 'hydrology_watershed_boundaries',
+        5: 'hydrology_wbd_hu12', 6: 'hydrology_wbd_hu10', 7: 'hydrology_wbd_hu8', 8: 'hydrology_simpler', 9: 'hydrology_lakes_simpler',
+        10: 'hydrology_nhd_streams', 11: 'hydrology_storm_drain_network', 12: 'hydrology_inlets_outlets', 13: 'hydrology_maintenance_holes',
+        14: 'hydrology_maintenance_holes_lacfcd', 15: 'hydrology_maintenance_holes_city', 16: 'hydrology_maintenance_holes_unknown',
+        17: 'hydrology_basins', 18: 'hydrology_debris_basins_lacfcd', 19: 'hydrology_debris_basins_city', 20: 'hydrology_debris_basins_caltrans',
+        21: 'hydrology_debris_basins_unknown', 22: 'hydrology_catch_basins', 23: 'hydrology_catch_basins_lacfcd', 24: 'hydrology_catch_basins_city',
+        25: 'hydrology_catch_basins_rmd', 26: 'hydrology_catch_basins_others', 27: 'hydrology_catch_basins_caltrans', 28: 'hydrology_catch_basins_unknown',
+        29: 'hydrology_low_flow_diversion', 30: 'hydrology_lfd_lacfcd', 31: 'hydrology_lfd_city', 32: 'hydrology_lfd_unknown',
+        33: 'hydrology_pump_stations', 34: 'hydrology_pump_stations_completed', 35: 'hydrology_pump_stations_city_la', 36: 'hydrology_pump_stations_investigate',
+        37: 'hydrology_channels', 38: 'hydrology_channels_lacfcd', 39: 'hydrology_channels_city', 40: 'hydrology_channels_usace',
+        41: 'hydrology_channels_caltrans', 42: 'hydrology_channels_unknown', 43: 'hydrology_drains', 44: 'hydrology_drains_lacfcd',
+        45: 'hydrology_drains_city', 46: 'hydrology_drains_road', 47: 'hydrology_drains_metro_parks', 48: 'hydrology_drains_private',
+        49: 'hydrology_drains_caltrans', 50: 'hydrology_drains_unknown', 51: 'hydrology_laterals', 52: 'hydrology_laterals_lacfcd',
+        53: 'hydrology_laterals_city', 54: 'hydrology_laterals_road', 55: 'hydrology_laterals_metro_parks', 56: 'hydrology_laterals_private',
+        57: 'hydrology_laterals_caltrans', 58: 'hydrology_laterals_unknown', 59: 'hydrology_culverts', 60: 'hydrology_culverts_completed',
+        61: 'hydrology_culverts_investigate', 62: 'hydrology_culverts_city_la', 63: 'hydrology_permitted_connections',
+        64: 'hydrology_force_mains', 65: 'hydrology_force_mains_completed', 66: 'hydrology_force_mains_investigate', 67: 'hydrology_force_mains_city_la',
+        68: 'hydrology_force_mains_caltrans', 69: 'hydrology_natural_drainage', 70: 'hydrology_pseudo_line', 71: 'hydrology_embankment'
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'Hydrology (Complete)', 2: 'Lakes', 3: 'Streams and Rivers', 4: 'Watershed Boundaries',
+        5: 'WBD HU12', 6: 'WBD HU10', 7: 'WBD HU8', 8: 'Hydrology (Simpler)', 9: 'Lakes (Simpler)',
+        10: 'NHD Streams', 11: 'Storm Drain Network', 12: 'Inlets/Outlets', 13: 'Maintenance Holes',
+        14: 'Maintenance Holes (LACFCD)', 15: 'Maintenance Holes (City)', 16: 'Maintenance Holes (Unknown)',
+        17: 'Basins', 18: 'Debris Basins (LACFCD)', 19: 'Debris Basins (City)', 20: 'Debris Basins (Caltrans)',
+        21: 'Debris Basins (Unknown)', 22: 'Catch Basins', 23: 'Catch Basins (LACFCD)', 24: 'Catch Basins (City)',
+        25: 'Catch Basins (RMD)', 26: 'Catch Basins (Others)', 27: 'Catch Basins (Caltrans)', 28: 'Catch Basins (Unknown)',
+        29: 'Low Flow Diversion', 30: 'LFD (LACFCD)', 31: 'LFD (City)', 32: 'LFD (Unknown)',
+        33: 'Pump Stations', 34: 'Pump Stations (Completed)', 35: 'Pump Stations (City of LA)', 36: 'Pump Stations (To Investigate)',
+        37: 'Channels', 38: 'Channels (LACFCD)', 39: 'Channels (City)', 40: 'Channels (USACE)',
+        41: 'Channels (Caltrans)', 42: 'Channels (Unknown)', 43: 'Drains', 44: 'Drains (LACFCD)',
+        45: 'Drains (City)', 46: 'Drains (Road)', 47: 'Drains (Metro/Parks)', 48: 'Drains (Private)',
+        49: 'Drains (Caltrans)', 50: 'Drains (Unknown)', 51: 'Laterals', 52: 'Laterals (LACFCD)',
+        53: 'Laterals (City)', 54: 'Laterals (Road)', 55: 'Laterals (Metro/Parks)', 56: 'Laterals (Private)',
+        57: 'Laterals (Caltrans)', 58: 'Laterals (Unknown)', 59: 'Culverts', 60: 'Culverts (Completed)',
+        61: 'Culverts (To Investigate)', 62: 'Culverts (City of LA)', 63: 'Permitted Connections',
+        64: 'Force Mains', 65: 'Force Mains (Completed)', 66: 'Force Mains (To Investigate)', 67: 'Force Mains (City of LA)',
+        68: 'Force Mains (Caltrans)', 69: 'Natural Drainage', 70: 'Pseudo Line', 71: 'Embankment'
+      };
+      
+      const key = layerKeyMap[layerId] || `hydrology_${layerId}`;
+      const layerName = layerNames[layerId] || `Hydrology Layer ${layerId}`;
+      
+      console.log(`💧 Fetching LA County ${layerName} data for [${lat}, ${lon}]`);
+      
+      const hydrologyFeatures = await getLACountyHydrologyData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (hydrologyFeatures.length === 0) {
+        result[`la_county_${key}_containing`] = null;
+        result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found`;
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+      } else {
+        // Get the first containing feature (for point-in-polygon)
+        const containingFeature = hydrologyFeatures.find(h => h.isContaining);
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`la_county_${key}_containing`] = containingFeature.hydrologyId || 'Unknown';
+          result[`la_county_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.hydrologyId || 'Unknown'}`;
+        } else {
+          result[`la_county_${key}_containing`] = null;
+          result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`la_county_${key}_count`] = hydrologyFeatures.length;
+        result[`la_county_${key}_all`] = hydrologyFeatures.map(feature => ({
+          ...feature.attributes,
+          hydrologyId: feature.hydrologyId,
+          geometry: feature.geometry,
+          isContaining: feature.isContaining,
+          distance_miles: feature.distance_miles
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${hydrologyFeatures.length} ${layerName.toLowerCase()} feature(s)${containingFeature ? ' containing the point' : ' within proximity'}.`;
+      }
+      
+      console.log(`✅ LA County ${layerName} data processed:`, {
+        totalCount: result[`la_county_${key}_count`],
+        containing: result[`la_county_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Hydrology Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'hydrology_complete', 2: 'hydrology_lakes', 3: 'hydrology_streams_rivers', 4: 'hydrology_watershed_boundaries',
+        5: 'hydrology_wbd_hu12', 6: 'hydrology_wbd_hu10', 7: 'hydrology_wbd_hu8', 8: 'hydrology_simpler', 9: 'hydrology_lakes_simpler',
+        10: 'hydrology_nhd_streams', 11: 'hydrology_storm_drain_network', 12: 'hydrology_inlets_outlets', 13: 'hydrology_maintenance_holes',
+        14: 'hydrology_maintenance_holes_lacfcd', 15: 'hydrology_maintenance_holes_city', 16: 'hydrology_maintenance_holes_unknown',
+        17: 'hydrology_basins', 18: 'hydrology_debris_basins_lacfcd', 19: 'hydrology_debris_basins_city', 20: 'hydrology_debris_basins_caltrans',
+        21: 'hydrology_debris_basins_unknown', 22: 'hydrology_catch_basins', 23: 'hydrology_catch_basins_lacfcd', 24: 'hydrology_catch_basins_city',
+        25: 'hydrology_catch_basins_rmd', 26: 'hydrology_catch_basins_others', 27: 'hydrology_catch_basins_caltrans', 28: 'hydrology_catch_basins_unknown',
+        29: 'hydrology_low_flow_diversion', 30: 'hydrology_lfd_lacfcd', 31: 'hydrology_lfd_city', 32: 'hydrology_lfd_unknown',
+        33: 'hydrology_pump_stations', 34: 'hydrology_pump_stations_completed', 35: 'hydrology_pump_stations_city_la', 36: 'hydrology_pump_stations_investigate',
+        37: 'hydrology_channels', 38: 'hydrology_channels_lacfcd', 39: 'hydrology_channels_city', 40: 'hydrology_channels_usace',
+        41: 'hydrology_channels_caltrans', 42: 'hydrology_channels_unknown', 43: 'hydrology_drains', 44: 'hydrology_drains_lacfcd',
+        45: 'hydrology_drains_city', 46: 'hydrology_drains_road', 47: 'hydrology_drains_metro_parks', 48: 'hydrology_drains_private',
+        49: 'hydrology_drains_caltrans', 50: 'hydrology_drains_unknown', 51: 'hydrology_laterals', 52: 'hydrology_laterals_lacfcd',
+        53: 'hydrology_laterals_city', 54: 'hydrology_laterals_road', 55: 'hydrology_laterals_metro_parks', 56: 'hydrology_laterals_private',
+        57: 'hydrology_laterals_caltrans', 58: 'hydrology_laterals_unknown', 59: 'hydrology_culverts', 60: 'hydrology_culverts_completed',
+        61: 'hydrology_culverts_investigate', 62: 'hydrology_culverts_city_la', 63: 'hydrology_permitted_connections',
+        64: 'hydrology_force_mains', 65: 'hydrology_force_mains_completed', 66: 'hydrology_force_mains_investigate', 67: 'hydrology_force_mains_city_la',
+        68: 'hydrology_force_mains_caltrans', 69: 'hydrology_natural_drainage', 70: 'hydrology_pseudo_line', 71: 'hydrology_embankment'
+      };
+      const key = layerKeyMap[layerId] || `hydrology_${layerId}`;
+      return {
+        [`la_county_${key}_containing`]: null,
+        [`la_county_${key}_containing_message`]: 'Error querying hydrology',
         [`la_county_${key}_count`]: 0,
         [`la_county_${key}_all`]: []
       };
