@@ -523,6 +523,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             defaultRadius: poi.defaultRadius,
             category: poi.category
           })).sort((a, b) => {
+            // Sort Street Inventory to the very top
+            const aIsStreetInventory = a.id === 'la_county_street_inventory';
+            const bIsStreetInventory = b.id === 'la_county_street_inventory';
+            if (aIsStreetInventory && !bIsStreetInventory) return -1;
+            if (!aIsStreetInventory && bIsStreetInventory) return 1;
+            
             // Sort hazards layers to the top, then basemaps/grids, then hydrology, then others
             const aIsHazard = a.id.includes('hazard') || a.id.includes('fault') || a.id.includes('tsunami') || a.id.includes('landslide') || a.id.includes('liquefaction') || a.id.includes('flood') || a.id.includes('dam_inundation');
             const bIsHazard = b.id.includes('hazard') || b.id.includes('fault') || b.id.includes('tsunami') || b.id.includes('landslide') || b.id.includes('liquefaction') || b.id.includes('flood') || b.id.includes('dam_inundation');
@@ -2497,6 +2503,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           // Group enrichments by subCategory
                           const groupedBySubCategory: Record<string, typeof categoryEnrichments> = {};
                           const categoryOrder = [
+                            'Transportation', // Street Inventory is in this category, moved to top
                             'Hazards',
                             'Basemaps & Grids',
                             'Hydrology',
@@ -2506,10 +2513,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             'Demographics',
                             'LMS Data',
                             'Political Boundaries',
+                            'Redistricting Data',
                             'Points of Interest',
                             'Cultural & Historic',
-                            'Housing & Health',
-                            'Transportation'
+                            'Housing & Health'
                           ];
                           
                           categoryEnrichments.forEach(enrichment => {
@@ -2520,9 +2527,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             groupedBySubCategory[subCat].push(enrichment);
                           });
                           
-                          // Sort each group alphabetically
+                          // Sort each group alphabetically, but put Street Inventory first in Transportation
                           Object.keys(groupedBySubCategory).forEach(key => {
-                            groupedBySubCategory[key].sort((a, b) => a.label.localeCompare(b.label));
+                            groupedBySubCategory[key].sort((a, b) => {
+                              // Put Street Inventory first in Transportation category
+                              if (key === 'Transportation') {
+                                if (a.id === 'la_county_street_inventory') return -1;
+                                if (b.id === 'la_county_street_inventory') return 1;
+                              }
+                              return a.label.localeCompare(b.label);
+                            });
                           });
                           
                           return (

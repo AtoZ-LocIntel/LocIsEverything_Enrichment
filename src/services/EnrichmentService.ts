@@ -95,6 +95,7 @@ import { getLACountyElevationData } from '../adapters/laCountyElevation';
 import { getLACountyDemographicsData } from '../adapters/laCountyDemographics';
 import { getLACountyLMSData } from '../adapters/laCountyLMSData';
 import { getLACountyPoliticalBoundariesData } from '../adapters/laCountyPoliticalBoundaries';
+import { getLACountyRedistrictingData } from '../adapters/laCountyRedistricting';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2551,6 +2552,166 @@ export class EnrichmentService {
         return await this.getLACountyPoliticalBoundaries(23, lat, lon);
       case 'la_county_political_boundaries_city_annexations':
         return await this.getLACountyPoliticalBoundaries(21, lat, lon);
+      
+      // LA County Redistricting Data (2011) - All layers (point-in-polygon and proximity up to 5 miles)
+      case 'la_county_redistricting_geography':
+        return await this.getLACountyRedistricting(0, lat, lon, radius);
+      case 'la_county_redistricting_communities_2011':
+        return await this.getLACountyRedistricting(1, lat, lon, radius);
+      case 'la_county_redistricting_home_income_info':
+        return await this.getLACountyRedistricting(3, lat, lon, radius);
+      case 'la_county_redistricting_housing_data':
+        return await this.getLACountyRedistricting(4, lat, lon, radius);
+      case 'la_county_redistricting_pct_owners':
+        return await this.getLACountyRedistricting(5, lat, lon, radius);
+      case 'la_county_redistricting_pct_renters':
+        return await this.getLACountyRedistricting(6, lat, lon, radius);
+      case 'la_county_redistricting_homes_lt_200k':
+        return await this.getLACountyRedistricting(7, lat, lon, radius);
+      case 'la_county_redistricting_homes_200k_399k':
+        return await this.getLACountyRedistricting(8, lat, lon, radius);
+      case 'la_county_redistricting_homes_400k_749k':
+        return await this.getLACountyRedistricting(9, lat, lon, radius);
+      case 'la_county_redistricting_homes_750k_plus':
+        return await this.getLACountyRedistricting(10, lat, lon, radius);
+      case 'la_county_redistricting_home_value_preponderance':
+        return await this.getLACountyRedistricting(11, lat, lon, radius);
+      case 'la_county_redistricting_income_data':
+        return await this.getLACountyRedistricting(12, lat, lon, radius);
+      case 'la_county_redistricting_income_lt_25k':
+        return await this.getLACountyRedistricting(13, lat, lon, radius);
+      case 'la_county_redistricting_income_25k_49k':
+        return await this.getLACountyRedistricting(14, lat, lon, radius);
+      case 'la_county_redistricting_income_50k_99k':
+        return await this.getLACountyRedistricting(15, lat, lon, radius);
+      case 'la_county_redistricting_income_100k_plus':
+        return await this.getLACountyRedistricting(16, lat, lon, radius);
+      case 'la_county_redistricting_income_preponderance':
+        return await this.getLACountyRedistricting(17, lat, lon, radius);
+      case 'la_county_redistricting_other':
+        return await this.getLACountyRedistricting(18, lat, lon, radius);
+      case 'la_county_redistricting_population_density':
+        return await this.getLACountyRedistricting(19, lat, lon, radius);
+      case 'la_county_redistricting_pct_over_18':
+        return await this.getLACountyRedistricting(20, lat, lon, radius);
+      case 'la_county_redistricting_pct_no_hs_diploma':
+        return await this.getLACountyRedistricting(21, lat, lon, radius);
+      case 'la_county_redistricting_pct_below_poverty':
+        return await this.getLACountyRedistricting(22, lat, lon, radius);
+      case 'la_county_redistricting_voter_registration':
+        return await this.getLACountyRedistricting(23, lat, lon, radius);
+      case 'la_county_redistricting_registration_by_age':
+        return await this.getLACountyRedistricting(24, lat, lon, radius);
+      case 'la_county_redistricting_voter_age_18_34':
+        return await this.getLACountyRedistricting(25, lat, lon, radius);
+      case 'la_county_redistricting_voter_age_35_49':
+        return await this.getLACountyRedistricting(26, lat, lon, radius);
+      case 'la_county_redistricting_voter_age_50_64':
+        return await this.getLACountyRedistricting(27, lat, lon, radius);
+      case 'la_county_redistricting_voter_age_65_plus':
+        return await this.getLACountyRedistricting(28, lat, lon, radius);
+      case 'la_county_redistricting_registration_by_surname':
+        return await this.getLACountyRedistricting(29, lat, lon, radius);
+      case 'la_county_redistricting_surname_not_classified':
+        return await this.getLACountyRedistricting(30, lat, lon, radius);
+      case 'la_county_redistricting_surname_spanish':
+        return await this.getLACountyRedistricting(31, lat, lon, radius);
+      case 'la_county_redistricting_surname_asian':
+        return await this.getLACountyRedistricting(32, lat, lon, radius);
+      case 'la_county_redistricting_registration_by_party':
+        return await this.getLACountyRedistricting(33, lat, lon, radius);
+      case 'la_county_redistricting_party_decline_to_state':
+        return await this.getLACountyRedistricting(34, lat, lon, radius);
+      case 'la_county_redistricting_party_republican':
+        return await this.getLACountyRedistricting(35, lat, lon, radius);
+      case 'la_county_redistricting_party_democratic':
+        return await this.getLACountyRedistricting(36, lat, lon, radius);
+      case 'la_county_redistricting_registration_by_sex':
+        return await this.getLACountyRedistricting(37, lat, lon, radius);
+      case 'la_county_redistricting_sex_male':
+        return await this.getLACountyRedistricting(38, lat, lon, radius);
+      case 'la_county_redistricting_sex_female':
+        return await this.getLACountyRedistricting(39, lat, lon, radius);
+      case 'la_county_redistricting_citizen_voting_age_pop':
+        return await this.getLACountyRedistricting(40, lat, lon, radius);
+      case 'la_county_redistricting_cvap_hispanic':
+        return await this.getLACountyRedistricting(41, lat, lon, radius);
+      case 'la_county_redistricting_cvap_white':
+        return await this.getLACountyRedistricting(42, lat, lon, radius);
+      case 'la_county_redistricting_cvap_african_american':
+        return await this.getLACountyRedistricting(43, lat, lon, radius);
+      case 'la_county_redistricting_cvap_asian':
+        return await this.getLACountyRedistricting(44, lat, lon, radius);
+      case 'la_county_redistricting_demographic_data':
+        return await this.getLACountyRedistricting(45, lat, lon, radius);
+      case 'la_county_redistricting_pop_2010_by_race':
+        return await this.getLACountyRedistricting(46, lat, lon, radius);
+      case 'la_county_redistricting_pop_2010_hispanic':
+        return await this.getLACountyRedistricting(47, lat, lon, radius);
+      case 'la_county_redistricting_pop_2010_nh_white':
+        return await this.getLACountyRedistricting(48, lat, lon, radius);
+      case 'la_county_redistricting_pop_2010_nh_african_american':
+        return await this.getLACountyRedistricting(49, lat, lon, radius);
+      case 'la_county_redistricting_pop_2010_nh_asian':
+        return await this.getLACountyRedistricting(50, lat, lon, radius);
+      case 'la_county_redistricting_pop_2010_over_18_by_race':
+        return await this.getLACountyRedistricting(51, lat, lon, radius);
+      case 'la_county_redistricting_pop_over_18_hispanic':
+        return await this.getLACountyRedistricting(52, lat, lon, radius);
+      case 'la_county_redistricting_pop_over_18_nh_white':
+        return await this.getLACountyRedistricting(53, lat, lon, radius);
+      case 'la_county_redistricting_pop_over_18_nh_african_american':
+        return await this.getLACountyRedistricting(54, lat, lon, radius);
+      case 'la_county_redistricting_pop_over_18_nh_asian':
+        return await this.getLACountyRedistricting(55, lat, lon, radius);
+      case 'la_county_redistricting_pop_2010_by_race_inclusive':
+        return await this.getLACountyRedistricting(56, lat, lon, radius);
+      case 'la_county_redistricting_pop_incl_hispanic':
+        return await this.getLACountyRedistricting(57, lat, lon, radius);
+      case 'la_county_redistricting_pop_incl_nh_white':
+        return await this.getLACountyRedistricting(58, lat, lon, radius);
+      case 'la_county_redistricting_pop_incl_nh_african_american':
+        return await this.getLACountyRedistricting(59, lat, lon, radius);
+      case 'la_county_redistricting_pop_incl_nh_asian':
+        return await this.getLACountyRedistricting(60, lat, lon, radius);
+      case 'la_county_redistricting_cvap_2010':
+        return await this.getLACountyRedistricting(61, lat, lon, radius);
+      case 'la_county_redistricting_cvap_2010_hispanic':
+        return await this.getLACountyRedistricting(62, lat, lon, radius);
+      case 'la_county_redistricting_cvap_2010_nh_white':
+        return await this.getLACountyRedistricting(63, lat, lon, radius);
+      case 'la_county_redistricting_cvap_2010_nh_african_american':
+        return await this.getLACountyRedistricting(64, lat, lon, radius);
+      case 'la_county_redistricting_cvap_2010_nh_asian':
+        return await this.getLACountyRedistricting(65, lat, lon, radius);
+      case 'la_county_redistricting_language':
+        return await this.getLACountyRedistricting(66, lat, lon, radius);
+      case 'la_county_redistricting_pct_not_fluent_english':
+        return await this.getLACountyRedistricting(67, lat, lon, radius);
+      case 'la_county_redistricting_lang_arabic':
+        return await this.getLACountyRedistricting(68, lat, lon, radius);
+      case 'la_county_redistricting_lang_armenian':
+        return await this.getLACountyRedistricting(69, lat, lon, radius);
+      case 'la_county_redistricting_lang_chinese':
+        return await this.getLACountyRedistricting(70, lat, lon, radius);
+      case 'la_county_redistricting_lang_cambodian':
+        return await this.getLACountyRedistricting(71, lat, lon, radius);
+      case 'la_county_redistricting_lang_english':
+        return await this.getLACountyRedistricting(72, lat, lon, radius);
+      case 'la_county_redistricting_lang_farsi':
+        return await this.getLACountyRedistricting(73, lat, lon, radius);
+      case 'la_county_redistricting_lang_korean':
+        return await this.getLACountyRedistricting(74, lat, lon, radius);
+      case 'la_county_redistricting_lang_russian':
+        return await this.getLACountyRedistricting(75, lat, lon, radius);
+      case 'la_county_redistricting_lang_spanish':
+        return await this.getLACountyRedistricting(76, lat, lon, radius);
+      case 'la_county_redistricting_lang_tagalog':
+        return await this.getLACountyRedistricting(77, lat, lon, radius);
+      case 'la_county_redistricting_lang_vietnamese':
+        return await this.getLACountyRedistricting(78, lat, lon, radius);
+      case 'la_county_redistricting_lang_other':
+        return await this.getLACountyRedistricting(79, lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -10144,6 +10305,311 @@ out center;`;
         [`la_county_${key}_count`]: 0,
         [`la_county_${key}_all`]: [],
         [`la_county_${key}_message`]: 'Error querying elevation data'
+      };
+    }
+  }
+
+  private async getLACountyRedistricting(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      // Map layer IDs to enrichment keys
+      const layerKeyMap: Record<number, string> = {
+        0: 'redistricting_geography',
+        1: 'redistricting_communities_2011',
+        3: 'redistricting_home_income_info',
+        4: 'redistricting_housing_data',
+        5: 'redistricting_pct_owners',
+        6: 'redistricting_pct_renters',
+        7: 'redistricting_homes_lt_200k',
+        8: 'redistricting_homes_200k_399k',
+        9: 'redistricting_homes_400k_749k',
+        10: 'redistricting_homes_750k_plus',
+        11: 'redistricting_home_value_preponderance',
+        12: 'redistricting_income_data',
+        13: 'redistricting_income_lt_25k',
+        14: 'redistricting_income_25k_49k',
+        15: 'redistricting_income_50k_99k',
+        16: 'redistricting_income_100k_plus',
+        17: 'redistricting_income_preponderance',
+        18: 'redistricting_other',
+        19: 'redistricting_population_density',
+        20: 'redistricting_pct_over_18',
+        21: 'redistricting_pct_no_hs_diploma',
+        22: 'redistricting_pct_below_poverty',
+        23: 'redistricting_voter_registration',
+        24: 'redistricting_registration_by_age',
+        25: 'redistricting_voter_age_18_34',
+        26: 'redistricting_voter_age_35_49',
+        27: 'redistricting_voter_age_50_64',
+        28: 'redistricting_voter_age_65_plus',
+        29: 'redistricting_registration_by_surname',
+        30: 'redistricting_surname_not_classified',
+        31: 'redistricting_surname_spanish',
+        32: 'redistricting_surname_asian',
+        33: 'redistricting_registration_by_party',
+        34: 'redistricting_party_decline_to_state',
+        35: 'redistricting_party_republican',
+        36: 'redistricting_party_democratic',
+        37: 'redistricting_registration_by_sex',
+        38: 'redistricting_sex_male',
+        39: 'redistricting_sex_female',
+        40: 'redistricting_citizen_voting_age_pop',
+        41: 'redistricting_cvap_hispanic',
+        42: 'redistricting_cvap_white',
+        43: 'redistricting_cvap_african_american',
+        44: 'redistricting_cvap_asian',
+        45: 'redistricting_demographic_data',
+        46: 'redistricting_pop_2010_by_race',
+        47: 'redistricting_pop_2010_hispanic',
+        48: 'redistricting_pop_2010_nh_white',
+        49: 'redistricting_pop_2010_nh_african_american',
+        50: 'redistricting_pop_2010_nh_asian',
+        51: 'redistricting_pop_2010_over_18_by_race',
+        52: 'redistricting_pop_over_18_hispanic',
+        53: 'redistricting_pop_over_18_nh_white',
+        54: 'redistricting_pop_over_18_nh_african_american',
+        55: 'redistricting_pop_over_18_nh_asian',
+        56: 'redistricting_pop_2010_by_race_inclusive',
+        57: 'redistricting_pop_incl_hispanic',
+        58: 'redistricting_pop_incl_nh_white',
+        59: 'redistricting_pop_incl_nh_african_american',
+        60: 'redistricting_pop_incl_nh_asian',
+        61: 'redistricting_cvap_2010',
+        62: 'redistricting_cvap_2010_hispanic',
+        63: 'redistricting_cvap_2010_nh_white',
+        64: 'redistricting_cvap_2010_nh_african_american',
+        65: 'redistricting_cvap_2010_nh_asian',
+        66: 'redistricting_language',
+        67: 'redistricting_pct_not_fluent_english',
+        68: 'redistricting_lang_arabic',
+        69: 'redistricting_lang_armenian',
+        70: 'redistricting_lang_chinese',
+        71: 'redistricting_lang_cambodian',
+        72: 'redistricting_lang_english',
+        73: 'redistricting_lang_farsi',
+        74: 'redistricting_lang_korean',
+        75: 'redistricting_lang_russian',
+        76: 'redistricting_lang_spanish',
+        77: 'redistricting_lang_tagalog',
+        78: 'redistricting_lang_vietnamese',
+        79: 'redistricting_lang_other'
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'Redistricting Geography',
+        1: 'Redistricting Communities (2011)',
+        3: 'Home and Income Information',
+        4: 'Housing Data',
+        5: '% Owners',
+        6: '% Renters',
+        7: '% Homes < $200,000',
+        8: '% Homes $200,000 - $399,000',
+        9: '% Homes $400,000 - $749,000',
+        10: '% Homes $750,000+',
+        11: 'Home Value Preponderance',
+        12: 'Income Data',
+        13: '% Households w/ Income < $25,000',
+        14: '% Households w/ Income $25,000 - $49,999',
+        15: '% Households w/ Income $50,000 - $99,999',
+        16: '% Households w/ Income $100,000+',
+        17: 'Household Income Preponderance',
+        18: 'Other',
+        19: 'Population Density (Residential)',
+        20: '% Population Over 18',
+        21: '% No High School Diploma',
+        22: '% Below Poverty Level',
+        23: 'Voter Registration Data',
+        24: 'Registration by Age',
+        25: '% Voter Age 18 to 34',
+        26: '% Voter Age 35 - 49',
+        27: '% Voter Age 50 - 64',
+        28: '% Voter Age 65+',
+        29: 'Registration by Surname',
+        30: '% Surname Not Classified',
+        31: '% Spanish Surname',
+        32: '% Asian Surname',
+        33: 'Registration by Party',
+        34: '% Decline to State',
+        35: '% Republican',
+        36: '% Democratic Registration',
+        37: 'Registration by Sex',
+        38: '% Male',
+        39: '% Female',
+        40: 'Citizen Voting Age Population',
+        41: '% Hispanic Citizen Voting Age',
+        42: '% White Citizen Voting Age',
+        43: '% African American Citizen Voting Age',
+        44: '% Asian Citizen Voting Age',
+        45: 'Demographic Data',
+        46: '2010 Population by Race',
+        47: '% 2010 Population that is Hispanic',
+        48: '% 2010 Population that is NH-White',
+        49: '% 2010 Population that is NH-African American',
+        50: '% 2010 Population that is NH-Asian',
+        51: '2010 Population over 18 by Race',
+        52: '% 2010 Pop over 18 - Hispanic',
+        53: '% 2010 Pop over 18 - NH-White',
+        54: '% 2010 Pop over 18 - NH-African American',
+        55: '% 2010 Pop over 18 - NH-Asian',
+        56: '2010 Population by Race (Inclusive)',
+        57: '% 2010 Pop (Incl) - Hispanic',
+        58: '% 2010 Pop (Incl) - NH-White',
+        59: '% 2010 Pop (Incl) - NH-African American',
+        60: '% 2010 Pop (Incl) - NH-Asian',
+        61: '2010 Citizen Voting Age Population (CVAP)',
+        62: '% 2010 CVAP Population - Hispanic',
+        63: '% 2010 CVAP Population - NH-White',
+        64: '% 2010 CVAP Population - NH-African American',
+        65: '% 2010 CVAP Population - NH-Asian',
+        66: 'Language',
+        67: '% Not Fluent in English',
+        68: '% Arabic Primary Language',
+        69: '% Armenian Primary Language',
+        70: '% Chinese Primary Language',
+        71: '% Cambodian Primary Language',
+        72: '% English Primary Language',
+        73: '% Farsi Primary Language',
+        74: '% Korean Primary Language',
+        75: '% Russian Primary Language',
+        76: '% Spanish Primary Language',
+        77: '% Tagalog Primary Language',
+        78: '% Vietnamese Primary Language',
+        79: '% Some Other Language Primary Language'
+      };
+      
+      const key = layerKeyMap[layerId] || `redistricting_${layerId}`;
+      const layerName = layerNames[layerId] || `Redistricting Layer ${layerId}`;
+      
+      console.log(`🗺️ Fetching LA County Redistricting Data ${layerName} for [${lat}, ${lon}]`);
+      
+      const redistrictingFeatures = await getLACountyRedistrictingData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (redistrictingFeatures.length > 0) {
+        const containingFeature = redistrictingFeatures.find(d => d.isContaining);
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`la_county_${key}_containing`] = containingFeature.redistrictingId || 'Unknown';
+          result[`la_county_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.redistrictingId || 'Unknown'}`;
+        } else {
+          result[`la_county_${key}_containing`] = null;
+          result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`la_county_${key}_count`] = redistrictingFeatures.length;
+        result[`la_county_${key}_all`] = redistrictingFeatures.map(feature => ({
+          ...feature.attributes,
+          redistrictingId: feature.redistrictingId,
+          geometry: feature.geometry,
+          isContaining: feature.isContaining,
+          distance_miles: feature.distance_miles
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${redistrictingFeatures.length} ${layerName.toLowerCase()} feature(s)${containingFeature ? ' containing the point' : ''}.`;
+      } else {
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+        result[`la_county_${key}_containing`] = null;
+        result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found`;
+        result[`la_county_${key}_summary`] = `No ${layerName.toLowerCase()} found containing this location.`;
+      }
+      
+      console.log(`✅ LA County Redistricting Data ${layerName} processed:`, {
+        totalCount: result[`la_county_${key}_count`],
+        containing: result[`la_county_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Redistricting Data Layer ${layerId}:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'redistricting_geography',
+        1: 'redistricting_communities_2011',
+        3: 'redistricting_home_income_info',
+        4: 'redistricting_housing_data',
+        5: 'redistricting_pct_owners',
+        6: 'redistricting_pct_renters',
+        7: 'redistricting_homes_lt_200k',
+        8: 'redistricting_homes_200k_399k',
+        9: 'redistricting_homes_400k_749k',
+        10: 'redistricting_homes_750k_plus',
+        11: 'redistricting_home_value_preponderance',
+        12: 'redistricting_income_data',
+        13: 'redistricting_income_lt_25k',
+        14: 'redistricting_income_25k_49k',
+        15: 'redistricting_income_50k_99k',
+        16: 'redistricting_income_100k_plus',
+        17: 'redistricting_income_preponderance',
+        18: 'redistricting_other',
+        19: 'redistricting_population_density',
+        20: 'redistricting_pct_over_18',
+        21: 'redistricting_pct_no_hs_diploma',
+        22: 'redistricting_pct_below_poverty',
+        23: 'redistricting_voter_registration',
+        24: 'redistricting_registration_by_age',
+        25: 'redistricting_voter_age_18_34',
+        26: 'redistricting_voter_age_35_49',
+        27: 'redistricting_voter_age_50_64',
+        28: 'redistricting_voter_age_65_plus',
+        29: 'redistricting_registration_by_surname',
+        30: 'redistricting_surname_not_classified',
+        31: 'redistricting_surname_spanish',
+        32: 'redistricting_surname_asian',
+        33: 'redistricting_registration_by_party',
+        34: 'redistricting_party_decline_to_state',
+        35: 'redistricting_party_republican',
+        36: 'redistricting_party_democratic',
+        37: 'redistricting_registration_by_sex',
+        38: 'redistricting_sex_male',
+        39: 'redistricting_sex_female',
+        40: 'redistricting_citizen_voting_age_pop',
+        41: 'redistricting_cvap_hispanic',
+        42: 'redistricting_cvap_white',
+        43: 'redistricting_cvap_african_american',
+        44: 'redistricting_cvap_asian',
+        45: 'redistricting_demographic_data',
+        46: 'redistricting_pop_2010_by_race',
+        47: 'redistricting_pop_2010_hispanic',
+        48: 'redistricting_pop_2010_nh_white',
+        49: 'redistricting_pop_2010_nh_african_american',
+        50: 'redistricting_pop_2010_nh_asian',
+        51: 'redistricting_pop_2010_over_18_by_race',
+        52: 'redistricting_pop_over_18_hispanic',
+        53: 'redistricting_pop_over_18_nh_white',
+        54: 'redistricting_pop_over_18_nh_african_american',
+        55: 'redistricting_pop_over_18_nh_asian',
+        56: 'redistricting_pop_2010_by_race_inclusive',
+        57: 'redistricting_pop_incl_hispanic',
+        58: 'redistricting_pop_incl_nh_white',
+        59: 'redistricting_pop_incl_nh_african_american',
+        60: 'redistricting_pop_incl_nh_asian',
+        61: 'redistricting_cvap_2010',
+        62: 'redistricting_cvap_2010_hispanic',
+        63: 'redistricting_cvap_2010_nh_white',
+        64: 'redistricting_cvap_2010_nh_african_american',
+        65: 'redistricting_cvap_2010_nh_asian',
+        66: 'redistricting_language',
+        67: 'redistricting_pct_not_fluent_english',
+        68: 'redistricting_lang_arabic',
+        69: 'redistricting_lang_armenian',
+        70: 'redistricting_lang_chinese',
+        71: 'redistricting_lang_cambodian',
+        72: 'redistricting_lang_english',
+        73: 'redistricting_lang_farsi',
+        74: 'redistricting_lang_korean',
+        75: 'redistricting_lang_russian',
+        76: 'redistricting_lang_spanish',
+        77: 'redistricting_lang_tagalog',
+        78: 'redistricting_lang_vietnamese',
+        79: 'redistricting_lang_other'
+      };
+      const key = layerKeyMap[layerId] || `redistricting_${layerId}`;
+      return {
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: [],
+        [`la_county_${key}_containing`]: null,
+        [`la_county_${key}_containing_message`]: `No data found`,
+        [`la_county_${key}_summary`]: `No data found`
       };
     }
   }

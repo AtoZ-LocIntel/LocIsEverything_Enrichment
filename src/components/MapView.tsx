@@ -624,6 +624,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key.startsWith('la_county_elevation_') && key.endsWith('_all') || // Skip LA County Elevation arrays (handled separately for map drawing)
     key.startsWith('la_county_elevation_') && key.endsWith('_enabled') || // Skip LA County Elevation raster layer flags (handled separately)
     key.startsWith('la_county_demographics_') && key.endsWith('_all') || // Skip LA County Demographics arrays (handled separately for map drawing)
+    (key.startsWith('la_county_redistricting_') && key.endsWith('_all')) || // Skip LA County Redistricting arrays (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -13310,6 +13311,183 @@ const MapView: React.FC<MapViewProps> = ({
                     
                     const excludeFields = ['boundaryId', 'DISTRICT', 'district', 'DISTRICT_NUM', 'district_num', 'DISTRICT_NUMBER', 'district_number', 'NAME', 'Name', 'name', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
                     Object.entries(boundary).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error drawing ${title} polygon:`, error);
+                }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
+      // Draw LA County Redistricting Data layers
+      // Create a comprehensive list of all redistricting layers with their metadata
+      const laCountyRedistrictingLayers = [
+        { key: 'la_county_redistricting_geography_all', layerId: 0, icon: '🗺️', color: '#3b82f6', title: 'LA County Redistricting Geography' },
+        { key: 'la_county_redistricting_communities_2011_all', layerId: 1, icon: '🏘️', color: '#2563eb', title: 'LA County Redistricting Communities (2011)' },
+        { key: 'la_county_redistricting_home_income_info_all', layerId: 3, icon: '🏠', color: '#1d4ed8', title: 'LA County Home and Income Information' },
+        { key: 'la_county_redistricting_housing_data_all', layerId: 4, icon: '🏘️', color: '#1e40af', title: 'LA County Housing Data' },
+        { key: 'la_county_redistricting_pct_owners_all', layerId: 5, icon: '🏡', color: '#1e3a8a', title: 'LA County % Owners' },
+        { key: 'la_county_redistricting_pct_renters_all', layerId: 6, icon: '🏠', color: '#172554', title: 'LA County % Renters' },
+        { key: 'la_county_redistricting_homes_lt_200k_all', layerId: 7, icon: '💰', color: '#0f172a', title: 'LA County % Homes < $200,000' },
+        { key: 'la_county_redistricting_homes_200k_399k_all', layerId: 8, icon: '💰', color: '#6366f1', title: 'LA County % Homes $200,000 - $399,000' },
+        { key: 'la_county_redistricting_homes_400k_749k_all', layerId: 9, icon: '💰', color: '#4f46e5', title: 'LA County % Homes $400,000 - $749,000' },
+        { key: 'la_county_redistricting_homes_750k_plus_all', layerId: 10, icon: '💰', color: '#4338ca', title: 'LA County % Homes $750,000+' },
+        { key: 'la_county_redistricting_home_value_preponderance_all', layerId: 11, icon: '📊', color: '#3730a3', title: 'LA County Home Value Preponderance' },
+        { key: 'la_county_redistricting_income_data_all', layerId: 12, icon: '💵', color: '#312e81', title: 'LA County Income Data' },
+        { key: 'la_county_redistricting_income_lt_25k_all', layerId: 13, icon: '💵', color: '#1e1b4b', title: 'LA County % Households w/ Income < $25,000' },
+        { key: 'la_county_redistricting_income_25k_49k_all', layerId: 14, icon: '💵', color: '#9333ea', title: 'LA County % Households w/ Income $25,000 - $49,999' },
+        { key: 'la_county_redistricting_income_50k_99k_all', layerId: 15, icon: '💵', color: '#8b5cf6', title: 'LA County % Households w/ Income $50,000 - $99,999' },
+        { key: 'la_county_redistricting_income_100k_plus_all', layerId: 16, icon: '💵', color: '#7c3aed', title: 'LA County % Households w/ Income $100,000+' },
+        { key: 'la_county_redistricting_income_preponderance_all', layerId: 17, icon: '📊', color: '#6d28d9', title: 'LA County Household Income Preponderance' },
+        { key: 'la_county_redistricting_other_all', layerId: 18, icon: '📋', color: '#5b21b6', title: 'LA County Other' },
+        { key: 'la_county_redistricting_population_density_all', layerId: 19, icon: '👥', color: '#4c1d95', title: 'LA County Population Density (Residential)' },
+        { key: 'la_county_redistricting_pct_over_18_all', layerId: 20, icon: '👤', color: '#3b0764', title: 'LA County % Population Over 18' },
+        { key: 'la_county_redistricting_pct_no_hs_diploma_all', layerId: 21, icon: '🎓', color: '#2e1065', title: 'LA County % No High School Diploma' },
+        { key: 'la_county_redistricting_pct_below_poverty_all', layerId: 22, icon: '📉', color: '#1e1b4b', title: 'LA County % Below Poverty Level' },
+        { key: 'la_county_redistricting_voter_registration_all', layerId: 23, icon: '🗳️', color: '#ec4899', title: 'LA County Voter Registration Data' },
+        { key: 'la_county_redistricting_registration_by_age_all', layerId: 24, icon: '👥', color: '#db2777', title: 'LA County Registration by Age' },
+        { key: 'la_county_redistricting_voter_age_18_34_all', layerId: 25, icon: '👤', color: '#be185d', title: 'LA County % Voter Age 18 to 34' },
+        { key: 'la_county_redistricting_voter_age_35_49_all', layerId: 26, icon: '👤', color: '#9f1239', title: 'LA County % Voter Age 35 - 49' },
+        { key: 'la_county_redistricting_voter_age_50_64_all', layerId: 27, icon: '👤', color: '#831843', title: 'LA County % Voter Age 50 - 64' },
+        { key: 'la_county_redistricting_voter_age_65_plus_all', layerId: 28, icon: '👤', color: '#701a75', title: 'LA County % Voter Age 65+' },
+        { key: 'la_county_redistricting_registration_by_surname_all', layerId: 29, icon: '📝', color: '#f59e0b', title: 'LA County Registration by Surname' },
+        { key: 'la_county_redistricting_surname_not_classified_all', layerId: 30, icon: '❓', color: '#d97706', title: 'LA County % Surname Not Classified' },
+        { key: 'la_county_redistricting_surname_spanish_all', layerId: 31, icon: '🇪🇸', color: '#b45309', title: 'LA County % Spanish Surname' },
+        { key: 'la_county_redistricting_surname_asian_all', layerId: 32, icon: '🇦🇸', color: '#92400e', title: 'LA County % Asian Surname' },
+        { key: 'la_county_redistricting_registration_by_party_all', layerId: 33, icon: '🏛️', color: '#78350f', title: 'LA County Registration by Party' },
+        { key: 'la_county_redistricting_party_decline_to_state_all', layerId: 34, icon: '⚪', color: '#713f12', title: 'LA County % Decline to State' },
+        { key: 'la_county_redistricting_party_republican_all', layerId: 35, icon: '🔴', color: '#dc2626', title: 'LA County % Republican' },
+        { key: 'la_county_redistricting_party_democratic_all', layerId: 36, icon: '🔵', color: '#2563eb', title: 'LA County % Democratic Registration' },
+        { key: 'la_county_redistricting_registration_by_sex_all', layerId: 37, icon: '👥', color: '#1d4ed8', title: 'LA County Registration by Sex' },
+        { key: 'la_county_redistricting_sex_male_all', layerId: 38, icon: '♂️', color: '#1e40af', title: 'LA County % Male' },
+        { key: 'la_county_redistricting_sex_female_all', layerId: 39, icon: '♀️', color: '#1e3a8a', title: 'LA County % Female' },
+        { key: 'la_county_redistricting_citizen_voting_age_pop_all', layerId: 40, icon: '🗳️', color: '#172554', title: 'LA County Citizen Voting Age Population' },
+        { key: 'la_county_redistricting_cvap_hispanic_all', layerId: 41, icon: '👤', color: '#0f172a', title: 'LA County % Hispanic Citizen Voting Age' },
+        { key: 'la_county_redistricting_cvap_white_all', layerId: 42, icon: '👤', color: '#6366f1', title: 'LA County % White Citizen Voting Age' },
+        { key: 'la_county_redistricting_cvap_african_american_all', layerId: 43, icon: '👤', color: '#4f46e5', title: 'LA County % African American Citizen Voting Age' },
+        { key: 'la_county_redistricting_cvap_asian_all', layerId: 44, icon: '👤', color: '#4338ca', title: 'LA County % Asian Citizen Voting Age' },
+        { key: 'la_county_redistricting_demographic_data_all', layerId: 45, icon: '📊', color: '#3730a3', title: 'LA County Demographic Data' },
+        { key: 'la_county_redistricting_pop_2010_by_race_all', layerId: 46, icon: '👥', color: '#312e81', title: 'LA County 2010 Population by Race' },
+        { key: 'la_county_redistricting_pop_2010_hispanic_all', layerId: 47, icon: '👤', color: '#1e1b4b', title: 'LA County % 2010 Population that is Hispanic' },
+        { key: 'la_county_redistricting_pop_2010_nh_white_all', layerId: 48, icon: '👤', color: '#9333ea', title: 'LA County % 2010 Population that is NH-White' },
+        { key: 'la_county_redistricting_pop_2010_nh_african_american_all', layerId: 49, icon: '👤', color: '#8b5cf6', title: 'LA County % 2010 Population that is NH-African American' },
+        { key: 'la_county_redistricting_pop_2010_nh_asian_all', layerId: 50, icon: '👤', color: '#7c3aed', title: 'LA County % 2010 Population that is NH-Asian' },
+        { key: 'la_county_redistricting_pop_2010_over_18_by_race_all', layerId: 51, icon: '👥', color: '#6d28d9', title: 'LA County 2010 Population over 18 by Race' },
+        { key: 'la_county_redistricting_pop_over_18_hispanic_all', layerId: 52, icon: '👤', color: '#5b21b6', title: 'LA County % 2010 Pop over 18 - Hispanic' },
+        { key: 'la_county_redistricting_pop_over_18_nh_white_all', layerId: 53, icon: '👤', color: '#4c1d95', title: 'LA County % 2010 Pop over 18 - NH-White' },
+        { key: 'la_county_redistricting_pop_over_18_nh_african_american_all', layerId: 54, icon: '👤', color: '#3b0764', title: 'LA County % 2010 Pop over 18 - NH-African American' },
+        { key: 'la_county_redistricting_pop_over_18_nh_asian_all', layerId: 55, icon: '👤', color: '#2e1065', title: 'LA County % 2010 Pop over 18 - NH-Asian' },
+        { key: 'la_county_redistricting_pop_2010_by_race_inclusive_all', layerId: 56, icon: '👥', color: '#1e1b4b', title: 'LA County 2010 Population by Race (Inclusive)' },
+        { key: 'la_county_redistricting_pop_incl_hispanic_all', layerId: 57, icon: '👤', color: '#ec4899', title: 'LA County % 2010 Pop (Incl) - Hispanic' },
+        { key: 'la_county_redistricting_pop_incl_nh_white_all', layerId: 58, icon: '👤', color: '#db2777', title: 'LA County % 2010 Pop (Incl) - NH-White' },
+        { key: 'la_county_redistricting_pop_incl_nh_african_american_all', layerId: 59, icon: '👤', color: '#be185d', title: 'LA County % 2010 Pop (Incl) - NH-African American' },
+        { key: 'la_county_redistricting_pop_incl_nh_asian_all', layerId: 60, icon: '👤', color: '#9f1239', title: 'LA County % 2010 Pop (Incl) - NH-Asian' },
+        { key: 'la_county_redistricting_cvap_2010_all', layerId: 61, icon: '🗳️', color: '#831843', title: 'LA County 2010 Citizen Voting Age Population (CVAP)' },
+        { key: 'la_county_redistricting_cvap_2010_hispanic_all', layerId: 62, icon: '👤', color: '#701a75', title: 'LA County % 2010 CVAP Population - Hispanic' },
+        { key: 'la_county_redistricting_cvap_2010_nh_white_all', layerId: 63, icon: '👤', color: '#f59e0b', title: 'LA County % 2010 CVAP Population - NH-White' },
+        { key: 'la_county_redistricting_cvap_2010_nh_african_american_all', layerId: 64, icon: '👤', color: '#d97706', title: 'LA County % 2010 CVAP Population - NH-African American' },
+        { key: 'la_county_redistricting_cvap_2010_nh_asian_all', layerId: 65, icon: '👤', color: '#b45309', title: 'LA County % 2010 CVAP Population - NH-Asian' },
+        { key: 'la_county_redistricting_language_all', layerId: 66, icon: '🗣️', color: '#92400e', title: 'LA County Language' },
+        { key: 'la_county_redistricting_pct_not_fluent_english_all', layerId: 67, icon: '❌', color: '#78350f', title: 'LA County % Not Fluent in English' },
+        { key: 'la_county_redistricting_lang_arabic_all', layerId: 68, icon: '🇸🇦', color: '#713f12', title: 'LA County % Arabic Primary Language' },
+        { key: 'la_county_redistricting_lang_armenian_all', layerId: 69, icon: '🇦🇲', color: '#dc2626', title: 'LA County % Armenian Primary Language' },
+        { key: 'la_county_redistricting_lang_chinese_all', layerId: 70, icon: '🇨🇳', color: '#2563eb', title: 'LA County % Chinese Primary Language' },
+        { key: 'la_county_redistricting_lang_cambodian_all', layerId: 71, icon: '🇰🇭', color: '#1d4ed8', title: 'LA County % Cambodian Primary Language' },
+        { key: 'la_county_redistricting_lang_english_all', layerId: 72, icon: '🇺🇸', color: '#1e40af', title: 'LA County % English Primary Language' },
+        { key: 'la_county_redistricting_lang_farsi_all', layerId: 73, icon: '🇮🇷', color: '#1e3a8a', title: 'LA County % Farsi Primary Language' },
+        { key: 'la_county_redistricting_lang_korean_all', layerId: 74, icon: '🇰🇷', color: '#172554', title: 'LA County % Korean Primary Language' },
+        { key: 'la_county_redistricting_lang_russian_all', layerId: 75, icon: '🇷🇺', color: '#0f172a', title: 'LA County % Russian Primary Language' },
+        { key: 'la_county_redistricting_lang_spanish_all', layerId: 76, icon: '🇪🇸', color: '#6366f1', title: 'LA County % Spanish Primary Language' },
+        { key: 'la_county_redistricting_lang_tagalog_all', layerId: 77, icon: '🇵🇭', color: '#4f46e5', title: 'LA County % Tagalog Primary Language' },
+        { key: 'la_county_redistricting_lang_vietnamese_all', layerId: 78, icon: '🇻🇳', color: '#4338ca', title: 'LA County % Vietnamese Primary Language' },
+        { key: 'la_county_redistricting_lang_other_all', layerId: 79, icon: '🌐', color: '#3730a3', title: 'LA County % Some Other Language Primary Language' }
+      ];
+
+      laCountyRedistrictingLayers.forEach(({ key, icon, color, title }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((redistricting: any) => {
+              if (redistricting.geometry && redistricting.geometry.rings) {
+                try {
+                  const rings = redistricting.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const isContaining = redistricting.isContaining;
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    const redistrictingId = redistricting.redistrictingId || redistricting.COMMUNITY || redistricting.community || redistricting.COMMUNITY_NAME || redistricting.community_name || redistricting.NAME || redistricting.Name || redistricting.name || redistricting.OBJECTID || redistricting.objectid || 'Unknown';
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${redistrictingId ? `<div><strong>ID:</strong> ${redistrictingId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this boundary</div>` : ''}
+                          ${redistricting.distance_miles !== null && redistricting.distance_miles !== undefined && redistricting.distance_miles > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${redistricting.distance_miles.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['redistrictingId', 'COMMUNITY', 'community', 'COMMUNITY_NAME', 'community_name', 'NAME', 'Name', 'name', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining', 'distance_miles'];
+                    Object.entries(redistricting).forEach(([key, value]) => {
                       if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                         if (typeof value === 'object' && !Array.isArray(value)) {
                           return;

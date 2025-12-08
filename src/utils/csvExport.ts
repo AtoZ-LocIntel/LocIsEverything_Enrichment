@@ -382,7 +382,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('la_county_elevation_') && key.endsWith('_enabled')) || // Skip LA County Demographics arrays (handled separately)
         (key.startsWith('la_county_demographics_') && key.endsWith('_all')) || // Skip LA County LMS arrays (handled separately)
         (key.startsWith('la_county_lms_') && key.endsWith('_all')) || // Skip LA County Political Boundaries arrays (handled separately)
-        (key.startsWith('la_county_political_boundaries_') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
+        (key.startsWith('la_county_political_boundaries_') && key.endsWith('_all')) || // Skip LA County Redistricting arrays (handled separately)
+        (key.startsWith('la_county_redistricting_') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -5775,6 +5776,58 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'LA County LMS Data'
+        ]);
+      });
+    }
+    
+    // LA County Redistricting Data - Generic handler for all layers
+    if (key.startsWith('la_county_redistricting_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
+      value.forEach((redistricting: any) => {
+        const redistrictingId = redistricting.redistrictingId || redistricting.COMMUNITY || redistricting.community || redistricting.COMMUNITY_NAME || redistricting.community_name || redistricting.NAME || redistricting.Name || redistricting.name || 'Unknown';
+        const distance = redistricting.isContaining ? '0.00' : (redistricting.distance_miles !== null && redistricting.distance_miles !== undefined ? redistricting.distance_miles.toFixed(2) : '');
+        
+        // Extract coordinates from polygon geometry
+        let lat = '';
+        let lon = '';
+        if (redistricting.geometry && redistricting.geometry.rings && redistricting.geometry.rings.length > 0) {
+          const firstCoord = redistricting.geometry.rings[0][0];
+          lat = firstCoord[1].toString();
+          lon = firstCoord[0].toString();
+        }
+        
+        const allAttributes = { ...redistricting };
+        delete allAttributes.redistrictingId;
+        delete allAttributes.COMMUNITY;
+        delete allAttributes.community;
+        delete allAttributes.COMMUNITY_NAME;
+        delete allAttributes.community_name;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.name;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Redistricting Data',
+          (location.confidence || 'N/A').toString(),
+          layerName,
+          redistrictingId,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          redistricting.isContaining ? 'Within Boundary' : (distance ? `Nearby Boundary (${distance} miles)` : 'Nearby Boundary'),
+          attributesJson,
+          '',
+          '',
+          'LA County Redistricting Data 2011'
         ]);
       });
     }

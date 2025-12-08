@@ -953,6 +953,221 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "California",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "CA CGS Landslide Zones",
+          description: "California Geological Survey (CGS) Landslide Zones - point-in-polygon and proximity queries up to 10 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA CGS Liquefaction Zones",
+          description: "California Geological Survey (CGS) Liquefaction Zones - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA State Parks Recreational Routes",
+          description: "California State Parks Recreational Routes - proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Marine Oil Terminals",
+          description: "California Marine Oil Terminals - proximity queries up to 50 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Post-Fire Damage Inspections (DINS)",
+          description: "CAL FIRE Damage Inspection Program (DINS) database of structures damaged and destroyed by wildland fire since 2013 - proximity queries up to 50 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Medium and Heavy Duty Infrastructure",
+          description: "Location of publicly accessible medium- and heavy-duty (MDHD) hydrogen refueling and charging stations - proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Facilities for Wildland Fire Protection",
+          description: "California State and Local Facilities for Wildland Fire Protection - proximity queries up to 50 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Solar Footprints",
+          description: "Solar footprint feature class combining existing datasets with imagery interpretation to create footprints of medium to large scale solar facilities - proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Natural Gas Service Areas",
+          description: "California Natural Gas Service Areas - point-in-polygon queries",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Public Land Survey Sections",
+          description: "California Public Land Survey Sections (PLSS) - point-in-polygon queries to identify Township and Range values",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Geothermal Wells",
+          description: "California Geothermal Wells (WellSTAR) - proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Oil and Gas Wells",
+          description: "California Oil and Gas Wells (WellSTAR) - proximity queries up to 25 miles",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "CA Eco Regions",
+          description: "USDA Ecoregion Sections for California - point-in-polygon queries",
+          coverage: "California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "City of Los Angeles Zoning Polygons",
+          description: "City of Los Angeles Zoning Polygons - point-in-polygon and proximity queries up to 1 mile",
+          coverage: "Los Angeles, California",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Los Angeles County Data",
+      sources: [
+        {
+          name: "LA County Street Inventory",
+          description: "StreetsLA GeoHub Street Inventory - proximity queries up to 5 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Points of Interest",
+          description: "Los Angeles County Points of Interest including Arts and Recreation, Education, Hospitals, Municipal Services, Physical Features, Public Safety, and Transportation - proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Historic Cultural Monuments",
+          description: "Los Angeles County Historic Cultural Monuments - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Housing with Potential Lead Risk",
+          description: "Los Angeles County Housing with Potential Lead Risk - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County School District Boundaries",
+          description: "Los Angeles County School District Boundaries - point-in-polygon queries",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County MTA Metro Lines",
+          description: "Los Angeles County Metropolitan Transportation Authority (MTA) Metro Lines - proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Hazards",
+          description: "Los Angeles County Hazards including Fire Hazards, Fire Hazard Responsibility Areas, Fire Hazard Severity Zones, Earthquake Hazards, Alquist-Priolo Fault Traces and Zones, USGS Faults, Tsunami Inundation Zones, Landslide Zones, Liquefaction Zones, Flood Hazards, 100-Year and 500-Year Flood Plains, and Dam Inundation Areas - point-in-polygon and proximity queries",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Basemaps and Grids",
+          description: "Los Angeles County Basemaps and Grids including US National Grid (USNG) at various scales and Township Range Section Rancho Boundaries - point-in-polygon queries",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Hydrology",
+          description: "Los Angeles County Hydrology data including Lakes, Streams, Watershed Boundaries, and comprehensive Storm Drain Network components (Inlets/Outlets, Maintenance Holes, Basins, Catch Basins, Low Flow Diversions, Pump Stations, Channels, Drains, Laterals, Culverts, Permitted Connections, Force Mains, Natural Drainage) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Infrastructure",
+          description: "Los Angeles County Infrastructure including County Facilities, County-owned Buildings, County-owned Parcels, Government-owned Parcels, and Schools - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Administrative Boundaries",
+          description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Elevation",
+          description: "Los Angeles County Elevation data including Contours at various scales (LARIAC Contours 1000FT, 250FT, 50FT, 10FT, 2FT, 1FT), Elevation Points, Elevation Data (Raster), LARIAC Hillshade, Digital Elevation Model (DEM), and Digital Surface Model (DSM) - proximity queries for queryable layers, raster visualization for raster layers",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Demographics",
+          description: "Los Angeles County Demographics including Census data from 1990, 2000, 2010, and 2020, as well as 2018 Estimates - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County LMS Data",
+          description: "Los Angeles County Location Management System (LMS) Data - comprehensive dataset of 193 layers covering various points of interest, facilities, and infrastructure - proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Political Boundaries",
+          description: "Los Angeles County Political Boundaries including Districts (2021, 2011, 2001, 1971-1991), Supervisorial Districts, Congressional Districts, State Assembly Districts, State Senate Districts, Board of Equalization, LA City Council Districts, School Districts, Registrar Recorder Precincts, Election Precincts, City and County Boundaries, Community Boundaries, and City Annexations - point-in-polygon queries",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Redistricting Data (2011)",
+          description: "Los Angeles County Redistricting Data from 2011 including Redistricting Geography, Communities, Home and Income Information, Housing Data, Income Data, Population Density, Voter Registration Data, Citizen Voting Age Population, Demographic Data, and Language data - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
