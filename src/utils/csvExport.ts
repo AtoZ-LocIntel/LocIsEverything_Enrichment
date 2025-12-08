@@ -349,6 +349,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'la_county_fire_hydrants_all' ||
         key === 'chicago_311_all' ||
         key === 'chicago_traffic_crashes_all' ||
+        key === 'chicago_speed_cameras_all' ||
+        key === 'chicago_red_light_cameras_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -5711,6 +5713,76 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           distance,
           crashType || 'Traffic Crash',
           address.trim() || crashId,
+          '', // Owner
+          '', // Phone
+          attributesJson,
+          'City of Chicago Data Portal'
+        ]);
+      });
+    } else if (key === 'chicago_speed_cameras_all' && Array.isArray(value)) {
+      value.forEach((camera: any) => {
+        const cameraId = camera.camera_id || camera.CAMERA_ID || 'Unknown';
+        const address = camera.address || camera.ADDRESS || '';
+        const distance = camera.distance_miles !== null && camera.distance_miles !== undefined ? camera.distance_miles.toFixed(2) : '';
+        const lat = camera.latitude || camera.geometry?.y || '';
+        const lon = camera.longitude || camera.geometry?.x || '';
+
+        const allAttributes = { ...camera };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Chicago',
+          (location.confidence || 'N/A').toString(),
+          'CHICAGO_SPEED_CAMERA',
+          cameraId,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Speed Camera',
+          address || cameraId,
+          '', // Owner
+          '', // Phone
+          attributesJson,
+          'City of Chicago Data Portal'
+        ]);
+      });
+    } else if (key === 'chicago_red_light_cameras_all' && Array.isArray(value)) {
+      value.forEach((camera: any) => {
+        const cameraId = camera.camera_id || camera.CAMERA_ID || 'Unknown';
+        const address = camera.address || camera.ADDRESS || '';
+        const distance = camera.distance_miles !== null && camera.distance_miles !== undefined ? camera.distance_miles.toFixed(2) : '';
+        const lat = camera.latitude || camera.geometry?.y || '';
+        const lon = camera.longitude || camera.geometry?.x || '';
+
+        const allAttributes = { ...camera };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Chicago',
+          (location.confidence || 'N/A').toString(),
+          'CHICAGO_RED_LIGHT_CAMERA',
+          cameraId,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Red Light Camera',
+          address || cameraId,
           '', // Owner
           '', // Phone
           attributesJson,

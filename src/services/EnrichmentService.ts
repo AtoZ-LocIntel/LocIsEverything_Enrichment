@@ -100,6 +100,8 @@ import { getLACountyFireHydrantsData } from '../adapters/laCountyFireHydrants';
 import { getChicago311Data } from '../adapters/chicago311';
 import { getChicagoBuildingFootprintsData } from '../adapters/chicagoBuildingFootprints';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
+import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
+import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2108,6 +2110,14 @@ export class EnrichmentService {
       case 'chicago_traffic_crashes':
         const crashYear = poiYears?.[enrichmentId];
         return await this.getChicagoTrafficCrashes(lat, lon, radius, crashYear);
+      
+      // Chicago Speed Camera Locations - Proximity query (max 5 miles)
+      case 'chicago_speed_cameras':
+        return await this.getChicagoSpeedCameras(lat, lon, radius);
+      
+      // Chicago Red Light Camera Locations - Proximity query (max 5 miles)
+      case 'chicago_red_light_cameras':
+        return await this.getChicagoRedLightCameras(lat, lon, radius);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -9586,6 +9596,84 @@ out center;`;
       return {
         chicago_traffic_crashes_count: 0,
         chicago_traffic_crashes_all: []
+      };
+    }
+  }
+
+  private async getChicagoSpeedCameras(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📷 Fetching Chicago Speed Camera Locations data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          chicago_speed_cameras_count: 0,
+          chicago_speed_cameras_all: []
+        };
+      }
+      
+      const cameras = await getChicagoSpeedCamerasData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.chicago_speed_cameras_count = cameras.length;
+      result.chicago_speed_cameras_all = cameras.map(camera => ({
+        ...camera,
+        geometry: {
+          x: camera.longitude,
+          y: camera.latitude
+        },
+        distance_miles: camera.distance_miles || 0
+      }));
+      result.chicago_speed_cameras_summary = `Found ${cameras.length} speed camera location(s) within ${radius} miles.`;
+      
+      console.log(`✅ Chicago Speed Camera Locations data processed:`, {
+        totalCount: result.chicago_speed_cameras_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Chicago Speed Camera Locations data:', error);
+      return {
+        chicago_speed_cameras_count: 0,
+        chicago_speed_cameras_all: []
+      };
+    }
+  }
+
+  private async getChicagoRedLightCameras(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚦 Fetching Chicago Red Light Camera Locations data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          chicago_red_light_cameras_count: 0,
+          chicago_red_light_cameras_all: []
+        };
+      }
+      
+      const cameras = await getChicagoRedLightCamerasData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.chicago_red_light_cameras_count = cameras.length;
+      result.chicago_red_light_cameras_all = cameras.map(camera => ({
+        ...camera,
+        geometry: {
+          x: camera.longitude,
+          y: camera.latitude
+        },
+        distance_miles: camera.distance_miles || 0
+      }));
+      result.chicago_red_light_cameras_summary = `Found ${cameras.length} red light camera location(s) within ${radius} miles.`;
+      
+      console.log(`✅ Chicago Red Light Camera Locations data processed:`, {
+        totalCount: result.chicago_red_light_cameras_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Chicago Red Light Camera Locations data:', error);
+      return {
+        chicago_red_light_cameras_count: 0,
+        chicago_red_light_cameras_all: []
       };
     }
   }

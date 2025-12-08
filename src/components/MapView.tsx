@@ -596,6 +596,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'chicago_311_all' || // Skip Chicago 311 array (handled separately for map drawing)
     key === 'chicago_building_footprints_all' || // Skip Chicago Building Footprints array (handled separately for map drawing)
     key === 'chicago_traffic_crashes_all' || // Skip Chicago Traffic Crashes array (handled separately for map drawing)
+    key === 'chicago_speed_cameras_all' || // Skip Chicago Speed Cameras array (handled separately for map drawing)
+    key === 'chicago_red_light_cameras_all' || // Skip Chicago Red Light Cameras array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -11377,6 +11379,168 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Chicago Building Centroids:', error);
+      }
+
+      // Draw Chicago Speed Camera Locations as point markers
+      try {
+        if (enrichments.chicago_speed_cameras_all && Array.isArray(enrichments.chicago_speed_cameras_all)) {
+          let chicagoSpeedCamerasCount = 0;
+          
+          enrichments.chicago_speed_cameras_all.forEach((camera: any) => {
+            try {
+              const lat = camera.latitude || camera.geometry?.y || null;
+              const lon = camera.longitude || camera.geometry?.x || null;
+              
+              if (lat !== null && lon !== null) {
+                // Create marker with camera icon
+                const marker = L.marker([lat, lon], {
+                  icon: L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `<div style="background-color: #f59e0b; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">📷</div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                  })
+                });
+                
+                // Build popup content
+                const cameraId = camera.camera_id || camera.CAMERA_ID || 'Unknown';
+                const address = camera.address || camera.ADDRESS || '';
+                const distance = camera.distance_miles !== null && camera.distance_miles !== undefined ? camera.distance_miles.toFixed(2) : '';
+                
+                let popupContent = `
+                  <div style="max-width: 300px;">
+                    <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px; color: #1f2937;">
+                      📷 Speed Camera
+                    </div>
+                    <div style="font-size: 12px; color: #4b5563;">
+                      ${cameraId ? `<div><strong>Camera ID:</strong> ${cameraId}</div>` : ''}
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${distance ? `<div><strong>Distance:</strong> ${distance} miles</div>` : ''}
+                `;
+                
+                // Add all camera attributes (excluding internal fields)
+                const excludeFields = ['geometry', 'distance_miles', 'latitude', 'longitude', 'location', 'camera_id', 'CAMERA_ID', 'address', 'ADDRESS'];
+                Object.entries(camera).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend(marker.getLatLng());
+                
+                chicagoSpeedCamerasCount++;
+              }
+            } catch (error) {
+              console.error('Error drawing Chicago Speed Camera marker:', error);
+            }
+          });
+          
+          if (chicagoSpeedCamerasCount > 0) {
+            if (!legendAccumulator['chicago_speed_cameras']) {
+              legendAccumulator['chicago_speed_cameras'] = {
+                icon: '📷',
+                color: '#f59e0b',
+                title: 'Chicago Speed Camera Locations',
+                count: 0,
+              };
+            }
+            legendAccumulator['chicago_speed_cameras'].count += chicagoSpeedCamerasCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Chicago Speed Camera Locations:', error);
+      }
+
+      // Draw Chicago Red Light Camera Locations as point markers
+      try {
+        if (enrichments.chicago_red_light_cameras_all && Array.isArray(enrichments.chicago_red_light_cameras_all)) {
+          let chicagoRedLightCamerasCount = 0;
+          
+          enrichments.chicago_red_light_cameras_all.forEach((camera: any) => {
+            try {
+              const lat = camera.latitude || camera.geometry?.y || null;
+              const lon = camera.longitude || camera.geometry?.x || null;
+              
+              if (lat !== null && lon !== null) {
+                // Create marker with red light camera icon
+                const marker = L.marker([lat, lon], {
+                  icon: L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `<div style="background-color: #dc2626; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">🚦</div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                  })
+                });
+                
+                // Build popup content
+                const cameraId = camera.camera_id || camera.CAMERA_ID || 'Unknown';
+                const address = camera.address || camera.ADDRESS || '';
+                const distance = camera.distance_miles !== null && camera.distance_miles !== undefined ? camera.distance_miles.toFixed(2) : '';
+                
+                let popupContent = `
+                  <div style="max-width: 300px;">
+                    <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px; color: #1f2937;">
+                      🚦 Red Light Camera
+                    </div>
+                    <div style="font-size: 12px; color: #4b5563;">
+                      ${cameraId ? `<div><strong>Camera ID:</strong> ${cameraId}</div>` : ''}
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${distance ? `<div><strong>Distance:</strong> ${distance} miles</div>` : ''}
+                `;
+                
+                // Add all camera attributes (excluding internal fields)
+                const excludeFields = ['geometry', 'distance_miles', 'latitude', 'longitude', 'location', 'camera_id', 'CAMERA_ID', 'address', 'ADDRESS'];
+                Object.entries(camera).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend(marker.getLatLng());
+                
+                chicagoRedLightCamerasCount++;
+              }
+            } catch (error) {
+              console.error('Error drawing Chicago Red Light Camera marker:', error);
+            }
+          });
+          
+          if (chicagoRedLightCamerasCount > 0) {
+            if (!legendAccumulator['chicago_red_light_cameras']) {
+              legendAccumulator['chicago_red_light_cameras'] = {
+                icon: '🚦',
+                color: '#dc2626',
+                title: 'Chicago Red Light Camera Locations',
+                count: 0,
+              };
+            }
+            legendAccumulator['chicago_red_light_cameras'].count += chicagoRedLightCamerasCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Chicago Red Light Camera Locations:', error);
       }
 
       // Draw LA County Historic Cultural Monuments as polygons on the map
