@@ -59,23 +59,10 @@ export async function getChicagoBuildingFootprintsData(
   radiusMiles: number
 ): Promise<ChicagoBuildingFootprintFeature[]> {
   try {
-    // Since the_geom is a multi-polygon, we can't use within_circle directly
-    // Instead, we'll use bounding box filtering on latitude/longitude fields
-    // Calculate bounding box for the query (approximate)
-    // 1 degree latitude ≈ 69 miles, 1 degree longitude ≈ 69 * cos(latitude) miles
-    const latDelta = radiusMiles / 69;
-    const lonDelta = radiusMiles / (69 * Math.cos(lat * Math.PI / 180));
-    
-    const minLat = lat - latDelta;
-    const maxLat = lat + latDelta;
-    const minLon = lon - lonDelta;
-    const maxLon = lon + lonDelta;
-
-    // X_COORD and Y_COORD are likely in State Plane Illinois East NAD 1983 (not lat/lon)
+    // Since the_geom is a multi-polygon, we use within_circle for spatial filtering
+    // X_COORD and Y_COORD are in State Plane Illinois East NAD 1983 (not lat/lon)
     // So we can't filter by lat/lon bounding box directly
-    // Instead, fetch a larger area and filter client-side after converting coordinates
-    // For now, fetch without spatial filter and rely on limit + client-side filtering
-    // Note: This is less efficient but necessary if coordinates are in State Plane
+    // Instead, we use within_circle on the_geom field and filter client-side after converting coordinates
     
     // SODA2 format: /resource/{dataset-id}.json with query parameters
     // Use within_circle spatial query on the_geom field to fetch only records near the search location
@@ -161,10 +148,6 @@ export async function getChicagoBuildingFootprintsData(
         // X_COORD and Y_COORD are in State Plane Illinois East NAD 1983
         // We need to extract coordinates from the_geom MultiPolygon instead
         // the_geom should be in WGS84 (lat/lon) format
-        let featureLat: number | null = null;
-        let featureLon: number | null = null;
-        
-        // Try to extract coordinates from the_geom MultiPolygon
         // For building footprints, check if polygon intersects the search radius
         // We'll check: 1) if point is inside polygon, 2) distance to centroid, 3) distance to nearest vertex
         let isWithinRadius = false;
@@ -341,7 +324,7 @@ export async function getChicagoBuildingFootprintsData(
                   if (coordCount > 0) {
                     featureLon = sumLon / coordCount;
                     featureLat = sumLat / coordCount;
-                    const centroidDistance = calculateDistance(lat, lon, featureLat, featureLon);
+                    const centroidDistance = calculateDistance(lat, lon, featureLat!, featureLon!);
                     // Use the minimum of centroid distance and nearest vertex distance
                     distance = Math.min(centroidDistance, minVertexDistance);
                   }
@@ -352,7 +335,7 @@ export async function getChicagoBuildingFootprintsData(
               if (Array.isArray(coords) && coords.length >= 2) {
                 featureLon = coords[0];
                 featureLat = coords[1];
-                distance = calculateDistance(lat, lon, featureLat, featureLon);
+                distance = calculateDistance(lat, lon, featureLat!, featureLon!);
               }
             }
           } catch (geomError) {
