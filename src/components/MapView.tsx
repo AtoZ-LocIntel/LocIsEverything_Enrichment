@@ -225,6 +225,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_physical_features': { icon: '🏔️', color: '#10b981', title: 'LA County Physical Features' },
   'la_county_public_safety': { icon: '🚨', color: '#dc2626', title: 'LA County Public Safety' },
   'la_county_transportation': { icon: '🚌', color: '#f59e0b', title: 'LA County Transportation' },
+  'la_county_fire_hydrants': { icon: '🚒', color: '#ef4444', title: 'LA County Fire Hydrants' },
   'la_county_historic_cultural_monuments': { icon: '🏛️', color: '#a855f7', title: 'LA County Historic Cultural Monuments' },
   'la_county_housing_lead_risk': { icon: '🏠', color: '#dc2626', title: 'LA County Housing with Potential Lead Risk' },
   'la_county_school_district_boundaries': { icon: '🏫', color: '#3b82f6', title: 'LA County School District Boundaries' },
@@ -589,6 +590,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_physical_features_all' || // Skip LA County Physical Features array (handled separately for map drawing)
     key === 'la_county_public_safety_all' || // Skip LA County Public Safety array (handled separately for map drawing)
     key === 'la_county_transportation_all' || // Skip LA County Transportation array (handled separately for map drawing)
+    key === 'la_county_fire_hydrants_all' || // Skip LA County Fire Hydrants array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -10979,7 +10981,8 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'la_county_municipal_services_all', icon: '🏛️', color: '#6366f1', title: 'LA County Municipal Services' },
         { key: 'la_county_physical_features_all', icon: '🏔️', color: '#10b981', title: 'LA County Physical Features' },
         { key: 'la_county_public_safety_all', icon: '🚨', color: '#dc2626', title: 'LA County Public Safety' },
-        { key: 'la_county_transportation_all', icon: '🚌', color: '#f59e0b', title: 'LA County Transportation' }
+        { key: 'la_county_transportation_all', icon: '🚌', color: '#f59e0b', title: 'LA County Transportation' },
+        { key: 'la_county_fire_hydrants_all', icon: '🚒', color: '#ef4444', title: 'LA County Fire Hydrants' }
       ];
 
       laCountyPOILayers.forEach(({ key, icon, color, title }) => {
@@ -10993,7 +10996,10 @@ const MapView: React.FC<MapViewProps> = ({
               
               if (lat !== null && lon !== null) {
                 try {
-                  const poiId = poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown';
+                  // Special handling for fire hydrants - prioritize OBJECTID_1
+                  const poiId = key === 'la_county_fire_hydrants_all' 
+                    ? (poi.OBJECTID_1 || poi.OBJECTID || poi.objectid || 'Unknown')
+                    : (poi.poiId || poi.OBJECTID || poi.objectid || 'Unknown');
                   const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles : 0;
                   
                   const marker = L.marker([lat, lon], {

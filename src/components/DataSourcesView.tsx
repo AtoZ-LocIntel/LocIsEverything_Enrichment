@@ -1128,6 +1128,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           cost: "Free"
         },
         {
+          name: "LA County Fire Hydrants",
+          description: "Fire hydrants within the Los Angeles County Fire Department's jurisdiction and surrounding areas - proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/Fire/Fire_Hydrants/MapServer/0"
+        },
+        {
           name: "LA County Administrative Boundaries",
           description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",

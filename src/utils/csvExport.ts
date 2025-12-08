@@ -346,6 +346,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'la_county_physical_features_all' ||
         key === 'la_county_public_safety_all' ||
         key === 'la_county_transportation_all' ||
+        key === 'la_county_fire_hydrants_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -5560,6 +5561,40 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'LA County GeoHub'
+        ]);
+      });
+    } else if (key === 'la_county_fire_hydrants_all' && Array.isArray(value)) {
+      value.forEach((hydrant: any) => {
+        const hydrantId = hydrant.OBJECTID_1 || hydrant.OBJECTID || hydrant.objectid || 'Unknown';
+        const config = hydrant.HYDR_CONFG || hydrant.hydr_confg || '';
+        const distance = hydrant.distance_miles !== null && hydrant.distance_miles !== undefined ? hydrant.distance_miles.toFixed(2) : '';
+        const lat = hydrant.geometry?.y || '';
+        const lon = hydrant.geometry?.x || '';
+        
+        const allAttributes = { ...hydrant };
+        delete allAttributes.OBJECTID_1;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Fire Department',
+          (location.confidence || 'N/A').toString(),
+          'LA_COUNTY_FIRE_HYDRANTS',
+          `Fire Hydrant ${hydrantId}${config ? ` (${config})` : ''}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Fire Hydrant',
+          attributesJson,
+          '',
+          '',
+          'LA County Fire Department'
         ]);
       });
     } else if (key === 'la_county_historic_cultural_monuments_all' && Array.isArray(value)) {

@@ -188,28 +188,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     setLayerSearchQuery('');
   }, [activeModal]);
   
-  // DEBUG: Track when modal renders
-  useEffect(() => {
-    if (activeModal) {
-      console.log('🔴 DEBUG: activeModal is set to:', activeModal);
-      console.log('🔴 DEBUG: Component should render modal with search bar');
-      // Force a re-render check
-      setTimeout(() => {
-        const searchBar = document.getElementById('layer-search-bar-container');
-        const testBox = document.getElementById('test-red-box');
-        console.log('🔴 DEBUG: Search bar element:', searchBar);
-        console.log('🔴 DEBUG: Test box element:', testBox);
-        if (!searchBar) {
-          console.error('❌ DEBUG: Search bar NOT found in DOM!');
-        }
-        if (!testBox) {
-          console.error('❌ DEBUG: Test box NOT found in DOM!');
-        }
-      }, 100);
-    } else {
-      console.log('🔴 DEBUG: activeModal is null, modal should NOT render');
-    }
-  }, [activeModal]);
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
   // const [activeCategory, setActiveCategory] = useState<string | null>(null); // Unused after removing mobile view
 
@@ -860,14 +838,24 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         
         if (section.id === 'il') {
-          // IL will have sub-categories (to be added later)
+          // IL sub-categories
+          const ilSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'chicago_data_portal',
+              title: 'Chicago Data Portal',
+              icon: <img src="/assets/ChicagoDataPortal.webp" alt="Chicago Data Portal" className="w-full h-full object-cover rounded-full" />,
+              description: 'Chicago Data Portal data layers - Coming Soon!',
+              enrichments: [] // Will be populated as layers are added
+            }
+          ];
+          
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
-            subCategories: []
+            enrichments: [], // IL parent category has no direct enrichments
+            subCategories: ilSubCategories
           };
         }
         
@@ -2168,12 +2156,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 
   // Desktop view (existing modal-based approach)
   // If modal is open, render ONLY the modal (hide main content)
-  console.log('🔍 DEBUG: EnrichmentConfig render - activeModal:', activeModal);
-  console.log('🔍 DEBUG: Component state - layerSearchQuery:', layerSearchQuery);
-  console.log('🔍 DEBUG: enrichmentCategories length:', enrichmentCategories.length);
-  
   if (activeModal) {
-    console.log('🔍 DEBUG: activeModal is truthy, entering modal render block');
     // Render modal only - this will cover the entire screen
     return (
       <div className="enrichment-config" style={{ position: 'relative', zIndex: 10001 }}>
@@ -2192,7 +2175,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             >
           <div className="bg-white flex flex-col" style={{ height: '100vh', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
                 {(() => {
-                  console.log('🔍 DEBUG: Inside IIFE, activeModal:', activeModal);
               // Check if this is a state sub-category (they have IDs like nh_granit, ma_massgis, ct_geodata_portal, de_firstmap)
               const isNHSubCategory = activeModal?.startsWith('nh_');
               const isMASubCategory = activeModal?.startsWith('ma_');
@@ -2200,6 +2182,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const isDESubCategory = activeModal?.startsWith('de_');
               const isNJSubCategory = activeModal?.startsWith('nj_');
               const isCASubCategory = activeModal?.startsWith('ca_');
+              const isILSubCategory = activeModal?.startsWith('il_') || activeModal === 'chicago_data_portal';
               let category: EnrichmentCategory | undefined;
               
               if (isNHSubCategory) {
@@ -2274,19 +2257,25 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   foundCategory: category?.id,
                   enrichmentsCount: category?.enrichments?.length
                 });
+              } else if (isILSubCategory) {
+                // Find the IL category and get the sub-category
+                const ilCategory = enrichmentCategories.find(c => c.id === 'il');
+                category = ilCategory?.subCategories?.find(sc => sc.id === activeModal);
+                console.log('🔍 IL Sub-Category Modal:', {
+                  activeModal,
+                  isILSubCategory,
+                  ilCategoryFound: !!ilCategory,
+                  subCategories: ilCategory?.subCategories?.map(sc => sc.id),
+                  foundCategory: category?.id,
+                  enrichmentsCount: category?.enrichments?.length
+                });
               } else {
                 // Regular category
-                console.log('🔍 DEBUG: Looking for regular category with id:', activeModal);
-                console.log('🔍 DEBUG: Available category IDs:', enrichmentCategories.map(c => c.id));
                 category = enrichmentCategories.find(c => c.id === activeModal);
-                console.log('🔍 DEBUG: Category lookup result:', category ? `Found: ${category.id}` : 'NOT FOUND');
               }
-              
-              console.log('🔍 DEBUG: Final category check:', category ? `Category found: ${category.id}` : 'Category is NULL');
               
               if (!category) {
                 console.warn('⚠️ Category not found for activeModal:', activeModal);
-                console.error('🔴 DEBUG: Category is null, returning early - search bar will NOT render');
                 return (
                   <div className="p-4">
                     <button
@@ -2346,51 +2335,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 category.id === 'de_firstmap' ? '#166534' :
                                     category.id === 'core' ? '#1e293b' : '#1f2937';
                   
-                  console.log('✅ DEBUG: Category:', category.id, 'Header color:', headerColor);
-                  console.log('✅ DEBUG: layerSearchQuery state:', layerSearchQuery);
-                  console.log('✅ DEBUG: About to return JSX with search bar');
-                  console.log('✅ DEBUG: React.createElement should be called now');
-
                   return (
                     <>
-                      {/* CRITICAL DEBUG: This should ALWAYS render if code executes */}
-                      <div style={{
-                        position: 'fixed',
-                        top: '100px',
-                        left: '10px',
-                        backgroundColor: 'lime',
-                        color: 'black',
-                        padding: '20px',
-                        zIndex: 99998,
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        border: '5px solid black'
-                      }}>
-                        ✅ JSX RETURNING - SEARCH BAR SHOULD BE BELOW
-                      </div>
-                  {/* TEST ELEMENT - BRIGHT RED BOX TO VERIFY CODE IS EXECUTING */}
-                      <div 
-                        id="test-red-box"
-                        style={{
-                        width: '100vw',
-                        height: '80px',
-                        backgroundColor: 'red',
-                        color: 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '24px',
-                        fontWeight: 'bold',
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        zIndex: 99999,
-                        border: '8px solid yellow',
-                        boxShadow: '0 0 20px rgba(255,0,0,0.8)'
-                      }}>
-                        🔴🔴🔴 TEST: IF YOU SEE THIS RED BOX, CODE IS RUNNING 🔴🔴🔴
-                      </div>
                   
                   {/* SEARCH BAR - SEPARATE ROW ABOVE HEADER */}
                       <div 
@@ -2687,10 +2633,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       >
                     <div className="space-y-3 sm:space-y-4 max-w-2xl mx-auto w-full pt-2 sm:pt-4 px-1 sm:px-0">
                       {categoryEnrichments.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">
-                          <p>No layers available yet in this category.</p>
-                          <p className="text-sm mt-2">Layers will be added soon.</p>
-                          <p className="text-xs mt-2 text-gray-400">Debug: Category ID: {category.id}, Enrichments: {categoryEnrichments.length}</p>
+                        <div className="text-center py-12">
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 max-w-md mx-auto">
+                            <div className="text-4xl mb-4">🚧</div>
+                            <p className="text-lg font-semibold text-blue-900 mb-2">Open Data Sources Coming Soon!</p>
+                            <p className="text-sm text-blue-700">We're working on adding data layers for this category. Check back soon for updates!</p>
+                          </div>
                         </div>
                       ) : (() => {
                         // For LA County (ca sub-category), group by subCategory

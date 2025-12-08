@@ -96,6 +96,7 @@ import { getLACountyLMSData } from '../adapters/laCountyLMSData';
 import { getLACountyPoliticalBoundariesData } from '../adapters/laCountyPoliticalBoundaries';
 import { getLACountyRedistrictingData } from '../adapters/laCountyRedistricting';
 import { getLACountyTransportationData } from '../adapters/laCountyTransportation';
+import { getLACountyFireHydrantsData } from '../adapters/laCountyFireHydrants';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2082,6 +2083,10 @@ export class EnrichmentService {
       // LA County Housing with Potential Lead Risk - Point-in-polygon and proximity query (max 5 miles)
       case 'la_county_housing_lead_risk':
         return await this.getLACountyHousingLeadRisk(lat, lon, radius);
+      
+      // LA County Fire Hydrants - Proximity query (max 25 miles)
+      case 'la_county_fire_hydrants':
+        return await this.getLACountyFireHydrants(lat, lon, radius);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -9402,6 +9407,42 @@ out center;`;
       return {
         la_county_public_safety_count: 0,
         la_county_public_safety_all: []
+      };
+    }
+  }
+
+  private async getLACountyFireHydrants(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚒 Fetching LA County Fire Hydrants data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          la_county_fire_hydrants_count: 0,
+          la_county_fire_hydrants_all: []
+        };
+      }
+      
+      const hydrants = await getLACountyFireHydrantsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.la_county_fire_hydrants_count = hydrants.length;
+      result.la_county_fire_hydrants_all = hydrants.map(hydrant => ({
+        ...hydrant.attributes,
+        geometry: hydrant.geometry,
+        distance_miles: hydrant.distance_miles || 0
+      }));
+      result.la_county_fire_hydrants_summary = `Found ${hydrants.length} fire hydrant(s) within ${radius} miles.`;
+      
+      console.log(`✅ LA County Fire Hydrants data processed:`, {
+        totalCount: result.la_county_fire_hydrants_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching LA County Fire Hydrants data:', error);
+      return {
+        la_county_fire_hydrants_count: 0,
+        la_county_fire_hydrants_all: []
       };
     }
   }
