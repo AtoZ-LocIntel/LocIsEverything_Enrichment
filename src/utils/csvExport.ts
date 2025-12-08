@@ -5790,6 +5790,113 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'City of Chicago Data Portal'
         ]);
       });
+    } else if (key === 'nyc_mappluto_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const borough = taxLot.borough || taxLot.Borough || taxLot.BOROUGH || '';
+        const block = taxLot.block || taxLot.Block || taxLot.BLOCK || '';
+        const lot = taxLot.lot || taxLot.Lot || taxLot.LOT || '';
+        const ownerName = taxLot.ownerName || taxLot.OwnerName || taxLot.OWNERNAME || '';
+        const landUse = taxLot.landUse || taxLot.LandUse || taxLot.LANDUSE || '';
+        const yearBuilt = taxLot.yearBuilt || taxLot.YearBuilt || taxLot.YEARBUILT || '';
+        const bldgClass = taxLot.bldgClass || taxLot.BldgClass || taxLot.BLDGCLASS || '';
+        const lotArea = taxLot.lotArea || taxLot.LotArea || taxLot.LOTAREA || '';
+        const bldgArea = taxLot.bldgArea || taxLot.BldgArea || taxLot.BLDGAREA || '';
+        const numBldgs = taxLot.numBldgs || taxLot.NumBldgs || taxLot.NUMBLDGS || '';
+        const numFloors = taxLot.numFloors || taxLot.NumFloors || taxLot.NUMFLOORS || '';
+        const unitsRes = taxLot.unitsRes || taxLot.UnitsRes || taxLot.UNITSRES || '';
+        const unitsTotal = taxLot.unitsTotal || taxLot.UnitsTotal || taxLot.UNITSTOTAL || '';
+        const assessLand = taxLot.assessLand || taxLot.AssessLand || taxLot.ASSESSLAND || '';
+        const assessTot = taxLot.assessTot || taxLot.AssessTot || taxLot.ASSESSTOT || '';
+        const zoneDist1 = taxLot.zoneDist1 || taxLot.ZoneDist1 || taxLot.ZONEDIST1 || '';
+        const zipCode = taxLot.zipCode || taxLot.ZipCode || taxLot.ZIPCODE || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.bbl;
+        delete allAttributes.BBL;
+        delete allAttributes.address;
+        delete allAttributes.Address;
+        delete allAttributes.ADDRESS;
+        delete allAttributes.borough;
+        delete allAttributes.Borough;
+        delete allAttributes.BOROUGH;
+        delete allAttributes.block;
+        delete allAttributes.Block;
+        delete allAttributes.BLOCK;
+        delete allAttributes.lot;
+        delete allAttributes.Lot;
+        delete allAttributes.LOT;
+        delete allAttributes.zipCode;
+        delete allAttributes.ZipCode;
+        delete allAttributes.ZIPCODE;
+        delete allAttributes.ownerName;
+        delete allAttributes.OwnerName;
+        delete allAttributes.OWNERNAME;
+        delete allAttributes.landUse;
+        delete allAttributes.LandUse;
+        delete allAttributes.LANDUSE;
+        delete allAttributes.yearBuilt;
+        delete allAttributes.YearBuilt;
+        delete allAttributes.YEARBUILT;
+        delete allAttributes.bldgClass;
+        delete allAttributes.BldgClass;
+        delete allAttributes.BLDGCLASS;
+        delete allAttributes.lotArea;
+        delete allAttributes.LotArea;
+        delete allAttributes.LOTAREA;
+        delete allAttributes.bldgArea;
+        delete allAttributes.BldgArea;
+        delete allAttributes.BLDGAREA;
+        delete allAttributes.numBldgs;
+        delete allAttributes.NumBldgs;
+        delete allAttributes.NUMBLDGS;
+        delete allAttributes.numFloors;
+        delete allAttributes.NumFloors;
+        delete allAttributes.NUMFLOORS;
+        delete allAttributes.unitsRes;
+        delete allAttributes.UnitsRes;
+        delete allAttributes.UNITSRES;
+        delete allAttributes.unitsTotal;
+        delete allAttributes.UnitsTotal;
+        delete allAttributes.UNITSTOTAL;
+        delete allAttributes.assessLand;
+        delete allAttributes.AssessLand;
+        delete allAttributes.ASSESSLAND;
+        delete allAttributes.assessTot;
+        delete allAttributes.AssessTot;
+        delete allAttributes.ASSESSTOT;
+        delete allAttributes.zoneDist1;
+        delete allAttributes.ZoneDist1;
+        delete allAttributes.ZONEDIST1;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'New York City',
+          (location.confidence || 'N/A').toString(),
+          'NYC_MAPPLUTO_TAX_LOT',
+          `${bbl}${address ? ` - ${address}` : ''}`,
+          '', // Lat (polygon, no single point)
+          '', // Lon (polygon, no single point)
+          distance,
+          taxLot.isContaining ? 'Within Tax Lot' : `Nearby Tax Lot (${distance} miles)`,
+          address || bbl,
+          ownerName || '',
+          '', // Phone
+          attributesJson,
+          'NYC Department of City Planning'
+        ]);
+      });
     } else if (key === 'la_county_historic_cultural_monuments_all' && Array.isArray(value)) {
       value.forEach((monument: any) => {
         const name = monument.name || monument.NAME || monument.Name || 'Unknown Monument';
