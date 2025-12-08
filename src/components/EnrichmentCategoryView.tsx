@@ -258,7 +258,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               ? [0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0]
               : enrichment.id === 'nh_key_destinations'
               ? [0.5, 1, 2, 3, 5, 10, 15, 25]
-              : enrichment.id === 'chicago_311'
+              : enrichment.id === 'chicago_311' || enrichment.id === 'chicago_building_footprints'
               ? [0.25, 0.50, 0.75, 1.0]
               : [0.5, 1, 2, 3, 5, 10, 15, 25];
             const formatMiles = (value: number) =>
@@ -371,6 +371,48 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                             <option value="">All Years</option>
                             {Array.from({ length: new Date().getFullYear() - 2009 }, (_, i) => {
                               const year = 2010 + i;
+                              return (
+                                <option key={year} value={year}>
+                                  {year}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Year filter for Chicago Traffic Crashes */}
+                      {enrichment.id === 'chicago_traffic_crashes' && isSelected && (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <label className="text-sm font-medium text-black block mb-2">
+                            Year Filter (Crash Date):
+                          </label>
+                          <select
+                            value={poiYears[enrichment.id] || ''}
+                            onChange={(e) => {
+                              if (onPoiYearsChange) {
+                                const newPoiYears = { ...poiYears };
+                                if (e.target.value) {
+                                  newPoiYears[enrichment.id] = parseInt(e.target.value, 10);
+                                } else {
+                                  delete newPoiYears[enrichment.id];
+                                }
+                                onPoiYearsChange(newPoiYears);
+                              }
+                            }}
+                            className="w-full sm:w-auto min-w-[150px] px-3 py-2 border-2 border-gray-400 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black font-medium appearance-none"
+                            style={{ 
+                              backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e\")", 
+                              backgroundPosition: "right 0.5rem center", 
+                              backgroundRepeat: "no-repeat", 
+                              backgroundSize: "1.5em 1.5em", 
+                              paddingRight: "2.5rem",
+                              boxSizing: "border-box"
+                            }}
+                          >
+                            <option value="">All Years</option>
+                            {Array.from({ length: new Date().getFullYear() - 2014 }, (_, i) => {
+                              const year = 2015 + i;
                               return (
                                 <option key={year} value={year}>
                                   {year}

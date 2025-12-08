@@ -98,6 +98,8 @@ import { getLACountyRedistrictingData } from '../adapters/laCountyRedistricting'
 import { getLACountyTransportationData } from '../adapters/laCountyTransportation';
 import { getLACountyFireHydrantsData } from '../adapters/laCountyFireHydrants';
 import { getChicago311Data } from '../adapters/chicago311';
+import { getChicagoBuildingFootprintsData } from '../adapters/chicagoBuildingFootprints';
+import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2097,6 +2099,15 @@ export class EnrichmentService {
       case 'chicago_311':
         const year = poiYears?.[enrichmentId];
         return await this.getChicago311(lat, lon, radius, year);
+      
+      // Chicago Building Footprints - Proximity query (max 1 mile)
+      case 'chicago_building_footprints':
+        return await this.getChicagoBuildingFootprints(lat, lon, radius);
+      
+      // Chicago Traffic Crashes - Proximity query (max 1 mile) with optional year filter
+      case 'chicago_traffic_crashes':
+        const crashYear = poiYears?.[enrichmentId];
+        return await this.getChicagoTrafficCrashes(lat, lon, radius, crashYear);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -9494,6 +9505,87 @@ out center;`;
       return {
         chicago_311_count: 0,
         chicago_311_all: []
+      };
+    }
+  }
+
+  private async getChicagoBuildingFootprints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏢 Fetching Chicago Building Footprints data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          chicago_building_footprints_count: 0,
+          chicago_building_footprints_all: []
+        };
+      }
+      
+      const footprints = await getChicagoBuildingFootprintsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.chicago_building_footprints_count = footprints.length;
+      result.chicago_building_footprints_all = footprints.map(footprint => ({
+        ...footprint,
+        // Only include centroid coordinates (the_geom already removed in adapter)
+        geometry: footprint.latitude && footprint.longitude ? {
+          x: footprint.longitude,
+          y: footprint.latitude
+        } : null,
+        distance_miles: footprint.distance_miles || 0
+      }));
+      result.chicago_building_footprints_summary = `Found ${footprints.length} building footprint(s) within ${radius} miles.`;
+      
+      console.log(`✅ Chicago Building Footprints data processed:`, {
+        totalCount: result.chicago_building_footprints_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Chicago Building Footprints data:', error);
+      return {
+        chicago_building_footprints_count: 0,
+        chicago_building_footprints_all: []
+      };
+    }
+  }
+
+  private async getChicagoTrafficCrashes(lat: number, lon: number, radius?: number, year?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚗 Fetching Chicago Traffic Crashes data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}${year ? ` for year ${year}` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          chicago_traffic_crashes_count: 0,
+          chicago_traffic_crashes_all: []
+        };
+      }
+      
+      const crashes = await getChicagoTrafficCrashesData(lat, lon, radius, year);
+      
+      const result: Record<string, any> = {};
+      result.chicago_traffic_crashes_count = crashes.length;
+      result.chicago_traffic_crashes_all = crashes.map(crash => ({
+        ...crash,
+        geometry: {
+          x: crash.longitude,
+          y: crash.latitude
+        },
+        distance_miles: crash.distance_miles || 0
+      }));
+      result.chicago_traffic_crashes_summary = year 
+        ? `Found ${crashes.length} traffic crash(es) within ${radius} miles for year ${year}.`
+        : `Found ${crashes.length} traffic crash(es) within ${radius} miles.`;
+      
+      console.log(`✅ Chicago Traffic Crashes data processed:`, {
+        totalCount: result.chicago_traffic_crashes_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Chicago Traffic Crashes data:', error);
+      return {
+        chicago_traffic_crashes_count: 0,
+        chicago_traffic_crashes_all: []
       };
     }
   }

@@ -348,6 +348,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'la_county_transportation_all' ||
         key === 'la_county_fire_hydrants_all' ||
         key === 'chicago_311_all' ||
+        key === 'chicago_traffic_crashes_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -5564,6 +5565,46 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'LA County GeoHub'
         ]);
       });
+    } else if (key === 'chicago_building_footprints_all' && Array.isArray(value)) {
+      value.forEach((footprint: any) => {
+        const bldgId = footprint.bldg_id || footprint.BLDG_ID || 'Unknown';
+        const bldgName = footprint.bldg_name || footprint.BLDG_NAME || '';
+        const address = footprint.address || footprint.ADDRESS || '';
+        const buildingType = footprint.building_type || footprint.BUILDING_TYPE || footprint.building_use || footprint.BUILDING_USE || '';
+        const yearBuilt = footprint.year_built || footprint.YEAR_BUILT || '';
+        const stories = footprint.stories || footprint.STORIES || '';
+        const height = footprint.height || footprint.HEIGHT || '';
+        const distance = footprint.distance_miles !== null && footprint.distance_miles !== undefined ? footprint.distance_miles.toFixed(2) : '';
+        const lat = footprint.latitude || footprint.geometry?.y || '';
+        const lon = footprint.longitude || footprint.geometry?.x || '';
+        
+        const allAttributes = { ...footprint };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Chicago',
+          (location.confidence || 'N/A').toString(),
+          'CHICAGO_BUILDING_CENTROID',
+          `${bldgName || bldgId}${buildingType ? ` - ${buildingType}` : ''}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Building Centroid',
+          address || bldgName || bldgId || attributesJson,
+          '', // Owner
+          '', // Phone
+          attributesJson,
+          'City of Chicago'
+        ]);
+      });
     } else if (key === 'la_county_fire_hydrants_all' && Array.isArray(value)) {
       value.forEach((hydrant: any) => {
         const hydrantId = hydrant.OBJECTID_1 || hydrant.OBJECTID || hydrant.objectid || 'Unknown';
@@ -5631,6 +5672,59 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           srType || 'Service Request',
           `${address}${city ? `, ${city}` : ''}${zip ? ` ${zip}` : ''}`,
           '',
+          attributesJson,
+          'City of Chicago Data Portal'
+        ]);
+      });
+    } else if (key === 'chicago_traffic_crashes_all' && Array.isArray(value)) {
+      value.forEach((crash: any) => {
+        const crashId = crash.crash_record_id || crash.CRASH_RECORD_ID || 'Unknown';
+        const crashDate = crash.crash_date || crash.CRASH_DATE || '';
+        const crashType = crash.crash_type || crash.CRASH_TYPE || '';
+        const firstCrashType = crash.first_crash_type || crash.FIRST_CRASH_TYPE || '';
+        const primCause = crash.prim_contributory_cause || crash.PRIM_CONTRIBUTORY_CAUSE || '';
+        const secCause = crash.sec_contributory_cause || crash.SEC_CONTRIBUTORY_CAUSE || '';
+        const streetName = crash.street_name || crash.STREET_NAME || '';
+        const streetNo = crash.street_no || crash.STREET_NO || '';
+        const streetDir = crash.street_direction || crash.STREET_DIRECTION || '';
+        const injuriesTotal = crash.injuries_total !== null && crash.injuries_total !== undefined ? crash.injuries_total : 0;
+        const injuriesFatal = crash.injuries_fatal !== null && crash.injuries_fatal !== undefined ? crash.injuries_fatal : 0;
+        const injuriesIncap = crash.injuries_incapacitating !== null && crash.injuries_incapacitating !== undefined ? crash.injuries_incapacitating : 0;
+        const mostSevereInjury = crash.most_severe_injury || crash.MOST_SEVERE_INJURY || '';
+        const damage = crash.damage || crash.DAMAGE || '';
+        const distance = crash.distance_miles !== null && crash.distance_miles !== undefined ? crash.distance_miles.toFixed(2) : '';
+        const lat = crash.latitude || crash.geometry?.y || '';
+        const lon = crash.longitude || crash.geometry?.x || '';
+        
+        // Build address
+        let address = '';
+        if (streetNo) address += streetNo;
+        if (streetDir) address += ` ${streetDir}`;
+        if (streetName) address += ` ${streetName}`;
+        
+        const allAttributes = { ...crash };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Chicago',
+          (location.confidence || 'N/A').toString(),
+          'CHICAGO_TRAFFIC_CRASH',
+          `${crashId}${crashType ? ` - ${crashType}` : ''}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          crashType || 'Traffic Crash',
+          address.trim() || crashId,
+          '', // Owner
+          '', // Phone
           attributesJson,
           'City of Chicago Data Portal'
         ]);

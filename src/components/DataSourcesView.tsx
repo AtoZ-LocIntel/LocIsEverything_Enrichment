@@ -1137,11 +1137,27 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         },
         {
           name: "Chicago 311 Service Requests",
-          description: "311 service requests from the City of Chicago Data Portal - proximity queries up to 25 miles, color-coded by request type",
+          description: "311 service requests from the City of Chicago Data Portal - proximity queries up to 1 mile, color-coded by request type",
           coverage: "City of Chicago, Illinois",
           accuracy: "Very High",
           cost: "Free",
           url: "https://data.cityofchicago.org/api/v3/views/v6vf-nfxy"
+        },
+        {
+          name: "Chicago Building Centroids",
+          description: "Building centroids from the City of Chicago Data Portal - proximity queries from 0.25 to 1 mile",
+          coverage: "City of Chicago, Illinois",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://data.cityofchicago.org/api/v3/views/syp8-uezg"
+        },
+        {
+          name: "Chicago Traffic Crashes",
+          description: "Traffic crashes from the City of Chicago Data Portal - proximity queries from 0.25 to 1 mile with optional year filtering",
+          coverage: "City of Chicago, Illinois",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://data.cityofchicago.org/api/v3/views/85ca-t3if"
         },
         {
           name: "LA County Administrative Boundaries",

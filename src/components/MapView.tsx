@@ -227,6 +227,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_transportation': { icon: '🚌', color: '#f59e0b', title: 'LA County Transportation' },
   'la_county_fire_hydrants': { icon: '🚒', color: '#ef4444', title: 'LA County Fire Hydrants' },
   'chicago_311': { icon: '📞', color: '#3b82f6', title: 'Chicago 311 Service Requests' },
+  'chicago_traffic_crashes': { icon: '🚗', color: '#dc2626', title: 'Chicago Traffic Crashes' },
   'la_county_historic_cultural_monuments': { icon: '🏛️', color: '#a855f7', title: 'LA County Historic Cultural Monuments' },
   'la_county_housing_lead_risk': { icon: '🏠', color: '#dc2626', title: 'LA County Housing with Potential Lead Risk' },
   'la_county_school_district_boundaries': { icon: '🏫', color: '#3b82f6', title: 'LA County School District Boundaries' },
@@ -593,6 +594,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_transportation_all' || // Skip LA County Transportation array (handled separately for map drawing)
     key === 'la_county_fire_hydrants_all' || // Skip LA County Fire Hydrants array (handled separately for map drawing)
     key === 'chicago_311_all' || // Skip Chicago 311 array (handled separately for map drawing)
+    key === 'chicago_building_footprints_all' || // Skip Chicago Building Footprints array (handled separately for map drawing)
+    key === 'chicago_traffic_crashes_all' || // Skip Chicago Traffic Crashes array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -11167,6 +11170,213 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Chicago 311:', error);
+      }
+
+      // Draw Chicago Traffic Crashes as point markers
+      try {
+        if (enrichments.chicago_traffic_crashes_all && Array.isArray(enrichments.chicago_traffic_crashes_all)) {
+          let chicagoTrafficCrashesCount = 0;
+          
+          enrichments.chicago_traffic_crashes_all.forEach((crash: any) => {
+            try {
+              const lat = crash.latitude || crash.geometry?.y || null;
+              const lon = crash.longitude || crash.geometry?.x || null;
+              
+              if (lat !== null && lon !== null) {
+                // Create marker with crash icon
+                const marker = L.marker([lat, lon], {
+                  icon: L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `<div style="background-color: #dc2626; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">🚗</div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                  })
+                });
+                
+                // Build popup content
+                const crashId = crash.crash_record_id || crash.CRASH_RECORD_ID || 'Unknown';
+                const crashDate = crash.crash_date || crash.CRASH_DATE || '';
+                const crashType = crash.crash_type || crash.CRASH_TYPE || '';
+                const firstCrashType = crash.first_crash_type || crash.FIRST_CRASH_TYPE || '';
+                const primCause = crash.prim_contributory_cause || crash.PRIM_CONTRIBUTORY_CAUSE || '';
+                const streetName = crash.street_name || crash.STREET_NAME || '';
+                const streetNo = crash.street_no || crash.STREET_NO || '';
+                const streetDir = crash.street_direction || crash.STREET_DIRECTION || '';
+                const injuriesTotal = crash.injuries_total !== null && crash.injuries_total !== undefined ? crash.injuries_total : 0;
+                const mostSevereInjury = crash.most_severe_injury || crash.MOST_SEVERE_INJURY || '';
+                const distance = crash.distance_miles !== null && crash.distance_miles !== undefined ? crash.distance_miles.toFixed(2) : '';
+                
+                // Build address
+                let address = '';
+                if (streetNo) address += streetNo;
+                if (streetDir) address += ` ${streetDir}`;
+                if (streetName) address += ` ${streetName}`;
+                
+                let popupContent = `
+                  <div style="max-width: 300px;">
+                    <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px; color: #1f2937;">
+                      🚗 Traffic Crash
+                    </div>
+                    <div style="font-size: 12px; color: #4b5563;">
+                      ${crashId ? `<div><strong>Crash ID:</strong> ${crashId}</div>` : ''}
+                      ${crashDate ? `<div><strong>Date:</strong> ${new Date(crashDate).toLocaleString()}</div>` : ''}
+                      ${address ? `<div><strong>Location:</strong> ${address.trim()}</div>` : ''}
+                      ${crashType ? `<div><strong>Crash Type:</strong> ${crashType}</div>` : ''}
+                      ${firstCrashType ? `<div><strong>First Crash Type:</strong> ${firstCrashType}</div>` : ''}
+                      ${primCause ? `<div><strong>Primary Cause:</strong> ${primCause}</div>` : ''}
+                      ${injuriesTotal > 0 ? `<div><strong>Injuries:</strong> ${injuriesTotal}</div>` : ''}
+                      ${mostSevereInjury ? `<div><strong>Most Severe Injury:</strong> ${mostSevereInjury}</div>` : ''}
+                      ${distance ? `<div><strong>Distance:</strong> ${distance} miles</div>` : ''}
+                `;
+                
+                // Add all crash attributes (excluding internal fields)
+                const excludeFields = ['geometry', 'distance_miles', 'latitude', 'longitude', 'location', 'crash_record_id', 'CRASH_RECORD_ID', 'crash_date', 'CRASH_DATE', 'crash_type', 'CRASH_TYPE', 'first_crash_type', 'FIRST_CRASH_TYPE', 'prim_contributory_cause', 'PRIM_CONTRIBUTORY_CAUSE', 'street_name', 'STREET_NAME', 'street_no', 'STREET_NO', 'street_direction', 'STREET_DIRECTION', 'injuries_total', 'INJURIES_TOTAL', 'most_severe_injury', 'MOST_SEVERE_INJURY'];
+                Object.entries(crash).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                chicagoTrafficCrashesCount++;
+              }
+            } catch (error) {
+              console.error('Error drawing Chicago Traffic Crash marker:', error);
+            }
+          });
+          
+          if (chicagoTrafficCrashesCount > 0) {
+            if (!legendAccumulator['chicago_traffic_crashes']) {
+              legendAccumulator['chicago_traffic_crashes'] = {
+                icon: '🚗',
+                color: '#dc2626',
+                title: 'Chicago Traffic Crashes',
+                count: 0,
+              };
+            }
+            legendAccumulator['chicago_traffic_crashes'].count += chicagoTrafficCrashesCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Chicago Traffic Crashes:', error);
+      }
+
+      // Draw Chicago Building Centroids as point markers
+      try {
+        if (enrichments.chicago_building_footprints_all && Array.isArray(enrichments.chicago_building_footprints_all)) {
+          let chicagoBuildingFootprintsCount = 0;
+          
+          enrichments.chicago_building_footprints_all.forEach((footprint: any) => {
+            try {
+              // Use centroid coordinates (latitude/longitude) from the adapter
+              const lat = footprint.latitude;
+              const lon = footprint.longitude;
+              
+              if (lat && lon && !isNaN(lat) && !isNaN(lon)) {
+                // Create marker with building icon
+                const marker = L.marker([lat, lon], {
+                  icon: L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `<div style="background-color: #8b5cf6; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">🏢</div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                  })
+                });
+                
+                // Build popup content
+                const bldgId = footprint.bldg_id || footprint.BLDG_ID || 'Unknown';
+                const bldgName1 = footprint.bldg_name1 || footprint.BLDG_NAME1 || '';
+                const bldgName2 = footprint.bldg_name2 || footprint.BLDG_NAME2 || '';
+                const bldgName = bldgName1 || bldgName2 || '';
+                const unitName = footprint.unit_name || footprint.UNIT_NAME || '';
+                const fAdd1 = footprint.f_add1 || footprint.F_ADD1 || '';
+                const tAdd1 = footprint.t_add1 || footprint.T_ADD1 || '';
+                const preDir1 = footprint.pre_dir1 || footprint.PRE_DIR1 || '';
+                const stName1 = footprint.st_name1 || footprint.ST_NAME1 || '';
+                const stType1 = footprint.st_type1 || footprint.ST_TYPE1 || '';
+                const sufDir1 = footprint.suf_dir1 || footprint.SUF_DIR1 || '';
+                const yearBuilt = footprint.year_built || footprint.YEAR_BUILT || '';
+                const stories = footprint.stories || footprint.STORIES || footprint.no_stories || footprint.NO_STORIES || '';
+                const distance = footprint.distance_miles !== null && footprint.distance_miles !== undefined ? footprint.distance_miles.toFixed(2) : '';
+                
+                // Build address from components
+                let address = '';
+                if (fAdd1 || tAdd1) {
+                  address = `${fAdd1}${tAdd1 ? `-${tAdd1}` : ''}`;
+                }
+                if (preDir1 || stName1 || stType1 || sufDir1) {
+                  address += ` ${preDir1 || ''} ${stName1 || ''} ${stType1 || ''} ${sufDir1 || ''}`.trim();
+                }
+                if (unitName) {
+                  address += ` ${unitName}`;
+                }
+                
+                let popupContent = `
+                  <div style="max-width: 300px;">
+                    <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px; color: #1f2937;">
+                      🏢 Building Centroid
+                    </div>
+                    <div style="font-size: 12px; color: #4b5563;">
+                      ${bldgName ? `<div><strong>Name:</strong> ${bldgName}</div>` : ''}
+                      ${bldgId ? `<div><strong>Building ID:</strong> ${bldgId}</div>` : ''}
+                      ${address ? `<div><strong>Address:</strong> ${address.trim()}</div>` : ''}
+                      ${yearBuilt ? `<div><strong>Year Built:</strong> ${yearBuilt}</div>` : ''}
+                      ${stories ? `<div><strong>Stories:</strong> ${stories}</div>` : ''}
+                      ${distance ? `<div><strong>Distance:</strong> ${distance} miles</div>` : ''}
+                `;
+                
+                // Add all footprint attributes (excluding internal fields)
+                const excludeFields = ['the_geom', 'geometry', 'distance_miles', 'latitude', 'longitude', 'location', 'bldg_id', 'BLDG_ID', 'bldg_name1', 'BLDG_NAME1', 'bldg_name2', 'BLDG_NAME2', 'unit_name', 'UNIT_NAME', 'f_add1', 'F_ADD1', 't_add1', 'T_ADD1', 'pre_dir1', 'PRE_DIR1', 'st_name1', 'ST_NAME1', 'st_type1', 'ST_TYPE1', 'suf_dir1', 'SUF_DIR1', 'year_built', 'YEAR_BUILT', 'stories', 'STORIES', 'no_stories', 'NO_STORIES'];
+                Object.entries(footprint).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                chicagoBuildingFootprintsCount++;
+              }
+            } catch (error) {
+              console.error('Error drawing Chicago Building Centroid:', error);
+            }
+          });
+          
+          if (chicagoBuildingFootprintsCount > 0) {
+            if (!legendAccumulator['chicago_building_footprints']) {
+              legendAccumulator['chicago_building_footprints'] = {
+                icon: '🏢',
+                color: '#8b5cf6',
+                title: 'Chicago Building Centroids',
+                count: 0,
+              };
+            }
+            legendAccumulator['chicago_building_footprints'].count += chicagoBuildingFootprintsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Chicago Building Centroids:', error);
       }
 
       // Draw LA County Historic Cultural Monuments as polygons on the map
