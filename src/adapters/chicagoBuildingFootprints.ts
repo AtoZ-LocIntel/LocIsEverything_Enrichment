@@ -367,10 +367,8 @@ export async function getChicagoBuildingFootprintsData(
             featureLon = featureX;
             distance = calculateDistance(lat, lon, featureLat, featureLon);
           } else {
-            // Can't determine coordinates - use null values
-            featureLat = null;
-            featureLon = null;
-            distance = null;
+            // Can't determine coordinates - skip this feature
+            return null;
           }
         }
         
@@ -378,12 +376,12 @@ export async function getChicagoBuildingFootprintsData(
         const { the_geom, ...featureWithoutGeom } = feature;
         return {
           ...featureWithoutGeom,
-          latitude: featureLat,
-          longitude: featureLon,
-          distance_miles: distance
+          latitude: featureLat!,
+          longitude: featureLon!,
+          distance_miles: distance!
         };
       })
-      .filter(feature => feature.latitude !== null && feature.longitude !== null && feature.distance_miles !== null)
+      .filter((feature): feature is NonNullable<typeof feature> => feature !== null)
       .sort((a, b) => (a.distance_miles || 0) - (b.distance_miles || 0));
     
     console.log(`✅ Chicago Building Footprints: Filtered to ${filteredFeatures.length} features within ${radiusMiles} miles`);

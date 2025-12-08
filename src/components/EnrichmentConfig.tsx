@@ -866,6 +866,31 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        if (section.id === 'ny') {
+          // NY sub-categories
+          // Get NYC enrichments (when added, they will start with 'nyc_')
+          const nycEnrichments = sectionEnrichments.filter(e => e.id.startsWith('nyc_'));
+          
+          const nySubCategories: EnrichmentCategory[] = [
+            {
+              id: 'nyc',
+              title: 'NYC',
+              icon: <img src="/assets/NYC.webp" alt="NYC" className="w-full h-full object-cover rounded-full" />,
+              description: 'NYC data layers',
+              enrichments: nycEnrichments
+            }
+          ];
+          
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [], // NY parent category has no direct enrichments
+            subCategories: nySubCategories
+          };
+        }
+        
         return {
           id: section.id,
           title: section.title,
@@ -2782,7 +2807,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
                               const isChicago311 = enrichment.id === 'chicago_311';
                               const isChicagoBuildingFootprints = enrichment.id === 'chicago_building_footprints';
-                              const isChicagoTrafficCrashes = enrichment.id === 'chicago_traffic_crashes';
                               const radiusOptions = isNHParcels || isNJParcels
                                 ? [0.25, 0.50, 0.75, 1.0]
                                 : isMAParcels
