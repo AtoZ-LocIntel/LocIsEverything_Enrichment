@@ -5891,7 +5891,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       value.forEach((route: any) => {
         const routeName = route.name || route.NAME || route.Name || route.ROUTE_NAME || route.route_name || 'Unknown Route';
         const routeType = route.routeType || route.ROUTE_TYPE || route.route_type || route.TYPE || route.type || '';
-        const status = route.status || route.STATUS || route.Status || '';
         const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
 
         const allAttributes = { ...route };
@@ -5938,7 +5937,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       value.forEach((neighborhood: any) => {
         const ntaName = neighborhood.ntaName || neighborhood.NTAName || neighborhood.NTA_NAME || neighborhood.nta_name || neighborhood.Name || neighborhood.name || 'Unknown Neighborhood';
         const ntaCode = neighborhood.ntaCode || neighborhood.NTACode || neighborhood.NTA_CODE || neighborhood.nta_code || '';
-        const borough = neighborhood.borough || neighborhood.Borough || neighborhood.BOROUGH || '';
         const distance = neighborhood.distance_miles !== null && neighborhood.distance_miles !== undefined ? neighborhood.distance_miles.toFixed(2) : (neighborhood.isContaining ? '0.00' : '');
 
         const allAttributes = { ...neighborhood };
@@ -6029,7 +6027,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     } else if (key === 'nyc_waterfront_hpb_launch_site_all' && Array.isArray(value)) {
       value.forEach((site: any) => {
         const name = site.name || site.NAME || site.Name || site.SITE_NAME || site.site_name || 'Unknown Launch Site';
-        const type = site.type || site.TYPE || site.Type || '';
         const distance = site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : '';
         const lat = site.geometry?.y || '';
         const lon = site.geometry?.x || '';
@@ -6074,7 +6071,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     } else if (key === 'nyc_waterfront_parks_all' && Array.isArray(value)) {
       value.forEach((park: any) => {
         const name = park.name || park.NAME || park.Name || park.PARK_NAME || park.park_name || 'Unknown Park';
-        const type = park.type || park.TYPE || park.Type || '';
         const distance = park.distance_miles !== null && park.distance_miles !== undefined ? park.distance_miles.toFixed(2) : (park.isContaining ? '0.00' : '');
 
         const allAttributes = { ...park };
@@ -6117,7 +6113,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     } else if (key === 'nyc_waterfront_paws_all' && Array.isArray(value)) {
       value.forEach((paws: any) => {
         const name = paws.name || paws.NAME || paws.Name || paws.SITE_NAME || paws.site_name || 'Unknown PAWS';
-        const type = paws.type || paws.TYPE || paws.Type || '';
         const distance = paws.distance_miles !== null && paws.distance_miles !== undefined ? paws.distance_miles.toFixed(2) : (paws.isContaining ? '0.00' : '');
 
         const allAttributes = { ...paws };

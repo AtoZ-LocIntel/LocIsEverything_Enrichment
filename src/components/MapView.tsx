@@ -16386,17 +16386,6 @@ const MapView: React.FC<MapViewProps> = ({
     return inside;
   };
 
-  // Helper function to get minimum distance to polyline
-  const getMinDistanceToPolyline = (point: L.LatLng, polyline: L.LatLng[]): number => {
-    let minDistance = Infinity;
-    for (let i = 0; i < polyline.length - 1; i++) {
-      const p1 = polyline[i];
-      const p2 = polyline[i + 1];
-      const distance = point.distanceTo(p1);
-      if (distance < minDistance) minDistance = distance;
-    }
-    return minDistance;
-  };
 
   // Helper function to extract layer type from popup content
   const extractLayerTypeFromPopup = (popupContent: string): string | null => {
