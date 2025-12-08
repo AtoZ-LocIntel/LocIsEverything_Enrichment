@@ -380,7 +380,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('la_county_admin_boundaries_') && key.endsWith('_all')) || // Skip LA County Elevation arrays (handled separately)
         (key.startsWith('la_county_elevation_') && key.endsWith('_all')) || // Skip LA County Elevation raster flags (handled separately)
         (key.startsWith('la_county_elevation_') && key.endsWith('_enabled')) || // Skip LA County Demographics arrays (handled separately)
-        (key.startsWith('la_county_demographics_') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
+        (key.startsWith('la_county_demographics_') && key.endsWith('_all')) || // Skip LA County LMS arrays (handled separately)
+        (key.startsWith('la_county_lms_') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -5711,6 +5712,68 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'LA County StreetsLA'
+        ]);
+      });
+    }
+    
+    // LA County LMS Data - Generic handler for all 193 layers
+    if (key.startsWith('la_county_lms_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
+      value.forEach((lmsFeature: any) => {
+        const lmsId = lmsFeature.lmsId || lmsFeature.OBJECTID || lmsFeature.objectid || lmsFeature.ID || lmsFeature.id || lmsFeature.NAME || lmsFeature.Name || lmsFeature.name || 'Unknown';
+        const distance = lmsFeature.distance_miles !== null && lmsFeature.distance_miles !== undefined ? lmsFeature.distance_miles.toFixed(2) : (lmsFeature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates based on geometry type
+        let lat = '';
+        let lon = '';
+        if (lmsFeature.geometry) {
+          if (lmsFeature.geometry.x && lmsFeature.geometry.y) {
+            // Point geometry
+            lat = lmsFeature.geometry.y.toString();
+            lon = lmsFeature.geometry.x.toString();
+          } else if (lmsFeature.geometry.rings && lmsFeature.geometry.rings.length > 0) {
+            // Polygon geometry - use first coordinate
+            const firstCoord = lmsFeature.geometry.rings[0][0];
+            lat = firstCoord[1].toString();
+            lon = firstCoord[0].toString();
+          } else if (lmsFeature.geometry.paths && lmsFeature.geometry.paths.length > 0) {
+            // Polyline geometry - use first coordinate
+            const firstCoord = lmsFeature.geometry.paths[0][0];
+            lat = firstCoord[1].toString();
+            lon = firstCoord[0].toString();
+          }
+        }
+        
+        const allAttributes = { ...lmsFeature };
+        delete allAttributes.lmsId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.ID;
+        delete allAttributes.id;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.name;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County LMS Data',
+          (location.confidence || 'N/A').toString(),
+          layerName,
+          lmsId,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          lmsFeature.isContaining ? 'Within Feature' : `Nearby Feature (${distance} miles)`,
+          attributesJson,
+          '',
+          '',
+          'LA County LMS Data 2014'
         ]);
       });
     }

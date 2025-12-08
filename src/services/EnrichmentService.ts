@@ -93,6 +93,7 @@ import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructur
 import { getLACountyAdministrativeBoundariesData } from '../adapters/laCountyAdministrativeBoundaries';
 import { getLACountyElevationData } from '../adapters/laCountyElevation';
 import { getLACountyDemographicsData } from '../adapters/laCountyDemographics';
+import { getLACountyLMSData } from '../adapters/laCountyLMSData';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2091,6 +2092,394 @@ export class EnrichmentService {
       // LA County Street Inventory - Proximity query only (max 5 miles)
       case 'la_county_street_inventory':
         return await this.getLACountyStreetInventory(lat, lon, radius);
+      
+      // LA County LMS Data - All layers
+      case 'la_county_lms_arts_recreation':
+        return await this.getLACountyLMS(0, lat, lon, radius);
+      case 'la_county_lms_beaches_marinas':
+        return await this.getLACountyLMS(1, lat, lon, radius);
+      case 'la_county_lms_campgrounds':
+        return await this.getLACountyLMS(2, lat, lon, radius);
+      case 'la_county_lms_cruise_line_terminals':
+        return await this.getLACountyLMS(3, lat, lon, radius);
+      case 'la_county_lms_cultural_performing_arts':
+        return await this.getLACountyLMS(4, lat, lon, radius);
+      case 'la_county_lms_golf_courses':
+        return await this.getLACountyLMS(5, lat, lon, radius);
+      case 'la_county_lms_museums_aquariums':
+        return await this.getLACountyLMS(6, lat, lon, radius);
+      case 'la_county_lms_natural_areas_wildlife':
+        return await this.getLACountyLMS(7, lat, lon, radius);
+      case 'la_county_lms_parks_gardens':
+        return await this.getLACountyLMS(8, lat, lon, radius);
+      case 'la_county_lms_picnic_areas':
+        return await this.getLACountyLMS(9, lat, lon, radius);
+      case 'la_county_lms_pools':
+        return await this.getLACountyLMS(10, lat, lon, radius);
+      case 'la_county_lms_ranches':
+        return await this.getLACountyLMS(11, lat, lon, radius);
+      case 'la_county_lms_recreation_centers':
+        return await this.getLACountyLMS(12, lat, lon, radius);
+      case 'la_county_lms_recreation_clubs':
+        return await this.getLACountyLMS(13, lat, lon, radius);
+      case 'la_county_lms_recreation_programs':
+        return await this.getLACountyLMS(14, lat, lon, radius);
+      case 'la_county_lms_ski_areas':
+        return await this.getLACountyLMS(15, lat, lon, radius);
+      case 'la_county_lms_sports_venues':
+        return await this.getLACountyLMS(16, lat, lon, radius);
+      case 'la_county_lms_tourist_assistance':
+        return await this.getLACountyLMS(17, lat, lon, radius);
+      case 'la_county_lms_trails':
+        return await this.getLACountyLMS(18, lat, lon, radius);
+      case 'la_county_lms_wineries':
+        return await this.getLACountyLMS(19, lat, lon, radius);
+      case 'la_county_lms_communications':
+        return await this.getLACountyLMS(20, lat, lon, radius);
+      case 'la_county_lms_am_antennas':
+        return await this.getLACountyLMS(21, lat, lon, radius);
+      case 'la_county_lms_antenna_structure_registration':
+        return await this.getLACountyLMS(22, lat, lon, radius);
+      case 'la_county_lms_brs_ebs_transmitters':
+        return await this.getLACountyLMS(23, lat, lon, radius);
+      case 'la_county_lms_cellular_towers':
+        return await this.getLACountyLMS(24, lat, lon, radius);
+      case 'la_county_lms_digital_tv':
+        return await this.getLACountyLMS(25, lat, lon, radius);
+      case 'la_county_lms_fm_antennas':
+        return await this.getLACountyLMS(26, lat, lon, radius);
+      case 'la_county_lms_internet_exchange_points':
+        return await this.getLACountyLMS(27, lat, lon, radius);
+      case 'la_county_lms_internet_service_providers':
+        return await this.getLACountyLMS(28, lat, lon, radius);
+      case 'la_county_lms_it_portal_locations':
+        return await this.getLACountyLMS(29, lat, lon, radius);
+      case 'la_county_lms_land_mobile_broadcast':
+        return await this.getLACountyLMS(30, lat, lon, radius);
+      case 'la_county_lms_land_mobile_commercial_towers':
+        return await this.getLACountyLMS(31, lat, lon, radius);
+      case 'la_county_lms_land_mobile_private':
+        return await this.getLACountyLMS(32, lat, lon, radius);
+      case 'la_county_lms_microwave_towers':
+        return await this.getLACountyLMS(33, lat, lon, radius);
+      case 'la_county_lms_ntsc_tv':
+        return await this.getLACountyLMS(34, lat, lon, radius);
+      case 'la_county_lms_paging_towers':
+        return await this.getLACountyLMS(35, lat, lon, radius);
+      case 'la_county_lms_towers':
+        return await this.getLACountyLMS(36, lat, lon, radius);
+      case 'la_county_lms_community_groups':
+        return await this.getLACountyLMS(37, lat, lon, radius);
+      case 'la_county_lms_churches':
+        return await this.getLACountyLMS(38, lat, lon, radius);
+      case 'la_county_lms_community_organizations':
+        return await this.getLACountyLMS(39, lat, lon, radius);
+      case 'la_county_lms_farmers_markets':
+        return await this.getLACountyLMS(40, lat, lon, radius);
+      case 'la_county_lms_red_cross_offices':
+        return await this.getLACountyLMS(41, lat, lon, radius);
+      case 'la_county_lms_volunteer_opportunities':
+        return await this.getLACountyLMS(42, lat, lon, radius);
+      case 'la_county_lms_education':
+        return await this.getLACountyLMS(43, lat, lon, radius);
+      case 'la_county_lms_adult_education':
+        return await this.getLACountyLMS(44, lat, lon, radius);
+      case 'la_county_lms_colleges_universities':
+        return await this.getLACountyLMS(45, lat, lon, radius);
+      case 'la_county_lms_early_childhood_education':
+        return await this.getLACountyLMS(46, lat, lon, radius);
+      case 'la_county_lms_guidance_tutoring':
+        return await this.getLACountyLMS(47, lat, lon, radius);
+      case 'la_county_lms_private_charter_schools':
+        return await this.getLACountyLMS(48, lat, lon, radius);
+      case 'la_county_lms_public_elementary_schools':
+        return await this.getLACountyLMS(49, lat, lon, radius);
+      case 'la_county_lms_public_high_schools':
+        return await this.getLACountyLMS(50, lat, lon, radius);
+      case 'la_county_lms_public_middle_school':
+        return await this.getLACountyLMS(51, lat, lon, radius);
+      case 'la_county_lms_school_districts':
+        return await this.getLACountyLMS(52, lat, lon, radius);
+      case 'la_county_lms_special_curriculum_schools':
+        return await this.getLACountyLMS(53, lat, lon, radius);
+      case 'la_county_lms_emergency_response':
+        return await this.getLACountyLMS(54, lat, lon, radius);
+      case 'la_county_lms_cooling_centers':
+        return await this.getLACountyLMS(55, lat, lon, radius);
+      case 'la_county_lms_emergency_disaster_offices':
+        return await this.getLACountyLMS(56, lat, lon, radius);
+      case 'la_county_lms_environment':
+        return await this.getLACountyLMS(57, lat, lon, radius);
+      case 'la_county_lms_conservation_programs':
+        return await this.getLACountyLMS(58, lat, lon, radius);
+      case 'la_county_lms_epa_facility_registration':
+        return await this.getLACountyLMS(59, lat, lon, radius);
+      case 'la_county_lms_epa_superfund_sites':
+        return await this.getLACountyLMS(60, lat, lon, radius);
+      case 'la_county_lms_hazardous_waste_disposal':
+        return await this.getLACountyLMS(61, lat, lon, radius);
+      case 'la_county_lms_historic_earthquakes':
+        return await this.getLACountyLMS(62, lat, lon, radius);
+      case 'la_county_lms_recycling':
+        return await this.getLACountyLMS(63, lat, lon, radius);
+      case 'la_county_lms_tsunami_tide_gauges':
+        return await this.getLACountyLMS(64, lat, lon, radius);
+      case 'la_county_lms_government':
+        return await this.getLACountyLMS(65, lat, lon, radius);
+      case 'la_county_lms_chambers_of_commerce':
+        return await this.getLACountyLMS(66, lat, lon, radius);
+      case 'la_county_lms_city_halls':
+        return await this.getLACountyLMS(67, lat, lon, radius);
+      case 'la_county_lms_consulate_offices':
+        return await this.getLACountyLMS(68, lat, lon, radius);
+      case 'la_county_lms_county_offices':
+        return await this.getLACountyLMS(69, lat, lon, radius);
+      case 'la_county_lms_government_offices':
+        return await this.getLACountyLMS(70, lat, lon, radius);
+      case 'la_county_lms_passports':
+        return await this.getLACountyLMS(71, lat, lon, radius);
+      case 'la_county_lms_representative_offices':
+        return await this.getLACountyLMS(72, lat, lon, radius);
+      case 'la_county_lms_social_security_administration':
+        return await this.getLACountyLMS(73, lat, lon, radius);
+      case 'la_county_lms_health_mental_health':
+        return await this.getLACountyLMS(74, lat, lon, radius);
+      case 'la_county_lms_dental_care':
+        return await this.getLACountyLMS(75, lat, lon, radius);
+      case 'la_county_lms_dhs_health_clinics':
+        return await this.getLACountyLMS(76, lat, lon, radius);
+      case 'la_county_lms_health_centers':
+        return await this.getLACountyLMS(77, lat, lon, radius);
+      case 'la_county_lms_health_clinics':
+        return await this.getLACountyLMS(78, lat, lon, radius);
+      case 'la_county_lms_health_education_counseling':
+        return await this.getLACountyLMS(79, lat, lon, radius);
+      case 'la_county_lms_health_screening_testing':
+        return await this.getLACountyLMS(80, lat, lon, radius);
+      case 'la_county_lms_hospitals_medical_centers':
+        return await this.getLACountyLMS(81, lat, lon, radius);
+      case 'la_county_lms_immunization':
+        return await this.getLACountyLMS(82, lat, lon, radius);
+      case 'la_county_lms_medicare_medicaid_offices':
+        return await this.getLACountyLMS(83, lat, lon, radius);
+      case 'la_county_lms_mental_health_centers':
+        return await this.getLACountyLMS(84, lat, lon, radius);
+      case 'la_county_lms_mental_health_counseling':
+        return await this.getLACountyLMS(85, lat, lon, radius);
+      case 'la_county_lms_mental_health_programs':
+        return await this.getLACountyLMS(86, lat, lon, radius);
+      case 'la_county_lms_public_health_programs':
+        return await this.getLACountyLMS(87, lat, lon, radius);
+      case 'la_county_lms_safe_havens':
+        return await this.getLACountyLMS(88, lat, lon, radius);
+      case 'la_county_lms_substance_abuse_programs':
+        return await this.getLACountyLMS(89, lat, lon, radius);
+      case 'la_county_lms_municipal_services':
+        return await this.getLACountyLMS(90, lat, lon, radius);
+      case 'la_county_lms_animals_pets':
+        return await this.getLACountyLMS(91, lat, lon, radius);
+      case 'la_county_lms_building_inspections':
+        return await this.getLACountyLMS(92, lat, lon, radius);
+      case 'la_county_lms_cemeteries':
+        return await this.getLACountyLMS(93, lat, lon, radius);
+      case 'la_county_lms_community_services':
+        return await this.getLACountyLMS(94, lat, lon, radius);
+      case 'la_county_lms_consumer_services':
+        return await this.getLACountyLMS(95, lat, lon, radius);
+      case 'la_county_lms_economic_development':
+        return await this.getLACountyLMS(96, lat, lon, radius);
+      case 'la_county_lms_elections':
+        return await this.getLACountyLMS(97, lat, lon, radius);
+      case 'la_county_lms_environmental_programs':
+        return await this.getLACountyLMS(98, lat, lon, radius);
+      case 'la_county_lms_health_housing_inspections':
+        return await this.getLACountyLMS(99, lat, lon, radius);
+      case 'la_county_lms_libraries':
+        return await this.getLACountyLMS(100, lat, lon, radius);
+      case 'la_county_lms_licenses_permits':
+        return await this.getLACountyLMS(101, lat, lon, radius);
+      case 'la_county_lms_planning_zoning':
+        return await this.getLACountyLMS(102, lat, lon, radius);
+      case 'la_county_lms_property_tax':
+        return await this.getLACountyLMS(103, lat, lon, radius);
+      case 'la_county_lms_public_internet_access':
+        return await this.getLACountyLMS(104, lat, lon, radius);
+      case 'la_county_lms_public_records':
+        return await this.getLACountyLMS(105, lat, lon, radius);
+      case 'la_county_lms_rubbish_disposal':
+        return await this.getLACountyLMS(106, lat, lon, radius);
+      case 'la_county_lms_street_maintenance':
+        return await this.getLACountyLMS(107, lat, lon, radius);
+      case 'la_county_lms_utilities':
+        return await this.getLACountyLMS(108, lat, lon, radius);
+      case 'la_county_lms_physical_features':
+        return await this.getLACountyLMS(109, lat, lon, radius);
+      case 'la_county_lms_electrical_substations':
+        return await this.getLACountyLMS(110, lat, lon, radius);
+      case 'la_county_lms_named_locations':
+        return await this.getLACountyLMS(111, lat, lon, radius);
+      case 'la_county_lms_power_plants':
+        return await this.getLACountyLMS(112, lat, lon, radius);
+      case 'la_county_lms_water':
+        return await this.getLACountyLMS(113, lat, lon, radius);
+      case 'la_county_lms_postal':
+        return await this.getLACountyLMS(114, lat, lon, radius);
+      case 'la_county_lms_dhl_locations':
+        return await this.getLACountyLMS(115, lat, lon, radius);
+      case 'la_county_lms_federal_express_locations':
+        return await this.getLACountyLMS(116, lat, lon, radius);
+      case 'la_county_lms_post_offices':
+        return await this.getLACountyLMS(117, lat, lon, radius);
+      case 'la_county_lms_private_non_retail_shipping':
+        return await this.getLACountyLMS(118, lat, lon, radius);
+      case 'la_county_lms_ups_locations':
+        return await this.getLACountyLMS(119, lat, lon, radius);
+      case 'la_county_lms_usps_mail_collection_boxes':
+        return await this.getLACountyLMS(120, lat, lon, radius);
+      case 'la_county_lms_private_industry':
+        return await this.getLACountyLMS(121, lat, lon, radius);
+      case 'la_county_lms_agriculture_food':
+        return await this.getLACountyLMS(122, lat, lon, radius);
+      case 'la_county_lms_banking_finance':
+        return await this.getLACountyLMS(123, lat, lon, radius);
+      case 'la_county_lms_business_centers':
+        return await this.getLACountyLMS(124, lat, lon, radius);
+      case 'la_county_lms_corporate_headquarters':
+        return await this.getLACountyLMS(125, lat, lon, radius);
+      case 'la_county_lms_manufacturing':
+        return await this.getLACountyLMS(126, lat, lon, radius);
+      case 'la_county_lms_mines':
+        return await this.getLACountyLMS(127, lat, lon, radius);
+      case 'la_county_lms_oilfields':
+        return await this.getLACountyLMS(128, lat, lon, radius);
+      case 'la_county_lms_shopping_centers':
+        return await this.getLACountyLMS(129, lat, lon, radius);
+      case 'la_county_lms_tv_movie_studios':
+        return await this.getLACountyLMS(130, lat, lon, radius);
+      case 'la_county_lms_public_safety':
+        return await this.getLACountyLMS(131, lat, lon, radius);
+      case 'la_county_lms_courthouses':
+        return await this.getLACountyLMS(132, lat, lon, radius);
+      case 'la_county_lms_crime_prevention_support':
+        return await this.getLACountyLMS(133, lat, lon, radius);
+      case 'la_county_lms_crime_reporting_investigation':
+        return await this.getLACountyLMS(134, lat, lon, radius);
+      case 'la_county_lms_district_attorney':
+        return await this.getLACountyLMS(135, lat, lon, radius);
+      case 'la_county_lms_fingerprinting':
+        return await this.getLACountyLMS(136, lat, lon, radius);
+      case 'la_county_lms_fire_stations':
+        return await this.getLACountyLMS(137, lat, lon, radius);
+      case 'la_county_lms_jails_prisons':
+        return await this.getLACountyLMS(138, lat, lon, radius);
+      case 'la_county_lms_legal_services_counseling':
+        return await this.getLACountyLMS(139, lat, lon, radius);
+      case 'la_county_lms_lifeguard_towers':
+        return await this.getLACountyLMS(140, lat, lon, radius);
+      case 'la_county_lms_parole_offender_assistance':
+        return await this.getLACountyLMS(141, lat, lon, radius);
+      case 'la_county_lms_probation_camps_juvenile_halls':
+        return await this.getLACountyLMS(142, lat, lon, radius);
+      case 'la_county_lms_probation_offices':
+        return await this.getLACountyLMS(143, lat, lon, radius);
+      case 'la_county_lms_public_defender':
+        return await this.getLACountyLMS(144, lat, lon, radius);
+      case 'la_county_lms_self_help_legal_centers':
+        return await this.getLACountyLMS(145, lat, lon, radius);
+      case 'la_county_lms_sheriff_police_stations':
+        return await this.getLACountyLMS(146, lat, lon, radius);
+      case 'la_county_lms_social_services':
+        return await this.getLACountyLMS(147, lat, lon, radius);
+      case 'la_county_lms_adoption':
+        return await this.getLACountyLMS(148, lat, lon, radius);
+      case 'la_county_lms_child_care':
+        return await this.getLACountyLMS(149, lat, lon, radius);
+      case 'la_county_lms_child_support_services':
+        return await this.getLACountyLMS(150, lat, lon, radius);
+      case 'la_county_lms_children_family_services':
+        return await this.getLACountyLMS(151, lat, lon, radius);
+      case 'la_county_lms_clothing':
+        return await this.getLACountyLMS(152, lat, lon, radius);
+      case 'la_county_lms_disability_support_services':
+        return await this.getLACountyLMS(153, lat, lon, radius);
+      case 'la_county_lms_domestic_violence_services':
+        return await this.getLACountyLMS(154, lat, lon, radius);
+      case 'la_county_lms_donation_services':
+        return await this.getLACountyLMS(155, lat, lon, radius);
+      case 'la_county_lms_food_assistance':
+        return await this.getLACountyLMS(156, lat, lon, radius);
+      case 'la_county_lms_forms_assistance':
+        return await this.getLACountyLMS(157, lat, lon, radius);
+      case 'la_county_lms_homeless_shelters_services':
+        return await this.getLACountyLMS(158, lat, lon, radius);
+      case 'la_county_lms_housing_assistance_information':
+        return await this.getLACountyLMS(159, lat, lon, radius);
+      case 'la_county_lms_immigration':
+        return await this.getLACountyLMS(160, lat, lon, radius);
+      case 'la_county_lms_job_training':
+        return await this.getLACountyLMS(161, lat, lon, radius);
+      case 'la_county_lms_neg_program_worksource_centers':
+        return await this.getLACountyLMS(162, lat, lon, radius);
+      case 'la_county_lms_payment_assistance':
+        return await this.getLACountyLMS(163, lat, lon, radius);
+      case 'la_county_lms_public_housing':
+        return await this.getLACountyLMS(164, lat, lon, radius);
+      case 'la_county_lms_public_information_services':
+        return await this.getLACountyLMS(165, lat, lon, radius);
+      case 'la_county_lms_senior_services':
+        return await this.getLACountyLMS(166, lat, lon, radius);
+      case 'la_county_lms_support_groups':
+        return await this.getLACountyLMS(167, lat, lon, radius);
+      case 'la_county_lms_thrift_shops':
+        return await this.getLACountyLMS(168, lat, lon, radius);
+      case 'la_county_lms_transportation_assistance':
+        return await this.getLACountyLMS(169, lat, lon, radius);
+      case 'la_county_lms_unemployment_insurance_offices':
+        return await this.getLACountyLMS(170, lat, lon, radius);
+      case 'la_county_lms_veterans_services':
+        return await this.getLACountyLMS(171, lat, lon, radius);
+      case 'la_county_lms_welfare_offices_programs':
+        return await this.getLACountyLMS(172, lat, lon, radius);
+      case 'la_county_lms_transportation':
+        return await this.getLACountyLMS(173, lat, lon, radius);
+      case 'la_county_lms_airports':
+        return await this.getLACountyLMS(174, lat, lon, radius);
+      case 'la_county_lms_alternative_fuel':
+        return await this.getLACountyLMS(175, lat, lon, radius);
+      case 'la_county_lms_amtrak_stations':
+        return await this.getLACountyLMS(176, lat, lon, radius);
+      case 'la_county_lms_anchorages':
+        return await this.getLACountyLMS(177, lat, lon, radius);
+      case 'la_county_lms_automatic_traffic_counters':
+        return await this.getLACountyLMS(178, lat, lon, radius);
+      case 'la_county_lms_breakwaters':
+        return await this.getLACountyLMS(179, lat, lon, radius);
+      case 'la_county_lms_bridges':
+        return await this.getLACountyLMS(180, lat, lon, radius);
+      case 'la_county_lms_ferries':
+        return await this.getLACountyLMS(181, lat, lon, radius);
+      case 'la_county_lms_freeway_exits':
+        return await this.getLACountyLMS(182, lat, lon, radius);
+      case 'la_county_lms_heliports':
+        return await this.getLACountyLMS(183, lat, lon, radius);
+      case 'la_county_lms_intermodal_terminal_facilities':
+        return await this.getLACountyLMS(184, lat, lon, radius);
+      case 'la_county_lms_metro_stations':
+        return await this.getLACountyLMS(185, lat, lon, radius);
+      case 'la_county_lms_metrolink_stations':
+        return await this.getLACountyLMS(186, lat, lon, radius);
+      case 'la_county_lms_park_and_ride_locations':
+        return await this.getLACountyLMS(187, lat, lon, radius);
+      case 'la_county_lms_transit_systems':
+        return await this.getLACountyLMS(188, lat, lon, radius);
+      case 'la_county_lms_tunnels':
+        return await this.getLACountyLMS(189, lat, lon, radius);
+      case 'la_county_lms_county_fueling_stations':
+        return await this.getLACountyLMS(190, lat, lon, radius);
+      case 'la_county_lms_county_electric_charging_stations':
+        return await this.getLACountyLMS(191, lat, lon, radius);
+      case 'la_county_lms_warming_centers':
+        return await this.getLACountyLMS(192, lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -9801,6 +10190,653 @@ out center;`;
         [`la_county_${key}_containing_message`]: 'Error querying demographics',
         [`la_county_${key}_count`]: 0,
         [`la_county_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getLACountyLMS(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      // Map layer IDs to enrichment keys
+      const layerKeyMap: Record<number, string> = {
+        0: 'lms_arts_recreation',
+        1: 'lms_beaches_marinas',
+        2: 'lms_campgrounds',
+        3: 'lms_cruise_line_terminals',
+        4: 'lms_cultural_performing_arts',
+        5: 'lms_golf_courses',
+        6: 'lms_museums_aquariums',
+        7: 'lms_natural_areas_wildlife',
+        8: 'lms_parks_gardens',
+        9: 'lms_picnic_areas',
+        10: 'lms_pools',
+        11: 'lms_ranches',
+        12: 'lms_recreation_centers',
+        13: 'lms_recreation_clubs',
+        14: 'lms_recreation_programs',
+        15: 'lms_ski_areas',
+        16: 'lms_sports_venues',
+        17: 'lms_tourist_assistance',
+        18: 'lms_trails',
+        19: 'lms_wineries',
+        20: 'lms_communications',
+        21: 'lms_am_antennas',
+        22: 'lms_antenna_structure_registration',
+        23: 'lms_brs_ebs_transmitters',
+        24: 'lms_cellular_towers',
+        25: 'lms_digital_tv',
+        26: 'lms_fm_antennas',
+        27: 'lms_internet_exchange_points',
+        28: 'lms_internet_service_providers',
+        29: 'lms_it_portal_locations',
+        30: 'lms_land_mobile_broadcast',
+        31: 'lms_land_mobile_commercial_towers',
+        32: 'lms_land_mobile_private',
+        33: 'lms_microwave_towers',
+        34: 'lms_ntsc_tv',
+        35: 'lms_paging_towers',
+        36: 'lms_towers',
+        37: 'lms_community_groups',
+        38: 'lms_churches',
+        39: 'lms_community_organizations',
+        40: 'lms_farmers_markets',
+        41: 'lms_red_cross_offices',
+        42: 'lms_volunteer_opportunities',
+        43: 'lms_education',
+        44: 'lms_adult_education',
+        45: 'lms_colleges_universities',
+        46: 'lms_early_childhood_education',
+        47: 'lms_guidance_tutoring',
+        48: 'lms_private_charter_schools',
+        49: 'lms_public_elementary_schools',
+        50: 'lms_public_high_schools',
+        51: 'lms_public_middle_school',
+        52: 'lms_school_districts',
+        53: 'lms_special_curriculum_schools',
+        54: 'lms_emergency_response',
+        55: 'lms_cooling_centers',
+        56: 'lms_emergency_disaster_offices',
+        57: 'lms_environment',
+        58: 'lms_conservation_programs',
+        59: 'lms_epa_facility_registration',
+        60: 'lms_epa_superfund_sites',
+        61: 'lms_hazardous_waste_disposal',
+        62: 'lms_historic_earthquakes',
+        63: 'lms_recycling',
+        64: 'lms_tsunami_tide_gauges',
+        65: 'lms_government',
+        66: 'lms_chambers_of_commerce',
+        67: 'lms_city_halls',
+        68: 'lms_consulate_offices',
+        69: 'lms_county_offices',
+        70: 'lms_government_offices',
+        71: 'lms_passports',
+        72: 'lms_representative_offices',
+        73: 'lms_social_security_administration',
+        74: 'lms_health_mental_health',
+        75: 'lms_dental_care',
+        76: 'lms_dhs_health_clinics',
+        77: 'lms_health_centers',
+        78: 'lms_health_clinics',
+        79: 'lms_health_education_counseling',
+        80: 'lms_health_screening_testing',
+        81: 'lms_hospitals_medical_centers',
+        82: 'lms_immunization',
+        83: 'lms_medicare_medicaid_offices',
+        84: 'lms_mental_health_centers',
+        85: 'lms_mental_health_counseling',
+        86: 'lms_mental_health_programs',
+        87: 'lms_public_health_programs',
+        88: 'lms_safe_havens',
+        89: 'lms_substance_abuse_programs',
+        90: 'lms_municipal_services',
+        91: 'lms_animals_pets',
+        92: 'lms_building_inspections',
+        93: 'lms_cemeteries',
+        94: 'lms_community_services',
+        95: 'lms_consumer_services',
+        96: 'lms_economic_development',
+        97: 'lms_elections',
+        98: 'lms_environmental_programs',
+        99: 'lms_health_housing_inspections',
+        100: 'lms_libraries',
+        101: 'lms_licenses_permits',
+        102: 'lms_planning_zoning',
+        103: 'lms_property_tax',
+        104: 'lms_public_internet_access',
+        105: 'lms_public_records',
+        106: 'lms_rubbish_disposal',
+        107: 'lms_street_maintenance',
+        108: 'lms_utilities',
+        109: 'lms_physical_features',
+        110: 'lms_electrical_substations',
+        111: 'lms_named_locations',
+        112: 'lms_power_plants',
+        113: 'lms_water',
+        114: 'lms_postal',
+        115: 'lms_dhl_locations',
+        116: 'lms_federal_express_locations',
+        117: 'lms_post_offices',
+        118: 'lms_private_non_retail_shipping',
+        119: 'lms_ups_locations',
+        120: 'lms_usps_mail_collection_boxes',
+        121: 'lms_private_industry',
+        122: 'lms_agriculture_food',
+        123: 'lms_banking_finance',
+        124: 'lms_business_centers',
+        125: 'lms_corporate_headquarters',
+        126: 'lms_manufacturing',
+        127: 'lms_mines',
+        128: 'lms_oilfields',
+        129: 'lms_shopping_centers',
+        130: 'lms_tv_movie_studios',
+        131: 'lms_public_safety',
+        132: 'lms_courthouses',
+        133: 'lms_crime_prevention_support',
+        134: 'lms_crime_reporting_investigation',
+        135: 'lms_district_attorney',
+        136: 'lms_fingerprinting',
+        137: 'lms_fire_stations',
+        138: 'lms_jails_prisons',
+        139: 'lms_legal_services_counseling',
+        140: 'lms_lifeguard_towers',
+        141: 'lms_parole_offender_assistance',
+        142: 'lms_probation_camps_juvenile_halls',
+        143: 'lms_probation_offices',
+        144: 'lms_public_defender',
+        145: 'lms_self_help_legal_centers',
+        146: 'lms_sheriff_police_stations',
+        147: 'lms_social_services',
+        148: 'lms_adoption',
+        149: 'lms_child_care',
+        150: 'lms_child_support_services',
+        151: 'lms_children_family_services',
+        152: 'lms_clothing',
+        153: 'lms_disability_support_services',
+        154: 'lms_domestic_violence_services',
+        155: 'lms_donation_services',
+        156: 'lms_food_assistance',
+        157: 'lms_forms_assistance',
+        158: 'lms_homeless_shelters_services',
+        159: 'lms_housing_assistance_information',
+        160: 'lms_immigration',
+        161: 'lms_job_training',
+        162: 'lms_neg_program_worksource_centers',
+        163: 'lms_payment_assistance',
+        164: 'lms_public_housing',
+        165: 'lms_public_information_services',
+        166: 'lms_senior_services',
+        167: 'lms_support_groups',
+        168: 'lms_thrift_shops',
+        169: 'lms_transportation_assistance',
+        170: 'lms_unemployment_insurance_offices',
+        171: 'lms_veterans_services',
+        172: 'lms_welfare_offices_programs',
+        173: 'lms_transportation',
+        174: 'lms_airports',
+        175: 'lms_alternative_fuel',
+        176: 'lms_amtrak_stations',
+        177: 'lms_anchorages',
+        178: 'lms_automatic_traffic_counters',
+        179: 'lms_breakwaters',
+        180: 'lms_bridges',
+        181: 'lms_ferries',
+        182: 'lms_freeway_exits',
+        183: 'lms_heliports',
+        184: 'lms_intermodal_terminal_facilities',
+        185: 'lms_metro_stations',
+        186: 'lms_metrolink_stations',
+        187: 'lms_park_and_ride_locations',
+        188: 'lms_transit_systems',
+        189: 'lms_tunnels',
+        190: 'lms_county_fueling_stations',
+        191: 'lms_county_electric_charging_stations',
+        192: 'lms_warming_centers'
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'Arts and Recreation',
+        1: 'Beaches and Marinas',
+        2: 'Campgrounds',
+        3: 'Cruise Line Terminals',
+        4: 'Cultural and Performing Arts Centers',
+        5: 'Golf Courses',
+        6: 'Museums and Aquariums',
+        7: 'Natural Areas and Wildlife Sanctuaries',
+        8: 'Parks and Gardens',
+        9: 'Picnic Areas',
+        10: 'Pools',
+        11: 'Ranches',
+        12: 'Recreation Centers',
+        13: 'Recreation Clubs',
+        14: 'Recreation Programs',
+        15: 'Ski Areas',
+        16: 'Sports Venues',
+        17: 'Tourist Assistance',
+        18: 'Trails',
+        19: 'Wineries',
+        20: 'Communications',
+        21: 'AM Antennas',
+        22: 'Antenna Structure Registration',
+        23: 'BRS and EBS Transmitters',
+        24: 'Cellular Towers',
+        25: 'Digital TV',
+        26: 'FM Antennas',
+        27: 'Internet Exchange Points',
+        28: 'Internet Service Providers',
+        29: 'IT Portal Locations',
+        30: 'Land Mobile Broadcast',
+        31: 'Land Mobile Commercial Towers',
+        32: 'Land Mobile Private',
+        33: 'Microwave Towers',
+        34: 'NTSC TV',
+        35: 'Paging Towers',
+        36: 'Towers',
+        37: 'Community Groups',
+        38: 'Churches',
+        39: 'Community Organizations',
+        40: 'Farmers Markets',
+        41: 'Red Cross Offices',
+        42: 'Volunteer Opportunities',
+        43: 'Education',
+        44: 'Adult Education',
+        45: 'Colleges and Universities',
+        46: 'Early Childhood Education and Head Start',
+        47: 'Guidance and Tutoring Programs',
+        48: 'Private and Charter Schools',
+        49: 'Public Elementary Schools',
+        50: 'Public High Schools',
+        51: 'Public Middle School',
+        52: 'School Districts',
+        53: 'Special Curriculum Schools and Programs',
+        54: 'Emergency Response',
+        55: 'Cooling Centers',
+        56: 'Emergency and Disaster Offices',
+        57: 'Environment',
+        58: 'Conservation Programs',
+        59: 'EPA Facility Registration System',
+        60: 'EPA Superfund Sites',
+        61: 'Hazardous Waste Disposal',
+        62: 'Historic Earthquakes',
+        63: 'Recycling',
+        64: 'Tsunami Tide Gauges',
+        65: 'Government',
+        66: 'Chambers of Commerce',
+        67: 'City Halls',
+        68: 'Consulate Offices',
+        69: 'County Offices',
+        70: 'Government Offices',
+        71: 'Passports',
+        72: 'Representative Offices',
+        73: 'Social Security Administration',
+        74: 'Health and Mental Health',
+        75: 'Dental Care',
+        76: 'DHS Health Clinics',
+        77: 'Health Centers',
+        78: 'Health Clinics',
+        79: 'Health Education and Counseling',
+        80: 'Health Screening and Testing',
+        81: 'Hospitals and Medical Centers',
+        82: 'Immunization',
+        83: 'Medicare and Medicaid Offices',
+        84: 'Mental Health Centers',
+        85: 'Mental Health Counseling',
+        86: 'Mental Health Programs',
+        87: 'Public Health Programs',
+        88: 'Safe Havens',
+        89: 'Substance Abuse Programs',
+        90: 'Municipal Services',
+        91: 'Animals and Pets',
+        92: 'Building Inspections',
+        93: 'Cemeteries',
+        94: 'Community Services',
+        95: 'Consumer Services',
+        96: 'Economic Development',
+        97: 'Elections',
+        98: 'Environmental Programs',
+        99: 'Health and Housing Inspections',
+        100: 'Libraries',
+        101: 'Licenses and Permits',
+        102: 'Planning and Zoning',
+        103: 'Property and Tax',
+        104: 'Public Internet Access',
+        105: 'Public Records',
+        106: 'Rubbish Disposal',
+        107: 'Street Maintenance',
+        108: 'Utilities',
+        109: 'Physical Features',
+        110: 'Electrical Sub-Stations',
+        111: 'Named Locations',
+        112: 'Power Plants',
+        113: 'Water',
+        114: 'Postal',
+        115: 'DHL Locations',
+        116: 'Federal Express Locations',
+        117: 'Post Offices',
+        118: 'Private Non Retail Shipping Locations',
+        119: 'UPS Locations',
+        120: 'USPS Mail Collection Boxes',
+        121: 'Private Industry',
+        122: 'Agriculture and Food',
+        123: 'Banking and Finance',
+        124: 'Business Centers',
+        125: 'Corporate Headquarters',
+        126: 'Manufacturing',
+        127: 'Mines',
+        128: 'Oilfields',
+        129: 'Shopping Centers',
+        130: 'TV and Movie Studios',
+        131: 'Public Safety',
+        132: 'Courthouses',
+        133: 'Crime Prevention and Support',
+        134: 'Crime Reporting and Investigation',
+        135: 'District Attorney',
+        136: 'Fingerprinting',
+        137: 'Fire Stations',
+        138: 'Jails and Prisons',
+        139: 'Legal Services and Counseling',
+        140: 'Lifeguard Towers',
+        141: 'Parole and Offender Assistance',
+        142: 'Probation Camps and Juvenile Halls',
+        143: 'Probation Offices',
+        144: 'Public Defender',
+        145: 'Self-Help Legal Centers',
+        146: 'Sheriff and Police Stations',
+        147: 'Social Services',
+        148: 'Adoption',
+        149: 'Child Care',
+        150: 'Child Support Services',
+        151: 'Children and Family Services',
+        152: 'Clothing',
+        153: 'Disability Support Services',
+        154: 'Domestic Violence Services',
+        155: 'Donation Services',
+        156: 'Food Assistance',
+        157: 'Forms Assistance',
+        158: 'Homeless Shelters and Services',
+        159: 'Housing Assistance and Information',
+        160: 'Immigration',
+        161: 'Job Training',
+        162: 'NEG Program WorkSource Centers',
+        163: 'Payment Assistance',
+        164: 'Public Housing',
+        165: 'Public Information Services',
+        166: 'Senior Services',
+        167: 'Support Groups',
+        168: 'Thrift Shops',
+        169: 'Transportation Assistance',
+        170: 'Unemployment Insurance Offices',
+        171: 'Veterans Services',
+        172: 'Welfare Offices and Programs',
+        173: 'Transportation',
+        174: 'Airports',
+        175: 'Alternative Fuel',
+        176: 'Amtrak Stations',
+        177: 'Anchorages',
+        178: 'Automatic Traffic Counters',
+        179: 'Breakwaters',
+        180: 'Bridges',
+        181: 'Ferries',
+        182: 'Freeway Exits',
+        183: 'Heliports',
+        184: 'Intermodal Terminal Facilities',
+        185: 'Metro Stations',
+        186: 'Metrolink Stations',
+        187: 'Park and Ride Locations',
+        188: 'Transit Systems',
+        189: 'Tunnels',
+        190: 'County Fueling Stations',
+        191: 'County Electric Charging Stations',
+        192: 'Warming Centers'
+      };
+      
+      const key = layerKeyMap[layerId] || `lms_${layerId}`;
+      const layerName = layerNames[layerId] || `LMS Layer ${layerId}`;
+      
+      console.log(`🗺️ Fetching LA County LMS Data ${layerName} for [${lat}, ${lon}]`);
+      
+      const lmsFeatures = await getLACountyLMSData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (lmsFeatures.length > 0) {
+        const containingFeature = lmsFeatures.find(d => d.isContaining);
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`la_county_${key}_containing`] = containingFeature.lmsId || 'Unknown';
+          result[`la_county_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.lmsId || 'Unknown'}`;
+        } else {
+          result[`la_county_${key}_containing`] = null;
+          result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`la_county_${key}_count`] = lmsFeatures.length;
+        result[`la_county_${key}_all`] = lmsFeatures.map(feature => ({
+          ...feature.attributes,
+          lmsId: feature.lmsId,
+          geometry: feature.geometry,
+          isContaining: feature.isContaining,
+          distance_miles: feature.distance_miles
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${lmsFeatures.length} ${layerName.toLowerCase()} feature(s)${containingFeature ? ' containing the point' : ' within proximity'}.`;
+      } else {
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+        result[`la_county_${key}_containing`] = null;
+        result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found`;
+        result[`la_county_${key}_summary`] = `No ${layerName.toLowerCase()} found within the search radius.`;
+      }
+      
+      console.log(`✅ LA County LMS Data ${layerName} processed:`, {
+        totalCount: result[`la_county_${key}_count`],
+        containing: result[`la_county_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County LMS Data Layer ${layerId}:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'lms_arts_recreation',
+        1: 'lms_beaches_marinas',
+        2: 'lms_campgrounds',
+        3: 'lms_cruise_line_terminals',
+        4: 'lms_cultural_performing_arts',
+        5: 'lms_golf_courses',
+        6: 'lms_museums_aquariums',
+        7: 'lms_natural_areas_wildlife',
+        8: 'lms_parks_gardens',
+        9: 'lms_picnic_areas',
+        10: 'lms_pools',
+        11: 'lms_ranches',
+        12: 'lms_recreation_centers',
+        13: 'lms_recreation_clubs',
+        14: 'lms_recreation_programs',
+        15: 'lms_ski_areas',
+        16: 'lms_sports_venues',
+        17: 'lms_tourist_assistance',
+        18: 'lms_trails',
+        19: 'lms_wineries',
+        20: 'lms_communications',
+        21: 'lms_am_antennas',
+        22: 'lms_antenna_structure_registration',
+        23: 'lms_brs_ebs_transmitters',
+        24: 'lms_cellular_towers',
+        25: 'lms_digital_tv',
+        26: 'lms_fm_antennas',
+        27: 'lms_internet_exchange_points',
+        28: 'lms_internet_service_providers',
+        29: 'lms_it_portal_locations',
+        30: 'lms_land_mobile_broadcast',
+        31: 'lms_land_mobile_commercial_towers',
+        32: 'lms_land_mobile_private',
+        33: 'lms_microwave_towers',
+        34: 'lms_ntsc_tv',
+        35: 'lms_paging_towers',
+        36: 'lms_towers',
+        37: 'lms_community_groups',
+        38: 'lms_churches',
+        39: 'lms_community_organizations',
+        40: 'lms_farmers_markets',
+        41: 'lms_red_cross_offices',
+        42: 'lms_volunteer_opportunities',
+        43: 'lms_education',
+        44: 'lms_adult_education',
+        45: 'lms_colleges_universities',
+        46: 'lms_early_childhood_education',
+        47: 'lms_guidance_tutoring',
+        48: 'lms_private_charter_schools',
+        49: 'lms_public_elementary_schools',
+        50: 'lms_public_high_schools',
+        51: 'lms_public_middle_school',
+        52: 'lms_school_districts',
+        53: 'lms_special_curriculum_schools',
+        54: 'lms_emergency_response',
+        55: 'lms_cooling_centers',
+        56: 'lms_emergency_disaster_offices',
+        57: 'lms_environment',
+        58: 'lms_conservation_programs',
+        59: 'lms_epa_facility_registration',
+        60: 'lms_epa_superfund_sites',
+        61: 'lms_hazardous_waste_disposal',
+        62: 'lms_historic_earthquakes',
+        63: 'lms_recycling',
+        64: 'lms_tsunami_tide_gauges',
+        65: 'lms_government',
+        66: 'lms_chambers_of_commerce',
+        67: 'lms_city_halls',
+        68: 'lms_consulate_offices',
+        69: 'lms_county_offices',
+        70: 'lms_government_offices',
+        71: 'lms_passports',
+        72: 'lms_representative_offices',
+        73: 'lms_social_security_administration',
+        74: 'lms_health_mental_health',
+        75: 'lms_dental_care',
+        76: 'lms_dhs_health_clinics',
+        77: 'lms_health_centers',
+        78: 'lms_health_clinics',
+        79: 'lms_health_education_counseling',
+        80: 'lms_health_screening_testing',
+        81: 'lms_hospitals_medical_centers',
+        82: 'lms_immunization',
+        83: 'lms_medicare_medicaid_offices',
+        84: 'lms_mental_health_centers',
+        85: 'lms_mental_health_counseling',
+        86: 'lms_mental_health_programs',
+        87: 'lms_public_health_programs',
+        88: 'lms_safe_havens',
+        89: 'lms_substance_abuse_programs',
+        90: 'lms_municipal_services',
+        91: 'lms_animals_pets',
+        92: 'lms_building_inspections',
+        93: 'lms_cemeteries',
+        94: 'lms_community_services',
+        95: 'lms_consumer_services',
+        96: 'lms_economic_development',
+        97: 'lms_elections',
+        98: 'lms_environmental_programs',
+        99: 'lms_health_housing_inspections',
+        100: 'lms_libraries',
+        101: 'lms_licenses_permits',
+        102: 'lms_planning_zoning',
+        103: 'lms_property_tax',
+        104: 'lms_public_internet_access',
+        105: 'lms_public_records',
+        106: 'lms_rubbish_disposal',
+        107: 'lms_street_maintenance',
+        108: 'lms_utilities',
+        109: 'lms_physical_features',
+        110: 'lms_electrical_substations',
+        111: 'lms_named_locations',
+        112: 'lms_power_plants',
+        113: 'lms_water',
+        114: 'lms_postal',
+        115: 'lms_dhl_locations',
+        116: 'lms_federal_express_locations',
+        117: 'lms_post_offices',
+        118: 'lms_private_non_retail_shipping',
+        119: 'lms_ups_locations',
+        120: 'lms_usps_mail_collection_boxes',
+        121: 'lms_private_industry',
+        122: 'lms_agriculture_food',
+        123: 'lms_banking_finance',
+        124: 'lms_business_centers',
+        125: 'lms_corporate_headquarters',
+        126: 'lms_manufacturing',
+        127: 'lms_mines',
+        128: 'lms_oilfields',
+        129: 'lms_shopping_centers',
+        130: 'lms_tv_movie_studios',
+        131: 'lms_public_safety',
+        132: 'lms_courthouses',
+        133: 'lms_crime_prevention_support',
+        134: 'lms_crime_reporting_investigation',
+        135: 'lms_district_attorney',
+        136: 'lms_fingerprinting',
+        137: 'lms_fire_stations',
+        138: 'lms_jails_prisons',
+        139: 'lms_legal_services_counseling',
+        140: 'lms_lifeguard_towers',
+        141: 'lms_parole_offender_assistance',
+        142: 'lms_probation_camps_juvenile_halls',
+        143: 'lms_probation_offices',
+        144: 'lms_public_defender',
+        145: 'lms_self_help_legal_centers',
+        146: 'lms_sheriff_police_stations',
+        147: 'lms_social_services',
+        148: 'lms_adoption',
+        149: 'lms_child_care',
+        150: 'lms_child_support_services',
+        151: 'lms_children_family_services',
+        152: 'lms_clothing',
+        153: 'lms_disability_support_services',
+        154: 'lms_domestic_violence_services',
+        155: 'lms_donation_services',
+        156: 'lms_food_assistance',
+        157: 'lms_forms_assistance',
+        158: 'lms_homeless_shelters_services',
+        159: 'lms_housing_assistance_information',
+        160: 'lms_immigration',
+        161: 'lms_job_training',
+        162: 'lms_neg_program_worksource_centers',
+        163: 'lms_payment_assistance',
+        164: 'lms_public_housing',
+        165: 'lms_public_information_services',
+        166: 'lms_senior_services',
+        167: 'lms_support_groups',
+        168: 'lms_thrift_shops',
+        169: 'lms_transportation_assistance',
+        170: 'lms_unemployment_insurance_offices',
+        171: 'lms_veterans_services',
+        172: 'lms_welfare_offices_programs',
+        173: 'lms_transportation',
+        174: 'lms_airports',
+        175: 'lms_alternative_fuel',
+        176: 'lms_amtrak_stations',
+        177: 'lms_anchorages',
+        178: 'lms_automatic_traffic_counters',
+        179: 'lms_breakwaters',
+        180: 'lms_bridges',
+        181: 'lms_ferries',
+        182: 'lms_freeway_exits',
+        183: 'lms_heliports',
+        184: 'lms_intermodal_terminal_facilities',
+        185: 'lms_metro_stations',
+        186: 'lms_metrolink_stations',
+        187: 'lms_park_and_ride_locations',
+        188: 'lms_transit_systems',
+        189: 'lms_tunnels',
+        190: 'lms_county_fueling_stations',
+        191: 'lms_county_electric_charging_stations',
+        192: 'lms_warming_centers'
+      };
+      const key = layerKeyMap[layerId] || `lms_${layerId}`;
+      return {
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: [],
+        [`la_county_${key}_containing`]: null,
+        [`la_county_${key}_containing_message`]: `No data found`,
+        [`la_county_${key}_summary`]: `No data found`
       };
     }
   }

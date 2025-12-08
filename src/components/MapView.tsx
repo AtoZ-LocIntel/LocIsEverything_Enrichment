@@ -12821,6 +12821,409 @@ const MapView: React.FC<MapViewProps> = ({
         }
       });
 
+      // Draw LA County LMS Data layers
+      // Create a comprehensive list of all LMS layers with their metadata
+      const laCountyLMSLayers = Array.from({ length: 193 }, (_, i) => {
+        const layerNames: Record<number, { key: string; icon: string; color: string; title: string }> = {
+          0: { key: 'la_county_lms_arts_recreation_all', icon: '🎨', color: '#ef4444', title: 'LA County LMS Data Arts and Recreation' },
+          1: { key: 'la_county_lms_beaches_marinas_all', icon: '🏖️', color: '#f59e0b', title: 'LA County LMS Data Beaches and Marinas' },
+          2: { key: 'la_county_lms_campgrounds_all', icon: '⛺', color: '#10b981', title: 'LA County LMS Data Campgrounds' },
+          3: { key: 'la_county_lms_cruise_line_terminals_all', icon: '🚢', color: '#3b82f6', title: 'LA County LMS Data Cruise Line Terminals' },
+          4: { key: 'la_county_lms_cultural_performing_arts_all', icon: '🎭', color: '#8b5cf6', title: 'LA County LMS Data Cultural and Performing Arts Centers' },
+          5: { key: 'la_county_lms_golf_courses_all', icon: '⛳', color: '#06b6d4', title: 'LA County LMS Data Golf Courses' },
+          6: { key: 'la_county_lms_museums_aquariums_all', icon: '🏛️', color: '#6366f1', title: 'LA County LMS Data Museums and Aquariums' },
+          7: { key: 'la_county_lms_natural_areas_wildlife_all', icon: '🌿', color: '#14b8a6', title: 'LA County LMS Data Natural Areas and Wildlife Sanctuaries' },
+          8: { key: 'la_county_lms_parks_gardens_all', icon: '🌳', color: '#22c55e', title: 'LA County LMS Data Parks and Gardens' },
+          9: { key: 'la_county_lms_picnic_areas_all', icon: '🧺', color: '#84cc16', title: 'LA County LMS Data Picnic Areas' },
+          10: { key: 'la_county_lms_pools_all', icon: '🏊', color: '#65a30d', title: 'LA County LMS Data Pools' },
+          11: { key: 'la_county_lms_ranches_all', icon: '🐴', color: '#a3e635', title: 'LA County LMS Data Ranches' },
+          12: { key: 'la_county_lms_recreation_centers_all', icon: '🏃', color: '#4ade80', title: 'LA County LMS Data Recreation Centers' },
+          13: { key: 'la_county_lms_recreation_clubs_all', icon: '🎪', color: '#34d399', title: 'LA County LMS Data Recreation Clubs' },
+          14: { key: 'la_county_lms_recreation_programs_all', icon: '🎯', color: '#2dd4bf', title: 'LA County LMS Data Recreation Programs' },
+          15: { key: 'la_county_lms_ski_areas_all', icon: '⛷️', color: '#06b6d4', title: 'LA County LMS Data Ski Areas' },
+          16: { key: 'la_county_lms_sports_venues_all', icon: '🏟️', color: '#0ea5e9', title: 'LA County LMS Data Sports Venues' },
+          17: { key: 'la_county_lms_tourist_assistance_all', icon: '🗺️', color: '#3b82f6', title: 'LA County LMS Data Tourist Assistance' },
+          18: { key: 'la_county_lms_trails_all', icon: '🥾', color: '#2563eb', title: 'LA County LMS Data Trails' },
+          19: { key: 'la_county_lms_wineries_all', icon: '🍷', color: '#1d4ed8', title: 'LA County LMS Data Wineries' },
+          20: { key: 'la_county_lms_communications_all', icon: '📡', color: '#7c3aed', title: 'LA County LMS Data Communications' },
+          21: { key: 'la_county_lms_am_antennas_all', icon: '📻', color: '#6d28d9', title: 'LA County LMS Data AM Antennas' },
+          22: { key: 'la_county_lms_antenna_structure_registration_all', icon: '📡', color: '#5b21b6', title: 'LA County LMS Data Antenna Structure Registration' },
+          23: { key: 'la_county_lms_brs_ebs_transmitters_all', icon: '📺', color: '#4c1d95', title: 'LA County LMS Data BRS and EBS Transmitters' },
+          24: { key: 'la_county_lms_cellular_towers_all', icon: '📱', color: '#3b0764', title: 'LA County LMS Data Cellular Towers' },
+          25: { key: 'la_county_lms_digital_tv_all', icon: '📺', color: '#2e1065', title: 'LA County LMS Data Digital TV' },
+          26: { key: 'la_county_lms_fm_antennas_all', icon: '📻', color: '#1e1b4b', title: 'LA County LMS Data FM Antennas' },
+          27: { key: 'la_county_lms_internet_exchange_points_all', icon: '🌐', color: '#9333ea', title: 'LA County LMS Data Internet Exchange Points' },
+          28: { key: 'la_county_lms_internet_service_providers_all', icon: '💻', color: '#a855f7', title: 'LA County LMS Data Internet Service Providers' },
+          29: { key: 'la_county_lms_it_portal_locations_all', icon: '🖥️', color: '#c084fc', title: 'LA County LMS Data IT Portal Locations' },
+          30: { key: 'la_county_lms_land_mobile_broadcast_all', icon: '📡', color: '#d946ef', title: 'LA County LMS Data Land Mobile Broadcast' },
+          31: { key: 'la_county_lms_land_mobile_commercial_towers_all', icon: '📡', color: '#e879f9', title: 'LA County LMS Data Land Mobile Commercial Towers' },
+          32: { key: 'la_county_lms_land_mobile_private_all', icon: '📡', color: '#f0abfc', title: 'LA County LMS Data Land Mobile Private' },
+          33: { key: 'la_county_lms_microwave_towers_all', icon: '📡', color: '#f472b6', title: 'LA County LMS Data Microwave Towers' },
+          34: { key: 'la_county_lms_ntsc_tv_all', icon: '📺', color: '#fb7185', title: 'LA County LMS Data NTSC TV' },
+          35: { key: 'la_county_lms_paging_towers_all', icon: '📡', color: '#fda4af', title: 'LA County LMS Data Paging Towers' },
+          36: { key: 'la_county_lms_towers_all', icon: '📡', color: '#fecdd3', title: 'LA County LMS Data Towers' },
+          37: { key: 'la_county_lms_community_groups_all', icon: '👥', color: '#ec4899', title: 'LA County LMS Data Community Groups' },
+          38: { key: 'la_county_lms_churches_all', icon: '⛪', color: '#db2777', title: 'LA County LMS Data Churches' },
+          39: { key: 'la_county_lms_community_organizations_all', icon: '🤝', color: '#be185d', title: 'LA County LMS Data Community Organizations' },
+          40: { key: 'la_county_lms_farmers_markets_all', icon: '🥬', color: '#9f1239', title: 'LA County LMS Data Farmers Markets' },
+          41: { key: 'la_county_lms_red_cross_offices_all', icon: '➕', color: '#831843', title: 'LA County LMS Data Red Cross Offices' },
+          42: { key: 'la_county_lms_volunteer_opportunities_all', icon: '🙋', color: '#701a75', title: 'LA County LMS Data Volunteer Opportunities' },
+          43: { key: 'la_county_lms_education_all', icon: '📚', color: '#dc2626', title: 'LA County LMS Data Education' },
+          44: { key: 'la_county_lms_adult_education_all', icon: '👨‍🎓', color: '#b91c1c', title: 'LA County LMS Data Adult Education' },
+          45: { key: 'la_county_lms_colleges_universities_all', icon: '🏫', color: '#991b1b', title: 'LA County LMS Data Colleges and Universities' },
+          46: { key: 'la_county_lms_early_childhood_education_all', icon: '🧒', color: '#7f1d1d', title: 'LA County LMS Data Early Childhood Education and Head Start' },
+          47: { key: 'la_county_lms_guidance_tutoring_all', icon: '📖', color: '#450a0a', title: 'LA County LMS Data Guidance and Tutoring Programs' },
+          48: { key: 'la_county_lms_private_charter_schools_all', icon: '🏫', color: '#f97316', title: 'LA County LMS Data Private and Charter Schools' },
+          49: { key: 'la_county_lms_public_elementary_schools_all', icon: '🏫', color: '#ea580c', title: 'LA County LMS Data Public Elementary Schools' },
+          50: { key: 'la_county_lms_public_high_schools_all', icon: '🏫', color: '#c2410c', title: 'LA County LMS Data Public High Schools' },
+          51: { key: 'la_county_lms_public_middle_school_all', icon: '🏫', color: '#9a3412', title: 'LA County LMS Data Public Middle School' },
+          52: { key: 'la_county_lms_school_districts_all', icon: '🏛️', color: '#7c2d12', title: 'LA County LMS Data School Districts' },
+          53: { key: 'la_county_lms_special_curriculum_schools_all', icon: '🎓', color: '#431407', title: 'LA County LMS Data Special Curriculum Schools and Programs' },
+          54: { key: 'la_county_lms_emergency_response_all', icon: '🚨', color: '#f59e0b', title: 'LA County LMS Data Emergency Response' },
+          55: { key: 'la_county_lms_cooling_centers_all', icon: '❄️', color: '#d97706', title: 'LA County LMS Data Cooling Centers' },
+          56: { key: 'la_county_lms_emergency_disaster_offices_all', icon: '🏢', color: '#b45309', title: 'LA County LMS Data Emergency and Disaster Offices' },
+          57: { key: 'la_county_lms_environment_all', icon: '🌍', color: '#84cc16', title: 'LA County LMS Data Environment' },
+          58: { key: 'la_county_lms_conservation_programs_all', icon: '🌱', color: '#65a30d', title: 'LA County LMS Data Conservation Programs' },
+          59: { key: 'la_county_lms_epa_facility_registration_all', icon: '🏭', color: '#4ade80', title: 'LA County LMS Data EPA Facility Registration System' },
+          60: { key: 'la_county_lms_epa_superfund_sites_all', icon: '⚠️', color: '#22c55e', title: 'LA County LMS Data EPA Superfund Sites' },
+          61: { key: 'la_county_lms_hazardous_waste_disposal_all', icon: '☢️', color: '#16a34a', title: 'LA County LMS Data Hazardous Waste Disposal' },
+          62: { key: 'la_county_lms_historic_earthquakes_all', icon: '🌋', color: '#15803d', title: 'LA County LMS Data Historic Earthquakes' },
+          63: { key: 'la_county_lms_recycling_all', icon: '♻️', color: '#166534', title: 'LA County LMS Data Recycling' },
+          64: { key: 'la_county_lms_tsunami_tide_gauges_all', icon: '🌊', color: '#14532d', title: 'LA County LMS Data Tsunami Tide Gauges' },
+          65: { key: 'la_county_lms_government_all', icon: '🏛️', color: '#0ea5e9', title: 'LA County LMS Data Government' },
+          66: { key: 'la_county_lms_chambers_of_commerce_all', icon: '💼', color: '#0284c7', title: 'LA County LMS Data Chambers of Commerce' },
+          67: { key: 'la_county_lms_city_halls_all', icon: '🏛️', color: '#0369a1', title: 'LA County LMS Data City Halls' },
+          68: { key: 'la_county_lms_consulate_offices_all', icon: '🏢', color: '#075985', title: 'LA County LMS Data Consulate Offices' },
+          69: { key: 'la_county_lms_county_offices_all', icon: '🏛️', color: '#0c4a6e', title: 'LA County LMS Data County Offices' },
+          70: { key: 'la_county_lms_government_offices_all', icon: '🏢', color: '#082f49', title: 'LA County LMS Data Government Offices' },
+          71: { key: 'la_county_lms_passports_all', icon: '📘', color: '#3b82f6', title: 'LA County LMS Data Passports' },
+          72: { key: 'la_county_lms_representative_offices_all', icon: '👤', color: '#2563eb', title: 'LA County LMS Data Representative Offices' },
+          73: { key: 'la_county_lms_social_security_administration_all', icon: '💳', color: '#1d4ed8', title: 'LA County LMS Data Social Security Administration' },
+          74: { key: 'la_county_lms_health_mental_health_all', icon: '🏥', color: '#ef4444', title: 'LA County LMS Data Health and Mental Health' },
+          75: { key: 'la_county_lms_dental_care_all', icon: '🦷', color: '#dc2626', title: 'LA County LMS Data Dental Care' },
+          76: { key: 'la_county_lms_dhs_health_clinics_all', icon: '🏥', color: '#b91c1c', title: 'LA County LMS Data DHS Health Clinics' },
+          77: { key: 'la_county_lms_health_centers_all', icon: '🏥', color: '#991b1b', title: 'LA County LMS Data Health Centers' },
+          78: { key: 'la_county_lms_health_clinics_all', icon: '🏥', color: '#7f1d1d', title: 'LA County LMS Data Health Clinics' },
+          79: { key: 'la_county_lms_health_education_counseling_all', icon: '💬', color: '#450a0a', title: 'LA County LMS Data Health Education and Counseling' },
+          80: { key: 'la_county_lms_health_screening_testing_all', icon: '🧪', color: '#f97316', title: 'LA County LMS Data Health Screening and Testing' },
+          81: { key: 'la_county_lms_hospitals_medical_centers_all', icon: '🏥', color: '#ea580c', title: 'LA County LMS Data Hospitals and Medical Centers' },
+          82: { key: 'la_county_lms_immunization_all', icon: '💉', color: '#c2410c', title: 'LA County LMS Data Immunization' },
+          83: { key: 'la_county_lms_medicare_medicaid_offices_all', icon: '💊', color: '#9a3412', title: 'LA County LMS Data Medicare and Medicaid Offices' },
+          84: { key: 'la_county_lms_mental_health_centers_all', icon: '🧠', color: '#7c2d12', title: 'LA County LMS Data Mental Health Centers' },
+          85: { key: 'la_county_lms_mental_health_counseling_all', icon: '💭', color: '#431407', title: 'LA County LMS Data Mental Health Counseling' },
+          86: { key: 'la_county_lms_mental_health_programs_all', icon: '🧘', color: '#f59e0b', title: 'LA County LMS Data Mental Health Programs' },
+          87: { key: 'la_county_lms_public_health_programs_all', icon: '🏥', color: '#d97706', title: 'LA County LMS Data Public Health Programs' },
+          88: { key: 'la_county_lms_safe_havens_all', icon: '🛡️', color: '#b45309', title: 'LA County LMS Data Safe Havens' },
+          89: { key: 'la_county_lms_substance_abuse_programs_all', icon: '💊', color: '#92400e', title: 'LA County LMS Data Substance Abuse Programs' },
+          90: { key: 'la_county_lms_municipal_services_all', icon: '🏛️', color: '#10b981', title: 'LA County LMS Data Municipal Services' },
+          91: { key: 'la_county_lms_animals_pets_all', icon: '🐾', color: '#059669', title: 'LA County LMS Data Animals and Pets' },
+          92: { key: 'la_county_lms_building_inspections_all', icon: '🔍', color: '#047857', title: 'LA County LMS Data Building Inspections' },
+          93: { key: 'la_county_lms_cemeteries_all', icon: '🪦', color: '#065f46', title: 'LA County LMS Data Cemeteries' },
+          94: { key: 'la_county_lms_community_services_all', icon: '🤝', color: '#064e3b', title: 'LA County LMS Data Community Services' },
+          95: { key: 'la_county_lms_consumer_services_all', icon: '🛒', color: '#022c22', title: 'LA County LMS Data Consumer Services' },
+          96: { key: 'la_county_lms_economic_development_all', icon: '💼', color: '#06b6d4', title: 'LA County LMS Data Economic Development' },
+          97: { key: 'la_county_lms_elections_all', icon: '🗳️', color: '#0891b2', title: 'LA County LMS Data Elections' },
+          98: { key: 'la_county_lms_environmental_programs_all', icon: '🌱', color: '#0e7490', title: 'LA County LMS Data Environmental Programs' },
+          99: { key: 'la_county_lms_health_housing_inspections_all', icon: '🏠', color: '#155e75', title: 'LA County LMS Data Health and Housing Inspections' },
+          100: { key: 'la_county_lms_libraries_all', icon: '📚', color: '#164e63', title: 'LA County LMS Data Libraries' },
+          101: { key: 'la_county_lms_licenses_permits_all', icon: '📄', color: '#083344', title: 'LA County LMS Data Licenses and Permits' },
+          102: { key: 'la_county_lms_planning_zoning_all', icon: '🗺️', color: '#6366f1', title: 'LA County LMS Data Planning and Zoning' },
+          103: { key: 'la_county_lms_property_tax_all', icon: '💰', color: '#4f46e5', title: 'LA County LMS Data Property and Tax' },
+          104: { key: 'la_county_lms_public_internet_access_all', icon: '💻', color: '#4338ca', title: 'LA County LMS Data Public Internet Access' },
+          105: { key: 'la_county_lms_public_records_all', icon: '📋', color: '#3730a3', title: 'LA County LMS Data Public Records' },
+          106: { key: 'la_county_lms_rubbish_disposal_all', icon: '🗑️', color: '#312e81', title: 'LA County LMS Data Rubbish Disposal' },
+          107: { key: 'la_county_lms_street_maintenance_all', icon: '🛣️', color: '#1e1b4b', title: 'LA County LMS Data Street Maintenance' },
+          108: { key: 'la_county_lms_utilities_all', icon: '⚡', color: '#9333ea', title: 'LA County LMS Data Utilities' },
+          109: { key: 'la_county_lms_physical_features_all', icon: '🏔️', color: '#8b5cf6', title: 'LA County LMS Data Physical Features' },
+          110: { key: 'la_county_lms_electrical_substations_all', icon: '⚡', color: '#7c3aed', title: 'LA County LMS Data Electrical Sub-Stations' },
+          111: { key: 'la_county_lms_named_locations_all', icon: '📍', color: '#6d28d9', title: 'LA County LMS Data Named Locations' },
+          112: { key: 'la_county_lms_power_plants_all', icon: '🏭', color: '#5b21b6', title: 'LA County LMS Data Power Plants' },
+          113: { key: 'la_county_lms_water_all', icon: '💧', color: '#4c1d95', title: 'LA County LMS Data Water' },
+          114: { key: 'la_county_lms_postal_all', icon: '📮', color: '#f59e0b', title: 'LA County LMS Data Postal' },
+          115: { key: 'la_county_lms_dhl_locations_all', icon: '📦', color: '#d97706', title: 'LA County LMS Data DHL Locations' },
+          116: { key: 'la_county_lms_federal_express_locations_all', icon: '📦', color: '#b45309', title: 'LA County LMS Data Federal Express Locations' },
+          117: { key: 'la_county_lms_post_offices_all', icon: '📮', color: '#92400e', title: 'LA County LMS Data Post Offices' },
+          118: { key: 'la_county_lms_private_non_retail_shipping_all', icon: '📦', color: '#78350f', title: 'LA County LMS Data Private Non Retail Shipping Locations' },
+          119: { key: 'la_county_lms_ups_locations_all', icon: '📦', color: '#713f12', title: 'LA County LMS Data UPS Locations' },
+          120: { key: 'la_county_lms_usps_mail_collection_boxes_all', icon: '📬', color: '#65a30d', title: 'LA County LMS Data USPS Mail Collection Boxes' },
+          121: { key: 'la_county_lms_private_industry_all', icon: '🏭', color: '#4ade80', title: 'LA County LMS Data Private Industry' },
+          122: { key: 'la_county_lms_agriculture_food_all', icon: '🌾', color: '#22c55e', title: 'LA County LMS Data Agriculture and Food' },
+          123: { key: 'la_county_lms_banking_finance_all', icon: '🏦', color: '#16a34a', title: 'LA County LMS Data Banking and Finance' },
+          124: { key: 'la_county_lms_business_centers_all', icon: '🏢', color: '#15803d', title: 'LA County LMS Data Business Centers' },
+          125: { key: 'la_county_lms_corporate_headquarters_all', icon: '🏢', color: '#166534', title: 'LA County LMS Data Corporate Headquarters' },
+          126: { key: 'la_county_lms_manufacturing_all', icon: '🏭', color: '#14532d', title: 'LA County LMS Data Manufacturing' },
+          127: { key: 'la_county_lms_mines_all', icon: '⛏️', color: '#0ea5e9', title: 'LA County LMS Data Mines' },
+          128: { key: 'la_county_lms_oilfields_all', icon: '🛢️', color: '#0284c7', title: 'LA County LMS Data Oilfields' },
+          129: { key: 'la_county_lms_shopping_centers_all', icon: '🛍️', color: '#0369a1', title: 'LA County LMS Data Shopping Centers' },
+          130: { key: 'la_county_lms_tv_movie_studios_all', icon: '🎬', color: '#075985', title: 'LA County LMS Data TV and Movie Studios' },
+          131: { key: 'la_county_lms_public_safety_all', icon: '🚨', color: '#0c4a6e', title: 'LA County LMS Data Public Safety' },
+          132: { key: 'la_county_lms_courthouses_all', icon: '⚖️', color: '#082f49', title: 'LA County LMS Data Courthouses' },
+          133: { key: 'la_county_lms_crime_prevention_support_all', icon: '🛡️', color: '#3b82f6', title: 'LA County LMS Data Crime Prevention and Support' },
+          134: { key: 'la_county_lms_crime_reporting_investigation_all', icon: '🔍', color: '#2563eb', title: 'LA County LMS Data Crime Reporting and Investigation' },
+          135: { key: 'la_county_lms_district_attorney_all', icon: '⚖️', color: '#1d4ed8', title: 'LA County LMS Data District Attorney' },
+          136: { key: 'la_county_lms_fingerprinting_all', icon: '👆', color: '#1e40af', title: 'LA County LMS Data Fingerprinting' },
+          137: { key: 'la_county_lms_fire_stations_all', icon: '🚒', color: '#1e3a8a', title: 'LA County LMS Data Fire Stations' },
+          138: { key: 'la_county_lms_jails_prisons_all', icon: '🔒', color: '#172554', title: 'LA County LMS Data Jails and Prisons' },
+          139: { key: 'la_county_lms_legal_services_counseling_all', icon: '⚖️', color: '#0f172a', title: 'LA County LMS Data Legal Services and Counseling' },
+          140: { key: 'la_county_lms_lifeguard_towers_all', icon: '🏖️', color: '#ef4444', title: 'LA County LMS Data Lifeguard Towers' },
+          141: { key: 'la_county_lms_parole_offender_assistance_all', icon: '👤', color: '#dc2626', title: 'LA County LMS Data Parole and Offender Assistance' },
+          142: { key: 'la_county_lms_probation_camps_juvenile_halls_all', icon: '🏫', color: '#b91c1c', title: 'LA County LMS Data Probation Camps and Juvenile Halls' },
+          143: { key: 'la_county_lms_probation_offices_all', icon: '🏢', color: '#991b1b', title: 'LA County LMS Data Probation Offices' },
+          144: { key: 'la_county_lms_public_defender_all', icon: '⚖️', color: '#7f1d1d', title: 'LA County LMS Data Public Defender' },
+          145: { key: 'la_county_lms_self_help_legal_centers_all', icon: '📚', color: '#450a0a', title: 'LA County LMS Data Self-Help Legal Centers' },
+          146: { key: 'la_county_lms_sheriff_police_stations_all', icon: '🚔', color: '#f97316', title: 'LA County LMS Data Sheriff and Police Stations' },
+          147: { key: 'la_county_lms_social_services_all', icon: '🤝', color: '#ea580c', title: 'LA County LMS Data Social Services' },
+          148: { key: 'la_county_lms_adoption_all', icon: '👶', color: '#c2410c', title: 'LA County LMS Data Adoption' },
+          149: { key: 'la_county_lms_child_care_all', icon: '👶', color: '#9a3412', title: 'LA County LMS Data Child Care' },
+          150: { key: 'la_county_lms_child_support_services_all', icon: '👨‍👩‍👧‍👦', color: '#7c2d12', title: 'LA County LMS Data Child Support Services' },
+          151: { key: 'la_county_lms_children_family_services_all', icon: '👨‍👩‍👧‍👦', color: '#431407', title: 'LA County LMS Data Children and Family Services' },
+          152: { key: 'la_county_lms_clothing_all', icon: '👕', color: '#f59e0b', title: 'LA County LMS Data Clothing' },
+          153: { key: 'la_county_lms_disability_support_services_all', icon: '♿', color: '#d97706', title: 'LA County LMS Data Disability Support Services' },
+          154: { key: 'la_county_lms_domestic_violence_services_all', icon: '🛡️', color: '#b45309', title: 'LA County LMS Data Domestic Violence Services' },
+          155: { key: 'la_county_lms_donation_services_all', icon: '🎁', color: '#92400e', title: 'LA County LMS Data Donation Services' },
+          156: { key: 'la_county_lms_food_assistance_all', icon: '🍽️', color: '#78350f', title: 'LA County LMS Data Food Assistance' },
+          157: { key: 'la_county_lms_forms_assistance_all', icon: '📝', color: '#713f12', title: 'LA County LMS Data Forms Assistance' },
+          158: { key: 'la_county_lms_homeless_shelters_services_all', icon: '🏠', color: '#65a30d', title: 'LA County LMS Data Homeless Shelters and Services' },
+          159: { key: 'la_county_lms_housing_assistance_information_all', icon: '🏘️', color: '#4ade80', title: 'LA County LMS Data Housing Assistance and Information' },
+          160: { key: 'la_county_lms_immigration_all', icon: '🛂', color: '#22c55e', title: 'LA County LMS Data Immigration' },
+          161: { key: 'la_county_lms_job_training_all', icon: '💼', color: '#16a34a', title: 'LA County LMS Data Job Training' },
+          162: { key: 'la_county_lms_neg_program_worksource_centers_all', icon: '💼', color: '#15803d', title: 'LA County LMS Data NEG Program WorkSource Centers' },
+          163: { key: 'la_county_lms_payment_assistance_all', icon: '💰', color: '#166534', title: 'LA County LMS Data Payment Assistance' },
+          164: { key: 'la_county_lms_public_housing_all', icon: '🏘️', color: '#14532d', title: 'LA County LMS Data Public Housing' },
+          165: { key: 'la_county_lms_public_information_services_all', icon: 'ℹ️', color: '#0ea5e9', title: 'LA County LMS Data Public Information Services' },
+          166: { key: 'la_county_lms_senior_services_all', icon: '👴', color: '#0284c7', title: 'LA County LMS Data Senior Services' },
+          167: { key: 'la_county_lms_support_groups_all', icon: '👥', color: '#0369a1', title: 'LA County LMS Data Support Groups' },
+          168: { key: 'la_county_lms_thrift_shops_all', icon: '🛍️', color: '#075985', title: 'LA County LMS Data Thrift Shops' },
+          169: { key: 'la_county_lms_transportation_assistance_all', icon: '🚗', color: '#0c4a6e', title: 'LA County LMS Data Transportation Assistance' },
+          170: { key: 'la_county_lms_unemployment_insurance_offices_all', icon: '💼', color: '#082f49', title: 'LA County LMS Data Unemployment Insurance Offices' },
+          171: { key: 'la_county_lms_veterans_services_all', icon: '🎖️', color: '#3b82f6', title: 'LA County LMS Data Veterans Services' },
+          172: { key: 'la_county_lms_welfare_offices_programs_all', icon: '💳', color: '#2563eb', title: 'LA County LMS Data Welfare Offices and Programs' },
+          173: { key: 'la_county_lms_transportation_all', icon: '🚗', color: '#1d4ed8', title: 'LA County LMS Data Transportation' },
+          174: { key: 'la_county_lms_airports_all', icon: '✈️', color: '#1e40af', title: 'LA County LMS Data Airports' },
+          175: { key: 'la_county_lms_alternative_fuel_all', icon: '⛽', color: '#1e3a8a', title: 'LA County LMS Data Alternative Fuel' },
+          176: { key: 'la_county_lms_amtrak_stations_all', icon: '🚂', color: '#172554', title: 'LA County LMS Data Amtrak Stations' },
+          177: { key: 'la_county_lms_anchorages_all', icon: '⚓', color: '#0f172a', title: 'LA County LMS Data Anchorages' },
+          178: { key: 'la_county_lms_automatic_traffic_counters_all', icon: '📊', color: '#ef4444', title: 'LA County LMS Data Automatic Traffic Counters' },
+          179: { key: 'la_county_lms_breakwaters_all', icon: '🌊', color: '#dc2626', title: 'LA County LMS Data Breakwaters' },
+          180: { key: 'la_county_lms_bridges_all', icon: '🌉', color: '#b91c1c', title: 'LA County LMS Data Bridges' },
+          181: { key: 'la_county_lms_ferries_all', icon: '⛴️', color: '#991b1b', title: 'LA County LMS Data Ferries' },
+          182: { key: 'la_county_lms_freeway_exits_all', icon: '🛣️', color: '#7f1d1d', title: 'LA County LMS Data Freeway Exits' },
+          183: { key: 'la_county_lms_heliports_all', icon: '🚁', color: '#450a0a', title: 'LA County LMS Data Heliports' },
+          184: { key: 'la_county_lms_intermodal_terminal_facilities_all', icon: '🚚', color: '#f97316', title: 'LA County LMS Data Intermodal Terminal Facilities' },
+          185: { key: 'la_county_lms_metro_stations_all', icon: '🚇', color: '#ea580c', title: 'LA County LMS Data Metro Stations' },
+          186: { key: 'la_county_lms_metrolink_stations_all', icon: '🚆', color: '#c2410c', title: 'LA County LMS Data Metrolink Stations' },
+          187: { key: 'la_county_lms_park_and_ride_locations_all', icon: '🅿️', color: '#9a3412', title: 'LA County LMS Data Park and Ride Locations' },
+          188: { key: 'la_county_lms_transit_systems_all', icon: '🚌', color: '#7c2d12', title: 'LA County LMS Data Transit Systems' },
+          189: { key: 'la_county_lms_tunnels_all', icon: '🚇', color: '#431407', title: 'LA County LMS Data Tunnels' },
+          190: { key: 'la_county_lms_county_fueling_stations_all', icon: '⛽', color: '#f59e0b', title: 'LA County LMS Data County Fueling Stations' },
+          191: { key: 'la_county_lms_county_electric_charging_stations_all', icon: '🔌', color: '#d97706', title: 'LA County LMS Data County Electric Charging Stations' },
+          192: { key: 'la_county_lms_warming_centers_all', icon: '🔥', color: '#b45309', title: 'LA County LMS Data Warming Centers' }
+        };
+        return layerNames[i] || { key: `la_county_lms_layer_${i}_all`, icon: '📍', color: '#6366f1', title: `LA County LMS Data Layer ${i}` };
+      });
+
+      laCountyLMSLayers.forEach(({ key, icon, color, title }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((lmsFeature: any) => {
+              try {
+                // Handle point geometry
+                if (lmsFeature.geometry && lmsFeature.geometry.x && lmsFeature.geometry.y) {
+                  const lat = lmsFeature.geometry.y;
+                  const lon = lmsFeature.geometry.x;
+                  
+                  const marker = L.marker([lat, lon], {
+                    icon: createPOIIcon(icon, color)
+                  });
+                  
+                  const lmsId = lmsFeature.lmsId || lmsFeature.OBJECTID || lmsFeature.objectid || lmsFeature.ID || lmsFeature.id || lmsFeature.NAME || lmsFeature.Name || lmsFeature.name || 'Unknown';
+                  const distance = lmsFeature.distance_miles !== null && lmsFeature.distance_miles !== undefined ? lmsFeature.distance_miles : 0;
+                  const isContaining = lmsFeature.isContaining;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${title}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${lmsId ? `<div><strong>ID:</strong> ${lmsId}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this feature</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['lmsId', 'OBJECTID', 'objectid', 'ID', 'id', 'NAME', 'Name', 'name', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                  Object.entries(lmsFeature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  marker.bindPopup(popupContent);
+                  marker.addTo(primary);
+                  bounds.extend([lat, lon]);
+                  featureCount++;
+                }
+                // Handle polygon geometry
+                else if (lmsFeature.geometry && lmsFeature.geometry.rings) {
+                  const rings = lmsFeature.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const isContaining = lmsFeature.isContaining;
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    const lmsId = lmsFeature.lmsId || lmsFeature.OBJECTID || lmsFeature.objectid || lmsFeature.ID || lmsFeature.id || lmsFeature.NAME || lmsFeature.Name || lmsFeature.name || 'Unknown';
+                    const distance = lmsFeature.distance_miles !== null && lmsFeature.distance_miles !== undefined ? lmsFeature.distance_miles : 0;
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${lmsId ? `<div><strong>ID:</strong> ${lmsId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this boundary</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['lmsId', 'OBJECTID', 'objectid', 'ID', 'id', 'NAME', 'Name', 'name', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                    Object.entries(lmsFeature).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                }
+                // Handle polyline geometry
+                else if (lmsFeature.geometry && lmsFeature.geometry.paths) {
+                  const paths = lmsFeature.geometry.paths;
+                  if (paths && paths.length > 0) {
+                    paths.forEach((path: number[][]) => {
+                      const latlngs = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+                      
+                      const isContaining = lmsFeature.isContaining;
+                      const lineColor = isContaining ? color : color.replace('ff', 'cc');
+                      const weight = isContaining ? 4 : 2;
+                      const opacity = isContaining ? 0.9 : 0.6;
+                      
+                      const polyline = L.polyline(latlngs, {
+                        color: lineColor,
+                        weight: weight,
+                        opacity: opacity
+                      });
+                      
+                      const lmsId = lmsFeature.lmsId || lmsFeature.OBJECTID || lmsFeature.objectid || lmsFeature.ID || lmsFeature.id || lmsFeature.NAME || lmsFeature.Name || lmsFeature.name || 'Unknown';
+                      const distance = lmsFeature.distance_miles !== null && lmsFeature.distance_miles !== undefined ? lmsFeature.distance_miles : 0;
+                      
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            ${icon} ${title}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${lmsId ? `<div><strong>ID:</strong> ${lmsId}</div>` : ''}
+                            ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is on this line</div>` : ''}
+                            ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                          </div>
+                          <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      `;
+                      
+                      const excludeFields = ['lmsId', 'OBJECTID', 'objectid', 'ID', 'id', 'NAME', 'Name', 'name', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                      Object.entries(lmsFeature).forEach(([key, value]) => {
+                        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                          if (typeof value === 'object' && !Array.isArray(value)) {
+                            return;
+                          }
+                          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                          popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                        }
+                      });
+                      
+                      popupContent += `
+                          </div>
+                        </div>
+                      `;
+                      
+                      polyline.bindPopup(popupContent);
+                      polyline.addTo(primary);
+                      const polylineBounds = L.latLngBounds(latlngs);
+                      bounds.extend(polylineBounds);
+                      featureCount++;
+                    });
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing ${title} feature:`, error);
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
       // Draw CA State Parks Entry Points
       try {
         if (enrichments.ca_state_parks_entry_points_all && Array.isArray(enrichments.ca_state_parks_entry_points_all)) {
