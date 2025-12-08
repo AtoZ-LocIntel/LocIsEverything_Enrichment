@@ -102,6 +102,7 @@ import { getChicagoBuildingFootprintsData } from '../adapters/chicagoBuildingFoo
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
+import { getNYCMapPLUTOData } from '../adapters/nycMapPLUTO';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2118,6 +2119,10 @@ export class EnrichmentService {
       // Chicago Red Light Camera Locations - Proximity query (max 5 miles)
       case 'chicago_red_light_cameras':
         return await this.getChicagoRedLightCameras(lat, lon, radius);
+      
+      // NYC MapPLUTO - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto':
+        return await this.getNYCMapPLUTO(lat, lon, radius);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -9674,6 +9679,79 @@ out center;`;
       return {
         chicago_red_light_cameras_count: 0,
         chicago_red_light_cameras_all: []
+      };
+    }
+  }
+
+  private async getNYCMapPLUTO(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏢 Fetching NYC MapPLUTO data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const taxLots = await getNYCMapPLUTOData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      if (taxLots.length === 0) {
+        result.nyc_mappluto_containing = null;
+        result.nyc_mappluto_containing_message = 'No tax lot found containing this location';
+        result.nyc_mappluto_count = 0;
+        result.nyc_mappluto_all = [];
+      } else {
+        // Get the first containing tax lot (should typically be only one for point-in-polygon)
+        const containingTaxLot = taxLots.find(t => t.isContaining) || taxLots[0];
+        
+        if (containingTaxLot && containingTaxLot.isContaining) {
+          result.nyc_mappluto_containing = containingTaxLot.bbl || containingTaxLot.address || containingTaxLot.objectId || 'Unknown Tax Lot';
+          result.nyc_mappluto_containing_message = `Location is within tax lot: ${containingTaxLot.bbl || containingTaxLot.address || containingTaxLot.objectId || 'Unknown'}`;
+        } else {
+          result.nyc_mappluto_containing = null;
+          result.nyc_mappluto_containing_message = 'No tax lot found containing this location';
+        }
+        
+        result.nyc_mappluto_count = taxLots.length;
+        result.nyc_mappluto_all = taxLots.map(taxLot => ({
+          ...taxLot.attributes,
+          objectId: taxLot.objectId,
+          borough: taxLot.borough,
+          block: taxLot.block,
+          lot: taxLot.lot,
+          address: taxLot.address,
+          bbl: taxLot.bbl,
+          zipCode: taxLot.zipCode,
+          ownerName: taxLot.ownerName,
+          landUse: taxLot.landUse,
+          yearBuilt: taxLot.yearBuilt,
+          bldgClass: taxLot.bldgClass,
+          lotArea: taxLot.lotArea,
+          bldgArea: taxLot.bldgArea,
+          numBldgs: taxLot.numBldgs,
+          numFloors: taxLot.numFloors,
+          unitsRes: taxLot.unitsRes,
+          unitsTotal: taxLot.unitsTotal,
+          assessLand: taxLot.assessLand,
+          assessTot: taxLot.assessTot,
+          zoneDist1: taxLot.zoneDist1,
+          geometry: taxLot.geometry,
+          distance_miles: taxLot.distance_miles,
+          isContaining: taxLot.isContaining
+        }));
+        
+        result.nyc_mappluto_summary = `Found ${taxLots.length} tax lot(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ NYC MapPLUTO data processed:`, {
+        totalCount: result.nyc_mappluto_count,
+        containing: result.nyc_mappluto_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NYC MapPLUTO data:', error);
+      return {
+        nyc_mappluto_containing: null,
+        nyc_mappluto_containing_message: 'Error querying tax lots',
+        nyc_mappluto_count: 0,
+        nyc_mappluto_all: []
       };
     }
   }

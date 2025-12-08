@@ -225,6 +225,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'California Data';
     }
     
+    // NYC Data - check before other state data
+    if (key.includes('nyc_') || key.includes('ny_')) {
+      return 'NYC Data';
+    }
+    
     // Connecticut Data
     if (key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
       return 'Connecticut Data';

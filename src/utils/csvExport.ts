@@ -351,6 +351,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'chicago_traffic_crashes_all' ||
         key === 'chicago_speed_cameras_all' ||
         key === 'chicago_red_light_cameras_all' ||
+        key === 'nyc_mappluto_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||

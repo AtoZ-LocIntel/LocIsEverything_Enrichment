@@ -527,6 +527,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Massachusetts Data';
       } else if (key.includes('ca_fire_perimeters') || key.includes('ca_wildland_fire') || key.includes('ca_calvtp_treatment_areas') || key.includes('ca_power_outage_areas') || key.includes('ca_')) {
         category = 'California Data';
+      } else if (key.includes('nyc_') || key.includes('ny_')) {
+        category = 'NYC Data';
       } else if (key.includes('ct_parcel') || key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
         category = 'Connecticut Data';
       } else if (key.includes('de_state_forest') || key.includes('de_pine_plantations') || key.includes('de_urban_tree_canopy') || key.includes('de_forest_cover_2007') || key.includes('de_')) {
