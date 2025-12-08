@@ -54,7 +54,7 @@ export async function getLACountyFireHydrantsData(
       })
     )}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusMeters}&units=esriSRUnit_Meter&inSR=4326&outSR=4326&returnGeometry=true`;
 
-    const response = await fetchJSONSmart<LACountyFireHydrantsResponse>(queryUrl);
+    const response = await fetchJSONSmart(queryUrl) as LACountyFireHydrantsResponse;
 
     if (!response || !response.features) {
       console.warn('⚠️ LA County Fire Hydrants: No features in response');
@@ -62,7 +62,7 @@ export async function getLACountyFireHydrantsData(
     }
 
     // Calculate distance for each feature
-    return response.features.map(feature => ({
+    return response.features.map((feature: LACountyFireHydrantFeature) => ({
       ...feature,
       distance_miles: calculateDistance(lat, lon, feature.geometry.y, feature.geometry.x)
     }));

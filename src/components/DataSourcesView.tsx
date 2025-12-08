@@ -1136,6 +1136,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/Fire/Fire_Hydrants/MapServer/0"
         },
         {
+          name: "Chicago 311 Service Requests",
+          description: "311 service requests from the City of Chicago Data Portal - proximity queries up to 25 miles, color-coded by request type",
+          coverage: "City of Chicago, Illinois",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://data.cityofchicago.org/api/v3/views/v6vf-nfxy"
+        },
+        {
           name: "LA County Administrative Boundaries",
           description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",

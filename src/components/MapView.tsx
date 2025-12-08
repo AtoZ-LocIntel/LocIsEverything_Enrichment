@@ -226,6 +226,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_public_safety': { icon: '🚨', color: '#dc2626', title: 'LA County Public Safety' },
   'la_county_transportation': { icon: '🚌', color: '#f59e0b', title: 'LA County Transportation' },
   'la_county_fire_hydrants': { icon: '🚒', color: '#ef4444', title: 'LA County Fire Hydrants' },
+  'chicago_311': { icon: '📞', color: '#3b82f6', title: 'Chicago 311 Service Requests' },
   'la_county_historic_cultural_monuments': { icon: '🏛️', color: '#a855f7', title: 'LA County Historic Cultural Monuments' },
   'la_county_housing_lead_risk': { icon: '🏠', color: '#dc2626', title: 'LA County Housing with Potential Lead Risk' },
   'la_county_school_district_boundaries': { icon: '🏫', color: '#3b82f6', title: 'LA County School District Boundaries' },
@@ -591,6 +592,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_public_safety_all' || // Skip LA County Public Safety array (handled separately for map drawing)
     key === 'la_county_transportation_all' || // Skip LA County Transportation array (handled separately for map drawing)
     key === 'la_county_fire_hydrants_all' || // Skip LA County Fire Hydrants array (handled separately for map drawing)
+    key === 'chicago_311_all' || // Skip Chicago 311 array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -11062,6 +11064,110 @@ const MapView: React.FC<MapViewProps> = ({
           console.error(`Error processing ${title}:`, error);
         }
       });
+
+      // Draw Chicago 311 Service Requests as point markers with color-coding by SR_TYPE
+      try {
+        if (enrichments.chicago_311_all && Array.isArray(enrichments.chicago_311_all)) {
+          let chicago311Count = 0;
+          
+          // Color mapping function for SR_TYPE
+          const getColorForSRType = (srType: string): string => {
+            if (!srType) return '#6b7280'; // Default gray
+            
+            const type = srType.toLowerCase();
+            // Common 311 request types with distinct colors
+            if (type.includes('graffiti') || type.includes('vandalism')) return '#dc2626'; // Red
+            if (type.includes('pothole') || type.includes('street')) return '#f59e0b'; // Orange
+            if (type.includes('tree') || type.includes('parkway')) return '#10b981'; // Green
+            if (type.includes('alley') || type.includes('light')) return '#3b82f6'; // Blue
+            if (type.includes('garbage') || type.includes('trash') || type.includes('sanitation')) return '#8b5cf6'; // Purple
+            if (type.includes('water') || type.includes('sewer')) return '#06b6d4'; // Cyan
+            if (type.includes('building') || type.includes('housing')) return '#ef4444'; // Pink-red
+            if (type.includes('rodent') || type.includes('animal')) return '#92400e'; // Brown
+            if (type.includes('sidewalk') || type.includes('curb')) return '#6366f1'; // Indigo
+            if (type.includes('traffic') || type.includes('sign')) return '#f97316'; // Orange-red
+            
+            // Default colors for other types (use hash of string for consistency)
+            const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#ef4444', '#6366f1'];
+            const hash = srType.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            return colors[hash % colors.length];
+          };
+          
+          enrichments.chicago_311_all.forEach((request: any) => {
+            try {
+              const lat = request.latitude || request.geometry?.y || null;
+              const lon = request.longitude || request.geometry?.x || null;
+              
+              if (lat !== null && lon !== null) {
+                const srType = request.sr_type || request.SR_TYPE || 'Unknown';
+                const srNumber = request.sr_number || request.SR_NUMBER || 'Unknown';
+                const color = getColorForSRType(srType);
+                const distance = request.distance_miles !== null && request.distance_miles !== undefined ? request.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('📞', color)
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      📞 Chicago 311 Service Request
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${srNumber ? `<div><strong>SR Number:</strong> ${srNumber}</div>` : ''}
+                      ${srType ? `<div><strong>Type:</strong> ${srType}</div>` : ''}
+                      ${request.status ? `<div><strong>Status:</strong> ${request.status}</div>` : ''}
+                      ${request.street_address ? `<div><strong>Address:</strong> ${request.street_address}</div>` : ''}
+                      ${request.community_area ? `<div><strong>Community Area:</strong> ${request.community_area}</div>` : ''}
+                      ${request.ward ? `<div><strong>Ward:</strong> ${request.ward}</div>` : ''}
+                      ${request.created_date ? `<div><strong>Created:</strong> ${new Date(request.created_date).toLocaleDateString()}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all request attributes (excluding internal fields)
+                const excludeFields = ['geometry', 'distance_miles', 'latitude', 'longitude', 'location', 'sr_number', 'SR_NUMBER', 'sr_type', 'SR_TYPE', 'status', 'street_address', 'community_area', 'ward', 'created_date'];
+                Object.entries(request).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                chicago311Count++;
+              }
+            } catch (error) {
+              console.error('Error drawing Chicago 311 marker:', error);
+            }
+          });
+          
+          if (chicago311Count > 0) {
+            if (!legendAccumulator['chicago_311']) {
+              legendAccumulator['chicago_311'] = {
+                icon: '📞',
+                color: '#3b82f6',
+                title: 'Chicago 311 Service Requests',
+                count: 0,
+              };
+            }
+            legendAccumulator['chicago_311'].count += chicago311Count;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Chicago 311:', error);
+      }
 
       // Draw LA County Historic Cultural Monuments as polygons on the map
       try {

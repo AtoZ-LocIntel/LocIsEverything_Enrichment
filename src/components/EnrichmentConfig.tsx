@@ -7,6 +7,8 @@ interface EnrichmentConfigProps {
   onSelectionChange: (enrichments: string[]) => void;
   poiRadii: Record<string, number>;
   onPoiRadiiChange: (radii: Record<string, number>) => void;
+  poiYears?: Record<string, number>;
+  onPoiYearsChange?: (years: Record<string, number>) => void;
   onViewCategory?: (category: EnrichmentCategory) => void;
   onModalStateChange?: (isModalOpen: boolean) => void;
   onTotalLayersChange?: (count: number) => void;
@@ -102,6 +104,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   onSelectionChange, 
   poiRadii, 
   onPoiRadiiChange,
+  poiYears = {},
+  onPoiYearsChange,
   onViewCategory,
   onModalStateChange,
   onTotalLayersChange
@@ -839,13 +843,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         
         if (section.id === 'il') {
           // IL sub-categories
+          // Get Chicago Data Portal enrichments
+          const chicagoEnrichments = sectionEnrichments.filter(e => e.id.startsWith('chicago_'));
+          
           const ilSubCategories: EnrichmentCategory[] = [
             {
               id: 'chicago_data_portal',
               title: 'Chicago Data Portal',
               icon: <img src="/assets/ChicagoDataPortal.webp" alt="Chicago Data Portal" className="w-full h-full object-cover rounded-full" />,
-              description: 'Chicago Data Portal data layers - Coming Soon!',
-              enrichments: [] // Will be populated as layers are added
+              description: 'Chicago Data Portal data layers',
+              enrichments: chicagoEnrichments
             }
           ];
           
@@ -2773,6 +2780,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               const isCTBuildingFootprints = enrichment.id === 'ct_building_footprints';
                               const isLACountyLeadRisk = enrichment.id === 'la_county_housing_lead_risk';
                               const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
+                              const isChicago311 = enrichment.id === 'chicago_311';
                               const radiusOptions = isNHParcels || isNJParcels
                                 ? [0.25, 0.50, 0.75, 1.0]
                                 : isMAParcels
@@ -2783,6 +2791,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                 : isLAStreetInventory
                                 ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+                                : isChicago311
+                                ? [0.25, 0.50, 0.75, 1.0]
                                 : enrichment.id === 'poi_aurora_viewing_sites'
                                 ? [5, 10, 25, 50, 100]
                                 : null; // null means use number input
@@ -2832,6 +2842,39 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                         Please stay between {formatMiles(minRadius)} and {formatMiles(maxRadius)} miles
                                       </div>
                                     )}
+
+                                  {/* Year filter for Chicago 311 */}
+                                  {isChicago311 && (
+                                    <div className="flex flex-col gap-3 mt-4 w-full max-w-full" style={isMobile ? { width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                                      <label className="text-sm font-medium text-black w-full" style={isMobile ? { width: '100%', fontSize: '16px' } as React.CSSProperties : {}}>Year Filter (Created Date):</label>
+                                      <div className="flex items-center gap-2 w-full max-w-full" style={isMobile ? { width: '100%', maxWidth: '100%' } as React.CSSProperties : {}}>
+                                        <select
+                                          value={poiYears[enrichment.id] || ''}
+                                          onChange={(e) => {
+                                            const year = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                                            if (onPoiYearsChange) {
+                                              onPoiYearsChange({
+                                                ...poiYears,
+                                                [enrichment.id]: year
+                                              });
+                                            }
+                                          }}
+                                          className={`px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 ${isMobile ? 'w-full flex-grow' : 'w-32 sm:w-28 flex-shrink-0'}`}
+                                          style={isMobile ? { width: '100%', maxWidth: '100%', minWidth: '150px' } as React.CSSProperties : { maxWidth: 'calc(100% - 60px)' }}
+                                        >
+                                          <option value="">All Years</option>
+                                          {Array.from({ length: new Date().getFullYear() - 2009 }, (_, i) => {
+                                            const year = 2010 + i;
+                                            return (
+                                              <option key={year} value={year}>
+                                                {year}
+                                              </option>
+                                            );
+                                          })}
+                                        </select>
+                                      </div>
+                                    </div>
+                                  )}
                                   </div>
                               );
                             })()}

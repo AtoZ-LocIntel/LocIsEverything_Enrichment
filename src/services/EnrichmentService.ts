@@ -97,6 +97,7 @@ import { getLACountyPoliticalBoundariesData } from '../adapters/laCountyPolitica
 import { getLACountyRedistrictingData } from '../adapters/laCountyRedistricting';
 import { getLACountyTransportationData } from '../adapters/laCountyTransportation';
 import { getLACountyFireHydrantsData } from '../adapters/laCountyFireHydrants';
+import { getChicago311Data } from '../adapters/chicago311';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -850,7 +851,8 @@ export class EnrichmentService {
   async enrichSingleLocation(
     address: string, 
     selectedEnrichments: string[], 
-    poiRadii: Record<string, number>
+    poiRadii: Record<string, number>,
+    poiYears?: Record<string, number>
   ): Promise<EnrichmentResult> {
     // Use the working geocoding functions from original geocoder.html
     const geocodeResult = await this.geocodeAddress(address);
@@ -864,7 +866,8 @@ export class EnrichmentService {
       geocodeResult.lat, 
       geocodeResult.lon, 
       selectedEnrichments, 
-      poiRadii
+      poiRadii,
+      poiYears
     );
 
     return {
@@ -1141,7 +1144,8 @@ export class EnrichmentService {
     lat: number, 
     lon: number, 
     selectedEnrichments: string[], 
-    poiRadii: Record<string, number>
+    poiRadii: Record<string, number>,
+    poiYears?: Record<string, number>
   ): Promise<Record<string, any>> {
     const enrichments: Record<string, any> = {};
     const startTime = performance.now();
@@ -1178,19 +1182,19 @@ export class EnrichmentService {
       }),
       
       // Census/FIPS query
-      this.runSingleEnrichment('fips', lat, lon, poiRadii).catch(error => {
+      this.runSingleEnrichment('fips', lat, lon, poiRadii, poiYears).catch(error => {
         console.error('Census/FIPS query failed:', error);
         return { fips_error: error instanceof Error ? error.message : 'Unknown error' };
       }),
       
       // ACS demographics query
-      this.runSingleEnrichment('acs', lat, lon, poiRadii).catch(error => {
+      this.runSingleEnrichment('acs', lat, lon, poiRadii, poiYears).catch(error => {
         console.error('ACS demographics query failed:', error);
         return { acs_error: error instanceof Error ? error.message : 'Unknown error' };
       }),
       
       // Walkability Index (runs automatically for every query)
-      this.runSingleEnrichment('poi_walkability_index', lat, lon, poiRadii).catch(error => {
+      this.runSingleEnrichment('poi_walkability_index', lat, lon, poiRadii, poiYears).catch(error => {
         console.error('Walkability index query failed:', error);
         return { walkability_index_error: error instanceof Error ? error.message : 'Unknown error' };
       })
@@ -1198,7 +1202,7 @@ export class EnrichmentService {
     
     // Create parallel promises for selected enrichments
     const selectedEnrichmentPromises = selectedEnrichments.map(enrichmentId => 
-      this.runSingleEnrichment(enrichmentId, lat, lon, poiRadii).catch(error => {
+      this.runSingleEnrichment(enrichmentId, lat, lon, poiRadii, poiYears).catch(error => {
         console.error(`Enrichment ${enrichmentId} failed:`, error);
         return { [`${enrichmentId}_error`]: error instanceof Error ? error.message : 'Unknown error' };
       })
@@ -1240,7 +1244,8 @@ export class EnrichmentService {
     enrichmentId: string, 
     lat: number, 
     lon: number, 
-    poiRadii: Record<string, number>
+    poiRadii: Record<string, number>,
+    poiYears?: Record<string, number>
   ): Promise<Record<string, any>> {
     // Check POI config for maxRadius, otherwise use default caps
     let maxRadius = 25; // Default 25 mile cap for all POIs (user can select up to this)
@@ -2087,6 +2092,11 @@ export class EnrichmentService {
       // LA County Fire Hydrants - Proximity query (max 25 miles)
       case 'la_county_fire_hydrants':
         return await this.getLACountyFireHydrants(lat, lon, radius);
+      
+      // Chicago 311 Service Requests - Proximity query (max 1 mile) with optional year filter
+      case 'chicago_311':
+        const year = poiYears?.[enrichmentId];
+        return await this.getChicago311(lat, lon, radius, year);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -9447,6 +9457,46 @@ out center;`;
     }
   }
 
+  private async getChicago311(lat: number, lon: number, radius?: number, year?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📞 Fetching Chicago 311 data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}${year ? ` for year ${year}` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          chicago_311_count: 0,
+          chicago_311_all: []
+        };
+      }
+      
+      const requests = await getChicago311Data(lat, lon, radius, year);
+      
+      const result: Record<string, any> = {};
+      result.chicago_311_count = requests.length;
+      result.chicago_311_all = requests.map(request => ({
+        ...request,
+        geometry: {
+          x: request.longitude,
+          y: request.latitude
+        },
+        distance_miles: request.distance_miles || 0
+      }));
+      result.chicago_311_summary = year 
+        ? `Found ${requests.length} 311 service request(s) within ${radius} miles for year ${year}.`
+        : `Found ${requests.length} 311 service request(s) within ${radius} miles.`;
+      
+      console.log(`✅ Chicago 311 data processed:`, {
+        totalCount: result.chicago_311_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Chicago 311 data:', error);
+      return {
+        chicago_311_count: 0,
+        chicago_311_all: []
+      };
+    }
+  }
 
   private async getLACountyHistoricCulturalMonuments(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {

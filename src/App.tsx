@@ -29,6 +29,7 @@ function App() {
   const [enrichmentResults, setEnrichmentResults] = useState<EnrichmentResult[]>([]);
   const [selectedEnrichments, setSelectedEnrichments] = useState<string[]>(['elev', 'airq', 'fips']);
   const [poiRadii, setPoiRadii] = useState<Record<string, number>>({});
+  const [poiYears, setPoiYears] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [activeCategory, setActiveCategory] = useState<any>(null);
@@ -76,7 +77,7 @@ function App() {
       setError(null);
       setIsLoading(true);
       const enrichmentService = new EnrichmentService();
-      const result = await enrichmentService.enrichSingleLocation(address, selectedEnrichments, poiRadii);
+      const result = await enrichmentService.enrichSingleLocation(address, selectedEnrichments, poiRadii, poiYears);
       setEnrichmentResults([result]);
       
       // On mobile, show mobile results view; on desktop, show desktop results view
@@ -321,6 +322,8 @@ function App() {
               onSelectionChange={setSelectedEnrichments}
               poiRadii={poiRadii}
               onPoiRadiiChange={setPoiRadii}
+              poiYears={poiYears}
+              onPoiYearsChange={setPoiYears}
               onViewCategory={handleViewEnrichmentCategory}
               onModalStateChange={setIsCategoryModalOpen}
               onTotalLayersChange={setTotalLayersCount}
@@ -364,8 +367,10 @@ function App() {
           category={activeCategory}
           selectedEnrichments={selectedEnrichments}
           poiRadii={poiRadii}
+          poiYears={poiYears}
           onSelectionChange={setSelectedEnrichments}
           onPoiRadiiChange={setPoiRadii}
+          onPoiYearsChange={setPoiYears}
           onBackToConfig={handleBackToConfig}
         />
       ) : (

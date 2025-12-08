@@ -347,6 +347,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'la_county_public_safety_all' ||
         key === 'la_county_transportation_all' ||
         key === 'la_county_fire_hydrants_all' ||
+        key === 'chicago_311_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -5595,6 +5596,44 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'LA County Fire Department'
+        ]);
+      });
+    } else if (key === 'chicago_311_all' && Array.isArray(value)) {
+      value.forEach((request: any) => {
+        const srNumber = request.sr_number || request.SR_NUMBER || 'Unknown';
+        const srType = request.sr_type || request.SR_TYPE || '';
+        const status = request.status || '';
+        const address = request.street_address || '';
+        const city = request.city || 'Chicago';
+        const zip = request.zip_code || '';
+        const distance = request.distance_miles !== null && request.distance_miles !== undefined ? request.distance_miles.toFixed(2) : '';
+        const lat = request.latitude || request.geometry?.y || '';
+        const lon = request.longitude || request.geometry?.x || '';
+        
+        const allAttributes = { ...request };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Chicago',
+          (location.confidence || 'N/A').toString(),
+          'CHICAGO_311',
+          `${srNumber}${srType ? ` - ${srType}` : ''}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          srType || 'Service Request',
+          `${address}${city ? `, ${city}` : ''}${zip ? ` ${zip}` : ''}`,
+          '',
+          attributesJson,
+          'City of Chicago Data Portal'
         ]);
       });
     } else if (key === 'la_county_historic_cultural_monuments_all' && Array.isArray(value)) {
