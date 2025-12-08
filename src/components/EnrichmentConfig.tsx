@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Settings, TreePine, Check, ArrowLeft } from 'lucide-react';
+import { Search, X, Settings, TreePine, Check, ArrowLeft } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
 interface EnrichmentConfigProps {
@@ -108,6 +108,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 }) => {
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
   const [viewingNHSubCategories, setViewingNHSubCategories] = useState(false);
   const [viewingMASubCategories, setViewingMASubCategories] = useState(false);
   const [viewingCTSubCategories, setViewingCTSubCategories] = useState(false);
@@ -181,6 +182,34 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, viewingTXSubCategories, viewingNMSubCategories, viewingAZSubCategories, viewingAKSubCategories, viewingHISubCategories, viewingWASubCategories, viewingORSubCategories, viewingMTSubCategories, viewingWYSubCategories, viewingNVSubCategories, viewingIDSubCategories, viewingUTSubCategories, viewingCOSubCategories, viewingILSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
+  
+  // Reset search query when modal changes
+  useEffect(() => {
+    setLayerSearchQuery('');
+  }, [activeModal]);
+  
+  // DEBUG: Track when modal renders
+  useEffect(() => {
+    if (activeModal) {
+      console.log('🔴 DEBUG: activeModal is set to:', activeModal);
+      console.log('🔴 DEBUG: Component should render modal with search bar');
+      // Force a re-render check
+      setTimeout(() => {
+        const searchBar = document.getElementById('layer-search-bar-container');
+        const testBox = document.getElementById('test-red-box');
+        console.log('🔴 DEBUG: Search bar element:', searchBar);
+        console.log('🔴 DEBUG: Test box element:', testBox);
+        if (!searchBar) {
+          console.error('❌ DEBUG: Search bar NOT found in DOM!');
+        }
+        if (!testBox) {
+          console.error('❌ DEBUG: Test box NOT found in DOM!');
+        }
+      }, 100);
+    } else {
+      console.log('🔴 DEBUG: activeModal is null, modal should NOT render');
+    }
+  }, [activeModal]);
   // const [mobileView, setMobileView] = useState<'landing' | 'category'>('landing'); // Unused after removing mobile view
   // const [activeCategory, setActiveCategory] = useState<string | null>(null); // Unused after removing mobile view
 
@@ -2139,7 +2168,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
 
   // Desktop view (existing modal-based approach)
   // If modal is open, render ONLY the modal (hide main content)
+  console.log('🔍 DEBUG: EnrichmentConfig render - activeModal:', activeModal);
+  console.log('🔍 DEBUG: Component state - layerSearchQuery:', layerSearchQuery);
+  console.log('🔍 DEBUG: enrichmentCategories length:', enrichmentCategories.length);
+  
   if (activeModal) {
+    console.log('🔍 DEBUG: activeModal is truthy, entering modal render block');
     // Render modal only - this will cover the entire screen
     return (
       <div className="enrichment-config" style={{ position: 'relative', zIndex: 10001 }}>
@@ -2158,6 +2192,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             >
           <div className="bg-white flex flex-col" style={{ height: '100vh', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
                 {(() => {
+                  console.log('🔍 DEBUG: Inside IIFE, activeModal:', activeModal);
               // Check if this is a state sub-category (they have IDs like nh_granit, ma_massgis, ct_geodata_portal, de_firstmap)
               const isNHSubCategory = activeModal?.startsWith('nh_');
               const isMASubCategory = activeModal?.startsWith('ma_');
@@ -2241,11 +2276,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 });
               } else {
                 // Regular category
+                console.log('🔍 DEBUG: Looking for regular category with id:', activeModal);
+                console.log('🔍 DEBUG: Available category IDs:', enrichmentCategories.map(c => c.id));
                 category = enrichmentCategories.find(c => c.id === activeModal);
+                console.log('🔍 DEBUG: Category lookup result:', category ? `Found: ${category.id}` : 'NOT FOUND');
               }
+              
+              console.log('🔍 DEBUG: Final category check:', category ? `Category found: ${category.id}` : 'Category is NULL');
               
               if (!category) {
                 console.warn('⚠️ Category not found for activeModal:', activeModal);
+                console.error('🔴 DEBUG: Category is null, returning early - search bar will NOT render');
                 return (
                   <div className="p-4">
                     <button
@@ -2261,8 +2302,20 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   </div>
                 );
               }
+              
+              console.log('✅ DEBUG: Category found:', category.id);
+              console.log('✅ DEBUG: About to render search bar');
                   
-                  const categoryEnrichments = category.enrichments;
+                  // Filter enrichments based on search query
+                  const filteredEnrichments = layerSearchQuery.trim() === '' 
+                    ? category.enrichments 
+                    : category.enrichments.filter(e => 
+                        e.label.toLowerCase().includes(layerSearchQuery.toLowerCase()) ||
+                        e.description.toLowerCase().includes(layerSearchQuery.toLowerCase()) ||
+                        e.id.toLowerCase().includes(layerSearchQuery.toLowerCase())
+                      );
+                  
+                  const categoryEnrichments = filteredEnrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
               console.log('📋 Category Enrichments:', {
                 categoryId: category.id,
@@ -2293,23 +2346,143 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 category.id === 'de_firstmap' ? '#166534' :
                                     category.id === 'core' ? '#1e293b' : '#1f2937';
                   
-                  console.log('Category:', category.id, 'Header color:', headerColor);
+                  console.log('✅ DEBUG: Category:', category.id, 'Header color:', headerColor);
+                  console.log('✅ DEBUG: layerSearchQuery state:', layerSearchQuery);
+                  console.log('✅ DEBUG: About to return JSX with search bar');
+                  console.log('✅ DEBUG: React.createElement should be called now');
 
                   return (
                     <>
+                      {/* CRITICAL DEBUG: This should ALWAYS render if code executes */}
+                      <div style={{
+                        position: 'fixed',
+                        top: '100px',
+                        left: '10px',
+                        backgroundColor: 'lime',
+                        color: 'black',
+                        padding: '20px',
+                        zIndex: 99998,
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        border: '5px solid black'
+                      }}>
+                        ✅ JSX RETURNING - SEARCH BAR SHOULD BE BELOW
+                      </div>
+                  {/* TEST ELEMENT - BRIGHT RED BOX TO VERIFY CODE IS EXECUTING */}
+                      <div 
+                        id="test-red-box"
+                        style={{
+                        width: '100vw',
+                        height: '80px',
+                        backgroundColor: 'red',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 99999,
+                        border: '8px solid yellow',
+                        boxShadow: '0 0 20px rgba(255,0,0,0.8)'
+                      }}>
+                        🔴🔴🔴 TEST: IF YOU SEE THIS RED BOX, CODE IS RUNNING 🔴🔴🔴
+                      </div>
+                  
+                  {/* SEARCH BAR - SEPARATE ROW ABOVE HEADER */}
+                      <div 
+                        id="layer-search-bar-container"
+                        style={{ 
+                        width: '100%',
+                        backgroundColor: '#f9fafb',
+                        padding: '12px 16px',
+                        borderBottom: '2px solid #3b82f6',
+                        position: 'sticky',
+                        top: '60px',
+                        zIndex: 10003,
+                        minHeight: '50px'
+                      }}>
+                        <div className="max-w-7xl mx-auto">
+                          <div style={{ position: 'relative', width: '100%' }}>
+                            <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px', zIndex: 10, pointerEvents: 'none' }}>🔍</span>
+                            <input
+                              id="layer-search-input"
+                              type="text"
+                              placeholder="Search layers..."
+                              value={layerSearchQuery}
+                              onChange={(e) => {
+                                console.log('🔍 DEBUG: Search input changed:', e.target.value);
+                                setLayerSearchQuery(e.target.value);
+                              }}
+                              style={{ 
+                                width: '100%',
+                                backgroundColor: '#ffffff',
+                                paddingLeft: '44px',
+                                paddingRight: layerSearchQuery ? '44px' : '16px',
+                                paddingTop: '10px',
+                                paddingBottom: '10px',
+                                border: '2px solid #3b82f6',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                color: '#111827',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                outline: 'none'
+                              }}
+                              onFocus={(e) => {
+                                console.log('🔍 DEBUG: Search input focused');
+                                e.target.style.borderColor = '#3b82f6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.2)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.borderColor = '#3b82f6';
+                                e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                              }}
+                            />
+                            {layerSearchQuery && (
+                              <button
+                                onClick={() => {
+                                  console.log('🔍 DEBUG: Clear button clicked');
+                                  setLayerSearchQuery('');
+                                }}
+                                type="button"
+                                style={{ 
+                                  position: 'absolute',
+                                  right: '16px',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  fontSize: '18px',
+                                  color: '#6b7280',
+                                  padding: '4px',
+                                  zIndex: 10
+                                }}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                  
                   {/* Header with Back Button - Matching EnrichmentCategoryView style exactly */}
                       <div 
                     className="shadow-lg border-b border-gray-300 flex-shrink-0"
                         style={{
                           backgroundColor: headerColor,
                       position: 'sticky',
-                      top: 0,
+                      top: '64px',
                       zIndex: 10002,
                       width: '100%'
                         }}
                       >
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                      <div className="flex items-center justify-between h-16">
+                      <div className="flex items-center gap-3 sm:gap-4 h-16" style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
                           <button
                           onClick={() => {
                             if (cameFromNHSubCategories) {
@@ -2465,13 +2638,37 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           <span className="whitespace-nowrap">Back to Configuration</span>
                           </button>
                         
-                        <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                        <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0 ml-auto">
                           <div className="text-right">
                             <h1 className="text-sm sm:text-base font-bold text-white leading-tight">{category.title}</h1>
                             <p className="text-xs text-white text-opacity-90 leading-tight">{selectedCount} of {categoryEnrichments.length} selected</p>
                           </div>
                         </div>
                       </div>
+                        </div>
+                      </div>
+                      
+                      {/* Mobile Search Bar - Full Width Below Header */}
+                      <div className="w-full sm:hidden px-4 py-2 bg-white border-b border-gray-200">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 z-10 pointer-events-none" />
+                          <input
+                            type="text"
+                            placeholder="Search layers..."
+                            value={layerSearchQuery}
+                            onChange={(e) => setLayerSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-10 py-2 text-sm text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-md"
+                          />
+                          {layerSearchQuery && (
+                            <button
+                              onClick={() => setLayerSearchQuery('')}
+                              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+                              type="button"
+                              aria-label="Clear search"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -2539,10 +2736,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             });
                           });
                           
+                          // Filter out empty sub-categories if search is active
+                          const filteredCategoryOrder = layerSearchQuery.trim() === ''
+                            ? categoryOrder
+                            : categoryOrder.filter(cat => groupedBySubCategory[cat] && groupedBySubCategory[cat].length > 0);
+                          
                           return (
                             <>
-                              {categoryOrder
-                                .filter(cat => groupedBySubCategory[cat])
+                              {filteredCategoryOrder
+                                .filter(cat => groupedBySubCategory[cat] && groupedBySubCategory[cat].length > 0)
                                 .map(subCategory => (
                                   <div key={subCategory} className="space-y-3 sm:space-y-4">
                                     <h3 className="text-base sm:text-lg font-bold text-gray-900 pt-2 pb-1 border-b border-gray-300">

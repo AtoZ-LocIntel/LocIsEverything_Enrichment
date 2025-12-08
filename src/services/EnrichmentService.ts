@@ -80,11 +80,10 @@ import { getCAGeothermalWellsData } from '../adapters/caGeothermalWells';
 import { getCAOilGasWellsData } from '../adapters/caOilGasWells';
 import { getCAEcoRegionsData } from '../adapters/caEcoRegions';
 import { getCALosAngelesZoningData } from '../adapters/caLosAngelesZoning';
-import { getLACountyArtsRecreationData, getLACountyEducationData, getLACountyHospitalsData, getLACountyMunicipalServicesData, getLACountyPhysicalFeaturesData, getLACountyPublicSafetyData, getLACountyTransportationData } from '../adapters/laCountyPOI';
+import { getLACountyArtsRecreationData, getLACountyEducationData, getLACountyHospitalsData, getLACountyMunicipalServicesData, getLACountyPhysicalFeaturesData, getLACountyPublicSafetyData } from '../adapters/laCountyPOI';
 import { getLACountyHistoricCulturalMonumentsData } from '../adapters/laCountyHistoricCulturalMonuments';
 import { getLACountyHousingLeadRiskData } from '../adapters/laCountyHousingLeadRisk';
 import { getLACountySchoolDistrictBoundariesData } from '../adapters/laCountySchoolDistrictBoundaries';
-import { getLACountyMetroLinesData } from '../adapters/laCountyMetroLines';
 import { getLACountyStreetInventoryData } from '../adapters/laCountyStreetInventory';
 import { getLACountyHazardsData } from '../adapters/laCountyHazards';
 import { getLACountyBasemapsGridsData } from '../adapters/laCountyBasemapsGrids';
@@ -96,6 +95,7 @@ import { getLACountyDemographicsData } from '../adapters/laCountyDemographics';
 import { getLACountyLMSData } from '../adapters/laCountyLMSData';
 import { getLACountyPoliticalBoundariesData } from '../adapters/laCountyPoliticalBoundaries';
 import { getLACountyRedistrictingData } from '../adapters/laCountyRedistricting';
+import { getLACountyTransportationData } from '../adapters/laCountyTransportation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2073,7 +2073,7 @@ export class EnrichmentService {
       case 'la_county_public_safety':
         return await this.getLACountyPublicSafety(lat, lon, radius);
       case 'la_county_transportation':
-        return await this.getLACountyTransportation(lat, lon, radius);
+        return await this.getLACountyTransportation(0, lat, lon, radius);
       
       // LA County Historic Cultural Monuments - Point-in-polygon and proximity query (max 25 miles)
       case 'la_county_historic_cultural_monuments':
@@ -2086,10 +2086,6 @@ export class EnrichmentService {
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
         return await this.getLACountySchoolDistrictBoundaries(lat, lon);
-      
-      // LA County MTA Metro Lines - Proximity query only (max 25 miles)
-      case 'la_county_metro_lines':
-        return await this.getLACountyMetroLines(lat, lon, radius);
       
       // LA County Street Inventory - Proximity query only (max 5 miles)
       case 'la_county_street_inventory':
@@ -2712,6 +2708,34 @@ export class EnrichmentService {
         return await this.getLACountyRedistricting(78, lat, lon, radius);
       case 'la_county_redistricting_lang_other':
         return await this.getLACountyRedistricting(79, lat, lon, radius);
+      
+      // LA County Transportation - All layers (proximity queries only, up to 25 miles)
+      case 'la_county_transportation':
+        return await this.getLACountyTransportation(0, lat, lon, radius);
+      case 'la_county_milepost_markers':
+        return await this.getLACountyTransportation(1, lat, lon, radius);
+      case 'la_county_rail_transportation':
+        return await this.getLACountyTransportation(2, lat, lon, radius);
+      case 'la_county_freeways':
+        return await this.getLACountyTransportation(3, lat, lon, radius);
+      case 'la_county_disaster_routes':
+        return await this.getLACountyTransportation(4, lat, lon, radius);
+      case 'la_county_highway_shields':
+        return await this.getLACountyTransportation(5, lat, lon, radius);
+      case 'la_county_freeways_lines':
+        return await this.getLACountyTransportation(6, lat, lon, radius);
+      case 'la_county_metro_park_ride':
+        return await this.getLACountyTransportation(7, lat, lon, radius);
+      case 'la_county_metro_stations':
+        return await this.getLACountyTransportation(8, lat, lon, radius);
+      case 'la_county_metrolink_stations':
+        return await this.getLACountyTransportation(9, lat, lon, radius);
+      case 'la_county_metrolink_lines':
+        return await this.getLACountyTransportation(10, lat, lon, radius);
+      case 'la_county_metro_lines':
+        return await this.getLACountyTransportation(11, lat, lon, radius);
+      case 'la_county_railroads':
+        return await this.getLACountyTransportation(12, lat, lon, radius);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -9382,42 +9406,6 @@ out center;`;
     }
   }
 
-  private async getLACountyTransportation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
-    try {
-      console.log(`🚌 Fetching LA County Transportation data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
-      
-      if (!radius || radius <= 0) {
-        return {
-          la_county_transportation_count: 0,
-          la_county_transportation_all: []
-        };
-      }
-      
-      const pois = await getLACountyTransportationData(lat, lon, radius);
-      
-      const result: Record<string, any> = {};
-      result.la_county_transportation_count = pois.length;
-      result.la_county_transportation_all = pois.map(poi => ({
-        ...poi.attributes,
-        poiId: poi.poiId,
-        geometry: poi.geometry,
-        distance_miles: poi.distance_miles
-      }));
-      result.la_county_transportation_summary = `Found ${pois.length} transportation POI(s) within ${radius} miles.`;
-      
-      console.log(`✅ LA County Transportation data processed:`, {
-        totalCount: result.la_county_transportation_count
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('❌ Error fetching LA County Transportation data:', error);
-      return {
-        la_county_transportation_count: 0,
-        la_county_transportation_all: []
-      };
-    }
-  }
 
   private async getLACountyHistoricCulturalMonuments(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
@@ -9599,47 +9587,6 @@ out center;`;
     }
   }
 
-  private async getLACountyMetroLines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
-    try {
-      console.log(`🚇 Fetching LA County MTA Metro Lines data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
-      
-      if (!radius || radius <= 0) {
-        return {
-          la_county_metro_lines_count: 0,
-          la_county_metro_lines_all: []
-        };
-      }
-      
-      const lines = await getLACountyMetroLinesData(lat, lon, radius);
-      
-      const result: Record<string, any> = {};
-      result.la_county_metro_lines_count = lines.length;
-      result.la_county_metro_lines_all = lines.map(line => ({
-        ...line.attributes,
-        lineId: line.lineId,
-        name: line.name,
-        label: line.label,
-        status: line.status,
-        type: line.type,
-        shapeLength: line.shapeLength,
-        geometry: line.geometry,
-        distance_miles: line.distance_miles
-      }));
-      result.la_county_metro_lines_summary = `Found ${lines.length} metro line(s) within ${radius} miles.`;
-      
-      console.log(`✅ LA County Metro Lines data processed:`, {
-        totalCount: result.la_county_metro_lines_count
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('❌ Error fetching LA County MTA Metro Lines data:', error);
-      return {
-        la_county_metro_lines_count: 0,
-        la_county_metro_lines_all: []
-      };
-    }
-  }
 
   private async getLACountyStreetInventory(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
@@ -10609,6 +10556,97 @@ out center;`;
         [`la_county_${key}_all`]: [],
         [`la_county_${key}_containing`]: null,
         [`la_county_${key}_containing_message`]: `No data found`,
+        [`la_county_${key}_summary`]: `No data found`
+      };
+    }
+  }
+
+  private async getLACountyTransportation(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      // Map layer IDs to enrichment keys
+      const layerKeyMap: Record<number, string> = {
+        0: 'transportation',
+        1: 'milepost_markers',
+        2: 'rail_transportation',
+        3: 'freeways',
+        4: 'disaster_routes',
+        5: 'highway_shields',
+        6: 'freeways_lines',
+        7: 'metro_park_ride',
+        8: 'metro_stations',
+        9: 'metrolink_stations',
+        10: 'metrolink_lines',
+        11: 'metro_lines',
+        12: 'railroads'
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'Transportation',
+        1: 'Milepost Markers',
+        2: 'Rail Transportation',
+        3: 'Freeways',
+        4: 'Disaster Routes',
+        5: 'Highway Shields',
+        6: 'Freeways (Lines)',
+        7: 'Metro Park and Ride',
+        8: 'Metro Stations',
+        9: 'Metrolink Stations',
+        10: 'Metrolink Lines',
+        11: 'Metro Lines',
+        12: 'Railroads'
+      };
+      
+      const key = layerKeyMap[layerId] || `transportation_${layerId}`;
+      const layerName = layerNames[layerId] || `Transportation Layer ${layerId}`;
+      
+      console.log(`🗺️ Fetching LA County Transportation ${layerName} for [${lat}, ${lon}]`);
+      
+      const transportationFeatures = await getLACountyTransportationData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (transportationFeatures.length > 0) {
+        result[`la_county_${key}_count`] = transportationFeatures.length;
+        result[`la_county_${key}_all`] = transportationFeatures.map(feature => ({
+          ...feature.attributes,
+          transportationId: feature.transportationId,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${transportationFeatures.length} ${layerName.toLowerCase()} feature(s) within proximity.`;
+      } else {
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+        result[`la_county_${key}_summary`] = `No ${layerName.toLowerCase()} found within the specified radius.`;
+      }
+      
+      console.log(`✅ LA County Transportation ${layerName} processed:`, {
+        totalCount: result[`la_county_${key}_count`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Transportation Layer ${layerId}:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'transportation',
+        1: 'milepost_markers',
+        2: 'rail_transportation',
+        3: 'freeways',
+        4: 'disaster_routes',
+        5: 'highway_shields',
+        6: 'freeways_lines',
+        7: 'metro_park_ride',
+        8: 'metro_stations',
+        9: 'metrolink_stations',
+        10: 'metrolink_lines',
+        11: 'metro_lines',
+        12: 'railroads'
+      };
+      const key = layerKeyMap[layerId] || `transportation_${layerId}`;
+      return {
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: [],
         [`la_county_${key}_summary`]: `No data found`
       };
     }

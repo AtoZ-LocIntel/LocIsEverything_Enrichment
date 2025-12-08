@@ -625,6 +625,17 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key.startsWith('la_county_elevation_') && key.endsWith('_enabled') || // Skip LA County Elevation raster layer flags (handled separately)
     key.startsWith('la_county_demographics_') && key.endsWith('_all') || // Skip LA County Demographics arrays (handled separately for map drawing)
     (key.startsWith('la_county_redistricting_') && key.endsWith('_all')) || // Skip LA County Redistricting arrays (handled separately for map drawing)
+    (key.startsWith('la_county_transportation') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_milepost_markers') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_rail_transportation') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_freeways') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_disaster_routes') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_highway_shields') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_metro_park_ride') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_metro_stations') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_metrolink') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_metro_lines') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
+    (key.startsWith('la_county_railroads') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately for map drawing)
     key === 'ca_state_parks_entry_points_all' || // Skip CA State Parks Entry Points array (handled separately for map drawing)
     key === 'ca_state_parks_parking_lots_all' || // Skip CA State Parks Parking Lots array (handled separately for map drawing)
     key === 'ca_state_parks_boundaries_all' || // Skip CA State Parks Boundaries array (handled separately for map drawing)
@@ -11368,106 +11379,6 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing LA County School District Boundaries:', error);
       }
 
-      // Draw LA County MTA Metro Lines as polylines on the map
-      try {
-        if (enrichments.la_county_metro_lines_all && Array.isArray(enrichments.la_county_metro_lines_all)) {
-          let lineCount = 0;
-          enrichments.la_county_metro_lines_all.forEach((line: any) => {
-            if (line.geometry && line.geometry.paths) {
-              try {
-                // Convert ESRI polyline paths to Leaflet LatLng arrays
-                const paths = line.geometry.paths;
-                if (paths && paths.length > 0) {
-                  lineCount++;
-                  // For each path in the polyline, create a separate polyline
-                  paths.forEach((path: number[][]) => {
-                    const latlngs = path.map((coord: number[]) => {
-                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
-                      // Since we requested outSR=4326, coordinates should already be in WGS84
-                      // Convert [lon, lat] to [lat, lon] for Leaflet
-                      return [coord[1], coord[0]] as [number, number];
-                    });
-
-                    const lineName = line.name || line.NAME || line.Name || 'Unknown Line';
-                    const lineLabel = line.label || line.LABEL || line.Label || null;
-                    const status = line.status || line.STATUS || line.Status || null;
-                    const type = line.type || line.TYPE || line.Type || null;
-                    const shapeLength = line.shapeLength || line.Shape__Length || line.shape_length || null;
-                    const lineId = line.lineId || line.OBJECTID || line.objectid || null;
-                    const distance = line.distance_miles !== null && line.distance_miles !== undefined ? line.distance_miles : 0;
-
-                    // Create polyline with purple color for metro lines
-                    const polyline = L.polyline(latlngs, {
-                      color: '#7c3aed', // Purple color for metro lines
-                      weight: 4,
-                      opacity: 0.8,
-                      smoothFactor: 1
-                    });
-
-                    // Build popup content with all line attributes
-                    let popupContent = `
-                      <div style="min-width: 250px; max-width: 400px;">
-                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                          🚇 ${lineName}
-                        </h3>
-                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                          ${lineLabel ? `<div><strong>Label:</strong> ${lineLabel}</div>` : ''}
-                          ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
-                          ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
-                          ${lineId ? `<div><strong>Line ID:</strong> ${lineId}</div>` : ''}
-                          ${shapeLength !== null && shapeLength !== undefined ? `<div><strong>Length:</strong> ${shapeLength.toFixed(2)} meters</div>` : ''}
-                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
-                        </div>
-                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
-                    `;
-                    
-                    // Add all line attributes (excluding internal fields)
-                    const excludeFields = ['lineId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'NAME', 'Name', 'label', 'LABEL', 'Label', 'status', 'STATUS', 'Status', 'type', 'TYPE', 'Type', 'shapeLength', 'Shape__Length', 'shape_length'];
-                    Object.entries(line).forEach(([key, value]) => {
-                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
-                        if (typeof value === 'object' && !Array.isArray(value)) {
-                          return;
-                        }
-                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
-                      }
-                    });
-                    
-                    popupContent += `
-                        </div>
-                      </div>
-                    `;
-                    
-                    polyline.bindPopup(popupContent);
-                    polyline.addTo(primary);
-                    
-                    // Extend bounds to include polyline
-                    const polylineBounds = L.latLngBounds(latlngs);
-                    bounds.extend(polylineBounds);
-                  });
-                }
-              } catch (error) {
-                console.error('Error drawing LA County Metro Line polyline:', error);
-              }
-            }
-          });
-          
-          if (lineCount > 0) {
-            if (!legendAccumulator['la_county_metro_lines']) {
-              legendAccumulator['la_county_metro_lines'] = {
-                icon: '🚇',
-                color: '#7c3aed',
-                title: 'LA County MTA Metro Lines',
-                count: 0,
-              };
-            }
-            legendAccumulator['la_county_metro_lines'].count += lineCount;
-          }
-        }
-      } catch (error) {
-        console.error('Error processing LA County MTA Metro Lines:', error);
-      }
-
       // Draw LA County Street Inventory as polylines on the map
       try {
         if (enrichments.la_county_street_inventory_all && Array.isArray(enrichments.la_county_street_inventory_all)) {
@@ -13511,6 +13422,157 @@ const MapView: React.FC<MapViewProps> = ({
                 } catch (error) {
                   console.error(`Error drawing ${title} polygon:`, error);
                 }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
+      // Draw LA County Transportation layers
+      const laCountyTransportationLayers = [
+        { key: 'la_county_transportation_all', layerId: 0, icon: '🚗', color: '#3b82f6', title: 'LA County Transportation', isPoint: true, isLine: true },
+        { key: 'la_county_milepost_markers_all', layerId: 1, icon: '📍', color: '#2563eb', title: 'LA County Milepost Markers', isPoint: true, isLine: false },
+        { key: 'la_county_rail_transportation_all', layerId: 2, icon: '🚂', color: '#1d4ed8', title: 'LA County Rail Transportation', isPoint: true, isLine: true },
+        { key: 'la_county_freeways_all', layerId: 3, icon: '🛣️', color: '#1e40af', title: 'LA County Freeways', isPoint: true, isLine: true },
+        { key: 'la_county_disaster_routes_all', layerId: 4, icon: '🚨', color: '#1e3a8a', title: 'LA County Disaster Routes', isPoint: false, isLine: true },
+        { key: 'la_county_highway_shields_all', layerId: 5, icon: '🛡️', color: '#172554', title: 'LA County Highway Shields', isPoint: true, isLine: false },
+        { key: 'la_county_freeways_lines_all', layerId: 6, icon: '🛣️', color: '#0f172a', title: 'LA County Freeways (Lines)', isPoint: false, isLine: true },
+        { key: 'la_county_metro_park_ride_all', layerId: 7, icon: '🅿️', color: '#6366f1', title: 'LA County Metro Park and Ride', isPoint: true, isLine: false },
+        { key: 'la_county_metro_stations_all', layerId: 8, icon: '🚇', color: '#4f46e5', title: 'LA County Metro Stations', isPoint: true, isLine: false },
+        { key: 'la_county_metrolink_stations_all', layerId: 9, icon: '🚆', color: '#4338ca', title: 'LA County Metrolink Stations', isPoint: true, isLine: false },
+        { key: 'la_county_metrolink_lines_all', layerId: 10, icon: '🚆', color: '#3730a3', title: 'LA County Metrolink Lines', isPoint: false, isLine: true },
+        { key: 'la_county_metro_lines_all', layerId: 11, icon: '🚇', color: '#312e81', title: 'LA County Metro Lines', isPoint: false, isLine: true },
+        { key: 'la_county_railroads_all', layerId: 12, icon: '🚂', color: '#1e1b4b', title: 'LA County Railroads', isPoint: false, isLine: true }
+      ];
+
+      laCountyTransportationLayers.forEach(({ key, icon, color, title, isPoint, isLine }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((transportation: any) => {
+              try {
+                // Handle point geometry
+                if (isPoint && transportation.geometry && transportation.geometry.x !== undefined && transportation.geometry.y !== undefined) {
+                  const lat = transportation.geometry.y;
+                  const lon = transportation.geometry.x;
+                  
+                  const transportationId = transportation.transportationId || transportation.STATION_NAME || transportation.station_name || transportation.STATION || transportation.station || transportation.NAME || transportation.Name || transportation.name || transportation.OBJECTID || transportation.objectid || 'Unknown';
+                  const distance = transportation.distance_miles !== null && transportation.distance_miles !== undefined ? transportation.distance_miles : 0;
+                  
+                  const marker = L.marker([lat, lon], {
+                    icon: L.divIcon({
+                      className: 'custom-marker',
+                      html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${icon}</div>`,
+                      iconSize: [24, 24],
+                      iconAnchor: [12, 12]
+                    })
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${title}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${transportationId ? `<div><strong>ID:</strong> ${transportationId}</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  const excludeFields = ['transportationId', 'STATION_NAME', 'station_name', 'STATION', 'station', 'NAME', 'Name', 'name', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'distance_miles'];
+                  Object.entries(transportation).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  marker.bindPopup(popupContent);
+                  marker.addTo(primary);
+                  bounds.extend([lat, lon]);
+                  featureCount++;
+                }
+                // Handle line geometry
+                else if (isLine && transportation.geometry && transportation.geometry.paths) {
+                  const paths = transportation.geometry.paths;
+                  if (paths && paths.length > 0) {
+                    paths.forEach((path: number[][]) => {
+                      const latlngs = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+                      
+                      const transportationId = transportation.transportationId || transportation.LINE || transportation.line || transportation.ROUTE || transportation.route || transportation.NAME || transportation.Name || transportation.name || 'Unknown';
+                      const distance = transportation.distance_miles !== null && transportation.distance_miles !== undefined ? transportation.distance_miles : 0;
+                      
+                      const polyline = L.polyline(latlngs, {
+                        color: color,
+                        weight: 3,
+                        opacity: 0.7,
+                        smoothFactor: 1
+                      });
+                      
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            ${icon} ${title}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${transportationId ? `<div><strong>ID:</strong> ${transportationId}</div>` : ''}
+                            ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                          </div>
+                          <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      `;
+                      
+                      const excludeFields = ['transportationId', 'LINE', 'line', 'ROUTE', 'route', 'NAME', 'Name', 'name', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'distance_miles'];
+                      Object.entries(transportation).forEach(([key, value]) => {
+                        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                          if (typeof value === 'object' && !Array.isArray(value)) {
+                            return;
+                          }
+                          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                          popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                        }
+                      });
+                      
+                      popupContent += `
+                          </div>
+                        </div>
+                      `;
+                      
+                      polyline.bindPopup(popupContent);
+                      polyline.addTo(primary);
+                      const polylineBounds = L.latLngBounds(latlngs);
+                      bounds.extend(polylineBounds);
+                      featureCount++;
+                    });
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing ${title} feature:`, error);
               }
             });
             

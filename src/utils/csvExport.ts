@@ -383,7 +383,18 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('la_county_demographics_') && key.endsWith('_all')) || // Skip LA County LMS arrays (handled separately)
         (key.startsWith('la_county_lms_') && key.endsWith('_all')) || // Skip LA County Political Boundaries arrays (handled separately)
         (key.startsWith('la_county_political_boundaries_') && key.endsWith('_all')) || // Skip LA County Redistricting arrays (handled separately)
-        (key.startsWith('la_county_redistricting_') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
+        (key.startsWith('la_county_redistricting_') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_transportation') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_milepost_markers') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_rail_transportation') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_freeways') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_disaster_routes') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_highway_shields') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_metro_park_ride') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_metro_stations') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_metrolink') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_metro_lines') && key.endsWith('_all')) || // Skip LA County Transportation arrays (handled separately)
+        (key.startsWith('la_county_railroads') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -5828,6 +5839,79 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'LA County Redistricting Data 2011'
+        ]);
+      });
+    }
+    
+    // LA County Transportation - Generic handler for all layers
+    if ((key.startsWith('la_county_transportation') || 
+         key.startsWith('la_county_milepost_markers') ||
+         key.startsWith('la_county_rail_transportation') ||
+         key.startsWith('la_county_freeways') ||
+         key.startsWith('la_county_disaster_routes') ||
+         key.startsWith('la_county_highway_shields') ||
+         key.startsWith('la_county_metro_park_ride') ||
+         key.startsWith('la_county_metro_stations') ||
+         key.startsWith('la_county_metrolink') ||
+         key.startsWith('la_county_metro_lines') ||
+         key.startsWith('la_county_railroads')) && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
+      value.forEach((transportation: any) => {
+        const transportationId = transportation.transportationId || transportation.STATION_NAME || transportation.station_name || transportation.STATION || transportation.station || transportation.LINE || transportation.line || transportation.ROUTE || transportation.route || transportation.NAME || transportation.Name || transportation.name || 'Unknown';
+        const distance = transportation.distance_miles !== null && transportation.distance_miles !== undefined ? transportation.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry
+        let lat = '';
+        let lon = '';
+        if (transportation.geometry) {
+          // Point geometry
+          if (transportation.geometry.x !== undefined && transportation.geometry.y !== undefined) {
+            lat = transportation.geometry.y.toString();
+            lon = transportation.geometry.x.toString();
+          }
+          // Line geometry (use first coordinate)
+          else if (transportation.geometry.paths && transportation.geometry.paths.length > 0 && transportation.geometry.paths[0].length > 0) {
+            const firstCoord = transportation.geometry.paths[0][0];
+            lat = firstCoord[1].toString();
+            lon = firstCoord[0].toString();
+          }
+        }
+        
+        const allAttributes = { ...transportation };
+        delete allAttributes.transportationId;
+        delete allAttributes.STATION_NAME;
+        delete allAttributes.station_name;
+        delete allAttributes.STATION;
+        delete allAttributes.station;
+        delete allAttributes.LINE;
+        delete allAttributes.line;
+        delete allAttributes.ROUTE;
+        delete allAttributes.route;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.name;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Transportation',
+          (location.confidence || 'N/A').toString(),
+          layerName,
+          transportationId,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          distance ? `Nearby Feature (${distance} miles)` : 'Nearby Feature',
+          attributesJson,
+          '',
+          '',
+          'LA County Transportation'
         ]);
       });
     }

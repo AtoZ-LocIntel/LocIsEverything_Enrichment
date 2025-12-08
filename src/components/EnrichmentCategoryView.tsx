@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Settings, Check } from 'lucide-react';
 
 interface EnrichmentItem {
@@ -35,6 +35,17 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
   onPoiRadiiChange,
   onBackToConfig
 }) => {
+  const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
+  
+  // Filter enrichments based on search query
+  const filteredEnrichments = layerSearchQuery.trim() === '' 
+    ? category.enrichments 
+    : category.enrichments.filter(e => 
+        e.label.toLowerCase().includes(layerSearchQuery.toLowerCase()) ||
+        e.description.toLowerCase().includes(layerSearchQuery.toLowerCase()) ||
+        e.id.toLowerCase().includes(layerSearchQuery.toLowerCase())
+      );
+  
   const handleToggleEnrichment = (enrichmentId: string) => {
     const isSelected = selectedEnrichments.includes(enrichmentId);
     if (isSelected) {
@@ -56,7 +67,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
     });
   };
 
-  const selectedCount = category.enrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+  const selectedCount = filteredEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -110,20 +121,93 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between gap-3 sm:gap-4 h-16">
             <button
               onClick={onBackToConfig}
-              className="flex items-center space-x-2 text-white hover:text-gray-200 transition-colors font-semibold"
+              className="flex items-center space-x-2 text-white hover:text-gray-200 transition-colors font-semibold text-sm sm:text-base flex-shrink-0"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back to Configuration</span>
+              <ArrowLeft className="w-5 h-5 flex-shrink-0" />
+              <span className="whitespace-nowrap">Back to Configuration</span>
             </button>
             
-            <div className="flex items-center space-x-3">
-
-              <div>
-                <h1 className="text-base font-bold text-white">{category.title}</h1>
-                <p className="text-xs text-white text-opacity-90">{selectedCount} of {category.enrichments.length} selected</p>
+            {/* Search Bar */}
+            <div className="flex-1 max-w-md mx-2 sm:mx-4" style={{ minWidth: '200px' }}>
+              <div style={{ position: 'relative', width: '100%' }}>
+                <span style={{ 
+                  position: 'absolute', 
+                  left: '12px', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  fontSize: '16px', 
+                  zIndex: 10, 
+                  pointerEvents: 'none',
+                  color: '#9ca3af'
+                }}>🔍</span>
+                <input
+                  id="layer-search-input"
+                  type="text"
+                  placeholder="Search layers..."
+                  value={layerSearchQuery}
+                  onChange={(e) => setLayerSearchQuery(e.target.value)}
+                  style={{ 
+                    width: '100%',
+                    backgroundColor: '#ffffff',
+                    paddingLeft: '36px',
+                    paddingRight: layerSearchQuery ? '36px' : '12px',
+                    paddingTop: '8px',
+                    paddingBottom: '8px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '400',
+                    color: '#111827',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                  }}
+                />
+                {layerSearchQuery && (
+                  <button
+                    onClick={() => setLayerSearchQuery('')}
+                    type="button"
+                    style={{ 
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      color: '#6b7280',
+                      padding: '4px',
+                      zIndex: 10
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3 flex-shrink-0">
+              <div className="text-right">
+                <h1 className="text-sm sm:text-base font-bold text-white leading-tight">{category.title}</h1>
+                <p className="text-xs text-white text-opacity-90 leading-tight">
+                  {selectedCount} of {filteredEnrichments.length} selected
+                  {layerSearchQuery && filteredEnrichments.length !== category.enrichments.length && (
+                    <span className="block text-xs text-white text-opacity-70 mt-0.5">
+                      (filtered from {category.enrichments.length})
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -142,7 +226,18 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
 
         {/* Enrichment Options */}
         <div className="space-y-4">
-          {category.enrichments.map((enrichment) => {
+          {filteredEnrichments.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+              <p className="text-gray-600 text-lg">No layers found matching "{layerSearchQuery}"</p>
+              <button
+                onClick={() => setLayerSearchQuery('')}
+                className="mt-4 text-blue-600 hover:text-blue-800 underline"
+              >
+                Clear search
+              </button>
+            </div>
+          ) : (
+            filteredEnrichments.map((enrichment) => {
             const isSelected = selectedEnrichments.includes(enrichment.id);
             const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius || 1;
             const radiusOptions = enrichment.id === 'poi_aurora_viewing_sites'
@@ -242,7 +337,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
 
         {/* Selection Summary */}

@@ -1168,6 +1168,13 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
           cost: "Free"
+        },
+        {
+          name: "LA County Transportation",
+          description: "Los Angeles County Transportation data including Transportation, Milepost Markers, Rail Transportation, Freeways, Disaster Routes, Highway Shields, Metro Park and Ride, Metro Stations, Metrolink Stations, Metrolink Lines, Metro Lines, and Railroads - proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
         }
       ]
     },
