@@ -599,6 +599,12 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'chicago_speed_cameras_all' || // Skip Chicago Speed Cameras array (handled separately for map drawing)
     key === 'chicago_red_light_cameras_all' || // Skip Chicago Red Light Cameras array (handled separately for map drawing)
     key === 'nyc_mappluto_all' || // Skip NYC MapPLUTO array (handled separately for map drawing)
+    key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
+    key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
+    key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
+    key === 'nyc_waterfront_hpb_launch_site_all' || // Skip NYC HPB Launch Site array (handled separately for map drawing)
+    key === 'nyc_waterfront_parks_all' || // Skip NYC Waterfront Parks array (handled separately for map drawing)
+    key === 'nyc_waterfront_paws_all' || // Skip NYC PAWS array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -896,6 +902,14 @@ const MapView: React.FC<MapViewProps> = ({
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  // Store feature metadata for tabbed popup functionality
+  const featuresMetadataRef = useRef<Array<{
+    layer: L.Layer;
+    layerType: string;
+    layerTitle: string;
+    featureData: any;
+    geometry: 'point' | 'polyline' | 'polygon';
+  }>>([]);
   // Default to hybrid basemap (no dropdown, fixed basemap)
   const selectedBasemap = 'hybrid';
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
@@ -1150,6 +1164,8 @@ const MapView: React.FC<MapViewProps> = ({
     // Clear layers and add features - simple and direct
     primary.clearLayers();
     poi.clearLayers();
+    // Clear feature metadata for tabbed popup
+    featuresMetadataRef.current = [];
     
     // Add location marker
     if (results[0]?.location) {
@@ -11676,6 +11692,577 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing NYC MapPLUTO Tax Lots:', error);
       }
 
+      // Draw NYC Bike Routes as polylines on the map
+      try {
+        if (enrichments.nyc_bike_routes_all && Array.isArray(enrichments.nyc_bike_routes_all)) {
+          let bikeRouteCount = 0;
+          enrichments.nyc_bike_routes_all.forEach((route: any) => {
+            if (route.geometry && route.geometry.paths) {
+              try {
+                const paths = route.geometry.paths;
+                if (paths && paths.length > 0) {
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 2) {
+                      return;
+                    }
+                    
+                    const polyline = L.polyline(latlngs, {
+                      color: '#10b981',
+                      weight: 3,
+                      opacity: 0.8
+                    });
+                    
+                    const routeName = route.name || route.NAME || route.Name || 'Unknown Route';
+                    const routeType = route.routeType || route.ROUTE_TYPE || route.route_type || route.TYPE || route.type || '';
+                    const status = route.status || route.STATUS || route.Status || '';
+                    const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🚴 Bike Route
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${routeName ? `<div><strong>Name:</strong> ${routeName}</div>` : ''}
+                          ${routeType ? `<div><strong>Route Type:</strong> ${routeType}</div>` : ''}
+                          ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                          ${distance ? `<div><strong>Distance:</strong> ${distance} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all route attributes (excluding internal fields)
+                    const excludeFields = ['geometry', 'distance_miles', 'routeId', 'ROUTE_ID', 'route_id', 'OBJECTID', 'objectid', 'name', 'NAME', 'Name', 'routeType', 'ROUTE_TYPE', 'route_type', 'TYPE', 'type', 'status', 'STATUS', 'Status'];
+                    Object.entries(route).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                    
+                    bikeRouteCount++;
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing NYC Bike Route polyline:', error);
+              }
+            }
+          });
+          
+          if (bikeRouteCount > 0) {
+            if (!legendAccumulator['nyc_bike_routes']) {
+              legendAccumulator['nyc_bike_routes'] = {
+                icon: '🚴',
+                color: '#10b981',
+                title: 'NYC Bike Routes',
+                count: 0,
+              };
+            }
+            legendAccumulator['nyc_bike_routes'].count += bikeRouteCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NYC Bike Routes:', error);
+      }
+
+      // Draw NYC Neighborhoods as polygons on the map
+      try {
+        if (enrichments.nyc_neighborhoods_all && Array.isArray(enrichments.nyc_neighborhoods_all)) {
+          let neighborhoodCount = 0;
+          enrichments.nyc_neighborhoods_all.forEach((neighborhood: any) => {
+            if (neighborhood.geometry && neighborhood.geometry.rings) {
+              try {
+                const rings = neighborhood.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('NYC Neighborhood polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = neighborhood.isContaining;
+                  const color = isContaining ? '#06b6d4' : '#67e8f9'; // Cyan for neighborhoods
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const ntaCode = neighborhood.ntaCode || neighborhood.NTACode || neighborhood.NTA_CODE || neighborhood.nta_code || null;
+                  const ntaName = neighborhood.ntaName || neighborhood.NTAName || neighborhood.NTA_NAME || neighborhood.nta_name || neighborhood.Name || neighborhood.name || null;
+                  const borough = neighborhood.borough || neighborhood.Borough || neighborhood.BOROUGH || null;
+                  const distance = neighborhood.distance_miles !== null && neighborhood.distance_miles !== undefined ? neighborhood.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${isContaining ? '🏘️ Containing Neighborhood' : '🏘️ Nearby Neighborhood'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${ntaName ? `<div><strong>Neighborhood:</strong> ${ntaName}</div>` : ''}
+                        ${ntaCode ? `<div><strong>NTA Code:</strong> ${ntaCode}</div>` : ''}
+                        ${borough ? `<div><strong>Borough:</strong> ${borough}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this neighborhood</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all neighborhood attributes (excluding internal fields)
+                  const excludeFields = ['neighborhoodId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'ntaCode', 'NTACode', 'NTA_CODE', 'nta_code', 'ntaName', 'NTAName', 'NTA_NAME', 'nta_name', 'Name', 'name', 'borough', 'Borough', 'BOROUGH', 'isContaining'];
+                  Object.entries(neighborhood).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  neighborhoodCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing NYC Neighborhood polygon:', error);
+              }
+            }
+          });
+          
+          if (neighborhoodCount > 0) {
+            if (!legendAccumulator['nyc_neighborhoods']) {
+              legendAccumulator['nyc_neighborhoods'] = {
+                icon: '🏘️',
+                color: '#06b6d4',
+                title: 'NYC Neighborhoods',
+                count: 0,
+              };
+            }
+            legendAccumulator['nyc_neighborhoods'].count += neighborhoodCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NYC Neighborhoods:', error);
+      }
+
+      // Draw NYC Zoning Districts as polygons on the map
+      try {
+        if (enrichments.nyc_zoning_districts_all && Array.isArray(enrichments.nyc_zoning_districts_all)) {
+          let districtCount = 0;
+          enrichments.nyc_zoning_districts_all.forEach((district: any) => {
+            if (district.geometry && district.geometry.rings) {
+              try {
+                const rings = district.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('NYC Zoning District polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = district.isContaining;
+                  const color = isContaining ? '#8b5cf6' : '#a78bfa'; // Purple for zoning
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const zoneDistrict = district.zoneDistrict || district.ZONEDIST || district.zonedist || null;
+                  const zoneSubdistrict = district.zoneSubdistrict || district.ZONESUBDIST || district.zonesubdist || null;
+                  const distance = district.distance_miles !== null && district.distance_miles !== undefined ? district.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${isContaining ? '🏛️ Containing Zoning District' : '🏛️ Nearby Zoning District'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${zoneDistrict ? `<div><strong>Zone District:</strong> ${zoneDistrict}</div>` : ''}
+                        ${zoneSubdistrict ? `<div><strong>Zone Subdistrict:</strong> ${zoneSubdistrict}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this zoning district</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all district attributes (excluding internal fields)
+                  const excludeFields = ['districtId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'zoneDistrict', 'ZONEDIST', 'zonedist', 'ZoneDist', 'ZONE_DIST', 'zoneSubdistrict', 'ZONESUBDIST', 'zonesubdist', 'ZoneSubdist', 'ZONE_SUBDIST', 'isContaining'];
+                  Object.entries(district).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  // Store metadata for tabbed popup
+                  (polygon as any).__layerType = 'nyc_zoning_districts';
+                  (polygon as any).__layerTitle = 'NYC Zoning Districts';
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  districtCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing NYC Zoning District polygon:', error);
+              }
+            }
+          });
+          
+          if (districtCount > 0) {
+            if (!legendAccumulator['nyc_zoning_districts']) {
+              legendAccumulator['nyc_zoning_districts'] = {
+                icon: '🏛️',
+                color: '#8b5cf6',
+                title: 'NYC Zoning Districts',
+                count: 0,
+              };
+            }
+            legendAccumulator['nyc_zoning_districts'].count += districtCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NYC Zoning Districts:', error);
+      }
+
+      // Draw NYC Waterfront Access - HPB Launch Site as points on the map
+      try {
+        if (enrichments.nyc_waterfront_hpb_launch_site_all && Array.isArray(enrichments.nyc_waterfront_hpb_launch_site_all)) {
+          let launchSiteCount = 0;
+          enrichments.nyc_waterfront_hpb_launch_site_all.forEach((site: any) => {
+            if (site.geometry && site.geometry.x !== undefined && site.geometry.y !== undefined) {
+              try {
+                const lat = site.geometry.y;
+                const lon = site.geometry.x;
+                const name = site.name || site.NAME || site.Name || site.SITE_NAME || site.site_name || 'Unknown Launch Site';
+                const type = site.type || site.TYPE || site.Type || null;
+                const distance = site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : '';
+                
+                const icon = createPOIIcon('🚤', '#0891b2'); // Teal for waterfront
+                const marker = L.marker([lat, lon], { icon });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚤 HPB Launch Site
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${name ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                      ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                      ${distance ? `<div><strong>Distance:</strong> ${distance} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all site attributes (excluding internal fields)
+                const excludeFields = ['featureId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'NAME', 'Name', 'SITE_NAME', 'site_name', 'type', 'TYPE', 'Type', 'layerId', 'isContaining'];
+                Object.entries(site).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                // Store metadata for tabbed popup
+                (marker as any).__layerType = 'nyc_waterfront_hpb_launch_site';
+                (marker as any).__layerTitle = 'NYC HPB Launch Site';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                
+                launchSiteCount++;
+              } catch (error) {
+                console.error('Error drawing NYC HPB Launch Site marker:', error);
+              }
+            }
+          });
+          
+          if (launchSiteCount > 0) {
+            if (!legendAccumulator['nyc_waterfront_hpb_launch_site']) {
+              legendAccumulator['nyc_waterfront_hpb_launch_site'] = {
+                icon: '🚤',
+                color: '#0891b2',
+                title: 'NYC HPB Launch Site',
+                count: 0,
+              };
+            }
+            legendAccumulator['nyc_waterfront_hpb_launch_site'].count += launchSiteCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NYC HPB Launch Site:', error);
+      }
+
+      // Draw NYC Waterfront Access - Waterfront Parks as polygons on the map
+      try {
+        if (enrichments.nyc_waterfront_parks_all && Array.isArray(enrichments.nyc_waterfront_parks_all)) {
+          let parkCount = 0;
+          enrichments.nyc_waterfront_parks_all.forEach((park: any) => {
+            if (park.geometry && park.geometry.rings) {
+              try {
+                const rings = park.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('NYC Waterfront Park polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = park.isContaining;
+                  const color = isContaining ? '#10b981' : '#34d399'; // Green for parks
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const name = park.name || park.NAME || park.Name || park.PARK_NAME || park.park_name || 'Unknown Park';
+                  const type = park.type || park.TYPE || park.Type || null;
+                  const distance = park.distance_miles !== null && park.distance_miles !== undefined ? park.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${isContaining ? '🌳 Containing Waterfront Park' : '🌳 Nearby Waterfront Park'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${name ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                        ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this park</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all park attributes (excluding internal fields)
+                  const excludeFields = ['featureId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'NAME', 'Name', 'PARK_NAME', 'park_name', 'type', 'TYPE', 'Type', 'layerId', 'isContaining'];
+                  Object.entries(park).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  // Store metadata for tabbed popup
+                  (polygon as any).__layerType = 'nyc_waterfront_parks';
+                  (polygon as any).__layerTitle = 'NYC Waterfront Parks';
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  parkCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing NYC Waterfront Park polygon:', error);
+              }
+            }
+          });
+          
+          if (parkCount > 0) {
+            if (!legendAccumulator['nyc_waterfront_parks']) {
+              legendAccumulator['nyc_waterfront_parks'] = {
+                icon: '🌳',
+                color: '#10b981',
+                title: 'NYC Waterfront Parks',
+                count: 0,
+              };
+            }
+            legendAccumulator['nyc_waterfront_parks'].count += parkCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NYC Waterfront Parks:', error);
+      }
+
+      // Draw NYC Waterfront Access - PAWS as polygons on the map
+      try {
+        if (enrichments.nyc_waterfront_paws_all && Array.isArray(enrichments.nyc_waterfront_paws_all)) {
+          let pawsCount = 0;
+          enrichments.nyc_waterfront_paws_all.forEach((paws: any) => {
+            if (paws.geometry && paws.geometry.rings) {
+              try {
+                const rings = paws.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('NYC PAWS polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = paws.isContaining;
+                  const color = isContaining ? '#06b6d4' : '#22d3ee'; // Cyan for PAWS
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const name = paws.name || paws.NAME || paws.Name || paws.SITE_NAME || paws.site_name || 'Unknown PAWS';
+                  const type = paws.type || paws.TYPE || paws.Type || null;
+                  const distance = paws.distance_miles !== null && paws.distance_miles !== undefined ? paws.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${isContaining ? '🌊 Containing PAWS' : '🌊 Nearby PAWS'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${name ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                        ${type ? `<div><strong>Type:</strong> ${type}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this PAWS</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all PAWS attributes (excluding internal fields)
+                  const excludeFields = ['featureId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'NAME', 'Name', 'SITE_NAME', 'site_name', 'type', 'TYPE', 'Type', 'layerId', 'isContaining'];
+                  Object.entries(paws).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  // Store metadata for tabbed popup
+                  (polygon as any).__layerType = 'nyc_waterfront_paws';
+                  (polygon as any).__layerTitle = 'NYC PAWS Publicly Accessible Waterfront Spaces';
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  pawsCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing NYC PAWS polygon:', error);
+              }
+            }
+          });
+          
+          if (pawsCount > 0) {
+            if (!legendAccumulator['nyc_waterfront_paws']) {
+              legendAccumulator['nyc_waterfront_paws'] = {
+                icon: '🌊',
+                color: '#06b6d4',
+                title: 'NYC PAWS Publicly Accessible Waterfront Spaces',
+                count: 0,
+              };
+            }
+            legendAccumulator['nyc_waterfront_paws'].count += pawsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NYC PAWS:', error);
+      }
+
       // Draw LA County Historic Cultural Monuments as polygons on the map
       try {
         if (enrichments.la_county_historic_cultural_monuments_all && Array.isArray(enrichments.la_county_historic_cultural_monuments_all)) {
@@ -15366,9 +15953,596 @@ const MapView: React.FC<MapViewProps> = ({
         }
         
         console.log('🗺️ All features drawn');
+        
+        // Add map click handler for tabbed popup functionality
+        setupTabbedPopupHandler();
       });
     }
   }, [results]);
+
+  // Setup tabbed popup handler for overlapping features
+  const setupTabbedPopupHandler = () => {
+    console.log('🔍 [TABBED POPUP] Setting up handler...');
+    if (!mapInstanceRef.current || !layerGroupsRef.current) {
+      console.error('❌ [TABBED POPUP] Map or layer groups not ready');
+      return;
+    }
+    
+    const map = mapInstanceRef.current;
+    const { primary } = layerGroupsRef.current;
+    console.log('🔍 [TABBED POPUP] Map instance found:', !!map);
+    console.log('🔍 [TABBED POPUP] Primary layer group:', primary);
+    
+    // Remove existing click handlers
+    map.off('click', handleMapClick);
+    
+    // Add map click handler (for clicks on empty areas)
+    map.on('click', handleMapClick);
+    
+    // Also intercept clicks on features - prevent default popup and check for overlaps
+    let featureHandlerCount = 0;
+    primary.eachLayer((layer: L.Layer) => {
+      // Skip location marker
+      if (layer instanceof L.Marker && (layer as any).options?.title === results[0]?.location?.name) {
+        return;
+      }
+      
+      // Remove existing click handlers
+      layer.off('click', handleFeatureClick);
+      
+      // Store original popup content before unbinding (we'll use it in our handler)
+      let originalPopupContent = '';
+      if (layer instanceof L.Marker || layer instanceof L.Polygon || layer instanceof L.Polyline) {
+        const popup = (layer as any).getPopup();
+        if (popup) {
+          originalPopupContent = popup.getContent() as string;
+        }
+        // Unbind default popup to prevent it from opening automatically
+        (layer as any).unbindPopup();
+        // Re-bind popup but don't auto-open it
+        if (originalPopupContent) {
+          (layer as any).bindPopup(originalPopupContent, { 
+            autoOpen: false,  // Don't auto-open on click
+            closeOnClick: false 
+          });
+        }
+      }
+      
+      // Add click handler that checks for overlapping features (with higher priority)
+      layer.on('click', handleFeatureClick);
+      featureHandlerCount++;
+    });
+    
+    console.log('✅ [TABBED POPUP] Handler set up successfully');
+    console.log('🔍 [TABBED POPUP] Attached handlers to', featureHandlerCount, 'features');
+  };
+  
+  // Handle feature click to check for overlapping features
+  const handleFeatureClick = (e: L.LeafletMouseEvent) => {
+    console.log('🔍 [TABBED POPUP] ========== FEATURE CLICK DETECTED ==========');
+    console.log('🔍 [TABBED POPUP] Feature click event:', e);
+    console.log('🔍 [TABBED POPUP] Clicked layer:', e.target);
+    console.log('🔍 [TABBED POPUP] Event type:', e.type);
+    
+    // Stop event propagation to prevent default popup
+    if (e.originalEvent) {
+      e.originalEvent.stopImmediatePropagation();
+      e.originalEvent.preventDefault();
+    }
+    
+    // Get the click point from the event
+    let clickPoint = e.latlng;
+    if (e.target instanceof L.Marker) {
+      clickPoint = (e.target as L.Marker).getLatLng();
+    } else if (e.target instanceof L.Polygon || e.target instanceof L.Polyline) {
+      // For polygons/polylines, use the click latlng from the event
+      clickPoint = e.latlng;
+    }
+    console.log('🔍 [TABBED POPUP] Click point from feature:', clickPoint);
+    
+    // Close any existing popups immediately
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.closePopup();
+    }
+    
+    // Create a synthetic map click event to use the same handler
+    const syntheticEvent = {
+      ...e,
+      latlng: clickPoint
+    } as L.LeafletMouseEvent;
+    
+    // Use the same logic as map click to find all features at this point
+    // Small delay to ensure popup is closed
+    setTimeout(() => {
+      handleMapClick(syntheticEvent);
+    }, 10);
+  };
+
+  // Handle map click to show tabbed popup for overlapping features
+  const handleMapClick = (e: L.LeafletMouseEvent) => {
+    console.log('🔍 [TABBED POPUP] ========== MAP CLICK DETECTED ==========');
+    console.log('🔍 [TABBED POPUP] Click event:', e);
+    
+    if (!mapInstanceRef.current || !layerGroupsRef.current) {
+      console.error('❌ [TABBED POPUP] Map or layer groups not ready');
+      console.log('🔍 [TABBED POPUP] mapInstanceRef.current:', !!mapInstanceRef.current);
+      console.log('🔍 [TABBED POPUP] layerGroupsRef.current:', !!layerGroupsRef.current);
+      return;
+    }
+    
+    const clickPoint = e.latlng;
+    const { primary } = layerGroupsRef.current;
+    
+    console.log('🔍 [TABBED POPUP] Click point:', clickPoint);
+    console.log('🔍 [TABBED POPUP] Primary layer group:', primary);
+    
+    // Close any existing popups first
+    mapInstanceRef.current.closePopup();
+    
+    // Collect all features at click point
+    const featuresAtPoint: Array<{
+      layer: L.Layer;
+      layerType: string;
+      layerTitle: string;
+      popupContent: string;
+    }> = [];
+    
+    let layerCount = 0;
+    let markerCount = 0;
+    let polygonCount = 0;
+    let polylineCount = 0;
+    
+    console.log('🔍 [TABBED POPUP] Starting to check layers...');
+    // Check all layers in primary group
+    primary.eachLayer((layer: L.Layer) => {
+      layerCount++;
+      // Skip location marker
+      if (layer instanceof L.Marker && (layer as any).options?.title === results[0]?.location?.name) {
+        console.log('🔍 [TABBED POPUP] Skipping location marker');
+        return;
+      }
+      
+      let intersects = false;
+      let layerType = 'unknown';
+      let layerTitle = 'Unknown Layer';
+      let popupContent = '';
+      
+      // Check for stored metadata first
+      const storedType = (layer as any).__layerType;
+      const storedTitle = (layer as any).__layerTitle;
+      console.log(`🔍 [TABBED POPUP] Layer ${layerCount}:`, {
+        type: layer instanceof L.Marker ? 'Marker' : layer instanceof L.Polygon ? 'Polygon' : layer instanceof L.Polyline ? 'Polyline' : 'Unknown',
+        storedType,
+        storedTitle
+      });
+      
+      // Check if click point intersects with this layer
+      if (layer instanceof L.Marker) {
+        markerCount++;
+        // Point feature - check distance (within 15 pixels)
+        const markerLatLng = (layer as L.Marker).getLatLng();
+        const containerPoint = mapInstanceRef.current!.latLngToContainerPoint(markerLatLng);
+        const clickContainerPoint = mapInstanceRef.current!.latLngToContainerPoint(clickPoint);
+        const pixelDistance = Math.sqrt(
+          Math.pow(containerPoint.x - clickContainerPoint.x, 2) + 
+          Math.pow(containerPoint.y - clickContainerPoint.y, 2)
+        );
+        intersects = pixelDistance <= 15; // 15 pixels tolerance
+        
+        if (intersects) {
+          console.log(`🔍 [TABBED POPUP] Marker ${markerCount} intersects!`);
+          const popup = (layer as L.Marker).getPopup();
+          if (popup) {
+            popupContent = popup.getContent() as string;
+            console.log('🔍 [TABBED POPUP] Marker popup content length:', popupContent?.length || 0);
+          } else {
+            console.warn('⚠️ [TABBED POPUP] Marker has no popup');
+          }
+          layerType = storedType || extractLayerTypeFromPopup(popupContent) || 'point';
+          layerTitle = storedTitle || extractLayerTitleFromPopup(popupContent) || 'Point Feature';
+          console.log('🔍 [TABBED POPUP] Marker layer type:', layerType, 'title:', layerTitle);
+        }
+      } else if (layer instanceof L.Polygon) {
+        polygonCount++;
+        // Polygon feature - check if point is inside
+        const bounds = (layer as L.Polygon).getBounds();
+        if (bounds.contains(clickPoint)) {
+          // More precise check using point-in-polygon
+          const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
+          if (Array.isArray(latlngs) && latlngs.length > 0) {
+            intersects = isPointInPolygon(clickPoint, latlngs);
+            
+            if (intersects) {
+              console.log(`🔍 [TABBED POPUP] Polygon ${polygonCount} intersects!`);
+              const popup = (layer as L.Polygon).getPopup();
+              if (popup) {
+                popupContent = popup.getContent() as string;
+                console.log('🔍 [TABBED POPUP] Polygon popup content length:', popupContent?.length || 0);
+              } else {
+                console.warn('⚠️ [TABBED POPUP] Polygon has no popup');
+              }
+              layerType = storedType || extractLayerTypeFromPopup(popupContent) || 'polygon';
+              layerTitle = storedTitle || extractLayerTitleFromPopup(popupContent) || 'Polygon Feature';
+              console.log('🔍 [TABBED POPUP] Polygon layer type:', layerType, 'title:', layerTitle);
+            }
+          }
+        }
+      } else if (layer instanceof L.Polyline) {
+        polylineCount++;
+        // Polyline feature - check distance to line (within 15 pixels)
+        const latlngs = (layer as L.Polyline).getLatLngs() as L.LatLng[];
+        if (Array.isArray(latlngs) && latlngs.length > 0) {
+          let minPixelDistance = Infinity;
+          for (let i = 0; i < latlngs.length; i++) {
+            const point = latlngs[i];
+            const containerPoint = mapInstanceRef.current!.latLngToContainerPoint(point);
+            const clickContainerPoint = mapInstanceRef.current!.latLngToContainerPoint(clickPoint);
+            const pixelDistance = Math.sqrt(
+              Math.pow(containerPoint.x - clickContainerPoint.x, 2) + 
+              Math.pow(containerPoint.y - clickContainerPoint.y, 2)
+            );
+            if (pixelDistance < minPixelDistance) {
+              minPixelDistance = pixelDistance;
+            }
+          }
+          intersects = minPixelDistance <= 15; // 15 pixels tolerance
+          
+          if (intersects) {
+            console.log(`🔍 [TABBED POPUP] Polyline ${polylineCount} intersects!`);
+            const popup = (layer as L.Polyline).getPopup();
+            if (popup) {
+              popupContent = popup.getContent() as string;
+              console.log('🔍 [TABBED POPUP] Polyline popup content length:', popupContent?.length || 0);
+            } else {
+              console.warn('⚠️ [TABBED POPUP] Polyline has no popup');
+            }
+            layerType = storedType || extractLayerTypeFromPopup(popupContent) || 'polyline';
+            layerTitle = storedTitle || extractLayerTitleFromPopup(popupContent) || 'Line Feature';
+            console.log('🔍 [TABBED POPUP] Polyline layer type:', layerType, 'title:', layerTitle);
+          }
+        }
+      }
+      
+      if (intersects && popupContent) {
+        console.log('✅ [TABBED POPUP] Found intersecting feature:', { 
+          layerType, 
+          layerTitle,
+          hasPopup: !!popupContent,
+          popupLength: popupContent.length
+        });
+        featuresAtPoint.push({
+          layer,
+          layerType,
+          layerTitle,
+          popupContent
+        });
+      } else if (intersects && !popupContent) {
+        console.warn('⚠️ [TABBED POPUP] Feature intersects but has no popup content');
+      }
+    });
+    
+    console.log('🔍 [TABBED POPUP] ========== LAYER CHECK COMPLETE ==========');
+    console.log('🔍 [TABBED POPUP] Total layers checked:', layerCount);
+    console.log('🔍 [TABBED POPUP] Markers:', markerCount, 'Polygons:', polygonCount, 'Polylines:', polylineCount);
+    console.log('🔍 [TABBED POPUP] Features found at point:', featuresAtPoint.length);
+    console.log('🔍 [TABBED POPUP] Features details:', featuresAtPoint.map(f => ({ type: f.layerType, title: f.layerTitle })));
+    
+    // If we found multiple features, show tabbed popup
+    if (featuresAtPoint.length > 1) {
+      console.log('🔍 [TABBED POPUP] ========== MULTIPLE FEATURES FOUND ==========');
+      console.log('🔍 [TABBED POPUP] Features count:', featuresAtPoint.length);
+      console.log('🔍 [TABBED POPUP] All features details:', featuresAtPoint.map((f, i) => ({
+        index: i,
+        layerType: f.layerType,
+        layerTitle: f.layerTitle,
+        hasPopup: !!f.popupContent,
+        popupPreview: f.popupContent?.substring(0, 100)
+      })));
+      
+      // Group by layer type
+      const groupedFeatures = groupFeaturesByType(featuresAtPoint);
+      console.log('🔍 [TABBED POPUP] Grouped features:', groupedFeatures);
+      console.log('🔍 [TABBED POPUP] Layer types:', Object.keys(groupedFeatures));
+      console.log('🔍 [TABBED POPUP] Features per type:', Object.entries(groupedFeatures).map(([type, features]) => ({
+        type,
+        count: features.length,
+        titles: features.map(f => f.layerTitle)
+      })));
+      
+      // Limit to max 10 tabs
+      const layerTypes = Object.keys(groupedFeatures).slice(0, 10);
+      console.log('🔍 [TABBED POPUP] Layer types (limited to 10):', layerTypes);
+      
+      console.log('🔍 [TABBED POPUP] Layer types count:', layerTypes.length);
+      console.log('🔍 [TABBED POPUP] Features per type:', layerTypes.map(lt => ({ type: lt, count: groupedFeatures[lt].length })));
+      
+      // Show tabs if we have multiple layer types OR multiple features of the same type
+      const totalFeatures = featuresAtPoint.length;
+      const shouldShowTabs = layerTypes.length > 1 || (layerTypes.length === 1 && totalFeatures > 1);
+      
+      console.log('🔍 [TABBED POPUP] Should show tabs?', shouldShowTabs, '(layerTypes:', layerTypes.length, ', totalFeatures:', totalFeatures, ')');
+      
+      if (shouldShowTabs) {
+        console.log('🔍 [TABBED POPUP] Creating popup with', layerTypes.length, 'tabs');
+        const tabbedPopupContent = createTabbedPopupContent(groupedFeatures, layerTypes);
+        console.log('🔍 [TABBED POPUP] Popup content length:', tabbedPopupContent.length);
+        console.log('🔍 [TABBED POPUP] Popup content preview (first 500 chars):', tabbedPopupContent.substring(0, 500));
+        
+        // Use setTimeout to ensure popup opens after any default popups are closed
+        setTimeout(() => {
+          console.log('🔍 [TABBED POPUP] Opening popup...');
+          const popup = L.popup({ 
+            maxWidth: 500, 
+            maxHeight: 500,
+            className: 'tabbed-popup', 
+            autoPan: true,
+            autoClose: false,
+            closeOnClick: false
+          })
+            .setLatLng(clickPoint)
+            .setContent(tabbedPopupContent);
+          popup.openOn(mapInstanceRef.current!);
+          console.log('✅ [TABBED POPUP] Popup opened on map');
+          
+          // Attach event listeners after popup is added to DOM
+          setTimeout(() => {
+            console.log('🔍 [TABBED POPUP] Looking for popup element in DOM...');
+            const popupElement = document.querySelector('.tabbed-popup .leaflet-popup-content-wrapper');
+            console.log('🔍 [TABBED POPUP] Popup element found:', !!popupElement);
+            if (popupElement) {
+              console.log('🔍 [TABBED POPUP] Popup element HTML:', popupElement.innerHTML.substring(0, 200));
+              const tabs = popupElement.querySelectorAll('.tabbed-popup-tab');
+              console.log('🔍 [TABBED POPUP] Tabs found:', tabs.length);
+              const contents = popupElement.querySelectorAll('.tabbed-popup-content');
+              console.log('🔍 [TABBED POPUP] Content panels found:', contents.length);
+              
+              // Use event delegation for tab clicks
+              popupElement.addEventListener('click', (e: Event) => {
+                const target = e.target as HTMLElement;
+                console.log('🔍 [TABBED POPUP] Click in popup:', target);
+                if (target.classList.contains('tabbed-popup-tab') || target.closest('.tabbed-popup-tab')) {
+                  const tab = target.classList.contains('tabbed-popup-tab') ? target : target.closest('.tabbed-popup-tab') as HTMLElement;
+                  const tabIndex = tab.getAttribute('data-tab-index');
+                  console.log('🔍 [TABBED POPUP] Tab clicked, index:', tabIndex);
+                  if (tabIndex !== null) {
+                    // Update all tabs
+                    popupElement.querySelectorAll('.tabbed-popup-tab').forEach((t: Element) => {
+                      const tabEl = t as HTMLElement;
+                      tabEl.style.backgroundColor = 'transparent';
+                      tabEl.style.color = '#6b7280';
+                      tabEl.style.fontWeight = '400';
+                      tabEl.style.borderBottomColor = 'transparent';
+                      tabEl.classList.remove('active');
+                    });
+                    // Update all content panels
+                    popupElement.querySelectorAll('.tabbed-popup-content').forEach((c: Element) => {
+                      (c as HTMLElement).style.display = 'none';
+                    });
+                    // Activate clicked tab
+                    tab.style.backgroundColor = '#3b82f6';
+                    tab.style.color = 'white';
+                    tab.style.fontWeight = '600';
+                    tab.style.borderBottomColor = '#3b82f6';
+                    tab.classList.add('active');
+                    // Show corresponding content
+                    const content = popupElement.querySelector(`#tab-content-${tabIndex}`) as HTMLElement;
+                    if (content) {
+                      content.style.display = 'block';
+                      console.log('✅ [TABBED POPUP] Tab switched to index:', tabIndex);
+                    } else {
+                      console.error('❌ [TABBED POPUP] Content panel not found for index:', tabIndex);
+                    }
+                  }
+                }
+              });
+              console.log('✅ [TABBED POPUP] Event listeners attached');
+            } else {
+              console.error('❌ [TABBED POPUP] Popup element not found in DOM');
+            }
+          }, 100);
+          
+          console.log('✅ [TABBED POPUP] Popup creation complete');
+        }, 50);
+      } else {
+        console.log('⚠️ [TABBED POPUP] Not showing tabs. Layer types:', layerTypes.length, 'Total features:', totalFeatures);
+        // If we have multiple features but only one type, still show them in a scrollable popup
+        if (totalFeatures > 1) {
+          console.log('🔍 [TABBED POPUP] Multiple features of same type, creating single-tab popup');
+          const singleTabContent = createTabbedPopupContent(groupedFeatures, layerTypes);
+          setTimeout(() => {
+            const popup = L.popup({ 
+              maxWidth: 500, 
+              maxHeight: 500,
+              className: 'tabbed-popup', 
+              autoPan: true,
+              autoClose: false,
+              closeOnClick: false
+            })
+              .setLatLng(clickPoint)
+              .setContent(singleTabContent);
+            popup.openOn(mapInstanceRef.current!);
+          }, 10);
+        }
+      }
+    } else if (featuresAtPoint.length === 1) {
+      // Single feature - let default popup show
+      console.log('ℹ️ [TABBED POPUP] Single feature found, allowing default popup');
+    } else {
+      console.log('ℹ️ [TABBED POPUP] No features found at click point');
+    }
+    console.log('🔍 [TABBED POPUP] ========== HANDLER COMPLETE ==========');
+  };
+
+  // Helper function to check if point is in polygon
+  const isPointInPolygon = (point: L.LatLng, polygon: L.LatLng[]): boolean => {
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const xi = polygon[i].lng, yi = polygon[i].lat;
+      const xj = polygon[j].lng, yj = polygon[j].lat;
+      const intersect = ((yi > point.lat) !== (yj > point.lat)) && 
+                       (point.lng < (xj - xi) * (point.lat - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  };
+
+  // Helper function to get minimum distance to polyline
+  const getMinDistanceToPolyline = (point: L.LatLng, polyline: L.LatLng[]): number => {
+    let minDistance = Infinity;
+    for (let i = 0; i < polyline.length - 1; i++) {
+      const p1 = polyline[i];
+      const p2 = polyline[i + 1];
+      const distance = point.distanceTo(p1);
+      if (distance < minDistance) minDistance = distance;
+    }
+    return minDistance;
+  };
+
+  // Helper function to extract layer type from popup content
+  const extractLayerTypeFromPopup = (popupContent: string): string | null => {
+    if (!popupContent) return null;
+    // Try to extract from popup content - look for common patterns
+    const match = popupContent.match(/data-layer-type=["']([^"']+)["']/);
+    if (match) return match[1];
+    // Fallback: try to extract from title
+    const titleMatch = popupContent.match(/<h3[^>]*>([^<]+)<\/h3>/);
+    if (titleMatch) {
+      const title = titleMatch[1].toLowerCase();
+      // NYC layers
+      if (title.includes('bike route')) return 'nyc_bike_routes';
+      if (title.includes('neighborhood')) return 'nyc_neighborhoods';
+      if (title.includes('tax lot') || title.includes('mappluto')) return 'nyc_mappluto';
+      // LA County layers
+      if (title.includes('historic cultural monument')) return 'la_county_historic_cultural_monuments';
+      if (title.includes('housing') && title.includes('lead')) return 'la_county_housing_lead_risk';
+      if (title.includes('school district')) return 'la_county_school_district_boundaries';
+      if (title.includes('metro line')) return 'la_county_metro_lines';
+      if (title.includes('street inventory')) return 'la_county_street_inventory';
+      // Chicago layers
+      if (title.includes('311') || title.includes('service request')) return 'chicago_311';
+      if (title.includes('building') && (title.includes('centroid') || title.includes('footprint'))) return 'chicago_building_footprints';
+      if (title.includes('traffic crash')) return 'chicago_traffic_crashes';
+      if (title.includes('speed camera')) return 'chicago_speed_cameras';
+      if (title.includes('red light camera')) return 'chicago_red_light_cameras';
+      // Generic patterns
+      if (title.includes('parcel')) return 'parcels';
+      if (title.includes('polygon')) return 'polygon';
+      if (title.includes('line') || title.includes('route')) return 'polyline';
+    }
+    return null;
+  };
+
+  // Helper function to extract layer title from popup content
+  const extractLayerTitleFromPopup = (popupContent: string): string | null => {
+    if (!popupContent) return null;
+    const titleMatch = popupContent.match(/<h3[^>]*>([^<]+)<\/h3>/);
+    if (titleMatch) {
+      // Remove emojis and clean up title
+      let title = titleMatch[1].replace(/[🚴🏘️🏢🚑🚇🚆🚂💧🏛️🏠🌲🔥🌊⛰️🏔️🌋🌍🌎🌏🗺️📍]/g, '').trim();
+      // Remove common prefixes like "Containing" or "Nearby"
+      title = title.replace(/^(Containing|Nearby)\s+/i, '');
+      return title || 'Feature';
+    }
+    return null;
+  };
+
+  // Helper function to group features by layer type
+  const groupFeaturesByType = (features: Array<{layerType: string; layerTitle: string; popupContent: string}>) => {
+    const grouped: Record<string, Array<{layerTitle: string; popupContent: string}>> = {};
+    console.log('🔍 [TABBED POPUP] Grouping', features.length, 'features...');
+    features.forEach((feature, index) => {
+      // Use layerTitle as the key if layerType is 'unknown' or not specific enough
+      // This ensures different layers get separate tabs even if type detection fails
+      const key = feature.layerType && feature.layerType !== 'unknown' 
+        ? feature.layerType 
+        : (feature.layerTitle || `feature_${index}`);
+      
+      console.log(`🔍 [TABBED POPUP] Feature ${index}: type="${feature.layerType}", title="${feature.layerTitle}", key="${key}"`);
+      
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push({
+        layerTitle: feature.layerTitle,
+        popupContent: feature.popupContent
+      });
+    });
+    console.log('🔍 [TABBED POPUP] Grouping result:', Object.keys(grouped).map(k => ({ key: k, count: grouped[k].length })));
+    return grouped;
+  };
+
+  // Helper function to create tabbed popup content
+  const createTabbedPopupContent = (
+    groupedFeatures: Record<string, Array<{layerTitle: string; popupContent: string}>>,
+    layerTypes: string[]
+  ): string => {
+    let html = `
+      <div class="tabbed-popup-container" style="min-width: 300px; max-width: 500px;">
+        <div class="tabbed-popup-tabs" style="display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 12px; overflow-x: auto;">
+    `;
+    
+    layerTypes.forEach((layerType, index) => {
+      const features = groupedFeatures[layerType];
+      const count = features.length;
+      const title = features[0]?.layerTitle || layerType;
+      const isActive = index === 0 ? 'active' : '';
+      html += `
+        <button 
+          class="tabbed-popup-tab ${isActive}" 
+          data-tab-index="${index}"
+          style="
+            padding: 8px 12px;
+            border: none;
+            background: ${index === 0 ? '#3b82f6' : 'transparent'};
+            color: ${index === 0 ? 'white' : '#6b7280'};
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: ${index === 0 ? '600' : '400'};
+            border-bottom: 2px solid ${index === 0 ? '#3b82f6' : 'transparent'};
+            margin-bottom: -2px;
+            white-space: nowrap;
+            flex-shrink: 0;
+          "
+          onmouseover="this.style.backgroundColor='${index === 0 ? '#3b82f6' : '#f3f4f6'}'"
+          onmouseout="this.style.backgroundColor='${index === 0 ? '#3b82f6' : 'transparent'}'"
+        >
+          ${title}${count > 1 ? ` (${count})` : ''}
+        </button>
+      `;
+    });
+    
+    html += `
+        </div>
+        <div class="tabbed-popup-contents" style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">
+    `;
+    
+    layerTypes.forEach((layerType, index) => {
+      const features = groupedFeatures[layerType];
+      const isActive = index === 0 ? 'block' : 'none';
+      html += `
+        <div id="tab-content-${index}" class="tabbed-popup-content" style="display: ${isActive};">
+      `;
+      
+      features.forEach((feature, featureIndex) => {
+        if (features.length > 1) {
+          html += `<div style="margin-bottom: ${featureIndex < features.length - 1 ? '16px' : '0'}; padding-bottom: ${featureIndex < features.length - 1 ? '16px' : '0'}; border-bottom: ${featureIndex < features.length - 1 ? '1px solid #e5e7eb' : 'none'};">
+            ${feature.popupContent}
+          </div>`;
+        } else {
+          html += feature.popupContent;
+        }
+      });
+      
+      html += `</div>`;
+    });
+    
+    html += `
+        </div>
+      </div>
+    `;
+    
+    return html;
+  };
 
   // CSV export now handled by shared utility function
 

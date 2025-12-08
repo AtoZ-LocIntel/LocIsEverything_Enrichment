@@ -1184,6 +1184,54 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           url: "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0"
         },
         {
+          name: "NYC Bike Routes",
+          description: "Bike routes network from NYC Department of Transportation - proximity queries (0.5, 1.0, 2.5, and 5 miles)",
+          coverage: "New York City, New York",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/ArcGIS/rest/services/Bike_Routes/FeatureServer/0"
+        },
+        {
+          name: "NYC Neighborhoods",
+          description: "Neighborhood Tabulation Areas 2020 from NYC Department of City Planning - point-in-polygon and proximity queries up to 1 mile",
+          coverage: "New York City, New York",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/ArcGIS/rest/services/NYC_Neighborhood_Tabulation_Areas_2020/FeatureServer/0"
+        },
+        {
+          name: "NYC Zoning Districts",
+          description: "Zoning districts from NYC Department of City Planning - point-in-polygon and proximity queries up to 1 mile",
+          coverage: "New York City, New York",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/ArcGIS/rest/services/ZoningDistricts/FeatureServer/0"
+        },
+        {
+          name: "NYC Waterfront Access - HPB Launch Site",
+          description: "HPB Launch Site points from NYC Department of City Planning - proximity queries up to 5 miles",
+          coverage: "New York City, New York",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/ArcGIS/rest/services/WaterfrontAccessMap_520/FeatureServer/0"
+        },
+        {
+          name: "NYC Waterfront Access - Waterfront Parks",
+          description: "Waterfront Parks polygons from NYC Department of City Planning - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "New York City, New York",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/ArcGIS/rest/services/WaterfrontAccessMap_520/FeatureServer/1"
+        },
+        {
+          name: "NYC Waterfront Access - PAWS Publicly Accessible Waterfront Spaces",
+          description: "PAWS Publicly Accessible Waterfront Spaces polygons from NYC Department of City Planning - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "New York City, New York",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/ArcGIS/rest/services/WaterfrontAccessMap_520/FeatureServer/2"
+        },
+        {
           name: "LA County Administrative Boundaries",
           description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",

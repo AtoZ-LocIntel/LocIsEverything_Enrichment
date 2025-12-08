@@ -2807,6 +2807,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
                               const isChicago311 = enrichment.id === 'chicago_311';
                               const isChicagoBuildingFootprints = enrichment.id === 'chicago_building_footprints';
+                              const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                               const radiusOptions = isNHParcels || isNJParcels
                                 ? [0.25, 0.50, 0.75, 1.0]
                                 : isMAParcels
@@ -2819,6 +2820,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                 : isChicago311 || isChicagoBuildingFootprints
                                 ? [0.25, 0.50, 0.75, 1.0]
+                                : isNYCBikeRoutes
+                                ? [0.5, 1.0, 2.5, 5.0]
                                 : enrichment.id === 'poi_aurora_viewing_sites'
                                 ? [5, 10, 25, 50, 100]
                                 : null; // null means use number input
@@ -3000,6 +3003,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                             ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                             : isLAStreetInventory
                                             ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+                                            : enrichment.id === 'nyc_bike_routes'
+                                            ? [0.5, 1.0, 2.5, 5.0]
                                             : enrichment.id === 'poi_aurora_viewing_sites'
                                             ? [5, 10, 25, 50, 100]
                                             : null;
@@ -3141,6 +3146,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                     : isLAStreetInventory
                                     ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+                                    : enrichment.id === 'nyc_bike_routes'
+                                    ? [0.5, 1.0, 2.5, 5.0]
                                     : enrichment.id === 'poi_aurora_viewing_sites'
                                     ? [5, 10, 25, 50, 100]
                                     : null;

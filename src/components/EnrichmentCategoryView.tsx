@@ -260,6 +260,8 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               ? [0.5, 1, 2, 3, 5, 10, 15, 25]
               : enrichment.id === 'chicago_311' || enrichment.id === 'chicago_building_footprints'
               ? [0.25, 0.50, 0.75, 1.0]
+              : enrichment.id === 'nyc_bike_routes'
+              ? [0.5, 1.0, 2.5, 5.0]
               : [0.5, 1, 2, 3, 5, 10, 15, 25];
             const formatMiles = (value: number) =>
               Number.isInteger(value) ? value.toString() : value.toFixed(1);

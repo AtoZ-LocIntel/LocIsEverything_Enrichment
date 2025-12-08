@@ -352,6 +352,12 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'chicago_speed_cameras_all' ||
         key === 'chicago_red_light_cameras_all' ||
         key === 'nyc_mappluto_all' ||
+        key === 'nyc_bike_routes_all' ||
+        key === 'nyc_neighborhoods_all' ||
+        key === 'nyc_zoning_districts_all' ||
+        key === 'nyc_waterfront_hpb_launch_site_all' ||
+        key === 'nyc_waterfront_parks_all' ||
+        key === 'nyc_waterfront_paws_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -5794,23 +5800,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       value.forEach((taxLot: any) => {
         const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
         const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
-        const borough = taxLot.borough || taxLot.Borough || taxLot.BOROUGH || '';
-        const block = taxLot.block || taxLot.Block || taxLot.BLOCK || '';
-        const lot = taxLot.lot || taxLot.Lot || taxLot.LOT || '';
         const ownerName = taxLot.ownerName || taxLot.OwnerName || taxLot.OWNERNAME || '';
-        const landUse = taxLot.landUse || taxLot.LandUse || taxLot.LANDUSE || '';
-        const yearBuilt = taxLot.yearBuilt || taxLot.YearBuilt || taxLot.YEARBUILT || '';
-        const bldgClass = taxLot.bldgClass || taxLot.BldgClass || taxLot.BLDGCLASS || '';
-        const lotArea = taxLot.lotArea || taxLot.LotArea || taxLot.LOTAREA || '';
-        const bldgArea = taxLot.bldgArea || taxLot.BldgArea || taxLot.BLDGAREA || '';
-        const numBldgs = taxLot.numBldgs || taxLot.NumBldgs || taxLot.NUMBLDGS || '';
-        const numFloors = taxLot.numFloors || taxLot.NumFloors || taxLot.NUMFLOORS || '';
-        const unitsRes = taxLot.unitsRes || taxLot.UnitsRes || taxLot.UNITSRES || '';
-        const unitsTotal = taxLot.unitsTotal || taxLot.UnitsTotal || taxLot.UNITSTOTAL || '';
-        const assessLand = taxLot.assessLand || taxLot.AssessLand || taxLot.ASSESSLAND || '';
-        const assessTot = taxLot.assessTot || taxLot.AssessTot || taxLot.ASSESSTOT || '';
-        const zoneDist1 = taxLot.zoneDist1 || taxLot.ZoneDist1 || taxLot.ZONEDIST1 || '';
-        const zipCode = taxLot.zipCode || taxLot.ZipCode || taxLot.ZIPCODE || '';
         const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
 
         const allAttributes = { ...taxLot };
@@ -5892,6 +5882,276 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           taxLot.isContaining ? 'Within Tax Lot' : `Nearby Tax Lot (${distance} miles)`,
           address || bbl,
           ownerName || '',
+          '', // Phone
+          attributesJson,
+          'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_bike_routes_all' && Array.isArray(value)) {
+      value.forEach((route: any) => {
+        const routeName = route.name || route.NAME || route.Name || route.ROUTE_NAME || route.route_name || 'Unknown Route';
+        const routeType = route.routeType || route.ROUTE_TYPE || route.route_type || route.TYPE || route.type || '';
+        const status = route.status || route.STATUS || route.Status || '';
+        const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
+
+        const allAttributes = { ...route };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.routeId;
+        delete allAttributes.ROUTE_ID;
+        delete allAttributes.route_id;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.ROUTE_NAME;
+        delete allAttributes.route_name;
+        delete allAttributes.routeType;
+        delete allAttributes.ROUTE_TYPE;
+        delete allAttributes.route_type;
+        delete allAttributes.TYPE;
+        delete allAttributes.type;
+        delete allAttributes.status;
+        delete allAttributes.STATUS;
+        delete allAttributes.Status;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'New York City',
+          (location.confidence || 'N/A').toString(),
+          'NYC_BIKE_ROUTE',
+          `${routeName}${routeType ? ` - ${routeType}` : ''}`,
+          '', // Lat (polyline, no single point)
+          '', // Lon (polyline, no single point)
+          distance,
+          'Bike Route',
+          routeName,
+          '', // Owner
+          '', // Phone
+          attributesJson,
+          'NYC Department of Transportation'
+        ]);
+      });
+    } else if (key === 'nyc_neighborhoods_all' && Array.isArray(value)) {
+      value.forEach((neighborhood: any) => {
+        const ntaName = neighborhood.ntaName || neighborhood.NTAName || neighborhood.NTA_NAME || neighborhood.nta_name || neighborhood.Name || neighborhood.name || 'Unknown Neighborhood';
+        const ntaCode = neighborhood.ntaCode || neighborhood.NTACode || neighborhood.NTA_CODE || neighborhood.nta_code || '';
+        const borough = neighborhood.borough || neighborhood.Borough || neighborhood.BOROUGH || '';
+        const distance = neighborhood.distance_miles !== null && neighborhood.distance_miles !== undefined ? neighborhood.distance_miles.toFixed(2) : (neighborhood.isContaining ? '0.00' : '');
+
+        const allAttributes = { ...neighborhood };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.neighborhoodId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.ntaCode;
+        delete allAttributes.NTACode;
+        delete allAttributes.NTA_CODE;
+        delete allAttributes.nta_code;
+        delete allAttributes.ntaName;
+        delete allAttributes.NTAName;
+        delete allAttributes.NTA_NAME;
+        delete allAttributes.nta_name;
+        delete allAttributes.Name;
+        delete allAttributes.name;
+        delete allAttributes.borough;
+        delete allAttributes.Borough;
+        delete allAttributes.BOROUGH;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'New York City',
+          (location.confidence || 'N/A').toString(),
+          'NYC_NEIGHBORHOOD',
+          `${ntaName}${ntaCode ? ` (${ntaCode})` : ''}`,
+          '', // Lat (polygon, no single point)
+          '', // Lon (polygon, no single point)
+          distance,
+          neighborhood.isContaining ? 'Within Neighborhood' : `Nearby Neighborhood (${distance} miles)`,
+          ntaName,
+          '', // Owner
+          '', // Phone
+          attributesJson,
+          'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_zoning_districts_all' && Array.isArray(value)) {
+      value.forEach((district: any) => {
+        const zoneDistrict = district.zoneDistrict || district.ZONEDIST || district.zonedist || 'Unknown';
+        const zoneSubdistrict = district.zoneSubdistrict || district.ZONESUBDIST || district.zonesubdist || '';
+        const distance = district.distance_miles !== null && district.distance_miles !== undefined ? district.distance_miles.toFixed(2) : (district.isContaining ? '0.00' : '');
+
+        const allAttributes = { ...district };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.districtId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.zoneDistrict;
+        delete allAttributes.ZONEDIST;
+        delete allAttributes.zonedist;
+        delete allAttributes.ZoneDist;
+        delete allAttributes.ZONE_DIST;
+        delete allAttributes.zoneSubdistrict;
+        delete allAttributes.ZONESUBDIST;
+        delete allAttributes.zonesubdist;
+        delete allAttributes.ZoneSubdist;
+        delete allAttributes.ZONE_SUBDIST;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'New York City',
+          (location.confidence || 'N/A').toString(),
+          'NYC_ZONING_DISTRICT',
+          `${zoneDistrict}${zoneSubdistrict ? ` - ${zoneSubdistrict}` : ''}`,
+          '', // Lat (polygon, no single point)
+          '', // Lon (polygon, no single point)
+          distance,
+          district.isContaining ? 'Within Zoning District' : `Nearby Zoning District (${distance} miles)`,
+          zoneDistrict,
+          '', // Owner
+          '', // Phone
+          attributesJson,
+          'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_waterfront_hpb_launch_site_all' && Array.isArray(value)) {
+      value.forEach((site: any) => {
+        const name = site.name || site.NAME || site.Name || site.SITE_NAME || site.site_name || 'Unknown Launch Site';
+        const type = site.type || site.TYPE || site.Type || '';
+        const distance = site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : '';
+        const lat = site.geometry?.y || '';
+        const lon = site.geometry?.x || '';
+
+        const allAttributes = { ...site };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.featureId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.SITE_NAME;
+        delete allAttributes.site_name;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.Type;
+        delete allAttributes.layerId;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'New York City',
+          (location.confidence || 'N/A').toString(),
+          'NYC_HPB_LAUNCH_SITE',
+          name,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'HPB Launch Site',
+          name,
+          '', // Owner
+          '', // Phone
+          attributesJson,
+          'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_waterfront_parks_all' && Array.isArray(value)) {
+      value.forEach((park: any) => {
+        const name = park.name || park.NAME || park.Name || park.PARK_NAME || park.park_name || 'Unknown Park';
+        const type = park.type || park.TYPE || park.Type || '';
+        const distance = park.distance_miles !== null && park.distance_miles !== undefined ? park.distance_miles.toFixed(2) : (park.isContaining ? '0.00' : '');
+
+        const allAttributes = { ...park };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.featureId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.PARK_NAME;
+        delete allAttributes.park_name;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.Type;
+        delete allAttributes.layerId;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'New York City',
+          (location.confidence || 'N/A').toString(),
+          'NYC_WATERFRONT_PARK',
+          name,
+          '', // Lat (polygon, no single point)
+          '', // Lon (polygon, no single point)
+          distance,
+          park.isContaining ? 'Within Waterfront Park' : `Nearby Waterfront Park (${distance} miles)`,
+          name,
+          '', // Owner
+          '', // Phone
+          attributesJson,
+          'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_waterfront_paws_all' && Array.isArray(value)) {
+      value.forEach((paws: any) => {
+        const name = paws.name || paws.NAME || paws.Name || paws.SITE_NAME || paws.site_name || 'Unknown PAWS';
+        const type = paws.type || paws.TYPE || paws.Type || '';
+        const distance = paws.distance_miles !== null && paws.distance_miles !== undefined ? paws.distance_miles.toFixed(2) : (paws.isContaining ? '0.00' : '');
+
+        const allAttributes = { ...paws };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.featureId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.SITE_NAME;
+        delete allAttributes.site_name;
+        delete allAttributes.type;
+        delete allAttributes.TYPE;
+        delete allAttributes.Type;
+        delete allAttributes.layerId;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'New York City',
+          (location.confidence || 'N/A').toString(),
+          'NYC_PAWS',
+          name,
+          '', // Lat (polygon, no single point)
+          '', // Lon (polygon, no single point)
+          distance,
+          paws.isContaining ? 'Within PAWS' : `Nearby PAWS (${distance} miles)`,
+          name,
+          '', // Owner
           '', // Phone
           attributesJson,
           'NYC Department of City Planning'

@@ -103,6 +103,10 @@ import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes'
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
 import { getNYCMapPLUTOData } from '../adapters/nycMapPLUTO';
+import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
+import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
+import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
+import { getNYCWaterfrontAccessData } from '../adapters/nycWaterfrontAccess';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2123,6 +2127,30 @@ export class EnrichmentService {
       // NYC MapPLUTO - Point-in-polygon and proximity query (max 1 mile)
       case 'nyc_mappluto':
         return await this.getNYCMapPLUTO(lat, lon, radius);
+      
+      // NYC Bike Routes - Proximity query (max 5 miles)
+      case 'nyc_bike_routes':
+        return await this.getNYCBikeRoutes(lat, lon, radius);
+      
+      // NYC Neighborhoods - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_neighborhoods':
+        return await this.getNYCNeighborhoods(lat, lon, radius);
+      
+      // NYC Zoning Districts - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_zoning_districts':
+        return await this.getNYCZoningDistricts(lat, lon, radius);
+      
+      // NYC Waterfront Access - HPB Launch Site (points, proximity up to 5 miles)
+      case 'nyc_waterfront_hpb_launch_site':
+        return await this.getNYCWaterfrontAccess(lat, lon, 0, radius);
+      
+      // NYC Waterfront Access - Waterfront Parks (polygons, point-in-polygon and proximity up to 5 miles)
+      case 'nyc_waterfront_parks':
+        return await this.getNYCWaterfrontAccess(lat, lon, 1, radius);
+      
+      // NYC Waterfront Access - PAWS (polygons, point-in-polygon and proximity up to 5 miles)
+      case 'nyc_waterfront_paws':
+        return await this.getNYCWaterfrontAccess(lat, lon, 2, radius);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -9752,6 +9780,231 @@ out center;`;
         nyc_mappluto_containing_message: 'Error querying tax lots',
         nyc_mappluto_count: 0,
         nyc_mappluto_all: []
+      };
+    }
+  }
+
+  private async getNYCBikeRoutes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚴 Fetching NYC Bike Routes data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          nyc_bike_routes_count: 0,
+          nyc_bike_routes_all: []
+        };
+      }
+      
+      const routes = await getNYCBikeRoutesData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      result.nyc_bike_routes_count = routes.length;
+      result.nyc_bike_routes_all = routes.map(route => ({
+        ...route.attributes,
+        routeId: route.routeId,
+        name: route.name,
+        routeType: route.routeType,
+        status: route.status,
+        shapeLength: route.shapeLength,
+        geometry: route.geometry,
+        distance_miles: route.distance_miles || 0
+      }));
+      result.nyc_bike_routes_summary = `Found ${routes.length} bike route(s) within ${radius} miles.`;
+      
+      console.log(`✅ NYC Bike Routes data processed:`, {
+        totalCount: result.nyc_bike_routes_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NYC Bike Routes data:', error);
+      return {
+        nyc_bike_routes_count: 0,
+        nyc_bike_routes_all: []
+      };
+    }
+  }
+
+  private async getNYCNeighborhoods(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏘️ Fetching NYC Neighborhoods data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const neighborhoods = await getNYCNeighborhoodsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      if (neighborhoods.length === 0) {
+        result.nyc_neighborhoods_containing = null;
+        result.nyc_neighborhoods_containing_message = 'No neighborhood found containing this location';
+        result.nyc_neighborhoods_count = 0;
+        result.nyc_neighborhoods_all = [];
+      } else {
+        // Get the first containing neighborhood (should typically be only one for point-in-polygon)
+        const containingNeighborhood = neighborhoods.find(n => n.isContaining) || neighborhoods[0];
+        
+        if (containingNeighborhood && containingNeighborhood.isContaining) {
+          result.nyc_neighborhoods_containing = containingNeighborhood.ntaName || containingNeighborhood.ntaCode || containingNeighborhood.neighborhoodId || 'Unknown Neighborhood';
+          result.nyc_neighborhoods_containing_message = `Location is within neighborhood: ${containingNeighborhood.ntaName || containingNeighborhood.ntaCode || containingNeighborhood.neighborhoodId || 'Unknown'}`;
+        } else {
+          result.nyc_neighborhoods_containing = null;
+          result.nyc_neighborhoods_containing_message = 'No neighborhood found containing this location';
+        }
+        
+        result.nyc_neighborhoods_count = neighborhoods.length;
+        result.nyc_neighborhoods_all = neighborhoods.map(neighborhood => ({
+          ...neighborhood.attributes,
+          neighborhoodId: neighborhood.neighborhoodId,
+          ntaCode: neighborhood.ntaCode,
+          ntaName: neighborhood.ntaName,
+          borough: neighborhood.borough,
+          geometry: neighborhood.geometry,
+          distance_miles: neighborhood.distance_miles,
+          isContaining: neighborhood.isContaining
+        }));
+        
+        result.nyc_neighborhoods_summary = `Found ${neighborhoods.length} neighborhood(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ NYC Neighborhoods data processed:`, {
+        totalCount: result.nyc_neighborhoods_count,
+        containing: result.nyc_neighborhoods_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NYC Neighborhoods data:', error);
+      return {
+        nyc_neighborhoods_containing: null,
+        nyc_neighborhoods_containing_message: 'Error querying neighborhoods',
+        nyc_neighborhoods_count: 0,
+        nyc_neighborhoods_all: []
+      };
+    }
+  }
+
+  private async getNYCZoningDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching NYC Zoning Districts data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const districts = await getNYCZoningDistrictsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+
+      if (districts.length === 0) {
+        result.nyc_zoning_districts_containing = null;
+        result.nyc_zoning_districts_containing_message = 'No zoning district found containing this location';
+        result.nyc_zoning_districts_count = 0;
+        result.nyc_zoning_districts_all = [];
+      } else {
+        // Get the first containing district (should typically be only one for point-in-polygon)
+        const containingDistrict = districts.find(d => d.isContaining) || districts[0];
+        
+        if (containingDistrict && containingDistrict.isContaining) {
+          result.nyc_zoning_districts_containing = containingDistrict.zoneDistrict || containingDistrict.zoneSubdistrict || containingDistrict.districtId || 'Unknown District';
+          result.nyc_zoning_districts_containing_message = `Location is within zoning district: ${containingDistrict.zoneDistrict || containingDistrict.zoneSubdistrict || containingDistrict.districtId || 'Unknown'}`;
+        } else {
+          result.nyc_zoning_districts_containing = null;
+          result.nyc_zoning_districts_containing_message = 'No zoning district found containing this location';
+        }
+        
+        result.nyc_zoning_districts_count = districts.length;
+        result.nyc_zoning_districts_all = districts.map(district => ({
+          ...district.attributes,
+          districtId: district.districtId,
+          zoneDistrict: district.zoneDistrict,
+          zoneSubdistrict: district.zoneSubdistrict,
+          geometry: district.geometry,
+          distance_miles: district.distance_miles,
+          isContaining: district.isContaining
+        }));
+        
+        result.nyc_zoning_districts_summary = `Found ${districts.length} zoning district(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ NYC Zoning Districts data processed:`, {
+        totalCount: result.nyc_zoning_districts_count,
+        containing: result.nyc_zoning_districts_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NYC Zoning Districts data:', error);
+      return {
+        nyc_zoning_districts_containing: null,
+        nyc_zoning_districts_containing_message: 'Error querying zoning districts',
+        nyc_zoning_districts_count: 0,
+        nyc_zoning_districts_all: []
+      };
+    }
+  }
+
+  private async getNYCWaterfrontAccess(lat: number, lon: number, layerId: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerNames = ['HPB Launch Site', 'Waterfront Parks', 'PAWS Publicly Accessible Waterfront Spaces'];
+      const layerName = layerNames[layerId] || `Layer ${layerId}`;
+      const layerKey = layerId === 0 ? 'nyc_waterfront_hpb_launch_site' : 
+                      layerId === 1 ? 'nyc_waterfront_parks' : 
+                      'nyc_waterfront_paws';
+      
+      console.log(`🌊 Fetching NYC ${layerName} data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const features = await getNYCWaterfrontAccessData(lat, lon, layerId, radius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result[`${layerKey}_containing`] = null;
+        result[`${layerKey}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        result[`${layerKey}_count`] = 0;
+        result[`${layerKey}_all`] = [];
+      } else {
+        // For polygons, get the first containing feature
+        if (layerId === 1 || layerId === 2) {
+          const containingFeature = features.find(f => f.isContaining) || features[0];
+          
+          if (containingFeature && containingFeature.isContaining) {
+            result[`${layerKey}_containing`] = containingFeature.name || containingFeature.featureId || 'Unknown';
+            result[`${layerKey}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.name || containingFeature.featureId || 'Unknown'}`;
+          } else {
+            result[`${layerKey}_containing`] = null;
+            result[`${layerKey}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+          }
+        } else {
+          result[`${layerKey}_containing`] = null;
+          result[`${layerKey}_containing_message`] = `Point feature - proximity only`;
+        }
+        
+        result[`${layerKey}_count`] = features.length;
+        result[`${layerKey}_all`] = features.map(feature => ({
+          ...feature.attributes,
+          featureId: feature.featureId,
+          name: feature.name,
+          type: feature.type,
+          layerId: feature.layerId,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+        
+        result[`${layerKey}_summary`] = `Found ${features.length} ${layerName.toLowerCase()}(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ NYC ${layerName} data processed:`, {
+        totalCount: result[`${layerKey}_count`],
+        containing: result[`${layerKey}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      const layerKey = layerId === 0 ? 'nyc_waterfront_hpb_launch_site' : 
+                      layerId === 1 ? 'nyc_waterfront_parks' : 
+                      'nyc_waterfront_paws';
+      console.error(`❌ Error fetching NYC Waterfront Access Layer ${layerId} data:`, error);
+      return {
+        [`${layerKey}_containing`]: null,
+        [`${layerKey}_containing_message`]: 'Error querying waterfront access',
+        [`${layerKey}_count`]: 0,
+        [`${layerKey}_all`]: []
       };
     }
   }
