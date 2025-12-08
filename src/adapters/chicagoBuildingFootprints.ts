@@ -348,11 +348,16 @@ export async function getChicagoBuildingFootprintsData(
           if (Math.abs(featureY) <= 90 && Math.abs(featureX) <= 180) {
             featureLat = featureY;
             featureLon = featureX;
-            distance = calculateDistance(lat, lon, featureLat, featureLon);
+            distance = calculateDistance(lat, lon, featureY, featureX);
           } else {
             // Can't determine coordinates - skip this feature
             return null;
           }
+        }
+        
+        // Type guard: ensure all values are non-null before proceeding
+        if (featureLat === null || featureLon === null || distance === null) {
+          return null;
         }
         
         // Remove the_geom from response to reduce payload size (we only need centroids)
