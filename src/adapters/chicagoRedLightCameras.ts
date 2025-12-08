@@ -128,7 +128,7 @@ export async function getChicagoRedLightCamerasData(
           latitude: featureLat,
           longitude: featureLon,
           distance_miles: distance
-        };
+        } as ChicagoRedLightCameraFeature;
       })
       .filter((feature): feature is ChicagoRedLightCameraFeature => feature !== null);
 

@@ -128,7 +128,7 @@ export async function getChicagoSpeedCamerasData(
           latitude: featureLat,
           longitude: featureLon,
           distance_miles: distance
-        };
+        } as ChicagoSpeedCameraFeature;
       })
       .filter((feature): feature is ChicagoSpeedCameraFeature => feature !== null);
 
