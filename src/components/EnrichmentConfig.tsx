@@ -2505,6 +2505,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             'Elevation',
                             'Demographics',
                             'LMS Data',
+                            'Political Boundaries',
                             'Points of Interest',
                             'Cultural & Historic',
                             'Housing & Health',

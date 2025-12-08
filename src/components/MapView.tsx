@@ -229,7 +229,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_housing_lead_risk': { icon: '🏠', color: '#dc2626', title: 'LA County Housing with Potential Lead Risk' },
   'la_county_school_district_boundaries': { icon: '🏫', color: '#3b82f6', title: 'LA County School District Boundaries' },
   'la_county_metro_lines': { icon: '🚇', color: '#7c3aed', title: 'LA County MTA Metro Lines' },
-  'la_county_street_inventory': { icon: '🛣️', color: '#64748b', title: 'LA County Street Inventory' },
+  'la_county_street_inventory': { icon: '🛣️', color: '#fbbf24', title: 'LA County Street Inventory' },
   // LA County Hazards
   'la_county_fire_hazards': { icon: '🔥', color: '#dc2626', title: 'LA County Fire Hazards' },
   'la_county_fire_hazard_responsibility_areas': { icon: '🔥', color: '#ef4444', title: 'LA County Fire Hazard Responsibility Areas' },
@@ -260,7 +260,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
   'ca_state_parks_campgrounds': { icon: '⛺', color: '#f59e0b', title: 'CA State Parks Campgrounds' },
-  'ca_state_parks_recreational_routes': { icon: '🛤️', color: '#10b981', title: 'CA State Parks Recreational Routes' },
+  'ca_state_parks_recreational_routes': { icon: '🛤️', color: '#fbbf24', title: 'CA State Parks Recreational Routes' },
   'ca_condor_range': { icon: '🦅', color: '#7c3aed', title: 'CA Condor Range' },
   'ca_black_bear_range': { icon: '🐻', color: '#1f2937', title: 'CA Black Bear Range' },
   'ca_brush_rabbit_range': { icon: '🐰', color: '#92400e', title: 'CA Brush Rabbit Range' },
@@ -290,7 +290,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'nj_bus_stops': { icon: '🚌', color: '#f59e0b', title: 'NJ Bus Stops' },
   'nj_safety_service_patrol': { icon: '🚨', color: '#dc2626', title: 'NJ Safety Service Patrol' },
   'nj_service_areas': { icon: '🛣️', color: '#8b5cf6', title: 'NJ Service Areas' },
-  'nj_roadway_network': { icon: '🛣️', color: '#6b7280', title: 'NJ Roadway Network' },
+  'nj_roadway_network': { icon: '🛣️', color: '#fbbf24', title: 'NJ Roadway Network' },
   'nj_known_contaminated_sites': { icon: '⚠️', color: '#dc2626', title: 'NJ Known Contaminated Sites' },
   'nj_alternative_fuel_stations': { icon: '⛽', color: '#10b981', title: 'NJ Alternative Fuel Stations' },
   'nj_power_plants': { icon: '⚡', color: '#f59e0b', title: 'NJ Power Plants' },
@@ -1654,9 +1654,9 @@ const MapView: React.FC<MapViewProps> = ({
                   const roadType = road.road_type || road.ROAD_TYPE || road.RoadType || road.type || road.TYPE || road.fclass || road.FCLASS || 'Unknown Type';
                   const routeNumber = road.route_number || road.ROUTE_NUMBER || road.RouteNumber || road.route || road.ROUTE || road.rt_number || road.RT_NUMBER || null;
 
-                  // Create polyline with gray color for roads
+                  // Create polyline with yellow color for roads
                   const polyline = L.polyline(latlngs, {
-                    color: '#6b7280', // Gray color for roads
+                    color: '#fbbf24', // Yellow color for roads (better visibility on imagery basemap)
                     weight: 3,
                     opacity: 0.7,
                     smoothFactor: 1
@@ -1716,7 +1716,7 @@ const MapView: React.FC<MapViewProps> = ({
           if (!legendAccumulator['nh_dot_roads']) {
             legendAccumulator['nh_dot_roads'] = {
               icon: '🛣️',
-              color: '#6b7280',
+              color: '#fbbf24',
               title: 'NH DOT Roads',
               count: 0,
             };
@@ -7002,9 +7002,9 @@ const MapView: React.FC<MapViewProps> = ({
                   const routeSubtype = roadway.routeSubtype !== null && roadway.routeSubtype !== undefined ? roadway.routeSubtype : null;
                   const roadNum = roadway.roadNum || roadway.ROAD_NUM || roadway.road_num || '';
 
-                  // Create polyline with gray color for roadways
+                  // Create polyline with yellow color for roadways
                   const polyline = L.polyline(latlngs, {
-                    color: '#6b7280', // Gray color for roadways
+                    color: '#fbbf24', // Yellow color for roadways (better visibility on imagery basemap)
                     weight: 3,
                     opacity: 0.7,
                     smoothFactor: 1
@@ -7078,7 +7078,7 @@ const MapView: React.FC<MapViewProps> = ({
           if (!legendAccumulator['nj_roadway_network']) {
             legendAccumulator['nj_roadway_network'] = {
               icon: '🛣️',
-              color: '#6b7280',
+              color: '#fbbf24',
               title: 'NJ Roadway Network',
               count: 0,
             };
@@ -7965,9 +7965,9 @@ const MapView: React.FC<MapViewProps> = ({
                   const imsLegend = road.imsLegend || road.IMS_LEGEND || road.ImsLegend || null;
                   const lengthMiles = road.lengthMiles !== null && road.lengthMiles !== undefined ? road.lengthMiles : null;
 
-                  // Create polyline with orange color for CT roads
+                  // Create polyline with yellow color for CT roads
                   const polyline = L.polyline(latlngs, {
-                    color: '#f97316', // Orange color for CT roads
+                    color: '#fbbf24', // Yellow color for CT roads (better visibility on imagery basemap)
                     weight: 3,
                     opacity: 0.7,
                     smoothFactor: 1
@@ -8028,7 +8028,7 @@ const MapView: React.FC<MapViewProps> = ({
           if (!legendAccumulator['ct_roads']) {
             legendAccumulator['ct_roads'] = {
               icon: '🛣️',
-              color: '#f97316',
+              color: '#fbbf24',
               title: 'CT Roads and Trails',
               count: 0,
             };
@@ -11505,9 +11505,9 @@ const MapView: React.FC<MapViewProps> = ({
                     // Build full street name
                     const fullStreetName = [streetDir, streetName, streetType].filter(Boolean).join(' ').trim() || streetName;
 
-                    // Create polyline with gray color for street inventory
+                    // Create polyline with yellow color for street inventory
                     const polyline = L.polyline(latlngs, {
-                      color: '#64748b', // Slate gray color for streets
+                      color: '#fbbf24', // Yellow color for streets (better visibility on imagery basemap)
                       weight: 3,
                       opacity: 0.7,
                       smoothFactor: 1
@@ -11569,7 +11569,7 @@ const MapView: React.FC<MapViewProps> = ({
             if (!legendAccumulator['la_county_street_inventory']) {
               legendAccumulator['la_county_street_inventory'] = {
                 icon: '🛣️',
-                color: '#64748b',
+                color: '#fbbf24',
                 title: 'LA County Street Inventory',
                 count: 0,
               };
@@ -13224,6 +13224,136 @@ const MapView: React.FC<MapViewProps> = ({
         }
       });
 
+      // Draw LA County Political Boundaries layers
+      const laCountyPoliticalBoundariesLayers = [
+        { key: 'la_county_political_boundaries_districts_2021_all', layerId: 24, icon: '🗳️', color: '#3b82f6', title: 'LA County Districts (2021)' },
+        { key: 'la_county_political_boundaries_supervisorial_current_all', layerId: 27, icon: '🏛️', color: '#2563eb', title: 'LA County Supervisorial District (Current)' },
+        { key: 'la_county_political_boundaries_supervisorial_2021_all', layerId: 26, icon: '🏛️', color: '#1d4ed8', title: 'LA County Supervisorial District (2021)' },
+        { key: 'la_county_political_boundaries_congressional_2021_all', layerId: 29, icon: '🏛️', color: '#1e40af', title: 'LA County Congressional District (2021)' },
+        { key: 'la_county_political_boundaries_state_assembly_2021_all', layerId: 30, icon: '🏛️', color: '#1e3a8a', title: 'LA County State Assembly District (2021)' },
+        { key: 'la_county_political_boundaries_state_senate_2021_all', layerId: 31, icon: '🏛️', color: '#172554', title: 'LA County State Senate District (2021)' },
+        { key: 'la_county_political_boundaries_board_equalization_2021_all', layerId: 32, icon: '⚖️', color: '#0f172a', title: 'LA County Board of Equalization (2021)' },
+        { key: 'la_county_political_boundaries_city_council_2021_all', layerId: 33, icon: '🏛️', color: '#6366f1', title: 'LA City Council Districts (2021)' },
+        { key: 'la_county_political_boundaries_districts_2011_all', layerId: 0, icon: '🗳️', color: '#4f46e5', title: 'LA County Districts (2011)' },
+        { key: 'la_county_political_boundaries_supervisorial_2011_all', layerId: 1, icon: '🏛️', color: '#4338ca', title: 'LA County Supervisorial District (2011)' },
+        { key: 'la_county_political_boundaries_congressional_2011_all', layerId: 2, icon: '🏛️', color: '#3730a3', title: 'LA County Congressional District (2011)' },
+        { key: 'la_county_political_boundaries_state_assembly_2011_all', layerId: 3, icon: '🏛️', color: '#312e81', title: 'LA County State Assembly District (2011)' },
+        { key: 'la_county_political_boundaries_state_senate_2011_all', layerId: 4, icon: '🏛️', color: '#1e1b4b', title: 'LA County State Senate District (2011)' },
+        { key: 'la_county_political_boundaries_board_equalization_2011_all', layerId: 5, icon: '⚖️', color: '#9333ea', title: 'LA County Board of Equalization (2011)' },
+        { key: 'la_county_political_boundaries_city_council_2012_all', layerId: 6, icon: '🏛️', color: '#8b5cf6', title: 'LA City Council Districts (2012)' },
+        { key: 'la_county_political_boundaries_districts_2001_all', layerId: 7, icon: '🗳️', color: '#7c3aed', title: 'LA County Districts (2001)' },
+        { key: 'la_county_political_boundaries_supervisorial_2001_all', layerId: 8, icon: '🏛️', color: '#6d28d9', title: 'LA County Supervisorial Districts (2001)' },
+        { key: 'la_county_political_boundaries_congressional_2001_all', layerId: 9, icon: '🏛️', color: '#5b21b6', title: 'LA County Congressional Districts (2001)' },
+        { key: 'la_county_political_boundaries_state_assembly_2001_all', layerId: 10, icon: '🏛️', color: '#4c1d95', title: 'LA County State Assembly Districts (2001)' },
+        { key: 'la_county_political_boundaries_state_senate_2001_all', layerId: 11, icon: '🏛️', color: '#3b0764', title: 'LA County State Senate Districts (2001)' },
+        { key: 'la_county_political_boundaries_city_council_2002_all', layerId: 12, icon: '🏛️', color: '#2e1065', title: 'LA City Council Districts (2002)' },
+        { key: 'la_county_political_boundaries_districts_1971_1991_all', layerId: 13, icon: '🗳️', color: '#1e1b4b', title: 'LA County Districts (1971-1991)' },
+        { key: 'la_county_political_boundaries_supervisorial_1991_all', layerId: 14, icon: '🏛️', color: '#ec4899', title: 'LA County Supervisorial Districts (1991)' },
+        { key: 'la_county_political_boundaries_supervisorial_1981_all', layerId: 15, icon: '🏛️', color: '#db2777', title: 'LA County Supervisorial Districts (1981)' },
+        { key: 'la_county_political_boundaries_supervisorial_1971_all', layerId: 16, icon: '🏛️', color: '#be185d', title: 'LA County Supervisorial Districts (1971)' },
+        { key: 'la_county_political_boundaries_other_all', layerId: 36, icon: '🗺️', color: '#9f1239', title: 'LA County Other Political Boundaries' },
+        { key: 'la_county_political_boundaries_school_districts_all', layerId: 25, icon: '🏫', color: '#831843', title: 'LA County School Districts' },
+        { key: 'la_county_political_boundaries_registrar_precincts_all', layerId: 34, icon: '🗳️', color: '#701a75', title: 'LA County Registrar Recorder Precincts' },
+        { key: 'la_county_political_boundaries_election_precincts_all', layerId: 37, icon: '🗳️', color: '#f59e0b', title: 'LA County Registrar Recorder Election Precincts' },
+        { key: 'la_county_political_boundaries_city_county_all', layerId: 17, icon: '🏘️', color: '#d97706', title: 'LA County City and County Boundaries' },
+        { key: 'la_county_political_boundaries_county_boundaries_all', layerId: 18, icon: '🗺️', color: '#b45309', title: 'LA County County Boundaries' },
+        { key: 'la_county_political_boundaries_city_boundaries_all', layerId: 19, icon: '🏘️', color: '#92400e', title: 'LA County City Boundaries' },
+        { key: 'la_county_political_boundaries_community_boundaries_all', layerId: 23, icon: '🏘️', color: '#78350f', title: 'LA County Community Boundaries (CSA)' },
+        { key: 'la_county_political_boundaries_city_annexations_all', layerId: 21, icon: '📋', color: '#713f12', title: 'LA County City Annexations' }
+      ];
+
+      laCountyPoliticalBoundariesLayers.forEach(({ key, icon, color, title }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((boundary: any) => {
+              if (boundary.geometry && boundary.geometry.rings) {
+                try {
+                  const rings = boundary.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const isContaining = boundary.isContaining;
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    const boundaryId = boundary.boundaryId || boundary.DISTRICT || boundary.district || boundary.DISTRICT_NUM || boundary.district_num || boundary.DISTRICT_NUMBER || boundary.district_number || boundary.NAME || boundary.Name || boundary.name || boundary.OBJECTID || boundary.objectid || 'Unknown';
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${boundaryId ? `<div><strong>ID:</strong> ${boundaryId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this boundary</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['boundaryId', 'DISTRICT', 'district', 'DISTRICT_NUM', 'district_num', 'DISTRICT_NUMBER', 'district_number', 'NAME', 'Name', 'name', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                    Object.entries(boundary).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error drawing ${title} polygon:`, error);
+                }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
       // Draw CA State Parks Entry Points
       try {
         if (enrichments.ca_state_parks_entry_points_all && Array.isArray(enrichments.ca_state_parks_entry_points_all)) {
@@ -13522,7 +13652,7 @@ const MapView: React.FC<MapViewProps> = ({
 
                     // Create polyline with green color for recreational routes
                     const polyline = L.polyline(latlngs, {
-                      color: '#10b981', // Green color matching state parks theme
+                      color: '#fbbf24', // Yellow color for recreational routes (better visibility on imagery basemap)
                       weight: 3,
                       opacity: 0.8,
                       smoothFactor: 1
@@ -13590,7 +13720,7 @@ const MapView: React.FC<MapViewProps> = ({
             if (!legendAccumulator['ca_state_parks_recreational_routes']) {
               legendAccumulator['ca_state_parks_recreational_routes'] = {
                 icon: '🛤️',
-                color: '#10b981',
+                color: '#fbbf24',
                 title: 'CA State Parks Recreational Routes',
                 count: 0,
               };

@@ -381,7 +381,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('la_county_elevation_') && key.endsWith('_all')) || // Skip LA County Elevation raster flags (handled separately)
         (key.startsWith('la_county_elevation_') && key.endsWith('_enabled')) || // Skip LA County Demographics arrays (handled separately)
         (key.startsWith('la_county_demographics_') && key.endsWith('_all')) || // Skip LA County LMS arrays (handled separately)
-        (key.startsWith('la_county_lms_') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
+        (key.startsWith('la_county_lms_') && key.endsWith('_all')) || // Skip LA County Political Boundaries arrays (handled separately)
+        (key.startsWith('la_county_political_boundaries_') && key.endsWith('_all'))) { // Skip _all arrays (handled separately)
       return;
     }
     
@@ -5773,7 +5774,60 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           attributesJson,
           '',
           '',
-          'LA County LMS Data 2014'
+          'LA County LMS Data'
+        ]);
+      });
+    }
+    
+    // LA County Political Boundaries - Generic handler for all layers
+    if (key.startsWith('la_county_political_boundaries_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('la_county_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
+      value.forEach((boundary: any) => {
+        const boundaryId = boundary.boundaryId || boundary.DISTRICT || boundary.district || boundary.DISTRICT_NUM || boundary.district_num || boundary.DISTRICT_NUMBER || boundary.district_number || boundary.NAME || boundary.Name || boundary.name || 'Unknown';
+        const distance = boundary.isContaining ? '0.00' : '';
+        
+        // Extract coordinates from polygon geometry
+        let lat = '';
+        let lon = '';
+        if (boundary.geometry && boundary.geometry.rings && boundary.geometry.rings.length > 0) {
+          const firstCoord = boundary.geometry.rings[0][0];
+          lat = firstCoord[1].toString();
+          lon = firstCoord[0].toString();
+        }
+        
+        const allAttributes = { ...boundary };
+        delete allAttributes.boundaryId;
+        delete allAttributes.DISTRICT;
+        delete allAttributes.district;
+        delete allAttributes.DISTRICT_NUM;
+        delete allAttributes.district_num;
+        delete allAttributes.DISTRICT_NUMBER;
+        delete allAttributes.district_number;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.name;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'LA County Registrar/Recorder',
+          (location.confidence || 'N/A').toString(),
+          layerName,
+          boundaryId,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          boundary.isContaining ? 'Within Boundary' : 'Nearby Boundary',
+          attributesJson,
+          '',
+          '',
+          'LA County Registrar/Recorder'
         ]);
       });
     }

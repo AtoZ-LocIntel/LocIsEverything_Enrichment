@@ -94,6 +94,7 @@ import { getLACountyAdministrativeBoundariesData } from '../adapters/laCountyAdm
 import { getLACountyElevationData } from '../adapters/laCountyElevation';
 import { getLACountyDemographicsData } from '../adapters/laCountyDemographics';
 import { getLACountyLMSData } from '../adapters/laCountyLMSData';
+import { getLACountyPoliticalBoundariesData } from '../adapters/laCountyPoliticalBoundaries';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2480,6 +2481,76 @@ export class EnrichmentService {
         return await this.getLACountyLMS(191, lat, lon, radius);
       case 'la_county_lms_warming_centers':
         return await this.getLACountyLMS(192, lat, lon, radius);
+      
+      // LA County Political Boundaries - All layers (point-in-polygon only)
+      case 'la_county_political_boundaries_districts_2021':
+        return await this.getLACountyPoliticalBoundaries(24, lat, lon);
+      case 'la_county_political_boundaries_supervisorial_current':
+        return await this.getLACountyPoliticalBoundaries(27, lat, lon);
+      case 'la_county_political_boundaries_supervisorial_2021':
+        return await this.getLACountyPoliticalBoundaries(26, lat, lon);
+      case 'la_county_political_boundaries_congressional_2021':
+        return await this.getLACountyPoliticalBoundaries(29, lat, lon);
+      case 'la_county_political_boundaries_state_assembly_2021':
+        return await this.getLACountyPoliticalBoundaries(30, lat, lon);
+      case 'la_county_political_boundaries_state_senate_2021':
+        return await this.getLACountyPoliticalBoundaries(31, lat, lon);
+      case 'la_county_political_boundaries_board_equalization_2021':
+        return await this.getLACountyPoliticalBoundaries(32, lat, lon);
+      case 'la_county_political_boundaries_city_council_2021':
+        return await this.getLACountyPoliticalBoundaries(33, lat, lon);
+      case 'la_county_political_boundaries_districts_2011':
+        return await this.getLACountyPoliticalBoundaries(0, lat, lon);
+      case 'la_county_political_boundaries_supervisorial_2011':
+        return await this.getLACountyPoliticalBoundaries(1, lat, lon);
+      case 'la_county_political_boundaries_congressional_2011':
+        return await this.getLACountyPoliticalBoundaries(2, lat, lon);
+      case 'la_county_political_boundaries_state_assembly_2011':
+        return await this.getLACountyPoliticalBoundaries(3, lat, lon);
+      case 'la_county_political_boundaries_state_senate_2011':
+        return await this.getLACountyPoliticalBoundaries(4, lat, lon);
+      case 'la_county_political_boundaries_board_equalization_2011':
+        return await this.getLACountyPoliticalBoundaries(5, lat, lon);
+      case 'la_county_political_boundaries_city_council_2012':
+        return await this.getLACountyPoliticalBoundaries(6, lat, lon);
+      case 'la_county_political_boundaries_districts_2001':
+        return await this.getLACountyPoliticalBoundaries(7, lat, lon);
+      case 'la_county_political_boundaries_supervisorial_2001':
+        return await this.getLACountyPoliticalBoundaries(8, lat, lon);
+      case 'la_county_political_boundaries_congressional_2001':
+        return await this.getLACountyPoliticalBoundaries(9, lat, lon);
+      case 'la_county_political_boundaries_state_assembly_2001':
+        return await this.getLACountyPoliticalBoundaries(10, lat, lon);
+      case 'la_county_political_boundaries_state_senate_2001':
+        return await this.getLACountyPoliticalBoundaries(11, lat, lon);
+      case 'la_county_political_boundaries_city_council_2002':
+        return await this.getLACountyPoliticalBoundaries(12, lat, lon);
+      case 'la_county_political_boundaries_districts_1971_1991':
+        return await this.getLACountyPoliticalBoundaries(13, lat, lon);
+      case 'la_county_political_boundaries_supervisorial_1991':
+        return await this.getLACountyPoliticalBoundaries(14, lat, lon);
+      case 'la_county_political_boundaries_supervisorial_1981':
+        return await this.getLACountyPoliticalBoundaries(15, lat, lon);
+      case 'la_county_political_boundaries_supervisorial_1971':
+        return await this.getLACountyPoliticalBoundaries(16, lat, lon);
+      case 'la_county_political_boundaries_other':
+        return await this.getLACountyPoliticalBoundaries(36, lat, lon);
+      case 'la_county_political_boundaries_school_districts':
+        return await this.getLACountyPoliticalBoundaries(25, lat, lon);
+      case 'la_county_political_boundaries_registrar_precincts':
+        return await this.getLACountyPoliticalBoundaries(34, lat, lon);
+      case 'la_county_political_boundaries_election_precincts':
+        return await this.getLACountyPoliticalBoundaries(37, lat, lon);
+      case 'la_county_political_boundaries_city_county':
+        return await this.getLACountyPoliticalBoundaries(17, lat, lon);
+      case 'la_county_political_boundaries_county_boundaries':
+        return await this.getLACountyPoliticalBoundaries(18, lat, lon);
+      case 'la_county_political_boundaries_city_boundaries':
+        return await this.getLACountyPoliticalBoundaries(19, lat, lon);
+      case 'la_county_political_boundaries_community_boundaries':
+        return await this.getLACountyPoliticalBoundaries(23, lat, lon);
+      case 'la_county_political_boundaries_city_annexations':
+        return await this.getLACountyPoliticalBoundaries(21, lat, lon);
       
       // CA State Parks Entry Points (CA Open Data Portal) - Proximity query only
       case 'ca_state_parks_entry_points':
@@ -10831,6 +10902,175 @@ out center;`;
         192: 'lms_warming_centers'
       };
       const key = layerKeyMap[layerId] || `lms_${layerId}`;
+      return {
+        [`la_county_${key}_count`]: 0,
+        [`la_county_${key}_all`]: [],
+        [`la_county_${key}_containing`]: null,
+        [`la_county_${key}_containing_message`]: `No data found`,
+        [`la_county_${key}_summary`]: `No data found`
+      };
+    }
+  }
+
+  private async getLACountyPoliticalBoundaries(layerId: number, lat: number, lon: number): Promise<Record<string, any>> {
+    try {
+      // Map layer IDs to enrichment keys
+      const layerKeyMap: Record<number, string> = {
+        24: 'political_boundaries_districts_2021',
+        27: 'political_boundaries_supervisorial_current',
+        26: 'political_boundaries_supervisorial_2021',
+        29: 'political_boundaries_congressional_2021',
+        30: 'political_boundaries_state_assembly_2021',
+        31: 'political_boundaries_state_senate_2021',
+        32: 'political_boundaries_board_equalization_2021',
+        33: 'political_boundaries_city_council_2021',
+        0: 'political_boundaries_districts_2011',
+        1: 'political_boundaries_supervisorial_2011',
+        2: 'political_boundaries_congressional_2011',
+        3: 'political_boundaries_state_assembly_2011',
+        4: 'political_boundaries_state_senate_2011',
+        5: 'political_boundaries_board_equalization_2011',
+        6: 'political_boundaries_city_council_2012',
+        7: 'political_boundaries_districts_2001',
+        8: 'political_boundaries_supervisorial_2001',
+        9: 'political_boundaries_congressional_2001',
+        10: 'political_boundaries_state_assembly_2001',
+        11: 'political_boundaries_state_senate_2001',
+        12: 'political_boundaries_city_council_2002',
+        13: 'political_boundaries_districts_1971_1991',
+        14: 'political_boundaries_supervisorial_1991',
+        15: 'political_boundaries_supervisorial_1981',
+        16: 'political_boundaries_supervisorial_1971',
+        36: 'political_boundaries_other',
+        25: 'political_boundaries_school_districts',
+        34: 'political_boundaries_registrar_precincts',
+        37: 'political_boundaries_election_precincts',
+        17: 'political_boundaries_city_county',
+        18: 'political_boundaries_county_boundaries',
+        19: 'political_boundaries_city_boundaries',
+        23: 'political_boundaries_community_boundaries',
+        21: 'political_boundaries_city_annexations'
+      };
+      
+      const layerNames: Record<number, string> = {
+        24: 'Districts (2021)',
+        27: 'Supervisorial District (Current)',
+        26: 'Supervisorial District (2021)',
+        29: 'Congressional District (2021)',
+        30: 'State Assembly District (2021)',
+        31: 'State Senate District (2021)',
+        32: 'Board of Equalization (2021)',
+        33: 'LA City Council Districts (2021)',
+        0: 'Districts (2011)',
+        1: 'Supervisorial District (2011)',
+        2: 'Congressional District (2011)',
+        3: 'State Assembly District (2011)',
+        4: 'State Senate District (2011)',
+        5: 'Board of Equalization (2011)',
+        6: 'LA City Council Districts (2012)',
+        7: 'Districts (2001)',
+        8: 'Supervisorial Districts (2001)',
+        9: 'Congressional Districts (2001)',
+        10: 'State Assembly Districts (2001)',
+        11: 'State Senate Districts (2001)',
+        12: 'LA City Council Districts (2002)',
+        13: 'Districts (1971-1991)',
+        14: 'Supervisorial Districts (1991)',
+        15: 'Supervisorial Districts (1981)',
+        16: 'Supervisorial Districts (1971)',
+        36: 'Other Political Boundaries',
+        25: 'School Districts',
+        34: 'Registrar Recorder Precincts',
+        37: 'Registrar Recorder Election Precincts',
+        17: 'City and County Boundaries',
+        18: 'County Boundaries',
+        19: 'City Boundaries',
+        23: 'Community Boundaries (CSA)',
+        21: 'City Annexations'
+      };
+      
+      const key = layerKeyMap[layerId] || `political_boundaries_${layerId}`;
+      const layerName = layerNames[layerId] || `Political Boundaries Layer ${layerId}`;
+      
+      console.log(`🗺️ Fetching LA County Political Boundaries ${layerName} for [${lat}, ${lon}]`);
+      
+      const boundaryFeatures = await getLACountyPoliticalBoundariesData(layerId, lat, lon);
+      
+      const result: Record<string, any> = {};
+      
+      if (boundaryFeatures.length > 0) {
+        const containingFeature = boundaryFeatures.find(d => d.isContaining);
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`la_county_${key}_containing`] = containingFeature.boundaryId || 'Unknown';
+          result[`la_county_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.boundaryId || 'Unknown'}`;
+        } else {
+          result[`la_county_${key}_containing`] = null;
+          result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`la_county_${key}_count`] = boundaryFeatures.length;
+        result[`la_county_${key}_all`] = boundaryFeatures.map(feature => ({
+          ...feature.attributes,
+          boundaryId: feature.boundaryId,
+          geometry: feature.geometry,
+          isContaining: feature.isContaining
+        }));
+        
+        result[`la_county_${key}_summary`] = `Found ${boundaryFeatures.length} ${layerName.toLowerCase()} feature(s)${containingFeature ? ' containing the point' : ''}.`;
+      } else {
+        result[`la_county_${key}_count`] = 0;
+        result[`la_county_${key}_all`] = [];
+        result[`la_county_${key}_containing`] = null;
+        result[`la_county_${key}_containing_message`] = `No ${layerName.toLowerCase()} found`;
+        result[`la_county_${key}_summary`] = `No ${layerName.toLowerCase()} found containing this location.`;
+      }
+      
+      console.log(`✅ LA County Political Boundaries ${layerName} processed:`, {
+        totalCount: result[`la_county_${key}_count`],
+        containing: result[`la_county_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching LA County Political Boundaries Layer ${layerId}:`, error);
+      const layerKeyMap: Record<number, string> = {
+        24: 'political_boundaries_districts_2021',
+        27: 'political_boundaries_supervisorial_current',
+        26: 'political_boundaries_supervisorial_2021',
+        29: 'political_boundaries_congressional_2021',
+        30: 'political_boundaries_state_assembly_2021',
+        31: 'political_boundaries_state_senate_2021',
+        32: 'political_boundaries_board_equalization_2021',
+        33: 'political_boundaries_city_council_2021',
+        0: 'political_boundaries_districts_2011',
+        1: 'political_boundaries_supervisorial_2011',
+        2: 'political_boundaries_congressional_2011',
+        3: 'political_boundaries_state_assembly_2011',
+        4: 'political_boundaries_state_senate_2011',
+        5: 'political_boundaries_board_equalization_2011',
+        6: 'political_boundaries_city_council_2012',
+        7: 'political_boundaries_districts_2001',
+        8: 'political_boundaries_supervisorial_2001',
+        9: 'political_boundaries_congressional_2001',
+        10: 'political_boundaries_state_assembly_2001',
+        11: 'political_boundaries_state_senate_2001',
+        12: 'political_boundaries_city_council_2002',
+        13: 'political_boundaries_districts_1971_1991',
+        14: 'political_boundaries_supervisorial_1991',
+        15: 'political_boundaries_supervisorial_1981',
+        16: 'political_boundaries_supervisorial_1971',
+        36: 'political_boundaries_other',
+        25: 'political_boundaries_school_districts',
+        34: 'political_boundaries_registrar_precincts',
+        37: 'political_boundaries_election_precincts',
+        17: 'political_boundaries_city_county',
+        18: 'political_boundaries_county_boundaries',
+        19: 'political_boundaries_city_boundaries',
+        23: 'political_boundaries_community_boundaries',
+        21: 'political_boundaries_city_annexations'
+      };
+      const key = layerKeyMap[layerId] || `political_boundaries_${layerId}`;
       return {
         [`la_county_${key}_count`]: 0,
         [`la_county_${key}_all`]: [],
