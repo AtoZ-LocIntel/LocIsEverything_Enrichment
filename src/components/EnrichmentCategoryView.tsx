@@ -348,12 +348,14 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                           <select
                             value={poiYears[enrichment.id] || ''}
                             onChange={(e) => {
-                              const year = e.target.value ? parseInt(e.target.value, 10) : undefined;
                               if (onPoiYearsChange) {
-                                onPoiYearsChange({
-                                  ...poiYears,
-                                  [enrichment.id]: year
-                                });
+                                const newPoiYears = { ...poiYears };
+                                if (e.target.value) {
+                                  newPoiYears[enrichment.id] = parseInt(e.target.value, 10);
+                                } else {
+                                  delete newPoiYears[enrichment.id];
+                                }
+                                onPoiYearsChange(newPoiYears);
                               }
                             }}
                             className="w-full sm:w-auto min-w-[150px] px-3 py-2 border-2 border-gray-400 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black font-medium appearance-none"

@@ -5602,7 +5602,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       value.forEach((request: any) => {
         const srNumber = request.sr_number || request.SR_NUMBER || 'Unknown';
         const srType = request.sr_type || request.SR_TYPE || '';
-        const status = request.status || '';
         const address = request.street_address || '';
         const city = request.city || 'Chicago';
         const zip = request.zip_code || '';

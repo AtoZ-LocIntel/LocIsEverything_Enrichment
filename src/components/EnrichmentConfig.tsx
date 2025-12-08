@@ -2851,12 +2851,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                         <select
                                           value={poiYears[enrichment.id] || ''}
                                           onChange={(e) => {
-                                            const year = e.target.value ? parseInt(e.target.value, 10) : undefined;
                                             if (onPoiYearsChange) {
-                                              onPoiYearsChange({
-                                                ...poiYears,
-                                                [enrichment.id]: year
-                                              });
+                                              const newPoiYears = { ...poiYears };
+                                              if (e.target.value) {
+                                                newPoiYears[enrichment.id] = parseInt(e.target.value, 10);
+                                              } else {
+                                                delete newPoiYears[enrichment.id];
+                                              }
+                                              onPoiYearsChange(newPoiYears);
                                             }
                                           }}
                                           className={`px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 ${isMobile ? 'w-full flex-grow' : 'w-32 sm:w-28 flex-shrink-0'}`}
