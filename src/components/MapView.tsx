@@ -12974,10 +12974,6 @@ const MapView: React.FC<MapViewProps> = ({
                     });
 
                     const fullname = road.fullname || road.FULLNAME || road.fullName || 'Unknown Road';
-                    const roadname = road.roadname || road.ROADNAME || road.roadName || null;
-                    const roadtype = road.roadtype || road.ROADTYPE || road.roadType || null;
-                    const prefix = road.prefix || road.PREFIX || null;
-                    const suffix = road.suffix || road.SUFFIX || null;
                     const roadclass = road.roadclass || road.ROADCLASS || road.roadClass || null;
                     const fromleft = road.fromleft !== null && road.fromleft !== undefined ? road.fromleft : null;
                     const fromright = road.fromright !== null && road.fromright !== undefined ? road.fromright : null;
