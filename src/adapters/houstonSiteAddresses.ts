@@ -41,23 +41,6 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 /**
- * Convert ESRI geometry coordinates to lat/lon
- * ESRI geometry can be in various coordinate systems, but we'll assume Web Mercator or WGS84
- */
-function esriToLatLon(x: number, y: number): [number, number] {
-  // If coordinates look like Web Mercator (large numbers), convert to WGS84
-  if (Math.abs(x) > 180 || Math.abs(y) > 90) {
-    // Web Mercator to WGS84 conversion
-    const lon = (x / 20037508.34) * 180;
-    let lat = (y / 20037508.34) * 180;
-    lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
-    return [lat, lon];
-  }
-  // Assume already in WGS84
-  return [y, x]; // ESRI uses [x, y] but we need [lat, lon]
-}
-
-/**
  * Query Houston Site Addresses within proximity of a location
  * Supports proximity queries up to 1 mile only
  */
