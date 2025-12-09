@@ -12742,7 +12742,6 @@ const MapView: React.FC<MapViewProps> = ({
                 const objTyp = neighborhood.objTyp || neighborhood.OBJ_TYP || null;
                 const objSubtcd = neighborhood.objSubtcd || neighborhood.OBJ_SUBTCD || null;
                 const objSubtyp = neighborhood.objSubtyp || neighborhood.OBJ_SUBTYP || null;
-                const country = neighborhood.country || neighborhood.COUNTRY || null;
                 const metro = neighborhood.metro || neighborhood.METRO || null;
                 const reldate = neighborhood.reldate || neighborhood.RELDATE || null;
                 const objArea = neighborhood.objArea || neighborhood.OBJ_AREA || null;

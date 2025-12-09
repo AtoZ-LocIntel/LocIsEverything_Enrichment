@@ -6273,6 +6273,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const codeNum = neighborhood.codeNum !== null && neighborhood.codeNum !== undefined ? neighborhood.codeNum.toString() : (neighborhood.CODE_NUM !== null && neighborhood.CODE_NUM !== undefined ? neighborhood.CODE_NUM.toString() : '');
         const comment = neighborhood.comment || neighborhood.COMMENT || '';
         const distance = neighborhood.distance_miles !== null && neighborhood.distance_miles !== undefined ? neighborhood.distance_miles.toFixed(2) : (neighborhood.isContaining ? '0.00' : '');
+        const isContaining = neighborhood.isContaining ? 'Yes' : 'No';
         const lat = neighborhood.latitude || neighborhood.lat || neighborhood.LATITUDE || neighborhood.LAT || '';
         const lon = neighborhood.longitude || neighborhood.lon || neighborhood.LONGITUDE || neighborhood.LON || neighborhood.lng || neighborhood.LNG || '';
 
