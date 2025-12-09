@@ -606,6 +606,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nyc_waterfront_parks_all' || // Skip NYC Waterfront Parks array (handled separately for map drawing)
     key === 'nyc_waterfront_paws_all' || // Skip NYC PAWS array (handled separately for map drawing)
     key === 'nyc_business_improvement_districts_all' || // Skip NYC Business Improvement Districts array (handled separately for map drawing)
+    key === 'nyc_community_districts_all' || // Skip NYC Community Districts array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -12338,10 +12339,11 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                 `;
                 
-                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.bindPopup(popupContent, { maxWidth: 400, autoOpen: false });
                 // Store metadata for tabbed popup
                 (polygon as any).__layerType = 'nyc_business_improvement_districts';
                 (polygon as any).__layerTitle = 'NYC Business Improvement Districts';
+                (polygon as any).__popupContent = popupContent;
                 polygon.addTo(primary);
                 
                 // Extend bounds to include polygon
@@ -12394,10 +12396,11 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                 `;
                 
-                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.bindPopup(popupContent, { maxWidth: 400, autoOpen: false });
                 // Store metadata for tabbed popup
                 (marker as any).__layerType = 'nyc_business_improvement_districts';
                 (marker as any).__layerTitle = 'NYC Business Improvement Districts';
+                (marker as any).__popupContent = popupContent;
                 marker.addTo(primary);
                 bounds.extend([lat, lon]);
                 
@@ -12422,6 +12425,128 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing NYC Business Improvement Districts:', error);
+      }
+
+      // Draw NYC Community Districts as polygons on the map
+      try {
+        if (enrichments.nyc_community_districts_all && Array.isArray(enrichments.nyc_community_districts_all)) {
+          let districtCount = 0;
+          enrichments.nyc_community_districts_all.forEach((district: any) => {
+            // Check if geometry is available (ESRI polygon geometry)
+            if (district.geometry && district.geometry.rings && Array.isArray(district.geometry.rings)) {
+              try {
+                // Convert ESRI rings to Leaflet latlngs
+                const rings = district.geometry.rings;
+                const latlngs: [number, number][] = [];
+                
+                // Use the first ring (outer boundary)
+                if (rings[0] && Array.isArray(rings[0])) {
+                  for (const coord of rings[0]) {
+                    if (Array.isArray(coord) && coord.length >= 2) {
+                      // ESRI geometry might be in Web Mercator or WGS84
+                      // Convert if needed
+                      let lat: number;
+                      let lon: number;
+                      
+                      if (Math.abs(coord[0]) > 180 || Math.abs(coord[1]) > 90) {
+                        // Web Mercator to WGS84
+                        lon = (coord[0] / 20037508.34) * 180;
+                        let latRad = (coord[1] / 20037508.34) * 180;
+                        lat = 180 / Math.PI * (2 * Math.atan(Math.exp(latRad * Math.PI / 180)) - Math.PI / 2);
+                      } else {
+                        // Already WGS84
+                        lon = coord[0];
+                        lat = coord[1];
+                      }
+                      
+                      latlngs.push([lat, lon]);
+                    }
+                  }
+                }
+                
+                if (latlngs.length < 3) {
+                  console.warn('NYC Community District polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+                
+                const isContaining = district.isContaining;
+                const color = isContaining ? '#3b82f6' : '#60a5fa'; // Blue for Community Districts
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+                
+                const boroCD = district.boroCD || district.BoroCD || district.BOROCD || district.districtId || 'Unknown';
+                const distance = district.distance_miles !== null && district.distance_miles !== undefined ? district.distance_miles : 0;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🏘️ Containing Community District' : '🏘️ Nearby Community District'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${boroCD ? `<div><strong>Community District:</strong> ${boroCD}</div>` : ''}
+                      ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this district</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all district attributes (excluding internal fields)
+                const excludeFields = ['districtId', 'boroCD', 'BoroCD', 'BOROCD', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining', '__calculatedDistance'];
+                Object.entries(district).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value) && key !== 'the_geom') {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400, autoOpen: false });
+                // Store metadata for tabbed popup
+                (polygon as any).__layerType = 'nyc_community_districts';
+                (polygon as any).__layerTitle = 'NYC Community Districts';
+                (polygon as any).__popupContent = popupContent;
+                polygon.addTo(primary);
+                
+                // Extend bounds to include polygon
+                const polygonBounds = L.latLngBounds(latlngs);
+                bounds.extend(polygonBounds);
+                
+                districtCount++;
+              } catch (error) {
+                console.error('Error drawing NYC Community District polygon:', error);
+              }
+            }
+          });
+          
+          if (districtCount > 0) {
+            if (!legendAccumulator['nyc_community_districts']) {
+              legendAccumulator['nyc_community_districts'] = {
+                icon: '🏘️',
+                color: '#3b82f6',
+                title: 'NYC Community Districts',
+                count: 0,
+              };
+            }
+            legendAccumulator['nyc_community_districts'].count += districtCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NYC Community Districts:', error);
       }
 
       // Draw LA County Historic Cultural Monuments as polygons on the map
@@ -16297,7 +16422,9 @@ const MapView: React.FC<MapViewProps> = ({
             popupContent = popup.getContent() as string;
             console.log('🔍 [TABBED POPUP] Marker popup content length:', popupContent?.length || 0);
           } else {
-            console.warn('⚠️ [TABBED POPUP] Marker has no popup');
+            // Fallback to stored popup content
+            popupContent = (layer as any).__popupContent || '';
+            console.warn('⚠️ [TABBED POPUP] Marker has no popup, using stored content:', popupContent?.length || 0);
           }
           layerType = storedType || extractLayerTypeFromPopup(popupContent) || 'point';
           layerTitle = storedTitle || extractLayerTitleFromPopup(popupContent) || 'Point Feature';
@@ -16320,7 +16447,9 @@ const MapView: React.FC<MapViewProps> = ({
                 popupContent = popup.getContent() as string;
                 console.log('🔍 [TABBED POPUP] Polygon popup content length:', popupContent?.length || 0);
               } else {
-                console.warn('⚠️ [TABBED POPUP] Polygon has no popup');
+                // Fallback to stored popup content
+                popupContent = (layer as any).__popupContent || '';
+                console.warn('⚠️ [TABBED POPUP] Polygon has no popup, using stored content:', popupContent?.length || 0);
               }
               layerType = storedType || extractLayerTypeFromPopup(popupContent) || 'polygon';
               layerTitle = storedTitle || extractLayerTitleFromPopup(popupContent) || 'Polygon Feature';
@@ -16355,7 +16484,9 @@ const MapView: React.FC<MapViewProps> = ({
               popupContent = popup.getContent() as string;
               console.log('🔍 [TABBED POPUP] Polyline popup content length:', popupContent?.length || 0);
             } else {
-              console.warn('⚠️ [TABBED POPUP] Polyline has no popup');
+              // Fallback to stored popup content
+              popupContent = (layer as any).__popupContent || '';
+              console.warn('⚠️ [TABBED POPUP] Polyline has no popup, using stored content:', popupContent?.length || 0);
             }
             layerType = storedType || extractLayerTypeFromPopup(popupContent) || 'polyline';
             layerTitle = storedTitle || extractLayerTitleFromPopup(popupContent) || 'Line Feature';
@@ -16526,8 +16657,31 @@ const MapView: React.FC<MapViewProps> = ({
         }
       }
     } else if (featuresAtPoint.length === 1) {
-      // Single feature - let default popup show
-      console.log('ℹ️ [TABBED POPUP] Single feature found, allowing default popup');
+      // Single feature - open its popup manually since autoOpen is false
+      console.log('🔍 [TABBED POPUP] Single feature found, opening popup manually');
+      const singleFeature = featuresAtPoint[0];
+      if (singleFeature.popupContent) {
+        const popup = L.popup({ 
+          maxWidth: 500, 
+          maxHeight: 500,
+          autoPan: true,
+          autoClose: false,
+          closeOnClick: false
+        })
+          .setLatLng(clickPoint)
+          .setContent(singleFeature.popupContent);
+        popup.openOn(mapInstanceRef.current!);
+        console.log('✅ [TABBED POPUP] Single feature popup opened');
+      } else {
+        // Fallback: try to get popup from layer
+        const layerPopup = singleFeature.layer.getPopup();
+        if (layerPopup) {
+          layerPopup.openOn(mapInstanceRef.current!);
+          console.log('✅ [TABBED POPUP] Single feature popup opened from layer');
+        } else {
+          console.warn('⚠️ [TABBED POPUP] Single feature has no popup content');
+        }
+      }
     } else {
       console.log('ℹ️ [TABBED POPUP] No features found at click point');
     }

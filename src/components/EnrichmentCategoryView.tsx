@@ -62,8 +62,9 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
   const handleRadiusChange = (enrichmentId: string, radius: number) => {
     const isAurora = enrichmentId === 'poi_aurora_viewing_sites';
     const isNYCBusinessImprovementDistricts = enrichmentId === 'nyc_business_improvement_districts';
+    const isNYCCommunityDistricts = enrichmentId === 'nyc_community_districts';
     const minRadius = isAurora ? 5 : 0.5;
-    const maxRadius = isAurora ? 100 : (isNYCBusinessImprovementDistricts ? 5 : 25);
+    const maxRadius = isAurora ? 100 : (isNYCBusinessImprovementDistricts || isNYCCommunityDistricts ? 5 : 25);
     const normalizedRadius = Math.max(minRadius, Math.min(radius, maxRadius));
 
     onPoiRadiiChange({
@@ -263,7 +264,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               ? [0.25, 0.50, 0.75, 1.0]
               : enrichment.id === 'nyc_bike_routes'
               ? [0.5, 1.0, 2.5, 5.0]
-              : enrichment.id === 'nyc_business_improvement_districts'
+              : enrichment.id === 'nyc_business_improvement_districts' || enrichment.id === 'nyc_community_districts'
               ? [0.5, 1.0, 2.5, 5.0]
               : [0.5, 1, 2, 3, 5, 10, 15, 25];
             const formatMiles = (value: number) =>

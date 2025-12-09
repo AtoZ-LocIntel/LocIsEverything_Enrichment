@@ -2809,6 +2809,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               const isChicagoBuildingFootprints = enrichment.id === 'chicago_building_footprints';
                               const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                               const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
+                              const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
                               const radiusOptions = isNHParcels || isNJParcels
                                 ? [0.25, 0.50, 0.75, 1.0]
                                 : isMAParcels
@@ -2821,7 +2822,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                 : isChicago311 || isChicagoBuildingFootprints
                                 ? [0.25, 0.50, 0.75, 1.0]
-                                : isNYCBikeRoutes || isNYCBusinessImprovementDistricts
+                                : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts
                                 ? [0.5, 1.0, 2.5, 5.0]
                                 : enrichment.id === 'poi_aurora_viewing_sites'
                                 ? [5, 10, 25, 50, 100]
@@ -2996,6 +2997,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                           const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
                                           const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                                           const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
+                                          const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
                                           const radiusOptions = isNHParcels || isNJParcels
                                             ? [0.25, 0.50, 0.75, 1.0]
                                             : isMAParcels
@@ -3006,7 +3008,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                             ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                             : isLAStreetInventory
                                             ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
-                                            : isNYCBikeRoutes || isNYCBusinessImprovementDistricts
+                                            : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts
                                             ? [0.5, 1.0, 2.5, 5.0]
                                             : enrichment.id === 'poi_aurora_viewing_sites'
                                             ? [5, 10, 25, 50, 100]
@@ -3141,6 +3143,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
                                   const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                                   const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
+                                  const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
                                   const radiusOptions = isNHParcels || isNJParcels
                                     ? [0.25, 0.50, 0.75, 1.0]
                                     : isMAParcels
@@ -3151,9 +3154,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                     : isLAStreetInventory
                                     ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
-                                    : isNYCBikeRoutes || isNYCBusinessImprovementDistricts
+                                    : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts
                                     ? [0.5, 1.0, 2.5, 5.0]
-                                    : enrichment.id === 'nyc_bike_routes' || enrichment.id === 'nyc_business_improvement_districts'
+                                    : enrichment.id === 'nyc_bike_routes' || enrichment.id === 'nyc_business_improvement_districts' || enrichment.id === 'nyc_community_districts'
                                     ? [0.5, 1.0, 2.5, 5.0]
                                     : enrichment.id === 'poi_aurora_viewing_sites'
                                     ? [5, 10, 25, 50, 100]
