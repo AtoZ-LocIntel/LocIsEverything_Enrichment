@@ -358,6 +358,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nyc_waterfront_hpb_launch_site_all' ||
         key === 'nyc_waterfront_parks_all' ||
         key === 'nyc_waterfront_paws_all' ||
+        key === 'nyc_business_improvement_districts_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -6150,6 +6151,65 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone
           attributesJson,
           'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_business_improvement_districts_all' && Array.isArray(value)) {
+      value.forEach((bid: any) => {
+        const name = bid.name || bid.bid_name || bid.bidName || bid.BID_NAME || bid.NAME || bid.Name || 'Unknown BID';
+        const borough = bid.borough || bid.Borough || bid.BOROUGH || '';
+        const distance = bid.distance_miles !== null && bid.distance_miles !== undefined ? bid.distance_miles.toFixed(2) : (bid.isContaining ? '0.00' : '');
+        const lat = bid.latitude || bid.lat || bid.LATITUDE || bid.LAT || '';
+        const lon = bid.longitude || bid.lon || bid.LONGITUDE || bid.LON || bid.lng || bid.LNG || '';
+
+        const allAttributes = { ...bid };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.districtId;
+        delete allAttributes.bid_id;
+        delete allAttributes.bidId;
+        delete allAttributes.BID_ID;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.name;
+        delete allAttributes.bid_name;
+        delete allAttributes.bidName;
+        delete allAttributes.BID_NAME;
+        delete allAttributes.NAME;
+        delete allAttributes.Name;
+        delete allAttributes.borough;
+        delete allAttributes.Borough;
+        delete allAttributes.BOROUGH;
+        delete allAttributes.latitude;
+        delete allAttributes.lat;
+        delete allAttributes.LATITUDE;
+        delete allAttributes.LAT;
+        delete allAttributes.longitude;
+        delete allAttributes.lon;
+        delete allAttributes.LONGITUDE;
+        delete allAttributes.LON;
+        delete allAttributes.lng;
+        delete allAttributes.LNG;
+        delete allAttributes.__calculatedDistance;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'New York City',
+          (location.confidence || 'N/A').toString(),
+          'NYC_BUSINESS_IMPROVEMENT_DISTRICT',
+          name,
+          lat.toString() || '', // Lat (may be point or polygon)
+          lon.toString() || '', // Lon (may be point or polygon)
+          distance,
+          bid.isContaining ? 'Within Business Improvement District' : `Nearby Business Improvement District (${distance} miles)`,
+          name,
+          '', // Owner
+          '', // Phone
+          attributesJson,
+          'NYC Department of Small Business Services'
         ]);
       });
     } else if (key === 'la_county_historic_cultural_monuments_all' && Array.isArray(value)) {

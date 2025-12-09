@@ -1232,6 +1232,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           url: "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/ArcGIS/rest/services/WaterfrontAccessMap_520/FeatureServer/2"
         },
         {
+          name: "NYC Business Improvement Districts",
+          description: "Business Improvement Districts from NYC Department of Small Business Services - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "New York City, New York",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://data.cityofnewyork.us/api/v3/views/7jdm-inj8/query.json"
+        },
+        {
           name: "LA County Administrative Boundaries",
           description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",

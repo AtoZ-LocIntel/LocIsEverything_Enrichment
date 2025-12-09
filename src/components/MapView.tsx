@@ -605,6 +605,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nyc_waterfront_hpb_launch_site_all' || // Skip NYC HPB Launch Site array (handled separately for map drawing)
     key === 'nyc_waterfront_parks_all' || // Skip NYC Waterfront Parks array (handled separately for map drawing)
     key === 'nyc_waterfront_paws_all' || // Skip NYC PAWS array (handled separately for map drawing)
+    key === 'nyc_business_improvement_districts_all' || // Skip NYC Business Improvement Districts array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -12261,6 +12262,166 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing NYC PAWS:', error);
+      }
+
+      // Draw NYC Business Improvement Districts as polygons on the map
+      try {
+        if (enrichments.nyc_business_improvement_districts_all && Array.isArray(enrichments.nyc_business_improvement_districts_all)) {
+          let bidCount = 0;
+          enrichments.nyc_business_improvement_districts_all.forEach((bid: any) => {
+            // Check if geometry is available (could be GeoJSON polygon)
+            if (bid.geometry && (bid.geometry.type === 'Polygon' || bid.geometry.type === 'MultiPolygon')) {
+              try {
+                let latlngs: [number, number][] = [];
+                
+                // Extract coordinates from GeoJSON geometry
+                if (bid.geometry.type === 'Polygon' && bid.geometry.coordinates && bid.geometry.coordinates[0]) {
+                  latlngs = bid.geometry.coordinates[0].map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number]; // GeoJSON is [lon, lat], Leaflet needs [lat, lon]
+                  });
+                } else if (bid.geometry.type === 'MultiPolygon' && bid.geometry.coordinates && bid.geometry.coordinates[0] && bid.geometry.coordinates[0][0]) {
+                  latlngs = bid.geometry.coordinates[0][0].map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                }
+                
+                if (latlngs.length < 3) {
+                  console.warn('NYC Business Improvement District polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+                
+                const isContaining = bid.isContaining;
+                const color = isContaining ? '#f59e0b' : '#fbbf24'; // Amber for BIDs
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+                
+                const name = bid.name || bid.bid_name || bid.bidName || bid.BID_NAME || bid.NAME || bid.Name || 'Unknown BID';
+                const borough = bid.borough || bid.Borough || bid.BOROUGH || null;
+                const distance = bid.distance_miles !== null && bid.distance_miles !== undefined ? bid.distance_miles : 0;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🏢 Containing Business Improvement District' : '🏢 Nearby Business Improvement District'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${name ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                      ${borough ? `<div><strong>Borough:</strong> ${borough}</div>` : ''}
+                      ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this BID</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all BID attributes (excluding internal fields)
+                const excludeFields = ['districtId', 'bid_id', 'bidId', 'BID_ID', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'bid_name', 'bidName', 'BID_NAME', 'NAME', 'Name', 'borough', 'Borough', 'BOROUGH', 'isContaining', '__calculatedDistance'];
+                Object.entries(bid).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value) && key !== 'the_geom') {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                // Store metadata for tabbed popup
+                (polygon as any).__layerType = 'nyc_business_improvement_districts';
+                (polygon as any).__layerTitle = 'NYC Business Improvement Districts';
+                polygon.addTo(primary);
+                
+                // Extend bounds to include polygon
+                const polygonBounds = L.latLngBounds(latlngs);
+                bounds.extend(polygonBounds);
+                
+                bidCount++;
+              } catch (error) {
+                console.error('Error drawing NYC Business Improvement District polygon:', error);
+              }
+            } else if (bid.latitude && bid.longitude) {
+              // Fallback: if no polygon geometry, render as point marker
+              try {
+                const lat = bid.latitude;
+                const lon = bid.longitude;
+                const name = bid.name || bid.bid_name || bid.bidName || bid.BID_NAME || bid.NAME || bid.Name || 'Unknown BID';
+                const borough = bid.borough || bid.Borough || bid.BOROUGH || null;
+                const distance = bid.distance_miles !== null && bid.distance_miles !== undefined ? bid.distance_miles.toFixed(2) : '';
+                
+                const icon = createPOIIcon('🏢', '#f59e0b'); // Amber for BIDs
+                const marker = L.marker([lat, lon], { icon });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏢 Business Improvement District
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${name ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                      ${borough ? `<div><strong>Borough:</strong> ${borough}</div>` : ''}
+                      ${distance ? `<div><strong>Distance:</strong> ${distance} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all BID attributes
+                const excludeFields = ['districtId', 'bid_id', 'bidId', 'BID_ID', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'latitude', 'lat', 'LATITUDE', 'LAT', 'longitude', 'lon', 'LONGITUDE', 'LON', 'lng', 'LNG', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'bid_name', 'bidName', 'BID_NAME', 'NAME', 'Name', 'borough', 'Borough', 'BOROUGH', 'isContaining', '__calculatedDistance'];
+                Object.entries(bid).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                // Store metadata for tabbed popup
+                (marker as any).__layerType = 'nyc_business_improvement_districts';
+                (marker as any).__layerTitle = 'NYC Business Improvement Districts';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                
+                bidCount++;
+              } catch (error) {
+                console.error('Error drawing NYC Business Improvement District marker:', error);
+              }
+            }
+          });
+          
+          if (bidCount > 0) {
+            if (!legendAccumulator['nyc_business_improvement_districts']) {
+              legendAccumulator['nyc_business_improvement_districts'] = {
+                icon: '🏢',
+                color: '#f59e0b',
+                title: 'NYC Business Improvement Districts',
+                count: 0,
+              };
+            }
+            legendAccumulator['nyc_business_improvement_districts'].count += bidCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NYC Business Improvement Districts:', error);
       }
 
       // Draw LA County Historic Cultural Monuments as polygons on the map

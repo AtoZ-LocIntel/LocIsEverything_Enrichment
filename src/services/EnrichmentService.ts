@@ -107,6 +107,7 @@ import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
 import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
 import { getNYCWaterfrontAccessData } from '../adapters/nycWaterfrontAccess';
+import { getNYCBusinessImprovementDistrictsData } from '../adapters/nycBusinessImprovementDistricts';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2151,6 +2152,10 @@ export class EnrichmentService {
       // NYC Waterfront Access - PAWS (polygons, point-in-polygon and proximity up to 5 miles)
       case 'nyc_waterfront_paws':
         return await this.getNYCWaterfrontAccess(lat, lon, 2, radius);
+      
+      // NYC Business Improvement Districts - Point-in-polygon and proximity query (max 5 miles)
+      case 'nyc_business_improvement_districts':
+        return await this.getNYCBusinessImprovementDistricts(lat, lon, radius);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -10068,6 +10073,74 @@ out center;`;
         la_county_historic_cultural_monuments_containing_message: 'Error querying historic cultural monuments',
         la_county_historic_cultural_monuments_count: 0,
         la_county_historic_cultural_monuments_all: []
+      };
+    }
+  }
+
+  private async getNYCBusinessImprovementDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏢 Fetching NYC Business Improvement Districts data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          nyc_business_improvement_districts_containing: null,
+          nyc_business_improvement_districts_containing_message: 'Radius required for Business Improvement Districts query',
+          nyc_business_improvement_districts_count: 0,
+          nyc_business_improvement_districts_all: []
+        };
+      }
+      
+      // Cap radius at 5 miles
+      const cappedRadius = Math.min(radius, 5.0);
+      
+      const districts = await getNYCBusinessImprovementDistrictsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (districts.length === 0) {
+        result.nyc_business_improvement_districts_containing = null;
+        result.nyc_business_improvement_districts_containing_message = 'No Business Improvement District found containing this location';
+        result.nyc_business_improvement_districts_count = 0;
+        result.nyc_business_improvement_districts_all = [];
+      } else {
+        // Get the first containing district
+        const containingDistrict = districts.find(d => d.isContaining) || districts[0];
+        
+        if (containingDistrict && containingDistrict.isContaining) {
+          result.nyc_business_improvement_districts_containing = containingDistrict.name || containingDistrict.districtId || 'Unknown District';
+          result.nyc_business_improvement_districts_containing_message = `Location is within Business Improvement District: ${containingDistrict.name || containingDistrict.districtId || 'Unknown'}`;
+        } else {
+          result.nyc_business_improvement_districts_containing = null;
+          result.nyc_business_improvement_districts_containing_message = 'No Business Improvement District found containing this location';
+        }
+        
+        result.nyc_business_improvement_districts_count = districts.length;
+        result.nyc_business_improvement_districts_all = districts.map(district => ({
+          ...district.attributes,
+          districtId: district.districtId,
+          name: district.name,
+          borough: district.borough,
+          geometry: district.geometry,
+          distance_miles: district.distance_miles,
+          isContaining: district.isContaining
+        }));
+        
+        result.nyc_business_improvement_districts_summary = `Found ${districts.length} Business Improvement District(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ NYC Business Improvement Districts data processed:`, {
+        totalCount: result.nyc_business_improvement_districts_count,
+        containing: result.nyc_business_improvement_districts_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NYC Business Improvement Districts data:', error);
+      return {
+        nyc_business_improvement_districts_containing: null,
+        nyc_business_improvement_districts_containing_message: 'Error querying Business Improvement Districts',
+        nyc_business_improvement_districts_count: 0,
+        nyc_business_improvement_districts_all: []
       };
     }
   }
