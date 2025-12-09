@@ -112,6 +112,11 @@ import { getNYCCommunityDistrictsData } from '../adapters/nycCommunityDistricts'
 import { getHoustonNeighborhoodsData } from '../adapters/houstonNeighborhoods';
 import { getHoustonNeighborhoods2021Data } from '../adapters/houstonNeighborhoods2021';
 import { getHoustonSiteAddressesData } from '../adapters/houstonSiteAddresses';
+import { getHoustonRoadsCenterlineData } from '../adapters/houstonRoadsCenterline';
+import { getHoustonOLCGridsData } from '../adapters/houstonOLCGrids';
+import { getHoustonFireStationsData } from '../adapters/houstonFireStations';
+import { getHoustonTIRZData } from '../adapters/houstonTIRZ';
+import { getHoustonMetroBusRoutesData } from '../adapters/houstonMetroBusRoutes';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2176,6 +2181,30 @@ export class EnrichmentService {
       // Houston Site Addresses - Proximity query only (max 1 mile)
       case 'houston_site_addresses':
         return await this.getHoustonSiteAddresses(lat, lon, radius);
+      
+      // Houston Roads Centerline - Proximity query only (max 1 mile)
+      case 'houston_roads_centerline':
+        return await this.getHoustonRoadsCenterline(lat, lon, radius);
+      
+      // Houston OLC Grid 6-digit - Point-in-polygon and proximity query (max 5 miles)
+      case 'houston_olc_grid_6digit':
+        return await this.getHoustonOLCGrid6Digit(lat, lon, radius);
+      
+      // Houston OLC Grid 8-digit - Point-in-polygon and proximity query (max 5 miles)
+      case 'houston_olc_grid_8digit':
+        return await this.getHoustonOLCGrid8Digit(lat, lon, radius);
+      
+      // Houston Fire Stations - Proximity query only (max 25 miles)
+      case 'houston_fire_stations':
+        return await this.getHoustonFireStations(lat, lon, radius);
+      
+      // Houston TIRZ - Point-in-polygon and proximity query (max 10 miles)
+      case 'houston_tirz':
+        return await this.getHoustonTIRZ(lat, lon, radius);
+      
+      // Houston Metro Bus Routes - Proximity query only (max 5 miles)
+      case 'houston_metro_bus_routes':
+        return await this.getHoustonMetroBusRoutes(lat, lon, radius);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -10405,6 +10434,348 @@ out center;`;
         houston_site_addresses_count: 0,
         houston_site_addresses_all: [],
         houston_site_addresses_summary: 'Error querying addresses'
+      };
+    }
+  }
+
+  private async getHoustonRoadsCenterline(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching Houston Roads Centerline data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 1 mile
+      const cappedRadius = radius ? Math.min(radius, 1.0) : 0.25;
+      
+      const roads = await getHoustonRoadsCenterlineData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (roads.length === 0) {
+        result.houston_roads_centerline_count = 0;
+        result.houston_roads_centerline_all = [];
+        result.houston_roads_centerline_summary = 'No roads found within the search radius.';
+      } else {
+        result.houston_roads_centerline_count = roads.length;
+        result.houston_roads_centerline_all = roads.map(road => ({
+          ...road.attributes,
+          objectId: road.objectId,
+          centerlineid: road.centerlineid,
+          source: road.source,
+          roadclass: road.roadclass,
+          fromleft: road.fromleft,
+          fromright: road.fromright,
+          toleft: road.toleft,
+          toright: road.toright,
+          prefix: road.prefix,
+          roadname: road.roadname,
+          roadtype: road.roadtype,
+          suffix: road.suffix,
+          fullname: road.fullname,
+          parityleft: road.parityleft,
+          parityright: road.parityright,
+          onewaydir: road.onewaydir,
+          munileft: road.munileft,
+          muniright: road.muniright,
+          countyleft: road.countyleft,
+          countyright: road.countyright,
+          zipleft: road.zipleft,
+          zipright: road.zipright,
+          speed: road.speed,
+          shapeLength: road.shapeLength,
+          geometry: road.geometry,
+          distance_miles: road.distance_miles
+        }));
+        
+        result.houston_roads_centerline_summary = `Found ${roads.length} road segment(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ Houston Roads Centerline data processed:`, {
+        totalCount: result.houston_roads_centerline_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Roads Centerline data:', error);
+      return {
+        houston_roads_centerline_count: 0,
+        houston_roads_centerline_all: [],
+        houston_roads_centerline_summary: 'Error querying roads'
+      };
+    }
+  }
+
+  private async getHoustonOLCGrid6Digit(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Fetching Houston OLC Grid 6-digit data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 5 miles
+      const cappedRadius = radius ? Math.min(radius, 5.0) : 0.25;
+      
+      const grids = await getHoustonOLCGridsData(0, lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (grids.length === 0) {
+        result.houston_olc_grid_6digit_count = 0;
+        result.houston_olc_grid_6digit_all = [];
+        result.houston_olc_grid_6digit_summary = 'No grid cells found.';
+      } else {
+        result.houston_olc_grid_6digit_count = grids.length;
+        result.houston_olc_grid_6digit_all = grids.map(grid => ({
+          ...grid.attributes,
+          objectId: grid.objectId,
+          olcCode: grid.olcCode,
+          gridSize: grid.gridSize,
+          geometry: grid.geometry,
+          distance_miles: grid.distance_miles,
+          isContaining: grid.isContaining
+        }));
+        
+        const containingCount = grids.filter(g => g.isContaining).length;
+        const proximityCount = grids.length - containingCount;
+        if (containingCount > 0 && proximityCount > 0) {
+          result.houston_olc_grid_6digit_summary = `Found ${containingCount} containing grid cell(s) and ${proximityCount} nearby grid cell(s) within ${cappedRadius} miles.`;
+        } else if (containingCount > 0) {
+          result.houston_olc_grid_6digit_summary = `Found ${containingCount} containing grid cell(s).`;
+        } else {
+          result.houston_olc_grid_6digit_summary = `Found ${proximityCount} grid cell(s) within ${cappedRadius} miles.`;
+        }
+      }
+      
+      console.log(`✅ Houston OLC Grid 6-digit data processed:`, {
+        totalCount: result.houston_olc_grid_6digit_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston OLC Grid 6-digit data:', error);
+      return {
+        houston_olc_grid_6digit_count: 0,
+        houston_olc_grid_6digit_all: [],
+        houston_olc_grid_6digit_summary: 'Error querying grid cells'
+      };
+    }
+  }
+
+  private async getHoustonOLCGrid8Digit(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Fetching Houston OLC Grid 8-digit data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 5 miles
+      const cappedRadius = radius ? Math.min(radius, 5.0) : 0.25;
+      
+      const grids = await getHoustonOLCGridsData(1, lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (grids.length === 0) {
+        result.houston_olc_grid_8digit_count = 0;
+        result.houston_olc_grid_8digit_all = [];
+        result.houston_olc_grid_8digit_summary = 'No grid cells found.';
+      } else {
+        result.houston_olc_grid_8digit_count = grids.length;
+        result.houston_olc_grid_8digit_all = grids.map(grid => ({
+          ...grid.attributes,
+          objectId: grid.objectId,
+          olcCode: grid.olcCode,
+          gridSize: grid.gridSize,
+          geometry: grid.geometry,
+          distance_miles: grid.distance_miles,
+          isContaining: grid.isContaining
+        }));
+        
+        const containingCount = grids.filter(g => g.isContaining).length;
+        const proximityCount = grids.length - containingCount;
+        if (containingCount > 0 && proximityCount > 0) {
+          result.houston_olc_grid_8digit_summary = `Found ${containingCount} containing grid cell(s) and ${proximityCount} nearby grid cell(s) within ${cappedRadius} miles.`;
+        } else if (containingCount > 0) {
+          result.houston_olc_grid_8digit_summary = `Found ${containingCount} containing grid cell(s).`;
+        } else {
+          result.houston_olc_grid_8digit_summary = `Found ${proximityCount} grid cell(s) within ${cappedRadius} miles.`;
+        }
+      }
+      
+      console.log(`✅ Houston OLC Grid 8-digit data processed:`, {
+        totalCount: result.houston_olc_grid_8digit_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston OLC Grid 8-digit data:', error);
+      return {
+        houston_olc_grid_8digit_count: 0,
+        houston_olc_grid_8digit_all: [],
+        houston_olc_grid_8digit_summary: 'Error querying grid cells'
+      };
+    }
+  }
+
+  private async getHoustonFireStations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚒 Fetching Houston Fire Stations data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      
+      const fireStations = await getHoustonFireStationsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (fireStations.length === 0) {
+        result.houston_fire_stations_count = 0;
+        result.houston_fire_stations_all = [];
+        result.houston_fire_stations_summary = 'No fire stations found within the search radius.';
+      } else {
+        result.houston_fire_stations_count = fireStations.length;
+        result.houston_fire_stations_all = fireStations.map(station => ({
+          ...station.attributes,
+          objectId: station.objectId,
+          label: station.label,
+          distSta: station.distSta,
+          inDist: station.inDist,
+          text: station.text,
+          admin: station.admin,
+          xCoord: station.xCoord,
+          yCoord: station.yCoord,
+          lat: station.lat,
+          long: station.long,
+          ladders: station.ladders,
+          globalId: station.globalId,
+          geometry: station.geometry,
+          distance_miles: station.distance_miles
+        }));
+        
+        result.houston_fire_stations_summary = `Found ${fireStations.length} fire station(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ Houston Fire Stations data processed:`, {
+        totalCount: result.houston_fire_stations_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Fire Stations data:', error);
+      return {
+        houston_fire_stations_count: 0,
+        houston_fire_stations_all: [],
+        houston_fire_stations_summary: 'Error querying fire stations'
+      };
+    }
+  }
+
+  private async getHoustonMetroBusRoutes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚌 Fetching Houston Metro Bus Routes data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 5 miles
+      const cappedRadius = radius ? Math.min(radius, 5.0) : 0.25;
+      
+      const busRoutes = await getHoustonMetroBusRoutesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (busRoutes.length === 0) {
+        result.houston_metro_bus_routes_count = 0;
+        result.houston_metro_bus_routes_all = [];
+        result.houston_metro_bus_routes_summary = 'No bus routes found within the search radius.';
+      } else {
+        result.houston_metro_bus_routes_count = busRoutes.length;
+        result.houston_metro_bus_routes_all = busRoutes.map(route => ({
+          ...route.attributes,
+          objectId: route.objectId,
+          routeName: route.routeName,
+          routeNumber: route.routeNumber,
+          routeType: route.routeType,
+          geometry: route.geometry,
+          distance_miles: route.distance_miles
+        }));
+        
+        result.houston_metro_bus_routes_summary = `Found ${busRoutes.length} bus route segment(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ Houston Metro Bus Routes data processed:`, {
+        totalCount: result.houston_metro_bus_routes_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Metro Bus Routes data:', error);
+      return {
+        houston_metro_bus_routes_count: 0,
+        houston_metro_bus_routes_all: [],
+        houston_metro_bus_routes_summary: 'Error querying bus routes'
+      };
+    }
+  }
+
+  private async getHoustonTIRZ(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching Houston TIRZ data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 10 miles
+      const cappedRadius = radius ? Math.min(radius, 10.0) : undefined;
+      
+      const zones = await getHoustonTIRZData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (zones.length === 0) {
+        result.houston_tirz_containing = null;
+        result.houston_tirz_containing_message = 'No TIRZ zone found containing this location';
+        result.houston_tirz_count = 0;
+        result.houston_tirz_all = [];
+        result.houston_tirz_summary = 'No TIRZ zones found.';
+      } else {
+        // Get the first containing zone (should typically be only one for point-in-polygon)
+        const containingZone = zones.find(z => z.isContaining) || zones[0];
+        
+        if (containingZone && containingZone.isContaining) {
+          result.houston_tirz_containing = containingZone.name || containingZone.siteNo?.toString() || 'Unknown Zone';
+          result.houston_tirz_containing_message = `Location is within TIRZ zone: ${containingZone.name || `Site ${containingZone.siteNo || 'Unknown'}`}`;
+        } else {
+          result.houston_tirz_containing = null;
+          result.houston_tirz_containing_message = 'No TIRZ zone found containing this location';
+        }
+        
+        result.houston_tirz_count = zones.length;
+        result.houston_tirz_all = zones.map(zone => ({
+          ...zone.attributes,
+          objectId: zone.objectId,
+          name: zone.name,
+          siteNo: zone.siteNo,
+          perimeter: zone.perimeter,
+          shapeArea: zone.shapeArea,
+          shapeLength: zone.shapeLength,
+          globalId: zone.globalId,
+          geometry: zone.geometry,
+          distance_miles: zone.distance_miles,
+          isContaining: zone.isContaining
+        }));
+        
+        const containingCount = zones.filter(z => z.isContaining).length;
+        const proximityCount = zones.length - containingCount;
+        if (containingCount > 0 && proximityCount > 0) {
+          result.houston_tirz_summary = `Found ${containingCount} containing zone(s) and ${proximityCount} nearby zone(s)${cappedRadius ? ` within ${cappedRadius} miles` : ''}.`;
+        } else if (containingCount > 0) {
+          result.houston_tirz_summary = `Found ${containingCount} containing zone(s).`;
+        } else {
+          result.houston_tirz_summary = `Found ${proximityCount} zone(s)${cappedRadius ? ` within ${cappedRadius} miles` : ''}.`;
+        }
+      }
+      
+      console.log(`✅ Houston TIRZ data processed:`, {
+        totalCount: result.houston_tirz_count,
+        containing: result.houston_tirz_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston TIRZ data:', error);
+      return {
+        houston_tirz_containing: null,
+        houston_tirz_containing_message: 'Error querying TIRZ zones',
+        houston_tirz_count: 0,
+        houston_tirz_all: [],
+        houston_tirz_summary: 'Error querying TIRZ zones'
       };
     }
   }

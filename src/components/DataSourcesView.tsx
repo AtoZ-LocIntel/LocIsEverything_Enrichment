@@ -1269,6 +1269,38 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_SiteAddresses/FeatureServer/3"
         },
         {
+          name: "Houston Roads Centerline",
+          description: "Houston Roads Centerline from City of Houston - proximity queries up to 1 mile (0.25, 0.50, 0.75, 1.0 miles)",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_RoadCenterline/FeatureServer/8"
+        },
+        {
+          name: "Houston OLC Grids",
+          description: "Houston OLC (Open Location Code) Grids from City of Houston - 6-digit and 8-digit grid cells for point-in-polygon and proximity queries up to 5 miles",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_OLC_GRIDS/FeatureServer"
+        },
+        {
+          name: "Houston Fire Stations",
+          description: "Houston Fire Department (HFD) Fire Stations from City of Houston - proximity queries up to 25 miles",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/ArcGIS/rest/services/HFD_FireStations_AOI_SZ/FeatureServer/15"
+        },
+        {
+          name: "Houston Tax Incentive Reinvestment Zones",
+          description: "Houston Tax Incentive Reinvestment Zones (TIRZ) from City of Houston - point-in-polygon and proximity queries",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Tax_Incentive_Reinvestment_Zones_view/FeatureServer/5"
+        },
+        {
           name: "LA County Administrative Boundaries",
           description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",

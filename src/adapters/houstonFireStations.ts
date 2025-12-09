@@ -1,26 +1,24 @@
 /**
- * Houston Site Addresses Adapter
- * Queries Houston Site Addresses point feature service
- * Supports proximity queries up to 1 mile only
+ * Houston Fire Stations Adapter
+ * Queries Houston Fire Stations point feature service
+ * Supports proximity queries up to 25 miles
  */
 
-const BASE_SERVICE_URL = 'https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_SiteAddresses/FeatureServer/3';
+const BASE_SERVICE_URL = 'https://services.arcgis.com/NummVBqZSIJKUeVR/ArcGIS/rest/services/HFD_FireStations_AOI_SZ/FeatureServer/15';
 
-export interface HoustonSiteAddressInfo {
+export interface HoustonFireStationInfo {
   objectId: string | null;
-  siteaddid: number | null;
-  fulladdr: string | null;
-  addrnum: string | null;
-  roadname: string | null;
-  roadtype: string | null;
-  unitid: string | null;
-  unittype: string | null;
-  municipality: string | null;
-  zipcode: string | null;
-  county: string | null;
-  addrtype: string | null;
-  status: string | null;
-  source: string | null;
+  label: number | null;
+  distSta: string | null;
+  inDist: number | null;
+  text: string | null;
+  admin: string | null;
+  xCoord: number | null;
+  yCoord: number | null;
+  lat: number | null;
+  long: number | null;
+  ladders: string | null;
+  globalId: string | null;
   geometry?: any; // ESRI geometry for drawing on map
   distance_miles?: number; // For proximity queries
   attributes: Record<string, any>;
@@ -41,20 +39,20 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 /**
- * Query Houston Site Addresses within proximity of a location
- * Supports proximity queries up to 1 mile only
+ * Query Houston Fire Stations within proximity of a location
+ * Supports proximity queries up to 25 miles
  */
-export async function getHoustonSiteAddressesData(
+export async function getHoustonFireStationsData(
   lat: number,
   lon: number,
   radiusMiles?: number
-): Promise<HoustonSiteAddressInfo[]> {
+): Promise<HoustonFireStationInfo[]> {
   try {
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
     
-    // Cap radius at 1 mile
-    if (radiusMiles && radiusMiles > 1.0) {
-      radiusMiles = 1.0;
+    // Cap radius at 25 miles
+    if (radiusMiles && radiusMiles > 25.0) {
+      radiusMiles = 25.0;
     }
     
     if (!radiusMiles || radiusMiles <= 0) {
@@ -68,7 +66,7 @@ export async function getHoustonSiteAddressesData(
       spatialReference: { wkid: 4326 }
     };
     
-    const features: HoustonSiteAddressInfo[] = [];
+    const features: HoustonFireStationInfo[] = [];
     
     // Proximity query (required for points) with pagination to get all results
     try {
@@ -85,14 +83,14 @@ export async function getHoustonSiteAddressesData(
         const proximityUrl = `${BASE_SERVICE_URL}/query?f=json&where=1%3D1&outFields=*&geometry=${geometryStr}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusMeters}&units=esriSRUnit_Meter&inSR=4326&outSR=4326&returnGeometry=true&resultRecordCount=${batchSize}&resultOffset=${resultOffset}`;
         
         if (resultOffset === 0) {
-          console.log(`📍 Querying Houston Site Addresses for proximity (${radiusMiles} miles) at [${lat}, ${lon}]`);
+          console.log(`🚒 Querying Houston Fire Stations for proximity (${radiusMiles} miles) at [${lat}, ${lon}]`);
         }
-        console.log(`🔗 Houston Site Addresses Proximity Query URL (offset ${resultOffset}): ${proximityUrl}`);
+        console.log(`🔗 Houston Fire Stations Proximity Query URL (offset ${resultOffset}): ${proximityUrl}`);
         
         const proximityData = await fetchJSONSmart(proximityUrl) as any;
         
         // Log the full response for debugging
-        console.log(`📊 Houston Site Addresses Proximity Response (offset ${resultOffset}):`, {
+        console.log(`📊 Houston Fire Stations Proximity Response (offset ${resultOffset}):`, {
           hasError: !!proximityData.error,
           error: proximityData.error,
           featureCount: proximityData.features?.length || 0,
@@ -101,7 +99,7 @@ export async function getHoustonSiteAddressesData(
         });
         
         if (proximityData.error) {
-          console.error('❌ Houston Site Addresses API Error:', proximityData.error);
+          console.error('❌ Houston Fire Stations API Error:', proximityData.error);
           break;
         }
         
@@ -111,7 +109,7 @@ export async function getHoustonSiteAddressesData(
         }
         
         allFeatures.push(...proximityData.features);
-        console.log(`📦 Fetched batch: ${proximityData.features.length} addresses (total so far: ${allFeatures.length})`);
+        console.log(`📦 Fetched batch: ${proximityData.features.length} fire stations (total so far: ${allFeatures.length})`);
         
         // Check if there are more records to fetch
         if (proximityData.exceededTransferLimit === true || proximityData.features.length === batchSize) {
@@ -123,7 +121,7 @@ export async function getHoustonSiteAddressesData(
         }
       }
       
-      console.log(`✅ Fetched ${allFeatures.length} total Houston Site Addresses (${Math.ceil(allFeatures.length / batchSize)} batches)`);
+      console.log(`✅ Fetched ${allFeatures.length} total Houston Fire Stations (${Math.ceil(allFeatures.length / batchSize)} batches)`);
       
       // Process all features
       if (allFeatures.length > 0) {
@@ -139,52 +137,49 @@ export async function getHoustonSiteAddressesData(
             // Geometry is already in WGS84 (we requested outSR=4326)
             featureLon = geometry.x;
             featureLat = geometry.y;
-          } else if (attributes.xcoord && attributes.ycoord) {
-            // Fallback to xcoord/ycoord if geometry not available
-            // These appear to be in State Plane, but we'll try to use them if they look like lat/lon
-            const x = Number(attributes.xcoord);
-            const y = Number(attributes.ycoord);
+          } else if (attributes.LAT && attributes.LONG) {
+            // Fallback to LAT/LONG fields if geometry not available
+            featureLat = Number(attributes.LAT);
+            featureLon = Number(attributes.LONG);
+          } else if (attributes.X_COORD && attributes.Y_COORD) {
+            // Fallback to X_COORD/Y_COORD if available (may need conversion)
+            const x = Number(attributes.X_COORD);
+            const y = Number(attributes.Y_COORD);
+            // Check if they look like lat/lon
             if (Math.abs(x) <= 180 && Math.abs(y) <= 90) {
               featureLon = x;
               featureLat = y;
-            } else {
-              // State Plane coordinates - would need conversion, but geometry should be available
-              console.warn('⚠️ Houston Site Addresses: Coordinates appear to be State Plane, using geometry instead');
             }
           }
           
           const distance = calculateDistance(lat, lon, featureLat, featureLon);
           
           const objectId = attributes.OBJECTID !== null && attributes.OBJECTID !== undefined ? attributes.OBJECTID.toString() : null;
-          const siteaddid = attributes.siteaddid !== null && attributes.siteaddid !== undefined ? Number(attributes.siteaddid) : null;
-          const fulladdr = attributes.fulladdr || null;
-          const addrnum = attributes.addrnum || null;
-          const roadname = attributes.roadname || null;
-          const roadtype = attributes.roadtype || null;
-          const unitid = attributes.unitid || null;
-          const unittype = attributes.unittype || null;
-          const municipality = attributes.municipality || null;
-          const zipcode = attributes.zipcode || null;
-          const county = attributes.county || null;
-          const addrtype = attributes.addrtype || null;
-          const status = attributes.status || null;
-          const source = attributes.source || null;
+          const label = attributes.LABEL !== null && attributes.LABEL !== undefined ? Number(attributes.LABEL) : null;
+          const distSta = attributes.DIST_STA || null;
+          const inDist = attributes.IN_DIST !== null && attributes.IN_DIST !== undefined ? Number(attributes.IN_DIST) : null;
+          const text = attributes.TEXT_ || null;
+          const admin = attributes.Admin || attributes.ADMIN || null;
+          const xCoord = attributes.X_COORD !== null && attributes.X_COORD !== undefined ? Number(attributes.X_COORD) : null;
+          const yCoord = attributes.Y_COORD !== null && attributes.Y_COORD !== undefined ? Number(attributes.Y_COORD) : null;
+          const latCoord = attributes.LAT !== null && attributes.LAT !== undefined ? Number(attributes.LAT) : null;
+          const longCoord = attributes.LONG !== null && attributes.LONG !== undefined ? Number(attributes.LONG) : null;
+          const ladders = attributes.LADDERS || null;
+          const globalId = attributes.GlobalID || attributes.GLOBALID || null;
           
           features.push({
             objectId: objectId,
-            siteaddid: siteaddid,
-            fulladdr: fulladdr,
-            addrnum: addrnum,
-            roadname: roadname,
-            roadtype: roadtype,
-            unitid: unitid,
-            unittype: unittype,
-            municipality: municipality,
-            zipcode: zipcode,
-            county: county,
-            addrtype: addrtype,
-            status: status,
-            source: source,
+            label: label,
+            distSta: distSta,
+            inDist: inDist,
+            text: text,
+            admin: admin,
+            xCoord: xCoord,
+            yCoord: yCoord,
+            lat: latCoord,
+            long: longCoord,
+            ladders: ladders,
+            globalId: globalId,
             geometry: geometry,
             distance_miles: distance,
             attributes: attributes
@@ -192,16 +187,16 @@ export async function getHoustonSiteAddressesData(
         });
       }
     } catch (error) {
-      console.warn('⚠️ Houston Site Addresses: Proximity query failed:', error);
+      console.warn('⚠️ Houston Fire Stations: Proximity query failed:', error);
     }
     
     // Sort by distance
     features.sort((a, b) => (a.distance_miles || 0) - (b.distance_miles || 0));
     
-    console.log(`✅ Houston Site Addresses: Found ${features.length} address(es)`);
+    console.log(`✅ Houston Fire Stations: Found ${features.length} fire station(s)`);
     return features;
   } catch (error) {
-    console.error('❌ Error querying Houston Site Addresses data:', error);
+    console.error('❌ Error querying Houston Fire Stations data:', error);
     throw error;
   }
 }

@@ -363,6 +363,12 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'houston_neighborhoods_all' ||
         key === 'houston_neighborhoods_2021_all' ||
         key === 'houston_site_addresses_all' ||
+        key === 'houston_roads_centerline_all' ||
+        key === 'houston_olc_grid_6digit_all' ||
+        key === 'houston_olc_grid_8digit_all' ||
+        key === 'houston_fire_stations_all' ||
+        key === 'houston_metro_bus_routes_all' ||
+        key === 'houston_tirz_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -6449,6 +6455,282 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           distance || '0.00',
           '', // Address (already in fulladdr)
           '', // Phone
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_olc_grid_6digit_all' && Array.isArray(value)) {
+      value.forEach((grid: any) => {
+        const olcCode = grid.olcCode || grid.OLC_CODE || grid.olc_code || grid.CODE || grid.code || grid.GRID_CODE || grid.grid_code || 'Unknown';
+        const gridId = grid.objectId || grid.OBJECTID || grid.objectid || '';
+        const gridSize = grid.gridSize || '6-digit';
+        const distance = grid.distance_miles !== null && grid.distance_miles !== undefined ? grid.distance_miles.toFixed(2) : (grid.isContaining ? '0.00' : '');
+        const isContaining = grid.isContaining ? 'Yes' : 'No';
+        
+        const allAttributes = { ...grid };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.olcCode;
+        delete allAttributes.OLC_CODE;
+        delete allAttributes.olc_code;
+        delete allAttributes.CODE;
+        delete allAttributes.code;
+        delete allAttributes.GRID_CODE;
+        delete allAttributes.grid_code;
+        delete allAttributes.gridSize;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_OLC_Grid_6Digit',
+          olcCode,
+          '', // POI_Latitude
+          '', // POI_Longitude
+          distance,
+          gridSize,
+          gridId || 'N/A',
+          isContaining,
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_olc_grid_8digit_all' && Array.isArray(value)) {
+      value.forEach((grid: any) => {
+        const olcCode = grid.olcCode || grid.OLC_CODE || grid.olc_code || grid.CODE || grid.code || grid.GRID_CODE || grid.grid_code || 'Unknown';
+        const gridId = grid.objectId || grid.OBJECTID || grid.objectid || '';
+        const gridSize = grid.gridSize || '8-digit';
+        const distance = grid.distance_miles !== null && grid.distance_miles !== undefined ? grid.distance_miles.toFixed(2) : (grid.isContaining ? '0.00' : '');
+        const isContaining = grid.isContaining ? 'Yes' : 'No';
+        
+        const allAttributes = { ...grid };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.olcCode;
+        delete allAttributes.OLC_CODE;
+        delete allAttributes.olc_code;
+        delete allAttributes.CODE;
+        delete allAttributes.code;
+        delete allAttributes.GRID_CODE;
+        delete allAttributes.grid_code;
+        delete allAttributes.gridSize;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_OLC_Grid_8Digit',
+          olcCode,
+          '', // POI_Latitude
+          '', // POI_Longitude
+          distance,
+          gridSize,
+          gridId || 'N/A',
+          isContaining,
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_fire_stations_all' && Array.isArray(value)) {
+      value.forEach((station: any) => {
+        const distSta = station.distSta || station.DIST_STA || '';
+        const label = station.label !== null && station.label !== undefined ? station.label.toString() : '';
+        const text = station.text || station.TEXT_ || '';
+        const admin = station.admin || station.Admin || station.ADMIN || '';
+        const inDist = station.inDist !== null && station.inDist !== undefined ? station.inDist.toString() : '';
+        const ladders = station.ladders || station.LADDERS || '';
+        const stationId = station.objectId || station.OBJECTID || station.objectid || '';
+        const lat = station.lat !== null && station.lat !== undefined ? station.lat.toString() : (station.geometry?.y || '');
+        const lon = station.long !== null && station.long !== undefined ? station.long.toString() : (station.geometry?.x || '');
+        const distance = station.distance_miles !== null && station.distance_miles !== undefined ? station.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...station };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.distSta;
+        delete allAttributes.DIST_STA;
+        delete allAttributes.label;
+        delete allAttributes.LABEL;
+        delete allAttributes.text;
+        delete allAttributes.TEXT_;
+        delete allAttributes.admin;
+        delete allAttributes.Admin;
+        delete allAttributes.ADMIN;
+        delete allAttributes.inDist;
+        delete allAttributes.IN_DIST;
+        delete allAttributes.ladders;
+        delete allAttributes.LADDERS;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        delete allAttributes.xCoord;
+        delete allAttributes.X_COORD;
+        delete allAttributes.yCoord;
+        delete allAttributes.Y_COORD;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_Fire_Stations',
+          text || distSta || label || 'Fire Station',
+          lat,
+          lon,
+          distance,
+          admin || 'N/A',
+          distSta || 'N/A',
+          label || 'N/A',
+          inDist || 'N/A',
+          ladders || 'N/A',
+          stationId || 'N/A',
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_metro_bus_routes_all' && Array.isArray(value)) {
+      value.forEach((route: any) => {
+        const routeName = route.routeName || route.ROUTE_NAME || route.route_name || route.RouteName || route.NAME || route.name || route.Route || route.route || 'Unknown Route';
+        const routeNumber = route.routeNumber || route.ROUTE_NUMBER || route.route_number || route.RouteNumber || route.ROUTE || route.Route || route.NUMBER || route.number || '';
+        const routeType = route.routeType || route.ROUTE_TYPE || route.route_type || route.RouteType || route.TYPE || route.type || '';
+        const routeId = route.objectId || route.OBJECTID || route.objectid || '';
+        const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (route.geometry) {
+          // Line geometry (use first coordinate)
+          if (route.geometry.paths && route.geometry.paths.length > 0 && route.geometry.paths[0].length > 0) {
+            const firstCoord = route.geometry.paths[0][0];
+            lat = firstCoord[1].toString();
+            lon = firstCoord[0].toString();
+          }
+        }
+        
+        const allAttributes = { ...route };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.routeName;
+        delete allAttributes.ROUTE_NAME;
+        delete allAttributes.route_name;
+        delete allAttributes.RouteName;
+        delete allAttributes.NAME;
+        delete allAttributes.name;
+        delete allAttributes.Route;
+        delete allAttributes.route;
+        delete allAttributes.routeNumber;
+        delete allAttributes.ROUTE_NUMBER;
+        delete allAttributes.route_number;
+        delete allAttributes.RouteNumber;
+        delete allAttributes.ROUTE;
+        delete allAttributes.NUMBER;
+        delete allAttributes.number;
+        delete allAttributes.routeType;
+        delete allAttributes.ROUTE_TYPE;
+        delete allAttributes.route_type;
+        delete allAttributes.RouteType;
+        delete allAttributes.TYPE;
+        delete allAttributes.type;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_Metro_Bus_Routes',
+          routeName,
+          lat,
+          lon,
+          distance,
+          routeType || 'N/A',
+          routeNumber || 'N/A',
+          routeId || 'N/A',
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_tirz_all' && Array.isArray(value)) {
+      value.forEach((zone: any) => {
+        const name = zone.name || zone.NAME || 'Unknown Zone';
+        const siteNo = zone.siteNo !== null && zone.siteNo !== undefined ? zone.siteNo.toString() : (zone.SITENO !== null && zone.SITENO !== undefined ? zone.SITENO.toString() : '');
+        const zoneId = zone.objectId || zone.OBJECTID || zone.objectid || '';
+        const perimeter = zone.perimeter !== null && zone.perimeter !== undefined ? zone.perimeter.toFixed(2) : (zone.PERIMETER !== null && zone.PERIMETER !== undefined ? zone.PERIMETER.toFixed(2) : '');
+        const shapeArea = zone.shapeArea !== null && zone.shapeArea !== undefined ? zone.shapeArea : (zone.Shape__Area !== null && zone.Shape__Area !== undefined ? zone.Shape__Area : null);
+        const areaAcres = shapeArea ? (shapeArea * 0.000247105).toFixed(2) : '';
+        const shapeLength = zone.shapeLength !== null && zone.shapeLength !== undefined ? zone.shapeLength.toFixed(2) : (zone.Shape__Length !== null && zone.Shape__Length !== undefined ? zone.Shape__Length.toFixed(2) : '');
+        const distance = zone.distance_miles !== null && zone.distance_miles !== undefined ? zone.distance_miles.toFixed(2) : (zone.isContaining ? '0.00' : '');
+        const isContaining = zone.isContaining ? 'Yes' : 'No';
+        
+        const allAttributes = { ...zone };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.siteNo;
+        delete allAttributes.SITENO;
+        delete allAttributes.perimeter;
+        delete allAttributes.PERIMETER;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shape_area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.shape_length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_TIRZ',
+          name,
+          '', // POI_Latitude
+          '', // POI_Longitude
+          distance,
+          siteNo || 'N/A',
+          zoneId || 'N/A',
+          perimeter || 'N/A',
+          areaAcres || 'N/A',
+          shapeLength || 'N/A',
+          isContaining,
           attributesJson,
           'City of Houston'
         ]);

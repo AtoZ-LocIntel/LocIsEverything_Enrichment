@@ -233,6 +233,12 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_school_district_boundaries': { icon: '🏫', color: '#3b82f6', title: 'LA County School District Boundaries' },
   'la_county_metro_lines': { icon: '🚇', color: '#7c3aed', title: 'LA County MTA Metro Lines' },
   'la_county_street_inventory': { icon: '🛣️', color: '#fbbf24', title: 'LA County Street Inventory' },
+  'houston_roads_centerline': { icon: '🛣️', color: '#3b82f6', title: 'Houston Roads Centerline' },
+  'houston_metro_bus_routes': { icon: '🚌', color: '#10b981', title: 'Houston Metro Bus Routes' },
+  'houston_olc_grid_6digit': { icon: '🗺️', color: '#8b5cf6', title: 'Houston OLC Grid - 6 Digits' },
+  'houston_olc_grid_8digit': { icon: '🗺️', color: '#a855f7', title: 'Houston OLC Grid - 8 Digits' },
+  'houston_fire_stations': { icon: '🚒', color: '#dc2626', title: 'Houston Fire Stations' },
+  'houston_tirz': { icon: '🏛️', color: '#f59e0b', title: 'Houston Tax Incentive Reinvestment Zones' },
   // LA County Hazards
   'la_county_fire_hazards': { icon: '🔥', color: '#dc2626', title: 'LA County Fire Hazards' },
   'la_county_fire_hazard_responsibility_areas': { icon: '🔥', color: '#ef4444', title: 'LA County Fire Hazard Responsibility Areas' },
@@ -610,6 +616,12 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'houston_neighborhoods_all' || // Skip Houston Neighborhoods array (handled separately for map drawing)
     key === 'houston_neighborhoods_2021_all' || // Skip Houston Neighborhoods 2021 array (handled separately for map drawing)
     key === 'houston_site_addresses_all' || // Skip Houston Site Addresses array (handled separately for map drawing)
+    key === 'houston_roads_centerline_all' || // Skip Houston Roads Centerline array (handled separately for map drawing)
+    key === 'houston_metro_bus_routes_all' || // Skip Houston Metro Bus Routes array (handled separately for map drawing)
+    key === 'houston_olc_grid_6digit_all' || // Skip Houston OLC Grid 6-digit array (handled separately for map drawing)
+    key === 'houston_olc_grid_8digit_all' || // Skip Houston OLC Grid 8-digit array (handled separately for map drawing)
+    key === 'houston_fire_stations_all' || // Skip Houston Fire Stations array (handled separately for map drawing)
+    key === 'houston_tirz_all' || // Skip Houston TIRZ array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -915,8 +927,8 @@ const MapView: React.FC<MapViewProps> = ({
     featureData: any;
     geometry: 'point' | 'polyline' | 'polygon';
   }>>([]);
-  // Default to hybrid basemap (no dropdown, fixed basemap)
-  const selectedBasemap = 'hybrid';
+  // Basemap selection state (default to hybrid)
+  const [selectedBasemap, setSelectedBasemap] = useState<string>('hybrid');
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
 
   useEffect(() => {
@@ -1000,7 +1012,31 @@ const MapView: React.FC<MapViewProps> = ({
       setIsMapReady(false);
       setIsInitialized(false);
     };
-  }, [isMobile, results.length, selectedBasemap]);
+  }, [isMobile, results.length]);
+
+  // Handle basemap changes without re-initializing the map
+  useEffect(() => {
+    // Only handle basemap changes if map is already initialized
+    // Initial basemap is set during map initialization
+    if (!mapInstanceRef.current || !basemapLayerRef.current || !isInitialized) {
+      return;
+    }
+
+    const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.hybrid;
+    
+    // Remove old basemap layer
+    if (basemapLayerRef.current) {
+      mapInstanceRef.current.removeLayer(basemapLayerRef.current);
+    }
+
+    // Add new basemap layer
+    const newBasemapLayer = L.tileLayer(basemapConfig.url, {
+      attribution: basemapConfig.attribution,
+      maxZoom: 22,
+    }).addTo(mapInstanceRef.current);
+    
+    basemapLayerRef.current = newBasemapLayer;
+  }, [selectedBasemap, isInitialized]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -12917,6 +12953,525 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing Houston Site Addresses:', error);
       }
 
+      // Draw Houston Roads Centerline as polylines on the map
+      try {
+        if (enrichments.houston_roads_centerline_all && Array.isArray(enrichments.houston_roads_centerline_all)) {
+          let roadCount = 0;
+          enrichments.houston_roads_centerline_all.forEach((road: any) => {
+            if (road.geometry && road.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = road.geometry.paths;
+                if (paths && paths.length > 0) {
+                  roadCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const fullname = road.fullname || road.FULLNAME || road.fullName || 'Unknown Road';
+                    const roadname = road.roadname || road.ROADNAME || road.roadName || null;
+                    const roadtype = road.roadtype || road.ROADTYPE || road.roadType || null;
+                    const prefix = road.prefix || road.PREFIX || null;
+                    const suffix = road.suffix || road.SUFFIX || null;
+                    const roadclass = road.roadclass || road.ROADCLASS || road.roadClass || null;
+                    const fromleft = road.fromleft !== null && road.fromleft !== undefined ? road.fromleft : null;
+                    const fromright = road.fromright !== null && road.fromright !== undefined ? road.fromright : null;
+                    const toleft = road.toleft !== null && road.toleft !== undefined ? road.toleft : null;
+                    const toright = road.toright !== null && road.toright !== undefined ? road.toright : null;
+                    const parityleft = road.parityleft || road.PARITYLEFT || road.parityLeft || null;
+                    const parityright = road.parityright || road.PARITYRIGHT || road.parityRight || null;
+                    const onewaydir = road.onewaydir || road.ONEWAYDIR || road.onewayDir || null;
+                    const munileft = road.munileft || road.MUNILEFT || road.muniLeft || null;
+                    const muniright = road.muniright || road.MUNIRIGHT || road.muniRight || null;
+                    const countyleft = road.countyleft || road.COUNTYLEFT || road.countyLeft || null;
+                    const countyright = road.countyright || road.COUNTYRIGHT || road.countyRight || null;
+                    const zipleft = road.zipleft || road.ZIPLEFT || road.zipLeft || null;
+                    const zipright = road.zipright || road.ZIPRIGHT || road.zipRight || null;
+                    const speed = road.speed !== null && road.speed !== undefined ? road.speed : null;
+                    const shapeLength = road.shapeLength || road.Shape__Length || road.shape_length || null;
+                    const centerlineid = road.centerlineid || road.CENTERLINEID || road.centerlineId || null;
+                    const source = road.source || road.SOURCE || null;
+                    const distance = road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles : 0;
+
+                    // Create polyline with blue color for roads
+                    const polyline = L.polyline(latlngs, {
+                      color: '#3b82f6', // Blue color for Houston roads
+                      weight: 3,
+                      opacity: 0.7,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all road attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🛣️ ${fullname}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${roadclass ? `<div><strong>Road Class:</strong> ${roadclass}</div>` : ''}
+                          ${fromleft !== null && toleft !== null ? `<div><strong>Left Side:</strong> ${fromleft} - ${toleft}</div>` : ''}
+                          ${fromright !== null && toright !== null ? `<div><strong>Right Side:</strong> ${fromright} - ${toright}</div>` : ''}
+                          ${parityleft ? `<div><strong>Left Parity:</strong> ${parityleft}</div>` : ''}
+                          ${parityright ? `<div><strong>Right Parity:</strong> ${parityright}</div>` : ''}
+                          ${onewaydir ? `<div><strong>One Way Direction:</strong> ${onewaydir}</div>` : ''}
+                          ${munileft || muniright ? `<div><strong>Municipality:</strong> ${munileft || muniright}</div>` : ''}
+                          ${countyleft || countyright ? `<div><strong>County:</strong> ${countyleft || countyright}</div>` : ''}
+                          ${zipleft || zipright ? `<div><strong>ZIP:</strong> ${zipleft || zipright}</div>` : ''}
+                          ${speed !== null ? `<div><strong>Speed Limit:</strong> ${speed} mph</div>` : ''}
+                          ${shapeLength !== null && shapeLength !== undefined ? `<div><strong>Length:</strong> ${shapeLength.toFixed(2)} meters</div>` : ''}
+                          ${centerlineid ? `<div><strong>Centerline ID:</strong> ${centerlineid}</div>` : ''}
+                          ${source ? `<div><strong>Source:</strong> ${source}</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all road attributes (excluding internal fields)
+                    const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'centerlineid', 'CENTERLINEID', 'centerlineId', 'fullname', 'FULLNAME', 'fullName', 'roadname', 'ROADNAME', 'roadName', 'roadtype', 'ROADTYPE', 'roadType', 'prefix', 'PREFIX', 'suffix', 'SUFFIX', 'roadclass', 'ROADCLASS', 'roadClass', 'fromleft', 'FROMLEFT', 'fromLeft', 'fromright', 'FROMRIGHT', 'fromRight', 'toleft', 'TOLEFT', 'toLeft', 'toright', 'TORIGHT', 'toRight', 'parityleft', 'PARITYLEFT', 'parityLeft', 'parityright', 'PARITYRIGHT', 'parityRight', 'onewaydir', 'ONEWAYDIR', 'onewayDir', 'munileft', 'MUNILEFT', 'muniLeft', 'muniright', 'MUNIRIGHT', 'muniRight', 'countyleft', 'COUNTYLEFT', 'countyLeft', 'countyright', 'COUNTYRIGHT', 'countyRight', 'zipleft', 'ZIPLEFT', 'zipLeft', 'zipright', 'ZIPRIGHT', 'zipRight', 'speed', 'SPEED', 'shapeLength', 'Shape__Length', 'shape_length', 'source', 'SOURCE'];
+                    Object.entries(road).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Houston Roads Centerline polyline:', error);
+              }
+            }
+          });
+          
+          if (roadCount > 0) {
+            if (!legendAccumulator['houston_roads_centerline']) {
+              legendAccumulator['houston_roads_centerline'] = {
+                icon: '🛣️',
+                color: '#3b82f6',
+                title: 'Houston Roads Centerline',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_roads_centerline'].count += roadCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Roads Centerline:', error);
+      }
+
+      // Draw Houston Metro Bus Routes as polylines on the map
+      try {
+        if (enrichments.houston_metro_bus_routes_all && Array.isArray(enrichments.houston_metro_bus_routes_all)) {
+          let routeCount = 0;
+          enrichments.houston_metro_bus_routes_all.forEach((route: any) => {
+            if (route.geometry && route.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = route.geometry.paths;
+                if (paths && paths.length > 0) {
+                  routeCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const routeName = route.routeName || route.ROUTE_NAME || route.route_name || route.RouteName || route.NAME || route.name || route.Route || route.route || 'Unknown Route';
+                    const routeNumber = route.routeNumber || route.ROUTE_NUMBER || route.route_number || route.RouteNumber || route.ROUTE || route.Route || route.NUMBER || route.number || '';
+                    const routeType = route.routeType || route.ROUTE_TYPE || route.route_type || route.RouteType || route.TYPE || route.type || '';
+                    const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles : 0;
+
+                    // Create polyline with green color for bus routes
+                    const polyline = L.polyline(latlngs, {
+                      color: '#10b981', // Green color for Houston Metro Bus Routes
+                      weight: 4,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with route information
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🚌 ${routeName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${routeNumber ? `<div><strong>Route Number:</strong> ${routeNumber}</div>` : ''}
+                          ${routeType ? `<div><strong>Route Type:</strong> ${routeType}</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all route attributes (excluding internal fields)
+                    const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'routeName', 'ROUTE_NAME', 'route_name', 'RouteName', 'NAME', 'name', 'Route', 'route', 'routeNumber', 'ROUTE_NUMBER', 'route_number', 'RouteNumber', 'ROUTE', 'NUMBER', 'number', 'routeType', 'ROUTE_TYPE', 'route_type', 'RouteType', 'TYPE', 'type'];
+                    Object.entries(route).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Houston Metro Bus Routes polyline:', error);
+              }
+            }
+          });
+          
+          if (routeCount > 0) {
+            if (!legendAccumulator['houston_metro_bus_routes']) {
+              legendAccumulator['houston_metro_bus_routes'] = {
+                icon: '🚌',
+                color: '#10b981',
+                title: 'Houston Metro Bus Routes',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_metro_bus_routes'].count += routeCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Metro Bus Routes:', error);
+      }
+
+      // Draw Houston TIRZ as polygons on the map
+      try {
+        if (enrichments.houston_tirz_all && Array.isArray(enrichments.houston_tirz_all)) {
+          let zoneCount = 0;
+          enrichments.houston_tirz_all.forEach((zone: any) => {
+            if (zone.geometry && zone.geometry.rings && Array.isArray(zone.geometry.rings)) {
+              try {
+                const rings = zone.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('Houston TIRZ polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = zone.isContaining;
+                  const color = isContaining ? '#f59e0b' : '#fbbf24'; // Orange/amber for TIRZ zones
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const name = zone.name || zone.NAME || 'Unknown Zone';
+                  const siteNo = zone.siteNo !== null && zone.siteNo !== undefined ? zone.siteNo.toString() : (zone.SITENO !== null && zone.SITENO !== undefined ? zone.SITENO.toString() : '');
+                  const zoneId = zone.objectId || zone.OBJECTID || zone.objectid || null;
+                  const perimeter = zone.perimeter !== null && zone.perimeter !== undefined ? zone.perimeter.toFixed(2) : null;
+                  const shapeArea = zone.shapeArea !== null && zone.shapeArea !== undefined ? zone.shapeArea : null;
+                  const areaAcres = shapeArea ? (shapeArea * 0.000247105).toFixed(2) : null;
+                  const shapeLength = zone.shapeLength !== null && zone.shapeLength !== undefined ? zone.shapeLength.toFixed(2) : null;
+                  const distance = zone.distance_miles !== null && zone.distance_miles !== undefined ? zone.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏛️ ${name}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${siteNo ? `<div><strong>Site Number:</strong> ${siteNo}</div>` : ''}
+                        ${zoneId ? `<div><strong>Zone ID:</strong> ${zoneId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${perimeter ? `<div><strong>Perimeter:</strong> ${perimeter} meters</div>` : ''}
+                        ${areaAcres ? `<div><strong>Area:</strong> ${areaAcres} acres</div>` : ''}
+                        ${shapeLength ? `<div><strong>Length:</strong> ${shapeLength} meters</div>` : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all zone attributes (excluding internal fields)
+                  const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'isContaining', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'globalId', 'name', 'NAME', 'siteNo', 'SITENO', 'perimeter', 'PERIMETER', 'shapeArea', 'Shape__Area', 'shape_area', 'shapeLength', 'Shape__Length', 'shape_length'];
+                  Object.entries(zone).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  zoneCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing Houston TIRZ polygon:', error);
+              }
+            }
+          });
+          
+          if (zoneCount > 0) {
+            if (!legendAccumulator['houston_tirz']) {
+              legendAccumulator['houston_tirz'] = {
+                icon: '🏛️',
+                color: '#f59e0b',
+                title: 'Houston Tax Incentive Reinvestment Zones',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_tirz'].count += zoneCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston TIRZ:', error);
+      }
+
+      // Draw Houston OLC Grid 6-digit as polygons on the map
+      try {
+        if (enrichments.houston_olc_grid_6digit_all && Array.isArray(enrichments.houston_olc_grid_6digit_all)) {
+          let gridCount = 0;
+          enrichments.houston_olc_grid_6digit_all.forEach((grid: any) => {
+            if (grid.geometry && grid.geometry.rings && Array.isArray(grid.geometry.rings)) {
+              try {
+                const rings = grid.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('Houston OLC Grid 6-digit polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = grid.isContaining;
+                  const color = isContaining ? '#8b5cf6' : '#c084fc'; // Purple for grids
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const olcCode = grid.olcCode || grid.OLC_CODE || grid.olc_code || 'Unknown';
+                  const gridId = grid.objectId || grid.OBJECTID || grid.objectid || null;
+                  const distance = grid.distance_miles !== null && grid.distance_miles !== undefined ? grid.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🗺️ OLC Grid 6-digit: ${olcCode}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${gridId ? `<div><strong>Grid ID:</strong> ${gridId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all grid attributes (excluding internal fields)
+                  const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'isContaining', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'olcCode', 'OLC_CODE', 'olc_code', 'gridSize'];
+                  Object.entries(grid).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  gridCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing Houston OLC Grid 6-digit polygon:', error);
+              }
+            }
+          });
+          
+          if (gridCount > 0) {
+            if (!legendAccumulator['houston_olc_grid_6digit']) {
+              legendAccumulator['houston_olc_grid_6digit'] = {
+                icon: '🗺️',
+                color: '#8b5cf6',
+                title: 'Houston OLC Grid - 6 Digits',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_olc_grid_6digit'].count += gridCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston OLC Grid 6-digit:', error);
+      }
+
+      // Draw Houston OLC Grid 8-digit as polygons on the map
+      try {
+        if (enrichments.houston_olc_grid_8digit_all && Array.isArray(enrichments.houston_olc_grid_8digit_all)) {
+          let gridCount = 0;
+          enrichments.houston_olc_grid_8digit_all.forEach((grid: any) => {
+            if (grid.geometry && grid.geometry.rings && Array.isArray(grid.geometry.rings)) {
+              try {
+                const rings = grid.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('Houston OLC Grid 8-digit polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = grid.isContaining;
+                  const color = isContaining ? '#a855f7' : '#c084fc'; // Purple for grids
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const olcCode = grid.olcCode || grid.OLC_CODE || grid.olc_code || 'Unknown';
+                  const gridId = grid.objectId || grid.OBJECTID || grid.objectid || null;
+                  const distance = grid.distance_miles !== null && grid.distance_miles !== undefined ? grid.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🗺️ OLC Grid 8-digit: ${olcCode}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${gridId ? `<div><strong>Grid ID:</strong> ${gridId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all grid attributes (excluding internal fields)
+                  const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'isContaining', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'olcCode', 'OLC_CODE', 'olc_code', 'gridSize'];
+                  Object.entries(grid).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  gridCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing Houston OLC Grid 8-digit polygon:', error);
+              }
+            }
+          });
+          
+          if (gridCount > 0) {
+            if (!legendAccumulator['houston_olc_grid_8digit']) {
+              legendAccumulator['houston_olc_grid_8digit'] = {
+                icon: '🗺️',
+                color: '#a855f7',
+                title: 'Houston OLC Grid - 8 Digits',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_olc_grid_8digit'].count += gridCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston OLC Grid 8-digit:', error);
+      }
+
       // Draw LA County Historic Cultural Monuments as polygons on the map
       try {
         if (enrichments.la_county_historic_cultural_monuments_all && Array.isArray(enrichments.la_county_historic_cultural_monuments_all)) {
@@ -17090,6 +17645,7 @@ const MapView: React.FC<MapViewProps> = ({
       if (title.includes('school district')) return 'la_county_school_district_boundaries';
       if (title.includes('metro line')) return 'la_county_metro_lines';
       if (title.includes('street inventory')) return 'la_county_street_inventory';
+      if (title.includes('roads centerline') || title.includes('road centerline')) return 'houston_roads_centerline';
       // Chicago layers
       if (title.includes('311') || title.includes('service request')) return 'chicago_311';
       if (title.includes('building') && (title.includes('centroid') || title.includes('footprint'))) return 'chicago_building_footprints';
@@ -17379,6 +17935,28 @@ const MapView: React.FC<MapViewProps> = ({
           }}
         />
         
+        {/* Basemap Dropdown - Desktop only */}
+        {!isMobile && (
+          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10">
+            <label htmlFor="basemap-select" className="block text-sm font-semibold text-black mb-2">
+              Basemap
+            </label>
+            <select
+              id="basemap-select"
+              value={selectedBasemap}
+              onChange={(e) => setSelectedBasemap(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-black bg-white"
+              style={{ color: 'black' }}
+            >
+              {Object.entries(MAPTILER_BASEMAPS).map(([key, config]) => (
+                <option key={key} value={key} style={{ color: 'black' }}>
+                  {config.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Dynamic Legend - Always show when there are legend items (Desktop only) */}
         {legendItems.length > 0 && (
           <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-6 max-w-md z-10">
