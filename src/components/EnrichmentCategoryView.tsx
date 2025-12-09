@@ -260,7 +260,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               ? [0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0]
               : enrichment.id === 'nh_key_destinations'
               ? [0.5, 1, 2, 3, 5, 10, 15, 25]
-              : enrichment.id === 'chicago_311' || enrichment.id === 'chicago_building_footprints'
+              : enrichment.id === 'chicago_311' || enrichment.id === 'chicago_building_footprints' || enrichment.id === 'houston_site_addresses'
               ? [0.25, 0.50, 0.75, 1.0]
               : enrichment.id === 'nyc_bike_routes'
               ? [0.5, 1.0, 2.5, 5.0]

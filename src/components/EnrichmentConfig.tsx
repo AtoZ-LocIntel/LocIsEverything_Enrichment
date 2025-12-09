@@ -2836,6 +2836,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                               const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
                               const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
+                              const isHoustonSiteAddresses = enrichment.id === 'houston_site_addresses';
                               const radiusOptions = isNHParcels || isNJParcels
                                 ? [0.25, 0.50, 0.75, 1.0]
                                 : isMAParcels
@@ -2846,7 +2847,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                 : isLAStreetInventory
                                 ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
-                                : isChicago311 || isChicagoBuildingFootprints
+                                : isChicago311 || isChicagoBuildingFootprints || isHoustonSiteAddresses
                                 ? [0.25, 0.50, 0.75, 1.0]
                                 : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts
                                 ? [0.5, 1.0, 2.5, 5.0]

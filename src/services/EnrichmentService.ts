@@ -111,6 +111,7 @@ import { getNYCBusinessImprovementDistrictsData } from '../adapters/nycBusinessI
 import { getNYCCommunityDistrictsData } from '../adapters/nycCommunityDistricts';
 import { getHoustonNeighborhoodsData } from '../adapters/houstonNeighborhoods';
 import { getHoustonNeighborhoods2021Data } from '../adapters/houstonNeighborhoods2021';
+import { getHoustonSiteAddressesData } from '../adapters/houstonSiteAddresses';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2171,6 +2172,10 @@ export class EnrichmentService {
       // Houston Neighborhoods 2021 - Point-in-polygon and proximity query (max 10 miles)
       case 'houston_neighborhoods_2021':
         return await this.getHoustonNeighborhoods2021(lat, lon, radius);
+      
+      // Houston Site Addresses - Proximity query only (max 1 mile)
+      case 'houston_site_addresses':
+        return await this.getHoustonSiteAddresses(lat, lon, radius);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -10345,6 +10350,61 @@ out center;`;
         houston_neighborhoods_2021_containing_message: 'Error querying neighborhoods',
         houston_neighborhoods_2021_count: 0,
         houston_neighborhoods_2021_all: []
+      };
+    }
+  }
+
+  private async getHoustonSiteAddresses(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📍 Fetching Houston Site Addresses data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 1 mile
+      const cappedRadius = radius ? Math.min(radius, 1.0) : 0.25;
+      
+      const addresses = await getHoustonSiteAddressesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (addresses.length === 0) {
+        result.houston_site_addresses_count = 0;
+        result.houston_site_addresses_all = [];
+        result.houston_site_addresses_summary = 'No addresses found within the search radius.';
+      } else {
+        result.houston_site_addresses_count = addresses.length;
+        result.houston_site_addresses_all = addresses.map(address => ({
+          ...address.attributes,
+          objectId: address.objectId,
+          siteaddid: address.siteaddid,
+          fulladdr: address.fulladdr,
+          addrnum: address.addrnum,
+          roadname: address.roadname,
+          roadtype: address.roadtype,
+          unitid: address.unitid,
+          unittype: address.unittype,
+          municipality: address.municipality,
+          zipcode: address.zipcode,
+          county: address.county,
+          addrtype: address.addrtype,
+          status: address.status,
+          source: address.source,
+          geometry: address.geometry,
+          distance_miles: address.distance_miles
+        }));
+        
+        result.houston_site_addresses_summary = `Found ${addresses.length} address(es) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ Houston Site Addresses data processed:`, {
+        totalCount: result.houston_site_addresses_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Site Addresses data:', error);
+      return {
+        houston_site_addresses_count: 0,
+        houston_site_addresses_all: [],
+        houston_site_addresses_summary: 'Error querying addresses'
       };
     }
   }

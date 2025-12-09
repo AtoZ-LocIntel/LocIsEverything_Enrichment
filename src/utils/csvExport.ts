@@ -362,6 +362,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nyc_community_districts_all' ||
         key === 'houston_neighborhoods_all' ||
         key === 'houston_neighborhoods_2021_all' ||
+        key === 'houston_site_addresses_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -6378,6 +6379,75 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           distance || '0.00',
           isContaining,
           '', // Address
+          '', // Phone
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_site_addresses_all' && Array.isArray(value)) {
+      value.forEach((address: any) => {
+        const fulladdr = address.fulladdr || address.FULLADDR || '';
+        const addrnum = address.addrnum || address.ADDRNUM || '';
+        const roadname = address.roadname || address.ROADNAME || '';
+        const roadtype = address.roadtype || address.ROADTYPE || '';
+        const unitid = address.unitid || address.UNITID || '';
+        const unittype = address.unittype || address.UNITTYPE || '';
+        const municipality = address.municipality || address.MUNICIPALITY || '';
+        const zipcode = address.zipcode || address.ZIPCODE || '';
+        const county = address.county || address.COUNTY || '';
+        const addrtype = address.addrtype || address.ADDRTYPE || '';
+        const status = address.status || address.STATUS || '';
+        const source = address.source || address.SOURCE || '';
+        const siteaddid = address.siteaddid !== null && address.siteaddid !== undefined ? address.siteaddid.toString() : '';
+        const distance = address.distance_miles !== null && address.distance_miles !== undefined ? address.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...address };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.siteaddid;
+        delete allAttributes.fulladdr;
+        delete allAttributes.FULLADDR;
+        delete allAttributes.addrnum;
+        delete allAttributes.ADDRNUM;
+        delete allAttributes.roadname;
+        delete allAttributes.ROADNAME;
+        delete allAttributes.roadtype;
+        delete allAttributes.ROADTYPE;
+        delete allAttributes.unitid;
+        delete allAttributes.UNITID;
+        delete allAttributes.unittype;
+        delete allAttributes.UNITTYPE;
+        delete allAttributes.municipality;
+        delete allAttributes.MUNICIPALITY;
+        delete allAttributes.zipcode;
+        delete allAttributes.ZIPCODE;
+        delete allAttributes.county;
+        delete allAttributes.COUNTY;
+        delete allAttributes.addrtype;
+        delete allAttributes.ADDRTYPE;
+        delete allAttributes.status;
+        delete allAttributes.STATUS;
+        delete allAttributes.source;
+        delete allAttributes.SOURCE;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          'Houston Site Addresses',
+          fulladdr || 'N/A',
+          addrnum || 'N/A',
+          roadname || 'N/A',
+          roadtype || 'N/A',
+          unitid || 'N/A',
+          unittype || 'N/A',
+          municipality || 'N/A',
+          zipcode || 'N/A',
+          county || 'N/A',
+          addrtype || 'N/A',
+          status || 'N/A',
+          source || 'N/A',
+          siteaddid || 'N/A',
+          distance || '0.00',
+          '', // Address (already in fulladdr)
           '', // Phone
           attributesJson,
           'City of Houston'

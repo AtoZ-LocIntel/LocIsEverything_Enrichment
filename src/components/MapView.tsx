@@ -609,6 +609,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nyc_community_districts_all' || // Skip NYC Community Districts array (handled separately for map drawing)
     key === 'houston_neighborhoods_all' || // Skip Houston Neighborhoods array (handled separately for map drawing)
     key === 'houston_neighborhoods_2021_all' || // Skip Houston Neighborhoods 2021 array (handled separately for map drawing)
+    key === 'houston_site_addresses_all' || // Skip Houston Site Addresses array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -12817,6 +12818,103 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Houston Neighborhoods 2021:', error);
+      }
+
+      // Draw Houston Site Addresses as points on the map
+      try {
+        if (enrichments.houston_site_addresses_all && Array.isArray(enrichments.houston_site_addresses_all)) {
+          let addressCount = 0;
+          enrichments.houston_site_addresses_all.forEach((address: any) => {
+            // Check if geometry is available (ESRI point geometry)
+            if (address.geometry && address.geometry.x !== undefined && address.geometry.y !== undefined) {
+              try {
+                const lat = address.geometry.y;
+                const lon = address.geometry.x;
+                
+                const distance = address.distance_miles !== null && address.distance_miles !== undefined ? address.distance_miles : 0;
+                const color = '#3b82f6'; // Blue for addresses
+                
+                const marker = L.marker([lat, lon], {
+                  icon: L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [12, 12],
+                    iconAnchor: [6, 6]
+                  })
+                });
+                
+                const fulladdr = address.fulladdr || 'Unknown Address';
+                const municipality = address.municipality || '';
+                const zipcode = address.zipcode || '';
+                const addrtype = address.addrtype || '';
+                const status = address.status || '';
+                const source = address.source || '';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      📍 Site Address
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${fulladdr ? `<div><strong>Address:</strong> ${fulladdr}</div>` : ''}
+                      ${municipality ? `<div><strong>Municipality:</strong> ${municipality}</div>` : ''}
+                      ${zipcode ? `<div><strong>Zip Code:</strong> ${zipcode}</div>` : ''}
+                      ${addrtype ? `<div><strong>Address Type:</strong> ${addrtype}</div>` : ''}
+                      ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                      ${source ? `<div><strong>Source:</strong> ${source}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all address attributes (excluding internal fields)
+                const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'FID', 'fid', 'fulladdr', 'FULLADDR', 'addrnum', 'ADDRNUM', 'roadname', 'ROADNAME', 'roadtype', 'ROADTYPE', 'unitid', 'UNITID', 'unittype', 'UNITTYPE', 'municipality', 'MUNICIPALITY', 'zipcode', 'ZIPCODE', 'county', 'COUNTY', 'addrtype', 'ADDRTYPE', 'status', 'STATUS', 'source', 'SOURCE', 'geometry', 'distance_miles', 'GlobalID', 'GLOBALID', '__calculatedDistance'];
+                Object.entries(address).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value) && key !== 'the_geom') {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                // Store metadata for tabbed popup
+                (marker as any).__layerType = 'houston_site_addresses';
+                (marker as any).__layerTitle = 'Houston Site Addresses';
+                (marker as any).__popupContent = popupContent;
+                marker.addTo(primary);
+                
+                // Extend bounds to include marker
+                bounds.extend([lat, lon]);
+                
+                addressCount++;
+              } catch (error) {
+                console.error('Error drawing Houston Site Address marker:', error);
+              }
+            }
+          });
+          
+          if (addressCount > 0) {
+            if (!legendAccumulator['houston_site_addresses']) {
+              legendAccumulator['houston_site_addresses'] = {
+                icon: '📍',
+                color: '#3b82f6',
+                title: 'Houston Site Addresses',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_site_addresses'].count += addressCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Site Addresses:', error);
       }
 
       // Draw LA County Historic Cultural Monuments as polygons on the map

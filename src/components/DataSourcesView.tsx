@@ -1261,6 +1261,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           url: "https://services.arcgis.com/NummVBqZSIJKUeVR/ArcGIS/rest/services/Neighborhood_2021/FeatureServer/0"
         },
         {
+          name: "Houston Site Addresses",
+          description: "Houston Site Addresses from City of Houston - proximity queries up to 1 mile (0.25, 0.50, 0.75, 1.0 miles)",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_SiteAddresses/FeatureServer/3"
+        },
+        {
           name: "LA County Administrative Boundaries",
           description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
