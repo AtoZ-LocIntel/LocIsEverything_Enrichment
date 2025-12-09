@@ -230,6 +230,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'NYC Data';
     }
     
+    // Houston Data - check before other state data
+    if (key.includes('houston_')) {
+      return 'Houston Data';
+    }
+    
     // Connecticut Data
     if (key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
       return 'Connecticut Data';

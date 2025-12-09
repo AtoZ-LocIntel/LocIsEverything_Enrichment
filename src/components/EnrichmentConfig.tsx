@@ -686,14 +686,27 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         
         if (section.id === 'tx') {
-          // TX will have sub-categories (to be added later)
+          // TX sub-categories
+          // Get Houston enrichments (when added, they will start with 'houston_')
+          const houstonEnrichments = sectionEnrichments.filter(e => e.id.startsWith('houston_'));
+          
+          const txSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'houston_data_portal',
+              title: 'Houston Data Portal',
+              icon: <img src="/assets/Houston.webp" alt="Houston Data Portal" className="w-full h-full object-cover rounded-full" />,
+              description: 'Houston Data Portal data layers',
+              enrichments: houstonEnrichments
+            }
+          ];
+          
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
-            subCategories: []
+            enrichments: [], // TX parent category has no direct enrichments
+            subCategories: txSubCategories
           };
         }
         
@@ -2215,6 +2228,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const isNJSubCategory = activeModal?.startsWith('nj_');
               const isCASubCategory = activeModal?.startsWith('ca_');
               const isILSubCategory = activeModal?.startsWith('il_') || activeModal === 'chicago_data_portal';
+              const isTXSubCategory = activeModal?.startsWith('tx_') || activeModal === 'houston_data_portal';
               let category: EnrichmentCategory | undefined;
               
               if (isNHSubCategory) {
@@ -2298,6 +2312,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   isILSubCategory,
                   ilCategoryFound: !!ilCategory,
                   subCategories: ilCategory?.subCategories?.map(sc => sc.id),
+                  foundCategory: category?.id,
+                  enrichmentsCount: category?.enrichments?.length
+                });
+              } else if (isTXSubCategory) {
+                // Find the TX category and get the sub-category
+                const txCategory = enrichmentCategories.find(c => c.id === 'tx');
+                category = txCategory?.subCategories?.find(sc => sc.id === activeModal);
+                console.log('🔍 TX Sub-Category Modal:', {
+                  activeModal,
+                  isTXSubCategory,
+                  txCategoryFound: !!txCategory,
+                  subCategories: txCategory?.subCategories?.map(sc => sc.id),
                   foundCategory: category?.id,
                   enrichmentsCount: category?.enrichments?.length
                 });
@@ -3140,13 +3166,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   const isMAParcels = enrichment.id === 'ma_parcels';
                                   const isCTBuildingFootprints = enrichment.id === 'ct_building_footprints';
                                   const isLACountyLeadRisk = enrichment.id === 'la_county_housing_lead_risk';
-                                  const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
-                                  const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
-                                  const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
-                                  const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
-                                  const radiusOptions = isNHParcels || isNJParcels
-                                    ? [0.25, 0.50, 0.75, 1.0]
-                                    : isMAParcels
+                                          const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
+                                          const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
+                                          const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
+                                          const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
+                                          const radiusOptions = isNHParcels || isNJParcels
+                                            ? [0.25, 0.50, 0.75, 1.0]
+                                            : isMAParcels
                                     ? [0.3, 0.5, 0.75, 1.0]
                                     : isCTBuildingFootprints
                                     ? [0.25, 0.50, 0.75, 1.0]
@@ -3267,10 +3293,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 // For NH, MA, and other states, count sub-category enrichments too
-                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de') && category.subCategories
+                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx') && category.subCategories
                   ? category.subCategories.flatMap(sc => sc.enrichments)
                   : [];
-                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de')
+                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx')
                   ? stateSubCategoryEnrichments 
                   : categoryEnrichments;
                 const selectedCount = allCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;

@@ -607,6 +607,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nyc_waterfront_paws_all' || // Skip NYC PAWS array (handled separately for map drawing)
     key === 'nyc_business_improvement_districts_all' || // Skip NYC Business Improvement Districts array (handled separately for map drawing)
     key === 'nyc_community_districts_all' || // Skip NYC Community Districts array (handled separately for map drawing)
+    key === 'houston_neighborhoods_all' || // Skip Houston Neighborhoods array (handled separately for map drawing)
+    key === 'houston_neighborhoods_2021_all' || // Skip Houston Neighborhoods 2021 array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -12547,6 +12549,275 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing NYC Community Districts:', error);
+      }
+
+      // Draw Houston Neighborhoods as polygons on the map
+      try {
+        if (enrichments.houston_neighborhoods_all && Array.isArray(enrichments.houston_neighborhoods_all)) {
+          let neighborhoodCount = 0;
+          enrichments.houston_neighborhoods_all.forEach((neighborhood: any) => {
+            // Check if geometry is available (ESRI polygon geometry)
+            if (neighborhood.geometry && neighborhood.geometry.rings && Array.isArray(neighborhood.geometry.rings)) {
+              try {
+                // Convert ESRI rings to Leaflet latlngs
+                const rings = neighborhood.geometry.rings;
+                const latlngs: [number, number][] = [];
+                
+                // Use the first ring (outer boundary)
+                if (rings[0] && Array.isArray(rings[0])) {
+                  for (const coord of rings[0]) {
+                    if (Array.isArray(coord) && coord.length >= 2) {
+                      // ESRI geometry might be in Web Mercator or WGS84
+                      // Convert if needed
+                      let lat: number;
+                      let lon: number;
+                      
+                      if (Math.abs(coord[0]) > 180 || Math.abs(coord[1]) > 90) {
+                        // Web Mercator to WGS84
+                        lon = (coord[0] / 20037508.34) * 180;
+                        let latRad = (coord[1] / 20037508.34) * 180;
+                        lat = 180 / Math.PI * (2 * Math.atan(Math.exp(latRad * Math.PI / 180)) - Math.PI / 2);
+                      } else {
+                        // Already WGS84
+                        lon = coord[0];
+                        lat = coord[1];
+                      }
+                      
+                      latlngs.push([lat, lon]);
+                    }
+                  }
+                }
+                
+                if (latlngs.length < 3) {
+                  console.warn('Houston Neighborhood polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+                
+                const isContaining = neighborhood.isContaining;
+                const color = isContaining ? '#10b981' : '#34d399'; // Green for neighborhoods
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+                
+                const nameLabel = neighborhood.nameLabel || neighborhood.NAME_LABEL || neighborhood.name_label || null;
+                const nname = neighborhood.nname || neighborhood.NNAME || null;
+                const name1 = neighborhood.name1 || neighborhood.NAME_1 || null;
+                const name2 = neighborhood.name2 || neighborhood.NAME_2 || null;
+                const codeNum = neighborhood.codeNum || neighborhood.CODE_NUM || neighborhood.code_num || null;
+                const comment = neighborhood.comment || neighborhood.COMMENT || null;
+                const distance = neighborhood.distance_miles !== null && neighborhood.distance_miles !== undefined ? neighborhood.distance_miles : 0;
+                
+                const displayName = nameLabel || nname || name1 || name2 || 'Unknown Neighborhood';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🏘️ Containing Neighborhood' : '🏘️ Nearby Neighborhood'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${displayName ? `<div><strong>Neighborhood:</strong> ${displayName}</div>` : ''}
+                      ${nname ? `<div><strong>NNAME:</strong> ${nname}</div>` : ''}
+                      ${codeNum !== null ? `<div><strong>Code Number:</strong> ${codeNum}</div>` : ''}
+                      ${comment ? `<div><strong>Comment:</strong> ${comment}</div>` : ''}
+                      ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this neighborhood</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all neighborhood attributes (excluding internal fields)
+                const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'nname', 'NNAME', 'nameLabel', 'NAME_LABEL', 'name_label', 'name1', 'NAME_1', 'name_1', 'name2', 'NAME_2', 'name_2', 'codeNum', 'CODE_NUM', 'code_num', 'comment', 'COMMENT', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining', '__calculatedDistance'];
+                Object.entries(neighborhood).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value) && key !== 'the_geom') {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                // Store metadata for tabbed popup
+                (polygon as any).__layerType = 'houston_neighborhoods';
+                (polygon as any).__layerTitle = 'Houston Neighborhoods';
+                (polygon as any).__popupContent = popupContent;
+                polygon.addTo(primary);
+                
+                // Extend bounds to include polygon
+                const polygonBounds = L.latLngBounds(latlngs);
+                bounds.extend(polygonBounds);
+                
+                neighborhoodCount++;
+              } catch (error) {
+                console.error('Error drawing Houston Neighborhood polygon:', error);
+              }
+            }
+          });
+          
+          if (neighborhoodCount > 0) {
+            if (!legendAccumulator['houston_neighborhoods']) {
+              legendAccumulator['houston_neighborhoods'] = {
+                icon: '🏘️',
+                color: '#10b981',
+                title: 'Houston Neighborhoods',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_neighborhoods'].count += neighborhoodCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Neighborhoods:', error);
+      }
+
+      // Draw Houston Neighborhoods 2021 as polygons on the map
+      try {
+        if (enrichments.houston_neighborhoods_2021_all && Array.isArray(enrichments.houston_neighborhoods_2021_all)) {
+          let neighborhoodCount = 0;
+          enrichments.houston_neighborhoods_2021_all.forEach((neighborhood: any) => {
+            // Check if geometry is available (ESRI polygon geometry)
+            if (neighborhood.geometry && neighborhood.geometry.rings && Array.isArray(neighborhood.geometry.rings)) {
+              try {
+                // Convert ESRI rings to Leaflet latlngs
+                const rings = neighborhood.geometry.rings;
+                const latlngs: [number, number][] = [];
+                
+                // Use the first ring (outer boundary)
+                if (rings[0] && Array.isArray(rings[0])) {
+                  for (const coord of rings[0]) {
+                    if (Array.isArray(coord) && coord.length >= 2) {
+                      // ESRI geometry might be in Web Mercator or WGS84
+                      // Convert if needed
+                      let lat: number;
+                      let lon: number;
+                      
+                      if (Math.abs(coord[0]) > 180 || Math.abs(coord[1]) > 90) {
+                        // Web Mercator to WGS84
+                        lon = (coord[0] / 20037508.34) * 180;
+                        let latRad = (coord[1] / 20037508.34) * 180;
+                        lat = 180 / Math.PI * (2 * Math.atan(Math.exp(latRad * Math.PI / 180)) - Math.PI / 2);
+                      } else {
+                        // Already WGS84
+                        lon = coord[0];
+                        lat = coord[1];
+                      }
+                      
+                      latlngs.push([lat, lon]);
+                    }
+                  }
+                }
+                
+                if (latlngs.length < 3) {
+                  console.warn('Houston Neighborhood 2021 polygon has less than 3 coordinates, skipping');
+                  return;
+                }
+                
+                const isContaining = neighborhood.isContaining;
+                const color = isContaining ? '#10b981' : '#34d399'; // Green for neighborhoods
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+                
+                const objName = neighborhood.objName || neighborhood.OBJ_NAME || null;
+                const objTyp = neighborhood.objTyp || neighborhood.OBJ_TYP || null;
+                const objSubtcd = neighborhood.objSubtcd || neighborhood.OBJ_SUBTCD || null;
+                const objSubtyp = neighborhood.objSubtyp || neighborhood.OBJ_SUBTYP || null;
+                const country = neighborhood.country || neighborhood.COUNTRY || null;
+                const metro = neighborhood.metro || neighborhood.METRO || null;
+                const reldate = neighborhood.reldate || neighborhood.RELDATE || null;
+                const objArea = neighborhood.objArea || neighborhood.OBJ_AREA || null;
+                const distance = neighborhood.distance_miles !== null && neighborhood.distance_miles !== undefined ? neighborhood.distance_miles : 0;
+                
+                const displayName = objName || objTyp || 'Unknown Neighborhood';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🏘️ Containing Neighborhood' : '🏘️ Nearby Neighborhood'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${displayName ? `<div><strong>Neighborhood:</strong> ${displayName}</div>` : ''}
+                      ${objTyp ? `<div><strong>Type:</strong> ${objTyp}</div>` : ''}
+                      ${objSubtcd ? `<div><strong>Sub Type Code:</strong> ${objSubtcd}</div>` : ''}
+                      ${objSubtyp ? `<div><strong>Sub Type:</strong> ${objSubtyp}</div>` : ''}
+                      ${metro ? `<div><strong>Metro:</strong> ${metro}</div>` : ''}
+                      ${reldate ? `<div><strong>Release Date:</strong> ${reldate}</div>` : ''}
+                      ${objArea !== null ? `<div><strong>Area:</strong> ${objArea.toLocaleString()}</div>` : ''}
+                      ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this neighborhood</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all neighborhood attributes (excluding internal fields)
+                const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'FID', 'fid', 'objName', 'OBJ_NAME', 'objTyp', 'OBJ_TYP', 'objSubtcd', 'OBJ_SUBTCD', 'objSubtyp', 'OBJ_SUBTYP', 'country', 'COUNTRY', 'metro', 'METRO', 'lat', 'LAT', 'lon', 'LON', 'reldate', 'RELDATE', 'objArea', 'OBJ_AREA', 'geometry', 'distance_miles', 'GlobalID', 'GLOBALID', 'isContaining', '__calculatedDistance'];
+                Object.entries(neighborhood).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value) && key !== 'the_geom') {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                // Store metadata for tabbed popup
+                (polygon as any).__layerType = 'houston_neighborhoods_2021';
+                (polygon as any).__layerTitle = 'Houston Neighborhoods';
+                (polygon as any).__popupContent = popupContent;
+                polygon.addTo(primary);
+                
+                // Extend bounds to include polygon
+                const polygonBounds = L.latLngBounds(latlngs);
+                bounds.extend(polygonBounds);
+                
+                neighborhoodCount++;
+              } catch (error) {
+                console.error('Error drawing Houston Neighborhood 2021 polygon:', error);
+              }
+            }
+          });
+          
+          if (neighborhoodCount > 0) {
+            if (!legendAccumulator['houston_neighborhoods_2021']) {
+              legendAccumulator['houston_neighborhoods_2021'] = {
+                icon: '🏘️',
+                color: '#10b981',
+                title: 'Houston Neighborhoods',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_neighborhoods_2021'].count += neighborhoodCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Neighborhoods 2021:', error);
       }
 
       // Draw LA County Historic Cultural Monuments as polygons on the map

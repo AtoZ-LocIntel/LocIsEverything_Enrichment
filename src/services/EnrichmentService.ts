@@ -109,6 +109,8 @@ import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
 import { getNYCWaterfrontAccessData } from '../adapters/nycWaterfrontAccess';
 import { getNYCBusinessImprovementDistrictsData } from '../adapters/nycBusinessImprovementDistricts';
 import { getNYCCommunityDistrictsData } from '../adapters/nycCommunityDistricts';
+import { getHoustonNeighborhoodsData } from '../adapters/houstonNeighborhoods';
+import { getHoustonNeighborhoods2021Data } from '../adapters/houstonNeighborhoods2021';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2161,6 +2163,14 @@ export class EnrichmentService {
       // NYC Community Districts - Point-in-polygon and proximity query (max 5 miles)
       case 'nyc_community_districts':
         return await this.getNYCCommunityDistricts(lat, lon, radius);
+      
+      // Houston Neighborhoods - Point-in-polygon and proximity query (max 10 miles)
+      case 'houston_neighborhoods':
+        return await this.getHoustonNeighborhoods(lat, lon, radius);
+      
+      // Houston Neighborhoods 2021 - Point-in-polygon and proximity query (max 10 miles)
+      case 'houston_neighborhoods_2021':
+        return await this.getHoustonNeighborhoods2021(lat, lon, radius);
       
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
@@ -10204,6 +10214,137 @@ out center;`;
         nyc_community_districts_containing_message: 'Error querying Community Districts',
         nyc_community_districts_count: 0,
         nyc_community_districts_all: []
+      };
+    }
+  }
+
+  private async getHoustonNeighborhoods(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏘️ Fetching Houston Neighborhoods data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 10 miles
+      const cappedRadius = radius ? Math.min(radius, 10.0) : undefined;
+      
+      const neighborhoods = await getHoustonNeighborhoodsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (neighborhoods.length === 0) {
+        result.houston_neighborhoods_containing = null;
+        result.houston_neighborhoods_containing_message = 'No neighborhood found containing this location';
+        result.houston_neighborhoods_count = 0;
+        result.houston_neighborhoods_all = [];
+      } else {
+        // Get the first containing neighborhood
+        const containingNeighborhood = neighborhoods.find(n => n.isContaining) || neighborhoods[0];
+        
+        if (containingNeighborhood && containingNeighborhood.isContaining) {
+          result.houston_neighborhoods_containing = containingNeighborhood.nameLabel || containingNeighborhood.nname || containingNeighborhood.name1 || 'Unknown Neighborhood';
+          result.houston_neighborhoods_containing_message = `Location is within neighborhood: ${containingNeighborhood.nameLabel || containingNeighborhood.nname || containingNeighborhood.name1 || 'Unknown'}`;
+        } else {
+          result.houston_neighborhoods_containing = null;
+          result.houston_neighborhoods_containing_message = 'No neighborhood found containing this location';
+        }
+        
+        result.houston_neighborhoods_count = neighborhoods.length;
+        result.houston_neighborhoods_all = neighborhoods.map(neighborhood => ({
+          ...neighborhood.attributes,
+          objectId: neighborhood.objectId,
+          nname: neighborhood.nname,
+          nameLabel: neighborhood.nameLabel,
+          name1: neighborhood.name1,
+          name2: neighborhood.name2,
+          codeNum: neighborhood.codeNum,
+          comment: neighborhood.comment,
+          geometry: neighborhood.geometry,
+          distance_miles: neighborhood.distance_miles,
+          isContaining: neighborhood.isContaining
+        }));
+        
+        result.houston_neighborhoods_summary = `Found ${neighborhoods.length} neighborhood(s)${cappedRadius ? ` within ${cappedRadius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ Houston Neighborhoods data processed:`, {
+        totalCount: result.houston_neighborhoods_count,
+        containing: result.houston_neighborhoods_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Neighborhoods data:', error);
+      return {
+        houston_neighborhoods_containing: null,
+        houston_neighborhoods_containing_message: 'Error querying neighborhoods',
+        houston_neighborhoods_count: 0,
+        houston_neighborhoods_all: []
+      };
+    }
+  }
+
+  private async getHoustonNeighborhoods2021(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏘️ Fetching Houston Neighborhoods 2021 data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 10 miles
+      const cappedRadius = radius ? Math.min(radius, 10.0) : undefined;
+      
+      const neighborhoods = await getHoustonNeighborhoods2021Data(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (neighborhoods.length === 0) {
+        result.houston_neighborhoods_2021_containing = null;
+        result.houston_neighborhoods_2021_containing_message = 'No neighborhood found containing this location';
+        result.houston_neighborhoods_2021_count = 0;
+        result.houston_neighborhoods_2021_all = [];
+      } else {
+        // Get the first containing neighborhood
+        const containingNeighborhood = neighborhoods.find(n => n.isContaining) || neighborhoods[0];
+        
+        if (containingNeighborhood && containingNeighborhood.isContaining) {
+          result.houston_neighborhoods_2021_containing = containingNeighborhood.objName || containingNeighborhood.objTyp || 'Unknown Neighborhood';
+          result.houston_neighborhoods_2021_containing_message = `Location is within neighborhood: ${containingNeighborhood.objName || containingNeighborhood.objTyp || 'Unknown'}`;
+        } else {
+          result.houston_neighborhoods_2021_containing = null;
+          result.houston_neighborhoods_2021_containing_message = 'No neighborhood found containing this location';
+        }
+        
+        result.houston_neighborhoods_2021_count = neighborhoods.length;
+        result.houston_neighborhoods_2021_all = neighborhoods.map(neighborhood => ({
+          ...neighborhood.attributes,
+          objectId: neighborhood.objectId,
+          objId: neighborhood.objId,
+          objName: neighborhood.objName,
+          objTyp: neighborhood.objTyp,
+          objSubtcd: neighborhood.objSubtcd,
+          objSubtyp: neighborhood.objSubtyp,
+          country: neighborhood.country,
+          metro: neighborhood.metro,
+          lat: neighborhood.lat,
+          lon: neighborhood.lon,
+          reldate: neighborhood.reldate,
+          objArea: neighborhood.objArea,
+          geometry: neighborhood.geometry,
+          distance_miles: neighborhood.distance_miles,
+          isContaining: neighborhood.isContaining
+        }));
+        
+        result.houston_neighborhoods_2021_summary = `Found ${neighborhoods.length} neighborhood(s)${cappedRadius ? ` within ${cappedRadius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ Houston Neighborhoods 2021 data processed:`, {
+        totalCount: result.houston_neighborhoods_2021_count,
+        containing: result.houston_neighborhoods_2021_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Neighborhoods 2021 data:', error);
+      return {
+        houston_neighborhoods_2021_containing: null,
+        houston_neighborhoods_2021_containing_message: 'Error querying neighborhoods',
+        houston_neighborhoods_2021_count: 0,
+        houston_neighborhoods_2021_all: []
       };
     }
   }

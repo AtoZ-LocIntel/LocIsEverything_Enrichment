@@ -360,6 +360,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nyc_waterfront_paws_all' ||
         key === 'nyc_business_improvement_districts_all' ||
         key === 'nyc_community_districts_all' ||
+        key === 'houston_neighborhoods_all' ||
+        key === 'houston_neighborhoods_2021_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -6259,6 +6261,125 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone
           attributesJson,
           'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'houston_neighborhoods_all' && Array.isArray(value)) {
+      value.forEach((neighborhood: any) => {
+        const nameLabel = neighborhood.nameLabel || neighborhood.NAME_LABEL || neighborhood.name_label || '';
+        const nname = neighborhood.nname || neighborhood.NNAME || '';
+        const name1 = neighborhood.name1 || neighborhood.NAME_1 || '';
+        const name2 = neighborhood.name2 || neighborhood.NAME_2 || '';
+        const displayName = nameLabel || nname || name1 || name2 || 'Unknown Neighborhood';
+        const codeNum = neighborhood.codeNum !== null && neighborhood.codeNum !== undefined ? neighborhood.codeNum.toString() : (neighborhood.CODE_NUM !== null && neighborhood.CODE_NUM !== undefined ? neighborhood.CODE_NUM.toString() : '');
+        const comment = neighborhood.comment || neighborhood.COMMENT || '';
+        const distance = neighborhood.distance_miles !== null && neighborhood.distance_miles !== undefined ? neighborhood.distance_miles.toFixed(2) : (neighborhood.isContaining ? '0.00' : '');
+        const lat = neighborhood.latitude || neighborhood.lat || neighborhood.LATITUDE || neighborhood.LAT || '';
+        const lon = neighborhood.longitude || neighborhood.lon || neighborhood.LONGITUDE || neighborhood.LON || neighborhood.lng || neighborhood.LNG || '';
+
+        const allAttributes = { ...neighborhood };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.nname;
+        delete allAttributes.NNAME;
+        delete allAttributes.nameLabel;
+        delete allAttributes.NAME_LABEL;
+        delete allAttributes.name_label;
+        delete allAttributes.name1;
+        delete allAttributes.NAME_1;
+        delete allAttributes.name_1;
+        delete allAttributes.name2;
+        delete allAttributes.NAME_2;
+        delete allAttributes.name_2;
+        delete allAttributes.codeNum;
+        delete allAttributes.CODE_NUM;
+        delete allAttributes.code_num;
+        delete allAttributes.comment;
+        delete allAttributes.COMMENT;
+        delete allAttributes.latitude;
+        delete allAttributes.lat;
+        delete allAttributes.LATITUDE;
+        delete allAttributes.LAT;
+        delete allAttributes.longitude;
+        delete allAttributes.lon;
+        delete allAttributes.LONGITUDE;
+        delete allAttributes.LON;
+        delete allAttributes.lng;
+        delete allAttributes.LNG;
+        delete allAttributes.__calculatedDistance;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          'HoustonCO Neighborhoods',
+          displayName,
+          codeNum || 'N/A',
+          comment || 'N/A',
+          distance || '0.00',
+          isContaining,
+          lat || '',
+          lon || '',
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_neighborhoods_2021_all' && Array.isArray(value)) {
+      value.forEach((neighborhood: any) => {
+        const objName = neighborhood.objName || neighborhood.OBJ_NAME || '';
+        const objTyp = neighborhood.objTyp || neighborhood.OBJ_TYP || '';
+        const objSubtcd = neighborhood.objSubtcd || neighborhood.OBJ_SUBTCD || '';
+        const objSubtyp = neighborhood.objSubtyp || neighborhood.OBJ_SUBTYP || '';
+        const country = neighborhood.country || neighborhood.COUNTRY || '';
+        const metro = neighborhood.metro || neighborhood.METRO || '';
+        const reldate = neighborhood.reldate || neighborhood.RELDATE || '';
+        const objArea = neighborhood.objArea !== null && neighborhood.objArea !== undefined ? neighborhood.objArea.toString() : '';
+        const distance = neighborhood.distance_miles !== null && neighborhood.distance_miles !== undefined ? neighborhood.distance_miles.toFixed(2) : '';
+        const isContaining = neighborhood.isContaining ? 'Yes' : 'No';
+        const allAttributes = { ...neighborhood };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.objName;
+        delete allAttributes.OBJ_NAME;
+        delete allAttributes.objTyp;
+        delete allAttributes.OBJ_TYP;
+        delete allAttributes.objSubtcd;
+        delete allAttributes.OBJ_SUBTCD;
+        delete allAttributes.objSubtyp;
+        delete allAttributes.OBJ_SUBTYP;
+        delete allAttributes.country;
+        delete allAttributes.COUNTRY;
+        delete allAttributes.metro;
+        delete allAttributes.METRO;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.lon;
+        delete allAttributes.LON;
+        delete allAttributes.reldate;
+        delete allAttributes.RELDATE;
+        delete allAttributes.objArea;
+        delete allAttributes.OBJ_AREA;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          'Houston Neighborhoods',
+          objName || 'N/A',
+          objTyp || 'N/A',
+          objSubtcd || 'N/A',
+          objSubtyp || 'N/A',
+          country || 'N/A',
+          metro || 'N/A',
+          reldate || 'N/A',
+          objArea || 'N/A',
+          distance || '0.00',
+          isContaining,
+          '', // Address
+          '', // Phone
+          attributesJson,
+          'City of Houston'
         ]);
       });
     } else if (key === 'la_county_historic_cultural_monuments_all' && Array.isArray(value)) {
