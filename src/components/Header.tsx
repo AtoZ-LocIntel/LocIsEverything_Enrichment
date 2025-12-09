@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw, Bus, Heart } from 'lucide-react';
-import AdminPanel from './AdminPanel';
+import AddSourceForm from './AddSourceForm';
 import DonateModal from './DonateModal';
 
 interface HeaderProps {
@@ -9,7 +9,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
   const [showDocs, setShowDocs] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false);
+  const [showAddSource, setShowAddSource] = useState(false);
   const [showDonate, setShowDonate] = useState(false);
 
   const handleResetApp = () => {
@@ -134,11 +134,11 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                 Data Sources
               </button>
               <button 
-                onClick={() => setShowAdmin(true)}
-                className="text-purple-300 hover:text-purple-200 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-purple-600 hover:border-purple-500"
+                onClick={() => setShowAddSource(true)}
+                className="text-blue-300 hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-blue-600 hover:border-blue-500"
               >
-                <span className="mr-2">🔒</span>
-                Admin
+                <span className="mr-2">➕</span>
+                ADD A SOURCE
               </button>
               <button 
                 onClick={() => setShowDonate(true)}
@@ -806,9 +806,9 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
         </div>
       )}
 
-      {/* Admin Panel Modal */}
-      {showAdmin && (
-        <AdminPanel onClose={() => setShowAdmin(false)} />
+      {/* Add A Source Modal */}
+      {showAddSource && (
+        <AddSourceForm onClose={() => setShowAddSource(false)} />
       )}
 
       {/* Donate Modal */}
