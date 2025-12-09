@@ -30,26 +30,6 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 /**
- * Check if a point is inside a polygon
- */
-function isPointInPolygon(point: [number, number], polygon: number[][][]): boolean {
-  const [x, y] = point;
-  let inside = false;
-  
-  for (const ring of polygon) {
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      const [xi, yi] = ring[i];
-      const [xj, yj] = ring[j];
-      
-      const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
-    }
-  }
-  
-  return inside;
-}
-
-/**
  * Calculate centroid of a polygon ring
  */
 function calculatePolygonCentroid(ring: number[][]): [number, number] {

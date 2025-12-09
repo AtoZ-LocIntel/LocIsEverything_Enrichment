@@ -12339,7 +12339,7 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                 `;
                 
-                polygon.bindPopup(popupContent, { maxWidth: 400, autoOpen: false });
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
                 // Store metadata for tabbed popup
                 (polygon as any).__layerType = 'nyc_business_improvement_districts';
                 (polygon as any).__layerTitle = 'NYC Business Improvement Districts';
@@ -12396,7 +12396,7 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                 `;
                 
-                marker.bindPopup(popupContent, { maxWidth: 400, autoOpen: false });
+                marker.bindPopup(popupContent, { maxWidth: 400 });
                 // Store metadata for tabbed popup
                 (marker as any).__layerType = 'nyc_business_improvement_districts';
                 (marker as any).__layerTitle = 'NYC Business Improvement Districts';
@@ -12515,7 +12515,7 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                 `;
                 
-                polygon.bindPopup(popupContent, { maxWidth: 400, autoOpen: false });
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
                 // Store metadata for tabbed popup
                 (polygon as any).__layerType = 'nyc_community_districts';
                 (polygon as any).__layerTitle = 'NYC Community Districts';
