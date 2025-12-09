@@ -6156,7 +6156,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     } else if (key === 'nyc_business_improvement_districts_all' && Array.isArray(value)) {
       value.forEach((bid: any) => {
         const name = bid.name || bid.bid_name || bid.bidName || bid.BID_NAME || bid.NAME || bid.Name || 'Unknown BID';
-        const borough = bid.borough || bid.Borough || bid.BOROUGH || '';
         const distance = bid.distance_miles !== null && bid.distance_miles !== undefined ? bid.distance_miles.toFixed(2) : (bid.isContaining ? '0.00' : '');
         const lat = bid.latitude || bid.lat || bid.LATITUDE || bid.LAT || '';
         const lon = bid.longitude || bid.lon || bid.LONGITUDE || bid.LON || bid.lng || bid.LNG || '';
