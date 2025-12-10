@@ -7089,6 +7089,17 @@ out center;`;
       // Log first facility structure for debugging
       if (facilities.length > 0) {
         console.log(`🔍 Sample facility structure (first facility):`, JSON.stringify(facilities[0], null, 2));
+        console.log(`🔍 First facility field names:`, Object.keys(facilities[0]).join(', '));
+        // Check for common coordinate field patterns
+        const firstFacility = facilities[0];
+        Object.keys(firstFacility).forEach(key => {
+          const val = firstFacility[key];
+          if (key.toLowerCase().includes('lat') || key.toLowerCase().includes('lon') || 
+              key.toLowerCase().includes('lng') || key.toLowerCase().includes('coord') ||
+              key.toLowerCase() === 'x' || key.toLowerCase() === 'y') {
+            console.log(`  📍 Found potential coordinate field "${key}":`, val);
+          }
+        });
       }
       
       // Process facilities and calculate distances
@@ -7147,46 +7158,58 @@ out center;`;
           };
         } else {
           const allFields = Object.keys(facility);
-          console.warn(`⚠️  Facility ${index} missing valid coordinates. Available top-level fields (${allFields.length}):`, allFields);
+          // Use join to avoid console collapsing the array
+          console.warn(`⚠️  Facility ${index} missing valid coordinates. Available top-level fields (${allFields.length}):`, allFields.join(', '));
           
           // Look for any field that might contain coordinates
           const potentialCoordFields = allFields.filter(f => 
             f.toLowerCase().includes('lat') || 
             f.toLowerCase().includes('lon') || 
             f.toLowerCase().includes('lng') ||
-            f.toLowerCase().includes('y') ||
-            f.toLowerCase().includes('x') ||
-            f.toLowerCase() === 'coord'
+            f.toLowerCase().includes('coord') ||
+            (f.toLowerCase() === 'y' && typeof facility[f] === 'number') ||
+            (f.toLowerCase() === 'x' && typeof facility[f] === 'number')
           );
           if (potentialCoordFields.length > 0) {
-            console.warn(`    Potential coordinate fields found:`, potentialCoordFields);
+            console.warn(`    📍 Potential coordinate fields found:`, potentialCoordFields.join(', '));
             potentialCoordFields.forEach(field => {
-              console.warn(`      ${field}:`, facility[field]);
+              console.warn(`      ${field}:`, facility[field], typeof facility[field]);
             });
+          } else {
+            // Log all fields and their types to help debug
+            if (index === 0) {
+              console.warn(`    🔍 All field names and types (facility 0):`);
+              allFields.forEach(field => {
+                const val = facility[field];
+                const valType = typeof val;
+                const preview = valType === 'object' && val !== null ? JSON.stringify(val).substring(0, 100) : String(val).substring(0, 100);
+                console.warn(`      ${field}: [${valType}] ${preview}`);
+              });
+            }
           }
           
           if (facility.attributes) {
             const attrFields = Object.keys(facility.attributes);
-            console.warn(`    Attributes keys (${attrFields.length}):`, attrFields);
+            console.warn(`    Attributes keys (${attrFields.length}):`, attrFields.join(', '));
             const potentialAttrCoords = attrFields.filter(f => 
               f.toLowerCase().includes('lat') || 
               f.toLowerCase().includes('lon') || 
               f.toLowerCase().includes('lng') ||
-              f.toLowerCase().includes('y') ||
-              f.toLowerCase().includes('x') ||
-              f.toLowerCase() === 'coord'
+              f.toLowerCase().includes('coord') ||
+              (f.toLowerCase() === 'y' && typeof facility.attributes[f] === 'number') ||
+              (f.toLowerCase() === 'x' && typeof facility.attributes[f] === 'number')
             );
             if (potentialAttrCoords.length > 0) {
-              console.warn(`    Potential coordinate fields in attributes:`, potentialAttrCoords);
+              console.warn(`    📍 Potential coordinate fields in attributes:`, potentialAttrCoords.join(', '));
               potentialAttrCoords.forEach(field => {
-                console.warn(`      attributes.${field}:`, facility.attributes[field]);
+                console.warn(`      attributes.${field}:`, facility.attributes[field], typeof facility.attributes[field]);
               });
             }
           }
           
           // Log the actual facility object for the first facility to see full structure
           if (index === 0) {
-            console.warn(`    🔍 Facility 0 full structure:`, JSON.stringify(facility, null, 2));
+            console.warn(`    🔍 Facility 0 full JSON structure:`, JSON.stringify(facility, null, 2));
           }
         }
         
