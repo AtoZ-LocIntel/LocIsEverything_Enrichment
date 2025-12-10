@@ -7025,27 +7025,36 @@ out center;`;
       }
       
       // Build URL with correct query parameters
-      // Use x, y, and radius parameters for coordinate-based search
+      // Use x, y, radius, and apikey parameters for coordinate-based search
       const url = new URL(apiUrl);
+      const apiKey = import.meta.env.VITE_USDA_LOCAL_FOOD_API_KEY || '';
+      if (!apiKey) {
+        console.warn('⚠️ USDA Local Food Portal API key not found. Set VITE_USDA_LOCAL_FOOD_API_KEY environment variable.');
+        const foodTypeId = this.getUSDAFoodTypeId(foodType);
+        return {
+          [`poi_usda_${foodTypeId}_count`]: 0,
+          [`poi_usda_${foodTypeId}_facilities`]: [],
+          [`poi_usda_${foodTypeId}_error`]: 'USDA API key not configured. Please set VITE_USDA_LOCAL_FOOD_API_KEY environment variable.',
+          [`poi_usda_${foodTypeId}_status`]: 'API key missing'
+        };
+      }
+      url.searchParams.set('apikey', apiKey);
       url.searchParams.set('x', lon.toString()); // longitude
       url.searchParams.set('y', lat.toString()); // latitude
       url.searchParams.set('radius', Math.min(radiusMiles, 100).toString()); // max 100 miles
       
-      console.log(`🔗 USDA API URL: ${url.toString()}`);
+      // Log URL without exposing the API key
+      const safeUrl = url.toString().replace(new RegExp(`apikey=${apiKey}`, 'g'), 'apikey=REDACTED');
+      console.log(`🔗 USDA API URL: ${safeUrl}`);
       
-      const response = await fetch(url.toString(), {
+      // Use fetchJSONSmart to handle CORS and retries
+      const data = await fetchJSONSmart(url.toString(), {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       });
-      
-      if (!response.ok) {
-        throw new Error(`USDA API HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
       console.log(`📊 USDA ${foodType} API response:`, data);
       
       if (!data || !Array.isArray(data)) {
