@@ -335,6 +335,9 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'blm_national_sheep_goat_authorized_grazing': { icon: '🐐', color: '#d97706', title: 'BLM National Sheep and Goat Authorized Grazing Allotments' },
   'blm_national_nlcs_monuments_ncas': { icon: '🏛️', color: '#9333ea', title: 'BLM National NLCS National Monuments and National Conservation Areas' },
   'blm_national_wild_horse_burro_herd_areas': { icon: '🐴', color: '#7c2d12', title: 'BLM National Wild Horse and Burro Herd Areas' },
+  'blm_national_recreation_sites': { icon: '🏕️', color: '#059669', title: 'BLM National Recreation Site Polygons' },
+  'blm_national_fire_perimeters': { icon: '🔥', color: '#dc2626', title: 'BLM National Fire Perimeters' },
+  'blm_national_lwcf': { icon: '💧', color: '#0284c7', title: 'BLM National Land and Water Conservation Fund (LWCF) Polygons' },
   
   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
@@ -547,6 +550,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'blm_national_sheep_goat_authorized_grazing_all' || // Skip BLM National Sheep/Goat Authorized Grazing Allotments array (handled separately for map drawing)
     key === 'blm_national_nlcs_monuments_ncas_all' || // Skip BLM National NLCS Monuments/NCAs array (handled separately for map drawing)
     key === 'blm_national_wild_horse_burro_herd_areas_all' || // Skip BLM National Wild Horse/Burro Herd Areas array (handled separately for map drawing)
+    key === 'blm_national_recreation_sites_all' || // Skip BLM National Recreation Sites array (handled separately for map drawing)
+    key === 'blm_national_fire_perimeters_all' || // Skip BLM National Fire Perimeters array (handled separately for map drawing)
+    key === 'blm_national_lwcf_all' || // Skip BLM National LWCF Polygons array (handled separately for map drawing)
     key === 'ma_regional_planning_agencies_all' || // Skip MA Regional Planning Agencies array (handled separately for map drawing)
     key === 'ma_acecs_all' || // Skip MA ACECs array (handled separately for map drawing)
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
@@ -14434,6 +14440,317 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing BLM National Wild Horse and Burro Herd Areas:', error);
+      }
+
+      // Draw BLM National Recreation Sites as polygons on the map
+      try {
+        if (enrichments.blm_national_recreation_sites_all && Array.isArray(enrichments.blm_national_recreation_sites_all)) {
+          let recreationSiteCount = 0;
+          enrichments.blm_national_recreation_sites_all.forEach((site: any) => {
+            if (site.geometry && site.geometry.rings && Array.isArray(site.geometry.rings)) {
+              try {
+                const rings = site.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('BLM Recreation Site polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = site.isContaining;
+                  const color = isContaining ? '#059669' : '#10b981'; // Green for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const siteName = site.fetName || site.FET_NAME || site.Fet_Name || 'Unknown Recreation Site';
+                  const fetSubtype = site.fetSubtype || site.FET_SUBTYPE || site.Fet_Subtype || null;
+                  const fetType = site.fetType !== null && site.fetType !== undefined ? site.fetType : null;
+                  const unitName = site.unitName || site.UNIT_NAME || site.Unit_Name || null;
+                  const adminState = site.adminState || site.ADMIN_ST || site.Admin_St || null;
+                  const gisAcres = site.gisAcres !== null && site.gisAcres !== undefined ? site.gisAcres : null;
+                  const description = site.description || site.DESCRIPTION || site.Description || null;
+                  const webLink = site.webLink || site.WEB_LINK || site.Web_Link || null;
+                  const siteId = site.objectId || site.OBJECTID || site.objectid || null;
+                  const distance = site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏕️ ${siteName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${fetSubtype ? `<div><strong>Type:</strong> ${fetSubtype}</div>` : ''}
+                        ${fetType !== null && fetType !== undefined ? `<div><strong>Feature Type:</strong> ${fetType}</div>` : ''}
+                        ${unitName ? `<div><strong>Unit Name:</strong> ${unitName}</div>` : ''}
+                        ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                        ${gisAcres !== null && gisAcres !== undefined ? `<div><strong>Acres:</strong> ${gisAcres.toFixed(2)}</div>` : ''}
+                        ${description ? `<div><strong>Description:</strong> ${description}</div>` : ''}
+                        ${webLink ? `<div><strong>Web Link:</strong> <a href="${webLink}" target="_blank" rel="noopener noreferrer">${webLink}</a></div>` : ''}
+                        ${siteId ? `<div><strong>Site ID:</strong> ${siteId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  recreationSiteCount++;
+                  
+                  // Extend map bounds
+                  const polygonBounds = polygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing BLM Recreation Site polygon:', error);
+              }
+            }
+          });
+          
+          if (recreationSiteCount > 0) {
+            if (!legendAccumulator['blm_national_recreation_sites']) {
+              legendAccumulator['blm_national_recreation_sites'] = {
+                icon: '🏕️',
+                color: '#059669',
+                title: 'BLM National Recreation Site Polygons',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_recreation_sites'].count += recreationSiteCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Recreation Sites:', error);
+      }
+
+      // Draw BLM National Fire Perimeters as polygons on the map
+      try {
+        if (enrichments.blm_national_fire_perimeters_all && Array.isArray(enrichments.blm_national_fire_perimeters_all)) {
+          let firePerimeterCount = 0;
+          enrichments.blm_national_fire_perimeters_all.forEach((perimeter: any) => {
+            if (perimeter.geometry && perimeter.geometry.rings && Array.isArray(perimeter.geometry.rings)) {
+              try {
+                const rings = perimeter.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  // rings[0] is the outer ring, rings[1+] are holes
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  // Validate outer ring
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('BLM Fire Perimeter outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = perimeter.isContaining;
+                  const color = isContaining ? '#dc2626' : '#ef4444'; // Red for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  // L.polygon can handle multiple rings (outer + holes) when passed as array of arrays
+                  // First array is outer ring, subsequent arrays are holes
+                  const firePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const incidentName = perimeter.incidentName || perimeter.INCDNT_NM || perimeter.Incdnt_Nm || 'Unknown Fire';
+                  const fireDiscoveryYear = perimeter.fireDiscoveryYear !== null && perimeter.fireDiscoveryYear !== undefined ? perimeter.fireDiscoveryYear.toString() : null;
+                  const fireDiscoveryDate = perimeter.fireDiscoveryDate || perimeter.FIRE_DSCVR_DT || null;
+                  const fireControlDate = perimeter.fireControlDate || perimeter.FIRE_CNTRL_DT || null;
+                  const fireCauseName = perimeter.fireCauseName || perimeter.FIRE_CAUSE_NM || perimeter.Fire_Cause_Nm || null;
+                  const gisAcres = perimeter.gisAcres !== null && perimeter.gisAcres !== undefined ? perimeter.gisAcres : null;
+                  const totalReportedAcres = perimeter.totalReportedAcres !== null && perimeter.totalReportedAcres !== undefined ? perimeter.totalReportedAcres : null;
+                  const adminState = perimeter.adminState || perimeter.ADMIN_ST || perimeter.Admin_St || null;
+                  const complexName = perimeter.complexName || perimeter.CMPLX_NM || perimeter.Cmplx_Nm || null;
+                  const uniqueFireId = perimeter.uniqueFireId || perimeter.UNQE_FIRE_ID || perimeter.Unqe_Fire_Id || null;
+                  const perimeterId = perimeter.objectId || perimeter.OBJECTID || perimeter.objectid || null;
+                  const distance = perimeter.distance_miles !== null && perimeter.distance_miles !== undefined ? perimeter.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🔥 ${incidentName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${fireDiscoveryYear ? `<div><strong>Discovery Year:</strong> ${fireDiscoveryYear}</div>` : ''}
+                        ${fireDiscoveryDate ? `<div><strong>Discovery Date:</strong> ${fireDiscoveryDate}</div>` : ''}
+                        ${fireControlDate ? `<div><strong>Control Date:</strong> ${fireControlDate}</div>` : ''}
+                        ${fireCauseName ? `<div><strong>Cause:</strong> ${fireCauseName}</div>` : ''}
+                        ${gisAcres !== null && gisAcres !== undefined ? `<div><strong>GIS Acres:</strong> ${gisAcres.toLocaleString()}</div>` : ''}
+                        ${totalReportedAcres !== null && totalReportedAcres !== undefined ? `<div><strong>Total Reported Acres:</strong> ${totalReportedAcres.toLocaleString()}</div>` : ''}
+                        ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                        ${complexName ? `<div><strong>Complex Name:</strong> ${complexName}</div>` : ''}
+                        ${uniqueFireId ? `<div><strong>Unique Fire ID:</strong> ${uniqueFireId}</div>` : ''}
+                        ${perimeterId ? `<div><strong>Perimeter ID:</strong> ${perimeterId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  firePolygon.bindPopup(popupContent);
+                  firePolygon.addTo(map);
+                  firePerimeterCount++;
+                  
+                  // Extend map bounds
+                  const polygonBounds = firePolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing BLM Fire Perimeter polygon:', error);
+              }
+            }
+          });
+          
+          if (firePerimeterCount > 0) {
+            if (!legendAccumulator['blm_national_fire_perimeters']) {
+              legendAccumulator['blm_national_fire_perimeters'] = {
+                icon: '🔥',
+                color: '#dc2626',
+                title: 'BLM National Fire Perimeters',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_fire_perimeters'].count += firePerimeterCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Fire Perimeters:', error);
+      }
+
+      // Draw BLM National Land and Water Conservation Fund (LWCF) Polygons as polygons on the map
+      try {
+        if (enrichments.blm_national_lwcf_all && Array.isArray(enrichments.blm_national_lwcf_all)) {
+          let lwcfCount = 0;
+          enrichments.blm_national_lwcf_all.forEach((polygon: any) => {
+            if (polygon.geometry && polygon.geometry.rings && Array.isArray(polygon.geometry.rings)) {
+              try {
+                const rings = polygon.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  // rings[0] is the outer ring, rings[1+] are holes
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  // Validate outer ring
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('BLM LWCF polygon outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = polygon.isContaining;
+                  const color = isContaining ? '#0284c7' : '#38bdf8'; // Blue for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  // L.polygon can handle multiple rings (outer + holes) when passed as array of arrays
+                  // First array is outer ring, subsequent arrays are holes
+                  const lwcfPolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const projectName = polygon.projectName || polygon.Prjt_Name || polygon.Prjt_Name || 'Unknown LWCF Project';
+                  const snFull = polygon.snFull || polygon.SN_Full || polygon.Sn_Full || null;
+                  const geoState = polygon.geoState || polygon.Geo_State || polygon.Geo_State || null;
+                  const refNum = polygon.refNum || polygon.Ref_Num || polygon.Ref_Num || null;
+                  const acqFund = polygon.acqFund || polygon.Acq_Fund || polygon.Acq_Fund || null;
+                  const fundYear = polygon.fundYear || polygon.Fund_Year || polygon.Fund_Year || null;
+                  const purpose = polygon.purpose || polygon.Purpose || polygon.Purpose || null;
+                  const areaAcq = polygon.areaAcq !== null && polygon.areaAcq !== undefined ? polygon.areaAcq : null;
+                  const paymentMade = polygon.paymentMade || polygon.Pmnt_Made || polygon.Pmnt_Made || null;
+                  const acqValue = polygon.acqValue || polygon.Acq_Value || polygon.Acq_Value || null;
+                  const deedSignDate = polygon.deedSignDate || polygon.Deed_Sign || null;
+                  const countyRec = polygon.countyRec || polygon.County_Rec || polygon.County_Rec || null;
+                  const administratingAgency = polygon.administratingAgency || polygon.Administrating_Agency || polygon.Administrating_Agency || null;
+                  const caseId = polygon.caseId !== null && polygon.caseId !== undefined ? polygon.caseId.toString() : null;
+                  const distance = polygon.distance_miles !== null && polygon.distance_miles !== undefined ? polygon.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        💧 ${projectName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${snFull ? `<div><strong>Serial Number:</strong> ${snFull}</div>` : ''}
+                        ${caseId ? `<div><strong>Case ID:</strong> ${caseId}</div>` : ''}
+                        ${geoState ? `<div><strong>State:</strong> ${geoState}</div>` : ''}
+                        ${refNum ? `<div><strong>Reference Number:</strong> ${refNum}</div>` : ''}
+                        ${acqFund ? `<div><strong>Acquisition Fund:</strong> ${acqFund}</div>` : ''}
+                        ${fundYear ? `<div><strong>Fund Year:</strong> ${fundYear}</div>` : ''}
+                        ${purpose ? `<div><strong>Purpose:</strong> ${purpose}</div>` : ''}
+                        ${areaAcq !== null && areaAcq !== undefined ? `<div><strong>Area Acquired:</strong> ${areaAcq.toFixed(2)} acres</div>` : ''}
+                        ${paymentMade ? `<div><strong>Payment Made:</strong> ${paymentMade}</div>` : ''}
+                        ${acqValue ? `<div><strong>Acquisition Value:</strong> ${acqValue}</div>` : ''}
+                        ${deedSignDate ? `<div><strong>Deed Signed:</strong> ${deedSignDate}</div>` : ''}
+                        ${countyRec ? `<div><strong>County:</strong> ${countyRec}</div>` : ''}
+                        ${administratingAgency ? `<div><strong>Administering Agency:</strong> ${administratingAgency}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  lwcfPolygon.bindPopup(popupContent);
+                  lwcfPolygon.addTo(map);
+                  lwcfCount++;
+                  
+                  // Extend map bounds
+                  const polygonBounds = lwcfPolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing BLM LWCF polygon:', error);
+              }
+            }
+          });
+          
+          if (lwcfCount > 0) {
+            if (!legendAccumulator['blm_national_lwcf']) {
+              legendAccumulator['blm_national_lwcf'] = {
+                icon: '💧',
+                color: '#0284c7',
+                title: 'BLM National Land and Water Conservation Fund (LWCF) Polygons',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_lwcf'].count += lwcfCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Land and Water Conservation Fund (LWCF) Polygons:', error);
       }
 
       // Draw Houston METRO Rail Stations as point markers on the map

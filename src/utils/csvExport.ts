@@ -382,6 +382,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'blm_national_sheep_goat_authorized_grazing_all' ||
         key === 'blm_national_nlcs_monuments_ncas_all' ||
         key === 'blm_national_wild_horse_burro_herd_areas_all' ||
+        key === 'blm_national_recreation_sites_all' ||
+        key === 'blm_national_fire_perimeters_all' ||
+        key === 'blm_national_lwcf_all' ||
         key === 'houston_tirz_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
@@ -7590,6 +7593,320 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           estHorsePop || 'N/A',
           estBurroPop || 'N/A',
           herdAreaId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_recreation_sites_all' && Array.isArray(value)) {
+      value.forEach((site: any) => {
+        const siteName = site.fetName || site.FET_NAME || site.Fet_Name || 'Unknown Recreation Site';
+        const fetSubtype = site.fetSubtype || site.FET_SUBTYPE || site.Fet_Subtype || '';
+        const fetType = site.fetType !== null && site.fetType !== undefined ? site.fetType.toString() : '';
+        const unitName = site.unitName || site.UNIT_NAME || site.Unit_Name || '';
+        const adminState = site.adminState || site.ADMIN_ST || site.Admin_St || '';
+        const gisAcres = site.gisAcres !== null && site.gisAcres !== undefined ? site.gisAcres.toFixed(2) : '';
+        const description = site.description || site.DESCRIPTION || site.Description || '';
+        const webLink = site.webLink || site.WEB_LINK || site.Web_Link || '';
+        const siteId = site.objectId || site.OBJECTID || site.objectid || '';
+        const isContaining = site.isContaining ? 'Yes' : 'No';
+        const distance = site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : (site.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (site.geometry && site.geometry.rings && site.geometry.rings.length > 0) {
+          const outerRing = site.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...site };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.fetType;
+        delete allAttributes.FET_TYPE;
+        delete allAttributes.fetSubtype;
+        delete allAttributes.FET_SUBTYPE;
+        delete allAttributes.Fet_Subtype;
+        delete allAttributes.fetName;
+        delete allAttributes.FET_NAME;
+        delete allAttributes.Fet_Name;
+        delete allAttributes.admUnitCode;
+        delete allAttributes.ADM_UNIT_CD;
+        delete allAttributes.Adm_Unit_Cd;
+        delete allAttributes.adminState;
+        delete allAttributes.ADMIN_ST;
+        delete allAttributes.Admin_St;
+        delete allAttributes.gisAcres;
+        delete allAttributes.GIS_ACRES;
+        delete allAttributes.description;
+        delete allAttributes.DESCRIPTION;
+        delete allAttributes.Description;
+        delete allAttributes.webLink;
+        delete allAttributes.WEB_LINK;
+        delete allAttributes.Web_Link;
+        delete allAttributes.photoLink;
+        delete allAttributes.PHOTO_LINK;
+        delete allAttributes.Photo_Link;
+        delete allAttributes.unitName;
+        delete allAttributes.UNIT_NAME;
+        delete allAttributes.Unit_Name;
+        delete allAttributes.source;
+        delete allAttributes.SOURCE;
+        delete allAttributes.webDisplay;
+        delete allAttributes.WEB_DISPLAY;
+        delete allAttributes.Web_Display;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_Recreation_Sites',
+          siteName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          fetSubtype || 'N/A',
+          fetType || 'N/A',
+          unitName || 'N/A',
+          adminState || 'N/A',
+          gisAcres || 'N/A',
+          description || 'N/A',
+          webLink || 'N/A',
+          siteId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_fire_perimeters_all' && Array.isArray(value)) {
+      value.forEach((perimeter: any) => {
+        const incidentName = perimeter.incidentName || perimeter.INCDNT_NM || perimeter.Incdnt_Nm || 'Unknown Fire';
+        const fireDiscoveryYear = perimeter.fireDiscoveryYear !== null && perimeter.fireDiscoveryYear !== undefined ? perimeter.fireDiscoveryYear.toString() : '';
+        const fireDiscoveryDate = perimeter.fireDiscoveryDate || perimeter.FIRE_DSCVR_DT || '';
+        const fireControlDate = perimeter.fireControlDate || perimeter.FIRE_CNTRL_DT || '';
+        const fireCauseName = perimeter.fireCauseName || perimeter.FIRE_CAUSE_NM || perimeter.Fire_Cause_Nm || '';
+        const gisAcres = perimeter.gisAcres !== null && perimeter.gisAcres !== undefined ? perimeter.gisAcres.toFixed(2) : '';
+        const totalReportedAcres = perimeter.totalReportedAcres !== null && perimeter.totalReportedAcres !== undefined ? perimeter.totalReportedAcres.toFixed(2) : '';
+        const adminState = perimeter.adminState || perimeter.ADMIN_ST || perimeter.Admin_St || '';
+        const complexName = perimeter.complexName || perimeter.CMPLX_NM || perimeter.Cmplx_Nm || '';
+        const uniqueFireId = perimeter.uniqueFireId || perimeter.UNQE_FIRE_ID || perimeter.Unqe_Fire_Id || '';
+        const perimeterId = perimeter.objectId || perimeter.OBJECTID || perimeter.objectid || '';
+        const isContaining = perimeter.isContaining ? 'Yes' : 'No';
+        const distance = perimeter.distance_miles !== null && perimeter.distance_miles !== undefined ? perimeter.distance_miles.toFixed(2) : (perimeter.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (perimeter.geometry && perimeter.geometry.rings && perimeter.geometry.rings.length > 0) {
+          const outerRing = perimeter.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...perimeter };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.incidentName;
+        delete allAttributes.INCDNT_NM;
+        delete allAttributes.Incdnt_Nm;
+        delete allAttributes.fireDiscoveryYear;
+        delete allAttributes.FIRE_DSCVR_CY;
+        delete allAttributes.fireDiscoveryDate;
+        delete allAttributes.FIRE_DSCVR_DT;
+        delete allAttributes.fireDiscoveryDateEstFlag;
+        delete allAttributes.FIRE_DSCVR_DT_EST_FLAG;
+        delete allAttributes.fireControlDate;
+        delete allAttributes.FIRE_CNTRL_DT;
+        delete allAttributes.fireControlDateEstFlag;
+        delete allAttributes.FIRE_CNTRL_DT_EST_FLAG;
+        delete allAttributes.fireCauseName;
+        delete allAttributes.FIRE_CAUSE_NM;
+        delete allAttributes.Fire_Cause_Nm;
+        delete allAttributes.collectionMethodName;
+        delete allAttributes.CLCTN_MTHD_NM;
+        delete allAttributes.Clctn_Mthd_Nm;
+        delete allAttributes.totalReportedAcres;
+        delete allAttributes.TOTAL_RPT_ACRES_NR;
+        delete allAttributes.gisAcres;
+        delete allAttributes.GIS_ACRES;
+        delete allAttributes.complexName;
+        delete allAttributes.CMPLX_NM;
+        delete allAttributes.Cmplx_Nm;
+        delete allAttributes.irwinId;
+        delete allAttributes.IRWIN_ID;
+        delete allAttributes.Irwin_Id;
+        delete allAttributes.comment;
+        delete allAttributes.COMMENT;
+        delete allAttributes.Comment;
+        delete allAttributes.admUnitCode;
+        delete allAttributes.ADM_UNIT_CD;
+        delete allAttributes.Adm_Unit_Cd;
+        delete allAttributes.adminState;
+        delete allAttributes.ADMIN_ST;
+        delete allAttributes.Admin_St;
+        delete allAttributes.uniqueFireId;
+        delete allAttributes.UNQE_FIRE_ID;
+        delete allAttributes.Unqe_Fire_Id;
+        delete allAttributes.fireCodeId;
+        delete allAttributes.FIRE_CODE_ID;
+        delete allAttributes.Fire_Code_Id;
+        delete allAttributes.localIncidentId;
+        delete allAttributes.LOCAL_INCDNT_ID;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_Fire_Perimeters',
+          incidentName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          fireDiscoveryYear || 'N/A',
+          fireDiscoveryDate || 'N/A',
+          fireControlDate || 'N/A',
+          fireCauseName || 'N/A',
+          gisAcres || 'N/A',
+          totalReportedAcres || 'N/A',
+          adminState || 'N/A',
+          complexName || 'N/A',
+          uniqueFireId || 'N/A',
+          perimeterId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_lwcf_all' && Array.isArray(value)) {
+      value.forEach((polygon: any) => {
+        const projectName = polygon.projectName || polygon.Prjt_Name || polygon.Prjt_Name || 'Unknown LWCF Project';
+        const snFull = polygon.snFull || polygon.SN_Full || polygon.Sn_Full || '';
+        const caseId = polygon.caseId !== null && polygon.caseId !== undefined ? polygon.caseId.toString() : '';
+        const geoState = polygon.geoState || polygon.Geo_State || polygon.Geo_State || '';
+        const refNum = polygon.refNum || polygon.Ref_Num || polygon.Ref_Num || '';
+        const acqFund = polygon.acqFund || polygon.Acq_Fund || polygon.Acq_Fund || '';
+        const fundYear = polygon.fundYear || polygon.Fund_Year || polygon.Fund_Year || '';
+        const purpose = polygon.purpose || polygon.Purpose || polygon.Purpose || '';
+        const areaAcq = polygon.areaAcq !== null && polygon.areaAcq !== undefined ? polygon.areaAcq.toFixed(2) : '';
+        const paymentMade = polygon.paymentMade || polygon.Pmnt_Made || polygon.Pmnt_Made || '';
+        const acqValue = polygon.acqValue || polygon.Acq_Value || polygon.Acq_Value || '';
+        const deedSignDate = polygon.deedSignDate || polygon.Deed_Sign || '';
+        const recorded = polygon.recorded || polygon.Recorded || polygon.Recorded || '';
+        const countyRec = polygon.countyRec || polygon.County_Rec || polygon.County_Rec || '';
+        const administratingAgency = polygon.administratingAgency || polygon.Administrating_Agency || polygon.Administrating_Agency || '';
+        const isContaining = polygon.isContaining ? 'Yes' : 'No';
+        const distance = polygon.distance_miles !== null && polygon.distance_miles !== undefined ? polygon.distance_miles.toFixed(2) : (polygon.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (polygon.geometry && polygon.geometry.rings && polygon.geometry.rings.length > 0) {
+          const outerRing = polygon.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...polygon };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.projectName;
+        delete allAttributes.Prjt_Name;
+        delete allAttributes.Prjt_Name;
+        delete allAttributes.snFull;
+        delete allAttributes.SN_Full;
+        delete allAttributes.Sn_Full;
+        delete allAttributes.caseId;
+        delete allAttributes.Case_id;
+        delete allAttributes.Case_Id;
+        delete allAttributes.geoState;
+        delete allAttributes.Geo_State;
+        delete allAttributes.Geo_State;
+        delete allAttributes.refNum;
+        delete allAttributes.Ref_Num;
+        delete allAttributes.Ref_Num;
+        delete allAttributes.acqFund;
+        delete allAttributes.Acq_Fund;
+        delete allAttributes.Acq_Fund;
+        delete allAttributes.fundYear;
+        delete allAttributes.Fund_Year;
+        delete allAttributes.Fund_Year;
+        delete allAttributes.purpose;
+        delete allAttributes.Purpose;
+        delete allAttributes.Purpose;
+        delete allAttributes.areaAcq;
+        delete allAttributes.Area_Acq;
+        delete allAttributes.Area_Acq;
+        delete allAttributes.paymentMade;
+        delete allAttributes.Pmnt_Made;
+        delete allAttributes.Pmnt_Made;
+        delete allAttributes.acqValue;
+        delete allAttributes.Acq_Value;
+        delete allAttributes.Acq_Value;
+        delete allAttributes.deedSignDate;
+        delete allAttributes.Deed_Sign;
+        delete allAttributes.Deed_Sign;
+        delete allAttributes.recorded;
+        delete allAttributes.Recorded;
+        delete allAttributes.Recorded;
+        delete allAttributes.countyRec;
+        delete allAttributes.County_Rec;
+        delete allAttributes.County_Rec;
+        delete allAttributes.administratingAgency;
+        delete allAttributes.Administrating_Agency;
+        delete allAttributes.Administrating_Agency;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_LWCF',
+          projectName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          snFull || 'N/A',
+          caseId || 'N/A',
+          geoState || 'N/A',
+          refNum || 'N/A',
+          acqFund || 'N/A',
+          fundYear || 'N/A',
+          purpose || 'N/A',
+          areaAcq || 'N/A',
+          paymentMade || 'N/A',
+          acqValue || 'N/A',
+          deedSignDate || 'N/A',
+          recorded || 'N/A',
+          countyRec || 'N/A',
+          administratingAgency || 'N/A',
           attributesJson,
           'BLM'
         ]);

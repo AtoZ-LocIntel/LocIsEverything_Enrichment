@@ -131,6 +131,9 @@ import { getBLMNationalSheepGoatGrazingData } from '../adapters/blmNationalSheep
 import { getBLMNationalSheepGoatAuthorizedGrazingData } from '../adapters/blmNationalSheepGoatAuthorizedGrazing';
 import { getBLMNationalNLCSMonumentsNCAsData } from '../adapters/blmNationalNLCSMonumentsNCAs';
 import { getBLMNationalWildHorseBurroHerdAreasData } from '../adapters/blmNationalWildHorseBurroHerdAreas';
+import { getBLMNationalRecreationSitesData } from '../adapters/blmNationalRecreationSites';
+import { getBLMNationalFirePerimetersData } from '../adapters/blmNationalFirePerimeters';
+import { getBLMNationalLWCFData } from '../adapters/blmNationalLWCF';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -3097,6 +3100,18 @@ export class EnrichmentService {
       // BLM National Wild Horse and Burro Herd Areas - Point-in-polygon and proximity query (max 25 miles)
       case 'blm_national_wild_horse_burro_herd_areas':
         return await this.getBLMNationalWildHorseBurroHerdAreas(lat, lon, radius);
+      
+      // BLM National Recreation Site Polygons - Point-in-polygon and proximity query (max 25 miles)
+      case 'blm_national_recreation_sites':
+        return await this.getBLMNationalRecreationSites(lat, lon, radius);
+      
+      // BLM National Fire Perimeters - Point-in-polygon and proximity query (max 25 miles)
+      case 'blm_national_fire_perimeters':
+        return await this.getBLMNationalFirePerimeters(lat, lon, radius);
+      
+      // BLM National Land and Water Conservation Fund (LWCF) Polygons - Point-in-polygon and proximity query (max 25 miles)
+      case 'blm_national_lwcf':
+        return await this.getBLMNationalLWCF(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -11615,6 +11630,240 @@ out center;`;
         blm_national_wild_horse_burro_herd_areas_count: 0,
         blm_national_wild_horse_burro_herd_areas_all: [],
         blm_national_wild_horse_burro_herd_areas_summary: 'Error querying wild horse/burro herd areas'
+      };
+    }
+  }
+
+  private async getBLMNationalRecreationSites(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏕️ Fetching BLM National Recreation Sites data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const recreationSites = await getBLMNationalRecreationSitesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (recreationSites.length === 0) {
+        result.blm_national_recreation_sites_containing = null;
+        result.blm_national_recreation_sites_containing_message = 'No recreation site found containing this location';
+        result.blm_national_recreation_sites_count = 0;
+        result.blm_national_recreation_sites_all = [];
+        result.blm_national_recreation_sites_summary = 'No recreation sites found.';
+      } else {
+        // Get the first containing recreation site (should typically be only one for point-in-polygon)
+        const containingSite = recreationSites.find(s => s.isContaining) || recreationSites[0];
+        
+        if (containingSite && containingSite.isContaining) {
+          const siteLabel = containingSite.fetName || 'Unknown Recreation Site';
+          result.blm_national_recreation_sites_containing = siteLabel;
+          result.blm_national_recreation_sites_containing_message = `Location is within recreation site: ${siteLabel}${containingSite.fetSubtype ? ` (Type: ${containingSite.fetSubtype})` : ''}`;
+        } else {
+          result.blm_national_recreation_sites_containing = null;
+          result.blm_national_recreation_sites_containing_message = 'No recreation site found containing this location';
+        }
+        
+        result.blm_national_recreation_sites_count = recreationSites.length;
+        result.blm_national_recreation_sites_all = recreationSites.map(site => ({
+          ...site.attributes,
+          objectId: site.objectId,
+          fetType: site.fetType,
+          fetSubtype: site.fetSubtype,
+          fetName: site.fetName,
+          admUnitCode: site.admUnitCode,
+          adminState: site.adminState,
+          gisAcres: site.gisAcres,
+          description: site.description,
+          webLink: site.webLink,
+          photoLink: site.photoLink,
+          unitName: site.unitName,
+          source: site.source,
+          webDisplay: site.webDisplay,
+          geometry: site.geometry,
+          distance_miles: site.distance_miles,
+          isContaining: site.isContaining
+        }));
+        
+        result.blm_national_recreation_sites_summary = `Found ${recreationSites.length} recreation site(s)${containingSite && containingSite.isContaining ? ' (location is within a recreation site)' : ''}.`;
+      }
+      
+      console.log(`✅ BLM National Recreation Sites data processed:`, {
+        totalCount: result.blm_national_recreation_sites_count,
+        containing: result.blm_national_recreation_sites_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Recreation Sites data:', error);
+      return {
+        blm_national_recreation_sites_containing: null,
+        blm_national_recreation_sites_containing_message: 'Error querying recreation sites',
+        blm_national_recreation_sites_count: 0,
+        blm_national_recreation_sites_all: [],
+        blm_national_recreation_sites_summary: 'Error querying recreation sites'
+      };
+    }
+  }
+
+  private async getBLMNationalFirePerimeters(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔥 Fetching BLM National Fire Perimeters data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const firePerimeters = await getBLMNationalFirePerimetersData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (firePerimeters.length === 0) {
+        result.blm_national_fire_perimeters_containing = null;
+        result.blm_national_fire_perimeters_containing_message = 'No fire perimeter found containing this location';
+        result.blm_national_fire_perimeters_count = 0;
+        result.blm_national_fire_perimeters_all = [];
+        result.blm_national_fire_perimeters_summary = 'No fire perimeters found.';
+      } else {
+        // Get the first containing fire perimeter (should typically be only one for point-in-polygon)
+        const containingPerimeter = firePerimeters.find(f => f.isContaining) || firePerimeters[0];
+        
+        if (containingPerimeter && containingPerimeter.isContaining) {
+          const perimeterLabel = containingPerimeter.incidentName || 'Unknown Fire';
+          result.blm_national_fire_perimeters_containing = perimeterLabel;
+          result.blm_national_fire_perimeters_containing_message = `Location is within fire perimeter: ${perimeterLabel}${containingPerimeter.fireDiscoveryYear ? ` (Year: ${containingPerimeter.fireDiscoveryYear})` : ''}`;
+        } else {
+          result.blm_national_fire_perimeters_containing = null;
+          result.blm_national_fire_perimeters_containing_message = 'No fire perimeter found containing this location';
+        }
+        
+        result.blm_national_fire_perimeters_count = firePerimeters.length;
+        result.blm_national_fire_perimeters_all = firePerimeters.map(perimeter => ({
+          ...perimeter.attributes,
+          objectId: perimeter.objectId,
+          incidentName: perimeter.incidentName,
+          fireDiscoveryYear: perimeter.fireDiscoveryYear,
+          fireDiscoveryDate: perimeter.fireDiscoveryDate,
+          fireDiscoveryDateEstFlag: perimeter.fireDiscoveryDateEstFlag,
+          fireControlDate: perimeter.fireControlDate,
+          fireControlDateEstFlag: perimeter.fireControlDateEstFlag,
+          fireCauseName: perimeter.fireCauseName,
+          collectionMethodName: perimeter.collectionMethodName,
+          totalReportedAcres: perimeter.totalReportedAcres,
+          gisAcres: perimeter.gisAcres,
+          complexName: perimeter.complexName,
+          irwinId: perimeter.irwinId,
+          comment: perimeter.comment,
+          admUnitCode: perimeter.admUnitCode,
+          adminState: perimeter.adminState,
+          uniqueFireId: perimeter.uniqueFireId,
+          fireCodeId: perimeter.fireCodeId,
+          localIncidentId: perimeter.localIncidentId,
+          geometry: perimeter.geometry,
+          distance_miles: perimeter.distance_miles,
+          isContaining: perimeter.isContaining
+        }));
+        
+        result.blm_national_fire_perimeters_summary = `Found ${firePerimeters.length} fire perimeter(s)${containingPerimeter && containingPerimeter.isContaining ? ' (location is within a fire perimeter)' : ''}.`;
+      }
+      
+      console.log(`✅ BLM National Fire Perimeters data processed:`, {
+        totalCount: result.blm_national_fire_perimeters_count,
+        containing: result.blm_national_fire_perimeters_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Fire Perimeters data:', error);
+      return {
+        blm_national_fire_perimeters_containing: null,
+        blm_national_fire_perimeters_containing_message: 'Error querying fire perimeters',
+        blm_national_fire_perimeters_count: 0,
+        blm_national_fire_perimeters_all: [],
+        blm_national_fire_perimeters_summary: 'Error querying fire perimeters'
+      };
+    }
+  }
+
+  private async getBLMNationalLWCF(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching BLM National Land and Water Conservation Fund (LWCF) Polygons data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const lwcfPolygons = await getBLMNationalLWCFData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (lwcfPolygons.length === 0) {
+        result.blm_national_lwcf_containing = null;
+        result.blm_national_lwcf_containing_message = 'No LWCF polygon found containing this location';
+        result.blm_national_lwcf_count = 0;
+        result.blm_national_lwcf_all = [];
+        result.blm_national_lwcf_summary = 'No LWCF polygons found.';
+      } else {
+        // Get the first containing LWCF polygon (should typically be only one for point-in-polygon)
+        const containingPolygon = lwcfPolygons.find(p => p.isContaining) || lwcfPolygons[0];
+        
+        if (containingPolygon && containingPolygon.isContaining) {
+          const polygonLabel = containingPolygon.projectName || containingPolygon.snFull || 'Unknown LWCF Project';
+          result.blm_national_lwcf_containing = polygonLabel;
+          result.blm_national_lwcf_containing_message = `Location is within LWCF polygon: ${polygonLabel}${containingPolygon.geoState ? ` (State: ${containingPolygon.geoState})` : ''}`;
+        } else {
+          result.blm_national_lwcf_containing = null;
+          result.blm_national_lwcf_containing_message = 'No LWCF polygon found containing this location';
+        }
+        
+        result.blm_national_lwcf_count = lwcfPolygons.length;
+        result.blm_national_lwcf_all = lwcfPolygons.map(polygon => ({
+          ...polygon.attributes,
+          objectId: polygon.objectId,
+          caseId: polygon.caseId,
+          snFull: polygon.snFull,
+          geoState: polygon.geoState,
+          projectName: polygon.projectName,
+          refNum: polygon.refNum,
+          acqMethod: polygon.acqMethod,
+          intAcq: polygon.intAcq,
+          esmtRgts: polygon.esmtRgts,
+          accRgts: polygon.accRgts,
+          acqFund: polygon.acqFund,
+          fundYear: polygon.fundYear,
+          purpose: polygon.purpose,
+          paymentMade: polygon.paymentMade,
+          acqValue: polygon.acqValue,
+          areaAcq: polygon.areaAcq,
+          deedSignDate: polygon.deedSignDate,
+          recorded: polygon.recorded,
+          countyRec: polygon.countyRec,
+          rstsAcq: polygon.rstsAcq,
+          ngoName: polygon.ngoName,
+          titleAcptDate: polygon.titleAcptDate,
+          publicDisplay: polygon.publicDisplay,
+          administratingAgency: polygon.administratingAgency,
+          photoLinks: polygon.photoLinks,
+          geometry: polygon.geometry,
+          distance_miles: polygon.distance_miles,
+          isContaining: polygon.isContaining
+        }));
+        
+        result.blm_national_lwcf_summary = `Found ${lwcfPolygons.length} LWCF polygon(s)${containingPolygon && containingPolygon.isContaining ? ' (location is within a LWCF polygon)' : ''}.`;
+      }
+      
+      console.log(`✅ BLM National Land and Water Conservation Fund (LWCF) Polygons data processed:`, {
+        totalCount: result.blm_national_lwcf_count,
+        containing: result.blm_national_lwcf_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Land and Water Conservation Fund (LWCF) Polygons data:', error);
+      return {
+        blm_national_lwcf_containing: null,
+        blm_national_lwcf_containing_message: 'Error querying LWCF polygons',
+        blm_national_lwcf_count: 0,
+        blm_national_lwcf_all: [],
+        blm_national_lwcf_summary: 'Error querying LWCF polygons'
       };
     }
   }
