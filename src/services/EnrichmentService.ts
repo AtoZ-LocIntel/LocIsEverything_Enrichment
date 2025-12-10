@@ -7057,17 +7057,43 @@ out center;`;
       });
       console.log(`📊 USDA ${foodType} API response:`, data);
       
-      if (!data || !Array.isArray(data)) {
-        console.log(`⚠️  No USDA ${foodType} data found`);
+      // Handle different response formats
+      let facilities: any[] = [];
+      if (Array.isArray(data)) {
+        facilities = data;
+      } else if (data && typeof data === 'object') {
+        // Check if response is an object with a results/data array
+        if (Array.isArray(data.results)) {
+          facilities = data.results;
+        } else if (Array.isArray(data.data)) {
+          facilities = data.data;
+        } else if (Array.isArray(data.features)) {
+          facilities = data.features;
+        } else {
+          // Try to find any array property
+          const arrayKeys = Object.keys(data).filter(key => Array.isArray(data[key]));
+          if (arrayKeys.length > 0) {
+            console.log(`⚠️  Using first array property: ${arrayKeys[0]}`);
+            facilities = data[arrayKeys[0]];
+          }
+        }
+      }
+      
+      if (!facilities || facilities.length === 0) {
+        console.log(`⚠️  No USDA ${foodType} data found in response`);
         return this.createEmptyUSDAResult(foodType, radiusMiles);
       }
       
-      const facilities = data;
-      console.log(`🌾 Found ${facilities.length} USDA ${foodType} facilities`);
+      console.log(`🌾 Found ${facilities.length} USDA ${foodType} facilities in response`);
+      
+      // Log first facility structure for debugging
+      if (facilities.length > 0) {
+        console.log(`🔍 Sample facility structure (first facility):`, JSON.stringify(facilities[0], null, 2));
+      }
       
       // Process facilities and calculate distances
-      const processedFacilities = facilities.map((facility: any) => {
-                // Extract coordinates from facility data
+      const processedFacilities = facilities.map((facility: any, index: number) => {
+        // Extract coordinates from facility data
         let facilityLat: number | null = null;
         let facilityLon: number | null = null;
         
@@ -7079,35 +7105,51 @@ out center;`;
           facilityLat = parseFloat(facility.lat);
           facilityLon = parseFloat(facility.lon);
         } else if (facility.x && facility.y) {
-          // Handle x,y coordinate format
+          // Handle x,y coordinate format (x=lon, y=lat)
           facilityLon = parseFloat(facility.x);
           facilityLat = parseFloat(facility.y);
         } else if (facility.geometry && facility.geometry.coordinates) {
           // Handle GeoJSON format if present
-          facilityLon = parseFloat(facility.geometry.coordinates[0]);
-          facilityLat = parseFloat(facility.geometry.coordinates[1]);
+          const coords = facility.geometry.coordinates;
+          if (Array.isArray(coords) && coords.length >= 2) {
+            facilityLon = parseFloat(coords[0]);
+            facilityLat = parseFloat(coords[1]);
+          }
+        } else if (facility.geometry && facility.geometry.x && facility.geometry.y) {
+          // Handle Esri geometry format
+          facilityLon = parseFloat(facility.geometry.x);
+          facilityLat = parseFloat(facility.geometry.y);
+        } else if (facility.attributes && (facility.attributes.latitude || facility.attributes.lat || facility.attributes.y)) {
+          // Handle Esri feature with attributes
+          facilityLat = parseFloat(facility.attributes.latitude || facility.attributes.lat || facility.attributes.y);
+          facilityLon = parseFloat(facility.attributes.longitude || facility.attributes.lon || facility.attributes.x);
         }
         
         if (facilityLat && facilityLon && !isNaN(facilityLat) && !isNaN(facilityLon)) {
           const distanceMiles = this.calculateDistance(lat, lon, facilityLat, facilityLon) * 0.621371;
           
           return {
-            id: facility.id || facility.listing_id || facility.record_id || Math.random().toString(36).substr(2, 9),
-            name: facility.listing_name || facility.name || facility.facility_name || facility.market_name || 'Unnamed Facility',
+            id: facility.id || facility.attributes?.id || facility.listing_id || facility.record_id || facility.objectid || facility.OBJECTID || Math.random().toString(36).substr(2, 9),
+            name: facility.attributes?.name || facility.listing_name || facility.name || facility.facility_name || facility.market_name || facility.attributes?.market_name || 'Unnamed Facility',
             type: foodType,
             lat: facilityLat,
             lon: facilityLon,
-              distance_miles: Math.round(distanceMiles * 100) / 100,
-            address: facility.location_address || facility.address || facility.street_address || 'N/A',
-            city: facility.location_city || facility.city || facility.city_name || 'N/A',
-            state: facility.location_state || facility.state || facility.state_code || 'N/A',
-            zip: facility.location_zipcode || facility.zip || facility.zip_code || 'N/A',
-            phone: facility.phone || facility.phone_number || 'N/A',
-            website: facility.media_website || facility.website || facility.url || 'N/A',
-            description: facility.description || facility.notes || '',
-            season: facility.season || facility.seasonality || 'N/A',
+            distance_miles: Math.round(distanceMiles * 100) / 100,
+            address: facility.attributes?.address || facility.location_address || facility.address || facility.street_address || facility.attributes?.street_address || 'N/A',
+            city: facility.attributes?.city || facility.location_city || facility.city || facility.city_name || 'N/A',
+            state: facility.attributes?.state || facility.location_state || facility.state || facility.state_code || 'N/A',
+            zip: facility.attributes?.zip || facility.location_zipcode || facility.zip || facility.zip_code || 'N/A',
+            phone: facility.attributes?.phone || facility.phone || facility.phone_number || 'N/A',
+            website: facility.attributes?.website || facility.media_website || facility.website || facility.url || 'N/A',
+            description: facility.attributes?.description || facility.description || facility.notes || '',
+            season: facility.attributes?.season || facility.season || facility.seasonality || 'N/A',
             raw_data: facility
           };
+        } else {
+          console.warn(`⚠️  Facility ${index} missing valid coordinates. Available fields:`, Object.keys(facility));
+          if (facility.attributes) {
+            console.warn(`    Attributes keys:`, Object.keys(facility.attributes));
+          }
         }
         
         return null;
@@ -7152,12 +7194,23 @@ out center;`;
     } catch (error) {
       console.error(`❌ USDA Local Food Portal ${foodType} API error:`, error);
       
+      // Log more detailed error information
+      if (error instanceof Error) {
+        console.error(`   Error message: ${error.message}`);
+        console.error(`   Error stack: ${error.stack}`);
+      }
+      if (error && typeof error === 'object' && 'response' in error) {
+        console.error(`   Response:`, (error as any).response);
+      }
+      
       const foodTypeId = this.getUSDAFoodTypeId(foodType);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         [`poi_usda_${foodTypeId}_count`]: 0,
         [`poi_usda_${foodTypeId}_facilities`]: [],
-        [`poi_usda_${foodTypeId}_error`]: `USDA API error: ${error instanceof Error ? error.message : String(error)}`,
-        [`poi_usda_${foodTypeId}_status`]: 'API error'
+        [`poi_usda_${foodTypeId}_error`]: `USDA API error: ${errorMessage}`,
+        [`poi_usda_${foodTypeId}_status`]: 'API error',
+        [`poi_usda_${foodTypeId}_summary`]: `Error querying ${this.getUSDAFoodTypeLabel(foodType)}: ${errorMessage}`
       };
     }
   }
