@@ -379,12 +379,6 @@ const createPOIIcon = (emoji: string, color: string) => {
   });
 };
 
-// Helper function to set layer metadata for tabbed popup functionality
-const setFeatureMetadata = (feature: L.Marker | L.Polygon | L.Polyline, layerType: string, layerTitle: string): void => {
-  (feature as any).__layerType = layerType;
-  (feature as any).__layerTitle = layerTitle;
-};
-
 const createPOIPopupContent = (poi: any, legendTitle: string, key: string): string => {
     // Handle PADUS features specially
     if (key && key.includes('padus_')) {
@@ -20023,10 +20017,12 @@ const MapView: React.FC<MapViewProps> = ({
         console.log('🗺️ All features drawn');
         
         // Add map click handler for tabbed popup functionality
-        // Use a small delay to ensure all features are fully added to layer groups
-        setTimeout(() => {
-          setupTabbedPopupHandler();
-        }, 100);
+        // Use requestAnimationFrame to ensure all features are fully added to layer groups
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setupTabbedPopupHandler();
+          });
+        });
       });
     }
   }, [results]);
