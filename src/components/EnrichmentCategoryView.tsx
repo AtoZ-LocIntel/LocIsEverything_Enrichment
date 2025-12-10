@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Settings, Check } from 'lucide-react';
+import { poiConfigManager } from '../lib/poiConfig';
 
 interface EnrichmentItem {
   id: string;
@@ -60,11 +61,26 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
   };
 
   const handleRadiusChange = (enrichmentId: string, radius: number) => {
+    // Get maxRadius from POI config
+    const poiConfig = poiConfigManager.getPOIType(enrichmentId);
     const isAurora = enrichmentId === 'poi_aurora_viewing_sites';
     const isNYCBusinessImprovementDistricts = enrichmentId === 'nyc_business_improvement_districts';
     const isNYCCommunityDistricts = enrichmentId === 'nyc_community_districts';
     const minRadius = isAurora ? 5 : 0.5;
-    const maxRadius = isAurora ? 100 : (isNYCBusinessImprovementDistricts || isNYCCommunityDistricts ? 5 : 25);
+    
+    // Use maxRadius from POI config if available, otherwise fallback to hardcoded values
+    let maxRadius = 25; // Default fallback
+    if (poiConfig?.maxRadius) {
+      maxRadius = poiConfig.maxRadius;
+      console.log(`🔍 DEBUG EnrichmentCategoryView: Found maxRadius=${maxRadius} for ${enrichmentId} from poiConfig`);
+    } else if (isAurora) {
+      maxRadius = 100;
+    } else if (isNYCBusinessImprovementDistricts || isNYCCommunityDistricts) {
+      maxRadius = 5;
+    } else {
+      console.warn(`⚠️ DEBUG EnrichmentCategoryView: No maxRadius found for ${enrichmentId}, using default 25`);
+    }
+    
     const normalizedRadius = Math.max(minRadius, Math.min(radius, maxRadius));
 
     onPoiRadiiChange({
@@ -246,27 +262,49 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
             filteredEnrichments.map((enrichment) => {
             const isSelected = selectedEnrichments.includes(enrichment.id);
             const currentRadius = poiRadii[enrichment.id] || enrichment.defaultRadius || 1;
-            const radiusOptions = enrichment.id === 'poi_aurora_viewing_sites'
-              ? [5, 10, 25, 50, 100]
-              : enrichment.id === 'nh_parcels' || enrichment.id === 'nj_parcels'
-              ? [0.25, 0.50, 0.75, 1.0]
-              : enrichment.id === 'nh_nwi_plus' || enrichment.id === 'ma_dep_wetlands' || enrichment.id === 'ma_open_space' || enrichment.id === 'cape_cod_zoning'
-              ? [0.1, 0.25, 0.5, 0.75, 1.0]
-              : enrichment.id === 'nh_dot_roads' || enrichment.id === 'nh_railroads' || enrichment.id === 'nh_transmission_pipelines' || enrichment.id === 'ma_trails'
-              ? [0.5, 1, 2.5, 5, 10]
-              : enrichment.id === 'nh_nwi_plus' || enrichment.id === 'ma_dep_wetlands' || enrichment.id === 'ma_open_space' || enrichment.id === 'cape_cod_zoning' || enrichment.id === 'ma_nhesp_natural_communities'
-              ? [0.1, 0.25, 0.5, 0.75, 1.0]
-              : enrichment.id === 'ma_lakes_and_ponds'
-              ? [0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0]
-              : enrichment.id === 'nh_key_destinations'
-              ? [0.5, 1, 2, 3, 5, 10, 15, 25]
-              : enrichment.id === 'chicago_311' || enrichment.id === 'chicago_building_footprints' || enrichment.id === 'houston_site_addresses'
-              ? [0.25, 0.50, 0.75, 1.0]
-              : enrichment.id === 'nyc_bike_routes'
-              ? [0.5, 1.0, 2.5, 5.0]
-              : enrichment.id === 'nyc_business_improvement_districts' || enrichment.id === 'nyc_community_districts'
-              ? [0.5, 1.0, 2.5, 5.0]
-              : [0.5, 1, 2, 3, 5, 10, 15, 25];
+            // Get maxRadius from POI config
+            const poiConfig = poiConfigManager.getPOIType(enrichment.id);
+            const maxRadius = poiConfig?.maxRadius || 25;
+            
+            console.log(`🔍 DEBUG EnrichmentCategoryView: enrichment.id=${enrichment.id}, poiConfig.maxRadius=${poiConfig?.maxRadius}, using maxRadius=${maxRadius}`);
+            
+            // Generate radiusOptions dynamically based on maxRadius, but keep special cases
+            let radiusOptions: number[];
+            if (enrichment.id === 'poi_aurora_viewing_sites') {
+              radiusOptions = [5, 10, 25, 50, 100];
+            } else if (enrichment.id === 'nh_parcels' || enrichment.id === 'nj_parcels') {
+              radiusOptions = [0.25, 0.50, 0.75, 1.0];
+            } else if (enrichment.id === 'nh_nwi_plus' || enrichment.id === 'ma_dep_wetlands' || enrichment.id === 'ma_open_space' || enrichment.id === 'cape_cod_zoning') {
+              radiusOptions = [0.1, 0.25, 0.5, 0.75, 1.0];
+            } else if (enrichment.id === 'nh_dot_roads' || enrichment.id === 'nh_railroads' || enrichment.id === 'nh_transmission_pipelines' || enrichment.id === 'ma_trails') {
+              radiusOptions = [0.5, 1, 2.5, 5, 10];
+            } else if (enrichment.id === 'ma_lakes_and_ponds') {
+              radiusOptions = [0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0];
+            } else if (enrichment.id === 'chicago_311' || enrichment.id === 'chicago_building_footprints' || enrichment.id === 'houston_site_addresses') {
+              radiusOptions = [0.25, 0.50, 0.75, 1.0];
+            } else if (enrichment.id === 'nyc_bike_routes' || enrichment.id === 'nyc_business_improvement_districts' || enrichment.id === 'nyc_community_districts') {
+              radiusOptions = [0.5, 1.0, 2.5, 5.0];
+            } else {
+              // Generate options dynamically based on maxRadius
+              const baseOptions = [0.5, 1, 2, 3, 5, 10, 15];
+              if (maxRadius > 25) {
+                // Add options up to maxRadius
+                if (maxRadius >= 50) {
+                  radiusOptions = [...baseOptions, 25, 50];
+                  if (maxRadius >= 75) radiusOptions.push(75);
+                  if (maxRadius >= 100) radiusOptions.push(100);
+                } else {
+                  radiusOptions = [...baseOptions, 25, maxRadius];
+                }
+              } else {
+                radiusOptions = baseOptions.filter(opt => opt <= maxRadius);
+                if (maxRadius > 15 && !radiusOptions.includes(maxRadius)) {
+                  radiusOptions.push(maxRadius);
+                }
+              }
+              radiusOptions.sort((a, b) => a - b);
+              console.log(`🔍 DEBUG EnrichmentCategoryView: Generated radiusOptions=${JSON.stringify(radiusOptions)} for maxRadius=${maxRadius}`);
+            }
             const formatMiles = (value: number) =>
               Number.isInteger(value) ? value.toString() : value.toFixed(1);
 

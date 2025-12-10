@@ -376,6 +376,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'blm_national_trails_all' ||
         key === 'blm_national_motorized_trails_all' ||
         key === 'blm_national_nonmotorized_trails_all' ||
+        key === 'blm_national_limited_motorized_roads_all' ||
+        key === 'blm_national_public_motorized_roads_all' ||
         key === 'blm_national_grazing_pastures_all' ||
         key === 'blm_national_acec_all' ||
         key === 'blm_national_sheep_goat_grazing_all' ||
@@ -385,6 +387,19 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'blm_national_recreation_sites_all' ||
         key === 'blm_national_fire_perimeters_all' ||
         key === 'blm_national_lwcf_all' ||
+        key === 'usfs_forest_boundaries_all' ||
+        key === 'usfs_wilderness_areas_all' ||
+        key === 'usfs_national_grasslands_all' ||
+        key === 'usfs_hazardous_sites_all' ||
+        key === 'usfs_office_locations_all' ||
+        key === 'usfs_special_uses_communications_sites_all' ||
+        key === 'usfs_administrative_boundaries_all' ||
+        key === 'usfs_recreation_opportunities_all' ||
+        key === 'usfs_recreation_area_activities_all' ||
+        key === 'usfs_roads_closed_to_motorized_all' ||
+        key === 'usfs_system_roads_all' ||
+        key === 'usfs_mvum_all' ||
+        key === 'usfs_co_roadless_areas_all' ||
         key === 'houston_tirz_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
@@ -7909,6 +7924,627 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           administratingAgency || 'N/A',
           attributesJson,
           'BLM'
+        ]);
+      });
+    } else if (key === 'usfs_forest_boundaries_all' && Array.isArray(value)) {
+      value.forEach((forest: any) => {
+        const forestName = forest.forestName || forest.FORESTNAME || forest.ForestName || forest.FOREST_NM || forest.Forest_Nm || 'Unknown Forest';
+        const forestCode = forest.forestCode || forest.FORESTCODE || forest.ForestCode || forest.FOREST_CD || forest.Forest_Cd || '';
+        const regionCode = forest.regionCode || forest.REGIONCODE || forest.RegionCode || forest.REGION_CD || forest.Region_Cd || '';
+        const regionName = forest.regionName || forest.REGIONNAME || forest.RegionName || forest.REGION_NM || forest.Region_Nm || '';
+        const forestId = forest.objectId || forest.OBJECTID || forest.objectid || '';
+        const isContaining = forest.isContaining ? 'Yes' : 'No';
+        const distance = forest.distance_miles !== null && forest.distance_miles !== undefined ? forest.distance_miles.toFixed(2) : (forest.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (forest.geometry && forest.geometry.rings && forest.geometry.rings.length > 0) {
+          const outerRing = forest.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...forest };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        delete allAttributes.FOREST_NM;
+        delete allAttributes.Forest_Nm;
+        delete allAttributes.forestCode;
+        delete allAttributes.FORESTCODE;
+        delete allAttributes.ForestCode;
+        delete allAttributes.FOREST_CD;
+        delete allAttributes.Forest_Cd;
+        delete allAttributes.regionCode;
+        delete allAttributes.REGIONCODE;
+        delete allAttributes.RegionCode;
+        delete allAttributes.REGION_CD;
+        delete allAttributes.Region_Cd;
+        delete allAttributes.regionName;
+        delete allAttributes.REGIONNAME;
+        delete allAttributes.RegionName;
+        delete allAttributes.REGION_NM;
+        delete allAttributes.Region_Nm;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_Forest_Boundaries',
+          forestName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          forestCode || 'N/A',
+          regionName || 'N/A',
+          regionCode || 'N/A',
+          forestId || 'N/A',
+          attributesJson,
+          'USFS'
+        ]);
+      });
+    } else if (key === 'usfs_office_locations_all' && Array.isArray(value)) {
+      value.forEach((office: any) => {
+        const officeName = office.officeName || office.OFFICENAME || office.OfficeName || 'Unknown Office';
+        const officeType = office.officeType || office.OFFICETYPE || office.OfficeType || '';
+        const forestName = office.forestName || office.FORESTNAME || office.ForestName || '';
+        const address = office.address || office.ADDRESS || office.Address || '';
+        const phone = office.phone || office.PHONE || office.Phone || '';
+        const officeId = office.objectId || office.OBJECTID || office.objectid || '';
+        const distance = office.distance_miles !== null && office.distance_miles !== undefined ? office.distance_miles.toFixed(2) : '';
+        
+        let lat = '';
+        let lon = '';
+        if (office.geometry && office.geometry.x !== undefined && office.geometry.y !== undefined) {
+          lat = office.geometry.y.toString();
+          lon = office.geometry.x.toString();
+        }
+        
+        const allAttributes = { ...office };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.officeName;
+        delete allAttributes.OFFICENAME;
+        delete allAttributes.OfficeName;
+        delete allAttributes.officeType;
+        delete allAttributes.OFFICETYPE;
+        delete allAttributes.OfficeType;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        delete allAttributes.address;
+        delete allAttributes.ADDRESS;
+        delete allAttributes.Address;
+        delete allAttributes.phone;
+        delete allAttributes.PHONE;
+        delete allAttributes.Phone;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_Office_Locations',
+          officeName,
+          lat,
+          lon,
+          distance,
+          officeType || 'N/A',
+          forestName || 'N/A',
+          address || 'N/A',
+          phone || 'N/A',
+          officeId || 'N/A',
+          attributesJson,
+          'USFS'
+        ]);
+      });
+    } else if (key === 'usfs_special_uses_communications_sites_all' && Array.isArray(value)) {
+      value.forEach((site: any) => {
+        const siteName = site.siteName || site.SITENAME || site.SiteName || 'Unknown Communications Site';
+        const siteType = site.siteType || site.SITETYPE || site.SiteType || '';
+        const forestName = site.forestName || site.FORESTNAME || site.ForestName || '';
+        const siteId = site.objectId || site.OBJECTID || site.objectid || '';
+        const distance = site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles.toFixed(2) : '';
+        
+        let lat = '';
+        let lon = '';
+        if (site.geometry && site.geometry.x !== undefined && site.geometry.y !== undefined) {
+          lat = site.geometry.y.toString();
+          lon = site.geometry.x.toString();
+        }
+        
+        const allAttributes = { ...site };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.siteName;
+        delete allAttributes.SITENAME;
+        delete allAttributes.SiteName;
+        delete allAttributes.siteType;
+        delete allAttributes.SITETYPE;
+        delete allAttributes.SiteType;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_Special_Uses_Communications_Sites',
+          siteName,
+          lat,
+          lon,
+          distance,
+          siteType || 'N/A',
+          forestName || 'N/A',
+          siteId || 'N/A',
+          attributesJson,
+          'USFS'
+        ]);
+      });
+    } else if (key === 'usfs_administrative_boundaries_all' && Array.isArray(value)) {
+      value.forEach((boundary: any) => {
+        const boundaryName = boundary.boundaryName || boundary.BOUNDARYNAME || boundary.BoundaryName || boundary.forestName || boundary.FORESTNAME || 'Unknown Boundary';
+        const boundaryType = boundary.boundaryType || boundary.BOUNDARYTYPE || boundary.BoundaryType || '';
+        const forestName = boundary.forestName || boundary.FORESTNAME || boundary.ForestName || '';
+        const boundaryId = boundary.objectId || boundary.OBJECTID || boundary.objectid || '';
+        const isContaining = boundary.isContaining ? 'Yes' : 'No';
+        const distance = boundary.distance_miles !== null && boundary.distance_miles !== undefined ? boundary.distance_miles.toFixed(2) : (boundary.isContaining ? '0.00' : '');
+        
+        let lat = '';
+        let lon = '';
+        if (boundary.geometry && boundary.geometry.rings && boundary.geometry.rings.length > 0) {
+          const outerRing = boundary.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...boundary };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.boundaryName;
+        delete allAttributes.BOUNDARYNAME;
+        delete allAttributes.BoundaryName;
+        delete allAttributes.boundaryType;
+        delete allAttributes.BOUNDARYTYPE;
+        delete allAttributes.BoundaryType;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_Administrative_Boundaries',
+          boundaryName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          boundaryType || 'N/A',
+          forestName || 'N/A',
+          boundaryId || 'N/A',
+          attributesJson,
+          'USFS'
+        ]);
+      });
+    } else if (key === 'usfs_recreation_opportunities_all' && Array.isArray(value)) {
+      value.forEach((opp: any) => {
+        const recAreaName = opp.recAreaName || opp.RECAREANAME || opp.RecAreaName || 'Unknown Recreation Area';
+        const forestName = opp.forestName || opp.FORESTNAME || opp.ForestName || '';
+        const markerActivity = opp.markerActivity || opp.MARKERACTIVITY || opp.MarkerActivity || '';
+        const markerActivityGroup = opp.markerActivityGroup || opp.MARKERACTIVITYGROUP || opp.MarkerActivityGroup || '';
+        const openSeasonStart = opp.openSeasonStart || opp.OPEN_SEASON_START || opp.Open_Season_Start || '';
+        const openSeasonEnd = opp.openSeasonEnd || opp.OPEN_SEASON_END || opp.Open_Season_End || '';
+        const recAreaUrl = opp.recAreaUrl || opp.RECAREAURL || opp.RecAreaUrl || '';
+        const recAreaId = opp.recAreaId || opp.RECAREAID || opp.RecAreaId || '';
+        const oppId = opp.objectId || opp.OBJECTID || opp.objectid || '';
+        const distance = opp.distance_miles !== null && opp.distance_miles !== undefined ? opp.distance_miles.toFixed(2) : '';
+        
+        let lat = '';
+        let lon = '';
+        if (opp.geometry && opp.geometry.x !== undefined && opp.geometry.y !== undefined) {
+          lat = opp.geometry.y.toString();
+          lon = opp.geometry.x.toString();
+        }
+        
+        const allAttributes = { ...opp };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.recAreaName;
+        delete allAttributes.RECAREANAME;
+        delete allAttributes.RecAreaName;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        delete allAttributes.markerActivity;
+        delete allAttributes.MARKERACTIVITY;
+        delete allAttributes.MarkerActivity;
+        delete allAttributes.markerActivityGroup;
+        delete allAttributes.MARKERACTIVITYGROUP;
+        delete allAttributes.MarkerActivityGroup;
+        delete allAttributes.openSeasonStart;
+        delete allAttributes.OPEN_SEASON_START;
+        delete allAttributes.Open_Season_Start;
+        delete allAttributes.openSeasonEnd;
+        delete allAttributes.OPEN_SEASON_END;
+        delete allAttributes.Open_Season_End;
+        delete allAttributes.recAreaUrl;
+        delete allAttributes.RECAREAURL;
+        delete allAttributes.RecAreaUrl;
+        delete allAttributes.recAreaId;
+        delete allAttributes.RECAREAID;
+        delete allAttributes.RecAreaId;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_Recreation_Opportunities',
+          recAreaName,
+          lat,
+          lon,
+          distance,
+          forestName || 'N/A',
+          markerActivity || 'N/A',
+          markerActivityGroup || 'N/A',
+          openSeasonStart || 'N/A',
+          openSeasonEnd || 'N/A',
+          recAreaUrl || 'N/A',
+          recAreaId || 'N/A',
+          oppId || 'N/A',
+          attributesJson,
+          'USFS'
+        ]);
+      });
+    } else if (key === 'usfs_recreation_area_activities_all' && Array.isArray(value)) {
+      value.forEach((activity: any) => {
+        const recAreaName = activity.recAreaName || activity.RECAREANAME || activity.RecAreaName || 'Unknown Recreation Area';
+        const forestName = activity.forestName || activity.FORESTNAME || activity.ForestName || '';
+        const markerActivity = activity.markerActivity || activity.MARKERACTIVITY || activity.MarkerActivity || '';
+        const markerActivityGroup = activity.markerActivityGroup || activity.MARKERACTIVITYGROUP || activity.MarkerActivityGroup || '';
+        const activityName = activity.activityName || activity.ACTIVITYNAME || activity.ActivityName || '';
+        const parentActivityName = activity.parentActivityName || activity.PARENTACTIVITYNAME || activity.ParentActivityName || '';
+        const openSeasonStart = activity.openSeasonStart || activity.OPEN_SEASON_START || activity.Open_Season_Start || '';
+        const openSeasonEnd = activity.openSeasonEnd || activity.OPEN_SEASON_END || activity.Open_Season_End || '';
+        const recAreaUrl = activity.recAreaUrl || activity.RECAREAURL || activity.RecAreaUrl || '';
+        const recAreaId = activity.recAreaId || activity.RECAREAID || activity.RecAreaId || '';
+        const activityId = activity.objectId || activity.OBJECTID || activity.objectid || '';
+        const distance = activity.distance_miles !== null && activity.distance_miles !== undefined ? activity.distance_miles.toFixed(2) : '';
+        
+        let lat = '';
+        let lon = '';
+        if (activity.geometry && activity.geometry.x !== undefined && activity.geometry.y !== undefined) {
+          lat = activity.geometry.y.toString();
+          lon = activity.geometry.x.toString();
+        }
+        
+        const allAttributes = { ...activity };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.recAreaName;
+        delete allAttributes.RECAREANAME;
+        delete allAttributes.RecAreaName;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        delete allAttributes.markerActivity;
+        delete allAttributes.MARKERACTIVITY;
+        delete allAttributes.MarkerActivity;
+        delete allAttributes.markerActivityGroup;
+        delete allAttributes.MARKERACTIVITYGROUP;
+        delete allAttributes.MarkerActivityGroup;
+        delete allAttributes.activityName;
+        delete allAttributes.ACTIVITYNAME;
+        delete allAttributes.ActivityName;
+        delete allAttributes.parentActivityName;
+        delete allAttributes.PARENTACTIVITYNAME;
+        delete allAttributes.ParentActivityName;
+        delete allAttributes.openSeasonStart;
+        delete allAttributes.OPEN_SEASON_START;
+        delete allAttributes.Open_Season_Start;
+        delete allAttributes.openSeasonEnd;
+        delete allAttributes.OPEN_SEASON_END;
+        delete allAttributes.Open_Season_End;
+        delete allAttributes.recAreaUrl;
+        delete allAttributes.RECAREAURL;
+        delete allAttributes.RecAreaUrl;
+        delete allAttributes.recAreaId;
+        delete allAttributes.RECAREAID;
+        delete allAttributes.RecAreaId;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_Recreation_Area_Activities',
+          recAreaName,
+          lat,
+          lon,
+          distance,
+          forestName || 'N/A',
+          activityName || 'N/A',
+          parentActivityName || 'N/A',
+          markerActivity || 'N/A',
+          markerActivityGroup || 'N/A',
+          openSeasonStart || 'N/A',
+          openSeasonEnd || 'N/A',
+          recAreaUrl || 'N/A',
+          recAreaId || 'N/A',
+          activityId || 'N/A',
+          attributesJson,
+          'USFS'
+        ]);
+      });
+    } else if (key === 'usfs_roads_closed_to_motorized_all' && Array.isArray(value)) {
+      value.forEach((road: any) => {
+        const roadName = road.roadName || road.ROADNAME || road.RoadName || road.roadNumber || road.ROADNUMBER || 'Unknown Road';
+        const roadNumber = road.roadNumber || road.ROADNUMBER || road.RoadNumber || '';
+        const forestName = road.forestName || road.FORESTNAME || road.ForestName || '';
+        const roadId = road.objectId || road.OBJECTID || road.objectid || '';
+        const distance = road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles.toFixed(2) : '';
+        
+        let lat = '';
+        let lon = '';
+        if (road.geometry && road.geometry.paths && road.geometry.paths.length > 0 && road.geometry.paths[0].length > 0) {
+          const firstCoord = road.geometry.paths[0][0];
+          lat = firstCoord[1].toString();
+          lon = firstCoord[0].toString();
+        }
+        
+        const allAttributes = { ...road };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.roadName;
+        delete allAttributes.ROADNAME;
+        delete allAttributes.RoadName;
+        delete allAttributes.roadNumber;
+        delete allAttributes.ROADNUMBER;
+        delete allAttributes.RoadNumber;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_Roads_Closed_to_Motorized_Uses',
+          roadName,
+          lat,
+          lon,
+          distance,
+          roadNumber || 'N/A',
+          forestName || 'N/A',
+          'Closed to Motorized Uses',
+          roadId || 'N/A',
+          attributesJson,
+          'USFS'
+        ]);
+      });
+    } else if (key === 'usfs_system_roads_all' && Array.isArray(value)) {
+      value.forEach((road: any) => {
+        const roadName = road.roadName || road.ROADNAME || road.RoadName || road.roadNumber || road.ROADNUMBER || 'Unknown Road';
+        const roadNumber = road.roadNumber || road.ROADNUMBER || road.RoadNumber || '';
+        const forestName = road.forestName || road.FORESTNAME || road.ForestName || '';
+        const roadType = road.roadType || road.ROADTYPE || road.RoadType || '';
+        const roadId = road.objectId || road.OBJECTID || road.objectid || '';
+        const distance = road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles.toFixed(2) : '';
+        
+        let lat = '';
+        let lon = '';
+        if (road.geometry && road.geometry.paths && road.geometry.paths.length > 0 && road.geometry.paths[0].length > 0) {
+          const firstCoord = road.geometry.paths[0][0];
+          lat = firstCoord[1].toString();
+          lon = firstCoord[0].toString();
+        }
+        
+        const allAttributes = { ...road };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.roadName;
+        delete allAttributes.ROADNAME;
+        delete allAttributes.RoadName;
+        delete allAttributes.roadNumber;
+        delete allAttributes.ROADNUMBER;
+        delete allAttributes.RoadNumber;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        delete allAttributes.roadType;
+        delete allAttributes.ROADTYPE;
+        delete allAttributes.RoadType;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_System_Roads',
+          roadName,
+          lat,
+          lon,
+          distance,
+          roadNumber || 'N/A',
+          forestName || 'N/A',
+          roadType || 'N/A',
+          roadId || 'N/A',
+          attributesJson,
+          'USFS'
+        ]);
+      });
+    } else if (key === 'usfs_mvum_all' && Array.isArray(value)) {
+      value.forEach((route: any) => {
+        const routeName = route.routeName || route.ROUTENAME || route.RouteName || route.routeNumber || route.ROUTENUMBER || 'Unknown Route';
+        const routeNumber = route.routeNumber || route.ROUTENUMBER || route.RouteNumber || '';
+        const forestName = route.forestName || route.FORESTNAME || route.ForestName || '';
+        const vehicleType = route.vehicleType || route.VEHICLETYPE || route.VehicleType || '';
+        const seasonOfUse = route.seasonOfUse || route.SEASONOFUSE || route.SeasonOfUse || '';
+        const routeId = route.objectId || route.OBJECTID || route.objectid || '';
+        const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
+        
+        let lat = '';
+        let lon = '';
+        if (route.geometry && route.geometry.paths && route.geometry.paths.length > 0 && route.geometry.paths[0].length > 0) {
+          const firstCoord = route.geometry.paths[0][0];
+          lat = firstCoord[1].toString();
+          lon = firstCoord[0].toString();
+        }
+        
+        const allAttributes = { ...route };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.routeName;
+        delete allAttributes.ROUTENAME;
+        delete allAttributes.RouteName;
+        delete allAttributes.routeNumber;
+        delete allAttributes.ROUTENUMBER;
+        delete allAttributes.RouteNumber;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        delete allAttributes.vehicleType;
+        delete allAttributes.VEHICLETYPE;
+        delete allAttributes.VehicleType;
+        delete allAttributes.seasonOfUse;
+        delete allAttributes.SEASONOFUSE;
+        delete allAttributes.SeasonOfUse;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_MVUM',
+          routeName,
+          lat,
+          lon,
+          distance,
+          routeNumber || 'N/A',
+          forestName || 'N/A',
+          vehicleType || 'N/A',
+          seasonOfUse || 'N/A',
+          routeId || 'N/A',
+          attributesJson,
+          'USFS'
+        ]);
+      });
+    } else if (key === 'usfs_co_roadless_areas_all' && Array.isArray(value)) {
+      value.forEach((area: any) => {
+        const areaName = area.areaName || area.AREANAME || area.AreaName || 'Unknown Roadless Area';
+        const areaType = area.areaType || area.AREATYPE || area.AreaType || '';
+        const forestName = area.forestName || area.FORESTNAME || area.ForestName || '';
+        const areaId = area.objectId || area.OBJECTID || area.objectid || '';
+        const isContaining = area.isContaining ? 'Yes' : 'No';
+        const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles.toFixed(2) : (area.isContaining ? '0.00' : '');
+        
+        let lat = '';
+        let lon = '';
+        if (area.geometry && area.geometry.rings && area.geometry.rings.length > 0) {
+          const outerRing = area.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...area };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.areaName;
+        delete allAttributes.AREANAME;
+        delete allAttributes.AreaName;
+        delete allAttributes.areaType;
+        delete allAttributes.AREATYPE;
+        delete allAttributes.AreaType;
+        delete allAttributes.forestName;
+        delete allAttributes.FORESTNAME;
+        delete allAttributes.ForestName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USFS',
+          (location.confidence || 'N/A').toString(),
+          'USFS_Colorado_Roadless_Areas',
+          areaName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          areaType || 'N/A',
+          forestName || 'N/A',
+          areaId || 'N/A',
+          attributesJson,
+          'USFS'
         ]);
       });
     } else if (key === 'houston_bikeways_all' && Array.isArray(value)) {

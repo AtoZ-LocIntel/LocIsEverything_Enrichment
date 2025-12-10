@@ -125,6 +125,8 @@ import { getHoustonAirportsData } from '../adapters/houstonAirports';
 import { getBLMNationalTrailsData } from '../adapters/blmNationalTrails';
 import { getBLMNationalMotorizedTrailsData } from '../adapters/blmNationalMotorizedTrails';
 import { getBLMNationalNonmotorizedTrailsData } from '../adapters/blmNationalNonmotorizedTrails';
+import { getBLMNationalLimitedMotorizedRoadsData } from '../adapters/blmNationalLimitedMotorizedRoads';
+import { getBLMNationalPublicMotorizedRoadsData } from '../adapters/blmNationalPublicMotorizedRoads';
 import { getBLMNationalGrazingPasturesData } from '../adapters/blmNationalGrazingPastures';
 import { getBLMNationalACECData } from '../adapters/blmNationalACEC';
 import { getBLMNationalSheepGoatGrazingData } from '../adapters/blmNationalSheepGoatGrazing';
@@ -134,6 +136,18 @@ import { getBLMNationalWildHorseBurroHerdAreasData } from '../adapters/blmNation
 import { getBLMNationalRecreationSitesData } from '../adapters/blmNationalRecreationSites';
 import { getBLMNationalFirePerimetersData } from '../adapters/blmNationalFirePerimeters';
 import { getBLMNationalLWCFData } from '../adapters/blmNationalLWCF';
+import { getUSFSForestBoundariesData } from '../adapters/usfsForestBoundaries';
+import { getUSFSWildernessAreasData } from '../adapters/usfsWildernessAreas';
+import { getUSFSNationalGrasslandsData } from '../adapters/usfsNationalGrasslands';
+import { getUSFSOfficeLocationsData } from '../adapters/usfsOfficeLocations';
+import { getUSFSSpecialUsesCommunicationsSitesData } from '../adapters/usfsSpecialUsesCommunicationsSites';
+import { getUSFSAdministrativeBoundariesData } from '../adapters/usfsAdministrativeBoundaries';
+import { getUSFSRecreationOpportunitiesData } from '../adapters/usfsRecreationOpportunities';
+import { getUSFSRecreationAreaActivitiesData } from '../adapters/usfsRecreationAreaActivities';
+import { getUSFSRoadsClosedToMotorizedData } from '../adapters/usfsRoadsClosedToMotorized';
+import { getUSFSSystemRoadsData } from '../adapters/usfsSystemRoads';
+import { getUSFSMVUMData } from '../adapters/usfsMVUM';
+import { getUSFSCORoadlessAreasData } from '../adapters/usfsCORoadlessAreas';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1288,9 +1302,12 @@ export class EnrichmentService {
     
     const poiConfig = poiConfigManager.getPOIType(enrichmentId);
     
+    console.log(`🔍 DEBUG EnrichmentService.runSingleEnrichment: enrichmentId=${enrichmentId}, poiConfig=${poiConfig ? JSON.stringify({ maxRadius: poiConfig.maxRadius }) : 'null'}`);
+    
     if (poiConfig?.maxRadius) {
       // Use maxRadius from POI config if specified
       maxRadius = poiConfig.maxRadius;
+      console.log(`🔍 DEBUG EnrichmentService: Using maxRadius=${maxRadius} from poiConfig for ${enrichmentId}`);
     } else if (enrichmentId === 'poi_wildfires') {
       maxRadius = 50; // Wildfires can be up to 50 miles for risk assessment
     } else if (enrichmentId === 'poi_volcanoes') {
@@ -1302,7 +1319,9 @@ export class EnrichmentService {
       maxRadius = 25;
     }
     
-    const radius = Math.min(poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId), maxRadius);
+    const requestedRadius = poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId);
+    const radius = Math.min(requestedRadius, maxRadius);
+    console.log(`🔍 DEBUG EnrichmentService: requestedRadius=${requestedRadius}, maxRadius=${maxRadius}, final radius=${radius} for ${enrichmentId}`);
 
     switch (enrichmentId) {
       case 'elev':
@@ -3065,53 +3084,113 @@ export class EnrichmentService {
       case 'national_marine_sanctuaries':
         return await this.getNationalMarineSanctuaries(lat, lon, radius);
       
-      // BLM National GTLF Public Managed Trails - Proximity query only (max 25 miles)
+      // BLM National GTLF Public Managed Trails - Proximity query only (max 50 miles)
       case 'blm_national_trails':
         return await this.getBLMNationalTrails(lat, lon, radius);
       
-      // BLM National GTLF Public Motorized Trails - Proximity query only (max 25 miles)
+      // BLM National GTLF Public Motorized Trails - Proximity query only (max 50 miles)
       case 'blm_national_motorized_trails':
         return await this.getBLMNationalMotorizedTrails(lat, lon, radius);
       
-      // BLM National GTLF Public Nonmotorized Trails - Proximity query only (max 25 miles)
+      // BLM National GTLF Public Nonmotorized Trails - Proximity query only (max 50 miles)
       case 'blm_national_nonmotorized_trails':
         return await this.getBLMNationalNonmotorizedTrails(lat, lon, radius);
       
-      // BLM National Grazing Pasture Polygons - Point-in-polygon and proximity query (max 25 miles)
+      // BLM National GTLF Limited Public Motorized Roads - Proximity query (max 50 miles)
+      case 'blm_national_limited_motorized_roads':
+        return await this.getBLMNationalLimitedMotorizedRoads(lat, lon, radius);
+      
+      // BLM National GTLF Public Motorized Roads - Proximity query (max 50 miles)
+      case 'blm_national_public_motorized_roads':
+        return await this.getBLMNationalPublicMotorizedRoads(lat, lon, radius);
+      
+      // BLM National Grazing Pasture Polygons - Point-in-polygon and proximity query (max 50 miles)
       case 'blm_national_grazing_pastures':
         return await this.getBLMNationalGrazingPastures(lat, lon, radius);
       
-      // BLM National Areas of Critical Environmental Concern - Point-in-polygon and proximity query (max 25 miles)
+      // BLM National Areas of Critical Environmental Concern - Point-in-polygon and proximity query (max 50 miles)
       case 'blm_national_acec':
         return await this.getBLMNationalACEC(lat, lon, radius);
       
-      // BLM National Sheep and Goat Billed Grazing Allotments - Point-in-polygon and proximity query (max 25 miles)
+      // BLM National Sheep and Goat Billed Grazing Allotments - Point-in-polygon and proximity query (max 50 miles)
       case 'blm_national_sheep_goat_grazing':
         return await this.getBLMNationalSheepGoatGrazing(lat, lon, radius);
       
-      // BLM National Sheep and Goat Authorized Grazing Allotments - Point-in-polygon and proximity query (max 25 miles)
+      // BLM National Sheep and Goat Authorized Grazing Allotments - Point-in-polygon and proximity query (max 50 miles)
       case 'blm_national_sheep_goat_authorized_grazing':
         return await this.getBLMNationalSheepGoatAuthorizedGrazing(lat, lon, radius);
       
-      // BLM National NLCS National Monuments and National Conservation Areas - Point-in-polygon and proximity query (max 25 miles)
+      // BLM National NLCS National Monuments and National Conservation Areas - Point-in-polygon and proximity query (max 50 miles)
       case 'blm_national_nlcs_monuments_ncas':
         return await this.getBLMNationalNLCSMonumentsNCAs(lat, lon, radius);
       
-      // BLM National Wild Horse and Burro Herd Areas - Point-in-polygon and proximity query (max 25 miles)
+      // BLM National Wild Horse and Burro Herd Areas - Point-in-polygon and proximity query (max 50 miles)
       case 'blm_national_wild_horse_burro_herd_areas':
         return await this.getBLMNationalWildHorseBurroHerdAreas(lat, lon, radius);
       
-      // BLM National Recreation Site Polygons - Point-in-polygon and proximity query (max 25 miles)
+      // BLM National Recreation Site Polygons - Point-in-polygon and proximity query (max 50 miles)
       case 'blm_national_recreation_sites':
         return await this.getBLMNationalRecreationSites(lat, lon, radius);
       
-      // BLM National Fire Perimeters - Point-in-polygon and proximity query (max 25 miles)
+      // BLM National Fire Perimeters - Point-in-polygon and proximity query (max 50 miles)
       case 'blm_national_fire_perimeters':
         return await this.getBLMNationalFirePerimeters(lat, lon, radius);
       
-      // BLM National Land and Water Conservation Fund (LWCF) Polygons - Point-in-polygon and proximity query (max 25 miles)
+      // BLM National Land and Water Conservation Fund (LWCF) Polygons - Point-in-polygon and proximity query (max 50 miles)
       case 'blm_national_lwcf':
         return await this.getBLMNationalLWCF(lat, lon, radius);
+      
+      // USFS Forest Boundaries - Point-in-polygon and proximity query (max 50 miles)
+      case 'usfs_forest_boundaries':
+        return await this.getUSFSForestBoundaries(lat, lon, radius);
+      
+      // USFS National Wilderness Areas - Point-in-polygon and proximity query (max 50 miles)
+      case 'usfs_wilderness_areas':
+        return await this.getUSFSWildernessAreas(lat, lon, radius);
+      
+      // USFS National Grassland Units - Point-in-polygon and proximity query (max 50 miles)
+      case 'usfs_national_grasslands':
+        return await this.getUSFSNationalGrasslands(lat, lon, radius);
+      
+      // USFS Hazardous Sites (CERCLA Sites) - Point-in-polygon and proximity query (max 50 miles)
+      case 'usfs_hazardous_sites':
+        return await this.getUSFSHazardousSites(lat, lon, radius);
+      
+      // USFS Office Locations - Proximity query (max 50 miles)
+      case 'usfs_office_locations':
+        return await this.getUSFSOfficeLocations(lat, lon, radius);
+      
+      // USFS Special Uses Communications Sites - Proximity query (max 50 miles)
+      case 'usfs_special_uses_communications_sites':
+        return await this.getUSFSSpecialUsesCommunicationsSites(lat, lon, radius);
+      
+      // USFS Administrative Boundaries - Point-in-polygon and proximity query (max 50 miles)
+      case 'usfs_administrative_boundaries':
+        return await this.getUSFSAdministrativeBoundaries(lat, lon, radius);
+      
+      // USFS Recreation Opportunities - Proximity query (max 50 miles)
+      case 'usfs_recreation_opportunities':
+        return await this.getUSFSRecreationOpportunities(lat, lon, radius);
+      
+      // USFS Recreation Area Activities - Proximity query (max 50 miles)
+      case 'usfs_recreation_area_activities':
+        return await this.getUSFSRecreationAreaActivities(lat, lon, radius);
+      
+      // USFS Roads Closed to Motorized Uses - Proximity query (max 50 miles)
+      case 'usfs_roads_closed_to_motorized':
+        return await this.getUSFSRoadsClosedToMotorized(lat, lon, radius);
+      
+      // USFS System Roads - Proximity query (max 50 miles)
+      case 'usfs_system_roads':
+        return await this.getUSFSSystemRoads(lat, lon, radius);
+      
+      // USFS MVUM - Proximity query (max 50 miles)
+      case 'usfs_mvum':
+        return await this.getUSFSMVUM(lat, lon, radius);
+      
+      // USFS Colorado Roadless Areas - Point-in-polygon and proximity query (max 50 miles)
+      case 'usfs_co_roadless_areas':
+        return await this.getUSFSCORoadlessAreas(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -7331,7 +7410,10 @@ out center;`;
   // PAD-US Public Access Query
   private async getPADUSPublicAccess(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
-      console.log(`🏞️ PAD-US Public Access query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      // Cap radius at 50 miles
+      const cappedRadius = radiusMiles ? Math.min(radiusMiles, 50.0) : 50.0;
+      
+      console.log(`🏞️ PAD-US Public Access query for coordinates [${lat}, ${lon}] within ${cappedRadius} miles`);
       
       // First, check if point is inside any public land (point-in-polygon)
       const insideQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=true`;
@@ -7371,7 +7453,7 @@ out center;`;
       }
       
       // Now query for nearby public lands within radius
-      const radiusKm = radiusMiles * 1.60934;
+      const radiusKm = cappedRadius * 1.60934;
       const nearbyQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=true&outSR=4326&maxRecordCount=1000`;
       
       console.log(`🔗 PAD-US Nearby Query URL: ${nearbyQueryUrl}`);
@@ -7470,8 +7552,8 @@ out center;`;
         padus_public_access_summary: isInsidePublicLand 
           ? `Location is inside ${insideLandInfo?.unitName || 'public land'} (${insideLandInfo?.managerName || 'Unknown Manager'}) - ${insideLandInfo?.publicAccess || 'Unknown'} access`
           : nearbyLands.length > 0
-            ? `Location is not within any public land. Found ${nearbyLands.length} public lands within ${radiusMiles} miles.`
-            : `No public lands found within ${radiusMiles} miles of this location.`
+            ? `Location is not within any public land. Found ${nearbyLands.length} public lands within ${cappedRadius} miles.`
+            : `No public lands found within ${cappedRadius} miles of this location.`
       };
       
     } catch (error) {
@@ -7483,9 +7565,12 @@ out center;`;
   // PAD-US Protection Status Query
   private async getPADUSProtectionStatus(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
-      console.log(`🛡️ PAD-US Protection Status query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      // Cap radius at 50 miles
+      const cappedRadius = radiusMiles ? Math.min(radiusMiles, 50.0) : 50.0;
       
-      const radiusKm = radiusMiles * 1.60934;
+      console.log(`🛡️ PAD-US Protection Status query for coordinates [${lat}, ${lon}] within ${cappedRadius} miles`);
+      
+      const radiusKm = cappedRadius * 1.60934;
       const queryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,GAP_Sts,IUCN_Cat,Category,Unit_Nm,Pub_Access&f=json&returnGeometry=true&outSR=4326&maxRecordCount=1000`;
       
       console.log(`🔗 PAD-US Protection Status Query URL: ${queryUrl}`);
@@ -7554,7 +7639,7 @@ out center;`;
           console.log(`✅ PAD-US Protection Status: Created _all array with ${allFeatures.length} features, first has geometry:`, !!(allFeatures[0] as any)?.geometry);
           return allFeatures;
         })(),
-        padus_protection_status_summary: `Found ${features.length} protected areas within ${radiusMiles} miles with various protection levels and categories.`
+        padus_protection_status_summary: `Found ${features.length} protected areas within ${cappedRadius} miles with various protection levels and categories.`
       };
       
     } catch (error) {
@@ -11069,8 +11154,8 @@ out center;`;
     try {
       console.log(`🥾 Fetching BLM National GTLF Public Managed Trails data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 0.5;
       
       const trails = await getBLMNationalTrailsData(lat, lon, cappedRadius);
       
@@ -11118,8 +11203,8 @@ out center;`;
     try {
       console.log(`🏍️ Fetching BLM National GTLF Public Motorized Trails data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 0.5;
       
       const trails = await getBLMNationalMotorizedTrailsData(lat, lon, cappedRadius);
       
@@ -11168,8 +11253,8 @@ out center;`;
     try {
       console.log(`🚶 Fetching BLM National GTLF Public Nonmotorized Trails data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 0.5;
       
       const trails = await getBLMNationalNonmotorizedTrailsData(lat, lon, cappedRadius);
       
@@ -11214,12 +11299,114 @@ out center;`;
     }
   }
 
+  private async getBLMNationalLimitedMotorizedRoads(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching BLM National GTLF Limited Public Motorized Roads data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const roads = await getBLMNationalLimitedMotorizedRoadsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (roads.length === 0) {
+        result.blm_national_limited_motorized_roads_count = 0;
+        result.blm_national_limited_motorized_roads_all = [];
+        result.blm_national_limited_motorized_roads_summary = 'No limited motorized roads found.';
+      } else {
+        result.blm_national_limited_motorized_roads_count = roads.length;
+        result.blm_national_limited_motorized_roads_all = roads.map(road => ({
+          ...road.attributes,
+          objectId: road.objectId,
+          routePrimaryName: road.routePrimaryName,
+          routeSecondarySpecialDesignationName: road.routeSecondarySpecialDesignationName,
+          adminState: road.adminState,
+          planAssetClass: road.planAssetClass,
+          planModeTransport: road.planModeTransport,
+          planOhvRouteDsgntn: road.planOhvRouteDsgntn,
+          observeRouteUseClass: road.observeRouteUseClass,
+          gisMiles: road.gisMiles,
+          blmMiles: road.blmMiles,
+          geometry: road.geometry,
+          distance_miles: road.distance_miles
+        }));
+        
+        result.blm_national_limited_motorized_roads_summary = `Found ${roads.length} limited motorized road(s).`;
+      }
+      
+      console.log(`✅ BLM National GTLF Limited Public Motorized Roads data processed:`, {
+        totalCount: result.blm_national_limited_motorized_roads_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National GTLF Limited Public Motorized Roads data:', error);
+      return {
+        blm_national_limited_motorized_roads_count: 0,
+        blm_national_limited_motorized_roads_all: [],
+        blm_national_limited_motorized_roads_summary: 'Error querying limited motorized roads'
+      };
+    }
+  }
+
+  private async getBLMNationalPublicMotorizedRoads(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching BLM National GTLF Public Motorized Roads data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const roads = await getBLMNationalPublicMotorizedRoadsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (roads.length === 0) {
+        result.blm_national_public_motorized_roads_count = 0;
+        result.blm_national_public_motorized_roads_all = [];
+        result.blm_national_public_motorized_roads_summary = 'No public motorized roads found.';
+      } else {
+        result.blm_national_public_motorized_roads_count = roads.length;
+        result.blm_national_public_motorized_roads_all = roads.map(road => ({
+          ...road.attributes,
+          objectId: road.objectId,
+          routePrimaryName: road.routePrimaryName,
+          routeSecondarySpecialDesignationName: road.routeSecondarySpecialDesignationName,
+          adminState: road.adminState,
+          planAssetClass: road.planAssetClass,
+          planModeTransport: road.planModeTransport,
+          planOhvRouteDsgntn: road.planOhvRouteDsgntn,
+          observeRouteUseClass: road.observeRouteUseClass,
+          gisMiles: road.gisMiles,
+          blmMiles: road.blmMiles,
+          geometry: road.geometry,
+          distance_miles: road.distance_miles
+        }));
+        
+        result.blm_national_public_motorized_roads_summary = `Found ${roads.length} public motorized road(s).`;
+      }
+      
+      console.log(`✅ BLM National GTLF Public Motorized Roads data processed:`, {
+        totalCount: result.blm_national_public_motorized_roads_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National GTLF Public Motorized Roads data:', error);
+      return {
+        blm_national_public_motorized_roads_count: 0,
+        blm_national_public_motorized_roads_all: [],
+        blm_national_public_motorized_roads_summary: 'Error querying public motorized roads'
+      };
+    }
+  }
+
   private async getBLMNationalGrazingPastures(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`🐄 Fetching BLM National Grazing Pasture Polygons data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
       
       const pastures = await getBLMNationalGrazingPasturesData(lat, lon, cappedRadius);
       
@@ -11287,8 +11474,8 @@ out center;`;
     try {
       console.log(`🌿 Fetching BLM National Areas of Critical Environmental Concern data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
       
       const acecs = await getBLMNationalACECData(lat, lon, cappedRadius);
       
@@ -11367,8 +11554,8 @@ out center;`;
     try {
       console.log(`🐑 Fetching BLM National Sheep and Goat Billed Grazing Allotments data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
       
       const allotments = await getBLMNationalSheepGoatGrazingData(lat, lon, cappedRadius);
       
@@ -11435,8 +11622,8 @@ out center;`;
     try {
       console.log(`🐐 Fetching BLM National Sheep and Goat Authorized Grazing Allotments data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
       
       const allotments = await getBLMNationalSheepGoatAuthorizedGrazingData(lat, lon, cappedRadius);
       
@@ -11501,8 +11688,8 @@ out center;`;
     try {
       console.log(`🏛️ Fetching BLM National NLCS National Monuments and National Conservation Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
       
       const monumentsNCAs = await getBLMNationalNLCSMonumentsNCAsData(lat, lon, cappedRadius);
       
@@ -11567,8 +11754,8 @@ out center;`;
     try {
       console.log(`🐴 Fetching BLM National Wild Horse and Burro Herd Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
       
       const herdAreas = await getBLMNationalWildHorseBurroHerdAreasData(lat, lon, cappedRadius);
       
@@ -11638,8 +11825,8 @@ out center;`;
     try {
       console.log(`🏕️ Fetching BLM National Recreation Sites data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
       
       const recreationSites = await getBLMNationalRecreationSitesData(lat, lon, cappedRadius);
       
@@ -11710,8 +11897,8 @@ out center;`;
     try {
       console.log(`🔥 Fetching BLM National Fire Perimeters data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
       
       const firePerimeters = await getBLMNationalFirePerimetersData(lat, lon, cappedRadius);
       
@@ -11788,8 +11975,8 @@ out center;`;
     try {
       console.log(`💧 Fetching BLM National Land and Water Conservation Fund (LWCF) Polygons data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
       
-      // Cap radius at 25 miles
-      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
       
       const lwcfPolygons = await getBLMNationalLWCFData(lat, lon, cappedRadius);
       
@@ -11864,6 +12051,704 @@ out center;`;
         blm_national_lwcf_count: 0,
         blm_national_lwcf_all: [],
         blm_national_lwcf_summary: 'Error querying LWCF polygons'
+      };
+    }
+  }
+
+  private async getUSFSForestBoundaries(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌲 Fetching USFS Forest Boundaries data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const forests = await getUSFSForestBoundariesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (forests.length === 0) {
+        result.usfs_forest_boundaries_containing = null;
+        result.usfs_forest_boundaries_containing_message = 'No forest boundary found containing this location';
+        result.usfs_forest_boundaries_count = 0;
+        result.usfs_forest_boundaries_all = [];
+        result.usfs_forest_boundaries_summary = 'No forest boundaries found.';
+      } else {
+        // Get the first containing forest (should typically be only one for point-in-polygon)
+        const containingForest = forests.find(f => f.isContaining) || forests[0];
+        
+        if (containingForest && containingForest.isContaining) {
+          const forestLabel = containingForest.forestName || containingForest.forestCode || 'Unknown Forest';
+          result.usfs_forest_boundaries_containing = forestLabel;
+          result.usfs_forest_boundaries_containing_message = `Location is within forest boundary: ${forestLabel}${containingForest.regionName ? ` (Region: ${containingForest.regionName})` : ''}`;
+        } else {
+          result.usfs_forest_boundaries_containing = null;
+          result.usfs_forest_boundaries_containing_message = 'No forest boundary found containing this location';
+        }
+        
+        result.usfs_forest_boundaries_count = forests.length;
+        result.usfs_forest_boundaries_all = forests.map(forest => ({
+          ...forest.attributes,
+          objectId: forest.objectId,
+          forestName: forest.forestName,
+          forestCode: forest.forestCode,
+          regionCode: forest.regionCode,
+          regionName: forest.regionName,
+          geometry: forest.geometry,
+          distance_miles: forest.distance_miles,
+          isContaining: forest.isContaining
+        }));
+        
+        result.usfs_forest_boundaries_summary = `Found ${forests.length} forest boundary(ies)${containingForest && containingForest.isContaining ? ' (location is within a forest boundary)' : ''}.`;
+      }
+      
+      console.log(`✅ USFS Forest Boundaries data processed:`, {
+        totalCount: result.usfs_forest_boundaries_count,
+        containing: result.usfs_forest_boundaries_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS Forest Boundaries data:', error);
+      return {
+        usfs_forest_boundaries_containing: null,
+        usfs_forest_boundaries_containing_message: 'Error querying forest boundaries',
+        usfs_forest_boundaries_count: 0,
+        usfs_forest_boundaries_all: [],
+        usfs_forest_boundaries_summary: 'Error querying forest boundaries'
+      };
+    }
+  }
+
+  private async getUSFSWildernessAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏔️ Fetching USFS National Wilderness Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const wildernessAreas = await getUSFSWildernessAreasData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (wildernessAreas.length === 0) {
+        result.usfs_wilderness_areas_containing = null;
+        result.usfs_wilderness_areas_containing_message = 'No wilderness area found containing this location';
+        result.usfs_wilderness_areas_count = 0;
+        result.usfs_wilderness_areas_all = [];
+        result.usfs_wilderness_areas_summary = 'No wilderness areas found.';
+      } else {
+        // Get the first containing wilderness area (should typically be only one for point-in-polygon)
+        const containingWilderness = wildernessAreas.find(w => w.isContaining) || wildernessAreas[0];
+        
+        if (containingWilderness && containingWilderness.isContaining) {
+          const wildernessLabel = containingWilderness.wildernessName || containingWilderness.wildernessCode || 'Unknown Wilderness Area';
+          result.usfs_wilderness_areas_containing = wildernessLabel;
+          result.usfs_wilderness_areas_containing_message = `Location is within wilderness area: ${wildernessLabel}`;
+        } else {
+          result.usfs_wilderness_areas_containing = null;
+          result.usfs_wilderness_areas_containing_message = 'No wilderness area found containing this location';
+        }
+        
+        result.usfs_wilderness_areas_count = wildernessAreas.length;
+        result.usfs_wilderness_areas_all = wildernessAreas.map(wilderness => ({
+          ...wilderness.attributes,
+          objectId: wilderness.objectId,
+          wildernessName: wilderness.wildernessName,
+          wildernessCode: wilderness.wildernessCode,
+          geometry: wilderness.geometry,
+          distance_miles: wilderness.distance_miles,
+          isContaining: wilderness.isContaining
+        }));
+        
+        result.usfs_wilderness_areas_summary = `Found ${wildernessAreas.length} wilderness area(s)${containingWilderness && containingWilderness.isContaining ? ' (location is within a wilderness area)' : ''}.`;
+      }
+      
+      console.log(`✅ USFS National Wilderness Areas data processed:`, {
+        totalCount: result.usfs_wilderness_areas_count,
+        containing: result.usfs_wilderness_areas_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS National Wilderness Areas data:', error);
+      return {
+        usfs_wilderness_areas_containing: null,
+        usfs_wilderness_areas_containing_message: 'Error querying wilderness areas',
+        usfs_wilderness_areas_count: 0,
+        usfs_wilderness_areas_all: [],
+        usfs_wilderness_areas_summary: 'Error querying wilderness areas'
+      };
+    }
+  }
+
+  private async getUSFSNationalGrasslands(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌾 Fetching USFS National Grassland Units data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const grasslands = await getUSFSNationalGrasslandsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (grasslands.length === 0) {
+        result.usfs_national_grasslands_containing = null;
+        result.usfs_national_grasslands_containing_message = 'No grassland unit found containing this location';
+        result.usfs_national_grasslands_count = 0;
+        result.usfs_national_grasslands_all = [];
+        result.usfs_national_grasslands_summary = 'No grassland units found.';
+      } else {
+        // Get the first containing grassland (should typically be only one for point-in-polygon)
+        const containingGrassland = grasslands.find(g => g.isContaining) || grasslands[0];
+        
+        if (containingGrassland && containingGrassland.isContaining) {
+          const grasslandLabel = containingGrassland.grasslandName || containingGrassland.grasslandId || 'Unknown Grassland';
+          result.usfs_national_grasslands_containing = grasslandLabel;
+          result.usfs_national_grasslands_containing_message = `Location is within grassland unit: ${grasslandLabel}`;
+        } else {
+          result.usfs_national_grasslands_containing = null;
+          result.usfs_national_grasslands_containing_message = 'No grassland unit found containing this location';
+        }
+        
+        result.usfs_national_grasslands_count = grasslands.length;
+        result.usfs_national_grasslands_all = grasslands.map(grassland => ({
+          ...grassland.attributes,
+          objectId: grassland.objectId,
+          grasslandName: grassland.grasslandName,
+          grasslandId: grassland.grasslandId,
+          gisAcres: grassland.gisAcres,
+          geometry: grassland.geometry,
+          distance_miles: grassland.distance_miles,
+          isContaining: grassland.isContaining
+        }));
+        
+        result.usfs_national_grasslands_summary = `Found ${grasslands.length} grassland unit(s)${containingGrassland && containingGrassland.isContaining ? ' (location is within a grassland unit)' : ''}.`;
+      }
+      
+      console.log(`✅ USFS National Grassland Units data processed:`, {
+        totalCount: result.usfs_national_grasslands_count,
+        containing: result.usfs_national_grasslands_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS National Grassland Units data:', error);
+      return {
+        usfs_national_grasslands_containing: null,
+        usfs_national_grasslands_containing_message: 'Error querying grassland units',
+        usfs_national_grasslands_count: 0,
+        usfs_national_grasslands_all: [],
+        usfs_national_grasslands_summary: 'Error querying grassland units'
+      };
+    }
+  }
+
+  private async getUSFSHazardousSites(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⚠️ Fetching USFS Hazardous Sites (CERCLA Sites) data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const { getUSFSHazardousSitesData } = await import('../adapters/usfsHazardousSites');
+      const hazardousSites = await getUSFSHazardousSitesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (hazardousSites.length === 0) {
+        result.usfs_hazardous_sites_containing = null;
+        result.usfs_hazardous_sites_containing_message = 'No hazardous site found containing this location';
+        result.usfs_hazardous_sites_count = 0;
+        result.usfs_hazardous_sites_all = [];
+        result.usfs_hazardous_sites_summary = 'No hazardous sites found.';
+      } else {
+        // Get the first containing hazardous site (should typically be only one for point-in-polygon)
+        const containingSite = hazardousSites.find(s => s.isContaining) || hazardousSites[0];
+        
+        if (containingSite && containingSite.isContaining) {
+          const siteLabel = containingSite.areaName || containingSite.caseName || 'Unknown Hazardous Site';
+          result.usfs_hazardous_sites_containing = siteLabel;
+          result.usfs_hazardous_sites_containing_message = `Location is within hazardous site: ${siteLabel}${containingSite.areaType ? ` (Type: ${containingSite.areaType})` : ''}`;
+        } else {
+          result.usfs_hazardous_sites_containing = null;
+          result.usfs_hazardous_sites_containing_message = 'No hazardous site found containing this location';
+        }
+        
+        result.usfs_hazardous_sites_count = hazardousSites.length;
+        result.usfs_hazardous_sites_all = hazardousSites.map(site => ({
+          ...site.attributes,
+          objectId: site.objectId,
+          caseName: site.caseName,
+          localCaseId: site.localCaseId,
+          areaName: site.areaName,
+          areaType: site.areaType,
+          boundaryStatus: site.boundaryStatus,
+          officialAcres: site.officialAcres,
+          gisAcres: site.gisAcres,
+          region: site.region,
+          comments: site.comments,
+          actionDate: site.actionDate,
+          geometry: site.geometry,
+          distance_miles: site.distance_miles,
+          isContaining: site.isContaining
+        }));
+        
+        result.usfs_hazardous_sites_summary = `Found ${hazardousSites.length} hazardous site(s)${containingSite && containingSite.isContaining ? ' (location is within a hazardous site)' : ''}.`;
+      }
+      
+      console.log(`✅ USFS Hazardous Sites (CERCLA Sites) data processed:`, {
+        totalCount: result.usfs_hazardous_sites_count,
+        containing: result.usfs_hazardous_sites_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS Hazardous Sites (CERCLA Sites) data:', error);
+      return {
+        usfs_hazardous_sites_containing: null,
+        usfs_hazardous_sites_containing_message: 'Error querying hazardous sites',
+        usfs_hazardous_sites_count: 0,
+        usfs_hazardous_sites_all: [],
+        usfs_hazardous_sites_summary: 'Error querying hazardous sites'
+      };
+    }
+  }
+
+  private async getUSFSOfficeLocations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏢 Fetching USFS Office Locations data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      const offices = await getUSFSOfficeLocationsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (offices.length === 0) {
+        result.usfs_office_locations_count = 0;
+        result.usfs_office_locations_all = [];
+        result.usfs_office_locations_summary = 'No office locations found.';
+      } else {
+        result.usfs_office_locations_count = offices.length;
+        result.usfs_office_locations_all = offices.map(office => ({
+          ...office.attributes,
+          objectId: office.objectId,
+          officeName: office.officeName,
+          officeType: office.officeType,
+          forestName: office.forestName,
+          address: office.address,
+          phone: office.phone,
+          geometry: office.geometry,
+          distance_miles: office.distance_miles
+        }));
+        
+        result.usfs_office_locations_summary = `Found ${offices.length} office location(s).`;
+      }
+      
+      console.log(`✅ USFS Office Locations data processed:`, {
+        totalCount: result.usfs_office_locations_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS Office Locations data:', error);
+      return {
+        usfs_office_locations_count: 0,
+        usfs_office_locations_all: [],
+        usfs_office_locations_summary: 'Error querying office locations'
+      };
+    }
+  }
+
+  private async getUSFSSpecialUsesCommunicationsSites(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📡 Fetching USFS Special Uses Communications Sites data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      const sites = await getUSFSSpecialUsesCommunicationsSitesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (sites.length === 0) {
+        result.usfs_special_uses_communications_sites_count = 0;
+        result.usfs_special_uses_communications_sites_all = [];
+        result.usfs_special_uses_communications_sites_summary = 'No communications sites found.';
+      } else {
+        result.usfs_special_uses_communications_sites_count = sites.length;
+        result.usfs_special_uses_communications_sites_all = sites.map(site => ({
+          ...site.attributes,
+          objectId: site.objectId,
+          siteName: site.siteName,
+          siteType: site.siteType,
+          forestName: site.forestName,
+          geometry: site.geometry,
+          distance_miles: site.distance_miles
+        }));
+        
+        result.usfs_special_uses_communications_sites_summary = `Found ${sites.length} communications site(s).`;
+      }
+      
+      console.log(`✅ USFS Special Uses Communications Sites data processed:`, {
+        totalCount: result.usfs_special_uses_communications_sites_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS Special Uses Communications Sites data:', error);
+      return {
+        usfs_special_uses_communications_sites_count: 0,
+        usfs_special_uses_communications_sites_all: [],
+        usfs_special_uses_communications_sites_summary: 'Error querying communications sites'
+      };
+    }
+  }
+
+  private async getUSFSAdministrativeBoundaries(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching USFS Administrative Boundaries data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      const boundaries = await getUSFSAdministrativeBoundariesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (boundaries.length === 0) {
+        result.usfs_administrative_boundaries_containing = null;
+        result.usfs_administrative_boundaries_containing_message = 'No administrative boundary found containing this location';
+        result.usfs_administrative_boundaries_count = 0;
+        result.usfs_administrative_boundaries_all = [];
+        result.usfs_administrative_boundaries_summary = 'No administrative boundaries found.';
+      } else {
+        const containingBoundary = boundaries.find(b => b.isContaining) || boundaries[0];
+        
+        if (containingBoundary && containingBoundary.isContaining) {
+          const boundaryLabel = containingBoundary.boundaryName || containingBoundary.forestName || 'Unknown Boundary';
+          result.usfs_administrative_boundaries_containing = boundaryLabel;
+          result.usfs_administrative_boundaries_containing_message = `Location is within administrative boundary: ${boundaryLabel}`;
+        } else {
+          result.usfs_administrative_boundaries_containing = null;
+          result.usfs_administrative_boundaries_containing_message = 'No administrative boundary found containing this location';
+        }
+        
+        result.usfs_administrative_boundaries_count = boundaries.length;
+        result.usfs_administrative_boundaries_all = boundaries.map(boundary => ({
+          ...boundary.attributes,
+          objectId: boundary.objectId,
+          boundaryName: boundary.boundaryName,
+          boundaryType: boundary.boundaryType,
+          forestName: boundary.forestName,
+          geometry: boundary.geometry,
+          distance_miles: boundary.distance_miles,
+          isContaining: boundary.isContaining
+        }));
+        
+        result.usfs_administrative_boundaries_summary = `Found ${boundaries.length} administrative boundary(ies)${containingBoundary && containingBoundary.isContaining ? ' (location is within an administrative boundary)' : ''}.`;
+      }
+      
+      console.log(`✅ USFS Administrative Boundaries data processed:`, {
+        totalCount: result.usfs_administrative_boundaries_count,
+        containing: result.usfs_administrative_boundaries_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS Administrative Boundaries data:', error);
+      return {
+        usfs_administrative_boundaries_containing: null,
+        usfs_administrative_boundaries_containing_message: 'Error querying administrative boundaries',
+        usfs_administrative_boundaries_count: 0,
+        usfs_administrative_boundaries_all: [],
+        usfs_administrative_boundaries_summary: 'Error querying administrative boundaries'
+      };
+    }
+  }
+
+  private async getUSFSRecreationOpportunities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏕️ Fetching USFS Recreation Opportunities data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      const opportunities = await getUSFSRecreationOpportunitiesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (opportunities.length === 0) {
+        result.usfs_recreation_opportunities_count = 0;
+        result.usfs_recreation_opportunities_all = [];
+        result.usfs_recreation_opportunities_summary = 'No recreation opportunities found.';
+      } else {
+        result.usfs_recreation_opportunities_count = opportunities.length;
+        result.usfs_recreation_opportunities_all = opportunities.map(opp => ({
+          ...opp.attributes,
+          objectId: opp.objectId,
+          recAreaName: opp.recAreaName,
+          forestName: opp.forestName,
+          markerActivity: opp.markerActivity,
+          markerActivityGroup: opp.markerActivityGroup,
+          openSeasonStart: opp.openSeasonStart,
+          openSeasonEnd: opp.openSeasonEnd,
+          recAreaUrl: opp.recAreaUrl,
+          recAreaId: opp.recAreaId,
+          geometry: opp.geometry,
+          distance_miles: opp.distance_miles
+        }));
+        
+        result.usfs_recreation_opportunities_summary = `Found ${opportunities.length} recreation opportunity(ies).`;
+      }
+      
+      console.log(`✅ USFS Recreation Opportunities data processed:`, {
+        totalCount: result.usfs_recreation_opportunities_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS Recreation Opportunities data:', error);
+      return {
+        usfs_recreation_opportunities_count: 0,
+        usfs_recreation_opportunities_all: [],
+        usfs_recreation_opportunities_summary: 'Error querying recreation opportunities'
+      };
+    }
+  }
+
+  private async getUSFSRecreationAreaActivities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🎯 Fetching USFS Recreation Area Activities data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      const activities = await getUSFSRecreationAreaActivitiesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (activities.length === 0) {
+        result.usfs_recreation_area_activities_count = 0;
+        result.usfs_recreation_area_activities_all = [];
+        result.usfs_recreation_area_activities_summary = 'No recreation area activities found.';
+      } else {
+        result.usfs_recreation_area_activities_count = activities.length;
+        result.usfs_recreation_area_activities_all = activities.map(activity => ({
+          ...activity.attributes,
+          objectId: activity.objectId,
+          recAreaName: activity.recAreaName,
+          forestName: activity.forestName,
+          markerActivity: activity.markerActivity,
+          markerActivityGroup: activity.markerActivityGroup,
+          activityName: activity.activityName,
+          parentActivityName: activity.parentActivityName,
+          openSeasonStart: activity.openSeasonStart,
+          openSeasonEnd: activity.openSeasonEnd,
+          recAreaUrl: activity.recAreaUrl,
+          recAreaId: activity.recAreaId,
+          geometry: activity.geometry,
+          distance_miles: activity.distance_miles
+        }));
+        
+        result.usfs_recreation_area_activities_summary = `Found ${activities.length} recreation area activity(ies).`;
+      }
+      
+      console.log(`✅ USFS Recreation Area Activities data processed:`, {
+        totalCount: result.usfs_recreation_area_activities_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS Recreation Area Activities data:', error);
+      return {
+        usfs_recreation_area_activities_count: 0,
+        usfs_recreation_area_activities_all: [],
+        usfs_recreation_area_activities_summary: 'Error querying recreation area activities'
+      };
+    }
+  }
+
+  private async getUSFSRoadsClosedToMotorized(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚫 Fetching USFS Roads Closed to Motorized Uses data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      const roads = await getUSFSRoadsClosedToMotorizedData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (roads.length === 0) {
+        result.usfs_roads_closed_to_motorized_count = 0;
+        result.usfs_roads_closed_to_motorized_all = [];
+        result.usfs_roads_closed_to_motorized_summary = 'No roads closed to motorized uses found.';
+      } else {
+        result.usfs_roads_closed_to_motorized_count = roads.length;
+        result.usfs_roads_closed_to_motorized_all = roads.map(road => ({
+          ...road.attributes,
+          objectId: road.objectId,
+          roadName: road.roadName,
+          roadNumber: road.roadNumber,
+          forestName: road.forestName,
+          geometry: road.geometry,
+          distance_miles: road.distance_miles
+        }));
+        
+        result.usfs_roads_closed_to_motorized_summary = `Found ${roads.length} road(s) closed to motorized uses.`;
+      }
+      
+      console.log(`✅ USFS Roads Closed to Motorized Uses data processed:`, {
+        totalCount: result.usfs_roads_closed_to_motorized_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS Roads Closed to Motorized Uses data:', error);
+      return {
+        usfs_roads_closed_to_motorized_count: 0,
+        usfs_roads_closed_to_motorized_all: [],
+        usfs_roads_closed_to_motorized_summary: 'Error querying roads closed to motorized uses'
+      };
+    }
+  }
+
+  private async getUSFSSystemRoads(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching USFS System Roads data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      const roads = await getUSFSSystemRoadsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (roads.length === 0) {
+        result.usfs_system_roads_count = 0;
+        result.usfs_system_roads_all = [];
+        result.usfs_system_roads_summary = 'No system roads found.';
+      } else {
+        result.usfs_system_roads_count = roads.length;
+        result.usfs_system_roads_all = roads.map(road => ({
+          ...road.attributes,
+          objectId: road.objectId,
+          roadName: road.roadName,
+          roadNumber: road.roadNumber,
+          forestName: road.forestName,
+          roadType: road.roadType,
+          geometry: road.geometry,
+          distance_miles: road.distance_miles
+        }));
+        
+        result.usfs_system_roads_summary = `Found ${roads.length} system road(s).`;
+      }
+      
+      console.log(`✅ USFS System Roads data processed:`, {
+        totalCount: result.usfs_system_roads_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS System Roads data:', error);
+      return {
+        usfs_system_roads_count: 0,
+        usfs_system_roads_all: [],
+        usfs_system_roads_summary: 'Error querying system roads'
+      };
+    }
+  }
+
+  private async getUSFSMVUM(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚗 Fetching USFS MVUM data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      const routes = await getUSFSMVUMData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (routes.length === 0) {
+        result.usfs_mvum_count = 0;
+        result.usfs_mvum_all = [];
+        result.usfs_mvum_summary = 'No MVUM routes found.';
+      } else {
+        result.usfs_mvum_count = routes.length;
+        result.usfs_mvum_all = routes.map(route => ({
+          ...route.attributes,
+          objectId: route.objectId,
+          routeName: route.routeName,
+          routeNumber: route.routeNumber,
+          forestName: route.forestName,
+          vehicleType: route.vehicleType,
+          seasonOfUse: route.seasonOfUse,
+          geometry: route.geometry,
+          distance_miles: route.distance_miles
+        }));
+        
+        result.usfs_mvum_summary = `Found ${routes.length} MVUM route(s).`;
+      }
+      
+      console.log(`✅ USFS MVUM data processed:`, {
+        totalCount: result.usfs_mvum_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS MVUM data:', error);
+      return {
+        usfs_mvum_count: 0,
+        usfs_mvum_all: [],
+        usfs_mvum_summary: 'Error querying MVUM routes'
+      };
+    }
+  }
+
+  private async getUSFSCORoadlessAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏔️ Fetching USFS Colorado Roadless Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      const areas = await getUSFSCORoadlessAreasData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (areas.length === 0) {
+        result.usfs_co_roadless_areas_containing = null;
+        result.usfs_co_roadless_areas_containing_message = 'No roadless area found containing this location';
+        result.usfs_co_roadless_areas_count = 0;
+        result.usfs_co_roadless_areas_all = [];
+        result.usfs_co_roadless_areas_summary = 'No roadless areas found.';
+      } else {
+        const containingArea = areas.find(a => a.isContaining) || areas[0];
+        
+        if (containingArea && containingArea.isContaining) {
+          const areaLabel = containingArea.areaName || 'Unknown Roadless Area';
+          result.usfs_co_roadless_areas_containing = areaLabel;
+          result.usfs_co_roadless_areas_containing_message = `Location is within roadless area: ${areaLabel}`;
+        } else {
+          result.usfs_co_roadless_areas_containing = null;
+          result.usfs_co_roadless_areas_containing_message = 'No roadless area found containing this location';
+        }
+        
+        result.usfs_co_roadless_areas_count = areas.length;
+        result.usfs_co_roadless_areas_all = areas.map(area => ({
+          ...area.attributes,
+          objectId: area.objectId,
+          areaName: area.areaName,
+          areaType: area.areaType,
+          forestName: area.forestName,
+          geometry: area.geometry,
+          distance_miles: area.distance_miles,
+          isContaining: area.isContaining
+        }));
+        
+        result.usfs_co_roadless_areas_summary = `Found ${areas.length} roadless area(s)${containingArea && containingArea.isContaining ? ' (location is within a roadless area)' : ''}.`;
+      }
+      
+      console.log(`✅ USFS Colorado Roadless Areas data processed:`, {
+        totalCount: result.usfs_co_roadless_areas_count,
+        containing: result.usfs_co_roadless_areas_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching USFS Colorado Roadless Areas data:', error);
+      return {
+        usfs_co_roadless_areas_containing: null,
+        usfs_co_roadless_areas_containing_message: 'Error querying roadless areas',
+        usfs_co_roadless_areas_count: 0,
+        usfs_co_roadless_areas_all: [],
+        usfs_co_roadless_areas_summary: 'Error querying roadless areas'
       };
     }
   }

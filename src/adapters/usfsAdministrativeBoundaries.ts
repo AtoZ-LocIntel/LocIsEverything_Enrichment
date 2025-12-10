@@ -1,19 +1,16 @@
 /**
- * BLM National Sheep and Goat Authorized Grazing Allotments Adapter
- * Queries BLM National Sheep and Goat Authorized Grazing Allotments polygon feature service
+ * USFS Administrative Boundaries Adapter
+ * Queries USFS Administrative Boundaries polygon feature service
  * Supports point-in-polygon and proximity queries up to 50 miles
  */
 
-const BASE_SERVICE_URL = 'https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Sheep_and_Goat_Authorized_Grazing_Allotments/FeatureServer/2';
+const BASE_SERVICE_URL = 'https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_ForestSystemBoundaries_01/MapServer/1';
 
-export interface BLMNationalSheepGoatAuthorizedGrazingInfo {
+export interface USFSAdministrativeBoundaryInfo {
   objectId: string | null;
-  allotName: string | null;
-  stateAllotNum: string | null;
-  status: string | null;
-  source: string | null;
-  trAllotNum: string | null;
-  sumAcres: number | null;
+  boundaryName: string | null;
+  boundaryType: string | null;
+  forestName: string | null;
   geometry?: any; // ESRI geometry for drawing on map
   distance_miles?: number; // For proximity queries
   isContaining?: boolean; // True if point is within polygon
@@ -21,19 +18,17 @@ export interface BLMNationalSheepGoatAuthorizedGrazingInfo {
 }
 
 /**
- * Check if a point is inside a polygon using ray casting algorithm
+ * Check if a point is inside a single ring (polygon part) using ray casting algorithm
  */
-function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean {
-  if (!rings || rings.length === 0) return false;
+function pointInRing(lat: number, lon: number, ring: number[][]): boolean {
+  if (!ring || ring.length === 0) return false;
   
-  const outerRing = rings[0];
   let inside = false;
-  
-  for (let i = 0, j = outerRing.length - 1; i < outerRing.length; j = i++) {
-    const xi = outerRing[i][0];
-    const yi = outerRing[i][1];
-    const xj = outerRing[j][0];
-    const yj = outerRing[j][1];
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0];
+    const yi = ring[i][1];
+    const xj = ring[j][0];
+    const yj = ring[j][1];
     
     const intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
     if (intersect) inside = !inside;
@@ -43,20 +38,43 @@ function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean 
 }
 
 /**
- * Calculate distance from point to nearest edge of polygon
+ * Check if a point is inside a polygon (handles multipolygon features)
  */
-function distanceToPolygon(lat: number, lon: number, rings: number[][][]): number {
-  if (!rings || rings.length === 0) return Infinity;
+function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean {
+  if (!rings || rings.length === 0) return false;
+  
+  const outerRing = rings[0];
+  let inside = pointInRing(lat, lon, outerRing);
+  
+  if (inside && rings.length > 1) {
+    for (let i = 1; i < rings.length; i++) {
+      if (pointInRing(lat, lon, rings[i])) {
+        inside = false;
+        break;
+      }
+    }
+  }
+  
+  return inside;
+}
+
+function pointInMultipolygon(lat: number, lon: number, geometry: any): boolean {
+  if (!geometry) return false;
+  if (geometry.rings && Array.isArray(geometry.rings)) {
+    return pointInPolygon(lat, lon, geometry.rings);
+  }
+  return false;
+}
+
+function distanceToRing(lat: number, lon: number, ring: number[][]): number {
+  if (!ring || ring.length === 0) return Infinity;
   
   let minDistance = Infinity;
-  const outerRing = rings[0];
-  
-  for (let i = 0; i < outerRing.length; i++) {
-    const nextIndex = (i + 1) % outerRing.length;
-    const p1 = outerRing[i];
-    const p2 = outerRing[nextIndex];
+  for (let i = 0; i < ring.length; i++) {
+    const nextIndex = (i + 1) % ring.length;
+    const p1 = ring[i];
+    const p2 = ring[nextIndex];
     
-    // Calculate distance to line segment
     const dist = distanceToLineSegment(lat, lon, p1[1], p1[0], p2[1], p2[0]);
     if (dist < minDistance) minDistance = dist;
   }
@@ -64,9 +82,27 @@ function distanceToPolygon(lat: number, lon: number, rings: number[][][]): numbe
   return minDistance;
 }
 
-/**
- * Calculate distance from point to line segment
- */
+function distanceToPolygon(lat: number, lon: number, rings: number[][][]): number {
+  if (!rings || rings.length === 0) return Infinity;
+  
+  let minDistance = distanceToRing(lat, lon, rings[0]);
+  
+  for (let i = 1; i < rings.length; i++) {
+    const dist = distanceToRing(lat, lon, rings[i]);
+    if (dist < minDistance) minDistance = dist;
+  }
+  
+  return minDistance;
+}
+
+function distanceToMultipolygon(lat: number, lon: number, geometry: any): number {
+  if (!geometry) return Infinity;
+  if (geometry.rings && Array.isArray(geometry.rings)) {
+    return distanceToPolygon(lat, lon, geometry.rings);
+  }
+  return Infinity;
+}
+
 function distanceToLineSegment(
   px: number, py: number,
   x1: number, y1: number,
@@ -102,21 +138,19 @@ function distanceToLineSegment(
 }
 
 /**
- * Query BLM National Sheep and Goat Authorized Grazing Allotments for point-in-polygon and proximity
- * Supports proximity queries up to 25 miles
+ * Query USFS Administrative Boundaries for point-in-polygon and proximity
+ * Supports proximity queries up to 100 miles
  */
-export async function getBLMNationalSheepGoatAuthorizedGrazingData(
+export async function getUSFSAdministrativeBoundariesData(
   lat: number,
   lon: number,
   radiusMiles?: number
-): Promise<BLMNationalSheepGoatAuthorizedGrazingInfo[]> {
+): Promise<USFSAdministrativeBoundaryInfo[]> {
   try {
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
     
-    // Cap radius at 50 miles
     const maxRadius = radiusMiles ? Math.min(radiusMiles, 50.0) : 50.0;
-    
-    const results: BLMNationalSheepGoatAuthorizedGrazingInfo[] = [];
+    const results: USFSAdministrativeBoundaryInfo[] = [];
     
     // Point-in-polygon query first
     try {
@@ -128,8 +162,7 @@ export async function getBLMNationalSheepGoatAuthorizedGrazingData(
       
       const pointInPolyUrl = `${BASE_SERVICE_URL}/query?f=json&where=1%3D1&outFields=*&geometry=${encodeURIComponent(JSON.stringify(pointGeometry))}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&inSR=4326&outSR=4326&returnGeometry=true`;
       
-      console.log(`🐐 Querying BLM National Sheep and Goat Authorized Grazing Allotments for point-in-polygon at [${lat}, ${lon}]`);
-      console.log(`🔗 BLM Sheep/Goat Authorized Grazing Point-in-Polygon Query URL: ${pointInPolyUrl}`);
+      console.log(`🏛️ Querying USFS Administrative Boundaries for point-in-polygon at [${lat}, ${lon}]`);
       
       const pointInPolyData = await fetchJSONSmart(pointInPolyUrl) as any;
       
@@ -138,29 +171,22 @@ export async function getBLMNationalSheepGoatAuthorizedGrazingData(
           const attributes = feature.attributes || {};
           const geometry = feature.geometry || null;
           
-          // Verify point is actually inside polygon
           let isContaining = false;
-          if (geometry && geometry.rings) {
-            isContaining = pointInPolygon(lat, lon, geometry.rings);
+          if (geometry) {
+            isContaining = pointInMultipolygon(lat, lon, geometry);
           }
           
           if (isContaining) {
             const objectId = attributes.OBJECTID !== null && attributes.OBJECTID !== undefined ? attributes.OBJECTID.toString() : null;
-            const allotName = attributes.ALLOT_NAME || attributes.Allot_Name || attributes.allot_name || null;
-            const stateAllotNum = attributes.ST_ALLOT_NUM || attributes.St_Allot_Num || attributes.st_allot_num || null;
-            const status = attributes.Status || attributes.status || null;
-            const source = attributes.Source || attributes.source || null;
-            const trAllotNum = attributes.TR_ALLOT_NUM || attributes.Tr_Allot_Num || attributes.tr_allot_num || null;
-            const sumAcres = attributes.SUM_ACRES !== null && attributes.SUM_ACRES !== undefined ? Number(attributes.SUM_ACRES) : null;
+            const boundaryName = attributes.BOUNDARYNAME || attributes.BoundaryName || attributes.boundaryname || attributes.FORESTNAME || attributes.ForestName || attributes.forestname || null;
+            const boundaryType = attributes.BOUNDARYTYPE || attributes.BoundaryType || attributes.boundarytype || attributes.TYPE || attributes.Type || attributes.type || null;
+            const forestName = attributes.FORESTNAME || attributes.ForestName || attributes.forestname || null;
             
             results.push({
               objectId: objectId,
-              allotName: allotName,
-              stateAllotNum: stateAllotNum,
-              status: status,
-              source: source,
-              trAllotNum: trAllotNum,
-              sumAcres: sumAcres,
+              boundaryName: boundaryName,
+              boundaryType: boundaryType,
+              forestName: forestName,
               geometry: geometry,
               distance_miles: 0,
               isContaining: true,
@@ -170,12 +196,12 @@ export async function getBLMNationalSheepGoatAuthorizedGrazingData(
         });
       }
       
-      console.log(`✅ Found ${results.length} BLM Sheep/Goat Authorized Grazing Allotment(s) containing the point`);
+      console.log(`✅ Found ${results.length} USFS Administrative Boundary(ies) containing the point`);
     } catch (error) {
       console.error(`❌ Point-in-polygon query failed:`, error);
     }
     
-    // Proximity query (if radius is provided)
+    // Proximity query
     if (maxRadius > 0) {
       try {
         const radiusMeters = maxRadius * 1609.34;
@@ -194,13 +220,13 @@ export async function getBLMNationalSheepGoatAuthorizedGrazingData(
           const proximityUrl = `${BASE_SERVICE_URL}/query?f=json&where=1%3D1&outFields=*&geometry=${encodeURIComponent(JSON.stringify(proximityGeometry))}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusMeters}&units=esriSRUnit_Meter&inSR=4326&outSR=4326&returnGeometry=true&resultRecordCount=${batchSize}&resultOffset=${resultOffset}`;
           
           if (resultOffset === 0) {
-            console.log(`🐐 Querying BLM National Sheep and Goat Authorized Grazing Allotments for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
+            console.log(`🏛️ Querying USFS Administrative Boundaries for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
           }
           
           const proximityData = await fetchJSONSmart(proximityUrl) as any;
           
           if (proximityData.error) {
-            console.error('❌ BLM Sheep/Goat Authorized Grazing API Error:', proximityData.error);
+            console.error('❌ USFS Administrative Boundaries API Error:', proximityData.error);
             break;
           }
           
@@ -219,37 +245,29 @@ export async function getBLMNationalSheepGoatAuthorizedGrazingData(
           }
         }
         
-        console.log(`✅ Fetched ${allFeatures.length} total BLM Sheep/Goat Authorized Grazing Allotments for proximity`);
+        console.log(`✅ Fetched ${allFeatures.length} total USFS Administrative Boundaries for proximity`);
         
-        // Process proximity features
         allFeatures.forEach((feature: any) => {
           const attributes = feature.attributes || {};
           const geometry = feature.geometry || null;
           
-          // Check if already added as containing
           const objectId = attributes.OBJECTID !== null && attributes.OBJECTID !== undefined ? attributes.OBJECTID.toString() : null;
           const alreadyAdded = results.some(r => r.objectId === objectId && r.isContaining);
           
-          if (!alreadyAdded && geometry && geometry.rings) {
-            const distance = distanceToPolygon(lat, lon, geometry.rings);
-            const distanceMiles = distance * 69; // Approximate conversion (1 degree lat ≈ 69 miles)
+          if (!alreadyAdded && geometry) {
+            const distance = distanceToMultipolygon(lat, lon, geometry);
+            const distanceMiles = distance * 69;
             
             if (distanceMiles <= maxRadius) {
-              const allotName = attributes.ALLOT_NAME || attributes.Allot_Name || attributes.allot_name || null;
-              const stateAllotNum = attributes.ST_ALLOT_NUM || attributes.St_Allot_Num || attributes.st_allot_num || null;
-              const status = attributes.Status || attributes.status || null;
-              const source = attributes.Source || attributes.source || null;
-              const trAllotNum = attributes.TR_ALLOT_NUM || attributes.Tr_Allot_Num || attributes.tr_allot_num || null;
-              const sumAcres = attributes.SUM_ACRES !== null && attributes.SUM_ACRES !== undefined ? Number(attributes.SUM_ACRES) : null;
+              const boundaryName = attributes.BOUNDARYNAME || attributes.BoundaryName || attributes.boundaryname || attributes.FORESTNAME || attributes.ForestName || attributes.forestname || null;
+              const boundaryType = attributes.BOUNDARYTYPE || attributes.BoundaryType || attributes.boundarytype || attributes.TYPE || attributes.Type || attributes.type || null;
+              const forestName = attributes.FORESTNAME || attributes.ForestName || attributes.forestname || null;
               
               results.push({
                 objectId: objectId,
-                allotName: allotName,
-                stateAllotNum: stateAllotNum,
-                status: status,
-                source: source,
-                trAllotNum: trAllotNum,
-                sumAcres: sumAcres,
+                boundaryName: boundaryName,
+                boundaryType: boundaryType,
+                forestName: forestName,
                 geometry: geometry,
                 distance_miles: Number(distanceMiles.toFixed(2)),
                 isContaining: false,
@@ -263,17 +281,16 @@ export async function getBLMNationalSheepGoatAuthorizedGrazingData(
       }
     }
     
-    // Sort by containing first, then by distance
     results.sort((a, b) => {
       if (a.isContaining && !b.isContaining) return -1;
       if (!a.isContaining && b.isContaining) return 1;
       return (a.distance_miles || 0) - (b.distance_miles || 0);
     });
     
-    console.log(`✅ BLM National Sheep and Goat Authorized Grazing Allotments: Found ${results.length} allotment(s)`);
+    console.log(`✅ USFS Administrative Boundaries: Found ${results.length} boundary(ies)`);
     return results;
   } catch (error) {
-    console.error('❌ Error querying BLM National Sheep and Goat Authorized Grazing Allotments data:', error);
+    console.error('❌ Error querying USFS Administrative Boundaries data:', error);
     throw error;
   }
 }

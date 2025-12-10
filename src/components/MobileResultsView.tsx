@@ -303,8 +303,8 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_airports') || key.includes('poi_railroads') || key.includes('poi_gas')) {
       return 'Transportation';
     }
-    // Check BLM and PADUS before AT/PCT to avoid false matches
-    if (key.includes('blm_') || key.includes('padus_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
+    // Check BLM, PADUS, and USFS before AT/PCT to avoid false matches
+    if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
       return 'Public Lands';
     }
     if (key.startsWith('at_') || (key.includes('at_') && !key.includes('blm_'))) {

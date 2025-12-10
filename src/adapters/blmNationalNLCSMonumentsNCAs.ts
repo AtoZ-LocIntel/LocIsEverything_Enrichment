@@ -1,7 +1,7 @@
 /**
  * BLM National NLCS National Monuments and National Conservation Areas Adapter
  * Queries BLM National NLCS National Monuments and National Conservation Areas polygon feature service
- * Supports point-in-polygon and proximity queries up to 25 miles
+ * Supports point-in-polygon and proximity queries up to 50 miles
  */
 
 const BASE_SERVICE_URL = 'https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_NLCS_National_Monuments_National_Conservation_Areas_Polygons/FeatureServer/0';
@@ -113,8 +113,8 @@ export async function getBLMNationalNLCSMonumentsNCAsData(
   try {
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
     
-    // Cap radius at 25 miles
-    const maxRadius = radiusMiles ? Math.min(radiusMiles, 25.0) : 25.0;
+    // Cap radius at 50 miles
+    const maxRadius = radiusMiles ? Math.min(radiusMiles, 50.0) : 50.0;
     
     const results: BLMNationalNLCSMonumentsNCAInfo[] = [];
     

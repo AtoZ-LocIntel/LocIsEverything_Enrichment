@@ -1,7 +1,7 @@
 /**
  * BLM National Land and Water Conservation Fund (LWCF) Polygons Adapter
  * Queries BLM National Land and Water Conservation Fund (LWCF) Polygons polygon feature service
- * Supports point-in-polygon and proximity queries up to 25 miles
+ * Supports point-in-polygon and proximity queries up to 50 miles
  */
 
 const BASE_SERVICE_URL = 'https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Land_and_Water_Conservation_Fund_LWCF_Polygons/FeatureServer/2';
@@ -210,8 +210,8 @@ export async function getBLMNationalLWCFData(
   try {
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
     
-    // Cap radius at 25 miles
-    const maxRadius = radiusMiles ? Math.min(radiusMiles, 25.0) : 25.0;
+    // Cap radius at 50 miles
+    const maxRadius = radiusMiles ? Math.min(radiusMiles, 50.0) : 50.0;
     
     const results: BLMNationalLWCFInfo[] = [];
     

@@ -329,6 +329,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'blm_national_trails': { icon: '🥾', color: '#059669', title: 'BLM National GTLF Public Managed Trails' },
   'blm_national_motorized_trails': { icon: '🏍️', color: '#dc2626', title: 'BLM National GTLF Public Motorized Trails' },
   'blm_national_nonmotorized_trails': { icon: '🚶', color: '#10b981', title: 'BLM National GTLF Public Nonmotorized Trails' },
+  'blm_national_limited_motorized_roads': { icon: '🛣️', color: '#ea580c', title: 'BLM National GTLF Limited Public Motorized Roads' },
+  'blm_national_public_motorized_roads': { icon: '🛣️', color: '#f97316', title: 'BLM National GTLF Public Motorized Roads' },
   'blm_national_grazing_pastures': { icon: '🐄', color: '#a16207', title: 'BLM National Grazing Pasture Polygons' },
   'blm_national_acec': { icon: '🌿', color: '#16a34a', title: 'BLM National Areas of Critical Environmental Concern' },
   'blm_national_sheep_goat_grazing': { icon: '🐑', color: '#ca8a04', title: 'BLM National Sheep and Goat Billed Grazing Allotments' },
@@ -338,6 +340,19 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'blm_national_recreation_sites': { icon: '🏕️', color: '#059669', title: 'BLM National Recreation Site Polygons' },
   'blm_national_fire_perimeters': { icon: '🔥', color: '#dc2626', title: 'BLM National Fire Perimeters' },
   'blm_national_lwcf': { icon: '💧', color: '#0284c7', title: 'BLM National Land and Water Conservation Fund (LWCF) Polygons' },
+  'usfs_forest_boundaries': { icon: '🌲', color: '#166534', title: 'USFS Forest Boundaries' },
+  'usfs_wilderness_areas': { icon: '🏔️', color: '#1e40af', title: 'USFS National Wilderness Areas' },
+  'usfs_national_grasslands': { icon: '🌾', color: '#ca8a04', title: 'USFS National Grassland Units' },
+  'usfs_hazardous_sites': { icon: '⚠️', color: '#dc2626', title: 'USFS Hazardous Sites (CERCLA Sites)' },
+  'usfs_office_locations': { icon: '🏢', color: '#059669', title: 'USFS Office Locations' },
+  'usfs_special_uses_communications_sites': { icon: '📡', color: '#0891b2', title: 'USFS Special Uses Communications Sites' },
+  'usfs_administrative_boundaries': { icon: '🏛️', color: '#1e40af', title: 'USFS Administrative Boundaries' },
+  'usfs_recreation_opportunities': { icon: '🏕️', color: '#059669', title: 'USFS Recreation Opportunities' },
+  'usfs_recreation_area_activities': { icon: '🎯', color: '#7c3aed', title: 'USFS Recreation Area Activities' },
+  'usfs_roads_closed_to_motorized': { icon: '🚫', color: '#dc2626', title: 'USFS Roads Closed to Motorized Uses' },
+  'usfs_system_roads': { icon: '🛣️', color: '#6b7280', title: 'USFS System Roads' },
+  'usfs_mvum': { icon: '🚗', color: '#f59e0b', title: 'USFS Motor Vehicle Use Map (MVUM)' },
+  'usfs_co_roadless_areas': { icon: '🏔️', color: '#059669', title: 'USFS Colorado Roadless Areas' },
   
   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
@@ -362,6 +377,12 @@ const createPOIIcon = (emoji: string, color: string) => {
     iconAnchor: [16, 16],
     popupAnchor: [0, -16]
   });
+};
+
+// Helper function to set layer metadata for tabbed popup functionality
+const setFeatureMetadata = (feature: L.Marker | L.Polygon | L.Polyline, layerType: string, layerTitle: string): void => {
+  (feature as any).__layerType = layerType;
+  (feature as any).__layerTitle = layerTitle;
 };
 
 const createPOIPopupContent = (poi: any, legendTitle: string, key: string): string => {
@@ -544,6 +565,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'blm_national_trails_all' || // Skip BLM National Trails array (handled separately for map drawing)
     key === 'blm_national_motorized_trails_all' || // Skip BLM National Motorized Trails array (handled separately for map drawing)
     key === 'blm_national_nonmotorized_trails_all' || // Skip BLM National Nonmotorized Trails array (handled separately for map drawing)
+    key === 'blm_national_limited_motorized_roads_all' || // Skip BLM National Limited Motorized Roads array (handled separately for map drawing)
+    key === 'blm_national_public_motorized_roads_all' || // Skip BLM National Public Motorized Roads array (handled separately for map drawing)
     key === 'blm_national_grazing_pastures_all' || // Skip BLM National Grazing Pastures array (handled separately for map drawing)
     key === 'blm_national_acec_all' || // Skip BLM National ACEC array (handled separately for map drawing)
     key === 'blm_national_sheep_goat_grazing_all' || // Skip BLM National Sheep/Goat Billed Grazing Allotments array (handled separately for map drawing)
@@ -553,6 +576,19 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'blm_national_recreation_sites_all' || // Skip BLM National Recreation Sites array (handled separately for map drawing)
     key === 'blm_national_fire_perimeters_all' || // Skip BLM National Fire Perimeters array (handled separately for map drawing)
     key === 'blm_national_lwcf_all' || // Skip BLM National LWCF Polygons array (handled separately for map drawing)
+    key === 'usfs_forest_boundaries_all' || // Skip USFS Forest Boundaries array (handled separately for map drawing)
+    key === 'usfs_wilderness_areas_all' || // Skip USFS Wilderness Areas array (handled separately for map drawing)
+    key === 'usfs_national_grasslands_all' || // Skip USFS National Grasslands array (handled separately for map drawing)
+    key === 'usfs_hazardous_sites_all' || // Skip USFS Hazardous Sites array (handled separately for map drawing)
+    key === 'usfs_office_locations_all' || // Skip USFS Office Locations array (handled separately for map drawing)
+    key === 'usfs_special_uses_communications_sites_all' || // Skip USFS Special Uses Communications Sites array (handled separately for map drawing)
+    key === 'usfs_administrative_boundaries_all' || // Skip USFS Administrative Boundaries array (handled separately for map drawing)
+    key === 'usfs_recreation_opportunities_all' || // Skip USFS Recreation Opportunities array (handled separately for map drawing)
+    key === 'usfs_recreation_area_activities_all' || // Skip USFS Recreation Area Activities array (handled separately for map drawing)
+    key === 'usfs_roads_closed_to_motorized_all' || // Skip USFS Roads Closed to Motorized Uses array (handled separately for map drawing)
+    key === 'usfs_system_roads_all' || // Skip USFS System Roads array (handled separately for map drawing)
+    key === 'usfs_mvum_all' || // Skip USFS MVUM array (handled separately for map drawing)
+    key === 'usfs_co_roadless_areas_all' || // Skip USFS Colorado Roadless Areas array (handled separately for map drawing)
     key === 'ma_regional_planning_agencies_all' || // Skip MA Regional Planning Agencies array (handled separately for map drawing)
     key === 'ma_acecs_all' || // Skip MA ACECs array (handled separately for map drawing)
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
@@ -13874,6 +13910,172 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing BLM National Nonmotorized Trails:', error);
       }
 
+      // Draw BLM National GTLF Limited Public Motorized Roads as polylines on the map
+      try {
+        if (enrichments.blm_national_limited_motorized_roads_all && Array.isArray(enrichments.blm_national_limited_motorized_roads_all)) {
+          let roadCount = 0;
+          enrichments.blm_national_limited_motorized_roads_all.forEach((road: any) => {
+            if (road.geometry && road.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = road.geometry.paths;
+                if (paths && paths.length > 0) {
+                  roadCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry paths are in [x, y] format (lon, lat) in WGS84
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const routeName = road.routePrimaryName || road.ROUTE_PRMRY_NM || road.Route_Prmry_Nm || 'Unknown Road';
+                    const adminState = road.adminState || road.ADMIN_ST || road.Admin_St || '';
+                    const planAssetClass = road.planAssetClass || road.PLAN_ASSET_CLASS || road.Plan_Asset_Class || '';
+                    const planModeTransport = road.planModeTransport || road.PLAN_MODE_TRNSPRT || road.Plan_Mode_Trnsprt || '';
+                    const observeRouteUseClass = road.observeRouteUseClass || road.OBSRVE_ROUTE_USE_CLASS || road.Obsrve_Route_Use_Class || '';
+                    const planOhvRouteDsgntn = road.planOhvRouteDsgntn || road.PLAN_OHV_ROUTE_DSGNTN || road.Plan_Ohv_Route_Dsgntn || '';
+                    const gisMiles = road.gisMiles !== null && road.gisMiles !== undefined ? road.gisMiles : null;
+                    const distance = road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles : 0;
+
+                    // Create polyline with orange color for limited motorized roads
+                    const polyline = L.polyline(latlngs, {
+                      color: '#ea580c', // Orange color for limited motorized roads
+                      weight: 4,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with road information
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🛣️ ${routeName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                          ${planAssetClass ? `<div><strong>Asset Class:</strong> ${planAssetClass}</div>` : ''}
+                          ${planModeTransport ? `<div><strong>Mode:</strong> ${planModeTransport}</div>` : ''}
+                          ${observeRouteUseClass ? `<div><strong>Use Class:</strong> ${observeRouteUseClass}</div>` : ''}
+                          ${planOhvRouteDsgntn ? `<div><strong>OHV Route Designation:</strong> ${planOhvRouteDsgntn}</div>` : ''}
+                          ${gisMiles !== null && gisMiles !== undefined ? `<div><strong>Length:</strong> ${gisMiles.toFixed(2)} miles</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                      </div>
+                    `;
+
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(map);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing BLM Limited Motorized Road polyline:', error);
+              }
+            }
+          });
+          
+          if (roadCount > 0) {
+            if (!legendAccumulator['blm_national_limited_motorized_roads']) {
+              legendAccumulator['blm_national_limited_motorized_roads'] = {
+                icon: '🛣️',
+                color: '#ea580c',
+                title: 'BLM National GTLF Limited Public Motorized Roads',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_limited_motorized_roads'].count += roadCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Limited Motorized Roads:', error);
+      }
+
+      // Draw BLM National GTLF Public Motorized Roads as polylines on the map
+      try {
+        if (enrichments.blm_national_public_motorized_roads_all && Array.isArray(enrichments.blm_national_public_motorized_roads_all)) {
+          let roadCount = 0;
+          enrichments.blm_national_public_motorized_roads_all.forEach((road: any) => {
+            if (road.geometry && road.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = road.geometry.paths;
+                if (paths && paths.length > 0) {
+                  roadCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry paths are in [x, y] format (lon, lat) in WGS84
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const routeName = road.routePrimaryName || road.ROUTE_PRMRY_NM || road.Route_Prmry_Nm || 'Unknown Road';
+                    const adminState = road.adminState || road.ADMIN_ST || road.Admin_St || '';
+                    const planAssetClass = road.planAssetClass || road.PLAN_ASSET_CLASS || road.Plan_Asset_Class || '';
+                    const planModeTransport = road.planModeTransport || road.PLAN_MODE_TRNSPRT || road.Plan_Mode_Trnsprt || '';
+                    const observeRouteUseClass = road.observeRouteUseClass || road.OBSRVE_ROUTE_USE_CLASS || road.Obsrve_Route_Use_Class || '';
+                    const planOhvRouteDsgntn = road.planOhvRouteDsgntn || road.PLAN_OHV_ROUTE_DSGNTN || road.Plan_Ohv_Route_Dsgntn || '';
+                    const gisMiles = road.gisMiles !== null && road.gisMiles !== undefined ? road.gisMiles : null;
+                    const distance = road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles : 0;
+
+                    // Create polyline with lighter orange color for public motorized roads
+                    const polyline = L.polyline(latlngs, {
+                      color: '#f97316', // Lighter orange color for public motorized roads
+                      weight: 4,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with road information
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🛣️ ${routeName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                          ${planAssetClass ? `<div><strong>Asset Class:</strong> ${planAssetClass}</div>` : ''}
+                          ${planModeTransport ? `<div><strong>Mode:</strong> ${planModeTransport}</div>` : ''}
+                          ${observeRouteUseClass ? `<div><strong>Use Class:</strong> ${observeRouteUseClass}</div>` : ''}
+                          ${planOhvRouteDsgntn ? `<div><strong>OHV Route Designation:</strong> ${planOhvRouteDsgntn}</div>` : ''}
+                          ${gisMiles !== null && gisMiles !== undefined ? `<div><strong>Length:</strong> ${gisMiles.toFixed(2)} miles</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                      </div>
+                    `;
+
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(map);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing BLM Public Motorized Road polyline:', error);
+              }
+            }
+          });
+          
+          if (roadCount > 0) {
+            if (!legendAccumulator['blm_national_public_motorized_roads']) {
+              legendAccumulator['blm_national_public_motorized_roads'] = {
+                icon: '🛣️',
+                color: '#f97316',
+                title: 'BLM National GTLF Public Motorized Roads',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_public_motorized_roads'].count += roadCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Public Motorized Roads:', error);
+      }
+
       // Draw BLM National Grazing Pasture Polygons as polygons on the map
       try {
         if (enrichments.blm_national_grazing_pastures_all && Array.isArray(enrichments.blm_national_grazing_pastures_all)) {
@@ -14751,6 +14953,1006 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing BLM National Land and Water Conservation Fund (LWCF) Polygons:', error);
+      }
+
+      // Draw USFS Forest Boundaries as polygons on the map
+      try {
+        if (enrichments.usfs_forest_boundaries_all && Array.isArray(enrichments.usfs_forest_boundaries_all)) {
+          let forestCount = 0;
+          enrichments.usfs_forest_boundaries_all.forEach((forest: any) => {
+            if (forest.geometry && forest.geometry.rings && Array.isArray(forest.geometry.rings)) {
+              try {
+                const rings = forest.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  // rings[0] is the outer ring, rings[1+] are holes
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  // Validate outer ring
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('USFS Forest Boundary outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = forest.isContaining;
+                  const color = isContaining ? '#166534' : '#22c55e'; // Dark green for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  // L.polygon can handle multiple rings (outer + holes) when passed as array of arrays
+                  // First array is outer ring, subsequent arrays are holes
+                  const forestPolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const forestName = forest.forestName || forest.FORESTNAME || forest.ForestName || forest.FOREST_NM || forest.Forest_Nm || 'Unknown Forest';
+                  const forestCode = forest.forestCode || forest.FORESTCODE || forest.ForestCode || forest.FOREST_CD || forest.Forest_Cd || null;
+                  const regionCode = forest.regionCode || forest.REGIONCODE || forest.RegionCode || forest.REGION_CD || forest.Region_Cd || null;
+                  const regionName = forest.regionName || forest.REGIONNAME || forest.RegionName || forest.REGION_NM || forest.Region_Nm || null;
+                  const forestId = forest.objectId || forest.OBJECTID || forest.objectid || null;
+                  const distance = forest.distance_miles !== null && forest.distance_miles !== undefined ? forest.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌲 ${forestName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${forestCode ? `<div><strong>Forest Code:</strong> ${forestCode}</div>` : ''}
+                        ${regionName ? `<div><strong>Region:</strong> ${regionName}</div>` : ''}
+                        ${regionCode ? `<div><strong>Region Code:</strong> ${regionCode}</div>` : ''}
+                        ${forestId ? `<div><strong>Forest ID:</strong> ${forestId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  forestPolygon.bindPopup(popupContent);
+                  forestPolygon.addTo(map);
+                  forestCount++;
+                  
+                  // Extend map bounds
+                  const polygonBounds = forestPolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing USFS Forest Boundary polygon:', error);
+              }
+            }
+          });
+          
+          if (forestCount > 0) {
+            if (!legendAccumulator['usfs_forest_boundaries']) {
+              legendAccumulator['usfs_forest_boundaries'] = {
+                icon: '🌲',
+                color: '#166534',
+                title: 'USFS Forest Boundaries',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_forest_boundaries'].count += forestCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS Forest Boundaries:', error);
+      }
+
+      // Draw USFS National Wilderness Areas as polygons on the map
+      try {
+        if (enrichments.usfs_wilderness_areas_all && Array.isArray(enrichments.usfs_wilderness_areas_all)) {
+          let wildernessCount = 0;
+          enrichments.usfs_wilderness_areas_all.forEach((wilderness: any) => {
+            if (wilderness.geometry && wilderness.geometry.rings && Array.isArray(wilderness.geometry.rings)) {
+              try {
+                const rings = wilderness.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('USFS Wilderness Area outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = wilderness.isContaining;
+                  const color = isContaining ? '#1e40af' : '#3b82f6'; // Blue for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const wildernessPolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const wildernessName = wilderness.wildernessName || wilderness.WILDERNESSNAME || wilderness.WildernessName || wilderness.WILDERNESS_NM || 'Unknown Wilderness Area';
+                  const wildernessCode = wilderness.wildernessCode || wilderness.WILDERNESSCODE || wilderness.WildernessCode || wilderness.WILDERNESS_CD || null;
+                  const wildernessId = wilderness.objectId || wilderness.OBJECTID || wilderness.objectid || null;
+                  const distance = wilderness.distance_miles !== null && wilderness.distance_miles !== undefined ? wilderness.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏔️ ${wildernessName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${wildernessCode ? `<div><strong>Wilderness Code:</strong> ${wildernessCode}</div>` : ''}
+                        ${wildernessId ? `<div><strong>Wilderness ID:</strong> ${wildernessId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  wildernessPolygon.bindPopup(popupContent);
+                  wildernessPolygon.addTo(map);
+                  wildernessCount++;
+                  
+                  const polygonBounds = wildernessPolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing USFS Wilderness Area polygon:', error);
+              }
+            }
+          });
+          
+          if (wildernessCount > 0) {
+            if (!legendAccumulator['usfs_wilderness_areas']) {
+              legendAccumulator['usfs_wilderness_areas'] = {
+                icon: '🏔️',
+                color: '#1e40af',
+                title: 'USFS National Wilderness Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_wilderness_areas'].count += wildernessCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS National Wilderness Areas:', error);
+      }
+
+      // Draw USFS National Grassland Units as polygons on the map
+      try {
+        if (enrichments.usfs_national_grasslands_all && Array.isArray(enrichments.usfs_national_grasslands_all)) {
+          let grasslandCount = 0;
+          enrichments.usfs_national_grasslands_all.forEach((grassland: any) => {
+            if (grassland.geometry && grassland.geometry.rings && Array.isArray(grassland.geometry.rings)) {
+              try {
+                const rings = grassland.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('USFS Grassland outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = grassland.isContaining;
+                  const color = isContaining ? '#ca8a04' : '#eab308'; // Yellow/tan for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const grasslandPolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const grasslandName = grassland.grasslandName || grassland.GRASSLANDNAME || grassland.GrasslandName || grassland.NATIONALGRASSLANDNAME || 'Unknown Grassland';
+                  const grasslandId = grassland.grasslandId || grassland.NATIONALGRASSLANDID || null;
+                  const gisAcres = grassland.gisAcres !== null && grassland.gisAcres !== undefined ? grassland.gisAcres : null;
+                  const grasslandObjId = grassland.objectId || grassland.OBJECTID || grassland.objectid || null;
+                  const distance = grassland.distance_miles !== null && grassland.distance_miles !== undefined ? grassland.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌾 ${grasslandName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${grasslandId ? `<div><strong>Grassland ID:</strong> ${grasslandId}</div>` : ''}
+                        ${gisAcres !== null && gisAcres !== undefined ? `<div><strong>Acres:</strong> ${gisAcres.toLocaleString()}</div>` : ''}
+                        ${grasslandObjId ? `<div><strong>Object ID:</strong> ${grasslandObjId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  grasslandPolygon.bindPopup(popupContent);
+                  grasslandPolygon.addTo(map);
+                  grasslandCount++;
+                  
+                  const polygonBounds = grasslandPolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing USFS Grassland polygon:', error);
+              }
+            }
+          });
+          
+          if (grasslandCount > 0) {
+            if (!legendAccumulator['usfs_national_grasslands']) {
+              legendAccumulator['usfs_national_grasslands'] = {
+                icon: '🌾',
+                color: '#ca8a04',
+                title: 'USFS National Grassland Units',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_national_grasslands'].count += grasslandCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS National Grassland Units:', error);
+      }
+
+      // Draw USFS Hazardous Sites (CERCLA Sites) as polygons on the map
+      try {
+        if (enrichments.usfs_hazardous_sites_all && Array.isArray(enrichments.usfs_hazardous_sites_all)) {
+          let siteCount = 0;
+          enrichments.usfs_hazardous_sites_all.forEach((site: any) => {
+            if (site.geometry && site.geometry.rings && Array.isArray(site.geometry.rings)) {
+              try {
+                const rings = site.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('USFS Hazardous Site outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = site.isContaining;
+                  const color = isContaining ? '#dc2626' : '#ef4444'; // Red for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const sitePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const areaName = site.areaName || site.AREANAME || site.AreaName || site.caseName || site.CASENAME || site.CaseName || 'Unknown Hazardous Site';
+                  const caseName = site.caseName || site.CASENAME || site.CaseName || null;
+                  const areaType = site.areaType || site.AREATYPE || site.AreaType || null;
+                  const boundaryStatus = site.boundaryStatus || site.BOUNDARYSTATUS || site.BoundaryStatus || null;
+                  const officialAcres = site.officialAcres !== null && site.officialAcres !== undefined ? site.officialAcres : null;
+                  const gisAcres = site.gisAcres !== null && site.gisAcres !== undefined ? site.gisAcres : null;
+                  const region = site.region || site.REGION || site.Region || null;
+                  const comments = site.comments || site.COMMENTS || site.Comments || null;
+                  const actionDate = site.actionDate || site.ACTIONDATE || null;
+                  const siteId = site.objectId || site.OBJECTID || site.objectid || null;
+                  const distance = site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ⚠️ ${areaName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${caseName ? `<div><strong>Case Name:</strong> ${caseName}</div>` : ''}
+                        ${areaType ? `<div><strong>Area Type:</strong> ${areaType}</div>` : ''}
+                        ${boundaryStatus ? `<div><strong>Boundary Status:</strong> ${boundaryStatus}</div>` : ''}
+                        ${officialAcres !== null && officialAcres !== undefined ? `<div><strong>Official Acres:</strong> ${officialAcres.toLocaleString()}</div>` : ''}
+                        ${gisAcres !== null && gisAcres !== undefined ? `<div><strong>GIS Acres:</strong> ${gisAcres.toLocaleString()}</div>` : ''}
+                        ${region ? `<div><strong>Region:</strong> ${region}</div>` : ''}
+                        ${actionDate ? `<div><strong>Action Date:</strong> ${actionDate}</div>` : ''}
+                        ${comments ? `<div><strong>Comments:</strong> ${comments}</div>` : ''}
+                        ${siteId ? `<div><strong>Site ID:</strong> ${siteId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  sitePolygon.bindPopup(popupContent);
+                  sitePolygon.addTo(map);
+                  siteCount++;
+                  
+                  const polygonBounds = sitePolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing USFS Hazardous Site polygon:', error);
+              }
+            }
+          });
+          
+          if (siteCount > 0) {
+            if (!legendAccumulator['usfs_hazardous_sites']) {
+              legendAccumulator['usfs_hazardous_sites'] = {
+                icon: '⚠️',
+                color: '#dc2626',
+                title: 'USFS Hazardous Sites (CERCLA Sites)',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_hazardous_sites'].count += siteCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS Hazardous Sites:', error);
+      }
+
+      // Draw USFS Office Locations as point markers on the map
+      try {
+        if (enrichments.usfs_office_locations_all && Array.isArray(enrichments.usfs_office_locations_all)) {
+          let officeCount = 0;
+          enrichments.usfs_office_locations_all.forEach((office: any) => {
+            if (office.geometry && office.geometry.x !== undefined && office.geometry.y !== undefined) {
+              try {
+                const lat = office.geometry.y;
+                const lon = office.geometry.x;
+                
+                const officeName = office.officeName || office.OFFICENAME || office.OfficeName || 'Unknown Office';
+                const officeType = office.officeType || office.OFFICETYPE || office.OfficeType || null;
+                const forestName = office.forestName || office.FORESTNAME || office.ForestName || null;
+                const address = office.address || office.ADDRESS || office.Address || null;
+                const phone = office.phone || office.PHONE || office.Phone || null;
+                const distance = office.distance_miles !== null && office.distance_miles !== undefined ? office.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🏢', '#059669')
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏢 ${officeName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${officeType ? `<div><strong>Type:</strong> ${officeType}</div>` : ''}
+                      ${forestName ? `<div><strong>Forest:</strong> ${forestName}</div>` : ''}
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${phone ? `<div><strong>Phone:</strong> ${phone}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                officeCount++;
+              } catch (error) {
+                console.error('Error drawing USFS Office Location marker:', error);
+              }
+            }
+          });
+          
+          if (officeCount > 0) {
+            if (!legendAccumulator['usfs_office_locations']) {
+              legendAccumulator['usfs_office_locations'] = {
+                icon: '🏢',
+                color: '#059669',
+                title: 'USFS Office Locations',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_office_locations'].count += officeCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS Office Locations:', error);
+      }
+
+      // Draw USFS Special Uses Communications Sites as point markers on the map
+      try {
+        if (enrichments.usfs_special_uses_communications_sites_all && Array.isArray(enrichments.usfs_special_uses_communications_sites_all)) {
+          let siteCount = 0;
+          enrichments.usfs_special_uses_communications_sites_all.forEach((site: any) => {
+            if (site.geometry && site.geometry.x !== undefined && site.geometry.y !== undefined) {
+              try {
+                const lat = site.geometry.y;
+                const lon = site.geometry.x;
+                
+                const siteName = site.siteName || site.SITENAME || site.SiteName || 'Unknown Communications Site';
+                const siteType = site.siteType || site.SITETYPE || site.SiteType || null;
+                const forestName = site.forestName || site.FORESTNAME || site.ForestName || null;
+                const distance = site.distance_miles !== null && site.distance_miles !== undefined ? site.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('📡', '#0891b2')
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      📡 ${siteName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${siteType ? `<div><strong>Type:</strong> ${siteType}</div>` : ''}
+                      ${forestName ? `<div><strong>Forest:</strong> ${forestName}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                siteCount++;
+              } catch (error) {
+                console.error('Error drawing USFS Special Uses Communications Site marker:', error);
+              }
+            }
+          });
+          
+          if (siteCount > 0) {
+            if (!legendAccumulator['usfs_special_uses_communications_sites']) {
+              legendAccumulator['usfs_special_uses_communications_sites'] = {
+                icon: '📡',
+                color: '#0891b2',
+                title: 'USFS Special Uses Communications Sites',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_special_uses_communications_sites'].count += siteCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS Special Uses Communications Sites:', error);
+      }
+
+      // Draw USFS Administrative Boundaries as polygons on the map
+      try {
+        if (enrichments.usfs_administrative_boundaries_all && Array.isArray(enrichments.usfs_administrative_boundaries_all)) {
+          let boundaryCount = 0;
+          enrichments.usfs_administrative_boundaries_all.forEach((boundary: any) => {
+            if (boundary.geometry && boundary.geometry.rings && Array.isArray(boundary.geometry.rings)) {
+              try {
+                const rings = boundary.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('USFS Administrative Boundary outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = boundary.isContaining;
+                  const color = isContaining ? '#1e40af' : '#3b82f6';
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const boundaryPolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const boundaryName = boundary.boundaryName || boundary.BOUNDARYNAME || boundary.BoundaryName || boundary.forestName || boundary.FORESTNAME || 'Unknown Boundary';
+                  const boundaryType = boundary.boundaryType || boundary.BOUNDARYTYPE || boundary.BoundaryType || null;
+                  const forestName = boundary.forestName || boundary.FORESTNAME || boundary.ForestName || null;
+                  const distance = boundary.distance_miles !== null && boundary.distance_miles !== undefined ? boundary.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏛️ ${boundaryName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${boundaryType ? `<div><strong>Type:</strong> ${boundaryType}</div>` : ''}
+                        ${forestName ? `<div><strong>Forest:</strong> ${forestName}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  boundaryPolygon.bindPopup(popupContent);
+                  boundaryPolygon.addTo(map);
+                  boundaryCount++;
+                  
+                  const polygonBounds = boundaryPolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing USFS Administrative Boundary polygon:', error);
+              }
+            }
+          });
+          
+          if (boundaryCount > 0) {
+            if (!legendAccumulator['usfs_administrative_boundaries']) {
+              legendAccumulator['usfs_administrative_boundaries'] = {
+                icon: '🏛️',
+                color: '#1e40af',
+                title: 'USFS Administrative Boundaries',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_administrative_boundaries'].count += boundaryCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS Administrative Boundaries:', error);
+      }
+
+      // Draw USFS Recreation Opportunities as point markers on the map
+      try {
+        if (enrichments.usfs_recreation_opportunities_all && Array.isArray(enrichments.usfs_recreation_opportunities_all)) {
+          let oppCount = 0;
+          enrichments.usfs_recreation_opportunities_all.forEach((opp: any) => {
+            if (opp.geometry && opp.geometry.x !== undefined && opp.geometry.y !== undefined) {
+              try {
+                const lat = opp.geometry.y;
+                const lon = opp.geometry.x;
+                
+                const recAreaName = opp.recAreaName || opp.RECAREANAME || opp.RecAreaName || 'Unknown Recreation Area';
+                const forestName = opp.forestName || opp.FORESTNAME || opp.ForestName || null;
+                const markerActivity = opp.markerActivity || opp.MARKERACTIVITY || opp.MarkerActivity || null;
+                const markerActivityGroup = opp.markerActivityGroup || opp.MARKERACTIVITYGROUP || opp.MarkerActivityGroup || null;
+                const openSeasonStart = opp.openSeasonStart || opp.OPEN_SEASON_START || opp.Open_Season_Start || null;
+                const openSeasonEnd = opp.openSeasonEnd || opp.OPEN_SEASON_END || opp.Open_Season_End || null;
+                const recAreaUrl = opp.recAreaUrl || opp.RECAREAURL || opp.RecAreaUrl || null;
+                const distance = opp.distance_miles !== null && opp.distance_miles !== undefined ? opp.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🏕️', '#059669')
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏕️ ${recAreaName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${forestName ? `<div><strong>Forest:</strong> ${forestName}</div>` : ''}
+                      ${markerActivity ? `<div><strong>Activity:</strong> ${markerActivity}</div>` : ''}
+                      ${markerActivityGroup ? `<div><strong>Activity Group:</strong> ${markerActivityGroup}</div>` : ''}
+                      ${openSeasonStart ? `<div><strong>Season Start:</strong> ${openSeasonStart}</div>` : ''}
+                      ${openSeasonEnd ? `<div><strong>Season End:</strong> ${openSeasonEnd}</div>` : ''}
+                      ${recAreaUrl ? `<div><strong>URL:</strong> <a href="${recAreaUrl}" target="_blank">${recAreaUrl}</a></div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                oppCount++;
+              } catch (error) {
+                console.error('Error drawing USFS Recreation Opportunity marker:', error);
+              }
+            }
+          });
+          
+          if (oppCount > 0) {
+            if (!legendAccumulator['usfs_recreation_opportunities']) {
+              legendAccumulator['usfs_recreation_opportunities'] = {
+                icon: '🏕️',
+                color: '#059669',
+                title: 'USFS Recreation Opportunities',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_recreation_opportunities'].count += oppCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS Recreation Opportunities:', error);
+      }
+
+      // Draw USFS Recreation Area Activities as point markers on the map
+      try {
+        if (enrichments.usfs_recreation_area_activities_all && Array.isArray(enrichments.usfs_recreation_area_activities_all)) {
+          let activityCount = 0;
+          enrichments.usfs_recreation_area_activities_all.forEach((activity: any) => {
+            if (activity.geometry && activity.geometry.x !== undefined && activity.geometry.y !== undefined) {
+              try {
+                const lat = activity.geometry.y;
+                const lon = activity.geometry.x;
+                
+                const recAreaName = activity.recAreaName || activity.RECAREANAME || activity.RecAreaName || 'Unknown Recreation Area';
+                const forestName = activity.forestName || activity.FORESTNAME || activity.ForestName || null;
+                const markerActivity = activity.markerActivity || activity.MARKERACTIVITY || activity.MarkerActivity || null;
+                const markerActivityGroup = activity.markerActivityGroup || activity.MARKERACTIVITYGROUP || activity.MarkerActivityGroup || null;
+                const activityName = activity.activityName || activity.ACTIVITYNAME || activity.ActivityName || null;
+                const parentActivityName = activity.parentActivityName || activity.PARENTACTIVITYNAME || activity.ParentActivityName || null;
+                const openSeasonStart = activity.openSeasonStart || activity.OPEN_SEASON_START || activity.Open_Season_Start || null;
+                const openSeasonEnd = activity.openSeasonEnd || activity.OPEN_SEASON_END || activity.Open_Season_End || null;
+                const recAreaUrl = activity.recAreaUrl || activity.RECAREAURL || activity.RecAreaUrl || null;
+                const distance = activity.distance_miles !== null && activity.distance_miles !== undefined ? activity.distance_miles : 0;
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🎯', '#7c3aed')
+                });
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🎯 ${recAreaName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${forestName ? `<div><strong>Forest:</strong> ${forestName}</div>` : ''}
+                      ${activityName ? `<div><strong>Activity:</strong> ${activityName}</div>` : ''}
+                      ${parentActivityName ? `<div><strong>Parent Activity:</strong> ${parentActivityName}</div>` : ''}
+                      ${markerActivity ? `<div><strong>Marker Activity:</strong> ${markerActivity}</div>` : ''}
+                      ${markerActivityGroup ? `<div><strong>Activity Group:</strong> ${markerActivityGroup}</div>` : ''}
+                      ${openSeasonStart ? `<div><strong>Season Start:</strong> ${openSeasonStart}</div>` : ''}
+                      ${openSeasonEnd ? `<div><strong>Season End:</strong> ${openSeasonEnd}</div>` : ''}
+                      ${recAreaUrl ? `<div><strong>URL:</strong> <a href="${recAreaUrl}" target="_blank">${recAreaUrl}</a></div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                activityCount++;
+              } catch (error) {
+                console.error('Error drawing USFS Recreation Area Activity marker:', error);
+              }
+            }
+          });
+          
+          if (activityCount > 0) {
+            if (!legendAccumulator['usfs_recreation_area_activities']) {
+              legendAccumulator['usfs_recreation_area_activities'] = {
+                icon: '🎯',
+                color: '#7c3aed',
+                title: 'USFS Recreation Area Activities',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_recreation_area_activities'].count += activityCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS Recreation Area Activities:', error);
+      }
+
+      // Draw USFS Roads Closed to Motorized Uses as polylines on the map
+      try {
+        if (enrichments.usfs_roads_closed_to_motorized_all && Array.isArray(enrichments.usfs_roads_closed_to_motorized_all)) {
+          let roadCount = 0;
+          enrichments.usfs_roads_closed_to_motorized_all.forEach((road: any) => {
+            if (road.geometry && road.geometry.paths && Array.isArray(road.geometry.paths)) {
+              try {
+                road.geometry.paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 2) {
+                    return;
+                  }
+                  
+                  const roadName = road.roadName || road.ROADNAME || road.RoadName || road.roadNumber || road.ROADNUMBER || 'Unknown Road';
+                  const roadNumber = road.roadNumber || road.ROADNUMBER || road.RoadNumber || null;
+                  const forestName = road.forestName || road.FORESTNAME || road.ForestName || null;
+                  const distance = road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles : 0;
+                  
+                  const polyline = L.polyline(latlngs, {
+                    color: '#dc2626',
+                    weight: 3,
+                    opacity: 0.8
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🚫 ${roadName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${roadNumber ? `<div><strong>Road Number:</strong> ${roadNumber}</div>` : ''}
+                        ${forestName ? `<div><strong>Forest:</strong> ${forestName}</div>` : ''}
+                        <div><strong>Status:</strong> Closed to Motorized Uses</div>
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent);
+                  polyline.addTo(map);
+                  roadCount++;
+                  
+                  const polylineBounds = polyline.getBounds();
+                  if (polylineBounds.isValid()) {
+                    bounds.extend(polylineBounds);
+                  }
+                });
+              } catch (error) {
+                console.error('Error drawing USFS Road Closed to Motorized Uses polyline:', error);
+              }
+            }
+          });
+          
+          if (roadCount > 0) {
+            if (!legendAccumulator['usfs_roads_closed_to_motorized']) {
+              legendAccumulator['usfs_roads_closed_to_motorized'] = {
+                icon: '🚫',
+                color: '#dc2626',
+                title: 'USFS Roads Closed to Motorized Uses',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_roads_closed_to_motorized'].count += roadCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS Roads Closed to Motorized Uses:', error);
+      }
+
+      // Draw USFS System Roads as polylines on the map
+      try {
+        if (enrichments.usfs_system_roads_all && Array.isArray(enrichments.usfs_system_roads_all)) {
+          let roadCount = 0;
+          enrichments.usfs_system_roads_all.forEach((road: any) => {
+            if (road.geometry && road.geometry.paths && Array.isArray(road.geometry.paths)) {
+              try {
+                road.geometry.paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 2) {
+                    return;
+                  }
+                  
+                  const roadName = road.roadName || road.ROADNAME || road.RoadName || road.roadNumber || road.ROADNUMBER || 'Unknown Road';
+                  const roadNumber = road.roadNumber || road.ROADNUMBER || road.RoadNumber || null;
+                  const forestName = road.forestName || road.FORESTNAME || road.ForestName || null;
+                  const roadType = road.roadType || road.ROADTYPE || road.RoadType || null;
+                  const distance = road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles : 0;
+                  
+                  const polyline = L.polyline(latlngs, {
+                    color: '#6b7280',
+                    weight: 2,
+                    opacity: 0.7
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🛣️ ${roadName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${roadNumber ? `<div><strong>Road Number:</strong> ${roadNumber}</div>` : ''}
+                        ${forestName ? `<div><strong>Forest:</strong> ${forestName}</div>` : ''}
+                        ${roadType ? `<div><strong>Road Type:</strong> ${roadType}</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent);
+                  polyline.addTo(map);
+                  roadCount++;
+                  
+                  const polylineBounds = polyline.getBounds();
+                  if (polylineBounds.isValid()) {
+                    bounds.extend(polylineBounds);
+                  }
+                });
+              } catch (error) {
+                console.error('Error drawing USFS System Road polyline:', error);
+              }
+            }
+          });
+          
+          if (roadCount > 0) {
+            if (!legendAccumulator['usfs_system_roads']) {
+              legendAccumulator['usfs_system_roads'] = {
+                icon: '🛣️',
+                color: '#6b7280',
+                title: 'USFS System Roads',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_system_roads'].count += roadCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS System Roads:', error);
+      }
+
+      // Draw USFS MVUM as polylines on the map
+      try {
+        if (enrichments.usfs_mvum_all && Array.isArray(enrichments.usfs_mvum_all)) {
+          let routeCount = 0;
+          enrichments.usfs_mvum_all.forEach((route: any) => {
+            if (route.geometry && route.geometry.paths && Array.isArray(route.geometry.paths)) {
+              try {
+                route.geometry.paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 2) {
+                    return;
+                  }
+                  
+                  const routeName = route.routeName || route.ROUTENAME || route.RouteName || route.routeNumber || route.ROUTENUMBER || 'Unknown Route';
+                  const routeNumber = route.routeNumber || route.ROUTENUMBER || route.RouteNumber || null;
+                  const forestName = route.forestName || route.FORESTNAME || route.ForestName || null;
+                  const vehicleType = route.vehicleType || route.VEHICLETYPE || route.VehicleType || null;
+                  const seasonOfUse = route.seasonOfUse || route.SEASONOFUSE || route.SeasonOfUse || null;
+                  const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles : 0;
+                  
+                  const polyline = L.polyline(latlngs, {
+                    color: '#f59e0b',
+                    weight: 2,
+                    opacity: 0.7
+                  });
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🚗 ${routeName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${routeNumber ? `<div><strong>Route Number:</strong> ${routeNumber}</div>` : ''}
+                        ${forestName ? `<div><strong>Forest:</strong> ${forestName}</div>` : ''}
+                        ${vehicleType ? `<div><strong>Vehicle Type:</strong> ${vehicleType}</div>` : ''}
+                        ${seasonOfUse ? `<div><strong>Season of Use:</strong> ${seasonOfUse}</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent);
+                  polyline.addTo(map);
+                  routeCount++;
+                  
+                  const polylineBounds = polyline.getBounds();
+                  if (polylineBounds.isValid()) {
+                    bounds.extend(polylineBounds);
+                  }
+                });
+              } catch (error) {
+                console.error('Error drawing USFS MVUM polyline:', error);
+              }
+            }
+          });
+          
+          if (routeCount > 0) {
+            if (!legendAccumulator['usfs_mvum']) {
+              legendAccumulator['usfs_mvum'] = {
+                icon: '🚗',
+                color: '#f59e0b',
+                title: 'USFS Motor Vehicle Use Map (MVUM)',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_mvum'].count += routeCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS MVUM:', error);
+      }
+
+      // Draw USFS Colorado Roadless Areas as polygons on the map
+      try {
+        if (enrichments.usfs_co_roadless_areas_all && Array.isArray(enrichments.usfs_co_roadless_areas_all)) {
+          let areaCount = 0;
+          enrichments.usfs_co_roadless_areas_all.forEach((area: any) => {
+            if (area.geometry && area.geometry.rings && Array.isArray(area.geometry.rings)) {
+              try {
+                const rings = area.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('USFS Colorado Roadless Area outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = area.isContaining;
+                  const color = isContaining ? '#059669' : '#10b981';
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const areaPolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const areaName = area.areaName || area.AREANAME || area.AreaName || 'Unknown Roadless Area';
+                  const areaType = area.areaType || area.AREATYPE || area.AreaType || null;
+                  const forestName = area.forestName || area.FORESTNAME || area.ForestName || null;
+                  const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏔️ ${areaName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${areaType ? `<div><strong>Type:</strong> ${areaType}</div>` : ''}
+                        ${forestName ? `<div><strong>Forest:</strong> ${forestName}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  areaPolygon.bindPopup(popupContent);
+                  areaPolygon.addTo(map);
+                  areaCount++;
+                  
+                  const polygonBounds = areaPolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing USFS Colorado Roadless Area polygon:', error);
+              }
+            }
+          });
+          
+          if (areaCount > 0) {
+            if (!legendAccumulator['usfs_co_roadless_areas']) {
+              legendAccumulator['usfs_co_roadless_areas'] = {
+                icon: '🏔️',
+                color: '#059669',
+                title: 'USFS Colorado Roadless Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfs_co_roadless_areas'].count += areaCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFS Colorado Roadless Areas:', error);
       }
 
       // Draw Houston METRO Rail Stations as point markers on the map
@@ -18752,6 +19954,9 @@ const MapView: React.FC<MapViewProps> = ({
           }
 
           const poiMarker = L.marker([poiLat, poiLon], { icon: leafletIcon });
+          // Store metadata for tabbed popup functionality
+          (poiMarker as any).__layerType = baseKey;
+          (poiMarker as any).__layerTitle = legendTitle;
           poiMarker.bindPopup(createPOIPopupContent(item, legendTitle, baseKey), { maxWidth: 360 });
           poiMarker.addTo(poi);
           mappedCount++;
@@ -18818,10 +20023,14 @@ const MapView: React.FC<MapViewProps> = ({
         console.log('🗺️ All features drawn');
         
         // Add map click handler for tabbed popup functionality
-        setupTabbedPopupHandler();
+        // Use a small delay to ensure all features are fully added to layer groups
+        setTimeout(() => {
+          setupTabbedPopupHandler();
+        }, 100);
       });
     }
   }, [results]);
+
 
   // Setup tabbed popup handler for overlapping features
   const setupTabbedPopupHandler = () => {
@@ -18832,9 +20041,24 @@ const MapView: React.FC<MapViewProps> = ({
     }
     
     const map = mapInstanceRef.current;
-    const { primary } = layerGroupsRef.current;
+    const { primary, poi } = layerGroupsRef.current;
     console.log('🔍 [TABBED POPUP] Map instance found:', !!map);
     console.log('🔍 [TABBED POPUP] Primary layer group:', primary);
+    console.log('🔍 [TABBED POPUP] POI layer group:', poi);
+    
+    // Check how many layers are actually in the groups
+    const primaryLayerCount = primary.getLayers().length;
+    const poiLayerCount = poi.getLayers().length;
+    console.log('🔍 [TABBED POPUP] Primary layers count:', primaryLayerCount);
+    console.log('🔍 [TABBED POPUP] POI layers count:', poiLayerCount);
+    
+    if (primaryLayerCount === 0 && poiLayerCount === 0) {
+      console.warn('⚠️ [TABBED POPUP] No features found in layer groups yet, retrying in 200ms...');
+      setTimeout(() => {
+        setupTabbedPopupHandler();
+      }, 200);
+      return;
+    }
     
     // Remove existing click handlers
     map.off('click', handleMapClick);
@@ -18844,6 +20068,8 @@ const MapView: React.FC<MapViewProps> = ({
     
     // Also intercept clicks on features - prevent default popup and check for overlaps
     let featureHandlerCount = 0;
+    
+    // Set up handlers for primary group
     primary.eachLayer((layer: L.Layer) => {
       // Skip location marker
       if (layer instanceof L.Marker && (layer as any).options?.title === results[0]?.location?.name) {
@@ -18872,6 +20098,39 @@ const MapView: React.FC<MapViewProps> = ({
       }
       
       // Add click handler that checks for overlapping features (with higher priority)
+      layer.on('click', handleFeatureClick);
+      featureHandlerCount++;
+    });
+    
+    // Set up handlers for poi group as well
+    poi.eachLayer((layer: L.Layer) => {
+      // Skip location marker
+      if (layer instanceof L.Marker && (layer as any).options?.title === results[0]?.location?.name) {
+        return;
+      }
+      
+      // Remove existing click handlers
+      layer.off('click', handleFeatureClick);
+      
+      // Store original popup content before unbinding
+      let originalPopupContent = '';
+      if (layer instanceof L.Marker || layer instanceof L.Polygon || layer instanceof L.Polyline) {
+        const popup = (layer as any).getPopup();
+        if (popup) {
+          originalPopupContent = popup.getContent() as string;
+        }
+        // Unbind default popup to prevent it from opening automatically
+        (layer as any).unbindPopup();
+        // Re-bind popup but don't auto-open it
+        if (originalPopupContent) {
+          (layer as any).bindPopup(originalPopupContent, { 
+            autoOpen: false,
+            closeOnClick: false 
+          });
+        }
+      }
+      
+      // Add click handler that checks for overlapping features
       layer.on('click', handleFeatureClick);
       featureHandlerCount++;
     });
@@ -18934,10 +20193,11 @@ const MapView: React.FC<MapViewProps> = ({
     }
     
     const clickPoint = e.latlng;
-    const { primary } = layerGroupsRef.current;
+    const { primary, poi } = layerGroupsRef.current;
     
     console.log('🔍 [TABBED POPUP] Click point:', clickPoint);
     console.log('🔍 [TABBED POPUP] Primary layer group:', primary);
+    console.log('🔍 [TABBED POPUP] POI layer group:', poi);
     
     // Close any existing popups first
     mapInstanceRef.current.closePopup();
@@ -18956,8 +20216,10 @@ const MapView: React.FC<MapViewProps> = ({
     let polylineCount = 0;
     
     console.log('🔍 [TABBED POPUP] Starting to check layers...');
-    // Check all layers in primary group
-    primary.eachLayer((layer: L.Layer) => {
+    
+    // Helper function to check layers in a group
+    const checkLayerGroup = (layerGroup: L.LayerGroup) => {
+      layerGroup.eachLayer((layer: L.Layer) => {
       layerCount++;
       // Skip location marker
       if (layer instanceof L.Marker && (layer as any).options?.title === results[0]?.location?.name) {
@@ -19086,9 +20348,15 @@ const MapView: React.FC<MapViewProps> = ({
           popupContent
         });
       } else if (intersects && !popupContent) {
-        console.warn('⚠️ [TABBED POPUP] Feature intersects but has no popup content');
-      }
-    });
+          console.warn('⚠️ [TABBED POPUP] Feature intersects but has no popup content');
+        }
+        layerCount++;
+      });
+    };
+    
+    // Check both layer groups
+    checkLayerGroup(primary);
+    checkLayerGroup(poi);
     
     console.log('🔍 [TABBED POPUP] ========== LAYER CHECK COMPLETE ==========');
     console.log('🔍 [TABBED POPUP] Total layers checked:', layerCount);

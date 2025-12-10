@@ -1,22 +1,15 @@
 /**
- * BLM National Grazing Pasture Polygons Adapter
- * Queries BLM National Grazing Pasture Polygons polygon feature service
+ * USFS National Wilderness Areas Adapter
+ * Queries USFS National Wilderness Areas polygon feature service
  * Supports point-in-polygon and proximity queries up to 50 miles
  */
 
-const BASE_SERVICE_URL = 'https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Grazing_Pasture_Polygons/FeatureServer/0';
+const BASE_SERVICE_URL = 'https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_Wilderness_01/MapServer/0';
 
-export interface BLMNationalGrazingPastureInfo {
+export interface USFSWildernessAreaInfo {
   objectId: string | null;
-  allotNumber: string | null;
-  allotName: string | null;
-  pastureNumber: string | null;
-  pastureName: string | null;
-  gisAcres: number | null;
-  adminState: string | null;
-  adminOfficeCode: string | null;
-  adminUnitCode: string | null;
-  stateAllotPast: string | null;
+  wildernessName: string | null;
+  wildernessCode: string | null;
   geometry?: any; // ESRI geometry for drawing on map
   distance_miles?: number; // For proximity queries
   isContaining?: boolean; // True if point is within polygon
@@ -24,19 +17,17 @@ export interface BLMNationalGrazingPastureInfo {
 }
 
 /**
- * Check if a point is inside a polygon using ray casting algorithm
+ * Check if a point is inside a single ring (polygon part) using ray casting algorithm
  */
-function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean {
-  if (!rings || rings.length === 0) return false;
+function pointInRing(lat: number, lon: number, ring: number[][]): boolean {
+  if (!ring || ring.length === 0) return false;
   
-  const outerRing = rings[0];
   let inside = false;
-  
-  for (let i = 0, j = outerRing.length - 1; i < outerRing.length; j = i++) {
-    const xi = outerRing[i][0];
-    const yi = outerRing[i][1];
-    const xj = outerRing[j][0];
-    const yj = outerRing[j][1];
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0];
+    const yi = ring[i][1];
+    const xj = ring[j][0];
+    const yj = ring[j][1];
     
     const intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
     if (intersect) inside = !inside;
@@ -46,18 +37,56 @@ function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean 
 }
 
 /**
- * Calculate distance from point to nearest edge of polygon
+ * Check if a point is inside a polygon (handles multipolygon features)
+ * For multipolygons, checks all outer rings (polygon parts)
  */
-function distanceToPolygon(lat: number, lon: number, rings: number[][][]): number {
-  if (!rings || rings.length === 0) return Infinity;
+function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean {
+  if (!rings || rings.length === 0) return false;
+  
+  // Check if point is in the first ring (outer boundary)
+  const outerRing = rings[0];
+  let inside = pointInRing(lat, lon, outerRing);
+  
+  // If inside outer ring, check if point is in any holes (inner rings)
+  // Holes subtract from the polygon, so if point is in a hole, it's not inside the polygon
+  if (inside && rings.length > 1) {
+    for (let i = 1; i < rings.length; i++) {
+      if (pointInRing(lat, lon, rings[i])) {
+        inside = false; // Point is in a hole, so it's outside the polygon
+        break;
+      }
+    }
+  }
+  
+  return inside;
+}
+
+/**
+ * Check if a point is inside any part of a multipolygon feature
+ * This handles cases where ESRI returns multipolygon geometries with multiple separate polygon parts
+ */
+function pointInMultipolygon(lat: number, lon: number, geometry: any): boolean {
+  if (!geometry) return false;
+  
+  // Handle standard polygon with rings array
+  if (geometry.rings && Array.isArray(geometry.rings)) {
+    return pointInPolygon(lat, lon, geometry.rings);
+  }
+  
+  return false;
+}
+
+/**
+ * Calculate distance from point to nearest edge of a single ring
+ */
+function distanceToRing(lat: number, lon: number, ring: number[][]): number {
+  if (!ring || ring.length === 0) return Infinity;
   
   let minDistance = Infinity;
-  const outerRing = rings[0];
-  
-  for (let i = 0; i < outerRing.length; i++) {
-    const nextIndex = (i + 1) % outerRing.length;
-    const p1 = outerRing[i];
-    const p2 = outerRing[nextIndex];
+  for (let i = 0; i < ring.length; i++) {
+    const nextIndex = (i + 1) % ring.length;
+    const p1 = ring[i];
+    const p2 = ring[nextIndex];
     
     // Calculate distance to line segment
     const dist = distanceToLineSegment(lat, lon, p1[1], p1[0], p2[1], p2[0]);
@@ -65,6 +94,41 @@ function distanceToPolygon(lat: number, lon: number, rings: number[][][]): numbe
   }
   
   return minDistance;
+}
+
+/**
+ * Calculate distance from point to nearest edge of polygon (handles multipolygon features)
+ * For multipolygons, calculates distance to all polygon parts and returns the minimum
+ */
+function distanceToPolygon(lat: number, lon: number, rings: number[][][]): number {
+  if (!rings || rings.length === 0) return Infinity;
+  
+  // Calculate distance to outer ring (main polygon boundary)
+  let minDistance = distanceToRing(lat, lon, rings[0]);
+  
+  // For multipolygons or polygons with holes, check all rings
+  // Holes are also boundaries, so we need to check them too
+  for (let i = 1; i < rings.length; i++) {
+    const dist = distanceToRing(lat, lon, rings[i]);
+    if (dist < minDistance) minDistance = dist;
+  }
+  
+  return minDistance;
+}
+
+/**
+ * Calculate distance from point to nearest edge of multipolygon feature
+ * Handles all polygon parts in multipolygon geometries
+ */
+function distanceToMultipolygon(lat: number, lon: number, geometry: any): number {
+  if (!geometry) return Infinity;
+  
+  // Handle standard polygon with rings array
+  if (geometry.rings && Array.isArray(geometry.rings)) {
+    return distanceToPolygon(lat, lon, geometry.rings);
+  }
+  
+  return Infinity;
 }
 
 /**
@@ -105,21 +169,21 @@ function distanceToLineSegment(
 }
 
 /**
- * Query BLM National Grazing Pasture Polygons for point-in-polygon and proximity
- * Supports proximity queries up to 25 miles
+ * Query USFS National Wilderness Areas for point-in-polygon and proximity
+ * Supports proximity queries up to 50 miles
  */
-export async function getBLMNationalGrazingPasturesData(
+export async function getUSFSWildernessAreasData(
   lat: number,
   lon: number,
   radiusMiles?: number
-): Promise<BLMNationalGrazingPastureInfo[]> {
+): Promise<USFSWildernessAreaInfo[]> {
   try {
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
     
     // Cap radius at 50 miles
     const maxRadius = radiusMiles ? Math.min(radiusMiles, 50.0) : 50.0;
     
-    const results: BLMNationalGrazingPastureInfo[] = [];
+    const results: USFSWildernessAreaInfo[] = [];
     
     // Point-in-polygon query first
     try {
@@ -131,8 +195,8 @@ export async function getBLMNationalGrazingPasturesData(
       
       const pointInPolyUrl = `${BASE_SERVICE_URL}/query?f=json&where=1%3D1&outFields=*&geometry=${encodeURIComponent(JSON.stringify(pointGeometry))}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&inSR=4326&outSR=4326&returnGeometry=true`;
       
-      console.log(`🐄 Querying BLM National Grazing Pasture Polygons for point-in-polygon at [${lat}, ${lon}]`);
-      console.log(`🔗 BLM Grazing Pastures Point-in-Polygon Query URL: ${pointInPolyUrl}`);
+      console.log(`🏔️ Querying USFS National Wilderness Areas for point-in-polygon at [${lat}, ${lon}]`);
+      console.log(`🔗 USFS Wilderness Areas Point-in-Polygon Query URL: ${pointInPolyUrl}`);
       
       const pointInPolyData = await fetchJSONSmart(pointInPolyUrl) as any;
       
@@ -143,33 +207,19 @@ export async function getBLMNationalGrazingPasturesData(
           
           // Verify point is actually inside polygon
           let isContaining = false;
-          if (geometry && geometry.rings) {
-            isContaining = pointInPolygon(lat, lon, geometry.rings);
+          if (geometry) {
+            isContaining = pointInMultipolygon(lat, lon, geometry);
           }
           
           if (isContaining) {
             const objectId = attributes.OBJECTID !== null && attributes.OBJECTID !== undefined ? attributes.OBJECTID.toString() : null;
-            const allotNumber = attributes.ALLOT_NO || attributes.Allot_No || attributes.allot_no || null;
-            const allotName = attributes.ALLOT_NAME || attributes.Allot_Name || attributes.allot_name || null;
-            const pastureNumber = attributes.PAST_NO || attributes.Past_No || attributes.past_no || null;
-            const pastureName = attributes.PAST_NAME || attributes.Past_Name || attributes.past_name || null;
-            const gisAcres = attributes.GIS_ACRES !== null && attributes.GIS_ACRES !== undefined ? Number(attributes.GIS_ACRES) : null;
-            const adminState = attributes.ADMIN_ST || attributes.Admin_St || attributes.admin_st || null;
-            const adminOfficeCode = attributes.ADM_OFC_CD || attributes.Adm_Ofc_Cd || attributes.adm_ofc_cd || null;
-            const adminUnitCode = attributes.ADM_UNIT_CD || attributes.Adm_Unit_Cd || attributes.adm_unit_cd || null;
-            const stateAllotPast = attributes.ST_ALLOT_PAST || attributes.St_Allot_Past || attributes.st_allot_past || null;
+            const wildernessName = attributes.WILDERNESSNAME || attributes.WildernessName || attributes.wildernessname || attributes.WILDERNESS_NM || attributes.Wilderness_Nm || attributes.wilderness_nm || null;
+            const wildernessCode = attributes.WILDERNESSCODE || attributes.WildernessCode || attributes.wildernesscode || attributes.WILDERNESS_CD || attributes.Wilderness_Cd || attributes.wilderness_cd || null;
             
             results.push({
               objectId: objectId,
-              allotNumber: allotNumber,
-              allotName: allotName,
-              pastureNumber: pastureNumber,
-              pastureName: pastureName,
-              gisAcres: gisAcres,
-              adminState: adminState,
-              adminOfficeCode: adminOfficeCode,
-              adminUnitCode: adminUnitCode,
-              stateAllotPast: stateAllotPast,
+              wildernessName: wildernessName,
+              wildernessCode: wildernessCode,
               geometry: geometry,
               distance_miles: 0,
               isContaining: true,
@@ -179,7 +229,7 @@ export async function getBLMNationalGrazingPasturesData(
         });
       }
       
-      console.log(`✅ Found ${results.length} BLM Grazing Pasture(s) containing the point`);
+      console.log(`✅ Found ${results.length} USFS Wilderness Area(s) containing the point`);
     } catch (error) {
       console.error(`❌ Point-in-polygon query failed:`, error);
     }
@@ -203,13 +253,13 @@ export async function getBLMNationalGrazingPasturesData(
           const proximityUrl = `${BASE_SERVICE_URL}/query?f=json&where=1%3D1&outFields=*&geometry=${encodeURIComponent(JSON.stringify(proximityGeometry))}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusMeters}&units=esriSRUnit_Meter&inSR=4326&outSR=4326&returnGeometry=true&resultRecordCount=${batchSize}&resultOffset=${resultOffset}`;
           
           if (resultOffset === 0) {
-            console.log(`🐄 Querying BLM National Grazing Pasture Polygons for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
+            console.log(`🏔️ Querying USFS National Wilderness Areas for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
           }
           
           const proximityData = await fetchJSONSmart(proximityUrl) as any;
           
           if (proximityData.error) {
-            console.error('❌ BLM Grazing Pastures API Error:', proximityData.error);
+            console.error('❌ USFS Wilderness Areas API Error:', proximityData.error);
             break;
           }
           
@@ -228,7 +278,7 @@ export async function getBLMNationalGrazingPasturesData(
           }
         }
         
-        console.log(`✅ Fetched ${allFeatures.length} total BLM Grazing Pastures for proximity`);
+        console.log(`✅ Fetched ${allFeatures.length} total USFS Wilderness Areas for proximity`);
         
         // Process proximity features
         allFeatures.forEach((feature: any) => {
@@ -239,32 +289,18 @@ export async function getBLMNationalGrazingPasturesData(
           const objectId = attributes.OBJECTID !== null && attributes.OBJECTID !== undefined ? attributes.OBJECTID.toString() : null;
           const alreadyAdded = results.some(r => r.objectId === objectId && r.isContaining);
           
-          if (!alreadyAdded && geometry && geometry.rings) {
-            const distance = distanceToPolygon(lat, lon, geometry.rings);
+          if (!alreadyAdded && geometry) {
+            const distance = distanceToMultipolygon(lat, lon, geometry);
             const distanceMiles = distance * 69; // Approximate conversion (1 degree lat ≈ 69 miles)
             
             if (distanceMiles <= maxRadius) {
-              const allotNumber = attributes.ALLOT_NO || attributes.Allot_No || attributes.allot_no || null;
-              const allotName = attributes.ALLOT_NAME || attributes.Allot_Name || attributes.allot_name || null;
-              const pastureNumber = attributes.PAST_NO || attributes.Past_No || attributes.past_no || null;
-              const pastureName = attributes.PAST_NAME || attributes.Past_Name || attributes.past_name || null;
-              const gisAcres = attributes.GIS_ACRES !== null && attributes.GIS_ACRES !== undefined ? Number(attributes.GIS_ACRES) : null;
-              const adminState = attributes.ADMIN_ST || attributes.Admin_St || attributes.admin_st || null;
-              const adminOfficeCode = attributes.ADM_OFC_CD || attributes.Adm_Ofc_Cd || attributes.adm_ofc_cd || null;
-              const adminUnitCode = attributes.ADM_UNIT_CD || attributes.Adm_Unit_Cd || attributes.adm_unit_cd || null;
-              const stateAllotPast = attributes.ST_ALLOT_PAST || attributes.St_Allot_Past || attributes.st_allot_past || null;
+              const wildernessName = attributes.WILDERNESSNAME || attributes.WildernessName || attributes.wildernessname || attributes.WILDERNESS_NM || attributes.Wilderness_Nm || attributes.wilderness_nm || null;
+              const wildernessCode = attributes.WILDERNESSCODE || attributes.WildernessCode || attributes.wildernesscode || attributes.WILDERNESS_CD || attributes.Wilderness_Cd || attributes.wilderness_cd || null;
               
               results.push({
                 objectId: objectId,
-                allotNumber: allotNumber,
-                allotName: allotName,
-                pastureNumber: pastureNumber,
-                pastureName: pastureName,
-                gisAcres: gisAcres,
-                adminState: adminState,
-                adminOfficeCode: adminOfficeCode,
-                adminUnitCode: adminUnitCode,
-                stateAllotPast: stateAllotPast,
+                wildernessName: wildernessName,
+                wildernessCode: wildernessCode,
                 geometry: geometry,
                 distance_miles: Number(distanceMiles.toFixed(2)),
                 isContaining: false,
@@ -285,10 +321,10 @@ export async function getBLMNationalGrazingPasturesData(
       return (a.distance_miles || 0) - (b.distance_miles || 0);
     });
     
-    console.log(`✅ BLM National Grazing Pasture Polygons: Found ${results.length} grazing pasture(s)`);
+    console.log(`✅ USFS National Wilderness Areas: Found ${results.length} wilderness area(s)`);
     return results;
   } catch (error) {
-    console.error('❌ Error querying BLM National Grazing Pasture Polygons data:', error);
+    console.error('❌ Error querying USFS National Wilderness Areas data:', error);
     throw error;
   }
 }

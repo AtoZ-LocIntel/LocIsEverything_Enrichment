@@ -1,7 +1,7 @@
 /**
  * BLM National GTLF Public Motorized Trails Adapter
  * Queries BLM National GTLF Public Motorized Trails linear feature service
- * Supports proximity queries up to 25 miles
+ * Supports proximity queries up to 100 miles
  */
 
 const BASE_SERVICE_URL = 'https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_GTLF_Public_Motorized_Trails/FeatureServer/4';
@@ -37,7 +37,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 /**
  * Query BLM National GTLF Public Motorized Trails within proximity of a location
- * Supports proximity queries up to 25 miles
+ * Supports proximity queries up to 100 miles
  */
 export async function getBLMNationalMotorizedTrailsData(
   lat: number,
@@ -47,9 +47,9 @@ export async function getBLMNationalMotorizedTrailsData(
   try {
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
     
-    // Cap radius at 25 miles
-    if (radiusMiles && radiusMiles > 25.0) {
-      radiusMiles = 25.0;
+    // Cap radius at 50 miles
+    if (radiusMiles && radiusMiles > 50.0) {
+      radiusMiles = 50.0;
     }
     
     if (!radiusMiles || radiusMiles <= 0) {

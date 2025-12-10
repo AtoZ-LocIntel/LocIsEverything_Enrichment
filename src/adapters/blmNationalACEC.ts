@@ -1,7 +1,7 @@
 /**
  * BLM National Areas of Critical Environmental Concern Adapter
  * Queries BLM National Areas of Critical Environmental Concern polygon feature service
- * Supports point-in-polygon and proximity queries up to 25 miles
+ * Supports point-in-polygon and proximity queries up to 50 miles
  */
 
 const BASE_SERVICE_URL = 'https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Areas_of_Critical_Environmental_Concern/FeatureServer/1';
@@ -127,8 +127,8 @@ export async function getBLMNationalACECData(
   try {
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
     
-    // Cap radius at 25 miles
-    const maxRadius = radiusMiles ? Math.min(radiusMiles, 25.0) : 25.0;
+    // Cap radius at 50 miles
+    const maxRadius = radiusMiles ? Math.min(radiusMiles, 50.0) : 50.0;
     
     const results: BLMNationalACECInfo[] = [];
     
