@@ -7055,7 +7055,13 @@ out center;`;
           'Content-Type': 'application/json'
         }
       });
-      console.log(`📊 USDA ${foodType} API response:`, data);
+      console.log(`📊 USDA ${foodType} API response type:`, typeof data, Array.isArray(data) ? 'array' : 'object');
+      
+      // Handle HTML error responses (like 403 Forbidden)
+      if (typeof data === 'string' && (data.includes('<html>') || data.includes('403') || data.includes('Forbidden'))) {
+        console.error(`❌ USDA ${foodType} API returned HTML error response (likely 403 Forbidden). This may indicate the endpoint requires different permissions or the endpoint name is incorrect.`);
+        throw new Error(`USDA ${foodType} API access denied (403 Forbidden). The endpoint may require additional permissions or the endpoint name may be incorrect.`);
+      }
       
       // Handle different response formats
       let facilities: any[] = [];
@@ -7075,6 +7081,10 @@ out center;`;
           if (arrayKeys.length > 0) {
             console.log(`⚠️  Using first array property: ${arrayKeys[0]}`);
             facilities = data[arrayKeys[0]];
+          } else {
+            // If no array found, log the structure
+            console.log(`⚠️  No array found in response. Response keys:`, Object.keys(data));
+            console.log(`📊 Full response structure:`, JSON.stringify(data, null, 2).substring(0, 1000));
           }
         }
       }
