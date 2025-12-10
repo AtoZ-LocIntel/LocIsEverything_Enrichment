@@ -7146,9 +7146,47 @@ out center;`;
             raw_data: facility
           };
         } else {
-          console.warn(`⚠️  Facility ${index} missing valid coordinates. Available fields:`, Object.keys(facility));
+          const allFields = Object.keys(facility);
+          console.warn(`⚠️  Facility ${index} missing valid coordinates. Available top-level fields (${allFields.length}):`, allFields);
+          
+          // Look for any field that might contain coordinates
+          const potentialCoordFields = allFields.filter(f => 
+            f.toLowerCase().includes('lat') || 
+            f.toLowerCase().includes('lon') || 
+            f.toLowerCase().includes('lng') ||
+            f.toLowerCase().includes('y') ||
+            f.toLowerCase().includes('x') ||
+            f.toLowerCase() === 'coord'
+          );
+          if (potentialCoordFields.length > 0) {
+            console.warn(`    Potential coordinate fields found:`, potentialCoordFields);
+            potentialCoordFields.forEach(field => {
+              console.warn(`      ${field}:`, facility[field]);
+            });
+          }
+          
           if (facility.attributes) {
-            console.warn(`    Attributes keys:`, Object.keys(facility.attributes));
+            const attrFields = Object.keys(facility.attributes);
+            console.warn(`    Attributes keys (${attrFields.length}):`, attrFields);
+            const potentialAttrCoords = attrFields.filter(f => 
+              f.toLowerCase().includes('lat') || 
+              f.toLowerCase().includes('lon') || 
+              f.toLowerCase().includes('lng') ||
+              f.toLowerCase().includes('y') ||
+              f.toLowerCase().includes('x') ||
+              f.toLowerCase() === 'coord'
+            );
+            if (potentialAttrCoords.length > 0) {
+              console.warn(`    Potential coordinate fields in attributes:`, potentialAttrCoords);
+              potentialAttrCoords.forEach(field => {
+                console.warn(`      attributes.${field}:`, facility.attributes[field]);
+              });
+            }
+          }
+          
+          // Log the actual facility object for the first facility to see full structure
+          if (index === 0) {
+            console.warn(`    🔍 Facility 0 full structure:`, JSON.stringify(facility, null, 2));
           }
         }
         
