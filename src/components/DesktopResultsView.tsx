@@ -503,9 +503,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Hazards';
       } else if (key.includes('poi_epa_')) {
         category = 'Human Caused Hazards';
-      } else if (key.includes('at_')) {
+      } else if (key.includes('blm_') || key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
+        category = 'Public Lands & Protected Areas';
+      } else if (key.startsWith('at_') || (key.includes('at_') && !key.includes('blm_'))) {
         category = 'Appalachian Trail';
-      } else if (key.includes('pct_')) {
+      } else if (key.startsWith('pct_') || (key.includes('pct_') && !key.includes('blm_'))) {
         category = 'Pacific Crest Trail';
       } else if (key.includes('poi_') && (key.includes('grocery') || key.includes('restaurant') || key.includes('bank') || key.includes('pharmacy') || key.includes('convenience') || key.includes('hardware') || key.includes('liquor') || key.includes('bakery') || key.includes('butcher') || key.includes('seafood') || key.includes('sporting') || key.includes('bookstore') || key.includes('clothing') || key.includes('shoes') || key.includes('thrift') || key.includes('pet') || key.includes('florist') || key.includes('variety') || key.includes('gas_stations') || key.includes('car_wash') || key.includes('auto_repair') || key.includes('auto_parts') || key.includes('auto_dealers'))) {
         category = 'Retail & Commerce';
@@ -539,8 +541,6 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NJ Data';
       } else if (key.startsWith('nj_')) {
         category = 'NJ Data';
-      } else if (key.includes('padus_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
-        category = 'Public Lands & Protected Areas';
       } else if (key.includes('poi_') && (key.includes('school') || key.includes('college') || key.includes('childcare') || key.includes('community_centre') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('worship') || key.includes('mail_shipping'))) {
         category = 'Community & Services';
       }

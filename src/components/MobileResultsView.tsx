@@ -303,19 +303,20 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_airports') || key.includes('poi_railroads') || key.includes('poi_gas')) {
       return 'Transportation';
     }
-    if (key.includes('at_')) {
+    // Check BLM and PADUS before AT/PCT to avoid false matches
+    if (key.includes('blm_') || key.includes('padus_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
+      return 'Public Lands';
+    }
+    if (key.startsWith('at_') || (key.includes('at_') && !key.includes('blm_'))) {
       return 'Appalachian Trail';
     }
-    if (key.includes('pct_')) {
+    if (key.startsWith('pct_') || (key.includes('pct_') && !key.includes('blm_'))) {
       return 'Pacific Crest Trail';
     }
     
     // Catch-all for POI counts that don't fit other categories
     if (key.includes('poi_') && key.includes('count')) {
       return 'Points of Interest Nearby';
-    }
-    if (key.includes('padus_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
-      return 'Public Lands';
     }
     if (key.includes('poi_epa_power') || key.includes('poi_epa_oil_spill')) {
       return 'Hazards & Safety';
@@ -550,8 +551,45 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     return acc;
   }, {} as Record<string, Array<{ key: string; value: any }>>);
 
+  // Filter out categories that don't contain any selected enrichments
+  const filteredGroupedEnrichments = Object.entries(groupedEnrichments).reduce((acc, [category, items]) => {
+    // Check if category contains any selected enrichments
+    const hasSelected = items.some(item => 
+      selectedEnrichments.some(selected => {
+        // Exact match or starts with selected enrichment ID
+        if (item.key.includes(selected) || item.key.startsWith(selected + '_')) {
+          return true;
+        }
+        // Handle BLM layers
+        if (selected.includes('blm_') && item.key.includes('blm_')) {
+          return true;
+        }
+        // Handle PADUS layers
+        if (selected.includes('padus_') && item.key.includes('padus_')) {
+          return true;
+        }
+        // Handle AT layers - must start with at_ or be exact match
+        if (selected.startsWith('at_') && (item.key.startsWith('at_') || item.key === selected)) {
+          return true;
+        }
+        // Handle PCT layers - must start with pct_ or be exact match
+        if (selected.startsWith('pct_') && (item.key.startsWith('pct_') || item.key === selected)) {
+          return true;
+        }
+        return false;
+      })
+    );
+    
+    // Only include categories with selected enrichments
+    if (hasSelected) {
+      acc[category] = items;
+    }
+    
+    return acc;
+  }, {} as Record<string, Array<{ key: string; value: any }>>);
+
   // Sort categories to prioritize those containing selected enrichments
-  const sortedCategories = Object.entries(groupedEnrichments).sort(([categoryA, itemsA], [categoryB, itemsB]) => {
+  const sortedCategories = Object.entries(filteredGroupedEnrichments).sort(([categoryA, itemsA], [categoryB, itemsB]) => {
     // Check if category contains any selected enrichments
     const hasSelectedA = itemsA.some(item => 
       selectedEnrichments.some(selected => 

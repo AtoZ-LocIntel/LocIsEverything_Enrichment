@@ -126,6 +126,11 @@ import { getBLMNationalTrailsData } from '../adapters/blmNationalTrails';
 import { getBLMNationalMotorizedTrailsData } from '../adapters/blmNationalMotorizedTrails';
 import { getBLMNationalNonmotorizedTrailsData } from '../adapters/blmNationalNonmotorizedTrails';
 import { getBLMNationalGrazingPasturesData } from '../adapters/blmNationalGrazingPastures';
+import { getBLMNationalACECData } from '../adapters/blmNationalACEC';
+import { getBLMNationalSheepGoatGrazingData } from '../adapters/blmNationalSheepGoatGrazing';
+import { getBLMNationalSheepGoatAuthorizedGrazingData } from '../adapters/blmNationalSheepGoatAuthorizedGrazing';
+import { getBLMNationalNLCSMonumentsNCAsData } from '../adapters/blmNationalNLCSMonumentsNCAs';
+import { getBLMNationalWildHorseBurroHerdAreasData } from '../adapters/blmNationalWildHorseBurroHerdAreas';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -3072,6 +3077,26 @@ export class EnrichmentService {
       // BLM National Grazing Pasture Polygons - Point-in-polygon and proximity query (max 25 miles)
       case 'blm_national_grazing_pastures':
         return await this.getBLMNationalGrazingPastures(lat, lon, radius);
+      
+      // BLM National Areas of Critical Environmental Concern - Point-in-polygon and proximity query (max 25 miles)
+      case 'blm_national_acec':
+        return await this.getBLMNationalACEC(lat, lon, radius);
+      
+      // BLM National Sheep and Goat Billed Grazing Allotments - Point-in-polygon and proximity query (max 25 miles)
+      case 'blm_national_sheep_goat_grazing':
+        return await this.getBLMNationalSheepGoatGrazing(lat, lon, radius);
+      
+      // BLM National Sheep and Goat Authorized Grazing Allotments - Point-in-polygon and proximity query (max 25 miles)
+      case 'blm_national_sheep_goat_authorized_grazing':
+        return await this.getBLMNationalSheepGoatAuthorizedGrazing(lat, lon, radius);
+      
+      // BLM National NLCS National Monuments and National Conservation Areas - Point-in-polygon and proximity query (max 25 miles)
+      case 'blm_national_nlcs_monuments_ncas':
+        return await this.getBLMNationalNLCSMonumentsNCAs(lat, lon, radius);
+      
+      // BLM National Wild Horse and Burro Herd Areas - Point-in-polygon and proximity query (max 25 miles)
+      case 'blm_national_wild_horse_burro_herd_areas':
+        return await this.getBLMNationalWildHorseBurroHerdAreas(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -11239,6 +11264,357 @@ out center;`;
         blm_national_grazing_pastures_count: 0,
         blm_national_grazing_pastures_all: [],
         blm_national_grazing_pastures_summary: 'Error querying grazing pastures'
+      };
+    }
+  }
+
+  private async getBLMNationalACEC(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌿 Fetching BLM National Areas of Critical Environmental Concern data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const acecs = await getBLMNationalACECData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (acecs.length === 0) {
+        result.blm_national_acec_containing = null;
+        result.blm_national_acec_containing_message = 'No ACEC found containing this location';
+        result.blm_national_acec_count = 0;
+        result.blm_national_acec_all = [];
+        result.blm_national_acec_summary = 'No ACECs found.';
+      } else {
+        // Get the first containing ACEC (should typically be only one for point-in-polygon)
+        const containingACEC = acecs.find(a => a.isContaining) || acecs[0];
+        
+        if (containingACEC && containingACEC.isContaining) {
+          const acecLabel = containingACEC.acecName || 'Unknown ACEC';
+          result.blm_national_acec_containing = acecLabel;
+          result.blm_national_acec_containing_message = `Location is within ACEC: ${acecLabel}${containingACEC.lupName ? ` (Land Use Plan: ${containingACEC.lupName})` : ''}`;
+        } else {
+          result.blm_national_acec_containing = null;
+          result.blm_national_acec_containing_message = 'No ACEC found containing this location';
+        }
+        
+        result.blm_national_acec_count = acecs.length;
+        result.blm_national_acec_all = acecs.map(acec => ({
+          ...acec.attributes,
+          objectId: acec.objectId,
+          acecName: acec.acecName,
+          lupName: acec.lupName,
+          nepaNum: acec.nepaNum,
+          rodDate: acec.rodDate,
+          gisAcres: acec.gisAcres,
+          adminState: acec.adminState,
+          relevanceCultural: acec.relevanceCultural,
+          relevanceForestry: acec.relevanceForestry,
+          relevanceHistoric: acec.relevanceHistoric,
+          relevanceNaturalHazards: acec.relevanceNaturalHazards,
+          relevanceNaturalProcesses: acec.relevanceNaturalProcesses,
+          relevanceNaturalSystems: acec.relevanceNaturalSystems,
+          relevanceScenic: acec.relevanceScenic,
+          relevanceWildlife: acec.relevanceWildlife,
+          importanceQuality: acec.importanceQuality,
+          importanceImportance: acec.importanceImportance,
+          importanceContribution: acec.importanceContribution,
+          importanceThreat: acec.importanceThreat,
+          specialMgmtProtect: acec.specialMgmtProtect,
+          specialMgmtPrevent: acec.specialMgmtPrevent,
+          geometry: acec.geometry,
+          distance_miles: acec.distance_miles,
+          isContaining: acec.isContaining
+        }));
+        
+        result.blm_national_acec_summary = `Found ${acecs.length} ACEC(s)${containingACEC && containingACEC.isContaining ? ' (location is within an ACEC)' : ''}.`;
+      }
+      
+      console.log(`✅ BLM National Areas of Critical Environmental Concern data processed:`, {
+        totalCount: result.blm_national_acec_count,
+        containing: result.blm_national_acec_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Areas of Critical Environmental Concern data:', error);
+      return {
+        blm_national_acec_containing: null,
+        blm_national_acec_containing_message: 'Error querying ACECs',
+        blm_national_acec_count: 0,
+        blm_national_acec_all: [],
+        blm_national_acec_summary: 'Error querying ACECs'
+      };
+    }
+  }
+
+  private async getBLMNationalSheepGoatGrazing(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐑 Fetching BLM National Sheep and Goat Billed Grazing Allotments data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const allotments = await getBLMNationalSheepGoatGrazingData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (allotments.length === 0) {
+        result.blm_national_sheep_goat_grazing_containing = null;
+        result.blm_national_sheep_goat_grazing_containing_message = 'No sheep/goat grazing allotment found containing this location';
+        result.blm_national_sheep_goat_grazing_count = 0;
+        result.blm_national_sheep_goat_grazing_all = [];
+        result.blm_national_sheep_goat_grazing_summary = 'No sheep/goat grazing allotments found.';
+      } else {
+        // Get the first containing allotment (should typically be only one for point-in-polygon)
+        const containingAllotment = allotments.find(a => a.isContaining) || allotments[0];
+        
+        if (containingAllotment && containingAllotment.isContaining) {
+          const allotmentLabel = containingAllotment.allotName || 'Unknown Allotment';
+          result.blm_national_sheep_goat_grazing_containing = allotmentLabel;
+          result.blm_national_sheep_goat_grazing_containing_message = `Location is within sheep/goat grazing allotment: ${allotmentLabel}${containingAllotment.stateAllotNum ? ` (State Allotment Number: ${containingAllotment.stateAllotNum})` : ''}`;
+        } else {
+          result.blm_national_sheep_goat_grazing_containing = null;
+          result.blm_national_sheep_goat_grazing_containing_message = 'No sheep/goat grazing allotment found containing this location';
+        }
+        
+        result.blm_national_sheep_goat_grazing_count = allotments.length;
+        result.blm_national_sheep_goat_grazing_all = allotments.map(allotment => ({
+          ...allotment.attributes,
+          objectId: allotment.objectId,
+          allotName: allotment.allotName,
+          stateAllotNum: allotment.stateAllotNum,
+          status: allotment.status,
+          source: allotment.source,
+          trAllotNum: allotment.trAllotNum,
+          sumAcres: allotment.sumAcres,
+          pastureName: allotment.pastureName,
+          stateAllotPastNum: allotment.stateAllotPastNum,
+          geometry: allotment.geometry,
+          distance_miles: allotment.distance_miles,
+          isContaining: allotment.isContaining
+        }));
+        
+        result.blm_national_sheep_goat_grazing_summary = `Found ${allotments.length} sheep/goat grazing allotment(s)${containingAllotment && containingAllotment.isContaining ? ' (location is within an allotment)' : ''}.`;
+      }
+      
+      console.log(`✅ BLM National Sheep and Goat Billed Grazing Allotments data processed:`, {
+        totalCount: result.blm_national_sheep_goat_grazing_count,
+        containing: result.blm_national_sheep_goat_grazing_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Sheep and Goat Billed Grazing Allotments data:', error);
+      return {
+        blm_national_sheep_goat_grazing_containing: null,
+        blm_national_sheep_goat_grazing_containing_message: 'Error querying sheep/goat grazing allotments',
+        blm_national_sheep_goat_grazing_count: 0,
+        blm_national_sheep_goat_grazing_all: [],
+        blm_national_sheep_goat_grazing_summary: 'Error querying sheep/goat grazing allotments'
+      };
+    }
+  }
+
+  private async getBLMNationalSheepGoatAuthorizedGrazing(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐐 Fetching BLM National Sheep and Goat Authorized Grazing Allotments data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const allotments = await getBLMNationalSheepGoatAuthorizedGrazingData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (allotments.length === 0) {
+        result.blm_national_sheep_goat_authorized_grazing_containing = null;
+        result.blm_national_sheep_goat_authorized_grazing_containing_message = 'No sheep/goat authorized grazing allotment found containing this location';
+        result.blm_national_sheep_goat_authorized_grazing_count = 0;
+        result.blm_national_sheep_goat_authorized_grazing_all = [];
+        result.blm_national_sheep_goat_authorized_grazing_summary = 'No sheep/goat authorized grazing allotments found.';
+      } else {
+        // Get the first containing allotment (should typically be only one for point-in-polygon)
+        const containingAllotment = allotments.find(a => a.isContaining) || allotments[0];
+        
+        if (containingAllotment && containingAllotment.isContaining) {
+          const allotmentLabel = containingAllotment.allotName || 'Unknown Allotment';
+          result.blm_national_sheep_goat_authorized_grazing_containing = allotmentLabel;
+          result.blm_national_sheep_goat_authorized_grazing_containing_message = `Location is within sheep/goat authorized grazing allotment: ${allotmentLabel}${containingAllotment.stateAllotNum ? ` (State Allotment Number: ${containingAllotment.stateAllotNum})` : ''}`;
+        } else {
+          result.blm_national_sheep_goat_authorized_grazing_containing = null;
+          result.blm_national_sheep_goat_authorized_grazing_containing_message = 'No sheep/goat authorized grazing allotment found containing this location';
+        }
+        
+        result.blm_national_sheep_goat_authorized_grazing_count = allotments.length;
+        result.blm_national_sheep_goat_authorized_grazing_all = allotments.map(allotment => ({
+          ...allotment.attributes,
+          objectId: allotment.objectId,
+          allotName: allotment.allotName,
+          stateAllotNum: allotment.stateAllotNum,
+          status: allotment.status,
+          source: allotment.source,
+          trAllotNum: allotment.trAllotNum,
+          sumAcres: allotment.sumAcres,
+          geometry: allotment.geometry,
+          distance_miles: allotment.distance_miles,
+          isContaining: allotment.isContaining
+        }));
+        
+        result.blm_national_sheep_goat_authorized_grazing_summary = `Found ${allotments.length} sheep/goat authorized grazing allotment(s)${containingAllotment && containingAllotment.isContaining ? ' (location is within an allotment)' : ''}.`;
+      }
+      
+      console.log(`✅ BLM National Sheep and Goat Authorized Grazing Allotments data processed:`, {
+        totalCount: result.blm_national_sheep_goat_authorized_grazing_count,
+        containing: result.blm_national_sheep_goat_authorized_grazing_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Sheep and Goat Authorized Grazing Allotments data:', error);
+      return {
+        blm_national_sheep_goat_authorized_grazing_containing: null,
+        blm_national_sheep_goat_authorized_grazing_containing_message: 'Error querying sheep/goat authorized grazing allotments',
+        blm_national_sheep_goat_authorized_grazing_count: 0,
+        blm_national_sheep_goat_authorized_grazing_all: [],
+        blm_national_sheep_goat_authorized_grazing_summary: 'Error querying sheep/goat authorized grazing allotments'
+      };
+    }
+  }
+
+  private async getBLMNationalNLCSMonumentsNCAs(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching BLM National NLCS National Monuments and National Conservation Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const monumentsNCAs = await getBLMNationalNLCSMonumentsNCAsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (monumentsNCAs.length === 0) {
+        result.blm_national_nlcs_monuments_ncas_containing = null;
+        result.blm_national_nlcs_monuments_ncas_containing_message = 'No NLCS monument/NCA found containing this location';
+        result.blm_national_nlcs_monuments_ncas_count = 0;
+        result.blm_national_nlcs_monuments_ncas_all = [];
+        result.blm_national_nlcs_monuments_ncas_summary = 'No NLCS monuments/NCAs found.';
+      } else {
+        // Get the first containing monument/NCA (should typically be only one for point-in-polygon)
+        const containingMonumentNCA = monumentsNCAs.find(m => m.isContaining) || monumentsNCAs[0];
+        
+        if (containingMonumentNCA && containingMonumentNCA.isContaining) {
+          const monumentNCALabel = containingMonumentNCA.ncaName || containingMonumentNCA.label || 'Unknown Monument/NCA';
+          result.blm_national_nlcs_monuments_ncas_containing = monumentNCALabel;
+          result.blm_national_nlcs_monuments_ncas_containing_message = `Location is within NLCS monument/NCA: ${monumentNCALabel}${containingMonumentNCA.nlcsId ? ` (NLCS ID: ${containingMonumentNCA.nlcsId})` : ''}`;
+        } else {
+          result.blm_national_nlcs_monuments_ncas_containing = null;
+          result.blm_national_nlcs_monuments_ncas_containing_message = 'No NLCS monument/NCA found containing this location';
+        }
+        
+        result.blm_national_nlcs_monuments_ncas_count = monumentsNCAs.length;
+        result.blm_national_nlcs_monuments_ncas_all = monumentsNCAs.map(monumentNCA => ({
+          ...monumentNCA.attributes,
+          objectId: monumentNCA.objectId,
+          smaCode: monumentNCA.smaCode,
+          stateAdmin: monumentNCA.stateAdmin,
+          stateGeog: monumentNCA.stateGeog,
+          label: monumentNCA.label,
+          ncaName: monumentNCA.ncaName,
+          nlcsId: monumentNCA.nlcsId,
+          geometry: monumentNCA.geometry,
+          distance_miles: monumentNCA.distance_miles,
+          isContaining: monumentNCA.isContaining
+        }));
+        
+        result.blm_national_nlcs_monuments_ncas_summary = `Found ${monumentsNCAs.length} NLCS monument/NCA(s)${containingMonumentNCA && containingMonumentNCA.isContaining ? ' (location is within a monument/NCA)' : ''}.`;
+      }
+      
+      console.log(`✅ BLM National NLCS National Monuments and National Conservation Areas data processed:`, {
+        totalCount: result.blm_national_nlcs_monuments_ncas_count,
+        containing: result.blm_national_nlcs_monuments_ncas_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National NLCS National Monuments and National Conservation Areas data:', error);
+      return {
+        blm_national_nlcs_monuments_ncas_containing: null,
+        blm_national_nlcs_monuments_ncas_containing_message: 'Error querying NLCS monuments/NCAs',
+        blm_national_nlcs_monuments_ncas_count: 0,
+        blm_national_nlcs_monuments_ncas_all: [],
+        blm_national_nlcs_monuments_ncas_summary: 'Error querying NLCS monuments/NCAs'
+      };
+    }
+  }
+
+  private async getBLMNationalWildHorseBurroHerdAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐴 Fetching BLM National Wild Horse and Burro Herd Areas data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const herdAreas = await getBLMNationalWildHorseBurroHerdAreasData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (herdAreas.length === 0) {
+        result.blm_national_wild_horse_burro_herd_areas_containing = null;
+        result.blm_national_wild_horse_burro_herd_areas_containing_message = 'No wild horse/burro herd area found containing this location';
+        result.blm_national_wild_horse_burro_herd_areas_count = 0;
+        result.blm_national_wild_horse_burro_herd_areas_all = [];
+        result.blm_national_wild_horse_burro_herd_areas_summary = 'No wild horse/burro herd areas found.';
+      } else {
+        // Get the first containing herd area (should typically be only one for point-in-polygon)
+        const containingHerdArea = herdAreas.find(h => h.isContaining) || herdAreas[0];
+        
+        if (containingHerdArea && containingHerdArea.isContaining) {
+          const herdAreaLabel = containingHerdArea.herdAreaName || 'Unknown Herd Area';
+          result.blm_national_wild_horse_burro_herd_areas_containing = herdAreaLabel;
+          result.blm_national_wild_horse_burro_herd_areas_containing_message = `Location is within wild horse/burro herd area: ${herdAreaLabel}${containingHerdArea.herdType ? ` (Type: ${containingHerdArea.herdType})` : ''}`;
+        } else {
+          result.blm_national_wild_horse_burro_herd_areas_containing = null;
+          result.blm_national_wild_horse_burro_herd_areas_containing_message = 'No wild horse/burro herd area found containing this location';
+        }
+        
+        result.blm_national_wild_horse_burro_herd_areas_count = herdAreas.length;
+        result.blm_national_wild_horse_burro_herd_areas_all = herdAreas.map(herdArea => ({
+          ...herdArea.attributes,
+          objectId: herdArea.objectId,
+          herdAreaName: herdArea.herdAreaName,
+          herdAreaNumber: herdArea.herdAreaNumber,
+          adminState: herdArea.adminState,
+          adminAgency: herdArea.adminAgency,
+          herdType: herdArea.herdType,
+          blmAcres: herdArea.blmAcres,
+          totalAcres: herdArea.totalAcres,
+          transferAcres: herdArea.transferAcres,
+          estHorsePop: herdArea.estHorsePop,
+          estBurroPop: herdArea.estBurroPop,
+          lastGatherDate: herdArea.lastGatherDate,
+          geometry: herdArea.geometry,
+          distance_miles: herdArea.distance_miles,
+          isContaining: herdArea.isContaining
+        }));
+        
+        result.blm_national_wild_horse_burro_herd_areas_summary = `Found ${herdAreas.length} wild horse/burro herd area(s)${containingHerdArea && containingHerdArea.isContaining ? ' (location is within a herd area)' : ''}.`;
+      }
+      
+      console.log(`✅ BLM National Wild Horse and Burro Herd Areas data processed:`, {
+        totalCount: result.blm_national_wild_horse_burro_herd_areas_count,
+        containing: result.blm_national_wild_horse_burro_herd_areas_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Wild Horse and Burro Herd Areas data:', error);
+      return {
+        blm_national_wild_horse_burro_herd_areas_containing: null,
+        blm_national_wild_horse_burro_herd_areas_containing_message: 'Error querying wild horse/burro herd areas',
+        blm_national_wild_horse_burro_herd_areas_count: 0,
+        blm_national_wild_horse_burro_herd_areas_all: [],
+        blm_national_wild_horse_burro_herd_areas_summary: 'Error querying wild horse/burro herd areas'
       };
     }
   }

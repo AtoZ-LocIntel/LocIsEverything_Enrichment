@@ -377,6 +377,11 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'blm_national_motorized_trails_all' ||
         key === 'blm_national_nonmotorized_trails_all' ||
         key === 'blm_national_grazing_pastures_all' ||
+        key === 'blm_national_acec_all' ||
+        key === 'blm_national_sheep_goat_grazing_all' ||
+        key === 'blm_national_sheep_goat_authorized_grazing_all' ||
+        key === 'blm_national_nlcs_monuments_ncas_all' ||
+        key === 'blm_national_wild_horse_burro_herd_areas_all' ||
         key === 'houston_tirz_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
@@ -7198,6 +7203,393 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           gisAcres || 'N/A',
           adminState || 'N/A',
           pastureId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_acec_all' && Array.isArray(value)) {
+      value.forEach((acec: any) => {
+        const acecName = acec.acecName || acec.ACEC_NAME || acec.Acec_Name || 'Unknown ACEC';
+        const lupName = acec.lupName || acec.LUP_NAME || acec.Lup_Name || '';
+        const nepaNum = acec.nepaNum || acec.NEPA_NUM || acec.Nepa_Num || '';
+        const rodDate = acec.rodDate || acec.ROD_DATE || '';
+        const gisAcres = acec.gisAcres !== null && acec.gisAcres !== undefined ? acec.gisAcres.toFixed(2) : '';
+        const adminState = acec.adminState || acec.ADMIN_ST || acec.Admin_St || '';
+        const acecId = acec.objectId || acec.OBJECTID || acec.objectid || '';
+        const isContaining = acec.isContaining ? 'Yes' : 'No';
+        const distance = acec.distance_miles !== null && acec.distance_miles !== undefined ? acec.distance_miles.toFixed(2) : (acec.isContaining ? '0.00' : '');
+        
+        // Build relevance flags
+        const relevanceFlags: string[] = [];
+        if (acec.relevanceCultural === 'YES') relevanceFlags.push('Cultural');
+        if (acec.relevanceForestry === 'YES') relevanceFlags.push('Forestry');
+        if (acec.relevanceHistoric === 'YES') relevanceFlags.push('Historic');
+        if (acec.relevanceNaturalHazards === 'YES') relevanceFlags.push('Natural Hazards');
+        if (acec.relevanceNaturalProcesses === 'YES') relevanceFlags.push('Natural Processes');
+        if (acec.relevanceNaturalSystems === 'YES') relevanceFlags.push('Natural Systems');
+        if (acec.relevanceScenic === 'YES') relevanceFlags.push('Scenic');
+        if (acec.relevanceWildlife === 'YES') relevanceFlags.push('Wildlife');
+        const relevanceStr = relevanceFlags.join('; ');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (acec.geometry && acec.geometry.rings && acec.geometry.rings.length > 0) {
+          const outerRing = acec.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...acec };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.acecName;
+        delete allAttributes.ACEC_NAME;
+        delete allAttributes.Acec_Name;
+        delete allAttributes.lupName;
+        delete allAttributes.LUP_NAME;
+        delete allAttributes.Lup_Name;
+        delete allAttributes.nepaNum;
+        delete allAttributes.NEPA_NUM;
+        delete allAttributes.Nepa_Num;
+        delete allAttributes.rodDate;
+        delete allAttributes.ROD_DATE;
+        delete allAttributes.gisAcres;
+        delete allAttributes.GIS_ACRES;
+        delete allAttributes.adminState;
+        delete allAttributes.ADMIN_ST;
+        delete allAttributes.Admin_St;
+        delete allAttributes.relevanceCultural;
+        delete allAttributes.relevanceForestry;
+        delete allAttributes.relevanceHistoric;
+        delete allAttributes.relevanceNaturalHazards;
+        delete allAttributes.relevanceNaturalProcesses;
+        delete allAttributes.relevanceNaturalSystems;
+        delete allAttributes.relevanceScenic;
+        delete allAttributes.relevanceWildlife;
+        delete allAttributes.importanceQuality;
+        delete allAttributes.importanceImportance;
+        delete allAttributes.importanceContribution;
+        delete allAttributes.importanceThreat;
+        delete allAttributes.specialMgmtProtect;
+        delete allAttributes.specialMgmtPrevent;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_ACEC',
+          acecName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          lupName || 'N/A',
+          nepaNum || 'N/A',
+          rodDate || 'N/A',
+          gisAcres || 'N/A',
+          adminState || 'N/A',
+          relevanceStr || 'N/A',
+          acecId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_sheep_goat_grazing_all' && Array.isArray(value)) {
+      value.forEach((allotment: any) => {
+        const allotName = allotment.allotName || allotment.ALLOT_NAME || allotment.Allot_Name || 'Unknown Allotment';
+        const stateAllotNum = allotment.stateAllotNum || allotment.ST_ALLOT_NUM || allotment.St_Allot_Num || '';
+        const status = allotment.status || allotment.Status || '';
+        const sumAcres = allotment.sumAcres !== null && allotment.sumAcres !== undefined ? allotment.sumAcres.toFixed(2) : '';
+        const allotId = allotment.objectId || allotment.OBJECTID || allotment.objectid || '';
+        const isContaining = allotment.isContaining ? 'Yes' : 'No';
+        const distance = allotment.distance_miles !== null && allotment.distance_miles !== undefined ? allotment.distance_miles.toFixed(2) : (allotment.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (allotment.geometry && allotment.geometry.rings && allotment.geometry.rings.length > 0) {
+          const outerRing = allotment.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...allotment };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.allotName;
+        delete allAttributes.ALLOT_NAME;
+        delete allAttributes.Allot_Name;
+        delete allAttributes.stateAllotNum;
+        delete allAttributes.ST_ALLOT_NUM;
+        delete allAttributes.St_Allot_Num;
+        delete allAttributes.status;
+        delete allAttributes.Status;
+        delete allAttributes.source;
+        delete allAttributes.Source;
+        delete allAttributes.trAllotNum;
+        delete allAttributes.TR_ALLOT_NUM;
+        delete allAttributes.Tr_Allot_Num;
+        delete allAttributes.sumAcres;
+        delete allAttributes.SUM_ACRES;
+        delete allAttributes.pastureName;
+        delete allAttributes.PAST_NAME;
+        delete allAttributes.Past_Name;
+        delete allAttributes.stateAllotPastNum;
+        delete allAttributes.ST_ALLOT_PAST_NUM;
+        delete allAttributes.St_Allot_Past_Num;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_Sheep_Goat_Billed_Grazing',
+          allotName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          stateAllotNum || 'N/A',
+          status || 'N/A',
+          sumAcres || 'N/A',
+          allotId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_sheep_goat_authorized_grazing_all' && Array.isArray(value)) {
+      value.forEach((allotment: any) => {
+        const allotName = allotment.allotName || allotment.ALLOT_NAME || allotment.Allot_Name || 'Unknown Allotment';
+        const stateAllotNum = allotment.stateAllotNum || allotment.ST_ALLOT_NUM || allotment.St_Allot_Num || '';
+        const status = allotment.status || allotment.Status || '';
+        const sumAcres = allotment.sumAcres !== null && allotment.sumAcres !== undefined ? allotment.sumAcres.toFixed(2) : '';
+        const allotId = allotment.objectId || allotment.OBJECTID || allotment.objectid || '';
+        const isContaining = allotment.isContaining ? 'Yes' : 'No';
+        const distance = allotment.distance_miles !== null && allotment.distance_miles !== undefined ? allotment.distance_miles.toFixed(2) : (allotment.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (allotment.geometry && allotment.geometry.rings && allotment.geometry.rings.length > 0) {
+          const outerRing = allotment.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...allotment };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.allotName;
+        delete allAttributes.ALLOT_NAME;
+        delete allAttributes.Allot_Name;
+        delete allAttributes.stateAllotNum;
+        delete allAttributes.ST_ALLOT_NUM;
+        delete allAttributes.St_Allot_Num;
+        delete allAttributes.status;
+        delete allAttributes.Status;
+        delete allAttributes.source;
+        delete allAttributes.Source;
+        delete allAttributes.trAllotNum;
+        delete allAttributes.TR_ALLOT_NUM;
+        delete allAttributes.Tr_Allot_Num;
+        delete allAttributes.sumAcres;
+        delete allAttributes.SUM_ACRES;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_Sheep_Goat_Authorized_Grazing',
+          allotName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          stateAllotNum || 'N/A',
+          status || 'N/A',
+          sumAcres || 'N/A',
+          allotId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_nlcs_monuments_ncas_all' && Array.isArray(value)) {
+      value.forEach((monumentNCA: any) => {
+        const ncaName = monumentNCA.ncaName || monumentNCA.NCA_NAME || monumentNCA.Nca_Name || null;
+        const label = monumentNCA.label || monumentNCA.Label || null;
+        const displayName = ncaName || label || 'Unknown Monument/NCA';
+        const smaCode = monumentNCA.smaCode || monumentNCA.sma_code || monumentNCA.SMA_CODE || '';
+        const stateAdmin = monumentNCA.stateAdmin || monumentNCA.STATE_ADMN || monumentNCA.State_Admn || '';
+        const nlcsId = monumentNCA.nlcsId || monumentNCA.NLCS_ID || monumentNCA.Nlcs_Id || '';
+        const monumentNCAId = monumentNCA.objectId || monumentNCA.OBJECTID || monumentNCA.objectid || '';
+        const isContaining = monumentNCA.isContaining ? 'Yes' : 'No';
+        const distance = monumentNCA.distance_miles !== null && monumentNCA.distance_miles !== undefined ? monumentNCA.distance_miles.toFixed(2) : (monumentNCA.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (monumentNCA.geometry && monumentNCA.geometry.rings && monumentNCA.geometry.rings.length > 0) {
+          const outerRing = monumentNCA.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...monumentNCA };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.smaCode;
+        delete allAttributes.sma_code;
+        delete allAttributes.SMA_CODE;
+        delete allAttributes.stateAdmin;
+        delete allAttributes.STATE_ADMN;
+        delete allAttributes.State_Admn;
+        delete allAttributes.stateGeog;
+        delete allAttributes.STATE_GEOG;
+        delete allAttributes.State_Geog;
+        delete allAttributes.label;
+        delete allAttributes.Label;
+        delete allAttributes.ncaName;
+        delete allAttributes.NCA_NAME;
+        delete allAttributes.Nca_Name;
+        delete allAttributes.nlcsId;
+        delete allAttributes.NLCS_ID;
+        delete allAttributes.Nlcs_Id;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_NLCS_Monuments_NCAs',
+          displayName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          smaCode || 'N/A',
+          nlcsId || 'N/A',
+          stateAdmin || 'N/A',
+          monumentNCAId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_wild_horse_burro_herd_areas_all' && Array.isArray(value)) {
+      value.forEach((herdArea: any) => {
+        const herdAreaName = herdArea.herdAreaName || herdArea.HA_NAME || herdArea.Ha_Name || 'Unknown Herd Area';
+        const herdAreaNumber = herdArea.herdAreaNumber || herdArea.HA_NO || herdArea.Ha_No || '';
+        const herdType = herdArea.herdType || herdArea.HERD_TYPE || herdArea.Herd_Type || '';
+        const adminState = herdArea.adminState || herdArea.ADMIN_ST || herdArea.Admin_St || '';
+        const blmAcres = herdArea.blmAcres !== null && herdArea.blmAcres !== undefined ? herdArea.blmAcres.toFixed(2) : '';
+        const totalAcres = herdArea.totalAcres !== null && herdArea.totalAcres !== undefined ? herdArea.totalAcres.toFixed(2) : '';
+        const estHorsePop = herdArea.estHorsePop !== null && herdArea.estHorsePop !== undefined ? herdArea.estHorsePop.toString() : '';
+        const estBurroPop = herdArea.estBurroPop !== null && herdArea.estBurroPop !== undefined ? herdArea.estBurroPop.toString() : '';
+        const herdAreaId = herdArea.objectId || herdArea.OBJECTID || herdArea.objectid || '';
+        const isContaining = herdArea.isContaining ? 'Yes' : 'No';
+        const distance = herdArea.distance_miles !== null && herdArea.distance_miles !== undefined ? herdArea.distance_miles.toFixed(2) : (herdArea.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (herdArea.geometry && herdArea.geometry.rings && herdArea.geometry.rings.length > 0) {
+          const outerRing = herdArea.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...herdArea };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.herdAreaName;
+        delete allAttributes.HA_NAME;
+        delete allAttributes.Ha_Name;
+        delete allAttributes.herdAreaNumber;
+        delete allAttributes.HA_NO;
+        delete allAttributes.Ha_No;
+        delete allAttributes.adminState;
+        delete allAttributes.ADMIN_ST;
+        delete allAttributes.Admin_St;
+        delete allAttributes.adminAgency;
+        delete allAttributes.ADMIN_AGCY;
+        delete allAttributes.Admin_Agcy;
+        delete allAttributes.herdType;
+        delete allAttributes.HERD_TYPE;
+        delete allAttributes.Herd_Type;
+        delete allAttributes.blmAcres;
+        delete allAttributes.BLM_ACRES;
+        delete allAttributes.totalAcres;
+        delete allAttributes.TOTAL_ACRES;
+        delete allAttributes.transferAcres;
+        delete allAttributes.TRANSFER_ACRES;
+        delete allAttributes.estHorsePop;
+        delete allAttributes.EST_HORSE_POP;
+        delete allAttributes.estBurroPop;
+        delete allAttributes.EST_BURRO_POP;
+        delete allAttributes.lastGatherDate;
+        delete allAttributes.LAST_GATHER_DT;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_Wild_Horse_Burro_Herd_Areas',
+          herdAreaName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          herdAreaNumber || 'N/A',
+          herdType || 'N/A',
+          adminState || 'N/A',
+          blmAcres || 'N/A',
+          totalAcres || 'N/A',
+          estHorsePop || 'N/A',
+          estBurroPop || 'N/A',
+          herdAreaId || 'N/A',
           attributesJson,
           'BLM'
         ]);

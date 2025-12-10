@@ -330,6 +330,11 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'blm_national_motorized_trails': { icon: '🏍️', color: '#dc2626', title: 'BLM National GTLF Public Motorized Trails' },
   'blm_national_nonmotorized_trails': { icon: '🚶', color: '#10b981', title: 'BLM National GTLF Public Nonmotorized Trails' },
   'blm_national_grazing_pastures': { icon: '🐄', color: '#a16207', title: 'BLM National Grazing Pasture Polygons' },
+  'blm_national_acec': { icon: '🌿', color: '#16a34a', title: 'BLM National Areas of Critical Environmental Concern' },
+  'blm_national_sheep_goat_grazing': { icon: '🐑', color: '#ca8a04', title: 'BLM National Sheep and Goat Billed Grazing Allotments' },
+  'blm_national_sheep_goat_authorized_grazing': { icon: '🐐', color: '#d97706', title: 'BLM National Sheep and Goat Authorized Grazing Allotments' },
+  'blm_national_nlcs_monuments_ncas': { icon: '🏛️', color: '#9333ea', title: 'BLM National NLCS National Monuments and National Conservation Areas' },
+  'blm_national_wild_horse_burro_herd_areas': { icon: '🐴', color: '#7c2d12', title: 'BLM National Wild Horse and Burro Herd Areas' },
   
   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
@@ -537,6 +542,11 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'blm_national_motorized_trails_all' || // Skip BLM National Motorized Trails array (handled separately for map drawing)
     key === 'blm_national_nonmotorized_trails_all' || // Skip BLM National Nonmotorized Trails array (handled separately for map drawing)
     key === 'blm_national_grazing_pastures_all' || // Skip BLM National Grazing Pastures array (handled separately for map drawing)
+    key === 'blm_national_acec_all' || // Skip BLM National ACEC array (handled separately for map drawing)
+    key === 'blm_national_sheep_goat_grazing_all' || // Skip BLM National Sheep/Goat Billed Grazing Allotments array (handled separately for map drawing)
+    key === 'blm_national_sheep_goat_authorized_grazing_all' || // Skip BLM National Sheep/Goat Authorized Grazing Allotments array (handled separately for map drawing)
+    key === 'blm_national_nlcs_monuments_ncas_all' || // Skip BLM National NLCS Monuments/NCAs array (handled separately for map drawing)
+    key === 'blm_national_wild_horse_burro_herd_areas_all' || // Skip BLM National Wild Horse/Burro Herd Areas array (handled separately for map drawing)
     key === 'ma_regional_planning_agencies_all' || // Skip MA Regional Planning Agencies array (handled separately for map drawing)
     key === 'ma_acecs_all' || // Skip MA ACECs array (handled separately for map drawing)
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
@@ -13963,6 +13973,467 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing BLM National Grazing Pasture Polygons:', error);
+      }
+
+      // Draw BLM National Areas of Critical Environmental Concern as polygons on the map
+      try {
+        if (enrichments.blm_national_acec_all && Array.isArray(enrichments.blm_national_acec_all)) {
+          let acecCount = 0;
+          enrichments.blm_national_acec_all.forEach((acec: any) => {
+            if (acec.geometry && acec.geometry.rings && Array.isArray(acec.geometry.rings)) {
+              try {
+                const rings = acec.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('BLM ACEC polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = acec.isContaining;
+                  const color = isContaining ? '#16a34a' : '#22c55e'; // Green for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const acecName = acec.acecName || acec.ACEC_NAME || acec.Acec_Name || 'Unknown ACEC';
+                  const lupName = acec.lupName || acec.LUP_NAME || acec.Lup_Name || null;
+                  const nepaNum = acec.nepaNum || acec.NEPA_NUM || acec.Nepa_Num || null;
+                  const rodDate = acec.rodDate || acec.ROD_DATE || null;
+                  const gisAcres = acec.gisAcres !== null && acec.gisAcres !== undefined ? acec.gisAcres : null;
+                  const adminState = acec.adminState || acec.ADMIN_ST || acec.Admin_St || null;
+                  const acecId = acec.objectId || acec.OBJECTID || acec.objectid || null;
+                  const distance = acec.distance_miles !== null && acec.distance_miles !== undefined ? acec.distance_miles : 0;
+                  
+                  // Build relevance flags
+                  const relevanceFlags: string[] = [];
+                  if (acec.relevanceCultural === 'YES') relevanceFlags.push('Cultural');
+                  if (acec.relevanceForestry === 'YES') relevanceFlags.push('Forestry');
+                  if (acec.relevanceHistoric === 'YES') relevanceFlags.push('Historic');
+                  if (acec.relevanceNaturalHazards === 'YES') relevanceFlags.push('Natural Hazards');
+                  if (acec.relevanceNaturalProcesses === 'YES') relevanceFlags.push('Natural Processes');
+                  if (acec.relevanceNaturalSystems === 'YES') relevanceFlags.push('Natural Systems');
+                  if (acec.relevanceScenic === 'YES') relevanceFlags.push('Scenic');
+                  if (acec.relevanceWildlife === 'YES') relevanceFlags.push('Wildlife');
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌿 ${acecName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${lupName ? `<div><strong>Land Use Plan:</strong> ${lupName}</div>` : ''}
+                        ${nepaNum ? `<div><strong>NEPA Number:</strong> ${nepaNum}</div>` : ''}
+                        ${rodDate ? `<div><strong>ROD Date:</strong> ${rodDate}</div>` : ''}
+                        ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                        ${gisAcres !== null && gisAcres !== undefined ? `<div><strong>Acres:</strong> ${gisAcres.toFixed(2)}</div>` : ''}
+                        ${acecId ? `<div><strong>ACEC ID:</strong> ${acecId}</div>` : ''}
+                        ${relevanceFlags.length > 0 ? `<div><strong>Relevance:</strong> ${relevanceFlags.join(', ')}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  acecCount++;
+                  
+                  // Extend map bounds
+                  const bounds = polygon.getBounds();
+                  if (bounds.isValid()) {
+                    mapBounds.extend(bounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing BLM ACEC polygon:', error);
+              }
+            }
+          });
+          
+          if (acecCount > 0) {
+            if (!legendAccumulator['blm_national_acec']) {
+              legendAccumulator['blm_national_acec'] = {
+                icon: '🌿',
+                color: '#16a34a',
+                title: 'BLM National Areas of Critical Environmental Concern',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_acec'].count += acecCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Areas of Critical Environmental Concern:', error);
+      }
+
+      // Draw BLM National Sheep and Goat Billed Grazing Allotments as polygons on the map
+      try {
+        if (enrichments.blm_national_sheep_goat_grazing_all && Array.isArray(enrichments.blm_national_sheep_goat_grazing_all)) {
+          let allotmentCount = 0;
+          enrichments.blm_national_sheep_goat_grazing_all.forEach((allotment: any) => {
+            if (allotment.geometry && allotment.geometry.rings && Array.isArray(allotment.geometry.rings)) {
+              try {
+                const rings = allotment.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('BLM Sheep/Goat Billed Grazing Allotment polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = allotment.isContaining;
+                  const color = isContaining ? '#ca8a04' : '#eab308'; // Orange/tan for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const allotName = allotment.allotName || allotment.ALLOT_NAME || allotment.Allot_Name || 'Unknown Allotment';
+                  const stateAllotNum = allotment.stateAllotNum || allotment.ST_ALLOT_NUM || allotment.St_Allot_Num || null;
+                  const status = allotment.status || allotment.Status || null;
+                  const sumAcres = allotment.sumAcres !== null && allotment.sumAcres !== undefined ? allotment.sumAcres : null;
+                  const allotId = allotment.objectId || allotment.OBJECTID || allotment.objectid || null;
+                  const distance = allotment.distance_miles !== null && allotment.distance_miles !== undefined ? allotment.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🐑 ${allotName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${stateAllotNum ? `<div><strong>State Allotment Number:</strong> ${stateAllotNum}</div>` : ''}
+                        ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                        ${sumAcres !== null && sumAcres !== undefined ? `<div><strong>Acres:</strong> ${sumAcres.toFixed(2)}</div>` : ''}
+                        ${allotId ? `<div><strong>Allotment ID:</strong> ${allotId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  allotmentCount++;
+                  
+                  // Extend map bounds
+                  const bounds = polygon.getBounds();
+                  if (bounds.isValid()) {
+                    mapBounds.extend(bounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing BLM Sheep/Goat Billed Grazing Allotment polygon:', error);
+              }
+            }
+          });
+          
+          if (allotmentCount > 0) {
+            if (!legendAccumulator['blm_national_sheep_goat_grazing']) {
+              legendAccumulator['blm_national_sheep_goat_grazing'] = {
+                icon: '🐑',
+                color: '#ca8a04',
+                title: 'BLM National Sheep and Goat Billed Grazing Allotments',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_sheep_goat_grazing'].count += allotmentCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Sheep and Goat Billed Grazing Allotments:', error);
+      }
+
+      // Draw BLM National Sheep and Goat Authorized Grazing Allotments as polygons on the map
+      try {
+        if (enrichments.blm_national_sheep_goat_authorized_grazing_all && Array.isArray(enrichments.blm_national_sheep_goat_authorized_grazing_all)) {
+          let allotmentCount = 0;
+          enrichments.blm_national_sheep_goat_authorized_grazing_all.forEach((allotment: any) => {
+            if (allotment.geometry && allotment.geometry.rings && Array.isArray(allotment.geometry.rings)) {
+              try {
+                const rings = allotment.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('BLM Sheep/Goat Authorized Grazing Allotment polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = allotment.isContaining;
+                  const color = isContaining ? '#d97706' : '#f59e0b'; // Orange for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const allotName = allotment.allotName || allotment.ALLOT_NAME || allotment.Allot_Name || 'Unknown Allotment';
+                  const stateAllotNum = allotment.stateAllotNum || allotment.ST_ALLOT_NUM || allotment.St_Allot_Num || null;
+                  const status = allotment.status || allotment.Status || null;
+                  const sumAcres = allotment.sumAcres !== null && allotment.sumAcres !== undefined ? allotment.sumAcres : null;
+                  const allotId = allotment.objectId || allotment.OBJECTID || allotment.objectid || null;
+                  const distance = allotment.distance_miles !== null && allotment.distance_miles !== undefined ? allotment.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🐐 ${allotName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${stateAllotNum ? `<div><strong>State Allotment Number:</strong> ${stateAllotNum}</div>` : ''}
+                        ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                        ${sumAcres !== null && sumAcres !== undefined ? `<div><strong>Acres:</strong> ${sumAcres.toFixed(2)}</div>` : ''}
+                        ${allotId ? `<div><strong>Allotment ID:</strong> ${allotId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  allotmentCount++;
+                  
+                  // Extend map bounds
+                  const bounds = polygon.getBounds();
+                  if (bounds.isValid()) {
+                    mapBounds.extend(bounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing BLM Sheep/Goat Authorized Grazing Allotment polygon:', error);
+              }
+            }
+          });
+          
+          if (allotmentCount > 0) {
+            if (!legendAccumulator['blm_national_sheep_goat_authorized_grazing']) {
+              legendAccumulator['blm_national_sheep_goat_authorized_grazing'] = {
+                icon: '🐐',
+                color: '#d97706',
+                title: 'BLM National Sheep and Goat Authorized Grazing Allotments',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_sheep_goat_authorized_grazing'].count += allotmentCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Sheep and Goat Authorized Grazing Allotments:', error);
+      }
+
+      // Draw BLM National NLCS National Monuments and National Conservation Areas as polygons on the map
+      try {
+        if (enrichments.blm_national_nlcs_monuments_ncas_all && Array.isArray(enrichments.blm_national_nlcs_monuments_ncas_all)) {
+          let monumentNCACount = 0;
+          enrichments.blm_national_nlcs_monuments_ncas_all.forEach((monumentNCA: any) => {
+            if (monumentNCA.geometry && monumentNCA.geometry.rings && Array.isArray(monumentNCA.geometry.rings)) {
+              try {
+                const rings = monumentNCA.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('BLM NLCS Monument/NCA polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = monumentNCA.isContaining;
+                  const color = isContaining ? '#9333ea' : '#a855f7'; // Purple for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const ncaName = monumentNCA.ncaName || monumentNCA.NCA_NAME || monumentNCA.Nca_Name || null;
+                  const label = monumentNCA.label || monumentNCA.Label || null;
+                  const displayName = ncaName || label || 'Unknown Monument/NCA';
+                  const smaCode = monumentNCA.smaCode || monumentNCA.sma_code || monumentNCA.SMA_CODE || null;
+                  const stateAdmin = monumentNCA.stateAdmin || monumentNCA.STATE_ADMN || monumentNCA.State_Admn || null;
+                  const nlcsId = monumentNCA.nlcsId || monumentNCA.NLCS_ID || monumentNCA.Nlcs_Id || null;
+                  const monumentNCAId = monumentNCA.objectId || monumentNCA.OBJECTID || monumentNCA.objectid || null;
+                  const distance = monumentNCA.distance_miles !== null && monumentNCA.distance_miles !== undefined ? monumentNCA.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏛️ ${displayName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${smaCode ? `<div><strong>Type:</strong> ${smaCode === 'BLM_MON' ? 'National Monument' : smaCode === 'BLM_NCA' ? 'National Conservation Area' : smaCode}</div>` : ''}
+                        ${nlcsId ? `<div><strong>NLCS ID:</strong> ${nlcsId}</div>` : ''}
+                        ${stateAdmin ? `<div><strong>State:</strong> ${stateAdmin}</div>` : ''}
+                        ${monumentNCAId ? `<div><strong>Monument/NCA ID:</strong> ${monumentNCAId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  monumentNCACount++;
+                  
+                  // Extend map bounds
+                  const bounds = polygon.getBounds();
+                  if (bounds.isValid()) {
+                    mapBounds.extend(bounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing BLM NLCS Monument/NCA polygon:', error);
+              }
+            }
+          });
+          
+          if (monumentNCACount > 0) {
+            if (!legendAccumulator['blm_national_nlcs_monuments_ncas']) {
+              legendAccumulator['blm_national_nlcs_monuments_ncas'] = {
+                icon: '🏛️',
+                color: '#9333ea',
+                title: 'BLM National NLCS National Monuments and National Conservation Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_nlcs_monuments_ncas'].count += monumentNCACount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National NLCS National Monuments and National Conservation Areas:', error);
+      }
+
+      // Draw BLM National Wild Horse and Burro Herd Areas as polygons on the map
+      try {
+        if (enrichments.blm_national_wild_horse_burro_herd_areas_all && Array.isArray(enrichments.blm_national_wild_horse_burro_herd_areas_all)) {
+          let herdAreaCount = 0;
+          enrichments.blm_national_wild_horse_burro_herd_areas_all.forEach((herdArea: any) => {
+            if (herdArea.geometry && herdArea.geometry.rings && Array.isArray(herdArea.geometry.rings)) {
+              try {
+                const rings = herdArea.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('BLM Wild Horse/Burro Herd Area polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = herdArea.isContaining;
+                  const color = isContaining ? '#7c2d12' : '#991b1b'; // Dark brown for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const herdAreaName = herdArea.herdAreaName || herdArea.HA_NAME || herdArea.Ha_Name || 'Unknown Herd Area';
+                  const herdAreaNumber = herdArea.herdAreaNumber || herdArea.HA_NO || herdArea.Ha_No || null;
+                  const herdType = herdArea.herdType || herdArea.HERD_TYPE || herdArea.Herd_Type || null;
+                  const adminState = herdArea.adminState || herdArea.ADMIN_ST || herdArea.Admin_St || null;
+                  const blmAcres = herdArea.blmAcres !== null && herdArea.blmAcres !== undefined ? herdArea.blmAcres : null;
+                  const totalAcres = herdArea.totalAcres !== null && herdArea.totalAcres !== undefined ? herdArea.totalAcres : null;
+                  const estHorsePop = herdArea.estHorsePop !== null && herdArea.estHorsePop !== undefined ? herdArea.estHorsePop : null;
+                  const estBurroPop = herdArea.estBurroPop !== null && herdArea.estBurroPop !== undefined ? herdArea.estBurroPop : null;
+                  const herdAreaId = herdArea.objectId || herdArea.OBJECTID || herdArea.objectid || null;
+                  const distance = herdArea.distance_miles !== null && herdArea.distance_miles !== undefined ? herdArea.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🐴 ${herdAreaName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${herdAreaNumber ? `<div><strong>Herd Area Number:</strong> ${herdAreaNumber}</div>` : ''}
+                        ${herdType ? `<div><strong>Herd Type:</strong> ${herdType}</div>` : ''}
+                        ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                        ${blmAcres !== null && blmAcres !== undefined ? `<div><strong>BLM Acres:</strong> ${blmAcres.toLocaleString()}</div>` : ''}
+                        ${totalAcres !== null && totalAcres !== undefined ? `<div><strong>Total Acres:</strong> ${totalAcres.toLocaleString()}</div>` : ''}
+                        ${estHorsePop !== null && estHorsePop !== undefined ? `<div><strong>Est. Horse Population:</strong> ${estHorsePop}</div>` : ''}
+                        ${estBurroPop !== null && estBurroPop !== undefined ? `<div><strong>Est. Burro Population:</strong> ${estBurroPop}</div>` : ''}
+                        ${herdAreaId ? `<div><strong>Herd Area ID:</strong> ${herdAreaId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(map);
+                  herdAreaCount++;
+                  
+                  // Extend map bounds
+                  const bounds = polygon.getBounds();
+                  if (bounds.isValid()) {
+                    mapBounds.extend(bounds);
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing BLM Wild Horse/Burro Herd Area polygon:', error);
+              }
+            }
+          });
+          
+          if (herdAreaCount > 0) {
+            if (!legendAccumulator['blm_national_wild_horse_burro_herd_areas']) {
+              legendAccumulator['blm_national_wild_horse_burro_herd_areas'] = {
+                icon: '🐴',
+                color: '#7c2d12',
+                title: 'BLM National Wild Horse and Burro Herd Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_wild_horse_burro_herd_areas'].count += herdAreaCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Wild Horse and Burro Herd Areas:', error);
       }
 
       // Draw Houston METRO Rail Stations as point markers on the map
