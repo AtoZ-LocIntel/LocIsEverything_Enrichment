@@ -234,7 +234,12 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_metro_lines': { icon: '🚇', color: '#7c3aed', title: 'LA County MTA Metro Lines' },
   'la_county_street_inventory': { icon: '🛣️', color: '#fbbf24', title: 'LA County Street Inventory' },
   'houston_roads_centerline': { icon: '🛣️', color: '#3b82f6', title: 'Houston Roads Centerline' },
-  'houston_metro_bus_routes': { icon: '🚌', color: '#10b981', title: 'Houston Metro Bus Routes' },
+  'houston_metro_bus_routes': { icon: '🚌', color: '#2563eb', title: 'Houston Metro Bus Routes' },
+  'houston_metro_park_and_ride': { icon: '🚗', color: '#3b82f6', title: 'Houston METRO Park and Ride Locations' },
+  'houston_metro_transit_centers': { icon: '🚇', color: '#8b5cf6', title: 'Houston METRO Transit Centers' },
+  'houston_metro_rail_stations': { icon: '🚆', color: '#7c3aed', title: 'Houston METRO Rail Stations' },
+  'houston_airports': { icon: '✈️', color: '#f59e0b', title: 'Houston Airports' },
+  'houston_bikeways': { icon: '🚴', color: '#14b8a6', title: 'Houston Bikeways (Existing)' },
   'houston_olc_grid_6digit': { icon: '🗺️', color: '#8b5cf6', title: 'Houston OLC Grid - 6 Digits' },
   'houston_olc_grid_8digit': { icon: '🗺️', color: '#a855f7', title: 'Houston OLC Grid - 8 Digits' },
   'houston_fire_stations': { icon: '🚒', color: '#dc2626', title: 'Houston Fire Stations' },
@@ -321,6 +326,10 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   // Public Lands & Protected Areas
   'poi_padus_public_access': { icon: '🏞️', color: '#22c55e', title: 'Public Lands' },
   'poi_padus_protection_status': { icon: '🛡️', color: '#059669', title: 'Protected Areas' },
+  'blm_national_trails': { icon: '🥾', color: '#059669', title: 'BLM National GTLF Public Managed Trails' },
+  'blm_national_motorized_trails': { icon: '🏍️', color: '#dc2626', title: 'BLM National GTLF Public Motorized Trails' },
+  'blm_national_nonmotorized_trails': { icon: '🚶', color: '#10b981', title: 'BLM National GTLF Public Nonmotorized Trails' },
+  'blm_national_grazing_pastures': { icon: '🐄', color: '#a16207', title: 'BLM National Grazing Pasture Polygons' },
   
   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
@@ -524,6 +533,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nh_geographic_names_all' || // Skip Geographic Names array (handled separately for map drawing)
     key === 'padus_public_access_all' || // Skip PAD-US public access array (handled separately for map drawing)
     key === 'padus_protection_status_all' || // Skip PAD-US protection status array (handled separately for map drawing)
+    key === 'blm_national_trails_all' || // Skip BLM National Trails array (handled separately for map drawing)
+    key === 'blm_national_motorized_trails_all' || // Skip BLM National Motorized Trails array (handled separately for map drawing)
+    key === 'blm_national_nonmotorized_trails_all' || // Skip BLM National Nonmotorized Trails array (handled separately for map drawing)
+    key === 'blm_national_grazing_pastures_all' || // Skip BLM National Grazing Pastures array (handled separately for map drawing)
     key === 'ma_regional_planning_agencies_all' || // Skip MA Regional Planning Agencies array (handled separately for map drawing)
     key === 'ma_acecs_all' || // Skip MA ACECs array (handled separately for map drawing)
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
@@ -618,6 +631,11 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'houston_site_addresses_all' || // Skip Houston Site Addresses array (handled separately for map drawing)
     key === 'houston_roads_centerline_all' || // Skip Houston Roads Centerline array (handled separately for map drawing)
     key === 'houston_metro_bus_routes_all' || // Skip Houston Metro Bus Routes array (handled separately for map drawing)
+    key === 'houston_metro_park_and_ride_all' || // Skip Houston METRO Park and Ride Locations array (handled separately for map drawing)
+    key === 'houston_metro_transit_centers_all' || // Skip Houston METRO Transit Centers array (handled separately for map drawing)
+    key === 'houston_metro_rail_stations_all' || // Skip Houston METRO Rail Stations array (handled separately for map drawing)
+    key === 'houston_airports_all' || // Skip Houston Airports array (handled separately for map drawing)
+    key === 'houston_bikeways_all' || // Skip Houston Bikeways array (handled separately for map drawing)
     key === 'houston_olc_grid_6digit_all' || // Skip Houston OLC Grid 6-digit array (handled separately for map drawing)
     key === 'houston_olc_grid_8digit_all' || // Skip Houston OLC Grid 8-digit array (handled separately for map drawing)
     key === 'houston_fire_stations_all' || // Skip Houston Fire Stations array (handled separately for map drawing)
@@ -13099,9 +13117,9 @@ const MapView: React.FC<MapViewProps> = ({
                     const routeType = route.routeType || route.ROUTE_TYPE || route.route_type || route.RouteType || route.TYPE || route.type || '';
                     const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles : 0;
 
-                    // Create polyline with green color for bus routes
+                    // Create polyline with blue color for bus routes
                     const polyline = L.polyline(latlngs, {
-                      color: '#10b981', // Green color for Houston Metro Bus Routes
+                      color: '#2563eb', // Blue color for Houston Metro Bus Routes (distinct from bikeways)
                       weight: 4,
                       opacity: 0.8,
                       smoothFactor: 1
@@ -13156,7 +13174,7 @@ const MapView: React.FC<MapViewProps> = ({
             if (!legendAccumulator['houston_metro_bus_routes']) {
               legendAccumulator['houston_metro_bus_routes'] = {
                 icon: '🚌',
-                color: '#10b981',
+                color: '#2563eb',
                 title: 'Houston Metro Bus Routes',
                 count: 0,
               };
@@ -13272,6 +13290,858 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Houston TIRZ:', error);
+      }
+
+      // Draw Houston METRO Park and Ride Locations as point markers on the map
+      try {
+        if (enrichments.houston_metro_park_and_ride_all && Array.isArray(enrichments.houston_metro_park_and_ride_all)) {
+          let locationCount = 0;
+          enrichments.houston_metro_park_and_ride_all.forEach((location: any) => {
+            if (location.geometry && location.geometry.x !== undefined && location.geometry.y !== undefined) {
+              try {
+                // Extract coordinates from geometry (already in WGS84)
+                const lat = location.geometry.y;
+                const lon = location.geometry.x;
+                
+                const name = location.name || location.NAME1 || 'Unknown Park and Ride';
+                const address = location.address || location.ADDRESS || null;
+                const parkingSpaces = location.parkingSpaces !== null && location.parkingSpaces !== undefined ? location.parkingSpaces : (location.PSPACES !== null && location.PSPACES !== undefined ? Number(location.PSPACES) : null);
+                const routesServed = location.routesServed || location.ROUTES_SER || null;
+                const fareZone = location.fareZone !== null && location.fareZone !== undefined ? location.fareZone : (location.FareZone !== null && location.FareZone !== undefined ? Number(location.FareZone) : null);
+                const busStopId = location.busStopId !== null && location.busStopId !== undefined ? location.busStopId : (location.BusStopID !== null && location.BusStopID !== undefined ? Number(location.BusStopID) : null);
+                const distance = location.distance_miles !== null && location.distance_miles !== undefined ? location.distance_miles : 0;
+                
+                // Create marker with car icon
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚗', '#3b82f6')
+                });
+                
+                // Build popup content
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚗 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${parkingSpaces !== null && parkingSpaces !== undefined ? `<div><strong>Parking Spaces:</strong> ${parkingSpaces}</div>` : ''}
+                      ${routesServed ? `<div><strong>Routes Served:</strong> ${routesServed}</div>` : ''}
+                      ${fareZone !== null && fareZone !== undefined ? `<div><strong>Fare Zone:</strong> ${fareZone}</div>` : ''}
+                      ${busStopId !== null && busStopId !== undefined ? `<div><strong>Bus Stop ID:</strong> ${busStopId}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all location attributes (excluding internal fields)
+                const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'NAME1', 'address', 'ADDRESS', 'parkingSpaces', 'PSPACES', 'routesServed', 'ROUTES_SER', 'fareZone', 'FareZone', 'busStopId', 'BusStopID'];
+                Object.entries(location).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                locationCount++;
+              } catch (error) {
+                console.error('Error drawing Houston METRO Park and Ride Location marker:', error);
+              }
+            }
+          });
+          
+          if (locationCount > 0) {
+            if (!legendAccumulator['houston_metro_park_and_ride']) {
+              legendAccumulator['houston_metro_park_and_ride'] = {
+                icon: '🚗',
+                color: '#3b82f6',
+                title: 'Houston METRO Park and Ride Locations',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_metro_park_and_ride'].count += locationCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston METRO Park and Ride Locations:', error);
+      }
+
+      // Draw Houston METRO Transit Centers as point markers on the map
+      try {
+        if (enrichments.houston_metro_transit_centers_all && Array.isArray(enrichments.houston_metro_transit_centers_all)) {
+          let centerCount = 0;
+          enrichments.houston_metro_transit_centers_all.forEach((center: any) => {
+            if (center.geometry && center.geometry.x !== undefined && center.geometry.y !== undefined) {
+              try {
+                // Extract coordinates from geometry (already in WGS84)
+                const lat = center.geometry.y;
+                const lon = center.geometry.x;
+                
+                const name = center.name || center.NAME1 || 'Unknown Transit Center';
+                const address = center.address || center.ADDRESS || null;
+                const parkingSpaces = center.parkingSpaces !== null && center.parkingSpaces !== undefined ? center.parkingSpaces : (center.PSPACES !== null && center.PSPACES !== undefined ? Number(center.PSPACES) : null);
+                const busBays = center.busBays !== null && center.busBays !== undefined ? center.busBays : (center.B_BAYS !== null && center.B_BAYS !== undefined ? Number(center.B_BAYS) : null);
+                const routesServed = center.routesServed || center.ROUTES_SER || null;
+                const transitCenterId = center.transitCenterId !== null && center.transitCenterId !== undefined ? center.transitCenterId : (center.TRANCTR_ID !== null && center.TRANCTR_ID !== undefined ? Number(center.TRANCTR_ID) : null);
+                const busStopId = center.busStopId !== null && center.busStopId !== undefined ? center.busStopId : (center.BusStopID !== null && center.BusStopID !== undefined ? Number(center.BusStopID) : null);
+                const distance = center.distance_miles !== null && center.distance_miles !== undefined ? center.distance_miles : 0;
+                
+                // Create marker with transit icon
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚇', '#8b5cf6')
+                });
+                
+                // Build popup content
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚇 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${transitCenterId !== null && transitCenterId !== undefined ? `<div><strong>Transit Center ID:</strong> ${transitCenterId}</div>` : ''}
+                      ${busBays !== null && busBays !== undefined ? `<div><strong>Bus Bays:</strong> ${busBays}</div>` : ''}
+                      ${parkingSpaces !== null && parkingSpaces !== undefined ? `<div><strong>Parking Spaces:</strong> ${parkingSpaces}</div>` : ''}
+                      ${routesServed ? `<div><strong>Routes Served:</strong> ${routesServed}</div>` : ''}
+                      ${busStopId !== null && busStopId !== undefined ? `<div><strong>Bus Stop ID:</strong> ${busStopId}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all center attributes (excluding internal fields)
+                const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'name', 'NAME1', 'name2', 'NAME2', 'address', 'ADDRESS', 'parkingSpaces', 'PSPACES', 'busBays', 'B_BAYS', 'routesServed', 'ROUTES_SER', 'transitCenterId', 'TRANCTR_ID', 'busStopId', 'BusStopID'];
+                Object.entries(center).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                centerCount++;
+              } catch (error) {
+                console.error('Error drawing Houston METRO Transit Center marker:', error);
+              }
+            }
+          });
+          
+          if (centerCount > 0) {
+            if (!legendAccumulator['houston_metro_transit_centers']) {
+              legendAccumulator['houston_metro_transit_centers'] = {
+                icon: '🚇',
+                color: '#8b5cf6',
+                title: 'Houston METRO Transit Centers',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_metro_transit_centers'].count += centerCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston METRO Transit Centers:', error);
+      }
+
+      // Draw Houston Bikeways as polylines on the map
+      try {
+        if (enrichments.houston_bikeways_all && Array.isArray(enrichments.houston_bikeways_all)) {
+          let bikewayCount = 0;
+          enrichments.houston_bikeways_all.forEach((bikeway: any) => {
+            if (bikeway.geometry && bikeway.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = bikeway.geometry.paths;
+                if (paths && paths.length > 0) {
+                  bikewayCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry paths are in [x, y] format (lon, lat) in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const bikewayName = bikeway.bikewayName || bikeway.NAME || bikeway.name || bikeway.NAME1 || bikeway.name1 || bikeway.BIKEWAY_NAME || bikeway.bikeway_name || bikeway.STREET_NAME || bikeway.street_name || 'Unknown Bikeway';
+                    const bikewayType = bikeway.bikewayType || bikeway.TYPE || bikeway.type || bikeway.BIKEWAY_TYPE || bikeway.bikeway_type || bikeway.TYPE_DESC || bikeway.type_desc || '';
+                    const distance = bikeway.distance_miles !== null && bikeway.distance_miles !== undefined ? bikeway.distance_miles : 0;
+
+                    // Create polyline with teal/cyan color for bikeways
+                    const polyline = L.polyline(latlngs, {
+                      color: '#14b8a6', // Teal/cyan color for bikeways (distinct from bus routes)
+                      weight: 4,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with bikeway information
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🚴 ${bikewayName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${bikewayType ? `<div><strong>Bikeway Type:</strong> ${bikewayType}</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all bikeway attributes (excluding internal fields)
+                    const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'bikewayName', 'NAME', 'name', 'NAME1', 'name1', 'BIKEWAY_NAME', 'bikeway_name', 'STREET_NAME', 'street_name', 'bikewayType', 'TYPE', 'type', 'BIKEWAY_TYPE', 'bikeway_type', 'TYPE_DESC', 'type_desc'];
+                    Object.entries(bikeway).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Houston Bikeways polyline:', error);
+              }
+            }
+          });
+          
+          if (bikewayCount > 0) {
+            if (!legendAccumulator['houston_bikeways']) {
+              legendAccumulator['houston_bikeways'] = {
+                icon: '🚴',
+                color: '#14b8a6',
+                title: 'Houston Bikeways (Existing)',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_bikeways'].count += bikewayCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Bikeways:', error);
+      }
+
+      // Draw BLM National GTLF Public Managed Trails as polylines on the map
+      try {
+        if (enrichments.blm_national_trails_all && Array.isArray(enrichments.blm_national_trails_all)) {
+          let trailCount = 0;
+          enrichments.blm_national_trails_all.forEach((trail: any) => {
+            if (trail.geometry && trail.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = trail.geometry.paths;
+                if (paths && paths.length > 0) {
+                  trailCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry paths are in [x, y] format (lon, lat) in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const routeName = trail.routeName || trail.ROUTE_PRMRY_NM || trail.Route_Prmry_Nm || 'Unknown Trail';
+                    const adminState = trail.adminState || trail.ADMIN_ST || trail.Admin_St || '';
+                    const assetClass = trail.assetClass || trail.PLAN_ASSET_CLASS || trail.Plan_Asset_Class || '';
+                    const modeTransport = trail.modeTransport || trail.PLAN_MODE_TRNSPRT || trail.Plan_Mode_Trnsprt || '';
+                    const routeUseClass = trail.routeUseClass || trail.OBSRVE_ROUTE_USE_CLASS || trail.Obsrve_Route_Use_Class || '';
+                    const gisMiles = trail.gisMiles !== null && trail.gisMiles !== undefined ? trail.gisMiles : null;
+                    const distance = trail.distance_miles !== null && trail.distance_miles !== undefined ? trail.distance_miles : 0;
+
+                    // Create polyline with green color for BLM trails
+                    const polyline = L.polyline(latlngs, {
+                      color: '#059669', // Green color for BLM trails
+                      weight: 4,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with trail information
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🥾 ${routeName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                          ${assetClass ? `<div><strong>Asset Class:</strong> ${assetClass}</div>` : ''}
+                          ${modeTransport ? `<div><strong>Mode:</strong> ${modeTransport}</div>` : ''}
+                          ${routeUseClass ? `<div><strong>Use Class:</strong> ${routeUseClass}</div>` : ''}
+                          ${gisMiles !== null && gisMiles !== undefined ? `<div><strong>Length:</strong> ${gisMiles.toFixed(2)} miles</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all trail attributes (excluding internal fields)
+                    const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'routeName', 'ROUTE_PRMRY_NM', 'Route_Prmry_Nm', 'adminState', 'ADMIN_ST', 'Admin_St', 'assetClass', 'PLAN_ASSET_CLASS', 'Plan_Asset_Class', 'modeTransport', 'PLAN_MODE_TRNSPRT', 'Plan_Mode_Trnsprt', 'routeUseClass', 'OBSRVE_ROUTE_USE_CLASS', 'Obsrve_Route_Use_Class', 'gisMiles', 'GIS_MILES', 'blmMiles', 'BLM_MILES'];
+                    Object.entries(trail).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing BLM National Trail polyline:', error);
+              }
+            }
+          });
+          
+          if (trailCount > 0) {
+            if (!legendAccumulator['blm_national_trails']) {
+              legendAccumulator['blm_national_trails'] = {
+                icon: '🥾',
+                color: '#059669',
+                title: 'BLM National GTLF Public Managed Trails',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_trails'].count += trailCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Trails:', error);
+      }
+
+      // Draw BLM National GTLF Public Motorized Trails as polylines on the map
+      try {
+        if (enrichments.blm_national_motorized_trails_all && Array.isArray(enrichments.blm_national_motorized_trails_all)) {
+          let trailCount = 0;
+          enrichments.blm_national_motorized_trails_all.forEach((trail: any) => {
+            if (trail.geometry && trail.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = trail.geometry.paths;
+                if (paths && paths.length > 0) {
+                  trailCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry paths are in [x, y] format (lon, lat) in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const routeName = trail.routeName || trail.ROUTE_PRMRY_NM || trail.Route_Prmry_Nm || 'Unknown Motorized Trail';
+                    const adminState = trail.adminState || trail.ADMIN_ST || trail.Admin_St || '';
+                    const assetClass = trail.assetClass || trail.PLAN_ASSET_CLASS || trail.Plan_Asset_Class || '';
+                    const modeTransport = trail.modeTransport || trail.PLAN_MODE_TRNSPRT || trail.Plan_Mode_Trnsprt || '';
+                    const routeUseClass = trail.routeUseClass || trail.OBSRVE_ROUTE_USE_CLASS || trail.Obsrve_Route_Use_Class || '';
+                    const ohvRouteDesignation = trail.ohvRouteDesignation || trail.PLAN_OHV_ROUTE_DSGNTN || trail.Plan_Ohv_Route_Dsgntn || '';
+                    const gisMiles = trail.gisMiles !== null && trail.gisMiles !== undefined ? trail.gisMiles : null;
+                    const distance = trail.distance_miles !== null && trail.distance_miles !== undefined ? trail.distance_miles : 0;
+
+                    // Create polyline with red color for motorized trails
+                    const polyline = L.polyline(latlngs, {
+                      color: '#dc2626', // Red color for motorized trails
+                      weight: 4,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with trail information
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🏍️ ${routeName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                          ${assetClass ? `<div><strong>Asset Class:</strong> ${assetClass}</div>` : ''}
+                          ${modeTransport ? `<div><strong>Mode:</strong> ${modeTransport}</div>` : ''}
+                          ${routeUseClass ? `<div><strong>Use Class:</strong> ${routeUseClass}</div>` : ''}
+                          ${ohvRouteDesignation ? `<div><strong>OHV Route Designation:</strong> ${ohvRouteDesignation}</div>` : ''}
+                          ${gisMiles !== null && gisMiles !== undefined ? `<div><strong>Length:</strong> ${gisMiles.toFixed(2)} miles</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all trail attributes (excluding internal fields)
+                    const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'routeName', 'ROUTE_PRMRY_NM', 'Route_Prmry_Nm', 'adminState', 'ADMIN_ST', 'Admin_St', 'assetClass', 'PLAN_ASSET_CLASS', 'Plan_Asset_Class', 'modeTransport', 'PLAN_MODE_TRNSPRT', 'Plan_Mode_Trnsprt', 'routeUseClass', 'OBSRVE_ROUTE_USE_CLASS', 'Obsrve_Route_Use_Class', 'ohvRouteDesignation', 'PLAN_OHV_ROUTE_DSGNTN', 'Plan_Ohv_Route_Dsgntn', 'gisMiles', 'GIS_MILES', 'blmMiles', 'BLM_MILES'];
+                    Object.entries(trail).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing BLM National Motorized Trail polyline:', error);
+              }
+            }
+          });
+          
+          if (trailCount > 0) {
+            if (!legendAccumulator['blm_national_motorized_trails']) {
+              legendAccumulator['blm_national_motorized_trails'] = {
+                icon: '🏍️',
+                color: '#dc2626',
+                title: 'BLM National GTLF Public Motorized Trails',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_motorized_trails'].count += trailCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Motorized Trails:', error);
+      }
+
+      // Draw BLM National GTLF Public Nonmotorized Trails as polylines on the map
+      try {
+        if (enrichments.blm_national_nonmotorized_trails_all && Array.isArray(enrichments.blm_national_nonmotorized_trails_all)) {
+          let trailCount = 0;
+          enrichments.blm_national_nonmotorized_trails_all.forEach((trail: any) => {
+            if (trail.geometry && trail.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = trail.geometry.paths;
+                if (paths && paths.length > 0) {
+                  trailCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry paths are in [x, y] format (lon, lat) in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const routeName = trail.routeName || trail.ROUTE_PRMRY_NM || trail.Route_Prmry_Nm || 'Unknown Nonmotorized Trail';
+                    const adminState = trail.adminState || trail.ADMIN_ST || trail.Admin_St || '';
+                    const assetClass = trail.assetClass || trail.PLAN_ASSET_CLASS || trail.Plan_Asset_Class || '';
+                    const modeTransport = trail.modeTransport || trail.PLAN_MODE_TRNSPRT || trail.Plan_Mode_Trnsprt || '';
+                    const routeUseClass = trail.routeUseClass || trail.OBSRVE_ROUTE_USE_CLASS || trail.Obsrve_Route_Use_Class || '';
+                    const ohvRouteDesignation = trail.ohvRouteDesignation || trail.PLAN_OHV_ROUTE_DSGNTN || trail.Plan_Ohv_Route_Dsgntn || '';
+                    const gisMiles = trail.gisMiles !== null && trail.gisMiles !== undefined ? trail.gisMiles : null;
+                    const distance = trail.distance_miles !== null && trail.distance_miles !== undefined ? trail.distance_miles : 0;
+
+                    // Create polyline with green color for nonmotorized trails
+                    const polyline = L.polyline(latlngs, {
+                      color: '#10b981', // Green color for nonmotorized trails
+                      weight: 4,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with trail information
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🚶 ${routeName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                          ${assetClass ? `<div><strong>Asset Class:</strong> ${assetClass}</div>` : ''}
+                          ${modeTransport ? `<div><strong>Mode:</strong> ${modeTransport}</div>` : ''}
+                          ${routeUseClass ? `<div><strong>Use Class:</strong> ${routeUseClass}</div>` : ''}
+                          ${ohvRouteDesignation ? `<div><strong>OHV Route Designation:</strong> ${ohvRouteDesignation}</div>` : ''}
+                          ${gisMiles !== null && gisMiles !== undefined ? `<div><strong>Length:</strong> ${gisMiles.toFixed(2)} miles</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all trail attributes (excluding internal fields)
+                    const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'routeName', 'ROUTE_PRMRY_NM', 'Route_Prmry_Nm', 'adminState', 'ADMIN_ST', 'Admin_St', 'assetClass', 'PLAN_ASSET_CLASS', 'Plan_Asset_Class', 'modeTransport', 'PLAN_MODE_TRNSPRT', 'Plan_Mode_Trnsprt', 'routeUseClass', 'OBSRVE_ROUTE_USE_CLASS', 'Obsrve_Route_Use_Class', 'ohvRouteDesignation', 'PLAN_OHV_ROUTE_DSGNTN', 'Plan_Ohv_Route_Dsgntn', 'gisMiles', 'GIS_MILES', 'blmMiles', 'BLM_MILES'];
+                    Object.entries(trail).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    polyline.addTo(primary);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing BLM National Nonmotorized Trail polyline:', error);
+              }
+            }
+          });
+          
+          if (trailCount > 0) {
+            if (!legendAccumulator['blm_national_nonmotorized_trails']) {
+              legendAccumulator['blm_national_nonmotorized_trails'] = {
+                icon: '🚶',
+                color: '#10b981',
+                title: 'BLM National GTLF Public Nonmotorized Trails',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_nonmotorized_trails'].count += trailCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Nonmotorized Trails:', error);
+      }
+
+      // Draw BLM National Grazing Pasture Polygons as polygons on the map
+      try {
+        if (enrichments.blm_national_grazing_pastures_all && Array.isArray(enrichments.blm_national_grazing_pastures_all)) {
+          let pastureCount = 0;
+          enrichments.blm_national_grazing_pastures_all.forEach((pasture: any) => {
+            if (pasture.geometry && pasture.geometry.rings && Array.isArray(pasture.geometry.rings)) {
+              try {
+                const rings = pasture.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('BLM Grazing Pasture polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = pasture.isContaining;
+                  const color = isContaining ? '#a16207' : '#ca8a04'; // Brown/tan for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const pastureName = pasture.pastureName || pasture.PAST_NAME || pasture.Past_Name || 'Unknown Pasture';
+                  const allotName = pasture.allotName || pasture.ALLOT_NAME || pasture.Allot_Name || null;
+                  const allotNumber = pasture.allotNumber || pasture.ALLOT_NO || pasture.Allot_No || null;
+                  const pastureNumber = pasture.pastureNumber || pasture.PAST_NO || pasture.Past_No || null;
+                  const gisAcres = pasture.gisAcres !== null && pasture.gisAcres !== undefined ? pasture.gisAcres : null;
+                  const adminState = pasture.adminState || pasture.ADMIN_ST || pasture.Admin_St || null;
+                  const pastureId = pasture.objectId || pasture.OBJECTID || pasture.objectid || null;
+                  const distance = pasture.distance_miles !== null && pasture.distance_miles !== undefined ? pasture.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🐄 ${pastureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${allotName ? `<div><strong>Allotment:</strong> ${allotName}</div>` : ''}
+                        ${allotNumber ? `<div><strong>Allotment Number:</strong> ${allotNumber}</div>` : ''}
+                        ${pastureNumber ? `<div><strong>Pasture Number:</strong> ${pastureNumber}</div>` : ''}
+                        ${adminState ? `<div><strong>State:</strong> ${adminState}</div>` : ''}
+                        ${gisAcres !== null && gisAcres !== undefined ? `<div><strong>Acres:</strong> ${gisAcres.toFixed(2)}</div>` : ''}
+                        ${pastureId ? `<div><strong>Pasture ID:</strong> ${pastureId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all pasture attributes (excluding internal fields)
+                  const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'isContaining', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'pastureName', 'PAST_NAME', 'Past_Name', 'allotName', 'ALLOT_NAME', 'Allot_Name', 'allotNumber', 'ALLOT_NO', 'Allot_No', 'pastureNumber', 'PAST_NO', 'Past_No', 'gisAcres', 'GIS_ACRES', 'adminState', 'ADMIN_ST', 'Admin_St'];
+                  Object.entries(pasture).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  pastureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing BLM Grazing Pasture polygon:', error);
+              }
+            }
+          });
+          
+          if (pastureCount > 0) {
+            if (!legendAccumulator['blm_national_grazing_pastures']) {
+              legendAccumulator['blm_national_grazing_pastures'] = {
+                icon: '🐄',
+                color: '#a16207',
+                title: 'BLM National Grazing Pasture Polygons',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_national_grazing_pastures'].count += pastureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM National Grazing Pasture Polygons:', error);
+      }
+
+      // Draw Houston METRO Rail Stations as point markers on the map
+      try {
+        if (enrichments.houston_metro_rail_stations_all && Array.isArray(enrichments.houston_metro_rail_stations_all)) {
+          let stationCount = 0;
+          enrichments.houston_metro_rail_stations_all.forEach((station: any) => {
+            if (station.geometry && station.geometry.x !== undefined && station.geometry.y !== undefined) {
+              try {
+                // Extract coordinates from geometry (already in WGS84)
+                const lat = station.geometry.y;
+                const lon = station.geometry.x;
+                
+                const stationName = station.stationName || station.Stat_Name || station.STAT_NAME || 'Unknown Rail Station';
+                const corridorName = station.corridorName || station.Corr_Name || station.CORR_NAME || null;
+                const stationLocation = station.stationLocation || station.Stat_Loc || station.STAT_LOC || null;
+                const lineColor = station.lineColor || station.LineColor || station.LINECOLOR || null;
+                const status = station.status || station.Status || station.STATUS || null;
+                const distance = station.distance_miles !== null && station.distance_miles !== undefined ? station.distance_miles : 0;
+                
+                // Create marker with rail icon
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚆', '#7c3aed')
+                });
+                
+                // Build popup content
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚆 ${stationName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${corridorName ? `<div><strong>Corridor:</strong> ${corridorName}</div>` : ''}
+                      ${stationLocation ? `<div><strong>Location:</strong> ${stationLocation}</div>` : ''}
+                      ${lineColor ? `<div><strong>Line Color:</strong> ${lineColor}</div>` : ''}
+                      ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all station attributes (excluding internal fields)
+                const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'stationName', 'Stat_Name', 'STAT_NAME', 'corridorName', 'Corr_Name', 'CORR_NAME', 'stationLocation', 'Stat_Loc', 'STAT_LOC', 'lineColor', 'LineColor', 'LINECOLOR', 'status', 'Status', 'STATUS'];
+                Object.entries(station).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                stationCount++;
+              } catch (error) {
+                console.error('Error drawing Houston METRO Rail Station marker:', error);
+              }
+            }
+          });
+          
+          if (stationCount > 0) {
+            if (!legendAccumulator['houston_metro_rail_stations']) {
+              legendAccumulator['houston_metro_rail_stations'] = {
+                icon: '🚆',
+                color: '#7c3aed',
+                title: 'Houston METRO Rail Stations',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_metro_rail_stations'].count += stationCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston METRO Rail Stations:', error);
+      }
+
+      // Draw Houston Airports as polygons on the map
+      try {
+        if (enrichments.houston_airports_all && Array.isArray(enrichments.houston_airports_all)) {
+          let airportCount = 0;
+          enrichments.houston_airports_all.forEach((airport: any) => {
+            if (airport.geometry && airport.geometry.rings && Array.isArray(airport.geometry.rings)) {
+              try {
+                const rings = airport.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('Houston Airport polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = airport.isContaining;
+                  const color = isContaining ? '#f59e0b' : '#fbbf24'; // Orange for containing, lighter for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const airportName = airport.airportName || airport.NAME || airport.name || airport.NAME1 || airport.name1 || 'Unknown Airport';
+                  const airportId = airport.objectId || airport.OBJECTID || airport.objectid || null;
+                  const distance = airport.distance_miles !== null && airport.distance_miles !== undefined ? airport.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ✈️ ${airportName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${airportId ? `<div><strong>Airport ID:</strong> ${airportId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all airport attributes (excluding internal fields)
+                  const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'isContaining', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'airportName', 'NAME', 'name', 'NAME1', 'name1'];
+                  Object.entries(airport).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  airportCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing Houston Airport polygon:', error);
+              }
+            }
+          });
+          
+          if (airportCount > 0) {
+            if (!legendAccumulator['houston_airports']) {
+              legendAccumulator['houston_airports'] = {
+                icon: '✈️',
+                color: '#f59e0b',
+                title: 'Houston Airports',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_airports'].count += airportCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Airports:', error);
       }
 
       // Draw Houston OLC Grid 6-digit as polygons on the map

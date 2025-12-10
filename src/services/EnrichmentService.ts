@@ -117,6 +117,15 @@ import { getHoustonOLCGridsData } from '../adapters/houstonOLCGrids';
 import { getHoustonFireStationsData } from '../adapters/houstonFireStations';
 import { getHoustonTIRZData } from '../adapters/houstonTIRZ';
 import { getHoustonMetroBusRoutesData } from '../adapters/houstonMetroBusRoutes';
+import { getHoustonMetroParkAndRideData } from '../adapters/houstonMetroParkAndRide';
+import { getHoustonMetroTransitCentersData } from '../adapters/houstonMetroTransitCenters';
+import { getHoustonBikewaysData } from '../adapters/houstonBikeways';
+import { getHoustonMetroRailStationsData } from '../adapters/houstonMetroRailStations';
+import { getHoustonAirportsData } from '../adapters/houstonAirports';
+import { getBLMNationalTrailsData } from '../adapters/blmNationalTrails';
+import { getBLMNationalMotorizedTrailsData } from '../adapters/blmNationalMotorizedTrails';
+import { getBLMNationalNonmotorizedTrailsData } from '../adapters/blmNationalNonmotorizedTrails';
+import { getBLMNationalGrazingPasturesData } from '../adapters/blmNationalGrazingPastures';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -2206,6 +2215,26 @@ export class EnrichmentService {
       case 'houston_metro_bus_routes':
         return await this.getHoustonMetroBusRoutes(lat, lon, radius);
       
+      // Houston METRO Park and Ride Locations - Proximity query only (max 25 miles)
+      case 'houston_metro_park_and_ride':
+        return await this.getHoustonMetroParkAndRide(lat, lon, radius);
+      
+      // Houston METRO Transit Centers - Proximity query only (max 25 miles)
+      case 'houston_metro_transit_centers':
+        return await this.getHoustonMetroTransitCenters(lat, lon, radius);
+      
+      // Houston Bikeways (Existing) - Proximity query only (max 5 miles)
+      case 'houston_bikeways':
+        return await this.getHoustonBikeways(lat, lon, radius);
+      
+      // Houston METRO Rail Stations - Proximity query only (max 25 miles)
+      case 'houston_metro_rail_stations':
+        return await this.getHoustonMetroRailStations(lat, lon, radius);
+      
+      // Houston Airports - Point-in-polygon and proximity query (max 25 miles)
+      case 'houston_airports':
+        return await this.getHoustonAirports(lat, lon, radius);
+      
       // LA County School District Boundaries - Point-in-polygon query only
       case 'la_county_school_district_boundaries':
         return await this.getLACountySchoolDistrictBoundaries(lat, lon);
@@ -3027,6 +3056,22 @@ export class EnrichmentService {
       // National Marine Sanctuaries (NOAA) - Point-in-polygon and proximity query
       case 'national_marine_sanctuaries':
         return await this.getNationalMarineSanctuaries(lat, lon, radius);
+      
+      // BLM National GTLF Public Managed Trails - Proximity query only (max 25 miles)
+      case 'blm_national_trails':
+        return await this.getBLMNationalTrails(lat, lon, radius);
+      
+      // BLM National GTLF Public Motorized Trails - Proximity query only (max 25 miles)
+      case 'blm_national_motorized_trails':
+        return await this.getBLMNationalMotorizedTrails(lat, lon, radius);
+      
+      // BLM National GTLF Public Nonmotorized Trails - Proximity query only (max 25 miles)
+      case 'blm_national_nonmotorized_trails':
+        return await this.getBLMNationalNonmotorizedTrails(lat, lon, radius);
+      
+      // BLM National Grazing Pasture Polygons - Point-in-polygon and proximity query (max 25 miles)
+      case 'blm_national_grazing_pastures':
+        return await this.getBLMNationalGrazingPastures(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -10703,6 +10748,497 @@ out center;`;
         houston_metro_bus_routes_count: 0,
         houston_metro_bus_routes_all: [],
         houston_metro_bus_routes_summary: 'Error querying bus routes'
+      };
+    }
+  }
+
+  private async getHoustonMetroParkAndRide(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚗 Fetching Houston METRO Park and Ride Locations data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      
+      const parkAndRideLocations = await getHoustonMetroParkAndRideData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (parkAndRideLocations.length === 0) {
+        result.houston_metro_park_and_ride_count = 0;
+        result.houston_metro_park_and_ride_all = [];
+        result.houston_metro_park_and_ride_summary = 'No park and ride locations found within the search radius.';
+      } else {
+        result.houston_metro_park_and_ride_count = parkAndRideLocations.length;
+        result.houston_metro_park_and_ride_all = parkAndRideLocations.map(location => ({
+          ...location.attributes,
+          objectId: location.objectId,
+          name: location.name,
+          address: location.address,
+          canopy: location.canopy,
+          seat: location.seat,
+          kiosk: location.kiosk,
+          parkingSpaces: location.parkingSpaces,
+          bikeRack: location.bikeRack,
+          telephone: location.telephone,
+          restroom: location.restroom,
+          securityBooth: location.securityBooth,
+          routesServed: location.routesServed,
+          keyMap: location.keyMap,
+          busStopId: location.busStopId,
+          fareZone: location.fareZone,
+          geometry: location.geometry,
+          distance_miles: location.distance_miles
+        }));
+        
+        result.houston_metro_park_and_ride_summary = `Found ${parkAndRideLocations.length} park and ride location(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ Houston METRO Park and Ride Locations data processed:`, {
+        totalCount: result.houston_metro_park_and_ride_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston METRO Park and Ride Locations data:', error);
+      return {
+        houston_metro_park_and_ride_count: 0,
+        houston_metro_park_and_ride_all: [],
+        houston_metro_park_and_ride_summary: 'Error querying park and ride locations'
+      };
+    }
+  }
+
+  private async getHoustonMetroTransitCenters(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚇 Fetching Houston METRO Transit Centers data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      
+      const transitCenters = await getHoustonMetroTransitCentersData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (transitCenters.length === 0) {
+        result.houston_metro_transit_centers_count = 0;
+        result.houston_metro_transit_centers_all = [];
+        result.houston_metro_transit_centers_summary = 'No transit centers found within the search radius.';
+      } else {
+        result.houston_metro_transit_centers_count = transitCenters.length;
+        result.houston_metro_transit_centers_all = transitCenters.map(center => ({
+          ...center.attributes,
+          objectId: center.objectId,
+          transitCenterId: center.transitCenterId,
+          name: center.name,
+          name2: center.name2,
+          address: center.address,
+          zipCode: center.zipCode,
+          owner: center.owner,
+          permOperDate: center.permOperDate,
+          totalAcre: center.totalAcre,
+          busBays: center.busBays,
+          canopy: center.canopy,
+          seat: center.seat,
+          kiosk: center.kiosk,
+          parkingSpaces: center.parkingSpaces,
+          bikeRack: center.bikeRack,
+          telephone: center.telephone,
+          restroom: center.restroom,
+          securityBooth: center.securityBooth,
+          comments: center.comments,
+          routesServed: center.routesServed,
+          keyMap: center.keyMap,
+          busStopId: center.busStopId,
+          globalId: center.globalId,
+          geometry: center.geometry,
+          distance_miles: center.distance_miles
+        }));
+        
+        result.houston_metro_transit_centers_summary = `Found ${transitCenters.length} transit center(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ Houston METRO Transit Centers data processed:`, {
+        totalCount: result.houston_metro_transit_centers_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston METRO Transit Centers data:', error);
+      return {
+        houston_metro_transit_centers_count: 0,
+        houston_metro_transit_centers_all: [],
+        houston_metro_transit_centers_summary: 'Error querying transit centers'
+      };
+    }
+  }
+
+  private async getHoustonBikeways(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚴 Fetching Houston Bikeways data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 5 miles
+      const cappedRadius = radius ? Math.min(radius, 5.0) : 0.25;
+      
+      const bikeways = await getHoustonBikewaysData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (bikeways.length === 0) {
+        result.houston_bikeways_count = 0;
+        result.houston_bikeways_all = [];
+        result.houston_bikeways_summary = 'No bikeways found within the search radius.';
+      } else {
+        result.houston_bikeways_count = bikeways.length;
+        result.houston_bikeways_all = bikeways.map(bikeway => ({
+          ...bikeway.attributes,
+          objectId: bikeway.objectId,
+          bikewayName: bikeway.bikewayName,
+          bikewayType: bikeway.bikewayType,
+          geometry: bikeway.geometry,
+          distance_miles: bikeway.distance_miles
+        }));
+        
+        result.houston_bikeways_summary = `Found ${bikeways.length} bikeway segment(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ Houston Bikeways data processed:`, {
+        totalCount: result.houston_bikeways_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Bikeways data:', error);
+      return {
+        houston_bikeways_count: 0,
+        houston_bikeways_all: [],
+        houston_bikeways_summary: 'Error querying bikeways'
+      };
+    }
+  }
+
+  private async getHoustonMetroRailStations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚆 Fetching Houston METRO Rail Stations data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      
+      const railStations = await getHoustonMetroRailStationsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (railStations.length === 0) {
+        result.houston_metro_rail_stations_count = 0;
+        result.houston_metro_rail_stations_all = [];
+        result.houston_metro_rail_stations_summary = 'No rail stations found within the search radius.';
+      } else {
+        result.houston_metro_rail_stations_count = railStations.length;
+        result.houston_metro_rail_stations_all = railStations.map(station => ({
+          ...station.attributes,
+          objectId: station.objectId,
+          id: station.id,
+          corridorName: station.corridorName,
+          stationName: station.stationName,
+          stationLocation: station.stationLocation,
+          stationNameCaps: station.stationNameCaps,
+          lineColor: station.lineColor,
+          status: station.status,
+          geometry: station.geometry,
+          distance_miles: station.distance_miles
+        }));
+        
+        result.houston_metro_rail_stations_summary = `Found ${railStations.length} rail station(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ Houston METRO Rail Stations data processed:`, {
+        totalCount: result.houston_metro_rail_stations_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston METRO Rail Stations data:', error);
+      return {
+        houston_metro_rail_stations_count: 0,
+        houston_metro_rail_stations_all: [],
+        houston_metro_rail_stations_summary: 'Error querying rail stations'
+      };
+    }
+  }
+
+  private async getHoustonAirports(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`✈️ Fetching Houston Airports data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const airports = await getHoustonAirportsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (airports.length === 0) {
+        result.houston_airports_containing = null;
+        result.houston_airports_containing_message = 'No airport found containing this location';
+        result.houston_airports_count = 0;
+        result.houston_airports_all = [];
+        result.houston_airports_summary = 'No airports found.';
+      } else {
+        // Get the first containing airport (should typically be only one for point-in-polygon)
+        const containingAirport = airports.find(a => a.isContaining) || airports[0];
+        
+        if (containingAirport && containingAirport.isContaining) {
+          result.houston_airports_containing = containingAirport.airportName || 'Unknown Airport';
+          result.houston_airports_containing_message = `Location is within airport: ${containingAirport.airportName || 'Unknown Airport'}`;
+        } else {
+          result.houston_airports_containing = null;
+          result.houston_airports_containing_message = 'No airport found containing this location';
+        }
+        
+        result.houston_airports_count = airports.length;
+        result.houston_airports_all = airports.map(airport => ({
+          ...airport.attributes,
+          objectId: airport.objectId,
+          airportName: airport.airportName,
+          geometry: airport.geometry,
+          distance_miles: airport.distance_miles,
+          isContaining: airport.isContaining
+        }));
+        
+        result.houston_airports_summary = `Found ${airports.length} airport(s)${containingAirport && containingAirport.isContaining ? ' (location is within an airport)' : ''}.`;
+      }
+      
+      console.log(`✅ Houston Airports data processed:`, {
+        totalCount: result.houston_airports_count,
+        containing: result.houston_airports_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Airports data:', error);
+      return {
+        houston_airports_containing: null,
+        houston_airports_containing_message: 'Error querying airports',
+        houston_airports_count: 0,
+        houston_airports_all: [],
+        houston_airports_summary: 'Error querying airports'
+      };
+    }
+  }
+
+  private async getBLMNationalTrails(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🥾 Fetching BLM National GTLF Public Managed Trails data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      
+      const trails = await getBLMNationalTrailsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (trails.length === 0) {
+        result.blm_national_trails_count = 0;
+        result.blm_national_trails_all = [];
+        result.blm_national_trails_summary = 'No BLM trails found within the search radius.';
+      } else {
+        result.blm_national_trails_count = trails.length;
+        result.blm_national_trails_all = trails.map(trail => ({
+          ...trail.attributes,
+          objectId: trail.objectId,
+          routeName: trail.routeName,
+          adminState: trail.adminState,
+          assetClass: trail.assetClass,
+          modeTransport: trail.modeTransport,
+          routeUseClass: trail.routeUseClass,
+          gisMiles: trail.gisMiles,
+          blmMiles: trail.blmMiles,
+          geometry: trail.geometry,
+          distance_miles: trail.distance_miles
+        }));
+        
+        result.blm_national_trails_summary = `Found ${trails.length} BLM trail segment(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ BLM National Trails data processed:`, {
+        totalCount: result.blm_national_trails_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Trails data:', error);
+      return {
+        blm_national_trails_count: 0,
+        blm_national_trails_all: [],
+        blm_national_trails_summary: 'Error querying BLM trails'
+      };
+    }
+  }
+
+  private async getBLMNationalMotorizedTrails(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏍️ Fetching BLM National GTLF Public Motorized Trails data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      
+      const trails = await getBLMNationalMotorizedTrailsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (trails.length === 0) {
+        result.blm_national_motorized_trails_count = 0;
+        result.blm_national_motorized_trails_all = [];
+        result.blm_national_motorized_trails_summary = 'No BLM motorized trails found within the search radius.';
+      } else {
+        result.blm_national_motorized_trails_count = trails.length;
+        result.blm_national_motorized_trails_all = trails.map(trail => ({
+          ...trail.attributes,
+          objectId: trail.objectId,
+          routeName: trail.routeName,
+          adminState: trail.adminState,
+          assetClass: trail.assetClass,
+          modeTransport: trail.modeTransport,
+          routeUseClass: trail.routeUseClass,
+          ohvRouteDesignation: trail.ohvRouteDesignation,
+          gisMiles: trail.gisMiles,
+          blmMiles: trail.blmMiles,
+          geometry: trail.geometry,
+          distance_miles: trail.distance_miles
+        }));
+        
+        result.blm_national_motorized_trails_summary = `Found ${trails.length} BLM motorized trail segment(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ BLM National Motorized Trails data processed:`, {
+        totalCount: result.blm_national_motorized_trails_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Motorized Trails data:', error);
+      return {
+        blm_national_motorized_trails_count: 0,
+        blm_national_motorized_trails_all: [],
+        blm_national_motorized_trails_summary: 'Error querying BLM motorized trails'
+      };
+    }
+  }
+
+  private async getBLMNationalNonmotorizedTrails(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚶 Fetching BLM National GTLF Public Nonmotorized Trails data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 0.5;
+      
+      const trails = await getBLMNationalNonmotorizedTrailsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (trails.length === 0) {
+        result.blm_national_nonmotorized_trails_count = 0;
+        result.blm_national_nonmotorized_trails_all = [];
+        result.blm_national_nonmotorized_trails_summary = 'No BLM nonmotorized trails found within the search radius.';
+      } else {
+        result.blm_national_nonmotorized_trails_count = trails.length;
+        result.blm_national_nonmotorized_trails_all = trails.map(trail => ({
+          ...trail.attributes,
+          objectId: trail.objectId,
+          routeName: trail.routeName,
+          adminState: trail.adminState,
+          assetClass: trail.assetClass,
+          modeTransport: trail.modeTransport,
+          routeUseClass: trail.routeUseClass,
+          ohvRouteDesignation: trail.ohvRouteDesignation,
+          gisMiles: trail.gisMiles,
+          blmMiles: trail.blmMiles,
+          geometry: trail.geometry,
+          distance_miles: trail.distance_miles
+        }));
+        
+        result.blm_national_nonmotorized_trails_summary = `Found ${trails.length} BLM nonmotorized trail segment(s) within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ BLM National Nonmotorized Trails data processed:`, {
+        totalCount: result.blm_national_nonmotorized_trails_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Nonmotorized Trails data:', error);
+      return {
+        blm_national_nonmotorized_trails_count: 0,
+        blm_national_nonmotorized_trails_all: [],
+        blm_national_nonmotorized_trails_summary: 'Error querying BLM nonmotorized trails'
+      };
+    }
+  }
+
+  private async getBLMNationalGrazingPastures(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐄 Fetching BLM National Grazing Pasture Polygons data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const pastures = await getBLMNationalGrazingPasturesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (pastures.length === 0) {
+        result.blm_national_grazing_pastures_containing = null;
+        result.blm_national_grazing_pastures_containing_message = 'No grazing pasture found containing this location';
+        result.blm_national_grazing_pastures_count = 0;
+        result.blm_national_grazing_pastures_all = [];
+        result.blm_national_grazing_pastures_summary = 'No grazing pastures found.';
+      } else {
+        // Get the first containing pasture (should typically be only one for point-in-polygon)
+        const containingPasture = pastures.find(p => p.isContaining) || pastures[0];
+        
+        if (containingPasture && containingPasture.isContaining) {
+          const pastureLabel = containingPasture.pastureName || containingPasture.allotName || 'Unknown Pasture';
+          result.blm_national_grazing_pastures_containing = pastureLabel;
+          result.blm_national_grazing_pastures_containing_message = `Location is within grazing pasture: ${pastureLabel}${containingPasture.allotName ? ` (Allotment: ${containingPasture.allotName})` : ''}`;
+        } else {
+          result.blm_national_grazing_pastures_containing = null;
+          result.blm_national_grazing_pastures_containing_message = 'No grazing pasture found containing this location';
+        }
+        
+        result.blm_national_grazing_pastures_count = pastures.length;
+        result.blm_national_grazing_pastures_all = pastures.map(pasture => ({
+          ...pasture.attributes,
+          objectId: pasture.objectId,
+          allotNumber: pasture.allotNumber,
+          allotName: pasture.allotName,
+          pastureNumber: pasture.pastureNumber,
+          pastureName: pasture.pastureName,
+          gisAcres: pasture.gisAcres,
+          adminState: pasture.adminState,
+          adminOfficeCode: pasture.adminOfficeCode,
+          adminUnitCode: pasture.adminUnitCode,
+          stateAllotPast: pasture.stateAllotPast,
+          geometry: pasture.geometry,
+          distance_miles: pasture.distance_miles,
+          isContaining: pasture.isContaining
+        }));
+        
+        result.blm_national_grazing_pastures_summary = `Found ${pastures.length} grazing pasture(s)${containingPasture && containingPasture.isContaining ? ' (location is within a grazing pasture)' : ''}.`;
+      }
+      
+      console.log(`✅ BLM National Grazing Pasture Polygons data processed:`, {
+        totalCount: result.blm_national_grazing_pastures_count,
+        containing: result.blm_national_grazing_pastures_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM National Grazing Pasture Polygons data:', error);
+      return {
+        blm_national_grazing_pastures_containing: null,
+        blm_national_grazing_pastures_containing_message: 'Error querying grazing pastures',
+        blm_national_grazing_pastures_count: 0,
+        blm_national_grazing_pastures_all: [],
+        blm_national_grazing_pastures_summary: 'Error querying grazing pastures'
       };
     }
   }

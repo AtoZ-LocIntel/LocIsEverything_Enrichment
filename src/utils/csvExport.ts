@@ -368,6 +368,15 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'houston_olc_grid_8digit_all' ||
         key === 'houston_fire_stations_all' ||
         key === 'houston_metro_bus_routes_all' ||
+        key === 'houston_metro_park_and_ride_all' ||
+        key === 'houston_metro_transit_centers_all' ||
+        key === 'houston_metro_rail_stations_all' ||
+        key === 'houston_airports_all' ||
+        key === 'houston_bikeways_all' ||
+        key === 'blm_national_trails_all' ||
+        key === 'blm_national_motorized_trails_all' ||
+        key === 'blm_national_nonmotorized_trails_all' ||
+        key === 'blm_national_grazing_pastures_all' ||
         key === 'houston_tirz_all' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
@@ -6674,6 +6683,581 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           routeType || 'N/A',
           routeNumber || 'N/A',
           routeId || 'N/A',
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_metro_park_and_ride_all' && Array.isArray(value)) {
+      value.forEach((location: any) => {
+        const name = location.name || location.NAME1 || 'Unknown Park and Ride';
+        const address = location.address || location.ADDRESS || '';
+        const parkingSpaces = location.parkingSpaces !== null && location.parkingSpaces !== undefined ? location.parkingSpaces.toString() : (location.PSPACES !== null && location.PSPACES !== undefined ? location.PSPACES.toString() : '');
+        const routesServed = location.routesServed || location.ROUTES_SER || '';
+        const fareZone = location.fareZone !== null && location.fareZone !== undefined ? location.fareZone.toString() : (location.FareZone !== null && location.FareZone !== undefined ? location.FareZone.toString() : '');
+        const busStopId = location.busStopId !== null && location.busStopId !== undefined ? location.busStopId.toString() : (location.BusStopID !== null && location.BusStopID !== undefined ? location.BusStopID.toString() : '');
+        const locationId = location.objectId || location.OBJECTID || location.objectid || '';
+        const lat = location.geometry?.y || '';
+        const lon = location.geometry?.x || '';
+        const distance = location.distance_miles !== null && location.distance_miles !== undefined ? location.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...location };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.name;
+        delete allAttributes.NAME1;
+        delete allAttributes.address;
+        delete allAttributes.ADDRESS;
+        delete allAttributes.parkingSpaces;
+        delete allAttributes.PSPACES;
+        delete allAttributes.routesServed;
+        delete allAttributes.ROUTES_SER;
+        delete allAttributes.fareZone;
+        delete allAttributes.FareZone;
+        delete allAttributes.busStopId;
+        delete allAttributes.BusStopID;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_METRO_Park_and_Ride',
+          name,
+          lat,
+          lon,
+          distance,
+          fareZone || 'N/A',
+          address || 'N/A',
+          parkingSpaces || 'N/A',
+          routesServed || 'N/A',
+          busStopId || 'N/A',
+          locationId || 'N/A',
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_metro_transit_centers_all' && Array.isArray(value)) {
+      value.forEach((center: any) => {
+        const name = center.name || center.NAME1 || 'Unknown Transit Center';
+        const address = center.address || center.ADDRESS || '';
+        const parkingSpaces = center.parkingSpaces !== null && center.parkingSpaces !== undefined ? center.parkingSpaces.toString() : (center.PSPACES !== null && center.PSPACES !== undefined ? center.PSPACES.toString() : '');
+        const busBays = center.busBays !== null && center.busBays !== undefined ? center.busBays.toString() : (center.B_BAYS !== null && center.B_BAYS !== undefined ? center.B_BAYS.toString() : '');
+        const routesServed = center.routesServed || center.ROUTES_SER || '';
+        const transitCenterId = center.transitCenterId !== null && center.transitCenterId !== undefined ? center.transitCenterId.toString() : (center.TRANCTR_ID !== null && center.TRANCTR_ID !== undefined ? center.TRANCTR_ID.toString() : '');
+        const busStopId = center.busStopId !== null && center.busStopId !== undefined ? center.busStopId.toString() : (center.BusStopID !== null && center.BusStopID !== undefined ? center.BusStopID.toString() : '');
+        const centerId = center.objectId || center.OBJECTID || center.objectid || '';
+        const lat = center.geometry?.y || '';
+        const lon = center.geometry?.x || '';
+        const distance = center.distance_miles !== null && center.distance_miles !== undefined ? center.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...center };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.name;
+        delete allAttributes.NAME1;
+        delete allAttributes.name2;
+        delete allAttributes.NAME2;
+        delete allAttributes.address;
+        delete allAttributes.ADDRESS;
+        delete allAttributes.parkingSpaces;
+        delete allAttributes.PSPACES;
+        delete allAttributes.busBays;
+        delete allAttributes.B_BAYS;
+        delete allAttributes.routesServed;
+        delete allAttributes.ROUTES_SER;
+        delete allAttributes.transitCenterId;
+        delete allAttributes.TRANCTR_ID;
+        delete allAttributes.busStopId;
+        delete allAttributes.BusStopID;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_METRO_Transit_Centers',
+          name,
+          lat,
+          lon,
+          distance,
+          transitCenterId || 'N/A',
+          address || 'N/A',
+          busBays || 'N/A',
+          parkingSpaces || 'N/A',
+          routesServed || 'N/A',
+          busStopId || 'N/A',
+          centerId || 'N/A',
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_metro_rail_stations_all' && Array.isArray(value)) {
+      value.forEach((station: any) => {
+        const stationName = station.stationName || station.Stat_Name || station.STAT_NAME || 'Unknown Rail Station';
+        const corridorName = station.corridorName || station.Corr_Name || station.CORR_NAME || '';
+        const stationLocation = station.stationLocation || station.Stat_Loc || station.STAT_LOC || '';
+        const lineColor = station.lineColor || station.LineColor || station.LINECOLOR || '';
+        const status = station.status || station.Status || station.STATUS || '';
+        const stationId = station.objectId || station.OBJECTID || station.objectid || '';
+        const id = station.id !== null && station.id !== undefined ? station.id.toString() : '';
+        const lat = station.geometry?.y || '';
+        const lon = station.geometry?.x || '';
+        const distance = station.distance_miles !== null && station.distance_miles !== undefined ? station.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...station };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.stationName;
+        delete allAttributes.Stat_Name;
+        delete allAttributes.STAT_NAME;
+        delete allAttributes.corridorName;
+        delete allAttributes.Corr_Name;
+        delete allAttributes.CORR_NAME;
+        delete allAttributes.stationLocation;
+        delete allAttributes.Stat_Loc;
+        delete allAttributes.STAT_LOC;
+        delete allAttributes.lineColor;
+        delete allAttributes.LineColor;
+        delete allAttributes.LINECOLOR;
+        delete allAttributes.status;
+        delete allAttributes.Status;
+        delete allAttributes.STATUS;
+        delete allAttributes.id;
+        delete allAttributes.Id;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_METRO_Rail_Stations',
+          stationName,
+          lat,
+          lon,
+          distance,
+          corridorName || 'N/A',
+          stationLocation || 'N/A',
+          lineColor || 'N/A',
+          status || 'N/A',
+          id || 'N/A',
+          stationId || 'N/A',
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_airports_all' && Array.isArray(value)) {
+      value.forEach((airport: any) => {
+        const airportName = airport.airportName || airport.NAME || airport.name || airport.NAME1 || airport.name1 || 'Unknown Airport';
+        const airportId = airport.objectId || airport.OBJECTID || airport.objectid || '';
+        const isContaining = airport.isContaining ? 'Yes' : 'No';
+        const distance = airport.distance_miles !== null && airport.distance_miles !== undefined ? airport.distance_miles.toFixed(2) : (airport.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use centroid or first coordinate)
+        let lat = '';
+        let lon = '';
+        if (airport.geometry && airport.geometry.rings && airport.geometry.rings.length > 0) {
+          const outerRing = airport.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            // Use first coordinate as approximate location
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...airport };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.airportName;
+        delete allAttributes.NAME;
+        delete allAttributes.name;
+        delete allAttributes.NAME1;
+        delete allAttributes.name1;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_Airports',
+          airportName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          airportId || 'N/A',
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'blm_national_trails_all' && Array.isArray(value)) {
+      value.forEach((trail: any) => {
+        const routeName = trail.routeName || trail.ROUTE_PRMRY_NM || trail.Route_Prmry_Nm || 'Unknown Trail';
+        const adminState = trail.adminState || trail.ADMIN_ST || trail.Admin_St || '';
+        const assetClass = trail.assetClass || trail.PLAN_ASSET_CLASS || trail.Plan_Asset_Class || '';
+        const modeTransport = trail.modeTransport || trail.PLAN_MODE_TRNSPRT || trail.Plan_Mode_Trnsprt || '';
+        const routeUseClass = trail.routeUseClass || trail.OBSRVE_ROUTE_USE_CLASS || trail.Obsrve_Route_Use_Class || '';
+        const gisMiles = trail.gisMiles !== null && trail.gisMiles !== undefined ? trail.gisMiles.toFixed(2) : '';
+        const trailId = trail.objectId || trail.OBJECTID || trail.objectid || '';
+        const distance = trail.distance_miles !== null && trail.distance_miles !== undefined ? trail.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (trail.geometry) {
+          // Line geometry (use first coordinate)
+          if (trail.geometry.paths && trail.geometry.paths.length > 0 && trail.geometry.paths[0].length > 0) {
+            const firstCoord = trail.geometry.paths[0][0];
+            lat = firstCoord[1].toString();
+            lon = firstCoord[0].toString();
+          }
+        }
+        
+        const allAttributes = { ...trail };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.routeName;
+        delete allAttributes.ROUTE_PRMRY_NM;
+        delete allAttributes.Route_Prmry_Nm;
+        delete allAttributes.adminState;
+        delete allAttributes.ADMIN_ST;
+        delete allAttributes.Admin_St;
+        delete allAttributes.assetClass;
+        delete allAttributes.PLAN_ASSET_CLASS;
+        delete allAttributes.Plan_Asset_Class;
+        delete allAttributes.modeTransport;
+        delete allAttributes.PLAN_MODE_TRNSPRT;
+        delete allAttributes.Plan_Mode_Trnsprt;
+        delete allAttributes.routeUseClass;
+        delete allAttributes.OBSRVE_ROUTE_USE_CLASS;
+        delete allAttributes.Obsrve_Route_Use_Class;
+        delete allAttributes.gisMiles;
+        delete allAttributes.GIS_MILES;
+        delete allAttributes.blmMiles;
+        delete allAttributes.BLM_MILES;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_Trails',
+          routeName,
+          lat,
+          lon,
+          distance,
+          adminState || 'N/A',
+          assetClass || 'N/A',
+          modeTransport || 'N/A',
+          routeUseClass || 'N/A',
+          gisMiles || 'N/A',
+          trailId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_motorized_trails_all' && Array.isArray(value)) {
+      value.forEach((trail: any) => {
+        const routeName = trail.routeName || trail.ROUTE_PRMRY_NM || trail.Route_Prmry_Nm || 'Unknown Motorized Trail';
+        const adminState = trail.adminState || trail.ADMIN_ST || trail.Admin_St || '';
+        const assetClass = trail.assetClass || trail.PLAN_ASSET_CLASS || trail.Plan_Asset_Class || '';
+        const modeTransport = trail.modeTransport || trail.PLAN_MODE_TRNSPRT || trail.Plan_Mode_Trnsprt || '';
+        const routeUseClass = trail.routeUseClass || trail.OBSRVE_ROUTE_USE_CLASS || trail.Obsrve_Route_Use_Class || '';
+        const ohvRouteDesignation = trail.ohvRouteDesignation || trail.PLAN_OHV_ROUTE_DSGNTN || trail.Plan_Ohv_Route_Dsgntn || '';
+        const gisMiles = trail.gisMiles !== null && trail.gisMiles !== undefined ? trail.gisMiles.toFixed(2) : '';
+        const trailId = trail.objectId || trail.OBJECTID || trail.objectid || '';
+        const distance = trail.distance_miles !== null && trail.distance_miles !== undefined ? trail.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (trail.geometry) {
+          if (trail.geometry.paths && trail.geometry.paths.length > 0 && trail.geometry.paths[0].length > 0) {
+            const firstCoord = trail.geometry.paths[0][0];
+            lat = firstCoord[1].toString();
+            lon = firstCoord[0].toString();
+          }
+        }
+        
+        const allAttributes = { ...trail };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.routeName;
+        delete allAttributes.ROUTE_PRMRY_NM;
+        delete allAttributes.Route_Prmry_Nm;
+        delete allAttributes.adminState;
+        delete allAttributes.ADMIN_ST;
+        delete allAttributes.Admin_St;
+        delete allAttributes.assetClass;
+        delete allAttributes.PLAN_ASSET_CLASS;
+        delete allAttributes.Plan_Asset_Class;
+        delete allAttributes.modeTransport;
+        delete allAttributes.PLAN_MODE_TRNSPRT;
+        delete allAttributes.Plan_Mode_Trnsprt;
+        delete allAttributes.routeUseClass;
+        delete allAttributes.OBSRVE_ROUTE_USE_CLASS;
+        delete allAttributes.Obsrve_Route_Use_Class;
+        delete allAttributes.ohvRouteDesignation;
+        delete allAttributes.PLAN_OHV_ROUTE_DSGNTN;
+        delete allAttributes.Plan_Ohv_Route_Dsgntn;
+        delete allAttributes.gisMiles;
+        delete allAttributes.GIS_MILES;
+        delete allAttributes.blmMiles;
+        delete allAttributes.BLM_MILES;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_Motorized_Trails',
+          routeName,
+          lat,
+          lon,
+          distance,
+          adminState || 'N/A',
+          assetClass || 'N/A',
+          modeTransport || 'N/A',
+          routeUseClass || 'N/A',
+          ohvRouteDesignation || 'N/A',
+          gisMiles || 'N/A',
+          trailId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_nonmotorized_trails_all' && Array.isArray(value)) {
+      value.forEach((trail: any) => {
+        const routeName = trail.routeName || trail.ROUTE_PRMRY_NM || trail.Route_Prmry_Nm || 'Unknown Nonmotorized Trail';
+        const adminState = trail.adminState || trail.ADMIN_ST || trail.Admin_St || '';
+        const assetClass = trail.assetClass || trail.PLAN_ASSET_CLASS || trail.Plan_Asset_Class || '';
+        const modeTransport = trail.modeTransport || trail.PLAN_MODE_TRNSPRT || trail.Plan_Mode_Trnsprt || '';
+        const routeUseClass = trail.routeUseClass || trail.OBSRVE_ROUTE_USE_CLASS || trail.Obsrve_Route_Use_Class || '';
+        const ohvRouteDesignation = trail.ohvRouteDesignation || trail.PLAN_OHV_ROUTE_DSGNTN || trail.Plan_Ohv_Route_Dsgntn || '';
+        const gisMiles = trail.gisMiles !== null && trail.gisMiles !== undefined ? trail.gisMiles.toFixed(2) : '';
+        const trailId = trail.objectId || trail.OBJECTID || trail.objectid || '';
+        const distance = trail.distance_miles !== null && trail.distance_miles !== undefined ? trail.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (trail.geometry) {
+          if (trail.geometry.paths && trail.geometry.paths.length > 0 && trail.geometry.paths[0].length > 0) {
+            const firstCoord = trail.geometry.paths[0][0];
+            lat = firstCoord[1].toString();
+            lon = firstCoord[0].toString();
+          }
+        }
+        
+        const allAttributes = { ...trail };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.routeName;
+        delete allAttributes.ROUTE_PRMRY_NM;
+        delete allAttributes.Route_Prmry_Nm;
+        delete allAttributes.adminState;
+        delete allAttributes.ADMIN_ST;
+        delete allAttributes.Admin_St;
+        delete allAttributes.assetClass;
+        delete allAttributes.PLAN_ASSET_CLASS;
+        delete allAttributes.Plan_Asset_Class;
+        delete allAttributes.modeTransport;
+        delete allAttributes.PLAN_MODE_TRNSPRT;
+        delete allAttributes.Plan_Mode_Trnsprt;
+        delete allAttributes.routeUseClass;
+        delete allAttributes.OBSRVE_ROUTE_USE_CLASS;
+        delete allAttributes.Obsrve_Route_Use_Class;
+        delete allAttributes.ohvRouteDesignation;
+        delete allAttributes.PLAN_OHV_ROUTE_DSGNTN;
+        delete allAttributes.Plan_Ohv_Route_Dsgntn;
+        delete allAttributes.gisMiles;
+        delete allAttributes.GIS_MILES;
+        delete allAttributes.blmMiles;
+        delete allAttributes.BLM_MILES;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_Nonmotorized_Trails',
+          routeName,
+          lat,
+          lon,
+          distance,
+          adminState || 'N/A',
+          assetClass || 'N/A',
+          modeTransport || 'N/A',
+          routeUseClass || 'N/A',
+          ohvRouteDesignation || 'N/A',
+          gisMiles || 'N/A',
+          trailId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'blm_national_grazing_pastures_all' && Array.isArray(value)) {
+      value.forEach((pasture: any) => {
+        const pastureName = pasture.pastureName || pasture.PAST_NAME || pasture.Past_Name || 'Unknown Pasture';
+        const allotName = pasture.allotName || pasture.ALLOT_NAME || pasture.Allot_Name || '';
+        const allotNumber = pasture.allotNumber || pasture.ALLOT_NO || pasture.Allot_No || '';
+        const pastureNumber = pasture.pastureNumber || pasture.PAST_NO || pasture.Past_No || '';
+        const gisAcres = pasture.gisAcres !== null && pasture.gisAcres !== undefined ? pasture.gisAcres.toFixed(2) : '';
+        const adminState = pasture.adminState || pasture.ADMIN_ST || pasture.Admin_St || '';
+        const pastureId = pasture.objectId || pasture.OBJECTID || pasture.objectid || '';
+        const isContaining = pasture.isContaining ? 'Yes' : 'No';
+        const distance = pasture.distance_miles !== null && pasture.distance_miles !== undefined ? pasture.distance_miles.toFixed(2) : (pasture.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (pasture.geometry && pasture.geometry.rings && pasture.geometry.rings.length > 0) {
+          const outerRing = pasture.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...pasture };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.pastureName;
+        delete allAttributes.PAST_NAME;
+        delete allAttributes.Past_Name;
+        delete allAttributes.allotName;
+        delete allAttributes.ALLOT_NAME;
+        delete allAttributes.Allot_Name;
+        delete allAttributes.allotNumber;
+        delete allAttributes.ALLOT_NO;
+        delete allAttributes.Allot_No;
+        delete allAttributes.pastureNumber;
+        delete allAttributes.PAST_NO;
+        delete allAttributes.Past_No;
+        delete allAttributes.gisAcres;
+        delete allAttributes.GIS_ACRES;
+        delete allAttributes.adminState;
+        delete allAttributes.ADMIN_ST;
+        delete allAttributes.Admin_St;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_National_Grazing_Pastures',
+          pastureName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          allotName || 'N/A',
+          allotNumber || 'N/A',
+          pastureNumber || 'N/A',
+          gisAcres || 'N/A',
+          adminState || 'N/A',
+          pastureId || 'N/A',
+          attributesJson,
+          'BLM'
+        ]);
+      });
+    } else if (key === 'houston_bikeways_all' && Array.isArray(value)) {
+      value.forEach((bikeway: any) => {
+        const bikewayName = bikeway.bikewayName || bikeway.NAME || bikeway.name || bikeway.NAME1 || bikeway.name1 || bikeway.BIKEWAY_NAME || bikeway.bikeway_name || bikeway.STREET_NAME || bikeway.street_name || 'Unknown Bikeway';
+        const bikewayType = bikeway.bikewayType || bikeway.TYPE || bikeway.type || bikeway.BIKEWAY_TYPE || bikeway.bikeway_type || bikeway.TYPE_DESC || bikeway.type_desc || '';
+        const bikewayId = bikeway.objectId || bikeway.OBJECTID || bikeway.objectid || '';
+        const distance = bikeway.distance_miles !== null && bikeway.distance_miles !== undefined ? bikeway.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (bikeway.geometry) {
+          // Line geometry (use first coordinate)
+          if (bikeway.geometry.paths && bikeway.geometry.paths.length > 0 && bikeway.geometry.paths[0].length > 0) {
+            const firstCoord = bikeway.geometry.paths[0][0];
+            lat = firstCoord[1].toString();
+            lon = firstCoord[0].toString();
+          }
+        }
+        
+        const allAttributes = { ...bikeway };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.bikewayName;
+        delete allAttributes.NAME;
+        delete allAttributes.name;
+        delete allAttributes.NAME1;
+        delete allAttributes.name1;
+        delete allAttributes.BIKEWAY_NAME;
+        delete allAttributes.bikeway_name;
+        delete allAttributes.STREET_NAME;
+        delete allAttributes.street_name;
+        delete allAttributes.bikewayType;
+        delete allAttributes.TYPE;
+        delete allAttributes.type;
+        delete allAttributes.BIKEWAY_TYPE;
+        delete allAttributes.bikeway_type;
+        delete allAttributes.TYPE_DESC;
+        delete allAttributes.type_desc;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'Houston_Bikeways',
+          bikewayName,
+          lat,
+          lon,
+          distance,
+          bikewayType || 'N/A',
+          bikewayId || 'N/A',
           attributesJson,
           'City of Houston'
         ]);
