@@ -14051,9 +14051,9 @@ const MapView: React.FC<MapViewProps> = ({
                   acecCount++;
                   
                   // Extend map bounds
-                  const bounds = polygon.getBounds();
-                  if (bounds.isValid()) {
-                    mapBounds.extend(bounds);
+                  const polygonBounds = polygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
                   }
                 }
               } catch (error) {
@@ -14138,9 +14138,9 @@ const MapView: React.FC<MapViewProps> = ({
                   allotmentCount++;
                   
                   // Extend map bounds
-                  const bounds = polygon.getBounds();
-                  if (bounds.isValid()) {
-                    mapBounds.extend(bounds);
+                  const polygonBounds = polygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
                   }
                 }
               } catch (error) {
@@ -14225,9 +14225,9 @@ const MapView: React.FC<MapViewProps> = ({
                   allotmentCount++;
                   
                   // Extend map bounds
-                  const bounds = polygon.getBounds();
-                  if (bounds.isValid()) {
-                    mapBounds.extend(bounds);
+                  const polygonBounds = polygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
                   }
                 }
               } catch (error) {
@@ -14314,9 +14314,9 @@ const MapView: React.FC<MapViewProps> = ({
                   monumentNCACount++;
                   
                   // Extend map bounds
-                  const bounds = polygon.getBounds();
-                  if (bounds.isValid()) {
-                    mapBounds.extend(bounds);
+                  const polygonBounds = polygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
                   }
                 }
               } catch (error) {
@@ -14409,9 +14409,9 @@ const MapView: React.FC<MapViewProps> = ({
                   herdAreaCount++;
                   
                   // Extend map bounds
-                  const bounds = polygon.getBounds();
-                  if (bounds.isValid()) {
-                    mapBounds.extend(bounds);
+                  const polygonBounds = polygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
                   }
                 }
               } catch (error) {
