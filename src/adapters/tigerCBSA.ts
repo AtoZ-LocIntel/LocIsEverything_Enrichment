@@ -140,7 +140,6 @@ export async function getTIGERCBSAData(
   nearby_features: TIGERCBSAInfo[];
   _all: TIGERCBSAInfo[];
 }> {
-  let containing: TIGERCBSAInfo | null = null;
   const nearby_features: TIGERCBSAInfo[] = [];
   const _all: TIGERCBSAInfo[] = [];
 
