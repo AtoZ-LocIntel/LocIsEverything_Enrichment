@@ -160,6 +160,7 @@ import { getTIGERNativeLandsData } from '../adapters/tigerNativeLands';
 import { getTIGERCBSAData } from '../adapters/tigerCBSA';
 import { getTIGERUrbanData } from '../adapters/tigerUrban';
 import { getIrelandProvincesData } from '../adapters/irelandProvinces';
+import { getIrelandBuiltUpAreasData } from '../adapters/irelandBuiltUpAreas';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -3449,6 +3450,8 @@ export class EnrichmentService {
       // Ireland Data
       case 'ireland_provinces':
         return await this.getIrelandProvinces(lat, lon, radius);
+      case 'ireland_built_up_areas':
+        return await this.getIrelandBuiltUpAreas(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -13738,6 +13741,124 @@ out center;`;
     } catch (error) {
       console.error(`❌ Error fetching TIGER Native Lands Layer ${layerId}:`, error);
       return {};
+    }
+  }
+
+  private async getIrelandBuiltUpAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getIrelandBuiltUpAreasData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_built_up_areas_containing_count: data.containing.length,
+        ireland_built_up_areas_nearby_count: data.nearby_features.length,
+        ireland_built_up_areas_total_count: data._all.length
+      };
+      
+      // Add containing built-up areas
+      if (data.containing.length > 0) {
+        result.ireland_built_up_areas_containing = data.containing.map(area => {
+          const areaData: any = {
+            objectId: area.objectId,
+            fcSubtype: area.fcSubtype,
+            fCode: area.fCode,
+            shapeArea: area.shapeArea,
+            shapeLength: area.shapeLength,
+            distance_miles: 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (area.geometry) {
+            Object.defineProperty(areaData, '__geometry', {
+              value: area.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(area).forEach(key => {
+            if (!['objectId', 'fcSubtype', 'fCode', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              areaData[key] = area[key];
+            }
+          });
+          
+          return areaData;
+        });
+      }
+      
+      // Add nearby built-up areas
+      if (data.nearby_features.length > 0) {
+        result.ireland_built_up_areas_nearby_features = data.nearby_features.map(area => {
+          const areaData: any = {
+            objectId: area.objectId,
+            fcSubtype: area.fcSubtype,
+            fCode: area.fCode,
+            shapeArea: area.shapeArea,
+            shapeLength: area.shapeLength,
+            distance_miles: area.distance_miles
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (area.geometry) {
+            Object.defineProperty(areaData, '__geometry', {
+              value: area.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(area).forEach(key => {
+            if (!['objectId', 'fcSubtype', 'fCode', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              areaData[key] = area[key];
+            }
+          });
+          
+          return areaData;
+        });
+      }
+      
+      // Add all built-up areas for CSV export
+      if (data._all.length > 0) {
+        result.ireland_built_up_areas_all = data._all.map(area => {
+          const areaData: any = {
+            objectId: area.objectId,
+            fcSubtype: area.fcSubtype,
+            fCode: area.fCode,
+            shapeArea: area.shapeArea,
+            shapeLength: area.shapeLength,
+            distance_miles: area.distance_miles || 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (area.geometry) {
+            Object.defineProperty(areaData, '__geometry', {
+              value: area.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(area).forEach(key => {
+            if (!['objectId', 'fcSubtype', 'fCode', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              areaData[key] = area[key];
+            }
+          });
+          
+          return areaData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Built-Up Areas data:', error);
+      return {
+        ireland_built_up_areas_containing_count: 0,
+        ireland_built_up_areas_nearby_count: 0,
+        ireland_built_up_areas_total_count: 0
+      };
     }
   }
 

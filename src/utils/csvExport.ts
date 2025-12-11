@@ -438,6 +438,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'tiger_urban_urban_areas_containing' || key === 'tiger_urban_urban_areas_all' ||
         // Ireland Provinces skip list
         key === 'ireland_provinces_containing' || key === 'ireland_provinces_nearby_features' || key === 'ireland_provinces_all' ||
+        // Ireland Built-Up Areas skip list
+        key === 'ireland_built_up_areas_containing' || key === 'ireland_built_up_areas_nearby_features' || key === 'ireland_built_up_areas_all' ||
         // TIGER CBSA skip list - BAS 2025
         key === 'tiger_bas2025_cbsa_combined_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_combined_statistical_areas_all' ||
         key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_all' ||
@@ -10149,6 +10151,57 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           distance === '0.00' ? 'Containing Province' : `Nearby Province (${distance} miles)`,
           provinceId ? `Province ID: ${provinceId}` : '',
           area ? `Area: ${area.toLocaleString()} sq units` : '',
+          attributesJson,
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    }
+    
+    // Export Ireland Built-Up Areas data
+    if (key === 'ireland_built_up_areas_all' && Array.isArray(value)) {
+      value.forEach((area: any) => {
+        const fCode = area.fCode || area.F_CODE || '';
+        const fcSubtype = area.fcSubtype !== null && area.fcSubtype !== undefined ? area.fcSubtype : '';
+        const shapeArea = area.shapeArea || area.Shape__Area || 0;
+        const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles.toFixed(2) : '0.00';
+        
+        // Extract centroid coordinates if available
+        let lat = '';
+        let lon = '';
+        // For built-up areas, use the location coordinates as approximation
+        lat = location.lat.toString();
+        lon = location.lon.toString();
+        
+        const allAttributes = { ...area };
+        delete allAttributes.fCode;
+        delete allAttributes.F_CODE;
+        delete allAttributes.fcSubtype;
+        delete allAttributes.FCsubtype;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_BUILT_UP_AREA',
+          fCode ? `F Code: ${fCode}` : 'Built-Up Area',
+          lat,
+          lon,
+          distance,
+          distance === '0.00' ? 'Containing Built-Up Area' : `Nearby Built-Up Area (${distance} miles)`,
+          fcSubtype !== '' ? `FC Subtype: ${fcSubtype}` : '',
+          shapeArea ? `Area: ${shapeArea.toLocaleString()} sq units` : '',
           attributesJson,
           'Tailte Éireann (OSi)'
         ]);

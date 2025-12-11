@@ -1320,7 +1320,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'tiger_urban_urban_areas', label: 'TIGER Urban Areas', description: 'US Census TIGER - Urban Areas (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
   
   // Ireland Data
-  { id: 'ireland_provinces', label: 'Ireland Provinces', description: 'Ireland Provinces - OSi National Statutory Boundaries (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ireland', section: 'eu' }
+  { id: 'ireland_provinces', label: 'Ireland Provinces', description: 'Ireland Provinces - OSi National Statutory Boundaries (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ireland', section: 'eu' },
+  { id: 'ireland_built_up_areas', label: 'Ireland Built-Up Areas', description: 'Ireland Built-Up Areas - OSi National 1m Map of Ireland (point-in-polygon and proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'ireland', section: 'eu' }
 ];
 
 class POIConfigManager {

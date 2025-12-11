@@ -299,6 +299,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'de_safety_zones': { icon: '⚠️', color: '#ef4444', title: 'DE Wildlife Areas Safety Zones' },
   'de_wildlife_management_zones': { icon: '🦌', color: '#059669', title: 'DE Wildlife Management Zones' },
   'ireland_provinces': { icon: '🇮🇪', color: '#10b981', title: 'Ireland Provinces' },
+  'ireland_built_up_areas': { icon: '🏘️', color: '#3b82f6', title: 'Ireland Built-Up Areas' },
   'de_rail_lines': { icon: '🚂', color: '#1f2937', title: 'DE Rail Lines' },
   'nj_parcels': { icon: '🏠', color: '#059669', title: 'NJ Tax Parcels' },
   'nj_address_points': { icon: '📍', color: '#3b82f6', title: 'NJ Address Points' },
@@ -6547,6 +6548,11 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'ireland_provinces_containing', nearbyKey: 'ireland_provinces_nearby_features', name: 'Ireland Provinces', color: '#10b981', icon: '🇮🇪', layerType: 'ireland_provinces' }
       ];
 
+      // Draw Ireland Built-Up Areas as polygons on the map
+      const irelandBuiltUpAreaLayers = [
+        { containingKey: 'ireland_built_up_areas_containing', nearbyKey: 'ireland_built_up_areas_nearby_features', name: 'Ireland Built-Up Areas', color: '#3b82f6', icon: '🏘️', layerType: 'ireland_built_up_areas' }
+      ];
+
       irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
         
@@ -6668,6 +6674,179 @@ const MapView: React.FC<MapViewProps> = ({
                   // Add all other province attributes
                   const excludeFields = ['name', 'provinceId', 'area', 'geometry', '__geometry', 'distance_miles', 'objectId', 'guid', 'centroidX', 'centroidY'];
                   Object.entries(province).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw Ireland Built-Up Areas as polygons on the map
+      irelandBuiltUpAreaLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing built-up areas
+        if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
+          enrichments[containingKey].forEach((area: any) => {
+            const geometry = area.__geometry || area.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: color,
+                    fillOpacity: 0.4
+                  });
+
+                  const fCode = area.fCode || area.F_CODE || '';
+                  const fcSubtype = area.fcSubtype !== null && area.fcSubtype !== undefined ? area.fcSubtype : '';
+                  const shapeArea = area.shapeArea || area.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} Built-Up Area
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Containing Built-Up Area</div>
+                        ${fCode ? `<div><strong>F Code:</strong> ${fCode}</div>` : ''}
+                        ${fcSubtype !== '' ? `<div><strong>FC Subtype:</strong> ${fcSubtype}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other area attributes
+                  const excludeFields = ['fCode', 'F_CODE', 'fcSubtype', 'FCsubtype', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID'];
+                  Object.entries(area).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing polygon:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby built-up areas
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((area: any) => {
+            const geometry = area.__geometry || area.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const fCode = area.fCode || area.F_CODE || '';
+                  const fcSubtype = area.fcSubtype !== null && area.fcSubtype !== undefined ? area.fcSubtype : '';
+                  const distance = area.distance_miles ? area.distance_miles.toFixed(2) : 'Unknown';
+                  const shapeArea = area.shapeArea || area.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} Built-Up Area
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${fCode ? `<div><strong>F Code:</strong> ${fCode}</div>` : ''}
+                        ${fcSubtype !== '' ? `<div><strong>FC Subtype:</strong> ${fcSubtype}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other area attributes
+                  const excludeFields = ['fCode', 'F_CODE', 'fcSubtype', 'FCsubtype', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID'];
+                  Object.entries(area).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       let displayValue = '';
