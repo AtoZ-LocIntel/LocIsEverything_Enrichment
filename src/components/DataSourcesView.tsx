@@ -603,6 +603,54 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER CBSA - Combined Statistical Areas",
+          description: "US Census TIGER - Combined Statistical Areas (CSA) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/CBSA/MapServer"
+        },
+        {
+          name: "TIGER CBSA - Metropolitan and Micropolitan Statistical Areas",
+          description: "US Census TIGER - Metropolitan and Micropolitan Statistical Areas boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/CBSA/MapServer"
+        },
+        {
+          name: "TIGER CBSA - Metropolitan Divisions",
+          description: "US Census TIGER - Metropolitan Divisions boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/CBSA/MapServer"
+        },
+        {
+          name: "TIGER CBSA - Metropolitan Statistical Areas",
+          description: "US Census TIGER - Metropolitan Statistical Areas (MSA) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/CBSA/MapServer"
+        },
+        {
+          name: "TIGER CBSA - Micropolitan Statistical Areas",
+          description: "US Census TIGER - Micropolitan Statistical Areas (μSA) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/CBSA/MapServer"
+        },
+        {
+          name: "TIGER CBSA - New England City and Town Areas",
+          description: "US Census TIGER - New England City and Town Areas (NECTA) boundaries - point-in-polygon and proximity queries up to 25 miles. Census 2020 version only.",
+          coverage: "United States (New England)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/CBSA/MapServer"
         }
       ]
     },

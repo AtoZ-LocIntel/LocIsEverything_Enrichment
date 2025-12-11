@@ -298,6 +298,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'de_restrooms': { icon: '🚻', color: '#8b5cf6', title: 'DE Wildlife Areas Restrooms' },
   'de_safety_zones': { icon: '⚠️', color: '#ef4444', title: 'DE Wildlife Areas Safety Zones' },
   'de_wildlife_management_zones': { icon: '🦌', color: '#059669', title: 'DE Wildlife Management Zones' },
+  'ireland_provinces': { icon: '🇮🇪', color: '#10b981', title: 'Ireland Provinces' },
   'de_rail_lines': { icon: '🚂', color: '#1f2937', title: 'DE Rail Lines' },
   'nj_parcels': { icon: '🏠', color: '#059669', title: 'NJ Tax Parcels' },
   'nj_address_points': { icon: '📍', color: '#3b82f6', title: 'NJ Address Points' },
@@ -353,6 +354,40 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'usfs_system_roads': { icon: '🛣️', color: '#6b7280', title: 'USFS System Roads' },
   'usfs_mvum': { icon: '🚗', color: '#f59e0b', title: 'USFS Motor Vehicle Use Map (MVUM)' },
   'usfs_co_roadless_areas': { icon: '🏔️', color: '#059669', title: 'USFS Colorado Roadless Areas' },
+  
+  // TIGER CBSA Layers
+  'tiger_cbsa_combined_statistical_areas': { icon: '🏙️', color: '#3b82f6', title: 'TIGER Combined Statistical Areas' },
+  'tiger_cbsa_metro_micropolitan_statistical_areas': { icon: '🏙️', color: '#2563eb', title: 'TIGER Metropolitan and Micropolitan Statistical Areas' },
+  'tiger_cbsa_metropolitan_divisions': { icon: '🏙️', color: '#1d4ed8', title: 'TIGER Metropolitan Divisions' },
+  'tiger_cbsa_metropolitan_statistical_areas': { icon: '🏙️', color: '#1e40af', title: 'TIGER Metropolitan Statistical Areas' },
+  'tiger_cbsa_micropolitan_statistical_areas': { icon: '🏙️', color: '#1e3a8a', title: 'TIGER Micropolitan Statistical Areas' },
+  'tiger_bas2025_cbsa_combined_statistical_areas': { icon: '🏙️', color: '#3b82f6', title: 'TIGER BAS 2025 Combined Statistical Areas' },
+  'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas': { icon: '🏙️', color: '#2563eb', title: 'TIGER BAS 2025 Metropolitan and Micropolitan Statistical Areas' },
+  'tiger_bas2025_cbsa_metropolitan_divisions': { icon: '🏙️', color: '#1d4ed8', title: 'TIGER BAS 2025 Metropolitan Divisions' },
+  'tiger_bas2025_cbsa_metropolitan_statistical_areas': { icon: '🏙️', color: '#1e40af', title: 'TIGER BAS 2025 Metropolitan Statistical Areas' },
+  'tiger_bas2025_cbsa_micropolitan_statistical_areas': { icon: '🏙️', color: '#1e3a8a', title: 'TIGER BAS 2025 Micropolitan Statistical Areas' },
+  'tiger_acs2024_cbsa_combined_statistical_areas': { icon: '🏙️', color: '#3b82f6', title: 'TIGER ACS 2024 Combined Statistical Areas' },
+  'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas': { icon: '🏙️', color: '#2563eb', title: 'TIGER ACS 2024 Metropolitan and Micropolitan Statistical Areas' },
+  'tiger_acs2024_cbsa_metropolitan_divisions': { icon: '🏙️', color: '#1d4ed8', title: 'TIGER ACS 2024 Metropolitan Divisions' },
+  'tiger_acs2024_cbsa_metropolitan_statistical_areas': { icon: '🏙️', color: '#1e40af', title: 'TIGER ACS 2024 Metropolitan Statistical Areas' },
+  'tiger_acs2024_cbsa_micropolitan_statistical_areas': { icon: '🏙️', color: '#1e3a8a', title: 'TIGER ACS 2024 Micropolitan Statistical Areas' },
+  'tiger_census2020_cbsa_combined_new_england_city_town_areas': { icon: '🏙️', color: '#3b82f6', title: 'TIGER Census 2020 Combined New England City and Town Areas' },
+  'tiger_census2020_cbsa_new_england_city_town_areas': { icon: '🏙️', color: '#2563eb', title: 'TIGER Census 2020 New England City and Town Areas' },
+  'tiger_census2020_cbsa_new_england_city_town_area_divisions': { icon: '🏙️', color: '#1d4ed8', title: 'TIGER Census 2020 New England City and Town Area Divisions' },
+  'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas': { icon: '🏙️', color: '#1e40af', title: 'TIGER Census 2020 Metropolitan New England City and Town Areas' },
+  'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas': { icon: '🏙️', color: '#1e3a8a', title: 'TIGER Census 2020 Micropolitan New England City and Town Areas' },
+  'tiger_census2020_cbsa_combined_statistical_areas': { icon: '🏙️', color: '#3b82f6', title: 'TIGER Census 2020 Combined Statistical Areas' },
+  'tiger_census2020_cbsa_metro_micropolitan_statistical_areas': { icon: '🏙️', color: '#2563eb', title: 'TIGER Census 2020 Metropolitan and Micropolitan Statistical Areas' },
+  'tiger_census2020_cbsa_metropolitan_divisions': { icon: '🏙️', color: '#1d4ed8', title: 'TIGER Census 2020 Metropolitan Divisions' },
+  'tiger_census2020_cbsa_metropolitan_statistical_areas': { icon: '🏙️', color: '#1e40af', title: 'TIGER Census 2020 Metropolitan Statistical Areas' },
+  'tiger_census2020_cbsa_micropolitan_statistical_areas': { icon: '🏙️', color: '#1e3a8a', title: 'TIGER Census 2020 Micropolitan Statistical Areas' },
+  // TIGER Urban Areas Layers
+  'tiger_urban_2020_urban_areas': { icon: '🏙️', color: '#8b5cf6', title: 'TIGER 2020 Urban Areas' },
+  'tiger_urban_bas2025_2020_urban_areas': { icon: '🏙️', color: '#7c3aed', title: 'TIGER BAS 2025 2020 Urban Areas' },
+  'tiger_urban_acs2024_2020_urban_areas': { icon: '🏙️', color: '#6d28d9', title: 'TIGER ACS 2024 2020 Urban Areas' },
+  'tiger_urban_census2020_2020_urban_areas_corrected': { icon: '🏙️', color: '#5b21b6', title: 'TIGER Census 2020 2020 Urban Areas - Corrected' },
+  'tiger_urban_census2020_2020_urban_areas': { icon: '🏙️', color: '#4c1d95', title: 'TIGER Census 2020 2020 Urban Areas' },
+  'tiger_urban_urban_areas': { icon: '🏙️', color: '#3b1a7a', title: 'TIGER Urban Areas' },
   
   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
@@ -844,7 +879,36 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'tiger_census2020_otsa_containing' || key === 'tiger_census2020_otsa_all' ||
     key === 'tiger_census2020_sdtsa_containing' || key === 'tiger_census2020_sdtsa_all' ||
     key === 'tiger_census2020_tdsa_containing' || key === 'tiger_census2020_tdsa_all' ||
-    key === 'tiger_census2020_aijua_containing' || key === 'tiger_census2020_aijua_all' // Skip TIGER Native Lands arrays (handled separately for map drawing)
+    key === 'tiger_census2020_aijua_containing' || key === 'tiger_census2020_aijua_all' ||
+    // TIGER CBSA skip list - Base layers
+    key === 'tiger_cbsa_combined_statistical_areas_containing' || key === 'tiger_cbsa_combined_statistical_areas_all' ||
+    key === 'tiger_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_cbsa_metro_micropolitan_statistical_areas_all' ||
+    key === 'tiger_cbsa_metropolitan_divisions_containing' || key === 'tiger_cbsa_metropolitan_divisions_all' ||
+    key === 'tiger_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_cbsa_metropolitan_statistical_areas_all' ||
+    key === 'tiger_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_cbsa_micropolitan_statistical_areas_all' ||
+    // TIGER CBSA skip list - BAS 2025
+    key === 'tiger_bas2025_cbsa_combined_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_combined_statistical_areas_all' ||
+    key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_all' ||
+    key === 'tiger_bas2025_cbsa_metropolitan_divisions_containing' || key === 'tiger_bas2025_cbsa_metropolitan_divisions_all' ||
+    key === 'tiger_bas2025_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metropolitan_statistical_areas_all' ||
+    key === 'tiger_bas2025_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_micropolitan_statistical_areas_all' ||
+    // TIGER CBSA skip list - ACS 2024
+    key === 'tiger_acs2024_cbsa_combined_statistical_areas_containing' || key === 'tiger_acs2024_cbsa_combined_statistical_areas_all' ||
+    key === 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas_all' ||
+    key === 'tiger_acs2024_cbsa_metropolitan_divisions_containing' || key === 'tiger_acs2024_cbsa_metropolitan_divisions_all' ||
+    key === 'tiger_acs2024_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_acs2024_cbsa_metropolitan_statistical_areas_all' ||
+    key === 'tiger_acs2024_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_acs2024_cbsa_micropolitan_statistical_areas_all' ||
+    // TIGER CBSA skip list - Census 2020
+    key === 'tiger_census2020_cbsa_combined_new_england_city_town_areas_containing' || key === 'tiger_census2020_cbsa_combined_new_england_city_town_areas_all' ||
+    key === 'tiger_census2020_cbsa_new_england_city_town_areas_containing' || key === 'tiger_census2020_cbsa_new_england_city_town_areas_all' ||
+    key === 'tiger_census2020_cbsa_new_england_city_town_area_divisions_containing' || key === 'tiger_census2020_cbsa_new_england_city_town_area_divisions_all' ||
+    key === 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas_containing' || key === 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas_all' ||
+    key === 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas_containing' || key === 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas_all' ||
+    key === 'tiger_census2020_cbsa_combined_statistical_areas_containing' || key === 'tiger_census2020_cbsa_combined_statistical_areas_all' ||
+    key === 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_all' ||
+    key === 'tiger_census2020_cbsa_metropolitan_divisions_containing' || key === 'tiger_census2020_cbsa_metropolitan_divisions_all' ||
+    key === 'tiger_census2020_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_metropolitan_statistical_areas_all' ||
+    key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_all' // Skip TIGER CBSA arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -6288,6 +6352,466 @@ const MapView: React.FC<MapViewProps> = ({
                         ${areaType ? `<div><strong>Area Type:</strong> ${areaType}</div>` : ''}
                         ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
                         ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw TIGER CBSA as polygons on the map
+      const tigerCBSALayers = [
+        // Base layers (0-4)
+        { containingKey: 'tiger_cbsa_combined_statistical_areas_containing', nearbyKey: 'tiger_cbsa_combined_statistical_areas_nearby_features', name: 'TIGER Combined Statistical Areas', color: '#3b82f6', icon: '🏙️', layerType: 'tiger_cbsa_combined_statistical_areas' },
+        { containingKey: 'tiger_cbsa_metro_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_cbsa_metro_micropolitan_statistical_areas_nearby_features', name: 'TIGER Metropolitan and Micropolitan Statistical Areas', color: '#2563eb', icon: '🏙️', layerType: 'tiger_cbsa_metro_micropolitan_statistical_areas' },
+        { containingKey: 'tiger_cbsa_metropolitan_divisions_containing', nearbyKey: 'tiger_cbsa_metropolitan_divisions_nearby_features', name: 'TIGER Metropolitan Divisions', color: '#1d4ed8', icon: '🏙️', layerType: 'tiger_cbsa_metropolitan_divisions' },
+        { containingKey: 'tiger_cbsa_metropolitan_statistical_areas_containing', nearbyKey: 'tiger_cbsa_metropolitan_statistical_areas_nearby_features', name: 'TIGER Metropolitan Statistical Areas', color: '#1e40af', icon: '🏙️', layerType: 'tiger_cbsa_metropolitan_statistical_areas' },
+        { containingKey: 'tiger_cbsa_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_cbsa_micropolitan_statistical_areas_nearby_features', name: 'TIGER Micropolitan Statistical Areas', color: '#1e3a8a', icon: '🏙️', layerType: 'tiger_cbsa_micropolitan_statistical_areas' },
+        // BAS 2025 layers (6-10)
+        { containingKey: 'tiger_bas2025_cbsa_combined_statistical_areas_containing', nearbyKey: 'tiger_bas2025_cbsa_combined_statistical_areas_nearby_features', name: 'TIGER BAS 2025 Combined Statistical Areas', color: '#3b82f6', icon: '🏙️', layerType: 'tiger_bas2025_cbsa_combined_statistical_areas' },
+        { containingKey: 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_nearby_features', name: 'TIGER BAS 2025 Metropolitan and Micropolitan Statistical Areas', color: '#2563eb', icon: '🏙️', layerType: 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas' },
+        { containingKey: 'tiger_bas2025_cbsa_metropolitan_divisions_containing', nearbyKey: 'tiger_bas2025_cbsa_metropolitan_divisions_nearby_features', name: 'TIGER BAS 2025 Metropolitan Divisions', color: '#1d4ed8', icon: '🏙️', layerType: 'tiger_bas2025_cbsa_metropolitan_divisions' },
+        { containingKey: 'tiger_bas2025_cbsa_metropolitan_statistical_areas_containing', nearbyKey: 'tiger_bas2025_cbsa_metropolitan_statistical_areas_nearby_features', name: 'TIGER BAS 2025 Metropolitan Statistical Areas', color: '#1e40af', icon: '🏙️', layerType: 'tiger_bas2025_cbsa_metropolitan_statistical_areas' },
+        { containingKey: 'tiger_bas2025_cbsa_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_bas2025_cbsa_micropolitan_statistical_areas_nearby_features', name: 'TIGER BAS 2025 Micropolitan Statistical Areas', color: '#1e3a8a', icon: '🏙️', layerType: 'tiger_bas2025_cbsa_micropolitan_statistical_areas' },
+        // ACS 2024 layers (12-16)
+        { containingKey: 'tiger_acs2024_cbsa_combined_statistical_areas_containing', nearbyKey: 'tiger_acs2024_cbsa_combined_statistical_areas_nearby_features', name: 'TIGER ACS 2024 Combined Statistical Areas', color: '#3b82f6', icon: '🏙️', layerType: 'tiger_acs2024_cbsa_combined_statistical_areas' },
+        { containingKey: 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas_nearby_features', name: 'TIGER ACS 2024 Metropolitan and Micropolitan Statistical Areas', color: '#2563eb', icon: '🏙️', layerType: 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas' },
+        { containingKey: 'tiger_acs2024_cbsa_metropolitan_divisions_containing', nearbyKey: 'tiger_acs2024_cbsa_metropolitan_divisions_nearby_features', name: 'TIGER ACS 2024 Metropolitan Divisions', color: '#1d4ed8', icon: '🏙️', layerType: 'tiger_acs2024_cbsa_metropolitan_divisions' },
+        { containingKey: 'tiger_acs2024_cbsa_metropolitan_statistical_areas_containing', nearbyKey: 'tiger_acs2024_cbsa_metropolitan_statistical_areas_nearby_features', name: 'TIGER ACS 2024 Metropolitan Statistical Areas', color: '#1e40af', icon: '🏙️', layerType: 'tiger_acs2024_cbsa_metropolitan_statistical_areas' },
+        { containingKey: 'tiger_acs2024_cbsa_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_acs2024_cbsa_micropolitan_statistical_areas_nearby_features', name: 'TIGER ACS 2024 Micropolitan Statistical Areas', color: '#1e3a8a', icon: '🏙️', layerType: 'tiger_acs2024_cbsa_micropolitan_statistical_areas' },
+        // Census 2020 layers (18-27)
+        { containingKey: 'tiger_census2020_cbsa_combined_new_england_city_town_areas_containing', nearbyKey: 'tiger_census2020_cbsa_combined_new_england_city_town_areas_nearby_features', name: 'TIGER Census 2020 Combined New England City and Town Areas', color: '#3b82f6', icon: '🏙️', layerType: 'tiger_census2020_cbsa_combined_new_england_city_town_areas' },
+        { containingKey: 'tiger_census2020_cbsa_new_england_city_town_areas_containing', nearbyKey: 'tiger_census2020_cbsa_new_england_city_town_areas_nearby_features', name: 'TIGER Census 2020 New England City and Town Areas', color: '#2563eb', icon: '🏙️', layerType: 'tiger_census2020_cbsa_new_england_city_town_areas' },
+        { containingKey: 'tiger_census2020_cbsa_new_england_city_town_area_divisions_containing', nearbyKey: 'tiger_census2020_cbsa_new_england_city_town_area_divisions_nearby_features', name: 'TIGER Census 2020 New England City and Town Area Divisions', color: '#1d4ed8', icon: '🏙️', layerType: 'tiger_census2020_cbsa_new_england_city_town_area_divisions' },
+        { containingKey: 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas_containing', nearbyKey: 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas_nearby_features', name: 'TIGER Census 2020 Metropolitan New England City and Town Areas', color: '#1e40af', icon: '🏙️', layerType: 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas' },
+        { containingKey: 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas_containing', nearbyKey: 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas_nearby_features', name: 'TIGER Census 2020 Micropolitan New England City and Town Areas', color: '#1e3a8a', icon: '🏙️', layerType: 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas' },
+        { containingKey: 'tiger_census2020_cbsa_combined_statistical_areas_containing', nearbyKey: 'tiger_census2020_cbsa_combined_statistical_areas_nearby_features', name: 'TIGER Census 2020 Combined Statistical Areas', color: '#3b82f6', icon: '🏙️', layerType: 'tiger_census2020_cbsa_combined_statistical_areas' },
+        { containingKey: 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_nearby_features', name: 'TIGER Census 2020 Metropolitan and Micropolitan Statistical Areas', color: '#2563eb', icon: '🏙️', layerType: 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas' },
+        { containingKey: 'tiger_census2020_cbsa_metropolitan_divisions_containing', nearbyKey: 'tiger_census2020_cbsa_metropolitan_divisions_nearby_features', name: 'TIGER Census 2020 Metropolitan Divisions', color: '#1d4ed8', icon: '🏙️', layerType: 'tiger_census2020_cbsa_metropolitan_divisions' },
+        { containingKey: 'tiger_census2020_cbsa_metropolitan_statistical_areas_containing', nearbyKey: 'tiger_census2020_cbsa_metropolitan_statistical_areas_nearby_features', name: 'TIGER Census 2020 Metropolitan Statistical Areas', color: '#1e40af', icon: '🏙️', layerType: 'tiger_census2020_cbsa_metropolitan_statistical_areas' },
+        { containingKey: 'tiger_census2020_cbsa_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_census2020_cbsa_micropolitan_statistical_areas_nearby_features', name: 'TIGER Census 2020 Micropolitan Statistical Areas', color: '#1e3a8a', icon: '🏙️', layerType: 'tiger_census2020_cbsa_micropolitan_statistical_areas' }
+      ];
+
+      tigerCBSALayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing polygon
+        if (enrichments[containingKey] && (enrichments[containingKey] as any).__geometry) {
+          const feature = enrichments[containingKey];
+          const geometry = (feature as any).__geometry || (feature as any).geometry;
+          if (geometry && geometry.rings) {
+            try {
+              const rings = geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: 3,
+                  opacity: 0.9,
+                  fillColor: color,
+                  fillOpacity: 0.4
+                });
+
+                const featureName = (feature as any).name || 'Unknown';
+                const stateFips = (feature as any).stateFips || '';
+                const countyFips = (feature as any).countyFips || '';
+                const cbsaType = (feature as any).cbsaType || '';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${icon} ${featureName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> Containing Area</div>
+                      ${cbsaType ? `<div><strong>CBSA Type:</strong> ${cbsaType}</div>` : ''}
+                      ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                      ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                (polygon as any).__layerType = layerType;
+                (polygon as any).__layerTitle = name;
+                bounds.extend(polygon.getBounds());
+                featureCount += 1;
+              }
+            } catch (error) {
+              console.error(`Error drawing ${name} containing polygon:`, error);
+            }
+          }
+        }
+
+        // Draw nearby features
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((feature: any) => {
+            const geometry = feature.__geometry || feature.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const featureName = feature.name || 'Unknown';
+                  const distance = feature.distance_miles ? feature.distance_miles.toFixed(2) : 'Unknown';
+                  const stateFips = feature.stateFips || '';
+                  const countyFips = feature.countyFips || '';
+                  const cbsaType = feature.cbsaType || '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${cbsaType ? `<div><strong>CBSA Type:</strong> ${cbsaType}</div>` : ''}
+                        ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                        ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw Ireland Provinces as polygons on the map
+      const irelandProvinceLayers = [
+        { containingKey: 'ireland_provinces_containing', nearbyKey: 'ireland_provinces_nearby_features', name: 'Ireland Provinces', color: '#10b981', icon: '🇮🇪', layerType: 'ireland_provinces' }
+      ];
+
+      irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing province
+        if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
+          enrichments[containingKey].forEach((province: any) => {
+            const geometry = province.__geometry || province.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: color,
+                    fillOpacity: 0.4
+                  });
+
+                  const provinceName = province.name || 'Unknown Province';
+                  const provinceId = province.provinceId || '';
+                  const area = province.area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${provinceName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Containing Province</div>
+                        ${provinceId ? `<div><strong>Province ID:</strong> ${provinceId}</div>` : ''}
+                        ${area ? `<div><strong>Area:</strong> ${area.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other province attributes
+                  const excludeFields = ['name', 'provinceId', 'area', 'geometry', '__geometry', 'distance_miles', 'objectId', 'guid', 'centroidX', 'centroidY'];
+                  Object.entries(province).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing polygon:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby provinces
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((province: any) => {
+            const geometry = province.__geometry || province.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const provinceName = province.name || 'Unknown Province';
+                  const distance = province.distance_miles ? province.distance_miles.toFixed(2) : 'Unknown';
+                  const provinceId = province.provinceId || '';
+                  const area = province.area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${provinceName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${provinceId ? `<div><strong>Province ID:</strong> ${provinceId}</div>` : ''}
+                        ${area ? `<div><strong>Area:</strong> ${area.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other province attributes
+                  const excludeFields = ['name', 'provinceId', 'area', 'geometry', '__geometry', 'distance_miles', 'objectId', 'guid', 'centroidX', 'centroidY'];
+                  Object.entries(province).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw TIGER Urban Areas as polygons on the map
+      const tigerUrbanLayers = [
+        { containingKey: 'tiger_urban_2020_urban_areas_containing', nearbyKey: 'tiger_urban_2020_urban_areas_nearby_features', name: 'TIGER 2020 Urban Areas', color: '#8b5cf6', icon: '🏙️', layerType: 'tiger_urban_2020_urban_areas' },
+        { containingKey: 'tiger_urban_bas2025_2020_urban_areas_containing', nearbyKey: 'tiger_urban_bas2025_2020_urban_areas_nearby_features', name: 'TIGER BAS 2025 2020 Urban Areas', color: '#7c3aed', icon: '🏙️', layerType: 'tiger_urban_bas2025_2020_urban_areas' },
+        { containingKey: 'tiger_urban_acs2024_2020_urban_areas_containing', nearbyKey: 'tiger_urban_acs2024_2020_urban_areas_nearby_features', name: 'TIGER ACS 2024 2020 Urban Areas', color: '#6d28d9', icon: '🏙️', layerType: 'tiger_urban_acs2024_2020_urban_areas' },
+        { containingKey: 'tiger_urban_census2020_2020_urban_areas_corrected_containing', nearbyKey: 'tiger_urban_census2020_2020_urban_areas_corrected_nearby_features', name: 'TIGER Census 2020 2020 Urban Areas - Corrected', color: '#5b21b6', icon: '🏙️', layerType: 'tiger_urban_census2020_2020_urban_areas_corrected' },
+        { containingKey: 'tiger_urban_census2020_2020_urban_areas_containing', nearbyKey: 'tiger_urban_census2020_2020_urban_areas_nearby_features', name: 'TIGER Census 2020 2020 Urban Areas', color: '#4c1d95', icon: '🏙️', layerType: 'tiger_urban_census2020_2020_urban_areas' },
+        { containingKey: 'tiger_urban_urban_areas_containing', nearbyKey: 'tiger_urban_urban_areas_nearby_features', name: 'TIGER Urban Areas', color: '#3b1a7a', icon: '🏙️', layerType: 'tiger_urban_urban_areas' }
+      ];
+
+      tigerUrbanLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing area
+        if (enrichments[containingKey] && enrichments[containingKey].__geometry) {
+          const urban = enrichments[containingKey];
+          const geometry = urban.__geometry || urban.geometry;
+          if (geometry && geometry.rings) {
+            try {
+              const rings = geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: 3,
+                  opacity: 0.8,
+                  fillColor: color,
+                  fillOpacity: 0.3
+                });
+
+                const urbanName = urban.name || 'Unknown Urban Area';
+                const urbanType = urban.urbanType || '';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${icon} ${urbanName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> Containing Urban Area</div>
+                      ${urbanType ? `<div><strong>Urban Type:</strong> ${urbanType}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                (polygon as any).__layerType = layerType;
+                (polygon as any).__layerTitle = name;
+                bounds.extend(polygon.getBounds());
+                featureCount += 1;
+              }
+            } catch (error) {
+              console.error(`Error drawing ${name} containing polygon:`, error);
+            }
+          }
+        }
+
+        // Draw nearby features
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((urban: any) => {
+            const geometry = urban.__geometry || urban.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.15
+                  });
+
+                  const urbanName = urban.name || 'Unknown Urban Area';
+                  const urbanType = urban.urbanType || '';
+                  const distance = urban.distance_miles;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${urbanName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance ? distance.toFixed(2) : '0.00'} miles</div>
+                        ${urbanType ? `<div><strong>Urban Type:</strong> ${urbanType}</div>` : ''}
                       </div>
                     </div>
                   `;
@@ -20851,6 +21375,20 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Skip PAD-US features arrays - they're handled separately with geometry drawing
         if (key.includes('padus_public_access_nearby_features') || key.includes('padus_protection_status_nearby_features')) {
+          return;
+        }
+
+        // Skip TIGER CBSA nearby_features arrays - they're handled separately with geometry drawing
+        if (key.includes('tiger_cbsa_') && key.includes('_nearby_features')) {
+          return;
+        }
+        if (key.includes('tiger_bas2025_cbsa_') && key.includes('_nearby_features')) {
+          return;
+        }
+        if (key.includes('tiger_acs2024_cbsa_') && key.includes('_nearby_features')) {
+          return;
+        }
+        if (key.includes('tiger_census2020_cbsa_') && key.includes('_nearby_features')) {
           return;
         }
 

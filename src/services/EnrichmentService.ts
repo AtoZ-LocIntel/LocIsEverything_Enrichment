@@ -157,6 +157,9 @@ import { getTIGERTransportationData } from '../adapters/tigerTransportation';
 import { getTIGERSchoolDistrictsData } from '../adapters/tigerSchoolDistricts';
 import { getTIGERSpecialLandUseData } from '../adapters/tigerSpecialLandUse';
 import { getTIGERNativeLandsData } from '../adapters/tigerNativeLands';
+import { getTIGERCBSAData } from '../adapters/tigerCBSA';
+import { getTIGERUrbanData } from '../adapters/tigerUrban';
+import { getIrelandProvincesData } from '../adapters/irelandProvinces';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -3374,8 +3377,80 @@ export class EnrichmentService {
         return await this.getTIGERNativeLands(lat, lon, 45, radius);
       case 'tiger_census2020_aijua':
         return await this.getTIGERNativeLands(lat, lon, 46, radius);
-    
-    default:
+      
+      // TIGER CBSA Layers - Base (Layers 0-4)
+      case 'tiger_cbsa_combined_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 0, radius);
+      case 'tiger_cbsa_metro_micropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 1, radius);
+      case 'tiger_cbsa_metropolitan_divisions':
+        return await this.getTIGERCBSA(lat, lon, 2, radius);
+      case 'tiger_cbsa_metropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 3, radius);
+      case 'tiger_cbsa_micropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 4, radius);
+      // TIGER CBSA Layers - BAS 2025 (Layers 6-10)
+      case 'tiger_bas2025_cbsa_combined_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 6, radius);
+      case 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 7, radius);
+      case 'tiger_bas2025_cbsa_metropolitan_divisions':
+        return await this.getTIGERCBSA(lat, lon, 8, radius);
+      case 'tiger_bas2025_cbsa_metropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 9, radius);
+      case 'tiger_bas2025_cbsa_micropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 10, radius);
+      // TIGER CBSA Layers - ACS 2024 (Layers 12-16)
+      case 'tiger_acs2024_cbsa_combined_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 12, radius);
+      case 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 13, radius);
+      case 'tiger_acs2024_cbsa_metropolitan_divisions':
+        return await this.getTIGERCBSA(lat, lon, 14, radius);
+      case 'tiger_acs2024_cbsa_metropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 15, radius);
+      case 'tiger_acs2024_cbsa_micropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 16, radius);
+      // TIGER CBSA Layers - Census 2020 (Layers 18-27)
+      case 'tiger_census2020_cbsa_combined_new_england_city_town_areas':
+        return await this.getTIGERCBSA(lat, lon, 18, radius);
+      case 'tiger_census2020_cbsa_new_england_city_town_areas':
+        return await this.getTIGERCBSA(lat, lon, 19, radius);
+      case 'tiger_census2020_cbsa_new_england_city_town_area_divisions':
+        return await this.getTIGERCBSA(lat, lon, 20, radius);
+      case 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas':
+        return await this.getTIGERCBSA(lat, lon, 21, radius);
+      case 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas':
+        return await this.getTIGERCBSA(lat, lon, 22, radius);
+      case 'tiger_census2020_cbsa_combined_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 23, radius);
+      case 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 24, radius);
+      case 'tiger_census2020_cbsa_metropolitan_divisions':
+        return await this.getTIGERCBSA(lat, lon, 25, radius);
+      case 'tiger_census2020_cbsa_metropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 26, radius);
+      case 'tiger_census2020_cbsa_micropolitan_statistical_areas':
+        return await this.getTIGERCBSA(lat, lon, 27, radius);
+      // TIGER Urban Areas Layers
+      case 'tiger_urban_2020_urban_areas':
+        return await this.getTIGERUrban(lat, lon, 0, radius);
+      case 'tiger_urban_bas2025_2020_urban_areas':
+        return await this.getTIGERUrban(lat, lon, 2, radius);
+      case 'tiger_urban_acs2024_2020_urban_areas':
+        return await this.getTIGERUrban(lat, lon, 4, radius);
+      case 'tiger_urban_census2020_2020_urban_areas_corrected':
+        return await this.getTIGERUrban(lat, lon, 6, radius);
+      case 'tiger_urban_census2020_2020_urban_areas':
+        return await this.getTIGERUrban(lat, lon, 7, radius);
+      case 'tiger_urban_urban_areas':
+        return await this.getTIGERUrban(lat, lon, 8, radius);
+      
+      // Ireland Data
+      case 'ireland_provinces':
+        return await this.getIrelandProvinces(lat, lon, radius);
+      
+      default:
       if (enrichmentId.startsWith('at_')) {
         // Handle Appalachian Trail queries
         if (enrichmentId === 'at_osm_features') {
@@ -13662,6 +13737,306 @@ out center;`;
       return result;
     } catch (error) {
       console.error(`❌ Error fetching TIGER Native Lands Layer ${layerId}:`, error);
+      return {};
+    }
+  }
+
+  private async getIrelandProvinces(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getIrelandProvincesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_provinces_containing_count: data.containing.length,
+        ireland_provinces_nearby_count: data.nearby_features.length,
+        ireland_provinces_total_count: data._all.length
+      };
+      
+      // Add containing provinces
+      if (data.containing.length > 0) {
+        result.ireland_provinces_containing = data.containing.map(province => {
+          const provinceData: any = {
+            name: province.name,
+            provinceId: province.provinceId,
+            guid: province.guid,
+            centroidX: province.centroidX,
+            centroidY: province.centroidY,
+            area: province.area,
+            distance_miles: 0,
+            objectId: province.objectId
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (province.geometry) {
+            Object.defineProperty(provinceData, '__geometry', {
+              value: province.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(province).forEach(key => {
+            if (!['name', 'provinceId', 'guid', 'centroidX', 'centroidY', 'area', 'distance_miles', 'objectId', 'geometry'].includes(key)) {
+              provinceData[key] = province[key];
+            }
+          });
+          
+          return provinceData;
+        });
+      }
+      
+      // Add nearby provinces
+      if (data.nearby_features.length > 0) {
+        result.ireland_provinces_nearby_features = data.nearby_features.map(province => {
+          const provinceData: any = {
+            name: province.name,
+            provinceId: province.provinceId,
+            guid: province.guid,
+            centroidX: province.centroidX,
+            centroidY: province.centroidY,
+            area: province.area,
+            distance_miles: province.distance_miles,
+            objectId: province.objectId
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (province.geometry) {
+            Object.defineProperty(provinceData, '__geometry', {
+              value: province.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(province).forEach(key => {
+            if (!['name', 'provinceId', 'guid', 'centroidX', 'centroidY', 'area', 'distance_miles', 'objectId', 'geometry'].includes(key)) {
+              provinceData[key] = province[key];
+            }
+          });
+          
+          return provinceData;
+        });
+      }
+      
+      // Add all provinces for CSV export
+      if (data._all.length > 0) {
+        result.ireland_provinces_all = data._all.map(province => {
+          const provinceData: any = {
+            name: province.name,
+            provinceId: province.provinceId,
+            guid: province.guid,
+            centroidX: province.centroidX,
+            centroidY: province.centroidY,
+            area: province.area,
+            distance_miles: province.distance_miles || 0,
+            objectId: province.objectId
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (province.geometry) {
+            Object.defineProperty(provinceData, '__geometry', {
+              value: province.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(province).forEach(key => {
+            if (!['name', 'provinceId', 'guid', 'centroidX', 'centroidY', 'area', 'distance_miles', 'objectId', 'geometry'].includes(key)) {
+              provinceData[key] = province[key];
+            }
+          });
+          
+          return provinceData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Provinces data:', error);
+      return {
+        ireland_provinces_containing_count: 0,
+        ireland_provinces_nearby_count: 0,
+        ireland_provinces_total_count: 0
+      };
+    }
+  }
+
+  private async getTIGERUrban(lat: number, lon: number, layerId: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerConfigs: Record<number, { name: string; poiId: string }> = {
+        0: { name: '2020 Urban Areas', poiId: 'tiger_urban_2020_urban_areas' },
+        2: { name: 'BAS 2025 2020 Urban Areas', poiId: 'tiger_urban_bas2025_2020_urban_areas' },
+        4: { name: 'ACS 2024 2020 Urban Areas', poiId: 'tiger_urban_acs2024_2020_urban_areas' },
+        6: { name: 'Census 2020 2020 Urban Areas - Corrected', poiId: 'tiger_urban_census2020_2020_urban_areas_corrected' },
+        7: { name: 'Census 2020 2020 Urban Areas', poiId: 'tiger_urban_census2020_2020_urban_areas' },
+        8: { name: 'Urban Areas', poiId: 'tiger_urban_urban_areas' }
+      };
+      
+      const config = layerConfigs[layerId];
+      if (!config) {
+        console.error(`❌ Unknown TIGER Urban Areas layer ID: ${layerId}`);
+        return {};
+      }
+      
+      const data = await getTIGERUrbanData(layerId, lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      // Containing polygon
+      if (data.containing) {
+        const containing = data.containing;
+        result[`${config.poiId}_containing`] = {
+          name: containing.name || 'Unknown',
+          stateFips: containing.stateFips,
+          countyFips: containing.countyFips,
+          urbanType: containing.urbanType,
+          objectId: containing.objectId,
+          ...containing.attributes
+        };
+        // Store geometry separately for map rendering
+        Object.defineProperty(result[`${config.poiId}_containing`], '__geometry', {
+          value: containing.geometry,
+          enumerable: false
+        });
+      }
+      
+      // Nearby features
+      if (data.nearby_features && data.nearby_features.length > 0) {
+        result[`${config.poiId}_nearby_features`] = data.nearby_features.map((feature: any) => {
+          const featureData = {
+            name: feature.name || 'Unknown',
+            stateFips: feature.stateFips,
+            countyFips: feature.countyFips,
+            urbanType: feature.urbanType,
+            objectId: feature.objectId,
+            distance_miles: feature.distance_miles,
+            ...feature.attributes
+          };
+          // Store geometry separately for map rendering
+          Object.defineProperty(featureData, '__geometry', {
+            value: feature.geometry,
+            enumerable: false
+          });
+          return featureData;
+        });
+      }
+      
+      // All features (for counts)
+      if (data._all && data._all.length > 0) {
+        result[`${config.poiId}_all`] = data._all.length;
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching TIGER Urban Areas Layer ${layerId}:`, error);
+      return {};
+    }
+  }
+
+  private async getTIGERCBSA(lat: number, lon: number, layerId: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerConfigs: Record<number, { name: string; poiId: string }> = {
+        0: { name: 'Combined Statistical Areas', poiId: 'tiger_cbsa_combined_statistical_areas' },
+        1: { name: 'Metropolitan and Micropolitan Statistical Areas', poiId: 'tiger_cbsa_metro_micropolitan_statistical_areas' },
+        2: { name: 'Metropolitan Divisions', poiId: 'tiger_cbsa_metropolitan_divisions' },
+        3: { name: 'Metropolitan Statistical Areas', poiId: 'tiger_cbsa_metropolitan_statistical_areas' },
+        4: { name: 'Micropolitan Statistical Areas', poiId: 'tiger_cbsa_micropolitan_statistical_areas' },
+        6: { name: 'BAS 2025 Combined Statistical Areas', poiId: 'tiger_bas2025_cbsa_combined_statistical_areas' },
+        7: { name: 'BAS 2025 Metropolitan and Micropolitan Statistical Areas', poiId: 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas' },
+        8: { name: 'BAS 2025 Metropolitan Divisions', poiId: 'tiger_bas2025_cbsa_metropolitan_divisions' },
+        9: { name: 'BAS 2025 Metropolitan Statistical Areas', poiId: 'tiger_bas2025_cbsa_metropolitan_statistical_areas' },
+        10: { name: 'BAS 2025 Micropolitan Statistical Areas', poiId: 'tiger_bas2025_cbsa_micropolitan_statistical_areas' },
+        12: { name: 'ACS 2024 Combined Statistical Areas', poiId: 'tiger_acs2024_cbsa_combined_statistical_areas' },
+        13: { name: 'ACS 2024 Metropolitan and Micropolitan Statistical Areas', poiId: 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas' },
+        14: { name: 'ACS 2024 Metropolitan Divisions', poiId: 'tiger_acs2024_cbsa_metropolitan_divisions' },
+        15: { name: 'ACS 2024 Metropolitan Statistical Areas', poiId: 'tiger_acs2024_cbsa_metropolitan_statistical_areas' },
+        16: { name: 'ACS 2024 Micropolitan Statistical Areas', poiId: 'tiger_acs2024_cbsa_micropolitan_statistical_areas' },
+        18: { name: 'Census 2020 Combined New England City and Town Areas', poiId: 'tiger_census2020_cbsa_combined_new_england_city_town_areas' },
+        19: { name: 'Census 2020 New England City and Town Areas', poiId: 'tiger_census2020_cbsa_new_england_city_town_areas' },
+        20: { name: 'Census 2020 New England City and Town Area Divisions', poiId: 'tiger_census2020_cbsa_new_england_city_town_area_divisions' },
+        21: { name: 'Census 2020 Metropolitan New England City and Town Areas', poiId: 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas' },
+        22: { name: 'Census 2020 Micropolitan New England City and Town Areas', poiId: 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas' },
+        23: { name: 'Census 2020 Combined Statistical Areas', poiId: 'tiger_census2020_cbsa_combined_statistical_areas' },
+        24: { name: 'Census 2020 Metropolitan and Micropolitan Statistical Areas', poiId: 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas' },
+        25: { name: 'Census 2020 Metropolitan Divisions', poiId: 'tiger_census2020_cbsa_metropolitan_divisions' },
+        26: { name: 'Census 2020 Metropolitan Statistical Areas', poiId: 'tiger_census2020_cbsa_metropolitan_statistical_areas' },
+        27: { name: 'Census 2020 Micropolitan Statistical Areas', poiId: 'tiger_census2020_cbsa_micropolitan_statistical_areas' }
+      };
+      
+      const config = layerConfigs[layerId];
+      if (!config) {
+        console.error(`❌ Unknown TIGER CBSA layer ID: ${layerId}`);
+        return {};
+      }
+      
+      const data = await getTIGERCBSAData(layerId, lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      // Containing polygon
+      if (data.containing) {
+        const containing = data.containing;
+        result[`${config.poiId}_containing`] = {
+          name: containing.name || 'Unknown',
+          stateFips: containing.stateFips,
+          countyFips: containing.countyFips,
+          cbsaType: containing.cbsaType,
+          objectId: containing.objectId,
+          ...containing.attributes
+        };
+        
+        // Store geometry separately for map rendering
+        Object.defineProperty(result[`${config.poiId}_containing`], '__geometry', {
+          value: containing.geometry,
+          enumerable: false,
+          writable: false
+        });
+      } else {
+        result[`${config.poiId}_containing`] = null;
+      }
+      
+      // Nearby polygons
+      if (data.nearby_features && data.nearby_features.length > 0) {
+        result[`${config.poiId}_nearby_count`] = data.nearby_features.length;
+        result[`${config.poiId}_nearby_features`] = data.nearby_features.map(feature => {
+          const featureData: Record<string, any> = {
+            name: feature.name || 'Unknown',
+            stateFips: feature.stateFips,
+            countyFips: feature.countyFips,
+            cbsaType: feature.cbsaType,
+            objectId: feature.objectId,
+            distance_miles: Math.round(feature.distance_miles! * 100) / 100,
+            ...feature.attributes
+          };
+          
+          // Store geometry separately for map rendering
+          Object.defineProperty(featureData, '__geometry', {
+            value: feature.geometry,
+            enumerable: false,
+            writable: false
+          });
+          
+          return featureData;
+        });
+        
+        // Store all features for CSV export
+        result[`${config.poiId}_all`] = [
+          ...(data.containing ? [data.containing] : []),
+          ...data.nearby_features
+        ];
+      } else {
+        result[`${config.poiId}_nearby_count`] = 0;
+        result[`${config.poiId}_nearby_features`] = [];
+        result[`${config.poiId}_all`] = data.containing ? [data.containing] : [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching TIGER CBSA Layer ${layerId}:`, error);
       return {};
     }
   }

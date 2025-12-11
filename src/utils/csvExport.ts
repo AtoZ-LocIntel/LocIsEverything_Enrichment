@@ -422,7 +422,45 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'tiger_census2020_otsa_containing' || key === 'tiger_census2020_otsa_all' ||
         key === 'tiger_census2020_sdtsa_containing' || key === 'tiger_census2020_sdtsa_all' ||
         key === 'tiger_census2020_tdsa_containing' || key === 'tiger_census2020_tdsa_all' ||
-        key === 'tiger_census2020_aijua_containing' || key === 'tiger_census2020_aijua_all' || // Skip TIGER Native Lands arrays (handled separately)
+        key === 'tiger_census2020_aijua_containing' || key === 'tiger_census2020_aijua_all' ||
+        // TIGER CBSA skip list - Base layers
+        key === 'tiger_cbsa_combined_statistical_areas_containing' || key === 'tiger_cbsa_combined_statistical_areas_all' ||
+        key === 'tiger_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_cbsa_metro_micropolitan_statistical_areas_all' ||
+        key === 'tiger_cbsa_metropolitan_divisions_containing' || key === 'tiger_cbsa_metropolitan_divisions_all' ||
+        key === 'tiger_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_cbsa_metropolitan_statistical_areas_all' ||
+        key === 'tiger_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_cbsa_micropolitan_statistical_areas_all' ||
+        // TIGER Urban Areas skip list
+        key === 'tiger_urban_2020_urban_areas_containing' || key === 'tiger_urban_2020_urban_areas_all' ||
+        key === 'tiger_urban_bas2025_2020_urban_areas_containing' || key === 'tiger_urban_bas2025_2020_urban_areas_all' ||
+        key === 'tiger_urban_acs2024_2020_urban_areas_containing' || key === 'tiger_urban_acs2024_2020_urban_areas_all' ||
+        key === 'tiger_urban_census2020_2020_urban_areas_corrected_containing' || key === 'tiger_urban_census2020_2020_urban_areas_corrected_all' ||
+        key === 'tiger_urban_census2020_2020_urban_areas_containing' || key === 'tiger_urban_census2020_2020_urban_areas_all' ||
+        key === 'tiger_urban_urban_areas_containing' || key === 'tiger_urban_urban_areas_all' ||
+        // Ireland Provinces skip list
+        key === 'ireland_provinces_containing' || key === 'ireland_provinces_nearby_features' || key === 'ireland_provinces_all' ||
+        // TIGER CBSA skip list - BAS 2025
+        key === 'tiger_bas2025_cbsa_combined_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_combined_statistical_areas_all' ||
+        key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_all' ||
+        key === 'tiger_bas2025_cbsa_metropolitan_divisions_containing' || key === 'tiger_bas2025_cbsa_metropolitan_divisions_all' ||
+        key === 'tiger_bas2025_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metropolitan_statistical_areas_all' ||
+        key === 'tiger_bas2025_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_micropolitan_statistical_areas_all' ||
+        // TIGER CBSA skip list - ACS 2024
+        key === 'tiger_acs2024_cbsa_combined_statistical_areas_containing' || key === 'tiger_acs2024_cbsa_combined_statistical_areas_all' ||
+        key === 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas_all' ||
+        key === 'tiger_acs2024_cbsa_metropolitan_divisions_containing' || key === 'tiger_acs2024_cbsa_metropolitan_divisions_all' ||
+        key === 'tiger_acs2024_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_acs2024_cbsa_metropolitan_statistical_areas_all' ||
+        key === 'tiger_acs2024_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_acs2024_cbsa_micropolitan_statistical_areas_all' ||
+        // TIGER CBSA skip list - Census 2020
+        key === 'tiger_census2020_cbsa_combined_new_england_city_town_areas_containing' || key === 'tiger_census2020_cbsa_combined_new_england_city_town_areas_all' ||
+        key === 'tiger_census2020_cbsa_new_england_city_town_areas_containing' || key === 'tiger_census2020_cbsa_new_england_city_town_areas_all' ||
+        key === 'tiger_census2020_cbsa_new_england_city_town_area_divisions_containing' || key === 'tiger_census2020_cbsa_new_england_city_town_area_divisions_all' ||
+        key === 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas_containing' || key === 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas_all' ||
+        key === 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas_containing' || key === 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas_all' ||
+        key === 'tiger_census2020_cbsa_combined_statistical_areas_containing' || key === 'tiger_census2020_cbsa_combined_statistical_areas_all' ||
+        key === 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_all' ||
+        key === 'tiger_census2020_cbsa_metropolitan_divisions_containing' || key === 'tiger_census2020_cbsa_metropolitan_divisions_all' ||
+        key === 'tiger_census2020_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_metropolitan_statistical_areas_all' ||
+        key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_all' || // Skip TIGER CBSA arrays (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -5657,6 +5695,245 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       }
     });
 
+    // Add TIGER CBSA data rows
+    // Track all processed CBSA features by GEOID to prevent duplicates
+    // Use GEOID as the unique key since it's stable across all TIGER versions (base, BAS 2025, ACS 2024, Census 2020)
+    // The same geographic feature will have the same GEOID even if it appears in multiple layer types
+    // or has different objectIds in different TIGER versions
+    const processedCBSAFeatures = new Set<string>();
+    
+    const tigerCBSALayers = [
+      // Base layers (0-4)
+      { containingKey: 'tiger_cbsa_combined_statistical_areas_containing', nearbyKey: 'tiger_cbsa_combined_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CBSA_COMBINED_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_cbsa_metro_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_cbsa_metro_micropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CBSA_METRO_MICROPOLITAN_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_cbsa_metropolitan_divisions_containing', nearbyKey: 'tiger_cbsa_metropolitan_divisions_nearby_features', source: 'US Census TIGER', category: 'TIGER_CBSA_METROPOLITAN_DIVISIONS' },
+      { containingKey: 'tiger_cbsa_metropolitan_statistical_areas_containing', nearbyKey: 'tiger_cbsa_metropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CBSA_METROPOLITAN_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_cbsa_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_cbsa_micropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CBSA_MICROPOLITAN_STATISTICAL_AREAS' },
+      // BAS 2025 layers (6-10)
+      { containingKey: 'tiger_bas2025_cbsa_combined_statistical_areas_containing', nearbyKey: 'tiger_bas2025_cbsa_combined_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_CBSA_COMBINED_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_CBSA_METRO_MICROPOLITAN_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_bas2025_cbsa_metropolitan_divisions_containing', nearbyKey: 'tiger_bas2025_cbsa_metropolitan_divisions_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_CBSA_METROPOLITAN_DIVISIONS' },
+      { containingKey: 'tiger_bas2025_cbsa_metropolitan_statistical_areas_containing', nearbyKey: 'tiger_bas2025_cbsa_metropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_CBSA_METROPOLITAN_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_bas2025_cbsa_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_bas2025_cbsa_micropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_CBSA_MICROPOLITAN_STATISTICAL_AREAS' },
+      // ACS 2024 layers (12-16)
+      { containingKey: 'tiger_acs2024_cbsa_combined_statistical_areas_containing', nearbyKey: 'tiger_acs2024_cbsa_combined_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_CBSA_COMBINED_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_acs2024_cbsa_metro_micropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_CBSA_METRO_MICROPOLITAN_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_acs2024_cbsa_metropolitan_divisions_containing', nearbyKey: 'tiger_acs2024_cbsa_metropolitan_divisions_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_CBSA_METROPOLITAN_DIVISIONS' },
+      { containingKey: 'tiger_acs2024_cbsa_metropolitan_statistical_areas_containing', nearbyKey: 'tiger_acs2024_cbsa_metropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_CBSA_METROPOLITAN_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_acs2024_cbsa_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_acs2024_cbsa_micropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_CBSA_MICROPOLITAN_STATISTICAL_AREAS' },
+      // Census 2020 layers (18-27)
+      { containingKey: 'tiger_census2020_cbsa_combined_new_england_city_town_areas_containing', nearbyKey: 'tiger_census2020_cbsa_combined_new_england_city_town_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_COMBINED_NEW_ENGLAND_CITY_TOWN_AREAS' },
+      { containingKey: 'tiger_census2020_cbsa_new_england_city_town_areas_containing', nearbyKey: 'tiger_census2020_cbsa_new_england_city_town_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_NEW_ENGLAND_CITY_TOWN_AREAS' },
+      { containingKey: 'tiger_census2020_cbsa_new_england_city_town_area_divisions_containing', nearbyKey: 'tiger_census2020_cbsa_new_england_city_town_area_divisions_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_NEW_ENGLAND_CITY_TOWN_AREA_DIVISIONS' },
+      { containingKey: 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas_containing', nearbyKey: 'tiger_census2020_cbsa_metropolitan_new_england_city_town_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_METROPOLITAN_NEW_ENGLAND_CITY_TOWN_AREAS' },
+      { containingKey: 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas_containing', nearbyKey: 'tiger_census2020_cbsa_micropolitan_new_england_city_town_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_MICROPOLITAN_NEW_ENGLAND_CITY_TOWN_AREAS' },
+      { containingKey: 'tiger_census2020_cbsa_combined_statistical_areas_containing', nearbyKey: 'tiger_census2020_cbsa_combined_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_COMBINED_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_METRO_MICROPOLITAN_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_census2020_cbsa_metropolitan_divisions_containing', nearbyKey: 'tiger_census2020_cbsa_metropolitan_divisions_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_METROPOLITAN_DIVISIONS' },
+      { containingKey: 'tiger_census2020_cbsa_metropolitan_statistical_areas_containing', nearbyKey: 'tiger_census2020_cbsa_metropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_METROPOLITAN_STATISTICAL_AREAS' },
+      { containingKey: 'tiger_census2020_cbsa_micropolitan_statistical_areas_containing', nearbyKey: 'tiger_census2020_cbsa_micropolitan_statistical_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_CBSA_MICROPOLITAN_STATISTICAL_AREAS' }
+    ];
+
+    tigerCBSALayers.forEach(({ containingKey, nearbyKey, source, category }) => {
+      // Add containing area
+      if (enrichments[containingKey] && enrichments[containingKey] !== null) {
+        const feature = enrichments[containingKey];
+        const geoid = feature.GEOID || feature.geoid || '';
+        const featureName = feature.name || 'Unknown';
+        const objectId = feature.objectId || feature.OBJECTID || feature.FID || null;
+        
+        // Create a unique signature using GEOID (primary) since it's stable across all TIGER versions
+        // If GEOID is not available, use objectId + name as fallback
+        // This prevents the same feature from being exported multiple times, even if it appears
+        // in multiple layer types or in both containing and nearby_features arrays
+        const featureSignature = geoid
+          ? `cbsa_${geoid}`
+          : objectId !== null
+          ? `cbsa_${objectId}_${featureName}`
+          : `cbsa_${featureName}_${JSON.stringify(feature).substring(0, 100)}`;
+        
+        // Skip if we've already processed this feature
+        if (processedCBSAFeatures.has(featureSignature)) {
+          return;
+        }
+        
+        processedCBSAFeatures.add(featureSignature);
+        
+        const stateFips = feature.stateFips || '';
+        const countyFips = feature.countyFips || '';
+        const cbsaType = feature.cbsaType || '';
+        const attributesJson = JSON.stringify({
+          stateFips,
+          countyFips,
+          cbsaType,
+          objectId,
+          ...feature
+        });
+
+        rows.push([
+          result.location.name,
+          result.location.lat.toString(),
+          result.location.lon.toString(),
+          source,
+          result.location.confidence?.toString() || '',
+          category,
+          featureName,
+          result.location.lat.toString(), // Use search location (it's a polygon, not a point)
+          result.location.lon.toString(),
+          '0.00', // Containing area has distance 0
+          stateFips || attributesJson,
+          countyFips || attributesJson,
+          cbsaType || '',
+          objectId || '',
+          attributesJson,
+          source
+        ]);
+      }
+
+      // Add nearby features (excluding any that are already processed)
+      if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+        enrichments[nearbyKey].forEach((feature: any) => {
+          const geoid = feature.GEOID || feature.geoid || '';
+          const featureName = feature.name || 'Unknown';
+          const objectId = feature.objectId || feature.OBJECTID || feature.FID || null;
+          
+          // Create a unique signature using GEOID (primary) since it's stable across all TIGER versions
+          // If GEOID is not available, use objectId + name as fallback
+          // This prevents the same feature from being exported multiple times, even if it appears
+          // multiple times in the array or was already processed as a containing feature
+          const featureSignature = geoid
+            ? `cbsa_${geoid}`
+            : objectId !== null
+            ? `cbsa_${objectId}_${featureName}`
+            : `cbsa_${featureName}_${JSON.stringify(feature).substring(0, 100)}`;
+          
+          // Skip if we've already processed this feature (could be duplicate or same as containing)
+          if (processedCBSAFeatures.has(featureSignature)) {
+            return;
+          }
+          
+          processedCBSAFeatures.add(featureSignature);
+          
+          const distance = feature.distance_miles ? feature.distance_miles.toFixed(2) : '0.00';
+          const stateFips = feature.stateFips || '';
+          const countyFips = feature.countyFips || '';
+          const cbsaType = feature.cbsaType || '';
+          const attributesJson = JSON.stringify({
+            stateFips,
+            countyFips,
+            cbsaType,
+            objectId,
+            ...feature
+          });
+
+          rows.push([
+            result.location.name,
+            result.location.lat.toString(),
+            result.location.lon.toString(),
+            source,
+            result.location.confidence?.toString() || '',
+            category,
+            featureName,
+            result.location.lat.toString(), // Use search location (it's a polygon, not a point)
+            result.location.lon.toString(),
+            distance,
+            stateFips || attributesJson,
+            countyFips || attributesJson,
+            cbsaType || '',
+            objectId || '',
+            attributesJson,
+            source
+          ]);
+        });
+      }
+    });
+
+    // Add TIGER Urban Areas data rows
+    const tigerUrbanLayers = [
+      { containingKey: 'tiger_urban_2020_urban_areas_containing', nearbyKey: 'tiger_urban_2020_urban_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_URBAN_2020_URBAN_AREAS' },
+      { containingKey: 'tiger_urban_bas2025_2020_urban_areas_containing', nearbyKey: 'tiger_urban_bas2025_2020_urban_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_URBAN_BAS2025_2020_URBAN_AREAS' },
+      { containingKey: 'tiger_urban_acs2024_2020_urban_areas_containing', nearbyKey: 'tiger_urban_acs2024_2020_urban_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_URBAN_ACS2024_2020_URBAN_AREAS' },
+      { containingKey: 'tiger_urban_census2020_2020_urban_areas_corrected_containing', nearbyKey: 'tiger_urban_census2020_2020_urban_areas_corrected_nearby_features', source: 'US Census TIGER', category: 'TIGER_URBAN_CENSUS2020_2020_URBAN_AREAS_CORRECTED' },
+      { containingKey: 'tiger_urban_census2020_2020_urban_areas_containing', nearbyKey: 'tiger_urban_census2020_2020_urban_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_URBAN_CENSUS2020_2020_URBAN_AREAS' },
+      { containingKey: 'tiger_urban_urban_areas_containing', nearbyKey: 'tiger_urban_urban_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_URBAN_URBAN_AREAS' }
+    ];
+
+    tigerUrbanLayers.forEach(({ containingKey, nearbyKey, source, category }) => {
+      // Add containing area
+      if (enrichments[containingKey] && enrichments[containingKey] !== null) {
+        const urban = enrichments[containingKey];
+        const urbanName = urban.name || 'Unknown Urban Area';
+        const urbanType = urban.urbanType || '';
+        const objectId = urban.objectId || '';
+        
+        const allAttributes = { ...urban };
+        delete allAttributes.name;
+        delete allAttributes.urbanType;
+        delete allAttributes.objectId;
+        delete allAttributes.__geometry;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          source,
+          (location.confidence || 'N/A').toString(),
+          category,
+          urbanName,
+          location.lat.toString(),
+          location.lon.toString(),
+          '0.00', // Containing area has distance 0
+          urbanType || attributesJson,
+          '',
+          '',
+          objectId || '',
+          attributesJson,
+          source
+        ]);
+      }
+
+      // Add nearby features
+      if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+        enrichments[nearbyKey].forEach((urban: any) => {
+          const urbanName = urban.name || 'Unknown Urban Area';
+          const urbanType = urban.urbanType || '';
+          const distance = urban.distance_miles ? urban.distance_miles.toFixed(2) : '0.00';
+          const objectId = urban.objectId || '';
+          
+          const allAttributes = { ...urban };
+          delete allAttributes.name;
+          delete allAttributes.urbanType;
+          delete allAttributes.objectId;
+          delete allAttributes.__geometry;
+          delete allAttributes.geometry;
+          delete allAttributes.distance_miles;
+          const attributesJson = JSON.stringify(allAttributes);
+          
+          rows.push([
+            location.name,
+            location.lat.toString(),
+            location.lon.toString(),
+            source,
+            (location.confidence || 'N/A').toString(),
+            category,
+            urbanName,
+            location.lat.toString(),
+            location.lon.toString(),
+            distance,
+            urbanType || attributesJson,
+            '',
+            '',
+            objectId || '',
+            attributesJson,
+            source
+          ]);
+        });
+      }
+    });
+
     tigerSchoolDistrictLayers.forEach(({ containingKey, allKey, source, category }) => {
       // Add containing district
       if (enrichments[containingKey] && enrichments[containingKey] !== null) {
@@ -9820,6 +10097,60 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'LA County Public GIS'
+        ]);
+      });
+    }
+    
+    // Export Ireland Provinces data
+    if (key === 'ireland_provinces_all' && Array.isArray(value)) {
+      value.forEach((province: any) => {
+        const provinceName = province.name || 'Unknown Province';
+        const provinceId = province.provinceId || '';
+        const area = province.area || 0;
+        const distance = province.distance_miles !== null && province.distance_miles !== undefined ? province.distance_miles.toFixed(2) : '0.00';
+        
+        // Extract centroid coordinates if available
+        let lat = '';
+        let lon = '';
+        if (province.centroidY && province.centroidX) {
+          // Note: These are in ITM (Irish Transverse Mercator) coordinates, not lat/lon
+          // For CSV, we'll use the location coordinates as approximation
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+        
+        const allAttributes = { ...province };
+        delete allAttributes.name;
+        delete allAttributes.provinceId;
+        delete allAttributes.area;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.centroidX;
+        delete allAttributes.centroidY;
+        delete allAttributes.guid;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_PROVINCE',
+          provinceName,
+          lat,
+          lon,
+          distance,
+          distance === '0.00' ? 'Containing Province' : `Nearby Province (${distance} miles)`,
+          provinceId ? `Province ID: ${provinceId}` : '',
+          area ? `Area: ${area.toLocaleString()} sq units` : '',
+          attributesJson,
+          'Tailte Éireann (OSi)'
         ]);
       });
     }

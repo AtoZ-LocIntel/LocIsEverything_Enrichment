@@ -56,6 +56,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   natural_resources: <span className="text-xl">🏔️</span>,
   public_lands: <span className="text-xl">🏞️</span>,
   tiger: <img src="/assets/TIGERweb.webp" alt="US Census TIGER Data" className="w-5 h-5" />,
+  eu: <img src="/assets/EU.webp" alt="European Union Data" className="w-5 h-5" />,
   quirky: <span className="text-xl">☕</span>,
   wildfire: <img src="/assets/wildfire.webp" alt="Natural Hazards" className="w-5 h-5" />,
   at: <img src="/assets/at.webp" alt="Appalachian Trail" className="w-5 h-5" />,
@@ -121,6 +122,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [viewingNJSubCategories, setViewingNJSubCategories] = useState(false);
   const [viewingWVSubCategories, setViewingWVSubCategories] = useState(false);
   const [viewingCASubCategories, setViewingCASubCategories] = useState(false);
+  const [viewingEUSubCategories, setViewingEUSubCategories] = useState(false);
   const [viewingGASubCategories, setViewingGASubCategories] = useState(false);
   const [viewingSCSubCategories, setViewingSCSubCategories] = useState(false);
   const [viewingNCSubCategories, setViewingNCSubCategories] = useState(false);
@@ -178,13 +180,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [cameFromUTSubCategories, setCameFromUTSubCategories] = useState(false);
   const [cameFromCOSubCategories, setCameFromCOSubCategories] = useState(false);
   const [cameFromILSubCategories, setCameFromILSubCategories] = useState(false);
+  const [cameFromEUSubCategories, setCameFromEUSubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories || viewingNYSubCategories || viewingPASubCategories || viewingRISubCategories || viewingVTSubCategories || viewingTXSubCategories || viewingNMSubCategories || viewingAZSubCategories || viewingAKSubCategories || viewingHISubCategories || viewingWASubCategories || viewingORSubCategories || viewingMTSubCategories || viewingWYSubCategories || viewingNVSubCategories || viewingIDSubCategories || viewingUTSubCategories || viewingCOSubCategories || viewingILSubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories || viewingNYSubCategories || viewingPASubCategories || viewingRISubCategories || viewingVTSubCategories || viewingTXSubCategories || viewingNMSubCategories || viewingAZSubCategories || viewingAKSubCategories || viewingHISubCategories || viewingWASubCategories || viewingORSubCategories || viewingMTSubCategories || viewingWYSubCategories || viewingNVSubCategories || viewingIDSubCategories || viewingUTSubCategories || viewingCOSubCategories || viewingILSubCategories || viewingEUSubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, viewingTXSubCategories, viewingNMSubCategories, viewingAZSubCategories, viewingAKSubCategories, viewingHISubCategories, viewingWASubCategories, viewingORSubCategories, viewingMTSubCategories, viewingWYSubCategories, viewingNVSubCategories, viewingIDSubCategories, viewingUTSubCategories, viewingCOSubCategories, viewingILSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, viewingTXSubCategories, viewingNMSubCategories, viewingAZSubCategories, viewingAKSubCategories, viewingHISubCategories, viewingWASubCategories, viewingORSubCategories, viewingMTSubCategories, viewingWYSubCategories, viewingNVSubCategories, viewingIDSubCategories, viewingUTSubCategories, viewingCOSubCategories, viewingILSubCategories, viewingEUSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   
@@ -905,6 +908,54 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        // Special handling for EU - add sub-categories based on countries
+        if (section.id === 'eu') {
+          console.log('🔍 [EU DEBUG] Processing EU section');
+          console.log('🔍 [EU DEBUG] All poiTypes:', poiTypes.length);
+          console.log('🔍 [EU DEBUG] POIs with section eu:', poiTypes.filter(poi => poi.section === 'eu').map(p => ({ id: p.id, section: p.section, category: p.category })));
+          
+          // Get Ireland enrichments (filter POIs where section is 'eu' and category is 'ireland' or id starts with 'ireland_')
+          const irelandPOIs = poiTypes.filter(poi => 
+            poi.section === 'eu' && 
+            (poi.category === 'ireland' || poi.id.startsWith('ireland_'))
+          );
+          
+          console.log('🔍 [EU DEBUG] Ireland POIs found:', irelandPOIs.length, irelandPOIs.map(p => ({ id: p.id, category: p.category })));
+          
+          const irelandEnrichments = irelandPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          console.log('🔍 [EU DEBUG] Ireland enrichments created:', irelandEnrichments.length);
+          
+          // Define EU sub-categories (organized by country)
+          const euSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'ireland',
+              title: 'Ireland',
+              icon: <img src="/assets/Ireland.webp" alt="Ireland" className="w-full h-full object-cover rounded-full" />,
+              description: 'Ireland data layers',
+              enrichments: irelandEnrichments
+            }
+          ];
+          
+          console.log('🔍 [EU DEBUG] EU sub-categories created:', euSubCategories.length, euSubCategories.map(sc => ({ id: sc.id, title: sc.title, enrichmentsCount: sc.enrichments.length })));
+          
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [], // EU parent category has no direct enrichments
+            subCategories: euSubCategories
+          };
+        }
+        
         return {
           id: section.id,
           title: section.title,
@@ -914,6 +965,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         };
       });
       
+      console.log('🔍 [CATEGORIES DEBUG] All categories created:', categories.length);
+      console.log('🔍 [CATEGORIES DEBUG] EU category:', categories.find(c => c.id === 'eu'));
+      const euCategory = categories.find(c => c.id === 'eu');
+      if (euCategory) {
+        console.log('🔍 [CATEGORIES DEBUG] EU category details:', {
+          id: euCategory.id,
+          title: euCategory.title,
+          hasSubCategories: !!euCategory.subCategories,
+          subCategoriesLength: euCategory.subCategories?.length || 0,
+          subCategoryIds: euCategory.subCategories?.map(sc => sc.id) || []
+        });
+      }
       setEnrichmentCategories(categories);
     };
 
@@ -1017,7 +1080,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'ut': 'UT',
       'co': 'CO',
       'il': 'IL',
-      'tiger': 'TIGERweb'
+      'tiger': 'TIGERweb',
+      'eu': 'EU'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -1174,6 +1238,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             <div className="mb-6 w-full px-4">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto">
                 {enrichmentCategories.map((category) => {
+                  // Debug EU category
+                  if (category.id === 'eu') {
+                    console.log('🔍 [EU DEBUG] EU category in map:', {
+                      id: category.id,
+                      title: category.title,
+                      hasSubCategories: !!category.subCategories,
+                      subCategoriesLength: category.subCategories?.length || 0,
+                      subCategoryIds: category.subCategories?.map(sc => sc.id) || [],
+                      fullCategory: category
+                    });
+                  }
                   const categoryEnrichments = category.enrichments;
                   const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
                   
@@ -1193,7 +1268,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         console.log('🔍 Category clicked:', category.id, {
                           hasSubCategories: !!category.subCategories,
                           subCategoriesLength: category.subCategories?.length || 0,
-                          subCategories: category.subCategories?.map(sc => sc.id) || []
+                          subCategories: category.subCategories?.map(sc => sc.id) || [],
+                          subCategoryDetails: category.subCategories?.map(sc => ({ id: sc.id, title: sc.title, enrichmentsCount: sc.enrichments.length })) || []
                         });
                         if (category.id === 'nh' && category.subCategories && category.subCategories.length > 0) {
                           setViewingNHSubCategories(true);
@@ -1202,6 +1278,21 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         } else if (category.id === 'ct' && category.subCategories && category.subCategories.length > 0) {
                           console.log('✅ Setting viewingCTSubCategories to true');
                           setViewingCTSubCategories(true);
+                        } else if (category.id === 'eu' && category.subCategories && category.subCategories.length > 0) {
+                          console.log('🔍 [EU DEBUG] EU category clicked with sub-categories:', {
+                            categoryId: category.id,
+                            hasSubCategories: !!category.subCategories,
+                            subCategoriesLength: category.subCategories.length,
+                            subCategoryIds: category.subCategories.map(sc => sc.id),
+                            subCategoryDetails: category.subCategories.map(sc => ({ id: sc.id, title: sc.title, enrichmentsCount: sc.enrichments.length }))
+                          });
+                          setViewingEUSubCategories(true);
+                        } else if (category.id === 'eu') {
+                          console.log('⚠️ [EU DEBUG] EU clicked but no sub-categories found', {
+                            categoryId: category.id,
+                            hasSubCategories: !!category.subCategories,
+                            subCategoriesLength: category.subCategories?.length || 0
+                          });
                         } else if (category.id === 'de' && category.subCategories && category.subCategories.length > 0) {
                           console.log('✅ Setting viewingDESubCategories to true', {
                             categoryId: category.id,
@@ -1599,8 +1690,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   ) => {
     if (!viewingState) return null;
     
+    console.log(`🔍 [${stateId.toUpperCase()} DEBUG] Rendering sub-categories page, viewingState:`, viewingState);
     const stateCategory = enrichmentCategories.find(c => c.id === stateId);
+    console.log(`🔍 [${stateId.toUpperCase()} DEBUG] State category found:`, !!stateCategory, stateCategory ? { id: stateCategory.id, title: stateCategory.title, hasSubCategories: !!stateCategory.subCategories, subCategoriesLength: stateCategory.subCategories?.length || 0 } : null);
     const stateSubCategories = stateCategory?.subCategories || [];
+    console.log(`🔍 [${stateId.toUpperCase()} DEBUG] State sub-categories:`, stateSubCategories.length, stateSubCategories.map(sc => ({ id: sc.id, title: sc.title, enrichmentsCount: sc.enrichments.length })));
     
     return (
       <div className="enrichment-config">
@@ -2117,6 +2211,119 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   );
   if (ilSubCategoriesPage) return ilSubCategoriesPage;
 
+  // If viewing EU sub-categories, show full page with round icons
+  if (viewingEUSubCategories) {
+    console.log('🔍 [EU DEBUG] Rendering EU sub-categories page');
+    console.log('🔍 [EU DEBUG] enrichmentCategories:', enrichmentCategories.length);
+    const euCategory = enrichmentCategories.find(c => c.id === 'eu');
+    console.log('🔍 [EU DEBUG] EU category found:', !!euCategory);
+    if (euCategory) {
+      console.log('🔍 [EU DEBUG] EU category details:', {
+        id: euCategory.id,
+        title: euCategory.title,
+        hasSubCategories: !!euCategory.subCategories,
+        subCategoriesLength: euCategory.subCategories?.length || 0,
+        subCategoryIds: euCategory.subCategories?.map(sc => sc.id) || []
+      });
+    }
+    const euSubCategories = euCategory?.subCategories || [];
+    console.log('🔍 [EU DEBUG] EU sub-categories to render:', euSubCategories.length, euSubCategories.map(sc => ({ id: sc.id, title: sc.title, enrichmentsCount: sc.enrichments.length })));
+    
+    return (
+      <div className="enrichment-config">
+        <div className="card">
+          <div className="card-header">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setViewingEUSubCategories(false)}
+                  className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
+                  title="Back to categories"
+                >
+                  ←
+                </button>
+                <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" className="w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 rounded-full object-cover" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>European Union Data</h3>
+                  <p className="text-xs lg:text-sm text-gray-300">Select a category to view available layers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+            
+          <div className="card-body">
+            {/* EU Sub-Category Round Icons Grid - Same layout as home page */}
+            <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
+                {euSubCategories.length > 0 ? (
+                  euSubCategories.map((subCategory) => {
+                    const subCategoryEnrichments = subCategory.enrichments;
+                    const selectedCount = subCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
+                    
+                    // Determine ring brightness based on selection count
+                    const getRingOpacity = () => {
+                      if (selectedCount === 0) return 0;
+                      if (selectedCount <= 2) return 0.3;
+                      if (selectedCount <= 4) return 0.6;
+                      return 0.9;
+                    };
+
+                    return (
+                      <button
+                        key={subCategory.id}
+                        onClick={() => {
+                          // Use onViewCategory to show sub-category layers (same pattern as NH, MA, CT, DE, NJ)
+                          if (onViewCategory) {
+                            setViewingEUSubCategories(false);
+                            onViewCategory(subCategory);
+                          } else {
+                            // Fallback to modal
+                            setCameFromEUSubCategories(true);
+                            setActiveModal(subCategory.id);
+                            setViewingEUSubCategories(false);
+                          }
+                        }}
+                        className="relative w-full aspect-square rounded-full overflow-hidden transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          boxShadow: selectedCount > 0 ? `0 0 0 3px rgba(59, 130, 246, ${getRingOpacity()})` : 'none'
+                        }}
+                      >
+                        {/* Sub-Category Icon */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          {subCategory.icon}
+                        </div>
+                        
+                        {/* Selection Counter Badge */}
+                        {selectedCount > 0 && (
+                          <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                            {selectedCount}
+                          </div>
+                        )}
+                        
+                        {/* Sub-Category Title */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold p-2 text-center z-10">
+                          {subCategory.title}
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-2 text-center py-8">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-md mx-auto">
+                      <div className="text-4xl mb-4">🚧</div>
+                      <p className="text-lg font-semibold text-blue-900 mb-2">Data Sources Coming Soon!</p>
+                      <p className="text-sm text-blue-700">We're working on adding data layers for European Union countries. Check back soon for updates!</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // If viewing NH sub-categories, show full page with round icons
   if (viewingNHSubCategories) {
     const nhCategory = enrichmentCategories.find(c => c.id === 'nh');
@@ -2226,9 +2433,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const isNHSubCategory = activeModal?.startsWith('nh_');
               const isMASubCategory = activeModal?.startsWith('ma_');
               const isCTSubCategory = activeModal?.startsWith('ct_');
-              const isDESubCategory = activeModal?.startsWith('de_');
-              const isNJSubCategory = activeModal?.startsWith('nj_');
+              const isDESubCategory = activeModal === 'de_firstmap';
+              const isNJSubCategory = activeModal === 'nj_gin' || activeModal === 'nj_dep';
               const isCASubCategory = activeModal?.startsWith('ca_');
+              const isEUSubCategory = activeModal === 'ireland';
               const isILSubCategory = activeModal?.startsWith('il_') || activeModal === 'chicago_data_portal';
               const isTXSubCategory = activeModal?.startsWith('tx_') || activeModal === 'houston_data_portal';
               let category: EnrichmentCategory | undefined;
@@ -2302,6 +2510,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   isCASubCategory,
                   caCategoryFound: !!caCategory,
                   subCategories: caCategory?.subCategories?.map(sc => sc.id),
+                  foundCategory: category?.id,
+                  enrichmentsCount: category?.enrichments?.length
+                });
+              } else if (isEUSubCategory) {
+                // Find the EU category and get the sub-category
+                const euCategory = enrichmentCategories.find(c => c.id === 'eu');
+                category = euCategory?.subCategories?.find(sc => sc.id === activeModal);
+                console.log('🔍 EU Sub-Category Modal:', {
+                  activeModal,
+                  isEUSubCategory,
+                  euCategoryFound: !!euCategory,
+                  subCategories: euCategory?.subCategories?.map(sc => sc.id),
                   foundCategory: category?.id,
                   enrichmentsCount: category?.enrichments?.length
                 });
@@ -2511,6 +2731,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromDESubCategories(false);
                               setActiveModal(null);
                               setViewingDESubCategories(true);
+                            } else if (cameFromEUSubCategories) {
+                              // Go back to EU sub-categories page
+                              setCameFromEUSubCategories(false);
+                              setActiveModal(null);
+                              setViewingEUSubCategories(true);
                             } else if (cameFromNJSubCategories) {
                               // Go back to NJ sub-categories page
                               setCameFromNJSubCategories(false);
@@ -3296,10 +3521,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 // For NH, MA, and other states, count sub-category enrichments too
-                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx') && category.subCategories
+                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu') && category.subCategories
                   ? category.subCategories.flatMap(sc => sc.enrichments)
                   : [];
-                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx')
+                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu')
                   ? stateSubCategoryEnrichments 
                   : categoryEnrichments;
                 const selectedCount = allCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -3327,6 +3552,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setViewingDESubCategories(true);
                       } else if (category.id === 'nj' && category.subCategories && category.subCategories.length > 0) {
                         setViewingNJSubCategories(true);
+                      } else if (category.id === 'eu' && category.subCategories && category.subCategories.length > 0) {
+                        console.log('🔍 [EU DEBUG] EU category clicked (second location) with sub-categories:', {
+                          categoryId: category.id,
+                          hasSubCategories: !!category.subCategories,
+                          subCategoriesLength: category.subCategories.length,
+                          subCategoryIds: category.subCategories.map(sc => sc.id)
+                        });
+                        setViewingEUSubCategories(true);
                       } else if (category.id === 'wv') {
                         setViewingWVSubCategories(true);
                       } else if (category.id === 'ca' && category.subCategories && category.subCategories.length > 0) {
