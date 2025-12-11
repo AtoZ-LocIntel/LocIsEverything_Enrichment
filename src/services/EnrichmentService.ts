@@ -148,6 +148,9 @@ import { getUSFSRoadsClosedToMotorizedData } from '../adapters/usfsRoadsClosedTo
 import { getUSFSSystemRoadsData } from '../adapters/usfsSystemRoads';
 import { getUSFSMVUMData } from '../adapters/usfsMVUM';
 import { getUSFSCORoadlessAreasData } from '../adapters/usfsCORoadlessAreas';
+import { getNPSNationalParksData } from '../adapters/npsNationalParks';
+import { getNPSCampgroundsData } from '../adapters/npsCampgrounds';
+import { getNPSVisitorCentersData } from '../adapters/npsVisitorCenters';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -3191,6 +3194,14 @@ export class EnrichmentService {
       // USFS Colorado Roadless Areas - Point-in-polygon and proximity query (max 50 miles)
       case 'usfs_co_roadless_areas':
         return await this.getUSFSCORoadlessAreas(lat, lon, radius);
+      
+      // National Park Service (NPS) - Proximity queries (max 50 miles)
+      case 'nps_national_parks':
+        return await this.getNPSNationalParks(lat, lon, radius);
+      case 'nps_campgrounds':
+        return await this.getNPSCampgrounds(lat, lon, radius);
+      case 'nps_visitor_centers':
+        return await this.getNPSVisitorCenters(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -12892,6 +12903,148 @@ out center;`;
         usfs_co_roadless_areas_count: 0,
         usfs_co_roadless_areas_all: [],
         usfs_co_roadless_areas_summary: 'Error querying roadless areas'
+      };
+    }
+  }
+
+  private async getNPSNationalParks(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏞️ Fetching NPS National Parks data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      const parks = await getNPSNationalParksData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (parks.length === 0) {
+        result.nps_national_parks_count = 0;
+        result.nps_national_parks_all = [];
+        result.nps_national_parks_summary = 'No national parks found.';
+      } else {
+        result.nps_national_parks_count = parks.length;
+        result.nps_national_parks_all = parks.map(park => ({
+          ...park.attributes,
+          parkCode: park.parkCode,
+          fullName: park.fullName,
+          name: park.name,
+          designation: park.designation,
+          states: park.states,
+          description: park.description,
+          url: park.url,
+          lat: park.lat,
+          lon: park.lon,
+          distance_miles: park.distance_miles
+        }));
+        
+        const nearestPark = parks[0];
+        result.nps_national_parks_summary = `Found ${parks.length} national park(s). Nearest: ${nearestPark.fullName || nearestPark.name || 'Unknown'}${nearestPark.distance_miles ? ` (${nearestPark.distance_miles.toFixed(1)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ NPS National Parks data processed:`, {
+        totalCount: result.nps_national_parks_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NPS National Parks data:', error);
+      return {
+        nps_national_parks_count: 0,
+        nps_national_parks_all: [],
+        nps_national_parks_summary: 'Error querying national parks'
+      };
+    }
+  }
+
+  private async getNPSCampgrounds(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏕️ Fetching NPS Campgrounds data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      const campgrounds = await getNPSCampgroundsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (campgrounds.length === 0) {
+        result.nps_campgrounds_count = 0;
+        result.nps_campgrounds_all = [];
+        result.nps_campgrounds_summary = 'No campgrounds found.';
+      } else {
+        result.nps_campgrounds_count = campgrounds.length;
+        result.nps_campgrounds_all = campgrounds.map(campground => ({
+          ...campground.attributes,
+          id: campground.id,
+          name: campground.name,
+          parkCode: campground.parkCode,
+          description: campground.description,
+          directionsInfo: campground.directionsInfo,
+          directionsUrl: campground.directionsUrl,
+          lat: campground.lat,
+          lon: campground.lon,
+          distance_miles: campground.distance_miles
+        }));
+        
+        const nearestCampground = campgrounds[0];
+        result.nps_campgrounds_summary = `Found ${campgrounds.length} campground(s). Nearest: ${nearestCampground.name || 'Unknown'}${nearestCampground.distance_miles ? ` (${nearestCampground.distance_miles.toFixed(1)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ NPS Campgrounds data processed:`, {
+        totalCount: result.nps_campgrounds_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NPS Campgrounds data:', error);
+      return {
+        nps_campgrounds_count: 0,
+        nps_campgrounds_all: [],
+        nps_campgrounds_summary: 'Error querying campgrounds'
+      };
+    }
+  }
+
+  private async getNPSVisitorCenters(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching NPS Visitor Centers data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      const visitorCenters = await getNPSVisitorCentersData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (visitorCenters.length === 0) {
+        result.nps_visitor_centers_count = 0;
+        result.nps_visitor_centers_all = [];
+        result.nps_visitor_centers_summary = 'No visitor centers found.';
+      } else {
+        result.nps_visitor_centers_count = visitorCenters.length;
+        result.nps_visitor_centers_all = visitorCenters.map(center => ({
+          ...center.attributes,
+          id: center.id,
+          name: center.name,
+          parkCode: center.parkCode,
+          description: center.description,
+          directionsInfo: center.directionsInfo,
+          directionsUrl: center.directionsUrl,
+          lat: center.lat,
+          lon: center.lon,
+          distance_miles: center.distance_miles
+        }));
+        
+        const nearestCenter = visitorCenters[0];
+        result.nps_visitor_centers_summary = `Found ${visitorCenters.length} visitor center(s). Nearest: ${nearestCenter.name || 'Unknown'}${nearestCenter.distance_miles ? ` (${nearestCenter.distance_miles.toFixed(1)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ NPS Visitor Centers data processed:`, {
+        totalCount: result.nps_visitor_centers_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NPS Visitor Centers data:', error);
+      return {
+        nps_visitor_centers_count: 0,
+        nps_visitor_centers_all: [],
+        nps_visitor_centers_summary: 'Error querying visitor centers'
       };
     }
   }
