@@ -1,8 +1,9 @@
 /**
  * NPS Visitor Centers Adapter
- * Queries National Park Service API for visitor centers
+ * Queries National Park Service API for visitor centers via amenities endpoint
  * Supports proximity queries up to 50 miles
- * API: https://developer.nps.gov/api/v1/visitorcenters
+ * API: https://developer.nps.gov/api/v1/amenities/parksvisitorcenters
+ * Note: This endpoint requires parkCode parameters, so we query visitor centers for nearby parks
  */
 
 const BASE_API_URL = 'https://developer.nps.gov/api/v1';
@@ -33,7 +34,7 @@ function parseLatLong(latLong: string): { lat: number; lon: number } | null {
     
     if (latMatch && lonMatch) {
       const lat = parseFloat(latMatch[1]);
-      const lon = parseFloat(lonMatch[1]);
+      const lon = parseFloat(lonMatch[1]); // Fixed: was using latMatch[1] instead of lonMatch[1]
       
       if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
         return { lat, lon };
@@ -63,6 +64,8 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 /**
  * Query NPS Visitor Centers API for proximity search
+ * Uses amenities/parksvisitorcenters endpoint which requires park codes
+ * First gets nearby parks, then queries visitor centers for those parks
  * Supports proximity queries up to 50 miles
  */
 export async function getNPSVisitorCentersData(
@@ -77,23 +80,42 @@ export async function getNPSVisitorCentersData(
     }
     
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
+    const { getNPSNationalParksData } = await import('./npsNationalParks');
     
     // Cap radius at 50 miles
     const maxRadius = radiusMiles ? Math.min(radiusMiles, 50.0) : 50.0;
     
+    console.log(`🏛️ Querying NPS Visitor Centers API for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
+    
+    // First, get nearby parks to get their park codes
+    const nearbyParks = await getNPSNationalParksData(lat, lon, maxRadius);
+    const parkCodes = nearbyParks
+      .map(park => park.parkCode)
+      .filter((code): code is string => code !== null && code.length >= 4);
+    
+    if (parkCodes.length === 0) {
+      console.log('⚠️ No nearby parks found, cannot query visitor centers');
+      return [];
+    }
+    
+    console.log(`🔍 Found ${parkCodes.length} nearby park(s), querying visitor centers for: ${parkCodes.join(', ')}`);
+    
     const results: NPSVisitorCenterInfo[] = [];
     const allVisitorCenters: any[] = [];
     
-    // Fetch all visitor centers (paginated)
+    // Query visitor centers for each park (or batch if API supports it)
+    // The API accepts comma-delimited park codes
+    const parkCodesBatch = parkCodes.join(',');
+    
     let start = 0;
     const limit = 50;
     let hasMore = true;
     
     while (hasMore) {
-      const url = `${BASE_API_URL}/visitorcenters?limit=${limit}&start=${start}`;
+      const url = `${BASE_API_URL}/amenities/parksvisitorcenters?parkCode=${parkCodesBatch}&limit=${limit}&start=${start}`;
       
       if (start === 0) {
-        console.log(`🏛️ Querying NPS Visitor Centers API for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
+        console.log(`🔍 Querying visitor centers for parks: ${parkCodesBatch}`);
       }
       
       const data = await fetchJSONSmart(url, {
@@ -108,7 +130,7 @@ export async function getNPSVisitorCentersData(
           dataLength: data.data?.length || 0,
           total: data.total,
           error: data.error,
-          sampleItem: data.data?.[0] ? JSON.stringify(data.data[0]).substring(0, 200) : 'none'
+          sampleItem: data.data?.[0] ? JSON.stringify(data.data[0]).substring(0, 300) : 'none'
         });
       }
       
@@ -149,15 +171,23 @@ export async function getNPSVisitorCentersData(
           longitude: visitorCenter.longitude,
           lat: visitorCenter.lat,
           lon: visitorCenter.lon,
-          geometry: visitorCenter.geometry
+          geometry: visitorCenter.geometry,
+          parkCode: visitorCenter.parkCode
         });
       }
       
-      const latLong = visitorCenter.latLong;
+      // The response structure might be different - check various possible fields
+      let latLong = visitorCenter.latLong || visitorCenter.latlong || visitorCenter.lat_long;
+      
+      // If no latLong, check if there's a nested structure
+      if (!latLong && visitorCenter.visitorCenter) {
+        latLong = visitorCenter.visitorCenter.latLong || visitorCenter.visitorCenter.latlong;
+      }
+      
       if (!latLong) {
         centersWithoutCoords++;
         if (centersWithoutCoords <= 3) {
-          console.log(`⚠️ Visitor Center "${visitorCenter.name || 'Unknown'}" missing latLong field. Available fields:`, Object.keys(visitorCenter).join(', '));
+          console.log(`⚠️ Visitor Center "${visitorCenter.name || visitorCenter.visitorCenter?.name || 'Unknown'}" missing latLong field. Available fields:`, Object.keys(visitorCenter).join(', '));
         }
         return;
       }
@@ -166,7 +196,7 @@ export async function getNPSVisitorCentersData(
       if (!coords) {
         centersWithInvalidCoords++;
         if (centersWithInvalidCoords <= 3) {
-          console.log(`⚠️ Visitor Center "${visitorCenter.name || 'Unknown'}" has invalid latLong: "${latLong}"`);
+          console.log(`⚠️ Visitor Center "${visitorCenter.name || visitorCenter.visitorCenter?.name || 'Unknown'}" has invalid latLong: "${latLong}"`);
         }
         return;
       }
@@ -174,13 +204,15 @@ export async function getNPSVisitorCentersData(
       const distance = calculateDistance(lat, lon, coords.lat, coords.lon);
       
       if (distance <= maxRadius) {
+        // Handle nested structure if present
+        const vc = visitorCenter.visitorCenter || visitorCenter;
         results.push({
-          id: visitorCenter.id || null,
-          name: visitorCenter.name || null,
-          parkCode: visitorCenter.parkCode || null,
-          description: visitorCenter.description || null,
-          directionsInfo: visitorCenter.directionsInfo || null,
-          directionsUrl: visitorCenter.directionsUrl || null,
+          id: vc.id || visitorCenter.id || null,
+          name: vc.name || visitorCenter.name || null,
+          parkCode: vc.parkCode || visitorCenter.parkCode || null,
+          description: vc.description || visitorCenter.description || null,
+          directionsInfo: vc.directionsInfo || visitorCenter.directionsInfo || null,
+          directionsUrl: vc.directionsUrl || visitorCenter.directionsUrl || null,
           lat: coords.lat,
           lon: coords.lon,
           distance_miles: Number(distance.toFixed(2)),

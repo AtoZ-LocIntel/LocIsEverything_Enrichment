@@ -18,6 +18,7 @@ export interface NPSNationalParkInfo {
   lon: number;
   url: string | null;
   distance_miles?: number;
+  geometry?: any; // ESRI geometry for drawing park boundaries
   attributes: Record<string, any>;
 }
 
@@ -34,7 +35,7 @@ function parseLatLong(latLong: string): { lat: number; lon: number } | null {
     
     if (latMatch && lonMatch) {
       const lat = parseFloat(latMatch[1]);
-      const lon = parseFloat(lonMatch[1]);
+      const lon = parseFloat(lonMatch[1]); // Fixed: was using latMatch[1] instead of lonMatch[1]
       
       if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
         return { lat, lon };
@@ -127,28 +128,54 @@ export async function getNPSNationalParksData(
     
     console.log(`✅ Fetched ${allParks.length} total NPS National Parks`);
     
-    // Filter parks by distance
+    // Filter parks by distance and fetch geometry for each
     let parksWithoutCoords = 0;
     let parksWithInvalidCoords = 0;
     
-    allParks.forEach((park: any) => {
+    // Process parks and fetch boundaries for those within radius
+    for (const park of allParks) {
       const latLong = park.latLong;
       if (!latLong) {
         parksWithoutCoords++;
-        console.log(`⚠️ Park "${park.fullName || park.name || 'Unknown'}" missing latLong field`);
-        return;
+        // Log first few missing parks for debugging
+        if (parksWithoutCoords <= 5) {
+          console.log(`⚠️ Park "${park.fullName || park.name || 'Unknown'}" (${park.parkCode || 'no code'}) missing latLong field`);
+        }
+        continue;
       }
       
       const coords = parseLatLong(latLong);
       if (!coords) {
         parksWithInvalidCoords++;
-        console.log(`⚠️ Park "${park.fullName || park.name || 'Unknown'}" has invalid latLong: "${latLong}"`);
-        return;
+        if (parksWithInvalidCoords <= 5) {
+          console.log(`⚠️ Park "${park.fullName || park.name || 'Unknown'}" (${park.parkCode || 'no code'}) has invalid latLong: "${latLong}"`);
+        }
+        continue;
       }
       
       const distance = calculateDistance(lat, lon, coords.lat, coords.lon);
       
       if (distance <= maxRadius) {
+        // Fetch park boundary geometry if parkCode is available
+        let geometry = null;
+        if (park.parkCode) {
+          try {
+            const boundaryUrl = `${BASE_API_URL}/mapdata/parkboundaries/${park.parkCode}`;
+            const boundaryData = await fetchJSONSmart(boundaryUrl, {
+              headers: {
+                'X-Api-Key': apiKey
+              }
+            }) as any;
+            
+            if (boundaryData && boundaryData.geometry) {
+              geometry = boundaryData.geometry;
+              console.log(`✅ Fetched boundary geometry for ${park.fullName || park.name} (${park.parkCode})`);
+            }
+          } catch (error) {
+            console.warn(`⚠️ Could not fetch boundary geometry for ${park.parkCode}:`, error);
+          }
+        }
+        
         results.push({
           parkCode: park.parkCode || null,
           fullName: park.fullName || null,
@@ -160,10 +187,11 @@ export async function getNPSNationalParksData(
           lon: coords.lon,
           url: park.url || null,
           distance_miles: Number(distance.toFixed(2)),
+          geometry: geometry,
           attributes: park
         });
       }
-    });
+    }
     
     if (parksWithoutCoords > 0 || parksWithInvalidCoords > 0) {
       console.log(`⚠️ NPS Parks: ${parksWithoutCoords} without coordinates, ${parksWithInvalidCoords} with invalid coordinates`);

@@ -12933,7 +12933,8 @@ out center;`;
           url: park.url,
           lat: park.lat,
           lon: park.lon,
-          distance_miles: park.distance_miles
+          distance_miles: park.distance_miles,
+          geometry: park.geometry // Include geometry for map rendering
         }));
         
         const nearestPark = parks[0];

@@ -572,6 +572,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'blm_national_lwcf_all' || // Skip BLM National LWCF Polygons array (handled separately for map drawing)
     key === 'usfs_forest_boundaries_all' || // Skip USFS Forest Boundaries array (handled separately for map drawing)
     key === 'usfs_wilderness_areas_all' || // Skip USFS Wilderness Areas array (handled separately for map drawing)
+    key === 'nps_national_parks_all' || // Skip NPS National Parks array (handled separately for map drawing)
     key === 'usfs_national_grasslands_all' || // Skip USFS National Grasslands array (handled separately for map drawing)
     key === 'usfs_hazardous_sites_all' || // Skip USFS Hazardous Sites array (handled separately for map drawing)
     key === 'usfs_office_locations_all' || // Skip USFS Office Locations array (handled separately for map drawing)
@@ -15040,6 +15041,149 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing USFS Forest Boundaries:', error);
+      }
+
+      // Draw NPS National Parks as polygons on the map
+      try {
+        if (enrichments.nps_national_parks_all && Array.isArray(enrichments.nps_national_parks_all)) {
+          let parkCount = 0;
+          enrichments.nps_national_parks_all.forEach((park: any) => {
+            if (park.geometry && park.geometry.rings && Array.isArray(park.geometry.rings)) {
+              try {
+                const rings = park.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  // Validate outer ring
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('NPS National Park outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const color = '#16a34a'; // Green color for national parks
+                  const weight = 3;
+                  const opacity = 0.8;
+                  
+                  // L.polygon can handle multiple rings (outer + holes)
+                  const parkPolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const fullName = park.fullName || park.name || 'Unknown National Park';
+                  const parkCode = park.parkCode || null;
+                  const designation = park.designation || null;
+                  const states = park.states || null;
+                  const description = park.description || null;
+                  const url = park.url || null;
+                  const distance = park.distance_miles !== null && park.distance_miles !== undefined ? park.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏞️ ${fullName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${designation ? `<div><strong>Designation:</strong> ${designation}</div>` : ''}
+                        ${parkCode ? `<div><strong>Park Code:</strong> ${parkCode}</div>` : ''}
+                        ${states ? `<div><strong>States:</strong> ${states}</div>` : ''}
+                        ${description ? `<div style="margin-top: 8px;"><strong>Description:</strong> ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}</div>` : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        ${url ? `<div style="margin-top: 8px;"><a href="${url}" target="_blank" style="color: #3b82f6;">Visit NPS Website →</a></div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  parkPolygon.bindPopup(popupContent, { maxWidth: 400 });
+                  parkPolygon.addTo(primary);
+                  
+                  // Store metadata for tabbed popup
+                  (parkPolygon as any).__layerType = 'nps_national_parks';
+                  (parkPolygon as any).__layerTitle = 'NPS National Parks';
+                  
+                  // Extend map bounds
+                  const polygonBounds = parkPolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                  
+                  parkCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing NPS National Park polygon:', error);
+              }
+            } else if (park.lat && park.lon) {
+              // If no geometry but has coordinates, draw as marker
+              try {
+                const parkMarker = L.marker([park.lat, park.lon], {
+                  icon: L.divIcon({
+                    className: 'custom-park-marker',
+                    html: '<div style="background-color: #16a34a; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+                    iconSize: [12, 12],
+                    iconAnchor: [6, 6]
+                  })
+                });
+                
+                const fullName = park.fullName || park.name || 'Unknown National Park';
+                const parkCode = park.parkCode || null;
+                const designation = park.designation || null;
+                const states = park.states || null;
+                const description = park.description || null;
+                const url = park.url || null;
+                const distance = park.distance_miles !== null && park.distance_miles !== undefined ? park.distance_miles : 0;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏞️ ${fullName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${designation ? `<div><strong>Designation:</strong> ${designation}</div>` : ''}
+                      ${parkCode ? `<div><strong>Park Code:</strong> ${parkCode}</div>` : ''}
+                      ${states ? `<div><strong>States:</strong> ${states}</div>` : ''}
+                      ${description ? `<div style="margin-top: 8px;"><strong>Description:</strong> ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}</div>` : ''}
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      ${url ? `<div style="margin-top: 8px;"><a href="${url}" target="_blank" style="color: #3b82f6;">Visit NPS Website →</a></div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                parkMarker.bindPopup(popupContent, { maxWidth: 400 });
+                parkMarker.addTo(primary);
+                
+                // Store metadata for tabbed popup
+                (parkMarker as any).__layerType = 'nps_national_parks';
+                (parkMarker as any).__layerTitle = 'NPS National Parks';
+                
+                parkCount++;
+              } catch (error) {
+                console.error('Error drawing NPS National Park marker:', error);
+              }
+            }
+          });
+          
+          if (parkCount > 0) {
+            if (!legendAccumulator['nps_national_parks']) {
+              legendAccumulator['nps_national_parks'] = {
+                icon: '🏞️',
+                color: '#16a34a',
+                title: 'NPS National Parks',
+                count: 0,
+              };
+            }
+            legendAccumulator['nps_national_parks'].count += parkCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NPS National Parks:', error);
       }
 
       // Draw USFS National Wilderness Areas as polygons on the map

@@ -3,6 +3,7 @@
  * Queries National Park Service API for campgrounds
  * Supports proximity queries up to 50 miles
  * API: https://developer.nps.gov/api/v1/campgrounds
+ * Note: This endpoint requires parkCode parameters, so we query campgrounds for nearby parks
  */
 
 const BASE_API_URL = 'https://developer.nps.gov/api/v1';
@@ -33,7 +34,7 @@ function parseLatLong(latLong: string): { lat: number; lon: number } | null {
     
     if (latMatch && lonMatch) {
       const lat = parseFloat(latMatch[1]);
-      const lon = parseFloat(lonMatch[1]);
+      const lon = parseFloat(lonMatch[1]); // Fixed: was using latMatch[1] instead of lonMatch[1]
       
       if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
         return { lat, lon };
@@ -63,6 +64,8 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 /**
  * Query NPS Campgrounds API for proximity search
+ * Uses campgrounds endpoint which requires parkCode parameters
+ * First gets nearby parks, then queries campgrounds for those parks
  * Supports proximity queries up to 50 miles
  */
 export async function getNPSCampgroundsData(
@@ -77,23 +80,41 @@ export async function getNPSCampgroundsData(
     }
     
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
+    const { getNPSNationalParksData } = await import('./npsNationalParks');
     
     // Cap radius at 50 miles
     const maxRadius = radiusMiles ? Math.min(radiusMiles, 50.0) : 50.0;
     
+    console.log(`🏕️ Querying NPS Campgrounds API for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
+    
+    // First, get nearby parks to get their park codes
+    const nearbyParks = await getNPSNationalParksData(lat, lon, maxRadius);
+    const parkCodes = nearbyParks
+      .map(park => park.parkCode)
+      .filter((code): code is string => code !== null && code.length >= 4);
+    
+    if (parkCodes.length === 0) {
+      console.log('⚠️ No nearby parks found, cannot query campgrounds');
+      return [];
+    }
+    
+    console.log(`🔍 Found ${parkCodes.length} nearby park(s), querying campgrounds for: ${parkCodes.join(', ')}`);
+    
     const results: NPSCampgroundInfo[] = [];
     const allCampgrounds: any[] = [];
     
-    // Fetch all campgrounds (paginated)
+    // Query campgrounds for each park (API accepts comma-delimited park codes)
+    const parkCodesBatch = parkCodes.join(',');
+    
     let start = 0;
     const limit = 50;
     let hasMore = true;
     
     while (hasMore) {
-      const url = `${BASE_API_URL}/campgrounds?limit=${limit}&start=${start}`;
+      const url = `${BASE_API_URL}/campgrounds?parkCode=${parkCodesBatch}&limit=${limit}&start=${start}`;
       
       if (start === 0) {
-        console.log(`🏕️ Querying NPS Campgrounds API for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
+        console.log(`🔍 Querying campgrounds for parks: ${parkCodesBatch}`);
       }
       
       const data = await fetchJSONSmart(url, {
@@ -108,7 +129,7 @@ export async function getNPSCampgroundsData(
           dataLength: data.data?.length || 0,
           total: data.total,
           error: data.error,
-          sampleItem: data.data?.[0] ? JSON.stringify(data.data[0]).substring(0, 200) : 'none'
+          sampleItem: data.data?.[0] ? JSON.stringify(data.data[0]).substring(0, 300) : 'none'
         });
       }
       
@@ -149,7 +170,8 @@ export async function getNPSCampgroundsData(
           longitude: campground.longitude,
           lat: campground.lat,
           lon: campground.lon,
-          geometry: campground.geometry
+          geometry: campground.geometry,
+          parkCode: campground.parkCode
         });
       }
       
