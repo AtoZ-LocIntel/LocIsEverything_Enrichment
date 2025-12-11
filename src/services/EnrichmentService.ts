@@ -161,6 +161,9 @@ import { getTIGERCBSAData } from '../adapters/tigerCBSA';
 import { getTIGERUrbanData } from '../adapters/tigerUrban';
 import { getIrelandProvincesData } from '../adapters/irelandProvinces';
 import { getIrelandBuiltUpAreasData } from '../adapters/irelandBuiltUpAreas';
+import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
+import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDivisions';
+import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -592,6 +595,7 @@ export class EnrichmentService {
       let earthquakeCount = 0;
       let largestMagnitude = 0;
       let recentEarthquakes = [];
+      let allEarthquakes: any[] = [];
       
       try {
         const response = await fetch(queryUrl);
@@ -606,7 +610,7 @@ export class EnrichmentService {
             if (earthquakeCount > 0) {
               largestMagnitude = Math.max(...data.features.map((eq: any) => eq.properties.mag || 0));
               
-              // Get the 5 most recent earthquakes
+              // Get the 5 most recent earthquakes for summary
               recentEarthquakes = data.features
                 .sort((a: any, b: any) => new Date(b.properties.time).getTime() - new Date(a.properties.time).getTime())
                 .slice(0, 5)
@@ -616,6 +620,46 @@ export class EnrichmentService {
                   depth: eq.properties.depth || 0,
                   place: eq.properties.place || 'Unknown location'
                 }));
+              
+              // Process all earthquakes for map rendering and CSV export
+              allEarthquakes = data.features.map((eq: any) => {
+                const coords = eq.geometry?.coordinates || [];
+            const eqLon = coords[0];
+            const eqLat = coords[1];
+            const depth = coords[2] || eq.properties.depth || 0;
+            
+            // Calculate distance from query point
+            const distanceKm = eqLat && eqLon ? this.calculateDistance(lat, lon, eqLat, eqLon) : 0;
+            
+                return {
+                  lat: eqLat,
+                  lon: eqLon,
+                  magnitude: eq.properties.mag || 0,
+                  date: eq.properties.time ? new Date(eq.properties.time).toISOString() : '',
+                  dateFormatted: eq.properties.time ? new Date(eq.properties.time).toLocaleDateString() : '',
+                  depth: depth,
+                  place: eq.properties.place || 'Unknown location',
+                  url: eq.properties.url || '',
+                  detail: eq.properties.detail || '',
+                  status: eq.properties.status || '',
+                  tsunami: eq.properties.tsunami || 0,
+                  sig: eq.properties.sig || 0,
+                  net: eq.properties.net || '',
+                  code: eq.properties.code || '',
+                  ids: eq.properties.ids || '',
+                  sources: eq.properties.sources || '',
+                  types: eq.properties.types || '',
+                  nst: eq.properties.nst || 0,
+                  dmin: eq.properties.dmin || 0,
+                  rms: eq.properties.rms || 0,
+                  gap: eq.properties.gap || 0,
+                  magType: eq.properties.magType || '',
+                  type: eq.properties.type || '',
+                  title: eq.properties.title || '',
+                  distance_miles: distanceKm * 0.621371, // Convert km to miles
+                  ...eq.properties
+                };
+              });
             }
             
             console.log(`✅ Found ${earthquakeCount} earthquakes within ${radiusMiles} miles (${radiusKm.toFixed(1)} km)`);
@@ -644,7 +688,8 @@ export class EnrichmentService {
         poi_earthquakes_count: earthquakeCount,
         poi_earthquakes_largest_magnitude: largestMagnitude,
         poi_earthquakes_recent: recentEarthquakes,
-        poi_earthquakes_summary: summary
+        poi_earthquakes_summary: summary,
+        poi_earthquakes_all: allEarthquakes
       };
       
     } catch (error) {
@@ -653,7 +698,8 @@ export class EnrichmentService {
         poi_earthquakes_count: 0,
         poi_earthquakes_largest_magnitude: 0,
         poi_earthquakes_recent: [],
-        poi_earthquakes_summary: 'Error querying USGS Earthquake data'
+        poi_earthquakes_summary: 'Error querying USGS Earthquake data',
+        poi_earthquakes_all: []
       };
     }
   }
@@ -3452,6 +3498,12 @@ export class EnrichmentService {
         return await this.getIrelandProvinces(lat, lon, radius);
       case 'ireland_built_up_areas':
         return await this.getIrelandBuiltUpAreas(lat, lon, radius);
+      case 'ireland_small_areas':
+        return await this.getIrelandSmallAreas(lat, lon, radius);
+      case 'ireland_centres_of_population':
+        return await this.getIrelandCentresOfPopulation(lat, lon, radius);
+      case 'ireland_electoral_divisions':
+        return await this.getIrelandElectoralDivisions(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -13741,6 +13793,378 @@ out center;`;
     } catch (error) {
       console.error(`❌ Error fetching TIGER Native Lands Layer ${layerId}:`, error);
       return {};
+    }
+  }
+
+  private async getIrelandSmallAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getIrelandSmallAreasData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_small_areas_containing_count: data.containing.length,
+        ireland_small_areas_nearby_count: data.nearby_features.length,
+        ireland_small_areas_total_count: data._all.length
+      };
+      
+      // Add containing small areas
+      if (data.containing.length > 0) {
+        result.ireland_small_areas_containing = data.containing.map(area => {
+          const areaData: any = {
+            objectId: area.objectId,
+            guid: area.guid,
+            nuts1: area.nuts1,
+            nuts1Name: area.nuts1Name,
+            nuts2: area.nuts2,
+            nuts2Name: area.nuts2Name,
+            nuts3: area.nuts3,
+            nuts3Name: area.nuts3Name,
+            county: area.county,
+            countyName: area.countyName,
+            csoEd: area.csoEd,
+            osiEd: area.osiEd,
+            edName: area.edName,
+            saPub2011: area.saPub2011,
+            smallArea: area.smallArea,
+            geogId: area.geogId,
+            area: area.area,
+            changeCode: area.changeCode,
+            shapeArea: area.shapeArea,
+            shapeLength: area.shapeLength,
+            distance_miles: 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (area.geometry) {
+            Object.defineProperty(areaData, '__geometry', {
+              value: area.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(area).forEach(key => {
+            if (!['objectId', 'guid', 'nuts1', 'nuts1Name', 'nuts2', 'nuts2Name', 'nuts3', 'nuts3Name', 'county', 'countyName', 'csoEd', 'osiEd', 'edName', 'saPub2011', 'smallArea', 'geogId', 'area', 'changeCode', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              areaData[key] = area[key];
+            }
+          });
+          
+          return areaData;
+        });
+      }
+      
+      // Add nearby small areas
+      if (data.nearby_features.length > 0) {
+        result.ireland_small_areas_nearby_features = data.nearby_features.map(area => {
+          const areaData: any = {
+            objectId: area.objectId,
+            guid: area.guid,
+            nuts1: area.nuts1,
+            nuts1Name: area.nuts1Name,
+            nuts2: area.nuts2,
+            nuts2Name: area.nuts2Name,
+            nuts3: area.nuts3,
+            nuts3Name: area.nuts3Name,
+            county: area.county,
+            countyName: area.countyName,
+            csoEd: area.csoEd,
+            osiEd: area.osiEd,
+            edName: area.edName,
+            saPub2011: area.saPub2011,
+            smallArea: area.smallArea,
+            geogId: area.geogId,
+            area: area.area,
+            changeCode: area.changeCode,
+            shapeArea: area.shapeArea,
+            shapeLength: area.shapeLength,
+            distance_miles: area.distance_miles
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (area.geometry) {
+            Object.defineProperty(areaData, '__geometry', {
+              value: area.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(area).forEach(key => {
+            if (!['objectId', 'guid', 'nuts1', 'nuts1Name', 'nuts2', 'nuts2Name', 'nuts3', 'nuts3Name', 'county', 'countyName', 'csoEd', 'osiEd', 'edName', 'saPub2011', 'smallArea', 'geogId', 'area', 'changeCode', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              areaData[key] = area[key];
+            }
+          });
+          
+          return areaData;
+        });
+      }
+      
+      // Add all small areas for CSV export
+      if (data._all.length > 0) {
+        result.ireland_small_areas_all = data._all.map(area => {
+          const areaData: any = {
+            objectId: area.objectId,
+            guid: area.guid,
+            nuts1: area.nuts1,
+            nuts1Name: area.nuts1Name,
+            nuts2: area.nuts2,
+            nuts2Name: area.nuts2Name,
+            nuts3: area.nuts3,
+            nuts3Name: area.nuts3Name,
+            county: area.county,
+            countyName: area.countyName,
+            csoEd: area.csoEd,
+            osiEd: area.osiEd,
+            edName: area.edName,
+            saPub2011: area.saPub2011,
+            smallArea: area.smallArea,
+            geogId: area.geogId,
+            area: area.area,
+            changeCode: area.changeCode,
+            shapeArea: area.shapeArea,
+            shapeLength: area.shapeLength,
+            distance_miles: area.distance_miles || 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (area.geometry) {
+            Object.defineProperty(areaData, '__geometry', {
+              value: area.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(area).forEach(key => {
+            if (!['objectId', 'guid', 'nuts1', 'nuts1Name', 'nuts2', 'nuts2Name', 'nuts3', 'nuts3Name', 'county', 'countyName', 'csoEd', 'osiEd', 'edName', 'saPub2011', 'smallArea', 'geogId', 'area', 'changeCode', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              areaData[key] = area[key];
+            }
+          });
+          
+          return areaData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Small Areas data:', error);
+      return {
+        ireland_small_areas_containing_count: 0,
+        ireland_small_areas_nearby_count: 0,
+        ireland_small_areas_total_count: 0
+      };
+    }
+  }
+
+  private async getIrelandCentresOfPopulation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getIrelandCentresOfPopulationData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_centres_of_population_count: data.length
+      };
+      
+      // Add all centres of population
+      if (data.length > 0) {
+        result.ireland_centres_of_population_all = data.map(centre => {
+          const centreData: any = {
+            objectId: centre.objectId,
+            county: centre.county,
+            contae: centre.contae,
+            localGove: centre.localGove,
+            limistear: centre.limistear,
+            classification: centre.classification,
+            cineal: centre.cineal,
+            gaeltacht: centre.gaeltacht,
+            townClass: centre.townClass,
+            id: centre.id,
+            englishName: centre.englishName,
+            irishName: centre.irishName,
+            foirmGhin: centre.foirmGhin,
+            alternative: centre.alternative,
+            igE: centre.igE,
+            igN: centre.igN,
+            itmE: centre.itmE,
+            itmN: centre.itmN,
+            irishVali: centre.irishVali,
+            legislation: centre.legislation,
+            validated: centre.validated,
+            date: centre.date,
+            comment: centre.comment,
+            lat: centre.lat,
+            lon: centre.lon,
+            distance_miles: centre.distance_miles
+          };
+          
+          // Add all other attributes
+          Object.keys(centre).forEach(key => {
+            if (!['objectId', 'county', 'contae', 'localGove', 'limistear', 'classification', 'cineal', 'gaeltacht', 'townClass', 'id', 'englishName', 'irishName', 'foirmGhin', 'alternative', 'igE', 'igN', 'itmE', 'itmN', 'irishVali', 'legislation', 'validated', 'date', 'comment', 'lat', 'lon', 'distance_miles'].includes(key)) {
+              centreData[key] = centre[key];
+            }
+          });
+          
+          return centreData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Centres of Population data:', error);
+      return {
+        ireland_centres_of_population_count: 0
+      };
+    }
+  }
+
+  private async getIrelandElectoralDivisions(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getIrelandElectoralDivisionsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_electoral_divisions_containing_count: data.containing.length,
+        ireland_electoral_divisions_nearby_count: data.nearby_features.length,
+        ireland_electoral_divisions_total_count: data._all.length
+      };
+      
+      // Add containing electoral divisions
+      if (data.containing.length > 0) {
+        result.ireland_electoral_divisions_containing = data.containing.map(ed => {
+          const edData: any = {
+            objectId: ed.objectId,
+            edId: ed.edId,
+            edEnglish: ed.edEnglish,
+            edGaeilge: ed.edGaeilge,
+            county: ed.county,
+            contae: ed.contae,
+            province: ed.province,
+            centroidX: ed.centroidX,
+            centroidY: ed.centroidY,
+            guid: ed.guid,
+            csoed3409: ed.csoed3409,
+            osied3441: ed.osied3441,
+            csoed34_1: ed.csoed34_1,
+            shapeArea: ed.shapeArea,
+            shapeLength: ed.shapeLength,
+            distance_miles: 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (ed.geometry) {
+            Object.defineProperty(edData, '__geometry', {
+              value: ed.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(ed).forEach(key => {
+            if (!['objectId', 'edId', 'edEnglish', 'edGaeilge', 'county', 'contae', 'province', 'centroidX', 'centroidY', 'guid', 'csoed3409', 'osied3441', 'csoed34_1', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              edData[key] = ed[key];
+            }
+          });
+          
+          return edData;
+        });
+      }
+      
+      // Add nearby electoral divisions
+      if (data.nearby_features.length > 0) {
+        result.ireland_electoral_divisions_nearby_features = data.nearby_features.map(ed => {
+          const edData: any = {
+            objectId: ed.objectId,
+            edId: ed.edId,
+            edEnglish: ed.edEnglish,
+            edGaeilge: ed.edGaeilge,
+            county: ed.county,
+            contae: ed.contae,
+            province: ed.province,
+            centroidX: ed.centroidX,
+            centroidY: ed.centroidY,
+            guid: ed.guid,
+            csoed3409: ed.csoed3409,
+            osied3441: ed.osied3441,
+            csoed34_1: ed.csoed34_1,
+            shapeArea: ed.shapeArea,
+            shapeLength: ed.shapeLength,
+            distance_miles: ed.distance_miles
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (ed.geometry) {
+            Object.defineProperty(edData, '__geometry', {
+              value: ed.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(ed).forEach(key => {
+            if (!['objectId', 'edId', 'edEnglish', 'edGaeilge', 'county', 'contae', 'province', 'centroidX', 'centroidY', 'guid', 'csoed3409', 'osied3441', 'csoed34_1', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              edData[key] = ed[key];
+            }
+          });
+          
+          return edData;
+        });
+      }
+      
+      // Add all electoral divisions
+      if (data._all.length > 0) {
+        result.ireland_electoral_divisions_all = data._all.map(ed => {
+          const edData: any = {
+            objectId: ed.objectId,
+            edId: ed.edId,
+            edEnglish: ed.edEnglish,
+            edGaeilge: ed.edGaeilge,
+            county: ed.county,
+            contae: ed.contae,
+            province: ed.province,
+            centroidX: ed.centroidX,
+            centroidY: ed.centroidY,
+            guid: ed.guid,
+            csoed3409: ed.csoed3409,
+            osied3441: ed.osied3441,
+            csoed34_1: ed.csoed34_1,
+            shapeArea: ed.shapeArea,
+            shapeLength: ed.shapeLength,
+            distance_miles: ed.distance_miles || 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (ed.geometry) {
+            Object.defineProperty(edData, '__geometry', {
+              value: ed.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(ed).forEach(key => {
+            if (!['objectId', 'edId', 'edEnglish', 'edGaeilge', 'county', 'contae', 'province', 'centroidX', 'centroidY', 'guid', 'csoed3409', 'osied3441', 'csoed34_1', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              edData[key] = ed[key];
+            }
+          });
+          
+          return edData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Electoral Divisions data:', error);
+      return {
+        ireland_electoral_divisions_containing_count: 0,
+        ireland_electoral_divisions_nearby_count: 0,
+        ireland_electoral_divisions_total_count: 0
+      };
     }
   }
 

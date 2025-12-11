@@ -86,8 +86,33 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
-  // Add USGS Earthquake data
-  if (enrichments.poi_earthquakes_count !== undefined) {
+  // Add USGS Earthquake data - individual earthquakes
+  if (enrichments.poi_earthquakes_all && Array.isArray(enrichments.poi_earthquakes_all)) {
+    enrichments.poi_earthquakes_all.forEach((eq: any) => {
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'USGS',
+        (location.confidence || 'N/A').toString(),
+        'USGS_EARTHQUAKES',
+        'Historical Earthquakes',
+        (eq.lat || '').toString(),
+        (eq.lon || '').toString(),
+        (eq.distance_miles || 0).toFixed(2),
+        'Seismic Assessment',
+        `Magnitude: ${eq.magnitude || 'N/A'}`,
+        eq.place || 'Unknown location',
+        eq.dateFormatted || eq.date || '',
+        'USGS',
+        `Depth: ${eq.depth || 'N/A'} km`,
+        eq.url || '',
+        eq.type || '',
+        eq.magType || ''
+      ]);
+    });
+  } else if (enrichments.poi_earthquakes_count !== undefined) {
+    // Fallback to summary row if no individual earthquakes
     rows.push([
       location.name,
       location.lat.toString(),
@@ -440,6 +465,11 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ireland_provinces_containing' || key === 'ireland_provinces_nearby_features' || key === 'ireland_provinces_all' ||
         // Ireland Built-Up Areas skip list
         key === 'ireland_built_up_areas_containing' || key === 'ireland_built_up_areas_nearby_features' || key === 'ireland_built_up_areas_all' ||
+        // Ireland Small Areas skip list
+        key === 'ireland_small_areas_containing' || key === 'ireland_small_areas_nearby_features' || key === 'ireland_small_areas_all' ||
+        key === 'ireland_electoral_divisions_containing' || key === 'ireland_electoral_divisions_nearby_features' || key === 'ireland_electoral_divisions_all' ||
+        // Ireland Centres of Population skip list
+        key === 'ireland_centres_of_population_all' ||
         // TIGER CBSA skip list - BAS 2025
         key === 'tiger_bas2025_cbsa_combined_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_combined_statistical_areas_all' ||
         key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_all' ||
@@ -10204,6 +10234,200 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           shapeArea ? `Area: ${shapeArea.toLocaleString()} sq units` : '',
           attributesJson,
           'Tailte Éireann (OSi)'
+        ]);
+      });
+    }
+    
+    // Export Ireland Small Areas data
+    if (key === 'ireland_small_areas_all' && Array.isArray(value)) {
+      value.forEach((area: any) => {
+        const smallArea = area.smallArea || area.SMALL_AREA || '';
+        const countyName = area.countyName || area.COUNTYNAME || '';
+        const edName = area.edName || area.EDNAME || '';
+        const nuts3Name = area.nuts3Name || area.NUTS3NAME || '';
+        const geogId = area.geogId || area.GEOGID || '';
+        const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles.toFixed(2) : '0.00';
+        
+        // Extract centroid coordinates if available
+        let lat = '';
+        let lon = '';
+        // For small areas, use the location coordinates as approximation
+        lat = location.lat.toString();
+        lon = location.lon.toString();
+        
+        const allAttributes = { ...area };
+        delete allAttributes.smallArea;
+        delete allAttributes.SMALL_AREA;
+        delete allAttributes.countyName;
+        delete allAttributes.COUNTYNAME;
+        delete allAttributes.edName;
+        delete allAttributes.EDNAME;
+        delete allAttributes.nuts3Name;
+        delete allAttributes.NUTS3NAME;
+        delete allAttributes.geogId;
+        delete allAttributes.GEOGID;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID_1;
+        delete allAttributes.ESRI_OID;
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_SMALL_AREA',
+          smallArea || geogId || 'Small Area',
+          lat,
+          lon,
+          distance,
+          distance === '0.00' ? 'Containing Small Area' : `Nearby Small Area (${distance} miles)`,
+          countyName ? `County: ${countyName}` : '',
+          edName ? `ED: ${edName}` : (nuts3Name ? `NUTS3: ${nuts3Name}` : ''),
+          attributesJson,
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    }
+    
+    // Export Ireland Centres of Population data
+    if (key === 'ireland_centres_of_population_all' && Array.isArray(value)) {
+      value.forEach((centre: any) => {
+        const englishName = centre.englishName || centre.English_Na || 'Unknown Centre';
+        const irishName = centre.irishName || centre.Irish_Name || '';
+        const county = centre.county || centre.County || '';
+        const contae = centre.contae || centre.Contae || '';
+        const townClass = centre.townClass || centre.Town_Class || '';
+        const classification = centre.classification || centre.Classifica || '';
+        const distance = centre.distance_miles !== null && centre.distance_miles !== undefined ? centre.distance_miles.toFixed(2) : '0.00';
+        const lat = centre.lat ? centre.lat.toString() : location.lat.toString();
+        const lon = centre.lon ? centre.lon.toString() : location.lon.toString();
+        
+        const allAttributes = { ...centre };
+        delete allAttributes.englishName;
+        delete allAttributes.English_Na;
+        delete allAttributes.irishName;
+        delete allAttributes.Irish_Name;
+        delete allAttributes.county;
+        delete allAttributes.County;
+        delete allAttributes.contae;
+        delete allAttributes.Contae;
+        delete allAttributes.townClass;
+        delete allAttributes.Town_Class;
+        delete allAttributes.classification;
+        delete allAttributes.Classifica;
+        delete allAttributes.distance_miles;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID_1;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_CENTRE_OF_POPULATION',
+          englishName,
+          lat,
+          lon,
+          distance,
+          `Centre of Population (${distance} miles)`,
+          irishName ? `Irish Name: ${irishName}` : '',
+          county ? `County: ${county}` : (contae ? `Contae: ${contae}` : ''),
+          attributesJson,
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    }
+    
+    // Export Ireland Electoral Divisions data
+    if (key === 'ireland_electoral_divisions_all' && Array.isArray(value)) {
+      value.forEach((ed: any) => {
+        const edId = ed.edId || ed.ED_ID || '';
+        const edEnglish = ed.edEnglish || ed.ED_ENGLISH || '';
+        const edGaeilge = ed.edGaeilge || ed.ED_GAEILGE || '';
+        const county = ed.county || ed.COUNTY || '';
+        const contae = ed.contae || ed.CONTAE || '';
+        const province = ed.province || ed.PROVINCE || '';
+        const distance = ed.distance_miles !== null && ed.distance_miles !== undefined ? ed.distance_miles.toFixed(2) : '0.00';
+        
+        // Extract centroid coordinates if available
+        let lat = '';
+        let lon = '';
+        if (ed.centroidX && ed.centroidY) {
+          // These are in ITM projection, but for CSV we'll use location coordinates as approximation
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+        
+        const allAttributes = { ...ed };
+        delete allAttributes.edId;
+        delete allAttributes.ED_ID;
+        delete allAttributes.edEnglish;
+        delete allAttributes.ED_ENGLISH;
+        delete allAttributes.edGaeilge;
+        delete allAttributes.ED_GAEILGE;
+        delete allAttributes.county;
+        delete allAttributes.COUNTY;
+        delete allAttributes.contae;
+        delete allAttributes.CONTAE;
+        delete allAttributes.province;
+        delete allAttributes.PROVINCE;
+        delete allAttributes.centroidX;
+        delete allAttributes.CENTROID_X;
+        delete allAttributes.centroidY;
+        delete allAttributes.CENTROID_Y;
+        delete allAttributes.guid;
+        delete allAttributes.GUID_;
+        delete allAttributes.csoed3409;
+        delete allAttributes.CSOED_3409;
+        delete allAttributes.osied3441;
+        delete allAttributes.OSIED_3441;
+        delete allAttributes.csoed34_1;
+        delete allAttributes.CSOED_34_1;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID_1;
+        delete allAttributes.ESRI_OID;
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Central Statistics Office (CSO)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_ELECTORAL_DIVISION',
+          edEnglish || edGaeilge || edId || 'Electoral Division',
+          lat,
+          lon,
+          distance,
+          distance === '0.00' ? 'Containing Electoral Division' : `Nearby Electoral Division (${distance} miles)`,
+          edId ? `ED ID: ${edId}` : '',
+          county ? `County: ${county}` : (contae ? `Contae: ${contae}` : ''),
+          province ? `Province: ${province}` : '',
+          attributesJson,
+          'Central Statistics Office (CSO)'
         ]);
       });
     }

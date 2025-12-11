@@ -489,6 +489,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Air Quality';
       } else if (key.includes('tiger_')) {
         category = 'TIGER Data';
+      } else if (key.includes('ireland_provinces') || key.includes('ireland_built_up_areas') || key.includes('ireland_small_areas') || key.includes('ireland_electoral_divisions') || key.includes('ireland_centres_of_population')) {
+        category = 'Ireland Data';
       } else if (key.includes('fips') || key.includes('census') || key.includes('demographic')) {
         category = 'Demographics & Census';
       } else if (key.includes('fws_')) {

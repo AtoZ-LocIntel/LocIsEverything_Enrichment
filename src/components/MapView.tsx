@@ -300,6 +300,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'de_wildlife_management_zones': { icon: '🦌', color: '#059669', title: 'DE Wildlife Management Zones' },
   'ireland_provinces': { icon: '🇮🇪', color: '#10b981', title: 'Ireland Provinces' },
   'ireland_built_up_areas': { icon: '🏘️', color: '#3b82f6', title: 'Ireland Built-Up Areas' },
+  'ireland_small_areas': { icon: '📍', color: '#8b5cf6', title: 'Ireland Small Areas' },
+  'ireland_centres_of_population': { icon: '🏘️', color: '#a855f7', title: 'Ireland Centres of Population' },
   'de_rail_lines': { icon: '🚂', color: '#1f2937', title: 'DE Rail Lines' },
   'nj_parcels': { icon: '🏠', color: '#059669', title: 'NJ Tax Parcels' },
   'nj_address_points': { icon: '📍', color: '#3b82f6', title: 'NJ Address Points' },
@@ -486,6 +488,31 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
           </div>
           ${observationDate ? `<div style="margin: 4px 0; font-size: 12px; color: #6b7280;">🗓️ Observed: ${observationDate}</div>` : ''}
           ${checklistUrl ? `<div style="margin-top: 8px;"><a href="${checklistUrl}" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-size: 12px;">View checklist</a></div>` : ''}
+        </div>
+      `;
+    }
+
+    // Handle Ireland Centres of Population
+    if (key === 'ireland_centres_of_population' || key.includes('ireland_centres_of_population')) {
+      const irishName = poi.irishName || poi.Irish_Name || poi.IRISH_NAME || '';
+      const county = poi.county || poi.County || poi.COUNTY || '';
+      const englishName = poi.englishName || poi.English_Na || poi.ENGLISH_NA || '';
+      const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles : 0;
+      
+      // Use Irish Name as primary title if available, otherwise English Name
+      const displayName = irishName || englishName || 'Unknown Centre';
+      
+      return `
+        <div style="min-width: 250px; max-width: 400px;">
+          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+            🏘️ ${displayName}
+          </h3>
+          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+            ${irishName ? `<div><strong>Irish Name:</strong> ${irishName}</div>` : ''}
+            ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+            ${englishName && englishName !== displayName ? `<div><strong>English Name:</strong> ${englishName}</div>` : ''}
+            ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+          </div>
         </div>
       `;
     }
@@ -909,7 +936,13 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_metro_micropolitan_statistical_areas_all' ||
     key === 'tiger_census2020_cbsa_metropolitan_divisions_containing' || key === 'tiger_census2020_cbsa_metropolitan_divisions_all' ||
     key === 'tiger_census2020_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_metropolitan_statistical_areas_all' ||
-    key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_all' // Skip TIGER CBSA arrays (handled separately for map drawing)
+    key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_all' || // Skip TIGER CBSA arrays (handled separately for map drawing)
+    // Ireland skip list
+    key === 'ireland_provinces_containing' || key === 'ireland_provinces_nearby_features' || key === 'ireland_provinces_all' ||
+    key === 'ireland_built_up_areas_containing' || key === 'ireland_built_up_areas_nearby_features' || key === 'ireland_built_up_areas_all' ||
+    key === 'ireland_small_areas_containing' || key === 'ireland_small_areas_nearby_features' || key === 'ireland_small_areas_all' ||
+    key === 'ireland_electoral_divisions_containing' || key === 'ireland_electoral_divisions_nearby_features' || key === 'ireland_electoral_divisions_all' ||
+    key === 'ireland_centres_of_population_all' // Skip Ireland arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -1208,6 +1241,12 @@ const MapView: React.FC<MapViewProps> = ({
 
       const primary = L.layerGroup().addTo(map);
       const poi = L.layerGroup().addTo(map);
+      
+      // Create a custom pane for the location marker with higher z-index to keep it on top
+      if (!map.getPane('locationMarkerPane')) {
+        const locationMarkerPane = map.createPane('locationMarkerPane');
+        locationMarkerPane.style.zIndex = '650'; // Higher than default markerPane (600) and overlayPane (400)
+      }
 
       mapInstanceRef.current = map;
       layerGroupsRef.current = { primary, poi };
@@ -1436,13 +1475,46 @@ const MapView: React.FC<MapViewProps> = ({
     // Clear feature metadata for tabbed popup
     featuresMetadataRef.current = [];
     
-    // Add location marker
+    // Add location marker (larger blue pin)
     if (results[0]?.location) {
+      // Create a larger custom icon for the geocoded location
+      const locationIcon = L.divIcon({
+        className: 'custom-location-marker',
+        html: `<div style="
+          width: 40px;
+          height: 40px;
+          background-color: #3b82f6;
+          border: 4px solid white;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <div style="
+            transform: rotate(45deg);
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+          "></div>
+        </div>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40]
+      });
+      
       const locationMarker = L.marker([results[0].location.lat, results[0].location.lon], {
         title: results[0].location.name,
+        icon: locationIcon,
+        pane: 'locationMarkerPane' // Use custom pane with higher z-index
       });
       locationMarker.bindPopup(createPopupContent(results[0]), { maxWidth: 540 });
       locationMarker.addTo(primary);
+      
+      // Store reference to location marker so we can bring it to front after all features are added
+      (locationMarker as any).__isLocationMarker = true;
     }
     
     // Add all enrichment features - use requestAnimationFrame for smooth rendering
@@ -6553,6 +6625,16 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'ireland_built_up_areas_containing', nearbyKey: 'ireland_built_up_areas_nearby_features', name: 'Ireland Built-Up Areas', color: '#3b82f6', icon: '🏘️', layerType: 'ireland_built_up_areas' }
       ];
 
+      // Draw Ireland Small Areas as polygons on the map
+      const irelandSmallAreaLayers = [
+        { containingKey: 'ireland_small_areas_containing', nearbyKey: 'ireland_small_areas_nearby_features', name: 'Ireland Small Areas', color: '#8b5cf6', icon: '📍', layerType: 'ireland_small_areas' }
+      ];
+
+      // Draw Ireland Electoral Divisions as polygons on the map
+      const irelandElectoralDivisionLayers = [
+        { containingKey: 'ireland_electoral_divisions_containing', nearbyKey: 'ireland_electoral_divisions_nearby_features', name: 'Ireland Electoral Divisions', color: '#a855f7', icon: '🗳️', layerType: 'ireland_electoral_divisions' }
+      ];
+
       irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
         
@@ -6847,6 +6929,380 @@ const MapView: React.FC<MapViewProps> = ({
                   // Add all other area attributes
                   const excludeFields = ['fCode', 'F_CODE', 'fcSubtype', 'FCsubtype', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID'];
                   Object.entries(area).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw Ireland Small Areas as polygons on the map
+      irelandSmallAreaLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing small areas
+        if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
+          enrichments[containingKey].forEach((area: any) => {
+            const geometry = area.__geometry || area.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: color,
+                    fillOpacity: 0.4
+                  });
+
+                  const smallArea = area.smallArea || area.SMALL_AREA || '';
+                  const countyName = area.countyName || area.COUNTYNAME || '';
+                  const edName = area.edName || area.EDNAME || '';
+                  const nuts3Name = area.nuts3Name || area.NUTS3NAME || '';
+                  const geogId = area.geogId || area.GEOGID || '';
+                  const shapeArea = area.shapeArea || area.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} Small Area
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Containing Small Area</div>
+                        ${smallArea ? `<div><strong>Small Area:</strong> ${smallArea}</div>` : ''}
+                        ${countyName ? `<div><strong>County:</strong> ${countyName}</div>` : ''}
+                        ${edName ? `<div><strong>ED Name:</strong> ${edName}</div>` : ''}
+                        ${nuts3Name ? `<div><strong>NUTS3:</strong> ${nuts3Name}</div>` : ''}
+                        ${geogId ? `<div><strong>GEOGID:</strong> ${geogId}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other area attributes
+                  const excludeFields = ['smallArea', 'SMALL_AREA', 'countyName', 'COUNTYNAME', 'edName', 'EDNAME', 'nuts3Name', 'NUTS3NAME', 'geogId', 'GEOGID', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID_1', 'ESRI_OID'];
+                  Object.entries(area).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing polygon:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby small areas
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((area: any) => {
+            const geometry = area.__geometry || area.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const smallArea = area.smallArea || area.SMALL_AREA || '';
+                  const countyName = area.countyName || area.COUNTYNAME || '';
+                  const edName = area.edName || area.EDNAME || '';
+                  const nuts3Name = area.nuts3Name || area.NUTS3NAME || '';
+                  const geogId = area.geogId || area.GEOGID || '';
+                  const distance = area.distance_miles ? area.distance_miles.toFixed(2) : 'Unknown';
+                  const shapeArea = area.shapeArea || area.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} Small Area
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${smallArea ? `<div><strong>Small Area:</strong> ${smallArea}</div>` : ''}
+                        ${countyName ? `<div><strong>County:</strong> ${countyName}</div>` : ''}
+                        ${edName ? `<div><strong>ED Name:</strong> ${edName}</div>` : ''}
+                        ${nuts3Name ? `<div><strong>NUTS3:</strong> ${nuts3Name}</div>` : ''}
+                        ${geogId ? `<div><strong>GEOGID:</strong> ${geogId}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other area attributes
+                  const excludeFields = ['smallArea', 'SMALL_AREA', 'countyName', 'COUNTYNAME', 'edName', 'EDNAME', 'nuts3Name', 'NUTS3NAME', 'geogId', 'GEOGID', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID_1', 'ESRI_OID'];
+                  Object.entries(area).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw Ireland Electoral Divisions as polygons on the map
+      irelandElectoralDivisionLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing electoral divisions
+        if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
+          enrichments[containingKey].forEach((ed: any) => {
+            const geometry = ed.__geometry || ed.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: color,
+                    fillOpacity: 0.4
+                  });
+
+                  const edId = ed.edId || ed.ED_ID || '';
+                  const edEnglish = ed.edEnglish || ed.ED_ENGLISH || '';
+                  const edGaeilge = ed.edGaeilge || ed.ED_GAEILGE || '';
+                  const county = ed.county || ed.COUNTY || '';
+                  const contae = ed.contae || ed.CONTAE || '';
+                  const province = ed.province || ed.PROVINCE || '';
+                  const shapeArea = ed.shapeArea || ed.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} Electoral Division
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Containing Electoral Division</div>
+                        ${edId ? `<div><strong>ED ID:</strong> ${edId}</div>` : ''}
+                        ${edEnglish ? `<div><strong>English Name:</strong> ${edEnglish}</div>` : ''}
+                        ${edGaeilge ? `<div><strong>Gaeilge Name:</strong> ${edGaeilge}</div>` : ''}
+                        ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                        ${contae ? `<div><strong>Contae:</strong> ${contae}</div>` : ''}
+                        ${province ? `<div><strong>Province:</strong> ${province}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other ED attributes
+                  const excludeFields = ['edId', 'ED_ID', 'edEnglish', 'ED_ENGLISH', 'edGaeilge', 'ED_GAEILGE', 'county', 'COUNTY', 'contae', 'CONTAE', 'province', 'PROVINCE', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID_1', 'ESRI_OID', 'centroidX', 'CENTROID_X', 'centroidY', 'CENTROID_Y', 'guid', 'GUID_'];
+                  Object.entries(ed).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing polygon:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby electoral divisions
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((ed: any) => {
+            const geometry = ed.__geometry || ed.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const edId = ed.edId || ed.ED_ID || '';
+                  const edEnglish = ed.edEnglish || ed.ED_ENGLISH || '';
+                  const edGaeilge = ed.edGaeilge || ed.ED_GAEILGE || '';
+                  const county = ed.county || ed.COUNTY || '';
+                  const contae = ed.contae || ed.CONTAE || '';
+                  const province = ed.province || ed.PROVINCE || '';
+                  const distance = ed.distance_miles ? ed.distance_miles.toFixed(2) : 'Unknown';
+                  const shapeArea = ed.shapeArea || ed.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} Electoral Division
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${edId ? `<div><strong>ED ID:</strong> ${edId}</div>` : ''}
+                        ${edEnglish ? `<div><strong>English Name:</strong> ${edEnglish}</div>` : ''}
+                        ${edGaeilge ? `<div><strong>Gaeilge Name:</strong> ${edGaeilge}</div>` : ''}
+                        ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                        ${contae ? `<div><strong>Contae:</strong> ${contae}</div>` : ''}
+                        ${province ? `<div><strong>Province:</strong> ${province}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other ED attributes
+                  const excludeFields = ['edId', 'ED_ID', 'edEnglish', 'ED_ENGLISH', 'edGaeilge', 'ED_GAEILGE', 'county', 'COUNTY', 'contae', 'CONTAE', 'province', 'PROVINCE', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID_1', 'ESRI_OID', 'centroidX', 'CENTROID_X', 'centroidY', 'CENTROID_Y', 'guid', 'GUID_'];
+                  Object.entries(ed).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       let displayValue = '';
@@ -16711,6 +17167,102 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing NPS NRHP Locations:', error);
       }
 
+      // Draw Ireland Centres of Population as markers on the map
+      try {
+        if (enrichments.ireland_centres_of_population_all && Array.isArray(enrichments.ireland_centres_of_population_all)) {
+          let centreCount = 0;
+          enrichments.ireland_centres_of_population_all.forEach((centre: any) => {
+            if (centre.lat && centre.lon) {
+              try {
+                const centreMarker = L.marker([centre.lat, centre.lon], {
+                  icon: createPOIIcon('🏘️', '#a855f7')
+                });
+                
+                // Extract fields with multiple possible field name variations
+                const irishName = centre.irishName || centre.Irish_Name || centre.IRISH_NAME || '';
+                const county = centre.county || centre.County || centre.COUNTY || '';
+                const englishName = centre.englishName || centre.English_Na || centre.ENGLISH_NA || '';
+                const contae = centre.contae || centre.Contae || centre.CONTAE || '';
+                const townClass = centre.townClass || centre.Town_Class || centre.TOWN_CLASS || '';
+                const classification = centre.classification || centre.Classifica || centre.CLASSIFICA || '';
+                const distance = centre.distance_miles !== null && centre.distance_miles !== undefined ? centre.distance_miles : 0;
+                
+                // Use Irish Name as primary title if available, otherwise English Name
+                const displayName = irishName || englishName || 'Unknown Centre';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏘️ ${displayName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${irishName ? `<div><strong>Irish Name:</strong> ${irishName}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${englishName && englishName !== displayName ? `<div><strong>English Name:</strong> ${englishName}</div>` : ''}
+                      ${contae ? `<div><strong>Contae:</strong> ${contae}</div>` : ''}
+                      ${townClass ? `<div><strong>Town Class:</strong> ${townClass}</div>` : ''}
+                      ${classification ? `<div><strong>Classification:</strong> ${classification}</div>` : ''}
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other centre attributes
+                const excludeFields = ['englishName', 'English_Na', 'irishName', 'Irish_Name', 'county', 'County', 'contae', 'Contae', 'townClass', 'Town_Class', 'classification', 'Classifica', 'lat', 'lon', 'distance_miles', 'objectId', 'OBJECTID_1'];
+                Object.entries(centre).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                centreMarker.bindPopup(popupContent, { maxWidth: 400 });
+                centreMarker.addTo(poi);
+                
+                // Store metadata for tabbed popup
+                (centreMarker as any).__layerType = 'ireland_centres_of_population';
+                (centreMarker as any).__layerTitle = 'Ireland Centres of Population';
+                (centreMarker as any).__popupContent = popupContent;
+                
+                bounds.extend([centre.lat, centre.lon]);
+                centreCount++;
+              } catch (error) {
+                console.error('Error drawing Ireland Centre of Population marker:', error);
+              }
+            }
+          });
+          
+          if (centreCount > 0) {
+            if (!legendAccumulator['ireland_centres_of_population']) {
+              legendAccumulator['ireland_centres_of_population'] = {
+                icon: '🏘️',
+                color: '#a855f7',
+                title: 'Ireland Centres of Population',
+                count: 0,
+              };
+            }
+            legendAccumulator['ireland_centres_of_population'].count += centreCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Ireland Centres of Population:', error);
+      }
+
       // Draw USFS National Wilderness Areas as polygons on the map
       try {
         if (enrichments.usfs_wilderness_areas_all && Array.isArray(enrichments.usfs_wilderness_areas_all)) {
@@ -21548,7 +22100,7 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
-        if (!/_detailed$|_elements$|_features$|_facilities$|_all_pois$/i.test(key)) {
+        if (!/_detailed$|_elements$|_features$|_facilities$|_all_pois$|_all$/i.test(key)) {
           return;
         }
 
@@ -21571,7 +22123,24 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
-        const baseKey = key.replace(/_(detailed|elements|features|facilities|all_pois)$/i, '');
+        // Skip Ireland arrays - they're handled separately with geometry drawing
+        if (key.includes('ireland_electoral_divisions_containing') || 
+            key.includes('ireland_electoral_divisions_nearby_features') || 
+            key.includes('ireland_electoral_divisions_all') ||
+            key.includes('ireland_centres_of_population_all') ||
+            key.includes('ireland_small_areas_containing') ||
+            key.includes('ireland_small_areas_nearby_features') ||
+            key.includes('ireland_small_areas_all') ||
+            key.includes('ireland_built_up_areas_containing') ||
+            key.includes('ireland_built_up_areas_nearby_features') ||
+            key.includes('ireland_built_up_areas_all') ||
+            key.includes('ireland_provinces_containing') ||
+            key.includes('ireland_provinces_nearby_features') ||
+            key.includes('ireland_provinces_all')) {
+          return;
+        }
+
+        const baseKey = key.replace(/_(detailed|elements|features|facilities|all_pois|all)$/i, '');
         const poiInfo = POI_ICONS[baseKey] || POI_ICONS['default'];
         const poiMeta = poiConfigManager.getPOIType(baseKey);
         const iconEmoji = poiInfo.icon || '📍';
@@ -21698,6 +22267,15 @@ const MapView: React.FC<MapViewProps> = ({
         }
         
         console.log('🗺️ All features drawn');
+        
+        // Bring location marker to front to ensure it's always visible on top of all features
+        if (results[0]?.location && mapInstanceRef.current) {
+          primary.eachLayer((layer: any) => {
+            if (layer.__isLocationMarker) {
+              layer.bringToFront();
+            }
+          });
+        }
         
         // Add map click handler for tabbed popup functionality
         // Use requestAnimationFrame to ensure all features are fully added to layer groups

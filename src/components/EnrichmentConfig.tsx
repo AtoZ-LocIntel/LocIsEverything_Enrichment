@@ -57,6 +57,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   public_lands: <span className="text-xl">🏞️</span>,
   tiger: <img src="/assets/TIGERweb.webp" alt="US Census TIGER Data" className="w-5 h-5" />,
   eu: <img src="/assets/EU.webp" alt="European Union Data" className="w-5 h-5" />,
+  canada: <img src="/assets/Canada.webp" alt="Canadian Open Data" className="w-5 h-5" />,
   quirky: <span className="text-xl">☕</span>,
   wildfire: <img src="/assets/wildfire.webp" alt="Natural Hazards" className="w-5 h-5" />,
   at: <img src="/assets/at.webp" alt="Appalachian Trail" className="w-5 h-5" />,
@@ -123,6 +124,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [viewingWVSubCategories, setViewingWVSubCategories] = useState(false);
   const [viewingCASubCategories, setViewingCASubCategories] = useState(false);
   const [viewingEUSubCategories, setViewingEUSubCategories] = useState(false);
+  const [viewingCanadaSubCategories, setViewingCanadaSubCategories] = useState(false);
   const [viewingGASubCategories, setViewingGASubCategories] = useState(false);
   const [viewingSCSubCategories, setViewingSCSubCategories] = useState(false);
   const [viewingNCSubCategories, setViewingNCSubCategories] = useState(false);
@@ -181,13 +183,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [cameFromCOSubCategories, setCameFromCOSubCategories] = useState(false);
   const [cameFromILSubCategories, setCameFromILSubCategories] = useState(false);
   const [cameFromEUSubCategories, setCameFromEUSubCategories] = useState(false);
+  const [cameFromCanadaSubCategories, setCameFromCanadaSubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories || viewingNYSubCategories || viewingPASubCategories || viewingRISubCategories || viewingVTSubCategories || viewingTXSubCategories || viewingNMSubCategories || viewingAZSubCategories || viewingAKSubCategories || viewingHISubCategories || viewingWASubCategories || viewingORSubCategories || viewingMTSubCategories || viewingWYSubCategories || viewingNVSubCategories || viewingIDSubCategories || viewingUTSubCategories || viewingCOSubCategories || viewingILSubCategories || viewingEUSubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories || viewingNYSubCategories || viewingPASubCategories || viewingRISubCategories || viewingVTSubCategories || viewingTXSubCategories || viewingNMSubCategories || viewingAZSubCategories || viewingAKSubCategories || viewingHISubCategories || viewingWASubCategories || viewingORSubCategories || viewingMTSubCategories || viewingWYSubCategories || viewingNVSubCategories || viewingIDSubCategories || viewingUTSubCategories || viewingCOSubCategories || viewingILSubCategories || viewingEUSubCategories || viewingCanadaSubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, viewingTXSubCategories, viewingNMSubCategories, viewingAZSubCategories, viewingAKSubCategories, viewingHISubCategories, viewingWASubCategories, viewingORSubCategories, viewingMTSubCategories, viewingWYSubCategories, viewingNVSubCategories, viewingIDSubCategories, viewingUTSubCategories, viewingCOSubCategories, viewingILSubCategories, viewingEUSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, viewingTXSubCategories, viewingNMSubCategories, viewingAZSubCategories, viewingAKSubCategories, viewingHISubCategories, viewingWASubCategories, viewingORSubCategories, viewingMTSubCategories, viewingWYSubCategories, viewingNVSubCategories, viewingIDSubCategories, viewingUTSubCategories, viewingCOSubCategories, viewingILSubCategories, viewingEUSubCategories, viewingCanadaSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   
@@ -956,6 +959,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        // Special handling for Canada - add sub-categories (empty for now)
+        if (section.id === 'canada') {
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
         return {
           id: section.id,
           title: section.title,
@@ -1081,7 +1096,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'co': 'CO',
       'il': 'IL',
       'tiger': 'TIGERweb',
-      'eu': 'EU'
+      'eu': 'EU',
+      'canada': 'Canada'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -2076,6 +2092,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   );
   if (riSubCategoriesPage) return riSubCategoriesPage;
 
+  const canadaSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingCanadaSubCategories,
+    setViewingCanadaSubCategories,
+    'canada',
+    'Canadian Open Data',
+    setCameFromCanadaSubCategories
+  );
+  if (canadaSubCategoriesPage) return canadaSubCategoriesPage;
+
   const vtSubCategoriesPage = renderStateSubCategoriesPage(
     viewingVTSubCategories,
     setViewingVTSubCategories,
@@ -2736,6 +2761,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromEUSubCategories(false);
                               setActiveModal(null);
                               setViewingEUSubCategories(true);
+                            } else if (cameFromCanadaSubCategories) {
+                              // Go back to Canada sub-categories page
+                              setCameFromCanadaSubCategories(false);
+                              setActiveModal(null);
+                              setViewingCanadaSubCategories(true);
                             } else if (cameFromNJSubCategories) {
                               // Go back to NJ sub-categories page
                               setCameFromNJSubCategories(false);
@@ -3521,10 +3551,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 // For NH, MA, and other states, count sub-category enrichments too
-                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu') && category.subCategories
+                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada') && category.subCategories
                   ? category.subCategories.flatMap(sc => sc.enrichments)
                   : [];
-                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu')
+                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada')
                   ? stateSubCategoryEnrichments 
                   : categoryEnrichments;
                 const selectedCount = allCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -3560,6 +3590,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           subCategoryIds: category.subCategories.map(sc => sc.id)
                         });
                         setViewingEUSubCategories(true);
+                      } else if (category.id === 'canada') {
+                        setViewingCanadaSubCategories(true);
                       } else if (category.id === 'wv') {
                         setViewingWVSubCategories(true);
                       } else if (category.id === 'ca' && category.subCategories && category.subCategories.length > 0) {

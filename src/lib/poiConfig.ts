@@ -94,6 +94,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'EU.webp'
   },
   {
+    id: 'canada',
+    title: 'Canadian Open Data',
+    description: 'Canadian geographic and statistical open data',
+    icon: 'Canada.webp'
+  },
+  {
     id: 'quirky',
     title: 'Quirky & Fun',
     description: 'Interesting and unique nearby places',
@@ -1321,7 +1327,10 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   
   // Ireland Data
   { id: 'ireland_provinces', label: 'Ireland Provinces', description: 'Ireland Provinces - OSi National Statutory Boundaries (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ireland', section: 'eu' },
-  { id: 'ireland_built_up_areas', label: 'Ireland Built-Up Areas', description: 'Ireland Built-Up Areas - OSi National 1m Map of Ireland (point-in-polygon and proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'ireland', section: 'eu' }
+  { id: 'ireland_built_up_areas', label: 'Ireland Built-Up Areas', description: 'Ireland Built-Up Areas - OSi National 1m Map of Ireland (point-in-polygon and proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'ireland', section: 'eu' },
+  { id: 'ireland_small_areas', label: 'Ireland Small Areas', description: 'Ireland Small Areas - OSi Ungeneralised (point-in-polygon and proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'ireland', section: 'eu' },
+  { id: 'ireland_centres_of_population', label: 'Ireland Centres of Population', description: 'Ireland Centres of Population - OSi National Placenames Gazetteer (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ireland', section: 'eu' },
+  { id: 'ireland_electoral_divisions', label: 'Irish Electoral Divisions', description: 'Irish Electoral Divisions - CSO Electoral Divisions Ungeneralised (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ireland', section: 'eu' }
 ];
 
 class POIConfigManager {

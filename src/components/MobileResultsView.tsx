@@ -263,6 +263,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'TIGER Data';
     }
     
+    // Ireland Data
+    if (key.includes('ireland_provinces') || key.includes('ireland_built_up_areas') || key.includes('ireland_small_areas') || key.includes('ireland_electoral_divisions') || key.includes('ireland_centres_of_population')) {
+      return 'Ireland Data';
+    }
+    
     // Demographics
     if (key.includes('acs_')) {
       return 'Demographics';
