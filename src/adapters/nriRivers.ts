@@ -88,9 +88,7 @@ function pointToLineSegmentDistance(
     yy = y1 + param * D;
   }
   
-  const dx = px - xx;
-  const dy = py - yy;
-  
+  // Calculate distance using Haversine formula
   return haversineDistance(py, px, yy, xx);
 }
 
