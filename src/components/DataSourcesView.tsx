@@ -32,13 +32,6 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           cost: "Free (with limits)"
         },
         {
-          name: "NYC PLUTO",
-          description: "NYC parcel-level precision geocoding for New York City addresses",
-          coverage: "New York City",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
           name: "Postcodes.io",
           description: "UK postcode lookup service with detailed geographic information",
           coverage: "United Kingdom",
@@ -449,220 +442,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
-      category: "New Hampshire Data (NH GRANIT)",
-      sources: [
-        {
-          name: "NH SSURGO Soils",
-          description: "Soil Survey Geographic (SSURGO) database for New Hampshire - point-in-polygon queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Bedrock Geology - Formations",
-          description: "New Hampshire bedrock geology formations - point-in-polygon queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Geographic Names Information System (Places of Interest)",
-          description: "New Hampshire geographic names and places of interest - proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH House of Representatives Districts",
-          description: "New Hampshire House of Representatives district boundaries for 2022 - point-in-polygon queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Voting Wards",
-          description: "New Hampshire political districts and voting wards - point-in-polygon queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Senate Districts",
-          description: "New Hampshire Senate district boundaries for 2022 - point-in-polygon queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Parcels",
-          description: "New Hampshire parcel mosaics with proximity queries (0.25, 0.50, 0.75, 1.0 miles) - identifies containing parcel and nearby parcels",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Key Destinations",
-          description: "New Hampshire key destination points - proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Nursing Homes",
-          description: "New Hampshire nursing homes and long-term care facilities - proximity queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Emergency Medical Services",
-          description: "New Hampshire EMS facilities and emergency medical services - proximity queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Fire Stations",
-          description: "New Hampshire fire stations and fire department facilities - proximity queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Places of Worship",
-          description: "New Hampshire places of worship including churches, synagogues, mosques, and other religious facilities - proximity queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Hospitals",
-          description: "New Hampshire hospitals and medical facilities - proximity queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Access Sites to Public Waters",
-          description: "New Hampshire public access sites to lakes, rivers, and other water bodies - proximity queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Law Enforcement",
-          description: "New Hampshire police departments, sheriff offices, and law enforcement facilities - proximity queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Recreation Trails",
-          description: "New Hampshire recreation trails and hiking paths - line dataset with proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH DOT Roads",
-          description: "New Hampshire Department of Transportation road network - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Railroads",
-          description: "New Hampshire railroad network including active and abandoned lines - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Transmission/Pipelines",
-          description: "New Hampshire transmission lines and pipelines - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Personal Wireless Service Facilities",
-          description: "New Hampshire cell towers and wireless communication facilities - proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Stone Walls",
-          description: "New Hampshire stone walls - line dataset with proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        }
-      ]
-    },
-    {
-      category: "New Hampshire Data (NH DES)",
-      sources: [
-        {
-          name: "NH Underground Storage Tank Sites",
-          description: "New Hampshire underground storage tank sites from the Department of Environmental Services - proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Water Well Inventory",
-          description: "New Hampshire water well inventory from the Department of Environmental Services - proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Public Water Supply Wells",
-          description: "New Hampshire public water supply wells from the Department of Environmental Services - proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Remediation Sites",
-          description: "New Hampshire remediation sites from the Department of Environmental Services - proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Automobile Salvage Yards",
-          description: "New Hampshire automobile salvage yards from the Department of Environmental Services - proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Solid Waste Facilities",
-          description: "New Hampshire solid waste facilities from the Department of Environmental Services - proximity queries up to 25 miles",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH Source Water Protection Areas",
-          description: "New Hampshire source water protection areas from the Department of Environmental Services - point-in-polygon queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        },
-        {
-          name: "NH National Wetland Inventory (NWI) Plus",
-          description: "New Hampshire National Wetland Inventory Plus from the Department of Environmental Services - point-in-polygon queries",
-          coverage: "New Hampshire",
-          accuracy: "Very High",
-          cost: "Free"
-        }
-      ]
-    },
-    {
-      category: "Massachusetts Data (MassGIS)",
+      category: "Massachusetts Sources",
       sources: [
         {
           name: "MA DEP Wetland Areas",
@@ -737,7 +517,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
-      category: "Connecticut Data (CT Geodata Portal)",
+      category: "Connecticut Sources",
       sources: [
         {
           name: "CT Parcels",
@@ -833,7 +613,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
-      category: "California Data (CA Open Data Portal)",
+      category: "California Sources",
       sources: [
         {
           name: "CA Power Outage Areas",
@@ -1051,12 +831,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Los Angeles, California",
           accuracy: "Very High",
           cost: "Free"
-        }
-      ]
-    },
-    {
-      category: "Los Angeles County Data",
-      sources: [
+        },
         {
           name: "LA County Street Inventory",
           description: "StreetsLA GeoHub Street Inventory - proximity queries up to 5 miles",
@@ -1136,6 +911,60 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/Fire/Fire_Hydrants/MapServer/0"
         },
         {
+          name: "LA County Administrative Boundaries",
+          description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Elevation",
+          description: "Los Angeles County Elevation data including Contours at various scales (LARIAC Contours 1000FT, 250FT, 50FT, 10FT, 2FT, 1FT), Elevation Points, Elevation Data (Raster), LARIAC Hillshade, Digital Elevation Model (DEM), and Digital Surface Model (DSM) - proximity queries for queryable layers, raster visualization for raster layers",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Demographics",
+          description: "Los Angeles County Demographics including Census data from 1990, 2000, 2010, and 2020, as well as 2018 Estimates - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County LMS Data",
+          description: "Los Angeles County Location Management System (LMS) Data - comprehensive dataset of 193 layers covering various points of interest, facilities, and infrastructure - proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Political Boundaries",
+          description: "Los Angeles County Political Boundaries including Districts (2021, 2011, 2001, 1971-1991), Supervisorial Districts, Congressional Districts, State Assembly Districts, State Senate Districts, Board of Equalization, LA City Council Districts, School Districts, Registrar Recorder Precincts, Election Precincts, City and County Boundaries, Community Boundaries, and City Annexations - point-in-polygon queries",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Redistricting Data (2011)",
+          description: "Los Angeles County Redistricting Data from 2011 including Redistricting Geography, Communities, Home and Income Information, Housing Data, Income Data, Population Density, Voter Registration Data, Citizen Voting Age Population, Demographic Data, and Language data - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "LA County Transportation",
+          description: "Los Angeles County Transportation data including Transportation, Milepost Markers, Rail Transportation, Freeways, Disaster Routes, Highway Shields, Metro Park and Ride, Metro Stations, Metrolink Stations, Metrolink Lines, Metro Lines, and Railroads - proximity queries up to 25 miles",
+          coverage: "Los Angeles County, California",
+          accuracy: "Very High",
+          cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Illinois Sources",
+      sources: [
+        {
           name: "Chicago 311 Service Requests",
           description: "311 service requests from the City of Chicago Data Portal - proximity queries up to 1 mile, color-coded by request type",
           coverage: "City of Chicago, Illinois",
@@ -1174,6 +1003,18 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://data.cityofchicago.org/api/v3/views/thvf-6diy"
+        }
+      ]
+    },
+    {
+      category: "New York Sources",
+      sources: [
+        {
+          name: "NYC PLUTO",
+          description: "NYC parcel-level precision geocoding for New York City addresses",
+          coverage: "New York City, New York",
+          accuracy: "Very High",
+          cost: "Free"
         },
         {
           name: "NYC MapPLUTO Tax Lots",
@@ -1246,7 +1087,12 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Community_Districts_Water_Included/FeatureServer/0"
-        },
+        }
+      ]
+    },
+    {
+      category: "Texas Sources",
+      sources: [
         {
           name: "HoustonCO Neighborhoods",
           description: "HoustonCO Neighborhoods from City of Houston - point-in-polygon and proximity queries up to 10 miles",
@@ -1299,60 +1145,219 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Tax_Incentive_Reinvestment_Zones_view/FeatureServer/5"
-        },
+        }
+      ]
+    },
+    {
+      category: "New Hampshire Sources",
+      sources: [
         {
-          name: "LA County Administrative Boundaries",
-          description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
-          coverage: "Los Angeles County, California",
+          name: "NH SSURGO Soils",
+          description: "Soil Survey Geographic (SSURGO) database for New Hampshire - point-in-polygon queries",
+          coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
         },
         {
-          name: "LA County Elevation",
-          description: "Los Angeles County Elevation data including Contours at various scales (LARIAC Contours 1000FT, 250FT, 50FT, 10FT, 2FT, 1FT), Elevation Points, Elevation Data (Raster), LARIAC Hillshade, Digital Elevation Model (DEM), and Digital Surface Model (DSM) - proximity queries for queryable layers, raster visualization for raster layers",
-          coverage: "Los Angeles County, California",
+          name: "NH Bedrock Geology - Formations",
+          description: "New Hampshire bedrock geology formations - point-in-polygon queries",
+          coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
         },
         {
-          name: "LA County Demographics",
-          description: "Los Angeles County Demographics including Census data from 1990, 2000, 2010, and 2020, as well as 2018 Estimates - point-in-polygon and proximity queries up to 25 miles",
-          coverage: "Los Angeles County, California",
+          name: "NH Geographic Names Information System (Places of Interest)",
+          description: "New Hampshire geographic names and places of interest - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
         },
         {
-          name: "LA County LMS Data",
-          description: "Los Angeles County Location Management System (LMS) Data - comprehensive dataset of 193 layers covering various points of interest, facilities, and infrastructure - proximity queries up to 25 miles",
-          coverage: "Los Angeles County, California",
+          name: "NH House of Representatives Districts",
+          description: "New Hampshire House of Representatives district boundaries for 2022 - point-in-polygon queries",
+          coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
         },
         {
-          name: "LA County Political Boundaries",
-          description: "Los Angeles County Political Boundaries including Districts (2021, 2011, 2001, 1971-1991), Supervisorial Districts, Congressional Districts, State Assembly Districts, State Senate Districts, Board of Equalization, LA City Council Districts, School Districts, Registrar Recorder Precincts, Election Precincts, City and County Boundaries, Community Boundaries, and City Annexations - point-in-polygon queries",
-          coverage: "Los Angeles County, California",
+          name: "NH Voting Wards",
+          description: "New Hampshire political districts and voting wards - point-in-polygon queries",
+          coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
         },
         {
-          name: "LA County Redistricting Data (2011)",
-          description: "Los Angeles County Redistricting Data from 2011 including Redistricting Geography, Communities, Home and Income Information, Housing Data, Income Data, Population Density, Voter Registration Data, Citizen Voting Age Population, Demographic Data, and Language data - point-in-polygon and proximity queries up to 5 miles",
-          coverage: "Los Angeles County, California",
+          name: "NH Senate Districts",
+          description: "New Hampshire Senate district boundaries for 2022 - point-in-polygon queries",
+          coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
         },
         {
-          name: "LA County Transportation",
-          description: "Los Angeles County Transportation data including Transportation, Milepost Markers, Rail Transportation, Freeways, Disaster Routes, Highway Shields, Metro Park and Ride, Metro Stations, Metrolink Stations, Metrolink Lines, Metro Lines, and Railroads - proximity queries up to 25 miles",
-          coverage: "Los Angeles County, California",
+          name: "NH Parcels",
+          description: "New Hampshire parcel mosaics with proximity queries (0.25, 0.50, 0.75, 1.0 miles) - identifies containing parcel and nearby parcels",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Key Destinations",
+          description: "New Hampshire key destination points - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Nursing Homes",
+          description: "New Hampshire nursing homes and long-term care facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Emergency Medical Services",
+          description: "New Hampshire EMS facilities and emergency medical services - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Fire Stations",
+          description: "New Hampshire fire stations and fire department facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Places of Worship",
+          description: "New Hampshire places of worship including churches, synagogues, mosques, and other religious facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Hospitals",
+          description: "New Hampshire hospitals and medical facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Access Sites to Public Waters",
+          description: "New Hampshire public access sites to lakes, rivers, and other water bodies - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Law Enforcement",
+          description: "New Hampshire police departments, sheriff offices, and law enforcement facilities - proximity queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Recreation Trails",
+          description: "New Hampshire recreation trails and hiking paths - line dataset with proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH DOT Roads",
+          description: "New Hampshire Department of Transportation road network - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Railroads",
+          description: "New Hampshire railroad network including active and abandoned lines - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Transmission/Pipelines",
+          description: "New Hampshire transmission lines and pipelines - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Personal Wireless Service Facilities",
+          description: "New Hampshire cell towers and wireless communication facilities - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Stone Walls",
+          description: "New Hampshire stone walls - line dataset with proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Underground Storage Tank Sites",
+          description: "New Hampshire underground storage tank sites from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Water Well Inventory",
+          description: "New Hampshire water well inventory from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Public Water Supply Wells",
+          description: "New Hampshire public water supply wells from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Remediation Sites",
+          description: "New Hampshire remediation sites from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Automobile Salvage Yards",
+          description: "New Hampshire automobile salvage yards from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Solid Waste Facilities",
+          description: "New Hampshire solid waste facilities from the Department of Environmental Services - proximity queries up to 25 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH Source Water Protection Areas",
+          description: "New Hampshire source water protection areas from the Department of Environmental Services - point-in-polygon queries",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free"
+        },
+        {
+          name: "NH National Wetland Inventory (NWI) Plus",
+          description: "New Hampshire National Wetland Inventory Plus from the Department of Environmental Services - point-in-polygon queries",
+          coverage: "New Hampshire",
           accuracy: "Very High",
           cost: "Free"
         }
       ]
     },
     {
-      category: "New Jersey Data (NJGIN)",
+      category: "New Jersey Sources",
       sources: [
         {
           name: "NJ Tax Parcels",
@@ -1433,7 +1438,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
-      category: "Delaware Data (DE FirstMap)",
+      category: "Delaware Sources",
       sources: [
         {
           name: "DE State Forest",
@@ -1728,6 +1733,486 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Delaware",
           accuracy: "Very High",
           cost: "Free"
+        }
+      ]
+    },
+    {
+      category: "Alabama Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Alabama will be added in future updates",
+          coverage: "Alabama",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Alaska Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Alaska will be added in future updates",
+          coverage: "Alaska",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Arizona Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Arizona will be added in future updates",
+          coverage: "Arizona",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Arkansas Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Arkansas will be added in future updates",
+          coverage: "Arkansas",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Colorado Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Colorado will be added in future updates",
+          coverage: "Colorado",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Florida Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Florida will be added in future updates",
+          coverage: "Florida",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Georgia Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Georgia will be added in future updates",
+          coverage: "Georgia",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Hawaii Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Hawaii will be added in future updates",
+          coverage: "Hawaii",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Idaho Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Idaho will be added in future updates",
+          coverage: "Idaho",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Indiana Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Indiana will be added in future updates",
+          coverage: "Indiana",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Iowa Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Iowa will be added in future updates",
+          coverage: "Iowa",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Kansas Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Kansas will be added in future updates",
+          coverage: "Kansas",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Kentucky Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Kentucky will be added in future updates",
+          coverage: "Kentucky",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Louisiana Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Louisiana will be added in future updates",
+          coverage: "Louisiana",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Maine Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Maine will be added in future updates",
+          coverage: "Maine",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Maryland Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Maryland will be added in future updates",
+          coverage: "Maryland",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Michigan Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Michigan will be added in future updates",
+          coverage: "Michigan",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Minnesota Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Minnesota will be added in future updates",
+          coverage: "Minnesota",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Mississippi Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Mississippi will be added in future updates",
+          coverage: "Mississippi",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Missouri Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Missouri will be added in future updates",
+          coverage: "Missouri",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Montana Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Montana will be added in future updates",
+          coverage: "Montana",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Nebraska Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Nebraska will be added in future updates",
+          coverage: "Nebraska",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Nevada Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Nevada will be added in future updates",
+          coverage: "Nevada",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "North Carolina Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for North Carolina will be added in future updates",
+          coverage: "North Carolina",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "North Dakota Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for North Dakota will be added in future updates",
+          coverage: "North Dakota",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Ohio Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Ohio will be added in future updates",
+          coverage: "Ohio",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Oklahoma Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Oklahoma will be added in future updates",
+          coverage: "Oklahoma",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Oregon Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Oregon will be added in future updates",
+          coverage: "Oregon",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Pennsylvania Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Pennsylvania will be added in future updates",
+          coverage: "Pennsylvania",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Rhode Island Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Rhode Island will be added in future updates",
+          coverage: "Rhode Island",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "South Carolina Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for South Carolina will be added in future updates",
+          coverage: "South Carolina",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "South Dakota Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for South Dakota will be added in future updates",
+          coverage: "South Dakota",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Tennessee Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Tennessee will be added in future updates",
+          coverage: "Tennessee",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Utah Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Utah will be added in future updates",
+          coverage: "Utah",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Vermont Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Vermont will be added in future updates",
+          coverage: "Vermont",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Virginia Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Virginia will be added in future updates",
+          coverage: "Virginia",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Washington Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Washington will be added in future updates",
+          coverage: "Washington",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "West Virginia Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for West Virginia will be added in future updates",
+          coverage: "West Virginia",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Wisconsin Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Wisconsin will be added in future updates",
+          coverage: "Wisconsin",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
+      category: "Wyoming Sources",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "State-specific data sources for Wyoming will be added in future updates",
+          coverage: "Wyoming",
+          accuracy: "N/A",
+          cost: "N/A"
         }
       ]
     },
