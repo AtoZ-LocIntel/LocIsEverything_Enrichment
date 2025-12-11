@@ -151,6 +151,7 @@ import { getUSFSCORoadlessAreasData } from '../adapters/usfsCORoadlessAreas';
 import { getNPSNationalParksData } from '../adapters/npsNationalParks';
 import { getNPSCampgroundsData } from '../adapters/npsCampgrounds';
 import { getNPSVisitorCentersData } from '../adapters/npsVisitorCenters';
+import { getNPSNRHPLocationsData } from '../adapters/npsNRHPLocations';
 import { getNRIRiversData } from '../adapters/nriRivers';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3207,6 +3208,8 @@ export class EnrichmentService {
         return await this.getNPSCampgrounds(lat, lon, radius);
       case 'nps_visitor_centers':
         return await this.getNPSVisitorCenters(lat, lon, radius);
+      case 'nps_nrhp_locations':
+        return await this.getNPSNRHPLocations(lat, lon, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -13149,6 +13152,58 @@ out center;`;
         nps_visitor_centers_count: 0,
         nps_visitor_centers_all: [],
         nps_visitor_centers_summary: 'Error querying visitor centers'
+      };
+    }
+  }
+
+  private async getNPSNRHPLocations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching NPS NRHP Locations data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      const locations = await getNPSNRHPLocationsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (locations.length === 0) {
+        result.nps_nrhp_locations_count = 0;
+        result.nps_nrhp_locations_all = [];
+        result.nps_nrhp_locations_summary = 'No NRHP locations found.';
+      } else {
+        result.nps_nrhp_locations_count = locations.length;
+        result.nps_nrhp_locations_all = locations.map(location => ({
+          ...location.attributes,
+          objectId: location.objectId,
+          resourceName: location.resourceName,
+          resourceId: location.resourceId,
+          nrhpNumber: location.nrhpNumber,
+          state: location.state,
+          county: location.county,
+          city: location.city,
+          address: location.address,
+          propertyType: location.propertyType,
+          dateListed: location.dateListed,
+          dateAdded: location.dateAdded,
+          lat: location.lat,
+          lon: location.lon,
+          distance_miles: location.distance_miles
+        }));
+        
+        const nearestLocation = locations[0];
+        result.nps_nrhp_locations_summary = `Found ${locations.length} NRHP location(s). Nearest: ${nearestLocation.resourceName || 'Unknown'}${nearestLocation.distance_miles ? ` (${nearestLocation.distance_miles.toFixed(1)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ NPS NRHP Locations data processed:`, {
+        totalCount: result.nps_nrhp_locations_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NPS NRHP Locations data:', error);
+      return {
+        nps_nrhp_locations_count: 0,
+        nps_nrhp_locations_all: [],
+        nps_nrhp_locations_summary: 'Error querying NRHP locations'
       };
     }
   }

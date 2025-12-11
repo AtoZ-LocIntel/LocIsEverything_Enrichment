@@ -15275,6 +15275,85 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing NPS National Parks:', error);
       }
 
+      // Draw NPS National Register of Historic Places Locations as markers on the map
+      try {
+        if (enrichments.nps_nrhp_locations_all && Array.isArray(enrichments.nps_nrhp_locations_all)) {
+          let nrhpCount = 0;
+          enrichments.nps_nrhp_locations_all.forEach((location: any) => {
+            if (location.lat && location.lon) {
+              try {
+                const nrhpMarker = L.marker([location.lat, location.lon], {
+                  icon: L.divIcon({
+                    className: 'custom-nrhp-marker',
+                    html: '<div style="background-color: #dc2626; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+                    iconSize: [10, 10],
+                    iconAnchor: [5, 5]
+                  })
+                });
+                
+                const resourceName = location.resourceName || 'Unknown Historic Place';
+                const nrhpNumber = location.nrhpNumber || null;
+                const resourceId = location.resourceId || null;
+                const state = location.state || null;
+                const county = location.county || null;
+                const city = location.city || null;
+                const address = location.address || null;
+                const propertyType = location.propertyType || null;
+                const dateListed = location.dateListed || null;
+                const dateAdded = location.dateAdded || null;
+                const distance = location.distance_miles !== null && location.distance_miles !== undefined ? location.distance_miles : 0;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏛️ ${resourceName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${nrhpNumber ? `<div><strong>NRHP Number:</strong> ${nrhpNumber}</div>` : ''}
+                      ${resourceId ? `<div><strong>Resource ID:</strong> ${resourceId}</div>` : ''}
+                      ${propertyType ? `<div><strong>Property Type:</strong> ${propertyType}</div>` : ''}
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${state ? `<div><strong>State:</strong> ${state}</div>` : ''}
+                      ${dateListed ? `<div><strong>Date Listed:</strong> ${dateListed}</div>` : ''}
+                      ${dateAdded ? `<div><strong>Date Added:</strong> ${dateAdded}</div>` : ''}
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                nrhpMarker.bindPopup(popupContent, { maxWidth: 400 });
+                nrhpMarker.addTo(poi);
+                
+                // Store metadata for tabbed popup
+                (nrhpMarker as any).__layerType = 'nps_nrhp_locations';
+                (nrhpMarker as any).__layerTitle = 'NPS NRHP Locations';
+                (nrhpMarker as any).__popupContent = popupContent;
+                
+                nrhpCount++;
+              } catch (error) {
+                console.error('Error drawing NPS NRHP Location marker:', error);
+              }
+            }
+          });
+          
+          if (nrhpCount > 0) {
+            if (!legendAccumulator['nps_nrhp_locations']) {
+              legendAccumulator['nps_nrhp_locations'] = {
+                icon: '🏛️',
+                color: '#dc2626',
+                title: 'NPS National Register of Historic Places',
+                count: 0,
+              };
+            }
+            legendAccumulator['nps_nrhp_locations'].count += nrhpCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NPS NRHP Locations:', error);
+      }
+
       // Draw USFS National Wilderness Areas as polygons on the map
       try {
         if (enrichments.usfs_wilderness_areas_all && Array.isArray(enrichments.usfs_wilderness_areas_all)) {
