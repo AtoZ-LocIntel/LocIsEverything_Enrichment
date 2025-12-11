@@ -258,6 +258,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'NJ Data';
     }
     
+    // TIGER Data - check before other categories
+    if (key.includes('tiger_')) {
+      return 'TIGER Data';
+    }
+    
     // Demographics
     if (key.includes('acs_')) {
       return 'Demographics';

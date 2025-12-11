@@ -487,6 +487,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Elevation & Terrain';
       } else if (key.includes('airq') || key.includes('air_quality')) {
         category = 'Air Quality';
+      } else if (key.includes('tiger_')) {
+        category = 'TIGER Data';
       } else if (key.includes('fips') || key.includes('census') || key.includes('demographic')) {
         category = 'Demographics & Census';
       } else if (key.includes('fws_')) {
@@ -495,8 +497,6 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Points of Interest Nearby';
       } else if (key.includes('weather') || key.includes('climate')) {
         category = 'Weather & Climate';
-      } else if (key.includes('school') || key.includes('education')) {
-        category = 'Education';
       } else if (key.includes('hospital') || key.includes('healthcare')) {
         category = 'Healthcare';
       } else if (key.includes('crime') || key.includes('safety')) {

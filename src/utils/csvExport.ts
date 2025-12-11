@@ -337,6 +337,36 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'tiger_local_roads_72k_all' || // Skip TIGER Local Roads 72k array (handled separately)
         key === 'tiger_local_roads_all' || // Skip TIGER Local Roads array (handled separately)
         key === 'tiger_railroads_all' || // Skip TIGER Railroads array (handled separately)
+        key === 'tiger_unified_school_districts_containing' || // Skip TIGER Unified School Districts containing (handled separately)
+        key === 'tiger_unified_school_districts_all' || // Skip TIGER Unified School Districts array (handled separately)
+        key === 'tiger_secondary_school_districts_containing' || // Skip TIGER Secondary School Districts containing (handled separately)
+        key === 'tiger_secondary_school_districts_all' || // Skip TIGER Secondary School Districts array (handled separately)
+        key === 'tiger_elementary_school_districts_containing' || // Skip TIGER Elementary School Districts containing (handled separately)
+        key === 'tiger_elementary_school_districts_all' || // Skip TIGER Elementary School Districts array (handled separately)
+        key === 'tiger_school_district_admin_areas_containing' || // Skip TIGER School District Administrative Areas containing (handled separately)
+        key === 'tiger_school_district_admin_areas_all' || // Skip TIGER School District Administrative Areas array (handled separately)
+        key === 'tiger_bas2025_unified_school_districts_containing' || // Skip TIGER BAS 2025 Unified School Districts containing (handled separately)
+        key === 'tiger_bas2025_unified_school_districts_all' || // Skip TIGER BAS 2025 Unified School Districts array (handled separately)
+        key === 'tiger_bas2025_secondary_school_districts_containing' || // Skip TIGER BAS 2025 Secondary School Districts containing (handled separately)
+        key === 'tiger_bas2025_secondary_school_districts_all' || // Skip TIGER BAS 2025 Secondary School Districts array (handled separately)
+        key === 'tiger_bas2025_elementary_school_districts_containing' || // Skip TIGER BAS 2025 Elementary School Districts containing (handled separately)
+        key === 'tiger_bas2025_elementary_school_districts_all' || // Skip TIGER BAS 2025 Elementary School Districts array (handled separately)
+        key === 'tiger_bas2025_school_district_admin_areas_containing' || // Skip TIGER BAS 2025 School District Administrative Areas containing (handled separately)
+        key === 'tiger_bas2025_school_district_admin_areas_all' || // Skip TIGER BAS 2025 School District Administrative Areas array (handled separately)
+        key === 'tiger_acs2024_unified_school_districts_containing' || // Skip TIGER ACS 2024 Unified School Districts containing (handled separately)
+        key === 'tiger_acs2024_unified_school_districts_all' || // Skip TIGER ACS 2024 Unified School Districts array (handled separately)
+        key === 'tiger_acs2024_secondary_school_districts_containing' || // Skip TIGER ACS 2024 Secondary School Districts containing (handled separately)
+        key === 'tiger_acs2024_secondary_school_districts_all' || // Skip TIGER ACS 2024 Secondary School Districts array (handled separately)
+        key === 'tiger_acs2024_elementary_school_districts_containing' || // Skip TIGER ACS 2024 Elementary School Districts containing (handled separately)
+        key === 'tiger_acs2024_elementary_school_districts_all' || // Skip TIGER ACS 2024 Elementary School Districts array (handled separately)
+        key === 'tiger_acs2024_school_district_admin_areas_containing' || // Skip TIGER ACS 2024 School District Administrative Areas containing (handled separately)
+        key === 'tiger_acs2024_school_district_admin_areas_all' || // Skip TIGER ACS 2024 School District Administrative Areas array (handled separately)
+        key === 'tiger_census2020_unified_school_districts_containing' || // Skip TIGER Census 2020 Unified School Districts containing (handled separately)
+        key === 'tiger_census2020_unified_school_districts_all' || // Skip TIGER Census 2020 Unified School Districts array (handled separately)
+        key === 'tiger_census2020_secondary_school_districts_containing' || // Skip TIGER Census 2020 Secondary School Districts containing (handled separately)
+        key === 'tiger_census2020_secondary_school_districts_all' || // Skip TIGER Census 2020 Secondary School Districts array (handled separately)
+        key === 'tiger_census2020_elementary_school_districts_containing' || // Skip TIGER Census 2020 Elementary School Districts containing (handled separately)
+        key === 'tiger_census2020_elementary_school_districts_all' || // Skip TIGER Census 2020 Elementary School Districts array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -5332,6 +5362,109 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
             rttyp || attributesJson,
             mtfcc || attributesJson,
             linearId || '',
+            objectId || '',
+            attributesJson,
+            source
+          ]);
+        });
+      }
+    });
+    
+    // Add TIGER School Districts data rows
+    const tigerSchoolDistrictLayers = [
+      { containingKey: 'tiger_unified_school_districts_containing', allKey: 'tiger_unified_school_districts_all', source: 'US Census TIGER', category: 'TIGER_UNIFIED_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_secondary_school_districts_containing', allKey: 'tiger_secondary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_SECONDARY_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_elementary_school_districts_containing', allKey: 'tiger_elementary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_ELEMENTARY_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_school_district_admin_areas_containing', allKey: 'tiger_school_district_admin_areas_all', source: 'US Census TIGER', category: 'TIGER_SCHOOL_DISTRICT_ADMIN_AREAS' },
+      { containingKey: 'tiger_bas2025_unified_school_districts_containing', allKey: 'tiger_bas2025_unified_school_districts_all', source: 'US Census TIGER', category: 'TIGER_BAS2025_UNIFIED_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_bas2025_secondary_school_districts_containing', allKey: 'tiger_bas2025_secondary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_BAS2025_SECONDARY_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_bas2025_elementary_school_districts_containing', allKey: 'tiger_bas2025_elementary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_BAS2025_ELEMENTARY_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_bas2025_school_district_admin_areas_containing', allKey: 'tiger_bas2025_school_district_admin_areas_all', source: 'US Census TIGER', category: 'TIGER_BAS2025_SCHOOL_DISTRICT_ADMIN_AREAS' },
+      { containingKey: 'tiger_acs2024_unified_school_districts_containing', allKey: 'tiger_acs2024_unified_school_districts_all', source: 'US Census TIGER', category: 'TIGER_ACS2024_UNIFIED_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_acs2024_secondary_school_districts_containing', allKey: 'tiger_acs2024_secondary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_ACS2024_SECONDARY_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_acs2024_elementary_school_districts_containing', allKey: 'tiger_acs2024_elementary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_ACS2024_ELEMENTARY_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_acs2024_school_district_admin_areas_containing', allKey: 'tiger_acs2024_school_district_admin_areas_all', source: 'US Census TIGER', category: 'TIGER_ACS2024_SCHOOL_DISTRICT_ADMIN_AREAS' },
+      { containingKey: 'tiger_census2020_unified_school_districts_containing', allKey: 'tiger_census2020_unified_school_districts_all', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_UNIFIED_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_census2020_secondary_school_districts_containing', allKey: 'tiger_census2020_secondary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_SECONDARY_SCHOOL_DISTRICTS' },
+      { containingKey: 'tiger_census2020_elementary_school_districts_containing', allKey: 'tiger_census2020_elementary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_ELEMENTARY_SCHOOL_DISTRICTS' }
+    ];
+
+    tigerSchoolDistrictLayers.forEach(({ containingKey, allKey, source, category }) => {
+      // Add containing district
+      if (enrichments[containingKey] && enrichments[containingKey] !== null) {
+        const district = enrichments[containingKey];
+        const districtName = district.name || 'Unknown School District';
+        const stateFips = district.stateFips || '';
+        const countyFips = district.countyFips || '';
+        const districtCode = district.districtCode || '';
+        const objectId = district.objectId || '';
+        
+        const allAttributes = { ...district };
+        delete allAttributes.name;
+        delete allAttributes.stateFips;
+        delete allAttributes.countyFips;
+        delete allAttributes.districtCode;
+        delete allAttributes.objectId;
+        delete allAttributes.__geometry;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          source,
+          (location.confidence || 'N/A').toString(),
+          category,
+          districtName,
+          location.lat.toString(), // Use search location (it's a polygon, not a point)
+          location.lon.toString(),
+          '0.00', // Containing district has distance 0
+          stateFips || attributesJson,
+          countyFips || attributesJson,
+          districtCode || '',
+          objectId || '',
+          attributesJson,
+          source
+        ]);
+      }
+
+      // Add nearby districts
+      if (enrichments[allKey] && Array.isArray(enrichments[allKey])) {
+        enrichments[allKey].forEach((district: any) => {
+          const districtName = district.name || 'Unknown School District';
+          const stateFips = district.stateFips || '';
+          const countyFips = district.countyFips || '';
+          const districtCode = district.districtCode || '';
+          const objectId = district.objectId || '';
+          const distance = district.distance_miles !== null && district.distance_miles !== undefined ? district.distance_miles.toFixed(2) : '';
+          
+          const allAttributes = { ...district };
+          delete allAttributes.name;
+          delete allAttributes.stateFips;
+          delete allAttributes.countyFips;
+          delete allAttributes.districtCode;
+          delete allAttributes.objectId;
+          delete allAttributes.__geometry;
+          delete allAttributes.geometry;
+          delete allAttributes.distance_miles;
+          const attributesJson = JSON.stringify(allAttributes);
+          
+          rows.push([
+            location.name,
+            location.lat.toString(),
+            location.lon.toString(),
+            source,
+            (location.confidence || 'N/A').toString(),
+            category,
+            districtName,
+            location.lat.toString(), // Use search location (it's a polygon, not a point)
+            location.lon.toString(),
+            distance,
+            stateFips || attributesJson,
+            countyFips || attributesJson,
+            districtCode || '',
             objectId || '',
             attributesJson,
             source

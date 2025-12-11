@@ -154,6 +154,7 @@ import { getNPSVisitorCentersData } from '../adapters/npsVisitorCenters';
 import { getNPSNRHPLocationsData } from '../adapters/npsNRHPLocations';
 import { getNRIRiversData } from '../adapters/nriRivers';
 import { getTIGERTransportationData } from '../adapters/tigerTransportation';
+import { getTIGERSchoolDistrictsData } from '../adapters/tigerSchoolDistricts';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -3233,6 +3234,38 @@ export class EnrichmentService {
         return await this.getTIGERTransportation(lat, lon, 8, radius);
       case 'tiger_railroads':
         return await this.getTIGERTransportation(lat, lon, 9, radius);
+      
+      // TIGER School Districts Layers - Point-in-polygon and proximity queries (max 25 miles)
+      case 'tiger_unified_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 0, radius);
+      case 'tiger_secondary_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 1, radius);
+      case 'tiger_elementary_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 2, radius);
+      case 'tiger_school_district_admin_areas':
+        return await this.getTIGERSchoolDistricts(lat, lon, 3, radius);
+      case 'tiger_bas2025_unified_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 5, radius);
+      case 'tiger_bas2025_secondary_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 6, radius);
+      case 'tiger_bas2025_elementary_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 7, radius);
+      case 'tiger_bas2025_school_district_admin_areas':
+        return await this.getTIGERSchoolDistricts(lat, lon, 8, radius);
+      case 'tiger_acs2024_unified_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 10, radius);
+      case 'tiger_acs2024_secondary_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 11, radius);
+      case 'tiger_acs2024_elementary_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 12, radius);
+      case 'tiger_acs2024_school_district_admin_areas':
+        return await this.getTIGERSchoolDistricts(lat, lon, 13, radius);
+      case 'tiger_census2020_unified_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 15, radius);
+      case 'tiger_census2020_secondary_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 16, radius);
+      case 'tiger_census2020_elementary_school_districts':
+        return await this.getTIGERSchoolDistricts(lat, lon, 17, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -13315,6 +13348,118 @@ out center;`;
         [`${poiId}_count`]: 0,
         [`${poiId}_all`]: [],
         [`${poiId}_summary`]: 'Error querying transportation features'
+      };
+    }
+  }
+
+  private async getTIGERSchoolDistricts(lat: number, lon: number, layerId: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerConfigs: Record<number, { name: string; poiId: string }> = {
+        0: { name: 'Unified School Districts', poiId: 'tiger_unified_school_districts' },
+        1: { name: 'Secondary School Districts', poiId: 'tiger_secondary_school_districts' },
+        2: { name: 'Elementary School Districts', poiId: 'tiger_elementary_school_districts' },
+        3: { name: 'School District Administrative Areas', poiId: 'tiger_school_district_admin_areas' },
+        5: { name: 'BAS 2025 Unified School Districts', poiId: 'tiger_bas2025_unified_school_districts' },
+        6: { name: 'BAS 2025 Secondary School Districts', poiId: 'tiger_bas2025_secondary_school_districts' },
+        7: { name: 'BAS 2025 Elementary School Districts', poiId: 'tiger_bas2025_elementary_school_districts' },
+        8: { name: 'BAS 2025 School District Administrative Areas', poiId: 'tiger_bas2025_school_district_admin_areas' },
+        10: { name: 'ACS 2024 Unified School Districts', poiId: 'tiger_acs2024_unified_school_districts' },
+        11: { name: 'ACS 2024 Secondary School Districts', poiId: 'tiger_acs2024_secondary_school_districts' },
+        12: { name: 'ACS 2024 Elementary School Districts', poiId: 'tiger_acs2024_elementary_school_districts' },
+        13: { name: 'ACS 2024 School District Administrative Areas', poiId: 'tiger_acs2024_school_district_admin_areas' },
+        15: { name: 'Census 2020 Unified School Districts', poiId: 'tiger_census2020_unified_school_districts' },
+        16: { name: 'Census 2020 Secondary School Districts', poiId: 'tiger_census2020_secondary_school_districts' },
+        17: { name: 'Census 2020 Elementary School Districts', poiId: 'tiger_census2020_elementary_school_districts' }
+      };
+      
+      const config = layerConfigs[layerId];
+      if (!config) {
+        throw new Error(`Invalid TIGER School Districts layer ID: ${layerId}`);
+      }
+      
+      const { name: layerName, poiId } = config;
+      console.log(`🏫 Fetching TIGER School Districts ${layerName} data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const { containing, nearby } = await getTIGERSchoolDistrictsData(layerId, lat, lon, cappedRadius);
+      
+      // Handle containing district
+      if (containing) {
+        result[`${poiId}_containing`] = {
+          objectId: containing.objectId,
+          name: containing.name,
+          stateFips: containing.stateFips,
+          countyFips: containing.countyFips,
+          districtCode: containing.districtCode,
+          distance_miles: 0
+        };
+        // Store geometry separately for map drawing (not in summary output)
+        (result[`${poiId}_containing`] as any).__geometry = containing.geometry;
+        result[`${poiId}_containing_message`] = containing.name ? `Located within ${containing.name}` : 'Located within school district';
+      } else {
+        result[`${poiId}_containing`] = null;
+        result[`${poiId}_containing_message`] = 'No school district found containing this location';
+      }
+      
+      // Handle nearby districts
+      result[`${poiId}_count`] = nearby.length;
+      result[`${poiId}_all`] = nearby.map(district => {
+        const districtData: Record<string, any> = {
+          objectId: district.objectId,
+          name: district.name,
+          stateFips: district.stateFips,
+          countyFips: district.countyFips,
+          districtCode: district.districtCode,
+          distance_miles: district.distance_miles
+        };
+        // Store geometry separately for map drawing (not in summary output)
+        (districtData as any).__geometry = district.geometry;
+        return districtData;
+      });
+      
+      if (nearby.length > 0) {
+        const nearestDistrict = nearby[0];
+        result[`${poiId}_summary`] = `Found ${nearby.length} ${layerName.toLowerCase()} within ${cappedRadius} miles. Nearest: ${nearestDistrict.name || 'Unknown'}${nearestDistrict.distance_miles ? ` (${nearestDistrict.distance_miles.toFixed(1)} miles)` : ''}.`;
+      } else {
+        result[`${poiId}_summary`] = `No ${layerName.toLowerCase()} found within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ TIGER School Districts ${layerName} data processed:`, {
+        containing: !!containing,
+        nearbyCount: result[`${poiId}_count`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching TIGER School Districts Layer ${layerId} data:`, error);
+      const layerConfigs: Record<number, string> = {
+        0: 'tiger_unified_school_districts',
+        1: 'tiger_secondary_school_districts',
+        2: 'tiger_elementary_school_districts',
+        3: 'tiger_school_district_admin_areas',
+        5: 'tiger_bas2025_unified_school_districts',
+        6: 'tiger_bas2025_secondary_school_districts',
+        7: 'tiger_bas2025_elementary_school_districts',
+        8: 'tiger_bas2025_school_district_admin_areas',
+        10: 'tiger_acs2024_unified_school_districts',
+        11: 'tiger_acs2024_secondary_school_districts',
+        12: 'tiger_acs2024_elementary_school_districts',
+        13: 'tiger_acs2024_school_district_admin_areas',
+        15: 'tiger_census2020_unified_school_districts',
+        16: 'tiger_census2020_secondary_school_districts',
+        17: 'tiger_census2020_elementary_school_districts'
+      };
+      const poiId = layerConfigs[layerId] || `tiger_school_districts_${layerId}`;
+      return {
+        [`${poiId}_containing`]: null,
+        [`${poiId}_containing_message`]: 'Error querying school districts',
+        [`${poiId}_count`]: 0,
+        [`${poiId}_all`]: [],
+        [`${poiId}_summary`]: 'Error querying school districts'
       };
     }
   }

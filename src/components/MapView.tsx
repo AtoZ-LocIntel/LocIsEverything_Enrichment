@@ -758,7 +758,37 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'tiger_secondary_roads_72_1k_all' || // Skip TIGER Secondary Roads 72_1k array (handled separately for map drawing)
     key === 'tiger_local_roads_72k_all' || // Skip TIGER Local Roads 72k array (handled separately for map drawing)
     key === 'tiger_local_roads_all' || // Skip TIGER Local Roads array (handled separately for map drawing)
-    key === 'tiger_railroads_all' // Skip TIGER Railroads array (handled separately for map drawing)
+    key === 'tiger_railroads_all' || // Skip TIGER Railroads array (handled separately for map drawing)
+    key === 'tiger_unified_school_districts_containing' || // Skip TIGER Unified School Districts containing (handled separately for map drawing)
+    key === 'tiger_unified_school_districts_all' || // Skip TIGER Unified School Districts array (handled separately for map drawing)
+    key === 'tiger_secondary_school_districts_containing' || // Skip TIGER Secondary School Districts containing (handled separately for map drawing)
+    key === 'tiger_secondary_school_districts_all' || // Skip TIGER Secondary School Districts array (handled separately for map drawing)
+    key === 'tiger_elementary_school_districts_containing' || // Skip TIGER Elementary School Districts containing (handled separately for map drawing)
+    key === 'tiger_elementary_school_districts_all' || // Skip TIGER Elementary School Districts array (handled separately for map drawing)
+    key === 'tiger_school_district_admin_areas_containing' || // Skip TIGER School District Administrative Areas containing (handled separately for map drawing)
+    key === 'tiger_school_district_admin_areas_all' || // Skip TIGER School District Administrative Areas array (handled separately for map drawing)
+    key === 'tiger_bas2025_unified_school_districts_containing' || // Skip TIGER BAS 2025 Unified School Districts containing (handled separately for map drawing)
+    key === 'tiger_bas2025_unified_school_districts_all' || // Skip TIGER BAS 2025 Unified School Districts array (handled separately for map drawing)
+    key === 'tiger_bas2025_secondary_school_districts_containing' || // Skip TIGER BAS 2025 Secondary School Districts containing (handled separately for map drawing)
+    key === 'tiger_bas2025_secondary_school_districts_all' || // Skip TIGER BAS 2025 Secondary School Districts array (handled separately for map drawing)
+    key === 'tiger_bas2025_elementary_school_districts_containing' || // Skip TIGER BAS 2025 Elementary School Districts containing (handled separately for map drawing)
+    key === 'tiger_bas2025_elementary_school_districts_all' || // Skip TIGER BAS 2025 Elementary School Districts array (handled separately for map drawing)
+    key === 'tiger_bas2025_school_district_admin_areas_containing' || // Skip TIGER BAS 2025 School District Administrative Areas containing (handled separately for map drawing)
+    key === 'tiger_bas2025_school_district_admin_areas_all' || // Skip TIGER BAS 2025 School District Administrative Areas array (handled separately for map drawing)
+    key === 'tiger_acs2024_unified_school_districts_containing' || // Skip TIGER ACS 2024 Unified School Districts containing (handled separately for map drawing)
+    key === 'tiger_acs2024_unified_school_districts_all' || // Skip TIGER ACS 2024 Unified School Districts array (handled separately for map drawing)
+    key === 'tiger_acs2024_secondary_school_districts_containing' || // Skip TIGER ACS 2024 Secondary School Districts containing (handled separately for map drawing)
+    key === 'tiger_acs2024_secondary_school_districts_all' || // Skip TIGER ACS 2024 Secondary School Districts array (handled separately for map drawing)
+    key === 'tiger_acs2024_elementary_school_districts_containing' || // Skip TIGER ACS 2024 Elementary School Districts containing (handled separately for map drawing)
+    key === 'tiger_acs2024_elementary_school_districts_all' || // Skip TIGER ACS 2024 Elementary School Districts array (handled separately for map drawing)
+    key === 'tiger_acs2024_school_district_admin_areas_containing' || // Skip TIGER ACS 2024 School District Administrative Areas containing (handled separately for map drawing)
+    key === 'tiger_acs2024_school_district_admin_areas_all' || // Skip TIGER ACS 2024 School District Administrative Areas array (handled separately for map drawing)
+    key === 'tiger_census2020_unified_school_districts_containing' || // Skip TIGER Census 2020 Unified School Districts containing (handled separately for map drawing)
+    key === 'tiger_census2020_unified_school_districts_all' || // Skip TIGER Census 2020 Unified School Districts array (handled separately for map drawing)
+    key === 'tiger_census2020_secondary_school_districts_containing' || // Skip TIGER Census 2020 Secondary School Districts containing (handled separately for map drawing)
+    key === 'tiger_census2020_secondary_school_districts_all' || // Skip TIGER Census 2020 Secondary School Districts array (handled separately for map drawing)
+    key === 'tiger_census2020_elementary_school_districts_containing' || // Skip TIGER Census 2020 Elementary School Districts containing (handled separately for map drawing)
+    key === 'tiger_census2020_elementary_school_districts_all' // Skip TIGER Census 2020 Elementary School Districts array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -5899,6 +5929,150 @@ const MapView: React.FC<MapViewProps> = ({
                 title: name,
                 count: 0,
               };
+            }
+            legendAccumulator[layerType].count += featureCount;
+          }
+        }
+      });
+
+      // Draw TIGER School Districts as polygons on the map
+      const tigerSchoolDistrictLayers = [
+        { allKey: 'tiger_unified_school_districts_all', containingKey: 'tiger_unified_school_districts_containing', name: 'TIGER Unified School Districts', color: '#3b82f6', icon: '🏫', layerType: 'tiger_unified_school_districts' },
+        { allKey: 'tiger_secondary_school_districts_all', containingKey: 'tiger_secondary_school_districts_containing', name: 'TIGER Secondary School Districts', color: '#8b5cf6', icon: '🏫', layerType: 'tiger_secondary_school_districts' },
+        { allKey: 'tiger_elementary_school_districts_all', containingKey: 'tiger_elementary_school_districts_containing', name: 'TIGER Elementary School Districts', color: '#ec4899', icon: '🏫', layerType: 'tiger_elementary_school_districts' },
+        { allKey: 'tiger_school_district_admin_areas_all', containingKey: 'tiger_school_district_admin_areas_containing', name: 'TIGER School District Administrative Areas', color: '#f59e0b', icon: '🏛️', layerType: 'tiger_school_district_admin_areas' },
+        { allKey: 'tiger_bas2025_unified_school_districts_all', containingKey: 'tiger_bas2025_unified_school_districts_containing', name: 'TIGER BAS 2025 Unified School Districts', color: '#3b82f6', icon: '🏫', layerType: 'tiger_bas2025_unified_school_districts' },
+        { allKey: 'tiger_bas2025_secondary_school_districts_all', containingKey: 'tiger_bas2025_secondary_school_districts_containing', name: 'TIGER BAS 2025 Secondary School Districts', color: '#8b5cf6', icon: '🏫', layerType: 'tiger_bas2025_secondary_school_districts' },
+        { allKey: 'tiger_bas2025_elementary_school_districts_all', containingKey: 'tiger_bas2025_elementary_school_districts_containing', name: 'TIGER BAS 2025 Elementary School Districts', color: '#ec4899', icon: '🏫', layerType: 'tiger_bas2025_elementary_school_districts' },
+        { allKey: 'tiger_bas2025_school_district_admin_areas_all', containingKey: 'tiger_bas2025_school_district_admin_areas_containing', name: 'TIGER BAS 2025 School District Administrative Areas', color: '#f59e0b', icon: '🏛️', layerType: 'tiger_bas2025_school_district_admin_areas' },
+        { allKey: 'tiger_acs2024_unified_school_districts_all', containingKey: 'tiger_acs2024_unified_school_districts_containing', name: 'TIGER ACS 2024 Unified School Districts', color: '#3b82f6', icon: '🏫', layerType: 'tiger_acs2024_unified_school_districts' },
+        { allKey: 'tiger_acs2024_secondary_school_districts_all', containingKey: 'tiger_acs2024_secondary_school_districts_containing', name: 'TIGER ACS 2024 Secondary School Districts', color: '#8b5cf6', icon: '🏫', layerType: 'tiger_acs2024_secondary_school_districts' },
+        { allKey: 'tiger_acs2024_elementary_school_districts_all', containingKey: 'tiger_acs2024_elementary_school_districts_containing', name: 'TIGER ACS 2024 Elementary School Districts', color: '#ec4899', icon: '🏫', layerType: 'tiger_acs2024_elementary_school_districts' },
+        { allKey: 'tiger_acs2024_school_district_admin_areas_all', containingKey: 'tiger_acs2024_school_district_admin_areas_containing', name: 'TIGER ACS 2024 School District Administrative Areas', color: '#f59e0b', icon: '🏛️', layerType: 'tiger_acs2024_school_district_admin_areas' },
+        { allKey: 'tiger_census2020_unified_school_districts_all', containingKey: 'tiger_census2020_unified_school_districts_containing', name: 'TIGER Census 2020 Unified School Districts', color: '#3b82f6', icon: '🏫', layerType: 'tiger_census2020_unified_school_districts' },
+        { allKey: 'tiger_census2020_secondary_school_districts_all', containingKey: 'tiger_census2020_secondary_school_districts_containing', name: 'TIGER Census 2020 Secondary School Districts', color: '#8b5cf6', icon: '🏫', layerType: 'tiger_census2020_secondary_school_districts' },
+        { allKey: 'tiger_census2020_elementary_school_districts_all', containingKey: 'tiger_census2020_elementary_school_districts_containing', name: 'TIGER Census 2020 Elementary School Districts', color: '#ec4899', icon: '🏫', layerType: 'tiger_census2020_elementary_school_districts' }
+      ];
+
+      tigerSchoolDistrictLayers.forEach(({ allKey, containingKey, name, color, icon, layerType }) => {
+        // Draw containing district
+        if (enrichments[containingKey] && enrichments[containingKey].__geometry) {
+          const district = enrichments[containingKey];
+          const geometry = district.__geometry || district.geometry;
+          if (geometry && geometry.rings) {
+            try {
+              const rings = geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: 3,
+                  opacity: 0.8,
+                  fillColor: color,
+                  fillOpacity: 0.3
+                });
+
+                const districtName = district.name || 'Unknown School District';
+                const stateFips = district.stateFips || '';
+                const countyFips = district.countyFips || '';
+                const districtCode = district.districtCode || '';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${icon} ${districtName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> Containing District</div>
+                      ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                      ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                      ${districtCode ? `<div><strong>District Code:</strong> ${districtCode}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                (polygon as any).__layerType = layerType;
+                (polygon as any).__layerTitle = name;
+                bounds.extend(polygon.getBounds());
+              }
+            } catch (error) {
+              console.error(`Error drawing ${name} containing polygon:`, error);
+            }
+          }
+        }
+
+        // Draw nearby districts
+        if (enrichments[allKey] && Array.isArray(enrichments[allKey])) {
+          let featureCount = 0;
+          enrichments[allKey].forEach((district: any) => {
+            const geometry = district.__geometry || district.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.15
+                  });
+
+                  const districtName = district.name || 'Unknown School District';
+                  const stateFips = district.stateFips || '';
+                  const countyFips = district.countyFips || '';
+                  const districtCode = district.districtCode || '';
+                  const distance = district.distance_miles;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${districtName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                        ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                        ${districtCode ? `<div><strong>District Code:</strong> ${districtCode}</div>` : ''}
+                        ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} polygon:`, error);
+              }
+            }
+          });
+          
+          if (featureCount > 0 || enrichments[containingKey]) {
+            if (!legendAccumulator[layerType]) {
+              legendAccumulator[layerType] = {
+                icon: icon,
+                color: color,
+                title: name,
+                count: 0,
+              };
+            }
+            if (enrichments[containingKey]) {
+              legendAccumulator[layerType].count += 1;
             }
             legendAccumulator[layerType].count += featureCount;
           }
