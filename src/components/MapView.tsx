@@ -20142,10 +20142,30 @@ const MapView: React.FC<MapViewProps> = ({
     console.log('🔍 [TABBED POPUP] Clicked layer:', e.target);
     console.log('🔍 [TABBED POPUP] Event type:', e.type);
     
-    // Stop event propagation to prevent default popup
+    // Stop event propagation to prevent default popup - do this FIRST
     if (e.originalEvent) {
       e.originalEvent.stopImmediatePropagation();
       e.originalEvent.preventDefault();
+      e.originalEvent.stopPropagation();
+    }
+    
+    // Also stop Leaflet's event propagation
+    if (e.type) {
+      L.DomEvent.stop(e);
+    }
+    
+    // Close any existing popups immediately (including the layer's own popup)
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.closePopup();
+    }
+    
+    // Also close the clicked layer's popup if it exists
+    const clickedLayer = e.target as L.Layer;
+    if (clickedLayer) {
+      const layerPopup = (clickedLayer as any).getPopup?.();
+      if (layerPopup) {
+        layerPopup.close();
+      }
     }
     
     // Get the click point from the event
@@ -20158,11 +20178,6 @@ const MapView: React.FC<MapViewProps> = ({
     }
     console.log('🔍 [TABBED POPUP] Click point from feature:', clickPoint);
     
-    // Close any existing popups immediately
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.closePopup();
-    }
-    
     // Create a synthetic map click event to use the same handler
     const syntheticEvent = {
       ...e,
@@ -20173,7 +20188,7 @@ const MapView: React.FC<MapViewProps> = ({
     // Small delay to ensure popup is closed
     setTimeout(() => {
       handleMapClick(syntheticEvent);
-    }, 10);
+    }, 50);
   };
 
   // Handle map click to show tabbed popup for overlapping features
@@ -20206,6 +20221,11 @@ const MapView: React.FC<MapViewProps> = ({
       popupContent: string;
     }> = [];
     
+    // Track layers we've already processed to prevent duplicates
+    const processedLayers = new Set<L.Layer>();
+    // Track unique feature signatures (coordinates + layer type) to prevent duplicates
+    const seenFeatureSignatures = new Set<string>();
+    
     let layerCount = 0;
     let markerCount = 0;
     let polygonCount = 0;
@@ -20216,6 +20236,12 @@ const MapView: React.FC<MapViewProps> = ({
     // Helper function to check layers in a group
     const checkLayerGroup = (layerGroup: L.LayerGroup) => {
       layerGroup.eachLayer((layer: L.Layer) => {
+      // Skip if we've already processed this layer
+      if (processedLayers.has(layer)) {
+        console.log('🔍 [TABBED POPUP] Skipping duplicate layer');
+        return;
+      }
+      
       layerCount++;
       // Skip location marker
       if (layer instanceof L.Marker && (layer as any).options?.title === results[0]?.location?.name) {
@@ -20263,7 +20289,26 @@ const MapView: React.FC<MapViewProps> = ({
           }
           layerType = storedType || extractLayerTypeFromPopup(popupContent) || 'point';
           layerTitle = storedTitle || extractLayerTitleFromPopup(popupContent) || 'Point Feature';
+          
+          // Create a unique signature for this feature based on coordinates + layer type
+          // Use 6 decimal places for lat/lng to catch markers at exact same location
+          const featureSignature = `${markerLatLng.lat.toFixed(6)}_${markerLatLng.lng.toFixed(6)}_${layerType}`;
+          
           console.log('🔍 [TABBED POPUP] Marker layer type:', layerType, 'title:', layerTitle);
+          console.log('🔍 [TABBED POPUP] Marker coordinates:', markerLatLng.lat.toFixed(6), markerLatLng.lng.toFixed(6));
+          console.log('🔍 [TABBED POPUP] Feature signature:', featureSignature);
+          
+          // Check if we've already seen this exact feature (same location + type)
+          if (seenFeatureSignatures.has(featureSignature)) {
+            console.log('⚠️ [TABBED POPUP] Skipping duplicate feature (same coordinates + type):', featureSignature);
+            // Mark layer as processed and skip adding to featuresAtPoint
+            processedLayers.add(layer);
+            return;
+          }
+          
+          // Mark signature as seen BEFORE adding to featuresAtPoint
+          seenFeatureSignatures.add(featureSignature);
+          processedLayers.add(layer);
         }
       } else if (layer instanceof L.Polygon) {
         polygonCount++;
@@ -20331,11 +20376,42 @@ const MapView: React.FC<MapViewProps> = ({
       }
       
       if (intersects && popupContent) {
+        // For markers, deduplication was already done above and layer was marked as processed
+        // For polygons/polylines, create a signature and check for duplicates
+        if (!(layer instanceof L.Marker)) {
+          let featureSignature = '';
+          if (layer instanceof L.Polygon) {
+            const bounds = (layer as L.Polygon).getBounds();
+            const center = bounds.getCenter();
+            featureSignature = `${center.lat.toFixed(6)}_${center.lng.toFixed(6)}_${layerType}`;
+          } else if (layer instanceof L.Polyline) {
+            const latlngs = (layer as L.Polyline).getLatLngs() as L.LatLng[];
+            if (latlngs.length > 0) {
+              const firstPoint = Array.isArray(latlngs[0]) ? latlngs[0][0] : latlngs[0];
+              featureSignature = `${firstPoint.lat.toFixed(6)}_${firstPoint.lng.toFixed(6)}_${layerType}`;
+            }
+          }
+          
+          // Check for duplicates (for non-markers)
+          if (featureSignature && seenFeatureSignatures.has(featureSignature)) {
+            console.log('⚠️ [TABBED POPUP] Skipping duplicate feature (same location + type):', featureSignature);
+            processedLayers.add(layer);
+            return;
+          }
+          
+          // Mark signature and layer as processed
+          if (featureSignature) {
+            seenFeatureSignatures.add(featureSignature);
+          }
+          processedLayers.add(layer);
+        }
+        
         console.log('✅ [TABBED POPUP] Found intersecting feature:', { 
           layerType, 
           layerTitle,
           hasPopup: !!popupContent,
-          popupLength: popupContent.length
+          popupLength: popupContent.length,
+          popupPreview: popupContent.substring(0, 100)
         });
         featuresAtPoint.push({
           layer,
@@ -20346,7 +20422,6 @@ const MapView: React.FC<MapViewProps> = ({
       } else if (intersects && !popupContent) {
           console.warn('⚠️ [TABBED POPUP] Feature intersects but has no popup content');
         }
-        layerCount++;
       });
     };
     
@@ -20500,28 +20575,72 @@ const MapView: React.FC<MapViewProps> = ({
     } else if (featuresAtPoint.length === 1) {
       // Single feature - open its popup manually since autoOpen is false
       console.log('🔍 [TABBED POPUP] Single feature found, opening popup manually');
+      console.log('🔍 [TABBED POPUP] Features at point count:', featuresAtPoint.length);
+      console.log('🔍 [TABBED POPUP] Popup content length:', featuresAtPoint[0].popupContent?.length || 0);
+      console.log('🔍 [TABBED POPUP] Popup content preview (first 500 chars):', featuresAtPoint[0].popupContent?.substring(0, 500));
+      
       const singleFeature = featuresAtPoint[0];
+      
+      // Ensure ALL popups are closed first to prevent duplicates
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.closePopup();
+        // Also close any popups that might be attached to layers
+        const allLayers: L.Layer[] = [];
+        primary.eachLayer((l: L.Layer) => allLayers.push(l));
+        poi.eachLayer((l: L.Layer) => allLayers.push(l));
+        allLayers.forEach(layer => {
+          const popup = (layer as any).getPopup?.();
+          if (popup) {
+            popup.close();
+          }
+        });
+      }
+      
+      // Ensure the layer's popup is closed
+      const layerPopup = singleFeature.layer.getPopup();
+      if (layerPopup) {
+        layerPopup.close();
+      }
+      
       if (singleFeature.popupContent) {
-        const popup = L.popup({ 
-          maxWidth: 500, 
-          maxHeight: 500,
-          autoPan: true,
-          autoClose: false,
-          closeOnClick: false
-        })
-          .setLatLng(clickPoint)
-          .setContent(singleFeature.popupContent);
-        popup.openOn(mapInstanceRef.current!);
-        console.log('✅ [TABBED POPUP] Single feature popup opened');
+        // Deduplicate popup content before displaying
+        const cleanedContent = deduplicatePopupContent(singleFeature.popupContent);
+        console.log('🔍 [TABBED POPUP] Original content length:', singleFeature.popupContent.length);
+        console.log('🔍 [TABBED POPUP] Cleaned content length:', cleanedContent.length);
+        
+        // Small delay to ensure any default popups are closed
+        setTimeout(() => {
+          // Double-check no popups are open
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.closePopup();
+          }
+          
+          const popup = L.popup({ 
+            maxWidth: 500, 
+            maxHeight: 500,
+            autoPan: true,
+            autoClose: false,
+            closeOnClick: false
+          })
+            .setLatLng(clickPoint)
+            .setContent(cleanedContent);
+          popup.openOn(mapInstanceRef.current!);
+          console.log('✅ [TABBED POPUP] Single feature popup opened with cleaned content length:', cleanedContent.length);
+        }, 100);
       } else {
         // Fallback: try to get popup from layer
-        const layerPopup = singleFeature.layer.getPopup();
-        if (layerPopup) {
-          layerPopup.openOn(mapInstanceRef.current!);
-          console.log('✅ [TABBED POPUP] Single feature popup opened from layer');
-        } else {
-          console.warn('⚠️ [TABBED POPUP] Single feature has no popup content');
-        }
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.closePopup();
+          }
+          const fallbackPopup = singleFeature.layer.getPopup();
+          if (fallbackPopup) {
+            fallbackPopup.openOn(mapInstanceRef.current!);
+            console.log('✅ [TABBED POPUP] Single feature popup opened from layer');
+          } else {
+            console.warn('⚠️ [TABBED POPUP] Single feature has no popup content');
+          }
+        }, 100);
       }
     } else {
       console.log('ℹ️ [TABBED POPUP] No features found at click point');
@@ -20590,6 +20709,44 @@ const MapView: React.FC<MapViewProps> = ({
       return title || 'Feature';
     }
     return null;
+  };
+
+  // Helper function to remove duplicate sections from popup content
+  const deduplicatePopupContent = (content: string): string => {
+    if (!content) return content;
+    
+    // Try to detect if content contains duplicate sections
+    // Look for repeated div blocks with the same content
+    const divMatches = content.match(/<div[^>]*>[\s\S]*?<\/div>/g);
+    if (divMatches && divMatches.length > 1) {
+      const seenContent = new Set<string>();
+      let deduplicated = content;
+      let removedCount = 0;
+      
+      // Try to find and remove exact duplicate divs
+      divMatches.forEach(div => {
+        // Normalize whitespace for comparison
+        const normalized = div.replace(/\s+/g, ' ').trim();
+        if (seenContent.has(normalized)) {
+          // Remove this duplicate div (only the first occurrence after the original)
+          const index = deduplicated.indexOf(div, seenContent.size > 0 ? 1 : 0);
+          if (index !== -1) {
+            deduplicated = deduplicated.substring(0, index) + deduplicated.substring(index + div.length);
+            removedCount++;
+          }
+        } else {
+          seenContent.add(normalized);
+        }
+      });
+      
+      // If we removed duplicates, return cleaned content
+      if (removedCount > 0) {
+        console.log(`🔍 [TABBED POPUP] Removed ${removedCount} duplicate sections from popup content`);
+        return deduplicated.trim();
+      }
+    }
+    
+    return content;
   };
 
   // Helper function to group features by layer type

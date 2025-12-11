@@ -7119,7 +7119,12 @@ out center;`;
         let facilityLon: number | null = null;
         
         // Try different possible coordinate field names from USDA API response
-        if (facility.latitude && facility.longitude) {
+        // Note: USDA Local Food Portal uses location_x (lon) and location_y (lat)
+        if (facility.location_x && facility.location_y) {
+          // USDA Local Food Portal standard format: location_x = longitude, location_y = latitude
+          facilityLon = parseFloat(facility.location_x);
+          facilityLat = parseFloat(facility.location_y);
+        } else if (facility.latitude && facility.longitude) {
           facilityLat = parseFloat(facility.latitude);
           facilityLon = parseFloat(facility.longitude);
         } else if (facility.lat && facility.lon) {
@@ -7140,10 +7145,15 @@ out center;`;
           // Handle Esri geometry format
           facilityLon = parseFloat(facility.geometry.x);
           facilityLat = parseFloat(facility.geometry.y);
-        } else if (facility.attributes && (facility.attributes.latitude || facility.attributes.lat || facility.attributes.y)) {
-          // Handle Esri feature with attributes
-          facilityLat = parseFloat(facility.attributes.latitude || facility.attributes.lat || facility.attributes.y);
-          facilityLon = parseFloat(facility.attributes.longitude || facility.attributes.lon || facility.attributes.x);
+        } else if (facility.attributes) {
+          // Handle Esri feature with attributes - check for location_x/y first
+          if (facility.attributes.location_x && facility.attributes.location_y) {
+            facilityLon = parseFloat(facility.attributes.location_x);
+            facilityLat = parseFloat(facility.attributes.location_y);
+          } else if (facility.attributes.latitude || facility.attributes.lat || facility.attributes.y) {
+            facilityLat = parseFloat(facility.attributes.latitude || facility.attributes.lat || facility.attributes.y);
+            facilityLon = parseFloat(facility.attributes.longitude || facility.attributes.lon || facility.attributes.x);
+          }
         }
         
         if (facilityLat && facilityLon && !isNaN(facilityLat) && !isNaN(facilityLon)) {
@@ -7156,13 +7166,13 @@ out center;`;
             lat: facilityLat,
             lon: facilityLon,
             distance_miles: Math.round(distanceMiles * 100) / 100,
-            address: facility.attributes?.address || facility.location_address || facility.address || facility.street_address || facility.attributes?.street_address || 'N/A',
+            address: facility.attributes?.address || facility.location_address || facility.address || facility.street_address || facility.attributes?.street_address || facility.location_street || 'N/A',
             city: facility.attributes?.city || facility.location_city || facility.city || facility.city_name || 'N/A',
             state: facility.attributes?.state || facility.location_state || facility.state || facility.state_code || 'N/A',
             zip: facility.attributes?.zip || facility.location_zipcode || facility.zip || facility.zip_code || 'N/A',
-            phone: facility.attributes?.phone || facility.phone || facility.phone_number || 'N/A',
+            phone: facility.attributes?.phone || facility.contact_phone || facility.phone || facility.phone_number || 'N/A',
             website: facility.attributes?.website || facility.media_website || facility.website || facility.url || 'N/A',
-            description: facility.attributes?.description || facility.description || facility.notes || '',
+            description: facility.attributes?.description || facility.listing_desc || facility.brief_desc || facility.mydesc || facility.description || facility.notes || '',
             season: facility.attributes?.season || facility.season || facility.seasonality || 'N/A',
             raw_data: facility
           };
