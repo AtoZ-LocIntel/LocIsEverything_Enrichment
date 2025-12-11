@@ -327,6 +327,16 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nj_power_plants_all' || // Skip NJ Power Plants array (handled separately)
         key === 'nj_public_solar_facilities_all' || // Skip NJ Public Solar Facilities array (handled separately)
         key === 'nj_public_places_to_keep_cool_all' || // Skip NJ Public Places to Keep Cool array (handled separately)
+        key === 'tiger_primary_roads_interstates_5m_all' || // Skip TIGER Primary Roads Interstates 5M array (handled separately)
+        key === 'tiger_primary_roads_2_1m_all' || // Skip TIGER Primary Roads 2_1M array (handled separately)
+        key === 'tiger_primary_roads_all' || // Skip TIGER Primary Roads array (handled separately)
+        key === 'tiger_secondary_roads_interstates_us_all' || // Skip TIGER Secondary Roads Interstates and US Highways array (handled separately)
+        key === 'tiger_secondary_roads_578k_all' || // Skip TIGER Secondary Roads 578k array (handled separately)
+        key === 'tiger_secondary_roads_289_144k_all' || // Skip TIGER Secondary Roads 289_144k array (handled separately)
+        key === 'tiger_secondary_roads_72_1k_all' || // Skip TIGER Secondary Roads 72_1k array (handled separately)
+        key === 'tiger_local_roads_72k_all' || // Skip TIGER Local Roads 72k array (handled separately)
+        key === 'tiger_local_roads_all' || // Skip TIGER Local Roads array (handled separately)
+        key === 'tiger_railroads_all' || // Skip TIGER Railroads array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -5272,6 +5282,63 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         ]);
       });
     }
+    
+    // Add TIGER Transportation data rows
+    const tigerTransportationLayers = [
+      { key: 'tiger_primary_roads_interstates_5m_all', source: 'US Census TIGER', category: 'TIGER_PRIMARY_ROADS_INTERSTATES_5M' },
+      { key: 'tiger_primary_roads_2_1m_all', source: 'US Census TIGER', category: 'TIGER_PRIMARY_ROADS_2_1M' },
+      { key: 'tiger_primary_roads_all', source: 'US Census TIGER', category: 'TIGER_PRIMARY_ROADS' },
+      { key: 'tiger_secondary_roads_interstates_us_all', source: 'US Census TIGER', category: 'TIGER_SECONDARY_ROADS_INTERSTATES_US' },
+      { key: 'tiger_secondary_roads_578k_all', source: 'US Census TIGER', category: 'TIGER_SECONDARY_ROADS_578K' },
+      { key: 'tiger_secondary_roads_289_144k_all', source: 'US Census TIGER', category: 'TIGER_SECONDARY_ROADS_289_144K' },
+      { key: 'tiger_secondary_roads_72_1k_all', source: 'US Census TIGER', category: 'TIGER_SECONDARY_ROADS_72_1K' },
+      { key: 'tiger_local_roads_72k_all', source: 'US Census TIGER', category: 'TIGER_LOCAL_ROADS_72K' },
+      { key: 'tiger_local_roads_all', source: 'US Census TIGER', category: 'TIGER_LOCAL_ROADS' },
+      { key: 'tiger_railroads_all', source: 'US Census TIGER', category: 'TIGER_RAILROADS' }
+    ];
+
+    tigerTransportationLayers.forEach(({ key, source, category }) => {
+      if (enrichments[key] && Array.isArray(enrichments[key])) {
+        enrichments[key].forEach((feature: any) => {
+          const fullName = feature.fullName || 'Unknown Road/Railroad';
+          const rttyp = feature.rttyp || '';
+          const mtfcc = feature.mtfcc || '';
+          const linearId = feature.linearId || '';
+          const objectId = feature.objectId || '';
+          const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+          
+          const allAttributes = { ...feature };
+          delete allAttributes.fullName;
+          delete allAttributes.rttyp;
+          delete allAttributes.mtfcc;
+          delete allAttributes.linearId;
+          delete allAttributes.objectId;
+          delete allAttributes.__geometry;
+          delete allAttributes.geometry;
+          delete allAttributes.distance_miles;
+          const attributesJson = JSON.stringify(allAttributes);
+          
+          rows.push([
+            location.name,
+            location.lat.toString(),
+            location.lon.toString(),
+            source,
+            (location.confidence || 'N/A').toString(),
+            category,
+            fullName,
+            location.lat.toString(), // Use search location (it's a line, not a point)
+            location.lon.toString(),
+            distance,
+            rttyp || attributesJson,
+            mtfcc || attributesJson,
+            linearId || '',
+            objectId || '',
+            attributesJson,
+            source
+          ]);
+        });
+      }
+    });
     
     // Add MA ACECs data rows
     if (enrichments.ma_acecs_all && Array.isArray(enrichments.ma_acecs_all)) {

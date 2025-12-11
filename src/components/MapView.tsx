@@ -746,7 +746,19 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_sandhill_crane_range_all' || // Skip CA Sandhill Crane Range array (handled separately for map drawing)
     key === 'ca_highway_rest_areas_all' || // Skip CA Highway Rest Areas array (handled separately for map drawing)
     key === 'ca_marine_oil_terminals_all' || // Skip CA Marine Oil Terminals array (handled separately for map drawing)
-    key === 'national_marine_sanctuaries_all' // Skip National Marine Sanctuaries array (handled separately for map drawing)
+    key === 'national_marine_sanctuaries_all' || // Skip National Marine Sanctuaries array (handled separately for map drawing)
+    key === 'nri_rivers_all' || // Skip NRI Rivers array (handled separately for map drawing)
+    key === 'nps_nrhp_locations_all' || // Skip NPS NRHP Locations array (handled separately for map drawing)
+    key === 'tiger_primary_roads_interstates_5m_all' || // Skip TIGER Primary Roads Interstates 5M array (handled separately for map drawing)
+    key === 'tiger_primary_roads_2_1m_all' || // Skip TIGER Primary Roads 2_1M array (handled separately for map drawing)
+    key === 'tiger_primary_roads_all' || // Skip TIGER Primary Roads array (handled separately for map drawing)
+    key === 'tiger_secondary_roads_interstates_us_all' || // Skip TIGER Secondary Roads Interstates and US Highways array (handled separately for map drawing)
+    key === 'tiger_secondary_roads_578k_all' || // Skip TIGER Secondary Roads 578k array (handled separately for map drawing)
+    key === 'tiger_secondary_roads_289_144k_all' || // Skip TIGER Secondary Roads 289_144k array (handled separately for map drawing)
+    key === 'tiger_secondary_roads_72_1k_all' || // Skip TIGER Secondary Roads 72_1k array (handled separately for map drawing)
+    key === 'tiger_local_roads_72k_all' || // Skip TIGER Local Roads 72k array (handled separately for map drawing)
+    key === 'tiger_local_roads_all' || // Skip TIGER Local Roads array (handled separately for map drawing)
+    key === 'tiger_railroads_all' // Skip TIGER Railroads array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -5790,6 +5802,108 @@ const MapView: React.FC<MapViewProps> = ({
           legendAccumulator['nri_rivers'].count += nriRiverCount;
         }
       }
+
+      // Draw TIGER Transportation layers as polylines on the map
+      const tigerTransportationLayers = [
+        { key: 'tiger_primary_roads_interstates_5m_all', name: 'TIGER Primary Roads Interstates 5M', color: '#dc2626', icon: '🛣️', layerType: 'tiger_primary_roads_interstates_5m' },
+        { key: 'tiger_primary_roads_2_1m_all', name: 'TIGER Primary Roads 2_1M', color: '#dc2626', icon: '🛣️', layerType: 'tiger_primary_roads_2_1m' },
+        { key: 'tiger_primary_roads_all', name: 'TIGER Primary Roads', color: '#dc2626', icon: '🛣️', layerType: 'tiger_primary_roads' },
+        { key: 'tiger_secondary_roads_interstates_us_all', name: 'TIGER Secondary Roads Interstates and US Highways', color: '#f97316', icon: '🛣️', layerType: 'tiger_secondary_roads_interstates_us' },
+        { key: 'tiger_secondary_roads_578k_all', name: 'TIGER Secondary Roads 578k', color: '#f97316', icon: '🛣️', layerType: 'tiger_secondary_roads_578k' },
+        { key: 'tiger_secondary_roads_289_144k_all', name: 'TIGER Secondary Roads 289_144k', color: '#f97316', icon: '🛣️', layerType: 'tiger_secondary_roads_289_144k' },
+        { key: 'tiger_secondary_roads_72_1k_all', name: 'TIGER Secondary Roads 72_1k', color: '#f97316', icon: '🛣️', layerType: 'tiger_secondary_roads_72_1k' },
+        { key: 'tiger_local_roads_72k_all', name: 'TIGER Local Roads 72k', color: '#6b7280', icon: '🛣️', layerType: 'tiger_local_roads_72k' },
+        { key: 'tiger_local_roads_all', name: 'TIGER Local Roads', color: '#6b7280', icon: '🛣️', layerType: 'tiger_local_roads' },
+        { key: 'tiger_railroads_all', name: 'TIGER Railroads', color: '#92400e', icon: '🚂', layerType: 'tiger_railroads' }
+      ];
+
+      tigerTransportationLayers.forEach(({ key, name, color, icon, layerType }) => {
+        if (enrichments[key] && Array.isArray(enrichments[key])) {
+          let featureCount = 0;
+          enrichments[key].forEach((feature: any) => {
+            // Check for geometry in __geometry (for summary) or geometry (backward compatibility)
+            const geometry = feature.__geometry || feature.geometry;
+            if (geometry && geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = geometry.paths;
+                paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => {
+                    // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  // Determine weight based on road type - ensure all are clickable
+                  let weight = 2;
+                  if (key.includes('railroad')) {
+                    weight = 3;
+                  } else if (key.includes('primary')) {
+                    weight = 4;
+                  } else if (key.includes('secondary')) {
+                    weight = 3;
+                  } else {
+                    // Local roads - make thicker for better clickability
+                    weight = 2.5;
+                  }
+                  
+                  const polyline = L.polyline(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.8,
+                    interactive: true // Ensure polylines are clickable
+                  });
+
+                  // Build popup content with TIGER transportation attributes
+                  const fullName = feature.fullName || 'Unknown';
+                  const rttyp = feature.rttyp || null;
+                  const mtfcc = feature.mtfcc || null;
+                  const linearId = feature.linearId || null;
+                  const distance = feature.distance_miles;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${fullName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${rttyp ? `<div><strong>Route Type:</strong> ${rttyp}</div>` : ''}
+                        ${mtfcc ? `<div><strong>MTFCC:</strong> ${mtfcc}</div>` : ''}
+                        ${linearId ? `<div><strong>Linear ID:</strong> ${linearId}</div>` : ''}
+                        ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(primary);
+                  
+                  // Store metadata for tabbed popup
+                  (polyline as any).__layerType = layerType;
+                  (polyline as any).__layerTitle = name;
+                  
+                  bounds.extend(polyline.getBounds());
+                });
+                
+                featureCount++;
+              } catch (error) {
+                console.error(`Error drawing ${name} polyline:`, error);
+              }
+            }
+          });
+          
+          if (featureCount > 0) {
+            if (!legendAccumulator[layerType]) {
+              legendAccumulator[layerType] = {
+                icon: icon,
+                color: color,
+                title: name,
+                count: 0,
+              };
+            }
+            legendAccumulator[layerType].count += featureCount;
+          }
+        }
+      });
 
       // Draw MA Regional Planning Agencies as polygons on the map
       if (enrichments.ma_regional_planning_agencies_all && Array.isArray(enrichments.ma_regional_planning_agencies_all)) {

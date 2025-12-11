@@ -153,6 +153,7 @@ import { getNPSCampgroundsData } from '../adapters/npsCampgrounds';
 import { getNPSVisitorCentersData } from '../adapters/npsVisitorCenters';
 import { getNPSNRHPLocationsData } from '../adapters/npsNRHPLocations';
 import { getNRIRiversData } from '../adapters/nriRivers';
+import { getTIGERTransportationData } from '../adapters/tigerTransportation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -3210,6 +3211,28 @@ export class EnrichmentService {
         return await this.getNPSVisitorCenters(lat, lon, radius);
       case 'nps_nrhp_locations':
         return await this.getNPSNRHPLocations(lat, lon, radius);
+      
+      // TIGER Transportation Layers - Proximity queries (max 25 miles)
+      case 'tiger_primary_roads_interstates_5m':
+        return await this.getTIGERTransportation(lat, lon, 0, radius);
+      case 'tiger_primary_roads_2_1m':
+        return await this.getTIGERTransportation(lat, lon, 1, radius);
+      case 'tiger_primary_roads':
+        return await this.getTIGERTransportation(lat, lon, 2, radius);
+      case 'tiger_secondary_roads_interstates_us':
+        return await this.getTIGERTransportation(lat, lon, 3, radius);
+      case 'tiger_secondary_roads_578k':
+        return await this.getTIGERTransportation(lat, lon, 4, radius);
+      case 'tiger_secondary_roads_289_144k':
+        return await this.getTIGERTransportation(lat, lon, 5, radius);
+      case 'tiger_secondary_roads_72_1k':
+        return await this.getTIGERTransportation(lat, lon, 6, radius);
+      case 'tiger_local_roads_72k':
+        return await this.getTIGERTransportation(lat, lon, 7, radius);
+      case 'tiger_local_roads':
+        return await this.getTIGERTransportation(lat, lon, 8, radius);
+      case 'tiger_railroads':
+        return await this.getTIGERTransportation(lat, lon, 9, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -13204,6 +13227,94 @@ out center;`;
         nps_nrhp_locations_count: 0,
         nps_nrhp_locations_all: [],
         nps_nrhp_locations_summary: 'Error querying NRHP locations'
+      };
+    }
+  }
+
+  private async getTIGERTransportation(lat: number, lon: number, layerId: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerConfigs = [
+        { name: 'Primary Roads Interstates 5M', poiId: 'tiger_primary_roads_interstates_5m' },
+        { name: 'Primary Roads 2_1M', poiId: 'tiger_primary_roads_2_1m' },
+        { name: 'Primary Roads', poiId: 'tiger_primary_roads' },
+        { name: 'Secondary Roads Interstates and US Highways', poiId: 'tiger_secondary_roads_interstates_us' },
+        { name: 'Secondary Roads 578k', poiId: 'tiger_secondary_roads_578k' },
+        { name: 'Secondary Roads 289_144k', poiId: 'tiger_secondary_roads_289_144k' },
+        { name: 'Secondary Roads 72_1k', poiId: 'tiger_secondary_roads_72_1k' },
+        { name: 'Local Roads 72k', poiId: 'tiger_local_roads_72k' },
+        { name: 'Local Roads', poiId: 'tiger_local_roads' },
+        { name: 'Railroads', poiId: 'tiger_railroads' }
+      ];
+      
+      const config = layerConfigs[layerId];
+      if (!config) {
+        throw new Error(`Invalid TIGER layer ID: ${layerId}`);
+      }
+      
+      const { name: layerName, poiId } = config;
+      console.log(`🛣️ Fetching TIGER Transportation ${layerName} data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      if (!radius || radius <= 0) {
+        result[`${poiId}_count`] = 0;
+        result[`${poiId}_all`] = [];
+        result[`${poiId}_summary`] = 'Radius required for proximity query';
+        return result;
+      }
+      
+      // Cap radius at 25 miles
+      const cappedRadius = Math.min(radius, 25.0);
+      
+      const features = await getTIGERTransportationData(layerId, lat, lon, cappedRadius);
+      
+      result[`${poiId}_count`] = features.length;
+      result[`${poiId}_all`] = features.map(feature => {
+        const featureData: Record<string, any> = {
+          objectId: feature.objectId,
+          fullName: feature.fullName,
+          rttyp: feature.rttyp,
+          mtfcc: feature.mtfcc,
+          linearId: feature.linearId,
+          distance_miles: feature.distance_miles
+        };
+        // Store geometry separately for map drawing (not in summary output)
+        (featureData as any).__geometry = feature.geometry;
+        return featureData;
+      });
+      
+      if (features.length > 0) {
+        const nearestFeature = features[0];
+        result[`${poiId}_summary`] = `Found ${features.length} ${layerName.toLowerCase()} feature(s). Nearest: ${nearestFeature.fullName || 'Unknown'}${nearestFeature.distance_miles ? ` (${nearestFeature.distance_miles.toFixed(1)} miles)` : ''}.`;
+      } else {
+        result[`${poiId}_summary`] = `No ${layerName.toLowerCase()} features found within ${cappedRadius} miles.`;
+      }
+      
+      console.log(`✅ TIGER Transportation ${layerName} data processed:`, {
+        totalCount: result[`${poiId}_count`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching TIGER Transportation Layer ${layerId} data:`, error);
+      const layerConfigs = [
+        { poiId: 'tiger_primary_roads_interstates_5m' },
+        { poiId: 'tiger_primary_roads_2_1m' },
+        { poiId: 'tiger_primary_roads' },
+        { poiId: 'tiger_secondary_roads_interstates_us' },
+        { poiId: 'tiger_secondary_roads_578k' },
+        { poiId: 'tiger_secondary_roads_289_144k' },
+        { poiId: 'tiger_secondary_roads_72_1k' },
+        { poiId: 'tiger_local_roads_72k' },
+        { poiId: 'tiger_local_roads' },
+        { poiId: 'tiger_railroads' }
+      ];
+      const config = layerConfigs[layerId];
+      const poiId = config?.poiId || `tiger_transportation_${layerId}`;
+      return {
+        [`${poiId}_count`]: 0,
+        [`${poiId}_all`]: [],
+        [`${poiId}_summary`]: 'Error querying transportation features'
       };
     }
   }

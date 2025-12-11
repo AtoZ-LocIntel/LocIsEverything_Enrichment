@@ -82,6 +82,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: '🏞️'
   },
   {
+    id: 'tiger',
+    title: 'US Census TIGER Data',
+    description: 'US Census Bureau TIGER geographic data including roads, boundaries, water features, and other geographic features',
+    icon: 'TIGERweb.webp'
+  },
+  {
     id: 'quirky',
     title: 'Quirky & Fun',
     description: 'Interesting and unique nearby places',
@@ -1188,7 +1194,18 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nj_alternative_fuel_stations', label: 'NJ Alternative Fueled Vehicle Fueling Stations', description: 'NJDEP - New Jersey Department of Environmental Protection Alternative Fueled Vehicle Fueling Stations (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
   { id: 'nj_power_plants', label: 'NJ Power Plants', description: 'NJDEP - New Jersey Department of Environmental Protection Power Plants (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
   { id: 'nj_public_solar_facilities', label: 'NJ Public Solar Facilities', description: 'NJDEP - New Jersey Department of Environmental Protection Solar PV at Public Facilities (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
-  { id: 'nj_public_places_to_keep_cool', label: 'NJ Public Places to Keep Cool', description: 'NJDEP - New Jersey Department of Environmental Protection Public Places to Keep Cool (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' }
+  { id: 'nj_public_places_to_keep_cool', label: 'NJ Public Places to Keep Cool', description: 'NJDEP - New Jersey Department of Environmental Protection Public Places to Keep Cool (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'nj', section: 'nj' },
+  // TIGER Transportation Layers
+  { id: 'tiger_primary_roads_interstates_5m', label: 'TIGER Primary Roads Interstates 5M', description: 'US Census TIGER - Primary Roads Interstates 5M scale (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
+  { id: 'tiger_primary_roads_2_1m', label: 'TIGER Primary Roads 2_1M', description: 'US Census TIGER - Primary Roads 2_1M scale (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
+  { id: 'tiger_primary_roads', label: 'TIGER Primary Roads', description: 'US Census TIGER - Primary Roads (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
+  { id: 'tiger_secondary_roads_interstates_us', label: 'TIGER Secondary Roads Interstates and US Highways', description: 'US Census TIGER - Secondary Roads Interstates and US Highways (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
+  { id: 'tiger_secondary_roads_578k', label: 'TIGER Secondary Roads 578k', description: 'US Census TIGER - Secondary Roads 578k scale (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
+  { id: 'tiger_secondary_roads_289_144k', label: 'TIGER Secondary Roads 289_144k', description: 'US Census TIGER - Secondary Roads 289_144k scale (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
+  { id: 'tiger_secondary_roads_72_1k', label: 'TIGER Secondary Roads 72_1k', description: 'US Census TIGER - Secondary Roads 72_1k scale (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
+  { id: 'tiger_local_roads_72k', label: 'TIGER Local Roads 72k', description: 'US Census TIGER - Local Roads 72k scale (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
+  { id: 'tiger_local_roads', label: 'TIGER Local Roads', description: 'US Census TIGER - Local Roads (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' },
+  { id: 'tiger_railroads', label: 'TIGER Railroads', description: 'US Census TIGER - Railroads (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'tiger', section: 'tiger' }
 ];
 
 class POIConfigManager {

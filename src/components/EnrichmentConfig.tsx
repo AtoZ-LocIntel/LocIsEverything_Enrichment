@@ -55,6 +55,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   recreation: <span className="text-xl">🎯</span>,
   natural_resources: <span className="text-xl">🏔️</span>,
   public_lands: <span className="text-xl">🏞️</span>,
+  tiger: <img src="/assets/TIGERweb.webp" alt="US Census TIGER Data" className="w-5 h-5" />,
   quirky: <span className="text-xl">☕</span>,
   wildfire: <img src="/assets/wildfire.webp" alt="Natural Hazards" className="w-5 h-5" />,
   at: <img src="/assets/at.webp" alt="Appalachian Trail" className="w-5 h-5" />,
@@ -1015,7 +1016,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'id': 'ID',
       'ut': 'UT',
       'co': 'CO',
-      'il': 'IL'
+      'il': 'IL',
+      'tiger': 'TIGERweb'
     };
     return iconMap[categoryId] || categoryId;
   };

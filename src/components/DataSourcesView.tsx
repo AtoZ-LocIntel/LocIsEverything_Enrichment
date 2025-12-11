@@ -442,6 +442,18 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
+      category: "US Census TIGER Data",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "US Census Bureau TIGER (Topologically Integrated Geographic Encoding and Referencing) data sources will be added in future updates. TIGER provides geographic data including roads, boundaries, water features, and other geographic features for the entire United States.",
+          coverage: "United States",
+          accuracy: "N/A",
+          cost: "N/A"
+        }
+      ]
+    },
+    {
       category: "Massachusetts Sources",
       sources: [
         {
