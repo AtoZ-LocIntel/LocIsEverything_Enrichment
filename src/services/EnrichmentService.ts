@@ -155,6 +155,7 @@ import { getNPSNRHPLocationsData } from '../adapters/npsNRHPLocations';
 import { getNRIRiversData } from '../adapters/nriRivers';
 import { getTIGERTransportationData } from '../adapters/tigerTransportation';
 import { getTIGERSchoolDistrictsData } from '../adapters/tigerSchoolDistricts';
+import { getTIGERSpecialLandUseData } from '../adapters/tigerSpecialLandUse';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -3266,6 +3267,16 @@ export class EnrichmentService {
         return await this.getTIGERSchoolDistricts(lat, lon, 16, radius);
       case 'tiger_census2020_elementary_school_districts':
         return await this.getTIGERSchoolDistricts(lat, lon, 17, radius);
+      
+      // TIGER Special Land Use Areas Layers - Point-in-polygon and proximity queries (max 25 miles)
+      case 'tiger_nps_areas':
+        return await this.getTIGERSpecialLandUse(lat, lon, 0, radius);
+      case 'tiger_correctional_facilities':
+        return await this.getTIGERSpecialLandUse(lat, lon, 1, radius);
+      case 'tiger_colleges_universities':
+        return await this.getTIGERSpecialLandUse(lat, lon, 2, radius);
+      case 'tiger_military_installations':
+        return await this.getTIGERSpecialLandUse(lat, lon, 3, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -13349,6 +13360,89 @@ out center;`;
         [`${poiId}_all`]: [],
         [`${poiId}_summary`]: 'Error querying transportation features'
       };
+    }
+  }
+
+  private async getTIGERSpecialLandUse(lat: number, lon: number, layerId: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerConfigs: Record<number, { name: string; poiId: string }> = {
+        0: { name: 'National Park Service Areas', poiId: 'tiger_nps_areas' },
+        1: { name: 'Correctional Facilities', poiId: 'tiger_correctional_facilities' },
+        2: { name: 'Colleges and Universities', poiId: 'tiger_colleges_universities' },
+        3: { name: 'Military Installations', poiId: 'tiger_military_installations' }
+      };
+      
+      const config = layerConfigs[layerId];
+      if (!config) {
+        console.error(`❌ Unknown TIGER Special Land Use Areas layer ID: ${layerId}`);
+        return {};
+      }
+      
+      const data = await getTIGERSpecialLandUseData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      // Containing polygon
+      if (data.containing) {
+        const containing = data.containing;
+        result[`${config.poiId}_containing`] = {
+          name: containing.name || 'Unknown',
+          stateFips: containing.stateFips,
+          countyFips: containing.countyFips,
+          landUseType: containing.landUseType,
+          objectId: containing.objectId,
+          ...containing.attributes
+        };
+        
+        // Store geometry separately for map rendering
+        Object.defineProperty(result[`${config.poiId}_containing`], '__geometry', {
+          value: containing.geometry,
+          enumerable: false,
+          writable: false
+        });
+      } else {
+        result[`${config.poiId}_containing`] = null;
+      }
+      
+      // Nearby polygons
+      if (data.nearby && data.nearby.length > 0) {
+        result[`${config.poiId}_nearby_count`] = data.nearby.length;
+        result[`${config.poiId}_nearby_features`] = data.nearby.map(feature => {
+          const featureData: Record<string, any> = {
+            name: feature.name || 'Unknown',
+            stateFips: feature.stateFips,
+            countyFips: feature.countyFips,
+            landUseType: feature.landUseType,
+            objectId: feature.objectId,
+            distance_miles: Math.round(feature.distance_miles! * 100) / 100,
+            ...feature.attributes
+          };
+          
+          // Store geometry separately for map rendering
+          Object.defineProperty(featureData, '__geometry', {
+            value: feature.geometry,
+            enumerable: false,
+            writable: false
+          });
+          
+          return featureData;
+        });
+        
+        // Store all features for CSV export
+        result[`${config.poiId}_all`] = [
+          ...(data.containing ? [data.containing] : []),
+          ...data.nearby
+        ];
+      } else {
+        result[`${config.poiId}_nearby_count`] = 0;
+        result[`${config.poiId}_nearby_features`] = [];
+        result[`${config.poiId}_all`] = data.containing ? [data.containing] : [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching TIGER Special Land Use Areas Layer ${layerId}:`, error);
+      return {};
     }
   }
 

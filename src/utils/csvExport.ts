@@ -367,6 +367,14 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'tiger_census2020_secondary_school_districts_all' || // Skip TIGER Census 2020 Secondary School Districts array (handled separately)
         key === 'tiger_census2020_elementary_school_districts_containing' || // Skip TIGER Census 2020 Elementary School Districts containing (handled separately)
         key === 'tiger_census2020_elementary_school_districts_all' || // Skip TIGER Census 2020 Elementary School Districts array (handled separately)
+        key === 'tiger_nps_areas_containing' || // Skip TIGER National Park Service Areas containing (handled separately)
+        key === 'tiger_nps_areas_all' || // Skip TIGER National Park Service Areas array (handled separately)
+        key === 'tiger_correctional_facilities_containing' || // Skip TIGER Correctional Facilities containing (handled separately)
+        key === 'tiger_correctional_facilities_all' || // Skip TIGER Correctional Facilities array (handled separately)
+        key === 'tiger_colleges_universities_containing' || // Skip TIGER Colleges and Universities containing (handled separately)
+        key === 'tiger_colleges_universities_all' || // Skip TIGER Colleges and Universities array (handled separately)
+        key === 'tiger_military_installations_containing' || // Skip TIGER Military Installations containing (handled separately)
+        key === 'tiger_military_installations_all' || // Skip TIGER Military Installations array (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -5388,6 +5396,90 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       { containingKey: 'tiger_census2020_secondary_school_districts_containing', allKey: 'tiger_census2020_secondary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_SECONDARY_SCHOOL_DISTRICTS' },
       { containingKey: 'tiger_census2020_elementary_school_districts_containing', allKey: 'tiger_census2020_elementary_school_districts_all', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_ELEMENTARY_SCHOOL_DISTRICTS' }
     ];
+
+    // Add TIGER Special Land Use Areas data rows
+    const tigerSpecialLandUseLayers = [
+      { containingKey: 'tiger_nps_areas_containing', nearbyKey: 'tiger_nps_areas_nearby_features', source: 'US Census TIGER', category: 'TIGER_NPS_AREAS' },
+      { containingKey: 'tiger_correctional_facilities_containing', nearbyKey: 'tiger_correctional_facilities_nearby_features', source: 'US Census TIGER', category: 'TIGER_CORRECTIONAL_FACILITIES' },
+      { containingKey: 'tiger_colleges_universities_containing', nearbyKey: 'tiger_colleges_universities_nearby_features', source: 'US Census TIGER', category: 'TIGER_COLLEGES_UNIVERSITIES' },
+      { containingKey: 'tiger_military_installations_containing', nearbyKey: 'tiger_military_installations_nearby_features', source: 'US Census TIGER', category: 'TIGER_MILITARY_INSTALLATIONS' }
+    ];
+
+    tigerSpecialLandUseLayers.forEach(({ containingKey, nearbyKey, source, category }) => {
+      // Add containing area
+      if (enrichments[containingKey] && enrichments[containingKey] !== null) {
+        const feature = enrichments[containingKey];
+        const featureName = feature.name || 'Unknown';
+        const stateFips = feature.stateFips || '';
+        const countyFips = feature.countyFips || '';
+        const landUseType = feature.landUseType || '';
+        const objectId = feature.objectId || '';
+        const attributesJson = JSON.stringify({
+          stateFips,
+          countyFips,
+          landUseType,
+          objectId,
+          ...feature
+        });
+
+        rows.push([
+          result.location.name,
+          result.location.lat.toString(),
+          result.location.lon.toString(),
+          source,
+          result.location.confidence?.toString() || '',
+          category,
+          featureName,
+          result.location.lat.toString(), // Use search location (it's a polygon, not a point)
+          result.location.lon.toString(),
+          '0.00', // Containing area has distance 0
+          stateFips || attributesJson,
+          countyFips || attributesJson,
+          landUseType || '',
+          objectId || '',
+          attributesJson,
+          source
+        ]);
+      }
+
+      // Add nearby features
+      if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+        enrichments[nearbyKey].forEach((feature: any) => {
+          const featureName = feature.name || 'Unknown';
+          const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+          const stateFips = feature.stateFips || '';
+          const countyFips = feature.countyFips || '';
+          const landUseType = feature.landUseType || '';
+          const objectId = feature.objectId || '';
+          const attributesJson = JSON.stringify({
+            stateFips,
+            countyFips,
+            landUseType,
+            objectId,
+            ...feature
+          });
+
+          rows.push([
+            result.location.name,
+            result.location.lat.toString(),
+            result.location.lon.toString(),
+            source,
+            result.location.confidence?.toString() || '',
+            category,
+            featureName,
+            result.location.lat.toString(), // Use search location (it's a polygon, not a point)
+            result.location.lon.toString(),
+            distance,
+            stateFips || attributesJson,
+            countyFips || attributesJson,
+            landUseType || '',
+            objectId || '',
+            attributesJson,
+            source
+          ]);
+        });
+      }
+    });
 
     tigerSchoolDistrictLayers.forEach(({ containingKey, allKey, source, category }) => {
       // Add containing district

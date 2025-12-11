@@ -788,7 +788,15 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'tiger_census2020_secondary_school_districts_containing' || // Skip TIGER Census 2020 Secondary School Districts containing (handled separately for map drawing)
     key === 'tiger_census2020_secondary_school_districts_all' || // Skip TIGER Census 2020 Secondary School Districts array (handled separately for map drawing)
     key === 'tiger_census2020_elementary_school_districts_containing' || // Skip TIGER Census 2020 Elementary School Districts containing (handled separately for map drawing)
-    key === 'tiger_census2020_elementary_school_districts_all' // Skip TIGER Census 2020 Elementary School Districts array (handled separately for map drawing)
+    key === 'tiger_census2020_elementary_school_districts_all' || // Skip TIGER Census 2020 Elementary School Districts array (handled separately for map drawing)
+    key === 'tiger_nps_areas_containing' || // Skip TIGER National Park Service Areas containing (handled separately for map drawing)
+    key === 'tiger_nps_areas_all' || // Skip TIGER National Park Service Areas array (handled separately for map drawing)
+    key === 'tiger_correctional_facilities_containing' || // Skip TIGER Correctional Facilities containing (handled separately for map drawing)
+    key === 'tiger_correctional_facilities_all' || // Skip TIGER Correctional Facilities array (handled separately for map drawing)
+    key === 'tiger_colleges_universities_containing' || // Skip TIGER Colleges and Universities containing (handled separately for map drawing)
+    key === 'tiger_colleges_universities_all' || // Skip TIGER Colleges and Universities array (handled separately for map drawing)
+    key === 'tiger_military_installations_containing' || // Skip TIGER Military Installations containing (handled separately for map drawing)
+    key === 'tiger_military_installations_all' // Skip TIGER Military Installations array (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -5953,6 +5961,139 @@ const MapView: React.FC<MapViewProps> = ({
         { allKey: 'tiger_census2020_secondary_school_districts_all', containingKey: 'tiger_census2020_secondary_school_districts_containing', name: 'TIGER Census 2020 Secondary School Districts', color: '#8b5cf6', icon: '🏫', layerType: 'tiger_census2020_secondary_school_districts' },
         { allKey: 'tiger_census2020_elementary_school_districts_all', containingKey: 'tiger_census2020_elementary_school_districts_containing', name: 'TIGER Census 2020 Elementary School Districts', color: '#ec4899', icon: '🏫', layerType: 'tiger_census2020_elementary_school_districts' }
       ];
+
+      // Draw TIGER Special Land Use Areas as polygons on the map
+      const tigerSpecialLandUseLayers = [
+        { containingKey: 'tiger_nps_areas_containing', nearbyKey: 'tiger_nps_areas_nearby_features', name: 'TIGER National Park Service Areas', color: '#10b981', icon: '🏞️', layerType: 'tiger_nps_areas' },
+        { containingKey: 'tiger_correctional_facilities_containing', nearbyKey: 'tiger_correctional_facilities_nearby_features', name: 'TIGER Correctional Facilities', color: '#ef4444', icon: '🏛️', layerType: 'tiger_correctional_facilities' },
+        { containingKey: 'tiger_colleges_universities_containing', nearbyKey: 'tiger_colleges_universities_nearby_features', name: 'TIGER Colleges and Universities', color: '#8b5cf6', icon: '🎓', layerType: 'tiger_colleges_universities' },
+        { containingKey: 'tiger_military_installations_containing', nearbyKey: 'tiger_military_installations_nearby_features', name: 'TIGER Military Installations', color: '#6366f1', icon: '⚔️', layerType: 'tiger_military_installations' }
+      ];
+
+      tigerSpecialLandUseLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing polygon
+        if (enrichments[containingKey] && (enrichments[containingKey] as any).__geometry) {
+          const feature = enrichments[containingKey];
+          const geometry = (feature as any).__geometry || (feature as any).geometry;
+          if (geometry && geometry.rings) {
+            try {
+              const rings = geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: 3,
+                  opacity: 0.9,
+                  fillColor: color,
+                  fillOpacity: 0.4
+                });
+
+                const featureName = (feature as any).name || 'Unknown';
+                const stateFips = (feature as any).stateFips || '';
+                const countyFips = (feature as any).countyFips || '';
+                const landUseType = (feature as any).landUseType || '';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${icon} ${featureName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> Containing Area</div>
+                      ${landUseType ? `<div><strong>Land Use Type:</strong> ${landUseType}</div>` : ''}
+                      ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                      ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                (polygon as any).__layerType = layerType;
+                (polygon as any).__layerTitle = name;
+                bounds.extend(polygon.getBounds());
+                featureCount += 1;
+              }
+            } catch (error) {
+              console.error(`Error drawing ${name} containing polygon:`, error);
+            }
+          }
+        }
+
+        // Draw nearby features
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((feature: any) => {
+            const geometry = feature.__geometry || feature.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const featureName = feature.name || 'Unknown';
+                  const distance = feature.distance_miles ? feature.distance_miles.toFixed(2) : 'Unknown';
+                  const stateFips = feature.stateFips || '';
+                  const countyFips = feature.countyFips || '';
+                  const landUseType = feature.landUseType || '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${landUseType ? `<div><strong>Land Use Type:</strong> ${landUseType}</div>` : ''}
+                        ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                        ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
 
       tigerSchoolDistrictLayers.forEach(({ allKey, containingKey, name, color, icon, layerType }) => {
         // Draw containing district
