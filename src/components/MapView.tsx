@@ -5184,15 +5184,17 @@ const MapView: React.FC<MapViewProps> = ({
       // Draw PAD-US Public Access as polygons on the map
       if (enrichments.padus_public_access_all && Array.isArray(enrichments.padus_public_access_all)) {
         enrichments.padus_public_access_all.forEach((land: any, index: number) => {
-          if (!land.geometry || !land.geometry.rings) {
+          // Check for geometry in __geometry (for summary) or geometry (backward compatibility)
+          const geometry = land.__geometry || land.geometry;
+          if (!geometry || !geometry.rings) {
             return;
           }
           
-          if (land.geometry && land.geometry.rings) {
+          if (geometry && geometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng array
               // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
-              const rings = land.geometry.rings;
+              const rings = geometry.rings;
               
               if (rings && rings.length > 0) {
                 const outerRing = rings[0]; // First ring is the outer boundary
@@ -5288,29 +5290,31 @@ const MapView: React.FC<MapViewProps> = ({
         console.log(`🗺️ Map instance exists:`, !!map);
         console.log(`🗺️ Primary layer group exists:`, !!primary);
         enrichments.padus_protection_status_all.forEach((land: any, index: number) => {
+          // Check for geometry in __geometry (for summary) or geometry (backward compatibility)
+          const landGeometry = land.__geometry || land.geometry;
           console.log(`🗺️ PAD-US Protection Status ${index}:`, {
-            hasGeometry: !!land.geometry,
-            geometryType: land.geometry?.type || (land.geometry?.rings ? 'rings' : 'unknown'),
-            hasRings: !!land.geometry?.rings,
-            ringsLength: land.geometry?.rings?.length,
+            hasGeometry: !!landGeometry,
+            geometryType: landGeometry?.type || (landGeometry?.rings ? 'rings' : 'unknown'),
+            hasRings: !!landGeometry?.rings,
+            ringsLength: landGeometry?.rings?.length,
             fullLand: land // Log full object for debugging
           });
           
-          if (!land.geometry) {
+          if (!landGeometry) {
             console.warn(`⚠️ PAD-US Protection Status ${index} has no geometry!`);
             return;
           }
           
-          if (!land.geometry.rings) {
-            console.warn(`⚠️ PAD-US Protection Status ${index} geometry has no rings! Geometry:`, land.geometry);
+          if (!landGeometry.rings) {
+            console.warn(`⚠️ PAD-US Protection Status ${index} geometry has no rings! Geometry:`, landGeometry);
             return;
           }
           
-          if (land.geometry && land.geometry.rings) {
+          if (landGeometry && landGeometry.rings) {
             try {
               // Convert ESRI polygon rings to Leaflet LatLng array
               // ESRI polygons have rings (outer ring + holes), we'll use the first ring (outer boundary)
-              const rings = land.geometry.rings;
+              const rings = landGeometry.rings;
               console.log(`🔍 PAD-US Protection Status ${index}: Processing rings, count: ${rings?.length}`);
               
               if (rings && rings.length > 0) {
@@ -5323,7 +5327,7 @@ const MapView: React.FC<MapViewProps> = ({
                 }
                 
                 // Check spatial reference - PAD-US might return Web Mercator (3857) or other projection
-                const spatialRef = land.geometry.spatialReference || land.geometry.spatialref;
+                const spatialRef = landGeometry.spatialReference || landGeometry.spatialref;
                 const wkid = spatialRef?.wkid || spatialRef?.latestWkid;
                 console.log(`🔍 PAD-US Protection Status ${index}: Spatial Reference WKID: ${wkid}, first coord: [${outerRing[0]?.[0]}, ${outerRing[0]?.[1]}]`);
                 
@@ -5700,6 +5704,91 @@ const MapView: React.FC<MapViewProps> = ({
             }
           }
         });
+      }
+
+      // Draw NRI Rivers as polylines on the map
+      if (enrichments.nri_rivers_all && Array.isArray(enrichments.nri_rivers_all)) {
+        let nriRiverCount = 0;
+        enrichments.nri_rivers_all.forEach((river: any) => {
+          // Check for geometry in __geometry (for summary) or geometry (backward compatibility)
+          const geometry = river.__geometry || river.geometry;
+          if (geometry && geometry.paths) {
+            try {
+              // Convert ESRI polyline paths to Leaflet LatLng arrays
+              const paths = geometry.paths;
+              paths.forEach((path: number[][]) => {
+                const latlngs = path.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polyline = L.polyline(latlngs, {
+                  color: '#0284c7', // Blue color for NRI rivers
+                  weight: 4,
+                  opacity: 0.9
+                });
+
+                // Build popup content with NRI river attributes
+                const riverName = river.river || 'Unknown River';
+                const reach = river.reach || null;
+                const classification = river.classification || null;
+                const orv = river.orv || null;
+                const managementAreaName = river.managementAreaName || null;
+                const state1 = river.state1 || null;
+                const county = river.county || null;
+                const originalMiles = river.originalMiles !== null && river.originalMiles !== undefined ? river.originalMiles : null;
+                const gisMiles = river.gisMiles !== null && river.gisMiles !== undefined ? river.gisMiles : null;
+                const description = river.description || null;
+                const distance = river.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🌊 ${riverName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${reach ? `<div><strong>Reach:</strong> ${reach}</div>` : ''}
+                      ${classification ? `<div><strong>Classification:</strong> ${classification}</div>` : ''}
+                      ${orv ? `<div><strong>Outstandingly Remarkable Values:</strong> ${orv}</div>` : ''}
+                      ${managementAreaName ? `<div><strong>Management Area:</strong> ${managementAreaName}</div>` : ''}
+                      ${state1 ? `<div><strong>State:</strong> ${state1}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${originalMiles !== null ? `<div><strong>Original Miles:</strong> ${originalMiles.toFixed(2)}</div>` : ''}
+                      ${gisMiles !== null ? `<div><strong>GIS Miles:</strong> ${gisMiles.toFixed(2)}</div>` : ''}
+                      ${description ? `<div style="margin-top: 8px;"><strong>Description:</strong> ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polyline.bindPopup(popupContent, { maxWidth: 400 });
+                polyline.addTo(primary);
+                
+                // Store metadata for tabbed popup
+                (polyline as any).__layerType = 'nri_rivers';
+                (polyline as any).__layerTitle = 'NRI Rivers';
+                
+                bounds.extend(polyline.getBounds());
+              });
+              
+              nriRiverCount++;
+            } catch (error) {
+              console.error('Error drawing NRI River polyline:', error);
+            }
+          }
+        });
+        
+        if (nriRiverCount > 0) {
+          if (!legendAccumulator['nri_rivers']) {
+            legendAccumulator['nri_rivers'] = {
+              icon: '🌊',
+              color: '#0284c7',
+              title: 'NRI Rivers',
+              count: 0,
+            };
+          }
+          legendAccumulator['nri_rivers'].count += nriRiverCount;
+        }
       }
 
       // Draw MA Regional Planning Agencies as polygons on the map
@@ -21156,7 +21245,7 @@ const MapView: React.FC<MapViewProps> = ({
         
         {/* Basemap Dropdown - Desktop only */}
         {!isMobile && (
-          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10">
+          <div className="absolute top-4 left-20 bg-white rounded-lg shadow-lg p-3 z-10">
             <label htmlFor="basemap-select" className="block text-sm font-semibold text-black mb-2">
               Basemap
             </label>

@@ -151,6 +151,7 @@ import { getUSFSCORoadlessAreasData } from '../adapters/usfsCORoadlessAreas';
 import { getNPSNationalParksData } from '../adapters/npsNationalParks';
 import { getNPSCampgroundsData } from '../adapters/npsCampgrounds';
 import { getNPSVisitorCentersData } from '../adapters/npsVisitorCenters';
+import { getNRIRiversData } from '../adapters/nriRivers';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -1660,6 +1661,10 @@ export class EnrichmentService {
         return await this.getMALakesAndPonds(lat, lon, radius);
       case 'ma_rivers_and_streams':
         return await this.getMARiversAndStreams(lat, lon, radius);
+      
+      // Nationwide Rivers Inventory
+      case 'nri_rivers':
+        return await this.getNRIRivers(lat, lon, radius);
       
       // MA Regional Planning Agencies (MassGIS) - Point-in-polygon query
       case 'ma_regional_planning_agencies':
@@ -7642,29 +7647,52 @@ out center;`;
         padus_public_access_nearby_count: nearbyLands.length,
         padus_public_access_nearby_access_counts: accessCounts,
         padus_public_access_nearby_manager_counts: managerCounts,
-        padus_public_access_nearby_features: nearbyLands.map((feature: any) => ({
-          objectId: feature.attributes.OBJECTID,
-          category: feature.attributes.Category,
-          featureClass: feature.attributes.FeatClass,
-          unitName: feature.attributes.Unit_Nm,
-          publicAccess: feature.attributes.Pub_Access,
-          gapStatus: feature.attributes.GAP_Sts,
-          iucnCategory: feature.attributes.IUCN_Cat,
-          managerType: feature.attributes.MngTp_Desc,
-          managerName: feature.attributes.MngNm_Desc,
-          designationType: feature.attributes.DesTp_Desc,
-          boundaryName: feature.attributes.BndryName,
-          state: feature.attributes.ST_Name,
-          acres: feature.attributes.GIS_AcrsDb,
-          geometry: feature.geometry // Include geometry for map drawing
-        })),
+        padus_public_access_nearby_features: nearbyLands.map((feature: any) => {
+          const featureData: any = {
+            objectId: feature.attributes.OBJECTID,
+            category: feature.attributes.Category,
+            featureClass: feature.attributes.FeatClass,
+            unitName: feature.attributes.Unit_Nm,
+            publicAccess: feature.attributes.Pub_Access,
+            gapStatus: feature.attributes.GAP_Sts,
+            iucnCategory: feature.attributes.IUCN_Cat,
+            managerType: feature.attributes.MngTp_Desc,
+            managerName: feature.attributes.MngNm_Desc,
+            designationType: feature.attributes.DesTp_Desc,
+            boundaryName: feature.attributes.BndryName,
+            state: feature.attributes.ST_Name,
+            acres: feature.attributes.GIS_AcrsDb
+          };
+          // Store geometry separately for map drawing (not in summary output)
+          (featureData as any).__geometry = feature.geometry;
+          return featureData;
+        }),
         padus_public_access_all: (() => {
           const allFeatures: any[] = [];
           
           // Add containing feature first if it exists
           if (isInsidePublicLand && insideLandInfo && insideLandInfo.geometry) {
             console.log('🔍 PAD-US Public Access: Adding containing feature with geometry:', !!insideLandInfo.geometry, 'has rings:', !!insideLandInfo.geometry?.rings);
-            allFeatures.push(insideLandInfo);
+            // Create copy without geometry for summary, but keep geometry for map
+            const featureData: any = {
+              objectId: insideLandInfo.objectId,
+              category: insideLandInfo.category,
+              featureClass: insideLandInfo.featureClass,
+              unitName: insideLandInfo.unitName,
+              publicAccess: insideLandInfo.publicAccess,
+              gapStatus: insideLandInfo.gapStatus,
+              iucnCategory: insideLandInfo.iucnCategory,
+              managerType: insideLandInfo.managerType,
+              managerName: insideLandInfo.managerName,
+              designationType: insideLandInfo.designationType,
+              boundaryName: insideLandInfo.boundaryName,
+              state: insideLandInfo.state,
+              acres: insideLandInfo.acres,
+              distance_miles: 0
+            };
+            // Store geometry separately for map drawing (not in summary output)
+            (featureData as any).__geometry = insideLandInfo.geometry;
+            allFeatures.push(featureData);
           }
           
           // Add nearby features, avoiding duplicates
@@ -7679,7 +7707,7 @@ out center;`;
               if (idx === 0) {
                 console.log('🔍 PAD-US Public Access: First nearby feature has geometry:', !!feature.geometry, 'has rings:', !!feature.geometry?.rings);
               }
-              allFeatures.push({
+              const featureData: any = {
                 objectId: feature.attributes.OBJECTID,
                 category: feature.attributes.Category,
                 featureClass: feature.attributes.FeatClass,
@@ -7693,9 +7721,11 @@ out center;`;
                 boundaryName: feature.attributes.BndryName,
                 state: feature.attributes.ST_Name,
                 acres: feature.attributes.GIS_AcrsDb,
-                geometry: feature.geometry, // Preserve geometry for map drawing
                 distance_miles: 0 // Will be calculated if needed
-              });
+              };
+              // Store geometry separately for map drawing (not in summary output)
+              (featureData as any).__geometry = feature.geometry;
+              allFeatures.push(featureData);
               addedObjectIds.add(objectId);
             }
           });
@@ -7779,16 +7809,18 @@ out center;`;
             if (idx === 0) {
               console.log('🔍 PAD-US Protection Status: First feature has geometry:', !!feature.geometry, 'has rings:', !!feature.geometry?.rings);
             }
-            return {
+            const featureData: any = {
               objectId: feature.attributes.OBJECTID,
               gapStatus: feature.attributes.GAP_Sts,
               iucnCategory: feature.attributes.IUCN_Cat,
               category: feature.attributes.Category,
               unitName: feature.attributes.Unit_Nm,
               publicAccess: feature.attributes.Pub_Access,
-              geometry: feature.geometry, // Preserve geometry for map drawing
               distance_miles: 0 // Will be calculated if needed
             };
+            // Store geometry separately for map drawing (not in summary output)
+            (featureData as any).__geometry = feature.geometry;
+            return featureData;
           });
           console.log(`✅ PAD-US Protection Status: Created _all array with ${allFeatures.length} features, first has geometry:`, !!(allFeatures[0] as any)?.geometry);
           return allFeatures;
@@ -7799,6 +7831,77 @@ out center;`;
     } catch (error) {
       console.error('🛡️ PAD-US Protection Status query failed:', error);
       return { padus_protection_status_error: error instanceof Error ? error.message : String(error)       };
+    }
+  }
+
+  private async getNRIRivers(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NRI Rivers data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const result: Record<string, any> = {};
+      
+      if (!radius || radius <= 0) {
+        // NRI Rivers require a radius for proximity queries
+        result.nri_rivers_count = 0;
+        result.nri_rivers_all = [];
+        return result;
+      }
+      
+      const rivers = await getNRIRiversData(lat, lon, radius);
+      console.log(`🌊 NRI Rivers from adapter: ${rivers.length} found`);
+      
+      if (rivers.length > 0) {
+        result.nri_rivers_count = rivers.length;
+        result.nri_rivers_all = rivers.map(river => {
+          const riverAny = river as any;
+          const geometry = riverAny.geometry;
+          const attributes = riverAny.attributes;
+          const { geometry: _geom, ...rest } = riverAny;
+          // Exclude geometry from attributes if it exists there
+          const { geometry: _geom2, ...cleanAttributes } = attributes || {};
+          // Exclude geometry from rest to ensure it doesn't overwrite
+          const { geometry: _geom3, ...cleanRest } = rest || {};
+          return {
+            ...cleanAttributes,
+            ...cleanRest,
+            __geometry: geometry, // Store geometry separately for map drawing (not in summary output)
+            nriId: river.nriId,
+            river: river.river,
+            reach: river.reach,
+            originalMiles: river.originalMiles,
+            gisMiles: river.gisMiles,
+            classification: river.classification,
+            managementAreaName: river.managementAreaName,
+            gnisName: river.gnisName,
+            description: river.description,
+            state1: river.state1,
+            county: river.county,
+            orv: river.orv,
+            managementEntityFed1: river.managementEntityFed1,
+            watershedName6: river.watershedName6,
+            hucCode6: river.hucCode6,
+            watershedName8: river.watershedName8,
+            hucCode8: river.hucCode8,
+            yrListed: river.yrListed,
+            yrUpdated: river.yrUpdated,
+            distance_miles: river.distance_miles
+          };
+        });
+        result.nri_rivers_summary = `Found ${rivers.length} NRI river segment${rivers.length === 1 ? '' : 's'} within ${radius} miles`;
+      } else {
+        result.nri_rivers_count = 0;
+        result.nri_rivers_all = [];
+        result.nri_rivers_summary = `No NRI rivers found within ${radius} miles`;
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ NRI Rivers query failed:', error);
+      return {
+        nri_rivers_error: error instanceof Error ? error.message : String(error),
+        nri_rivers_count: 0,
+        nri_rivers_all: []
+      };
     }
   }
 

@@ -107,7 +107,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return entries.join(', ');
       }
       
-      return JSON.stringify(value);
+      // Filter out geometry and __geometry properties before stringifying
+      const filteredValue = { ...value };
+      delete (filteredValue as any).geometry;
+      delete (filteredValue as any).__geometry;
+      return JSON.stringify(filteredValue);
     }
     
     return String(value);
@@ -503,7 +507,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Hazards';
       } else if (key.includes('poi_epa_')) {
         category = 'Human Caused Hazards';
-      } else if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
+      } else if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('nps_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';
       } else if (key.startsWith('at_') || (key.includes('at_') && !key.includes('blm_'))) {
         category = 'Appalachian Trail';

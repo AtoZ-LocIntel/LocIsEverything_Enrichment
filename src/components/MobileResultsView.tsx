@@ -111,7 +111,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // Regular array handling for non-POI data
       return value.map((item: any) => {
         if (typeof item === 'object' && item !== null) {
-          return item.name || item.title || JSON.stringify(item);
+          // Filter out geometry properties before stringifying
+          const filteredItem = { ...item };
+          delete (filteredItem as any).geometry;
+          delete (filteredItem as any).__geometry;
+          return item.name || item.title || JSON.stringify(filteredItem);
         }
         return String(item);
       }).join('; ');
@@ -146,7 +150,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         return entries.join(', ');
       }
       
-      return JSON.stringify(value);
+      // Filter out geometry and __geometry properties before stringifying
+      const filteredValue = { ...value };
+      delete (filteredValue as any).geometry;
+      delete (filteredValue as any).__geometry;
+      return JSON.stringify(filteredValue);
     }
     
     // Handle USDA Wildfire Risk data
@@ -304,7 +312,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Transportation';
     }
     // Check BLM, PADUS, and USFS before AT/PCT to avoid false matches
-    if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
+    if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('nps_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
       return 'Public Lands';
     }
     if (key.startsWith('at_') || (key.includes('at_') && !key.includes('blm_'))) {
