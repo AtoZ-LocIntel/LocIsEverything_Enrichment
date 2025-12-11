@@ -515,6 +515,94 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Special_Land_Use_Areas/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - Alaska Native Regional Corporations",
+          description: "US Census TIGER - Alaska Native Regional Corporations (ANRC) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States (Alaska)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - Tribal Subdivisions",
+          description: "US Census TIGER - Tribal Subdivisions boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - Federal American Indian Reservations",
+          description: "US Census TIGER - Federal American Indian Reservations (AIR) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - Off-Reservation Trust Lands",
+          description: "US Census TIGER - Off-Reservation Trust Lands boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - State American Indian Reservations",
+          description: "US Census TIGER - State American Indian Reservations (SAIR) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - Hawaiian Home Lands",
+          description: "US Census TIGER - Hawaiian Home Lands (HHL) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States (Hawaii)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - Alaska Native Village Statistical Areas",
+          description: "US Census TIGER - Alaska Native Village Statistical Areas (ANVSA) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States (Alaska)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - Oklahoma Tribal Statistical Areas",
+          description: "US Census TIGER - Oklahoma Tribal Statistical Areas (OTSA) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States (Oklahoma)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - State Designated Tribal Statistical Areas",
+          description: "US Census TIGER - State Designated Tribal Statistical Areas (SDTSA) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - Tribal Designated Statistical Areas",
+          description: "US Census TIGER - Tribal Designated Statistical Areas (TDSA) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          name: "TIGER Native Lands - American Indian Joint-Use Areas",
+          description: "US Census TIGER - American Indian Joint-Use Areas (AIJUA) boundaries - point-in-polygon and proximity queries up to 25 miles. Includes base layer, BAS 2025, ACS 2024, and Census 2020 versions.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
         }
       ]
     },

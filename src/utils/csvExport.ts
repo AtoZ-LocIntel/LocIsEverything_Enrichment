@@ -375,6 +375,54 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'tiger_colleges_universities_all' || // Skip TIGER Colleges and Universities array (handled separately)
         key === 'tiger_military_installations_containing' || // Skip TIGER Military Installations containing (handled separately)
         key === 'tiger_military_installations_all' || // Skip TIGER Military Installations array (handled separately)
+        // TIGER Native Lands skip list - Base layers
+        key === 'tiger_anrc_containing' || key === 'tiger_anrc_all' ||
+        key === 'tiger_tribal_subdivisions_containing' || key === 'tiger_tribal_subdivisions_all' ||
+        key === 'tiger_federal_air_containing' || key === 'tiger_federal_air_all' ||
+        key === 'tiger_off_reservation_trust_containing' || key === 'tiger_off_reservation_trust_all' ||
+        key === 'tiger_state_air_containing' || key === 'tiger_state_air_all' ||
+        key === 'tiger_hhl_containing' || key === 'tiger_hhl_all' ||
+        key === 'tiger_anvsa_containing' || key === 'tiger_anvsa_all' ||
+        key === 'tiger_otsa_containing' || key === 'tiger_otsa_all' ||
+        key === 'tiger_sdtsa_containing' || key === 'tiger_sdtsa_all' ||
+        key === 'tiger_tdsa_containing' || key === 'tiger_tdsa_all' ||
+        key === 'tiger_aijua_containing' || key === 'tiger_aijua_all' ||
+        // TIGER Native Lands skip list - BAS 2025
+        key === 'tiger_bas2025_anrc_containing' || key === 'tiger_bas2025_anrc_all' ||
+        key === 'tiger_bas2025_tribal_subdivisions_containing' || key === 'tiger_bas2025_tribal_subdivisions_all' ||
+        key === 'tiger_bas2025_federal_air_containing' || key === 'tiger_bas2025_federal_air_all' ||
+        key === 'tiger_bas2025_off_reservation_trust_containing' || key === 'tiger_bas2025_off_reservation_trust_all' ||
+        key === 'tiger_bas2025_state_air_containing' || key === 'tiger_bas2025_state_air_all' ||
+        key === 'tiger_bas2025_hhl_containing' || key === 'tiger_bas2025_hhl_all' ||
+        key === 'tiger_bas2025_anvsa_containing' || key === 'tiger_bas2025_anvsa_all' ||
+        key === 'tiger_bas2025_otsa_containing' || key === 'tiger_bas2025_otsa_all' ||
+        key === 'tiger_bas2025_sdtsa_containing' || key === 'tiger_bas2025_sdtsa_all' ||
+        key === 'tiger_bas2025_tdsa_containing' || key === 'tiger_bas2025_tdsa_all' ||
+        key === 'tiger_bas2025_aijua_containing' || key === 'tiger_bas2025_aijua_all' ||
+        // TIGER Native Lands skip list - ACS 2024
+        key === 'tiger_acs2024_anrc_containing' || key === 'tiger_acs2024_anrc_all' ||
+        key === 'tiger_acs2024_tribal_subdivisions_containing' || key === 'tiger_acs2024_tribal_subdivisions_all' ||
+        key === 'tiger_acs2024_federal_air_containing' || key === 'tiger_acs2024_federal_air_all' ||
+        key === 'tiger_acs2024_off_reservation_trust_containing' || key === 'tiger_acs2024_off_reservation_trust_all' ||
+        key === 'tiger_acs2024_state_air_containing' || key === 'tiger_acs2024_state_air_all' ||
+        key === 'tiger_acs2024_hhl_containing' || key === 'tiger_acs2024_hhl_all' ||
+        key === 'tiger_acs2024_anvsa_containing' || key === 'tiger_acs2024_anvsa_all' ||
+        key === 'tiger_acs2024_otsa_containing' || key === 'tiger_acs2024_otsa_all' ||
+        key === 'tiger_acs2024_sdtsa_containing' || key === 'tiger_acs2024_sdtsa_all' ||
+        key === 'tiger_acs2024_tdsa_containing' || key === 'tiger_acs2024_tdsa_all' ||
+        key === 'tiger_acs2024_aijua_containing' || key === 'tiger_acs2024_aijua_all' ||
+        // TIGER Native Lands skip list - Census 2020
+        key === 'tiger_census2020_anrc_containing' || key === 'tiger_census2020_anrc_all' ||
+        key === 'tiger_census2020_tribal_subdivisions_containing' || key === 'tiger_census2020_tribal_subdivisions_all' ||
+        key === 'tiger_census2020_federal_air_containing' || key === 'tiger_census2020_federal_air_all' ||
+        key === 'tiger_census2020_off_reservation_trust_containing' || key === 'tiger_census2020_off_reservation_trust_all' ||
+        key === 'tiger_census2020_state_air_containing' || key === 'tiger_census2020_state_air_all' ||
+        key === 'tiger_census2020_hhl_containing' || key === 'tiger_census2020_hhl_all' ||
+        key === 'tiger_census2020_anvsa_containing' || key === 'tiger_census2020_anvsa_all' ||
+        key === 'tiger_census2020_otsa_containing' || key === 'tiger_census2020_otsa_all' ||
+        key === 'tiger_census2020_sdtsa_containing' || key === 'tiger_census2020_sdtsa_all' ||
+        key === 'tiger_census2020_tdsa_containing' || key === 'tiger_census2020_tdsa_all' ||
+        key === 'tiger_census2020_aijua_containing' || key === 'tiger_census2020_aijua_all' || // Skip TIGER Native Lands arrays (handled separately)
         key === 'de_natural_areas_all' ||
         key === 'de_outdoor_recreation_parks_trails_lands_all' ||
         key === 'de_land_water_conservation_fund_all' ||
@@ -5473,6 +5521,134 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
             stateFips || attributesJson,
             countyFips || attributesJson,
             landUseType || '',
+            objectId || '',
+            attributesJson,
+            source
+          ]);
+        });
+      }
+    });
+
+    // Add TIGER Native Lands data rows
+    const tigerNativeLandsLayers = [
+      // Base layers (0-10)
+      { containingKey: 'tiger_anrc_containing', nearbyKey: 'tiger_anrc_nearby_features', source: 'US Census TIGER', category: 'TIGER_ANRC' },
+      { containingKey: 'tiger_tribal_subdivisions_containing', nearbyKey: 'tiger_tribal_subdivisions_nearby_features', source: 'US Census TIGER', category: 'TIGER_TRIBAL_SUBDIVISIONS' },
+      { containingKey: 'tiger_federal_air_containing', nearbyKey: 'tiger_federal_air_nearby_features', source: 'US Census TIGER', category: 'TIGER_FEDERAL_AIR' },
+      { containingKey: 'tiger_off_reservation_trust_containing', nearbyKey: 'tiger_off_reservation_trust_nearby_features', source: 'US Census TIGER', category: 'TIGER_OFF_RESERVATION_TRUST' },
+      { containingKey: 'tiger_state_air_containing', nearbyKey: 'tiger_state_air_nearby_features', source: 'US Census TIGER', category: 'TIGER_STATE_AIR' },
+      { containingKey: 'tiger_hhl_containing', nearbyKey: 'tiger_hhl_nearby_features', source: 'US Census TIGER', category: 'TIGER_HHL' },
+      { containingKey: 'tiger_anvsa_containing', nearbyKey: 'tiger_anvsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_ANVSA' },
+      { containingKey: 'tiger_otsa_containing', nearbyKey: 'tiger_otsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_OTSA' },
+      { containingKey: 'tiger_sdtsa_containing', nearbyKey: 'tiger_sdtsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_SDTSA' },
+      { containingKey: 'tiger_tdsa_containing', nearbyKey: 'tiger_tdsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_TDSA' },
+      { containingKey: 'tiger_aijua_containing', nearbyKey: 'tiger_aijua_nearby_features', source: 'US Census TIGER', category: 'TIGER_AIJUA' },
+      // BAS 2025 layers (12-22)
+      { containingKey: 'tiger_bas2025_anrc_containing', nearbyKey: 'tiger_bas2025_anrc_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_ANRC' },
+      { containingKey: 'tiger_bas2025_tribal_subdivisions_containing', nearbyKey: 'tiger_bas2025_tribal_subdivisions_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_TRIBAL_SUBDIVISIONS' },
+      { containingKey: 'tiger_bas2025_federal_air_containing', nearbyKey: 'tiger_bas2025_federal_air_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_FEDERAL_AIR' },
+      { containingKey: 'tiger_bas2025_off_reservation_trust_containing', nearbyKey: 'tiger_bas2025_off_reservation_trust_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_OFF_RESERVATION_TRUST' },
+      { containingKey: 'tiger_bas2025_state_air_containing', nearbyKey: 'tiger_bas2025_state_air_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_STATE_AIR' },
+      { containingKey: 'tiger_bas2025_hhl_containing', nearbyKey: 'tiger_bas2025_hhl_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_HHL' },
+      { containingKey: 'tiger_bas2025_anvsa_containing', nearbyKey: 'tiger_bas2025_anvsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_ANVSA' },
+      { containingKey: 'tiger_bas2025_otsa_containing', nearbyKey: 'tiger_bas2025_otsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_OTSA' },
+      { containingKey: 'tiger_bas2025_sdtsa_containing', nearbyKey: 'tiger_bas2025_sdtsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_SDTSA' },
+      { containingKey: 'tiger_bas2025_tdsa_containing', nearbyKey: 'tiger_bas2025_tdsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_TDSA' },
+      { containingKey: 'tiger_bas2025_aijua_containing', nearbyKey: 'tiger_bas2025_aijua_nearby_features', source: 'US Census TIGER', category: 'TIGER_BAS2025_AIJUA' },
+      // ACS 2024 layers (24-34)
+      { containingKey: 'tiger_acs2024_anrc_containing', nearbyKey: 'tiger_acs2024_anrc_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_ANRC' },
+      { containingKey: 'tiger_acs2024_tribal_subdivisions_containing', nearbyKey: 'tiger_acs2024_tribal_subdivisions_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_TRIBAL_SUBDIVISIONS' },
+      { containingKey: 'tiger_acs2024_federal_air_containing', nearbyKey: 'tiger_acs2024_federal_air_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_FEDERAL_AIR' },
+      { containingKey: 'tiger_acs2024_off_reservation_trust_containing', nearbyKey: 'tiger_acs2024_off_reservation_trust_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_OFF_RESERVATION_TRUST' },
+      { containingKey: 'tiger_acs2024_state_air_containing', nearbyKey: 'tiger_acs2024_state_air_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_STATE_AIR' },
+      { containingKey: 'tiger_acs2024_hhl_containing', nearbyKey: 'tiger_acs2024_hhl_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_HHL' },
+      { containingKey: 'tiger_acs2024_anvsa_containing', nearbyKey: 'tiger_acs2024_anvsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_ANVSA' },
+      { containingKey: 'tiger_acs2024_otsa_containing', nearbyKey: 'tiger_acs2024_otsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_OTSA' },
+      { containingKey: 'tiger_acs2024_sdtsa_containing', nearbyKey: 'tiger_acs2024_sdtsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_SDTSA' },
+      { containingKey: 'tiger_acs2024_tdsa_containing', nearbyKey: 'tiger_acs2024_tdsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_TDSA' },
+      { containingKey: 'tiger_acs2024_aijua_containing', nearbyKey: 'tiger_acs2024_aijua_nearby_features', source: 'US Census TIGER', category: 'TIGER_ACS2024_AIJUA' },
+      // Census 2020 layers (36-46)
+      { containingKey: 'tiger_census2020_anrc_containing', nearbyKey: 'tiger_census2020_anrc_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_ANRC' },
+      { containingKey: 'tiger_census2020_tribal_subdivisions_containing', nearbyKey: 'tiger_census2020_tribal_subdivisions_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_TRIBAL_SUBDIVISIONS' },
+      { containingKey: 'tiger_census2020_federal_air_containing', nearbyKey: 'tiger_census2020_federal_air_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_FEDERAL_AIR' },
+      { containingKey: 'tiger_census2020_off_reservation_trust_containing', nearbyKey: 'tiger_census2020_off_reservation_trust_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_OFF_RESERVATION_TRUST' },
+      { containingKey: 'tiger_census2020_state_air_containing', nearbyKey: 'tiger_census2020_state_air_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_STATE_AIR' },
+      { containingKey: 'tiger_census2020_hhl_containing', nearbyKey: 'tiger_census2020_hhl_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_HHL' },
+      { containingKey: 'tiger_census2020_anvsa_containing', nearbyKey: 'tiger_census2020_anvsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_ANVSA' },
+      { containingKey: 'tiger_census2020_otsa_containing', nearbyKey: 'tiger_census2020_otsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_OTSA' },
+      { containingKey: 'tiger_census2020_sdtsa_containing', nearbyKey: 'tiger_census2020_sdtsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_SDTSA' },
+      { containingKey: 'tiger_census2020_tdsa_containing', nearbyKey: 'tiger_census2020_tdsa_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_TDSA' },
+      { containingKey: 'tiger_census2020_aijua_containing', nearbyKey: 'tiger_census2020_aijua_nearby_features', source: 'US Census TIGER', category: 'TIGER_CENSUS2020_AIJUA' }
+    ];
+
+    tigerNativeLandsLayers.forEach(({ containingKey, nearbyKey, source, category }) => {
+      // Add containing area
+      if (enrichments[containingKey] && enrichments[containingKey] !== null) {
+        const feature = enrichments[containingKey];
+        const featureName = feature.name || 'Unknown';
+        const stateFips = feature.stateFips || '';
+        const countyFips = feature.countyFips || '';
+        const areaType = feature.areaType || '';
+        const objectId = feature.objectId || '';
+        const attributesJson = JSON.stringify({
+          stateFips,
+          countyFips,
+          areaType,
+          objectId,
+          ...feature
+        });
+
+        rows.push([
+          result.location.name,
+          result.location.lat.toString(),
+          result.location.lon.toString(),
+          source,
+          result.location.confidence?.toString() || '',
+          category,
+          featureName,
+          result.location.lat.toString(), // Use search location (it's a polygon, not a point)
+          result.location.lon.toString(),
+          '0.00', // Containing area has distance 0
+          stateFips || attributesJson,
+          countyFips || attributesJson,
+          areaType || '',
+          objectId || '',
+          attributesJson,
+          source
+        ]);
+      }
+
+      // Add nearby features
+      if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+        enrichments[nearbyKey].forEach((feature: any) => {
+          const featureName = feature.name || 'Unknown';
+          const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+          const stateFips = feature.stateFips || '';
+          const countyFips = feature.countyFips || '';
+          const areaType = feature.areaType || '';
+          const objectId = feature.objectId || '';
+          const attributesJson = JSON.stringify({
+            stateFips,
+            countyFips,
+            areaType,
+            objectId,
+            ...feature
+          });
+
+          rows.push([
+            result.location.name,
+            result.location.lat.toString(),
+            result.location.lon.toString(),
+            source,
+            result.location.confidence?.toString() || '',
+            category,
+            featureName,
+            result.location.lat.toString(), // Use search location (it's a polygon, not a point)
+            result.location.lon.toString(),
+            distance,
+            stateFips || attributesJson,
+            countyFips || attributesJson,
+            areaType || '',
             objectId || '',
             attributesJson,
             source

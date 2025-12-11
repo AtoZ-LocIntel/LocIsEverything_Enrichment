@@ -796,7 +796,55 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'tiger_colleges_universities_containing' || // Skip TIGER Colleges and Universities containing (handled separately for map drawing)
     key === 'tiger_colleges_universities_all' || // Skip TIGER Colleges and Universities array (handled separately for map drawing)
     key === 'tiger_military_installations_containing' || // Skip TIGER Military Installations containing (handled separately for map drawing)
-    key === 'tiger_military_installations_all' // Skip TIGER Military Installations array (handled separately for map drawing)
+    key === 'tiger_military_installations_all' || // Skip TIGER Military Installations array (handled separately for map drawing)
+    // TIGER Native Lands skip list - Base layers
+    key === 'tiger_anrc_containing' || key === 'tiger_anrc_all' ||
+    key === 'tiger_tribal_subdivisions_containing' || key === 'tiger_tribal_subdivisions_all' ||
+    key === 'tiger_federal_air_containing' || key === 'tiger_federal_air_all' ||
+    key === 'tiger_off_reservation_trust_containing' || key === 'tiger_off_reservation_trust_all' ||
+    key === 'tiger_state_air_containing' || key === 'tiger_state_air_all' ||
+    key === 'tiger_hhl_containing' || key === 'tiger_hhl_all' ||
+    key === 'tiger_anvsa_containing' || key === 'tiger_anvsa_all' ||
+    key === 'tiger_otsa_containing' || key === 'tiger_otsa_all' ||
+    key === 'tiger_sdtsa_containing' || key === 'tiger_sdtsa_all' ||
+    key === 'tiger_tdsa_containing' || key === 'tiger_tdsa_all' ||
+    key === 'tiger_aijua_containing' || key === 'tiger_aijua_all' ||
+    // TIGER Native Lands skip list - BAS 2025
+    key === 'tiger_bas2025_anrc_containing' || key === 'tiger_bas2025_anrc_all' ||
+    key === 'tiger_bas2025_tribal_subdivisions_containing' || key === 'tiger_bas2025_tribal_subdivisions_all' ||
+    key === 'tiger_bas2025_federal_air_containing' || key === 'tiger_bas2025_federal_air_all' ||
+    key === 'tiger_bas2025_off_reservation_trust_containing' || key === 'tiger_bas2025_off_reservation_trust_all' ||
+    key === 'tiger_bas2025_state_air_containing' || key === 'tiger_bas2025_state_air_all' ||
+    key === 'tiger_bas2025_hhl_containing' || key === 'tiger_bas2025_hhl_all' ||
+    key === 'tiger_bas2025_anvsa_containing' || key === 'tiger_bas2025_anvsa_all' ||
+    key === 'tiger_bas2025_otsa_containing' || key === 'tiger_bas2025_otsa_all' ||
+    key === 'tiger_bas2025_sdtsa_containing' || key === 'tiger_bas2025_sdtsa_all' ||
+    key === 'tiger_bas2025_tdsa_containing' || key === 'tiger_bas2025_tdsa_all' ||
+    key === 'tiger_bas2025_aijua_containing' || key === 'tiger_bas2025_aijua_all' ||
+    // TIGER Native Lands skip list - ACS 2024
+    key === 'tiger_acs2024_anrc_containing' || key === 'tiger_acs2024_anrc_all' ||
+    key === 'tiger_acs2024_tribal_subdivisions_containing' || key === 'tiger_acs2024_tribal_subdivisions_all' ||
+    key === 'tiger_acs2024_federal_air_containing' || key === 'tiger_acs2024_federal_air_all' ||
+    key === 'tiger_acs2024_off_reservation_trust_containing' || key === 'tiger_acs2024_off_reservation_trust_all' ||
+    key === 'tiger_acs2024_state_air_containing' || key === 'tiger_acs2024_state_air_all' ||
+    key === 'tiger_acs2024_hhl_containing' || key === 'tiger_acs2024_hhl_all' ||
+    key === 'tiger_acs2024_anvsa_containing' || key === 'tiger_acs2024_anvsa_all' ||
+    key === 'tiger_acs2024_otsa_containing' || key === 'tiger_acs2024_otsa_all' ||
+    key === 'tiger_acs2024_sdtsa_containing' || key === 'tiger_acs2024_sdtsa_all' ||
+    key === 'tiger_acs2024_tdsa_containing' || key === 'tiger_acs2024_tdsa_all' ||
+    key === 'tiger_acs2024_aijua_containing' || key === 'tiger_acs2024_aijua_all' ||
+    // TIGER Native Lands skip list - Census 2020
+    key === 'tiger_census2020_anrc_containing' || key === 'tiger_census2020_anrc_all' ||
+    key === 'tiger_census2020_tribal_subdivisions_containing' || key === 'tiger_census2020_tribal_subdivisions_all' ||
+    key === 'tiger_census2020_federal_air_containing' || key === 'tiger_census2020_federal_air_all' ||
+    key === 'tiger_census2020_off_reservation_trust_containing' || key === 'tiger_census2020_off_reservation_trust_all' ||
+    key === 'tiger_census2020_state_air_containing' || key === 'tiger_census2020_state_air_all' ||
+    key === 'tiger_census2020_hhl_containing' || key === 'tiger_census2020_hhl_all' ||
+    key === 'tiger_census2020_anvsa_containing' || key === 'tiger_census2020_anvsa_all' ||
+    key === 'tiger_census2020_otsa_containing' || key === 'tiger_census2020_otsa_all' ||
+    key === 'tiger_census2020_sdtsa_containing' || key === 'tiger_census2020_sdtsa_all' ||
+    key === 'tiger_census2020_tdsa_containing' || key === 'tiger_census2020_tdsa_all' ||
+    key === 'tiger_census2020_aijua_containing' || key === 'tiger_census2020_aijua_all' // Skip TIGER Native Lands arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -6061,6 +6109,183 @@ const MapView: React.FC<MapViewProps> = ({
                       <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
                         <div><strong>Distance:</strong> ${distance} miles</div>
                         ${landUseType ? `<div><strong>Land Use Type:</strong> ${landUseType}</div>` : ''}
+                        ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                        ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw TIGER Native Lands as polygons on the map
+      const tigerNativeLandsLayers = [
+        // Base layers (0-10)
+        { containingKey: 'tiger_anrc_containing', nearbyKey: 'tiger_anrc_nearby_features', name: 'TIGER Alaska Native Regional Corporations', color: '#7c3aed', icon: '🏔️', layerType: 'tiger_anrc' },
+        { containingKey: 'tiger_tribal_subdivisions_containing', nearbyKey: 'tiger_tribal_subdivisions_nearby_features', name: 'TIGER Tribal Subdivisions', color: '#a855f7', icon: '🏛️', layerType: 'tiger_tribal_subdivisions' },
+        { containingKey: 'tiger_federal_air_containing', nearbyKey: 'tiger_federal_air_nearby_features', name: 'TIGER Federal American Indian Reservations', color: '#9333ea', icon: '🏜️', layerType: 'tiger_federal_air' },
+        { containingKey: 'tiger_off_reservation_trust_containing', nearbyKey: 'tiger_off_reservation_trust_nearby_features', name: 'TIGER Off-Reservation Trust Lands', color: '#c084fc', icon: '🌾', layerType: 'tiger_off_reservation_trust' },
+        { containingKey: 'tiger_state_air_containing', nearbyKey: 'tiger_state_air_nearby_features', name: 'TIGER State American Indian Reservations', color: '#d946ef', icon: '🏞️', layerType: 'tiger_state_air' },
+        { containingKey: 'tiger_hhl_containing', nearbyKey: 'tiger_hhl_nearby_features', name: 'TIGER Hawaiian Home Lands', color: '#ec4899', icon: '🌺', layerType: 'tiger_hhl' },
+        { containingKey: 'tiger_anvsa_containing', nearbyKey: 'tiger_anvsa_nearby_features', name: 'TIGER Alaska Native Village Statistical Areas', color: '#f472b6', icon: '❄️', layerType: 'tiger_anvsa' },
+        { containingKey: 'tiger_otsa_containing', nearbyKey: 'tiger_otsa_nearby_features', name: 'TIGER Oklahoma Tribal Statistical Areas', color: '#fb7185', icon: '🌾', layerType: 'tiger_otsa' },
+        { containingKey: 'tiger_sdtsa_containing', nearbyKey: 'tiger_sdtsa_nearby_features', name: 'TIGER State Designated Tribal Statistical Areas', color: '#fda4af', icon: '🏛️', layerType: 'tiger_sdtsa' },
+        { containingKey: 'tiger_tdsa_containing', nearbyKey: 'tiger_tdsa_nearby_features', name: 'TIGER Tribal Designated Statistical Areas', color: '#fbbf24', icon: '🏛️', layerType: 'tiger_tdsa' },
+        { containingKey: 'tiger_aijua_containing', nearbyKey: 'tiger_aijua_nearby_features', name: 'TIGER American Indian Joint-Use Areas', color: '#f59e0b', icon: '🤝', layerType: 'tiger_aijua' },
+        // BAS 2025 layers (12-22)
+        { containingKey: 'tiger_bas2025_anrc_containing', nearbyKey: 'tiger_bas2025_anrc_nearby_features', name: 'TIGER BAS 2025 Alaska Native Regional Corporations', color: '#7c3aed', icon: '🏔️', layerType: 'tiger_bas2025_anrc' },
+        { containingKey: 'tiger_bas2025_tribal_subdivisions_containing', nearbyKey: 'tiger_bas2025_tribal_subdivisions_nearby_features', name: 'TIGER BAS 2025 Tribal Subdivisions', color: '#a855f7', icon: '🏛️', layerType: 'tiger_bas2025_tribal_subdivisions' },
+        { containingKey: 'tiger_bas2025_federal_air_containing', nearbyKey: 'tiger_bas2025_federal_air_nearby_features', name: 'TIGER BAS 2025 Federal American Indian Reservations', color: '#9333ea', icon: '🏜️', layerType: 'tiger_bas2025_federal_air' },
+        { containingKey: 'tiger_bas2025_off_reservation_trust_containing', nearbyKey: 'tiger_bas2025_off_reservation_trust_nearby_features', name: 'TIGER BAS 2025 Off-Reservation Trust Lands', color: '#c084fc', icon: '🌾', layerType: 'tiger_bas2025_off_reservation_trust' },
+        { containingKey: 'tiger_bas2025_state_air_containing', nearbyKey: 'tiger_bas2025_state_air_nearby_features', name: 'TIGER BAS 2025 State American Indian Reservations', color: '#d946ef', icon: '🏞️', layerType: 'tiger_bas2025_state_air' },
+        { containingKey: 'tiger_bas2025_hhl_containing', nearbyKey: 'tiger_bas2025_hhl_nearby_features', name: 'TIGER BAS 2025 Hawaiian Home Lands', color: '#ec4899', icon: '🌺', layerType: 'tiger_bas2025_hhl' },
+        { containingKey: 'tiger_bas2025_anvsa_containing', nearbyKey: 'tiger_bas2025_anvsa_nearby_features', name: 'TIGER BAS 2025 Alaska Native Village Statistical Areas', color: '#f472b6', icon: '❄️', layerType: 'tiger_bas2025_anvsa' },
+        { containingKey: 'tiger_bas2025_otsa_containing', nearbyKey: 'tiger_bas2025_otsa_nearby_features', name: 'TIGER BAS 2025 Oklahoma Tribal Statistical Areas', color: '#fb7185', icon: '🌾', layerType: 'tiger_bas2025_otsa' },
+        { containingKey: 'tiger_bas2025_sdtsa_containing', nearbyKey: 'tiger_bas2025_sdtsa_nearby_features', name: 'TIGER BAS 2025 State Designated Tribal Statistical Areas', color: '#fda4af', icon: '🏛️', layerType: 'tiger_bas2025_sdtsa' },
+        { containingKey: 'tiger_bas2025_tdsa_containing', nearbyKey: 'tiger_bas2025_tdsa_nearby_features', name: 'TIGER BAS 2025 Tribal Designated Statistical Areas', color: '#fbbf24', icon: '🏛️', layerType: 'tiger_bas2025_tdsa' },
+        { containingKey: 'tiger_bas2025_aijua_containing', nearbyKey: 'tiger_bas2025_aijua_nearby_features', name: 'TIGER BAS 2025 American Indian Joint-Use Areas', color: '#f59e0b', icon: '🤝', layerType: 'tiger_bas2025_aijua' },
+        // ACS 2024 layers (24-34)
+        { containingKey: 'tiger_acs2024_anrc_containing', nearbyKey: 'tiger_acs2024_anrc_nearby_features', name: 'TIGER ACS 2024 Alaska Native Regional Corporations', color: '#7c3aed', icon: '🏔️', layerType: 'tiger_acs2024_anrc' },
+        { containingKey: 'tiger_acs2024_tribal_subdivisions_containing', nearbyKey: 'tiger_acs2024_tribal_subdivisions_nearby_features', name: 'TIGER ACS 2024 Tribal Subdivisions', color: '#a855f7', icon: '🏛️', layerType: 'tiger_acs2024_tribal_subdivisions' },
+        { containingKey: 'tiger_acs2024_federal_air_containing', nearbyKey: 'tiger_acs2024_federal_air_nearby_features', name: 'TIGER ACS 2024 Federal American Indian Reservations', color: '#9333ea', icon: '🏜️', layerType: 'tiger_acs2024_federal_air' },
+        { containingKey: 'tiger_acs2024_off_reservation_trust_containing', nearbyKey: 'tiger_acs2024_off_reservation_trust_nearby_features', name: 'TIGER ACS 2024 Off-Reservation Trust Lands', color: '#c084fc', icon: '🌾', layerType: 'tiger_acs2024_off_reservation_trust' },
+        { containingKey: 'tiger_acs2024_state_air_containing', nearbyKey: 'tiger_acs2024_state_air_nearby_features', name: 'TIGER ACS 2024 State American Indian Reservations', color: '#d946ef', icon: '🏞️', layerType: 'tiger_acs2024_state_air' },
+        { containingKey: 'tiger_acs2024_hhl_containing', nearbyKey: 'tiger_acs2024_hhl_nearby_features', name: 'TIGER ACS 2024 Hawaiian Home Lands', color: '#ec4899', icon: '🌺', layerType: 'tiger_acs2024_hhl' },
+        { containingKey: 'tiger_acs2024_anvsa_containing', nearbyKey: 'tiger_acs2024_anvsa_nearby_features', name: 'TIGER ACS 2024 Alaska Native Village Statistical Areas', color: '#f472b6', icon: '❄️', layerType: 'tiger_acs2024_anvsa' },
+        { containingKey: 'tiger_acs2024_otsa_containing', nearbyKey: 'tiger_acs2024_otsa_nearby_features', name: 'TIGER ACS 2024 Oklahoma Tribal Statistical Areas', color: '#fb7185', icon: '🌾', layerType: 'tiger_acs2024_otsa' },
+        { containingKey: 'tiger_acs2024_sdtsa_containing', nearbyKey: 'tiger_acs2024_sdtsa_nearby_features', name: 'TIGER ACS 2024 State Designated Tribal Statistical Areas', color: '#fda4af', icon: '🏛️', layerType: 'tiger_acs2024_sdtsa' },
+        { containingKey: 'tiger_acs2024_tdsa_containing', nearbyKey: 'tiger_acs2024_tdsa_nearby_features', name: 'TIGER ACS 2024 Tribal Designated Statistical Areas', color: '#fbbf24', icon: '🏛️', layerType: 'tiger_acs2024_tdsa' },
+        { containingKey: 'tiger_acs2024_aijua_containing', nearbyKey: 'tiger_acs2024_aijua_nearby_features', name: 'TIGER ACS 2024 American Indian Joint-Use Areas', color: '#f59e0b', icon: '🤝', layerType: 'tiger_acs2024_aijua' },
+        // Census 2020 layers (36-46)
+        { containingKey: 'tiger_census2020_anrc_containing', nearbyKey: 'tiger_census2020_anrc_nearby_features', name: 'TIGER Census 2020 Alaska Native Regional Corporations', color: '#7c3aed', icon: '🏔️', layerType: 'tiger_census2020_anrc' },
+        { containingKey: 'tiger_census2020_tribal_subdivisions_containing', nearbyKey: 'tiger_census2020_tribal_subdivisions_nearby_features', name: 'TIGER Census 2020 Tribal Subdivisions', color: '#a855f7', icon: '🏛️', layerType: 'tiger_census2020_tribal_subdivisions' },
+        { containingKey: 'tiger_census2020_federal_air_containing', nearbyKey: 'tiger_census2020_federal_air_nearby_features', name: 'TIGER Census 2020 Federal American Indian Reservations', color: '#9333ea', icon: '🏜️', layerType: 'tiger_census2020_federal_air' },
+        { containingKey: 'tiger_census2020_off_reservation_trust_containing', nearbyKey: 'tiger_census2020_off_reservation_trust_nearby_features', name: 'TIGER Census 2020 Off-Reservation Trust Lands', color: '#c084fc', icon: '🌾', layerType: 'tiger_census2020_off_reservation_trust' },
+        { containingKey: 'tiger_census2020_state_air_containing', nearbyKey: 'tiger_census2020_state_air_nearby_features', name: 'TIGER Census 2020 State American Indian Reservations', color: '#d946ef', icon: '🏞️', layerType: 'tiger_census2020_state_air' },
+        { containingKey: 'tiger_census2020_hhl_containing', nearbyKey: 'tiger_census2020_hhl_nearby_features', name: 'TIGER Census 2020 Hawaiian Home Lands', color: '#ec4899', icon: '🌺', layerType: 'tiger_census2020_hhl' },
+        { containingKey: 'tiger_census2020_anvsa_containing', nearbyKey: 'tiger_census2020_anvsa_nearby_features', name: 'TIGER Census 2020 Alaska Native Village Statistical Areas', color: '#f472b6', icon: '❄️', layerType: 'tiger_census2020_anvsa' },
+        { containingKey: 'tiger_census2020_otsa_containing', nearbyKey: 'tiger_census2020_otsa_nearby_features', name: 'TIGER Census 2020 Oklahoma Tribal Statistical Areas', color: '#fb7185', icon: '🌾', layerType: 'tiger_census2020_otsa' },
+        { containingKey: 'tiger_census2020_sdtsa_containing', nearbyKey: 'tiger_census2020_sdtsa_nearby_features', name: 'TIGER Census 2020 State Designated Tribal Statistical Areas', color: '#fda4af', icon: '🏛️', layerType: 'tiger_census2020_sdtsa' },
+        { containingKey: 'tiger_census2020_tdsa_containing', nearbyKey: 'tiger_census2020_tdsa_nearby_features', name: 'TIGER Census 2020 Tribal Designated Statistical Areas', color: '#fbbf24', icon: '🏛️', layerType: 'tiger_census2020_tdsa' },
+        { containingKey: 'tiger_census2020_aijua_containing', nearbyKey: 'tiger_census2020_aijua_nearby_features', name: 'TIGER Census 2020 American Indian Joint-Use Areas', color: '#f59e0b', icon: '🤝', layerType: 'tiger_census2020_aijua' }
+      ];
+
+      tigerNativeLandsLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing polygon
+        if (enrichments[containingKey] && (enrichments[containingKey] as any).__geometry) {
+          const feature = enrichments[containingKey];
+          const geometry = (feature as any).__geometry || (feature as any).geometry;
+          if (geometry && geometry.rings) {
+            try {
+              const rings = geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: 3,
+                  opacity: 0.9,
+                  fillColor: color,
+                  fillOpacity: 0.4
+                });
+
+                const featureName = (feature as any).name || 'Unknown';
+                const stateFips = (feature as any).stateFips || '';
+                const countyFips = (feature as any).countyFips || '';
+                const areaType = (feature as any).areaType || '';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${icon} ${featureName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> Containing Area</div>
+                      ${areaType ? `<div><strong>Area Type:</strong> ${areaType}</div>` : ''}
+                      ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                      ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                (polygon as any).__layerType = layerType;
+                (polygon as any).__layerTitle = name;
+                bounds.extend(polygon.getBounds());
+                featureCount += 1;
+              }
+            } catch (error) {
+              console.error(`Error drawing ${name} containing polygon:`, error);
+            }
+          }
+        }
+
+        // Draw nearby features
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((feature: any) => {
+            const geometry = feature.__geometry || feature.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const featureName = feature.name || 'Unknown';
+                  const distance = feature.distance_miles ? feature.distance_miles.toFixed(2) : 'Unknown';
+                  const stateFips = feature.stateFips || '';
+                  const countyFips = feature.countyFips || '';
+                  const areaType = feature.areaType || '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${areaType ? `<div><strong>Area Type:</strong> ${areaType}</div>` : ''}
                         ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
                         ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
                       </div>

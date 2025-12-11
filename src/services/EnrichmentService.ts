@@ -156,6 +156,7 @@ import { getNRIRiversData } from '../adapters/nriRivers';
 import { getTIGERTransportationData } from '../adapters/tigerTransportation';
 import { getTIGERSchoolDistrictsData } from '../adapters/tigerSchoolDistricts';
 import { getTIGERSpecialLandUseData } from '../adapters/tigerSpecialLandUse';
+import { getTIGERNativeLandsData } from '../adapters/tigerNativeLands';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
 import { getCABrushRabbitRangeData } from '../adapters/caBrushRabbitRange';
@@ -3277,6 +3278,102 @@ export class EnrichmentService {
         return await this.getTIGERSpecialLandUse(lat, lon, 2, radius);
       case 'tiger_military_installations':
         return await this.getTIGERSpecialLandUse(lat, lon, 3, radius);
+      
+      // TIGER Native Lands Layers - Base (Layers 0-10)
+      case 'tiger_anrc':
+        return await this.getTIGERNativeLands(lat, lon, 0, radius);
+      case 'tiger_tribal_subdivisions':
+        return await this.getTIGERNativeLands(lat, lon, 1, radius);
+      case 'tiger_federal_air':
+        return await this.getTIGERNativeLands(lat, lon, 2, radius);
+      case 'tiger_off_reservation_trust':
+        return await this.getTIGERNativeLands(lat, lon, 3, radius);
+      case 'tiger_state_air':
+        return await this.getTIGERNativeLands(lat, lon, 4, radius);
+      case 'tiger_hhl':
+        return await this.getTIGERNativeLands(lat, lon, 5, radius);
+      case 'tiger_anvsa':
+        return await this.getTIGERNativeLands(lat, lon, 6, radius);
+      case 'tiger_otsa':
+        return await this.getTIGERNativeLands(lat, lon, 7, radius);
+      case 'tiger_sdtsa':
+        return await this.getTIGERNativeLands(lat, lon, 8, radius);
+      case 'tiger_tdsa':
+        return await this.getTIGERNativeLands(lat, lon, 9, radius);
+      case 'tiger_aijua':
+        return await this.getTIGERNativeLands(lat, lon, 10, radius);
+      
+      // TIGER Native Lands Layers - BAS 2025 (Layers 12-22)
+      case 'tiger_bas2025_anrc':
+        return await this.getTIGERNativeLands(lat, lon, 12, radius);
+      case 'tiger_bas2025_tribal_subdivisions':
+        return await this.getTIGERNativeLands(lat, lon, 13, radius);
+      case 'tiger_bas2025_federal_air':
+        return await this.getTIGERNativeLands(lat, lon, 14, radius);
+      case 'tiger_bas2025_off_reservation_trust':
+        return await this.getTIGERNativeLands(lat, lon, 15, radius);
+      case 'tiger_bas2025_state_air':
+        return await this.getTIGERNativeLands(lat, lon, 16, radius);
+      case 'tiger_bas2025_hhl':
+        return await this.getTIGERNativeLands(lat, lon, 17, radius);
+      case 'tiger_bas2025_anvsa':
+        return await this.getTIGERNativeLands(lat, lon, 18, radius);
+      case 'tiger_bas2025_otsa':
+        return await this.getTIGERNativeLands(lat, lon, 19, radius);
+      case 'tiger_bas2025_sdtsa':
+        return await this.getTIGERNativeLands(lat, lon, 20, radius);
+      case 'tiger_bas2025_tdsa':
+        return await this.getTIGERNativeLands(lat, lon, 21, radius);
+      case 'tiger_bas2025_aijua':
+        return await this.getTIGERNativeLands(lat, lon, 22, radius);
+      
+      // TIGER Native Lands Layers - ACS 2024 (Layers 24-34)
+      case 'tiger_acs2024_anrc':
+        return await this.getTIGERNativeLands(lat, lon, 24, radius);
+      case 'tiger_acs2024_tribal_subdivisions':
+        return await this.getTIGERNativeLands(lat, lon, 25, radius);
+      case 'tiger_acs2024_federal_air':
+        return await this.getTIGERNativeLands(lat, lon, 26, radius);
+      case 'tiger_acs2024_off_reservation_trust':
+        return await this.getTIGERNativeLands(lat, lon, 27, radius);
+      case 'tiger_acs2024_state_air':
+        return await this.getTIGERNativeLands(lat, lon, 28, radius);
+      case 'tiger_acs2024_hhl':
+        return await this.getTIGERNativeLands(lat, lon, 29, radius);
+      case 'tiger_acs2024_anvsa':
+        return await this.getTIGERNativeLands(lat, lon, 30, radius);
+      case 'tiger_acs2024_otsa':
+        return await this.getTIGERNativeLands(lat, lon, 31, radius);
+      case 'tiger_acs2024_sdtsa':
+        return await this.getTIGERNativeLands(lat, lon, 32, radius);
+      case 'tiger_acs2024_tdsa':
+        return await this.getTIGERNativeLands(lat, lon, 33, radius);
+      case 'tiger_acs2024_aijua':
+        return await this.getTIGERNativeLands(lat, lon, 34, radius);
+      
+      // TIGER Native Lands Layers - Census 2020 (Layers 36-46)
+      case 'tiger_census2020_anrc':
+        return await this.getTIGERNativeLands(lat, lon, 36, radius);
+      case 'tiger_census2020_tribal_subdivisions':
+        return await this.getTIGERNativeLands(lat, lon, 37, radius);
+      case 'tiger_census2020_federal_air':
+        return await this.getTIGERNativeLands(lat, lon, 38, radius);
+      case 'tiger_census2020_off_reservation_trust':
+        return await this.getTIGERNativeLands(lat, lon, 39, radius);
+      case 'tiger_census2020_state_air':
+        return await this.getTIGERNativeLands(lat, lon, 40, radius);
+      case 'tiger_census2020_hhl':
+        return await this.getTIGERNativeLands(lat, lon, 41, radius);
+      case 'tiger_census2020_anvsa':
+        return await this.getTIGERNativeLands(lat, lon, 42, radius);
+      case 'tiger_census2020_otsa':
+        return await this.getTIGERNativeLands(lat, lon, 43, radius);
+      case 'tiger_census2020_sdtsa':
+        return await this.getTIGERNativeLands(lat, lon, 44, radius);
+      case 'tiger_census2020_tdsa':
+        return await this.getTIGERNativeLands(lat, lon, 45, radius);
+      case 'tiger_census2020_aijua':
+        return await this.getTIGERNativeLands(lat, lon, 46, radius);
     
     default:
       if (enrichmentId.startsWith('at_')) {
@@ -13442,6 +13539,129 @@ out center;`;
       return result;
     } catch (error) {
       console.error(`❌ Error fetching TIGER Special Land Use Areas Layer ${layerId}:`, error);
+      return {};
+    }
+  }
+
+  private async getTIGERNativeLands(lat: number, lon: number, layerId: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerConfigs: Record<number, { name: string; poiId: string }> = {
+        0: { name: 'Alaska Native Regional Corporations', poiId: 'tiger_anrc' },
+        1: { name: 'Tribal Subdivisions', poiId: 'tiger_tribal_subdivisions' },
+        2: { name: 'Federal American Indian Reservations', poiId: 'tiger_federal_air' },
+        3: { name: 'Off-Reservation Trust Lands', poiId: 'tiger_off_reservation_trust' },
+        4: { name: 'State American Indian Reservations', poiId: 'tiger_state_air' },
+        5: { name: 'Hawaiian Home Lands', poiId: 'tiger_hhl' },
+        6: { name: 'Alaska Native Village Statistical Areas', poiId: 'tiger_anvsa' },
+        7: { name: 'Oklahoma Tribal Statistical Areas', poiId: 'tiger_otsa' },
+        8: { name: 'State Designated Tribal Statistical Areas', poiId: 'tiger_sdtsa' },
+        9: { name: 'Tribal Designated Statistical Areas', poiId: 'tiger_tdsa' },
+        10: { name: 'American Indian Joint-Use Areas', poiId: 'tiger_aijua' },
+        12: { name: 'BAS 2025 Alaska Native Regional Corporations', poiId: 'tiger_bas2025_anrc' },
+        13: { name: 'BAS 2025 Tribal Subdivisions', poiId: 'tiger_bas2025_tribal_subdivisions' },
+        14: { name: 'BAS 2025 Federal American Indian Reservations', poiId: 'tiger_bas2025_federal_air' },
+        15: { name: 'BAS 2025 Off-Reservation Trust Lands', poiId: 'tiger_bas2025_off_reservation_trust' },
+        16: { name: 'BAS 2025 State American Indian Reservations', poiId: 'tiger_bas2025_state_air' },
+        17: { name: 'BAS 2025 Hawaiian Home Lands', poiId: 'tiger_bas2025_hhl' },
+        18: { name: 'BAS 2025 Alaska Native Village Statistical Areas', poiId: 'tiger_bas2025_anvsa' },
+        19: { name: 'BAS 2025 Oklahoma Tribal Statistical Areas', poiId: 'tiger_bas2025_otsa' },
+        20: { name: 'BAS 2025 State Designated Tribal Statistical Areas', poiId: 'tiger_bas2025_sdtsa' },
+        21: { name: 'BAS 2025 Tribal Designated Statistical Areas', poiId: 'tiger_bas2025_tdsa' },
+        22: { name: 'BAS 2025 American Indian Joint-Use Areas', poiId: 'tiger_bas2025_aijua' },
+        24: { name: 'ACS 2024 Alaska Native Regional Corporations', poiId: 'tiger_acs2024_anrc' },
+        25: { name: 'ACS 2024 Tribal Subdivisions', poiId: 'tiger_acs2024_tribal_subdivisions' },
+        26: { name: 'ACS 2024 Federal American Indian Reservations', poiId: 'tiger_acs2024_federal_air' },
+        27: { name: 'ACS 2024 Off-Reservation Trust Lands', poiId: 'tiger_acs2024_off_reservation_trust' },
+        28: { name: 'ACS 2024 State American Indian Reservations', poiId: 'tiger_acs2024_state_air' },
+        29: { name: 'ACS 2024 Hawaiian Home Lands', poiId: 'tiger_acs2024_hhl' },
+        30: { name: 'ACS 2024 Alaska Native Village Statistical Areas', poiId: 'tiger_acs2024_anvsa' },
+        31: { name: 'ACS 2024 Oklahoma Tribal Statistical Areas', poiId: 'tiger_acs2024_otsa' },
+        32: { name: 'ACS 2024 State Designated Tribal Statistical Areas', poiId: 'tiger_acs2024_sdtsa' },
+        33: { name: 'ACS 2024 Tribal Designated Statistical Areas', poiId: 'tiger_acs2024_tdsa' },
+        34: { name: 'ACS 2024 American Indian Joint-Use Areas', poiId: 'tiger_acs2024_aijua' },
+        36: { name: 'Census 2020 Alaska Native Regional Corporations', poiId: 'tiger_census2020_anrc' },
+        37: { name: 'Census 2020 Tribal Subdivisions', poiId: 'tiger_census2020_tribal_subdivisions' },
+        38: { name: 'Census 2020 Federal American Indian Reservations', poiId: 'tiger_census2020_federal_air' },
+        39: { name: 'Census 2020 Off-Reservation Trust Lands', poiId: 'tiger_census2020_off_reservation_trust' },
+        40: { name: 'Census 2020 State American Indian Reservations', poiId: 'tiger_census2020_state_air' },
+        41: { name: 'Census 2020 Hawaiian Home Lands', poiId: 'tiger_census2020_hhl' },
+        42: { name: 'Census 2020 Alaska Native Village Statistical Areas', poiId: 'tiger_census2020_anvsa' },
+        43: { name: 'Census 2020 Oklahoma Tribal Statistical Areas', poiId: 'tiger_census2020_otsa' },
+        44: { name: 'Census 2020 State Designated Tribal Statistical Areas', poiId: 'tiger_census2020_sdtsa' },
+        45: { name: 'Census 2020 Tribal Designated Statistical Areas', poiId: 'tiger_census2020_tdsa' },
+        46: { name: 'Census 2020 American Indian Joint-Use Areas', poiId: 'tiger_census2020_aijua' }
+      };
+      
+      const config = layerConfigs[layerId];
+      if (!config) {
+        console.error(`❌ Unknown TIGER Native Lands layer ID: ${layerId}`);
+        return {};
+      }
+      
+      const data = await getTIGERNativeLandsData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      // Containing polygon
+      if (data.containing) {
+        const containing = data.containing;
+        result[`${config.poiId}_containing`] = {
+          name: containing.name || 'Unknown',
+          stateFips: containing.stateFips,
+          countyFips: containing.countyFips,
+          areaType: containing.areaType,
+          objectId: containing.objectId,
+          ...containing.attributes
+        };
+        
+        // Store geometry separately for map rendering
+        Object.defineProperty(result[`${config.poiId}_containing`], '__geometry', {
+          value: containing.geometry,
+          enumerable: false,
+          writable: false
+        });
+      } else {
+        result[`${config.poiId}_containing`] = null;
+      }
+      
+      // Nearby polygons
+      if (data.nearby && data.nearby.length > 0) {
+        result[`${config.poiId}_nearby_count`] = data.nearby.length;
+        result[`${config.poiId}_nearby_features`] = data.nearby.map(feature => {
+          const featureData: Record<string, any> = {
+            name: feature.name || 'Unknown',
+            stateFips: feature.stateFips,
+            countyFips: feature.countyFips,
+            areaType: feature.areaType,
+            objectId: feature.objectId,
+            distance_miles: Math.round(feature.distance_miles! * 100) / 100,
+            ...feature.attributes
+          };
+          
+          // Store geometry separately for map rendering
+          Object.defineProperty(featureData, '__geometry', {
+            value: feature.geometry,
+            enumerable: false,
+            writable: false
+          });
+          
+          return featureData;
+        });
+        
+        // Store all features for CSV export
+        result[`${config.poiId}_all`] = [
+          ...(data.containing ? [data.containing] : []),
+          ...data.nearby
+        ];
+      } else {
+        result[`${config.poiId}_nearby_count`] = 0;
+        result[`${config.poiId}_nearby_features`] = [];
+        result[`${config.poiId}_all`] = data.containing ? [data.containing] : [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching TIGER Native Lands Layer ${layerId}:`, error);
       return {};
     }
   }
