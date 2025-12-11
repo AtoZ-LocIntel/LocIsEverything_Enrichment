@@ -91,13 +91,17 @@ export async function getNPSNationalParksData(
     let hasMore = true;
     
     while (hasMore) {
-      const url = `${BASE_API_URL}/parks?limit=${limit}&start=${start}&api_key=${apiKey}`;
+      const url = `${BASE_API_URL}/parks?limit=${limit}&start=${start}`;
       
       if (start === 0) {
         console.log(`🏞️ Querying NPS National Parks API for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
       }
       
-      const data = await fetchJSONSmart(url) as any;
+      const data = await fetchJSONSmart(url, {
+        headers: {
+          'X-Api-Key': apiKey
+        }
+      }) as any;
       
       if (data.error) {
         console.error('❌ NPS National Parks API Error:', data.error);
@@ -124,12 +128,23 @@ export async function getNPSNationalParksData(
     console.log(`✅ Fetched ${allParks.length} total NPS National Parks`);
     
     // Filter parks by distance
+    let parksWithoutCoords = 0;
+    let parksWithInvalidCoords = 0;
+    
     allParks.forEach((park: any) => {
       const latLong = park.latLong;
-      if (!latLong) return;
+      if (!latLong) {
+        parksWithoutCoords++;
+        console.log(`⚠️ Park "${park.fullName || park.name || 'Unknown'}" missing latLong field`);
+        return;
+      }
       
       const coords = parseLatLong(latLong);
-      if (!coords) return;
+      if (!coords) {
+        parksWithInvalidCoords++;
+        console.log(`⚠️ Park "${park.fullName || park.name || 'Unknown'}" has invalid latLong: "${latLong}"`);
+        return;
+      }
       
       const distance = calculateDistance(lat, lon, coords.lat, coords.lon);
       
@@ -149,6 +164,10 @@ export async function getNPSNationalParksData(
         });
       }
     });
+    
+    if (parksWithoutCoords > 0 || parksWithInvalidCoords > 0) {
+      console.log(`⚠️ NPS Parks: ${parksWithoutCoords} without coordinates, ${parksWithInvalidCoords} with invalid coordinates`);
+    }
     
     // Sort by distance
     results.sort((a, b) => (a.distance_miles || 0) - (b.distance_miles || 0));

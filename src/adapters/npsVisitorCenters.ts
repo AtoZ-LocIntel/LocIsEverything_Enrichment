@@ -90,13 +90,27 @@ export async function getNPSVisitorCentersData(
     let hasMore = true;
     
     while (hasMore) {
-      const url = `${BASE_API_URL}/visitorcenters?limit=${limit}&start=${start}&api_key=${apiKey}`;
+      const url = `${BASE_API_URL}/visitorcenters?limit=${limit}&start=${start}`;
       
       if (start === 0) {
         console.log(`🏛️ Querying NPS Visitor Centers API for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
       }
       
-      const data = await fetchJSONSmart(url) as any;
+      const data = await fetchJSONSmart(url, {
+        headers: {
+          'X-Api-Key': apiKey
+        }
+      }) as any;
+      
+      if (start === 0) {
+        console.log(`🔍 NPS Visitor Centers API Response:`, {
+          hasData: !!data.data,
+          dataLength: data.data?.length || 0,
+          total: data.total,
+          error: data.error,
+          sampleItem: data.data?.[0] ? JSON.stringify(data.data[0]).substring(0, 200) : 'none'
+        });
+      }
       
       if (data.error) {
         console.error('❌ NPS Visitor Centers API Error:', data.error);
@@ -123,12 +137,39 @@ export async function getNPSVisitorCentersData(
     console.log(`✅ Fetched ${allVisitorCenters.length} total NPS Visitor Centers`);
     
     // Filter visitor centers by distance
-    allVisitorCenters.forEach((visitorCenter: any) => {
+    let centersWithoutCoords = 0;
+    let centersWithInvalidCoords = 0;
+    
+    allVisitorCenters.forEach((visitorCenter: any, index: number) => {
+      if (index === 0) {
+        console.log(`🔍 Sample visitor center structure:`, {
+          keys: Object.keys(visitorCenter),
+          latLong: visitorCenter.latLong,
+          latitude: visitorCenter.latitude,
+          longitude: visitorCenter.longitude,
+          lat: visitorCenter.lat,
+          lon: visitorCenter.lon,
+          geometry: visitorCenter.geometry
+        });
+      }
+      
       const latLong = visitorCenter.latLong;
-      if (!latLong) return;
+      if (!latLong) {
+        centersWithoutCoords++;
+        if (centersWithoutCoords <= 3) {
+          console.log(`⚠️ Visitor Center "${visitorCenter.name || 'Unknown'}" missing latLong field. Available fields:`, Object.keys(visitorCenter).join(', '));
+        }
+        return;
+      }
       
       const coords = parseLatLong(latLong);
-      if (!coords) return;
+      if (!coords) {
+        centersWithInvalidCoords++;
+        if (centersWithInvalidCoords <= 3) {
+          console.log(`⚠️ Visitor Center "${visitorCenter.name || 'Unknown'}" has invalid latLong: "${latLong}"`);
+        }
+        return;
+      }
       
       const distance = calculateDistance(lat, lon, coords.lat, coords.lon);
       
@@ -147,6 +188,10 @@ export async function getNPSVisitorCentersData(
         });
       }
     });
+    
+    if (centersWithoutCoords > 0 || centersWithInvalidCoords > 0) {
+      console.log(`⚠️ NPS Visitor Centers: ${centersWithoutCoords} without coordinates, ${centersWithInvalidCoords} with invalid coordinates`);
+    }
     
     // Sort by distance
     results.sort((a, b) => (a.distance_miles || 0) - (b.distance_miles || 0));

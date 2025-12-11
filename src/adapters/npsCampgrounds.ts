@@ -90,13 +90,27 @@ export async function getNPSCampgroundsData(
     let hasMore = true;
     
     while (hasMore) {
-      const url = `${BASE_API_URL}/campgrounds?limit=${limit}&start=${start}&api_key=${apiKey}`;
+      const url = `${BASE_API_URL}/campgrounds?limit=${limit}&start=${start}`;
       
       if (start === 0) {
         console.log(`🏕️ Querying NPS Campgrounds API for proximity (${maxRadius} miles) at [${lat}, ${lon}]`);
       }
       
-      const data = await fetchJSONSmart(url) as any;
+      const data = await fetchJSONSmart(url, {
+        headers: {
+          'X-Api-Key': apiKey
+        }
+      }) as any;
+      
+      if (start === 0) {
+        console.log(`🔍 NPS Campgrounds API Response:`, {
+          hasData: !!data.data,
+          dataLength: data.data?.length || 0,
+          total: data.total,
+          error: data.error,
+          sampleItem: data.data?.[0] ? JSON.stringify(data.data[0]).substring(0, 200) : 'none'
+        });
+      }
       
       if (data.error) {
         console.error('❌ NPS Campgrounds API Error:', data.error);
@@ -123,12 +137,39 @@ export async function getNPSCampgroundsData(
     console.log(`✅ Fetched ${allCampgrounds.length} total NPS Campgrounds`);
     
     // Filter campgrounds by distance
-    allCampgrounds.forEach((campground: any) => {
+    let campgroundsWithoutCoords = 0;
+    let campgroundsWithInvalidCoords = 0;
+    
+    allCampgrounds.forEach((campground: any, index: number) => {
+      if (index === 0) {
+        console.log(`🔍 Sample campground structure:`, {
+          keys: Object.keys(campground),
+          latLong: campground.latLong,
+          latitude: campground.latitude,
+          longitude: campground.longitude,
+          lat: campground.lat,
+          lon: campground.lon,
+          geometry: campground.geometry
+        });
+      }
+      
       const latLong = campground.latLong;
-      if (!latLong) return;
+      if (!latLong) {
+        campgroundsWithoutCoords++;
+        if (campgroundsWithoutCoords <= 3) {
+          console.log(`⚠️ Campground "${campground.name || 'Unknown'}" missing latLong field. Available fields:`, Object.keys(campground).join(', '));
+        }
+        return;
+      }
       
       const coords = parseLatLong(latLong);
-      if (!coords) return;
+      if (!coords) {
+        campgroundsWithInvalidCoords++;
+        if (campgroundsWithInvalidCoords <= 3) {
+          console.log(`⚠️ Campground "${campground.name || 'Unknown'}" has invalid latLong: "${latLong}"`);
+        }
+        return;
+      }
       
       const distance = calculateDistance(lat, lon, coords.lat, coords.lon);
       
@@ -147,6 +188,10 @@ export async function getNPSCampgroundsData(
         });
       }
     });
+    
+    if (campgroundsWithoutCoords > 0 || campgroundsWithInvalidCoords > 0) {
+      console.log(`⚠️ NPS Campgrounds: ${campgroundsWithoutCoords} without coordinates, ${campgroundsWithInvalidCoords} with invalid coordinates`);
+    }
     
     // Sort by distance
     results.sort((a, b) => (a.distance_miles || 0) - (b.distance_miles || 0));
