@@ -115,66 +115,73 @@ export async function getNPSNRHPLocationsData(
     console.log(`📊 NPS NRHP Locations: Processing ${allFeatures.length} features`);
     
     // Process features and calculate distance
-    const locations: NPSNRHPLocationInfo[] = allFeatures.map((feature: any) => {
-      const attrs = feature.attributes || {};
-      const geom = feature.geometry;
-      
-      // Extract coordinates from geometry
-      let featureLat: number | null = null;
-      let featureLon: number | null = null;
-      
-      if (geom) {
-        if (geom.x !== undefined && geom.y !== undefined) {
-          // Point geometry
-          featureLon = geom.x;
-          featureLat = geom.y;
-        } else if (geom.coordinates && Array.isArray(geom.coordinates)) {
-          // GeoJSON format
-          featureLon = geom.coordinates[0];
-          featureLat = geom.coordinates[1];
+    const locations: NPSNRHPLocationInfo[] = allFeatures
+      .map((feature: any): NPSNRHPLocationInfo | null => {
+        const attrs = feature.attributes || {};
+        const geom = feature.geometry;
+        
+        // Extract coordinates from geometry
+        let featureLat: number | null = null;
+        let featureLon: number | null = null;
+        
+        if (geom) {
+          if (geom.x !== undefined && geom.y !== undefined) {
+            // Point geometry
+            featureLon = geom.x;
+            featureLat = geom.y;
+          } else if (geom.coordinates && Array.isArray(geom.coordinates)) {
+            // GeoJSON format
+            featureLon = geom.coordinates[0];
+            featureLat = geom.coordinates[1];
+          }
         }
-      }
-      
-      // Fallback to attribute fields if geometry doesn't have coordinates
-      if (featureLat === null || featureLon === null) {
-        featureLat = attrs.LATITUDE || attrs.latitude || attrs.LAT || attrs.lat || attrs.Y || attrs.y || null;
-        featureLon = attrs.LONGITUDE || attrs.longitude || attrs.LON || attrs.lon || attrs.X || attrs.x || null;
-      }
-      
-      if (featureLat === null || featureLon === null || isNaN(featureLat) || isNaN(featureLon)) {
-        console.warn(`⚠️ NPS NRHP Location missing coordinates. ObjectID: ${attrs.OBJECTID || attrs.objectId || 'unknown'}`);
-        return null;
-      }
-      
-      // Calculate distance
-      const distance = calculateDistance(lat, lon, featureLat, featureLon);
-      
-      return {
-        objectId: attrs.OBJECTID || attrs.objectId || null,
-        resourceName: attrs.RESNAME || attrs.resname || attrs.RESOURCE_NAME || attrs.resource_name || attrs.NAME || attrs.name || null,
-        resourceId: attrs.RESID || attrs.resid || attrs.RESOURCE_ID || attrs.resource_id || null,
-        nrhpNumber: attrs.NRHP_NUMBER || attrs.nrhp_number || attrs.NRHP || attrs.nrhp || null,
-        state: attrs.STATE || attrs.state || attrs.STATE_CODE || attrs.state_code || null,
-        county: attrs.COUNTY || attrs.county || null,
-        city: attrs.CITY || attrs.city || null,
-        address: attrs.ADDRESS || attrs.address || null,
-        propertyType: attrs.PROPERTY_TYPE || attrs.property_type || attrs.TYPE || attrs.type || null,
-        dateListed: attrs.DATE_LISTED || attrs.date_listed || attrs.LISTED_DATE || attrs.listed_date || null,
-        dateAdded: attrs.DATE_ADDED || attrs.date_added || attrs.ADDED_DATE || attrs.added_date || null,
-        lat: featureLat,
-        lon: featureLon,
-        distance_miles: distance <= cappedRadius ? Number(distance.toFixed(2)) : undefined,
-        attributes: attrs
-      };
-    }).filter((location: NPSNRHPLocationInfo | null): location is NPSNRHPLocationInfo => {
-      // Filter out null locations and those outside radius
-      return location !== null && location.distance_miles !== undefined;
-    }).sort((a: NPSNRHPLocationInfo, b: NPSNRHPLocationInfo) => {
-      // Sort by distance
-      const distA = a.distance_miles || Infinity;
-      const distB = b.distance_miles || Infinity;
-      return distA - distB;
-    });
+        
+        // Fallback to attribute fields if geometry doesn't have coordinates
+        if (featureLat === null || featureLon === null) {
+          featureLat = attrs.LATITUDE || attrs.latitude || attrs.LAT || attrs.lat || attrs.Y || attrs.y || null;
+          featureLon = attrs.LONGITUDE || attrs.longitude || attrs.LON || attrs.lon || attrs.X || attrs.x || null;
+        }
+        
+        if (featureLat === null || featureLon === null || isNaN(featureLat) || isNaN(featureLon)) {
+          console.warn(`⚠️ NPS NRHP Location missing coordinates. ObjectID: ${attrs.OBJECTID || attrs.objectId || 'unknown'}`);
+          return null;
+        }
+        
+        // Calculate distance
+        const distance = calculateDistance(lat, lon, featureLat, featureLon);
+        
+        if (distance > cappedRadius) {
+          return null;
+        }
+        
+        return {
+          objectId: attrs.OBJECTID || attrs.objectId || null,
+          resourceName: attrs.RESNAME || attrs.resname || attrs.RESOURCE_NAME || attrs.resource_name || attrs.NAME || attrs.name || null,
+          resourceId: attrs.RESID || attrs.resid || attrs.RESOURCE_ID || attrs.resource_id || null,
+          nrhpNumber: attrs.NRHP_NUMBER || attrs.nrhp_number || attrs.NRHP || attrs.nrhp || null,
+          state: attrs.STATE || attrs.state || attrs.STATE_CODE || attrs.state_code || null,
+          county: attrs.COUNTY || attrs.county || null,
+          city: attrs.CITY || attrs.city || null,
+          address: attrs.ADDRESS || attrs.address || null,
+          propertyType: attrs.PROPERTY_TYPE || attrs.property_type || attrs.TYPE || attrs.type || null,
+          dateListed: attrs.DATE_LISTED || attrs.date_listed || attrs.LISTED_DATE || attrs.listed_date || null,
+          dateAdded: attrs.DATE_ADDED || attrs.date_added || attrs.ADDED_DATE || attrs.added_date || null,
+          lat: featureLat,
+          lon: featureLon,
+          distance_miles: Number(distance.toFixed(2)),
+          attributes: attrs
+        };
+      })
+      .filter((location): location is NPSNRHPLocationInfo => {
+        // Filter out null locations
+        return location !== null;
+      })
+      .sort((a: NPSNRHPLocationInfo, b: NPSNRHPLocationInfo) => {
+        // Sort by distance
+        const distA = a.distance_miles || Infinity;
+        const distB = b.distance_miles || Infinity;
+        return distA - distB;
+      });
     
     console.log(`✅ NPS NRHP Locations: Found ${locations.length} locations within ${cappedRadius} miles`);
     
