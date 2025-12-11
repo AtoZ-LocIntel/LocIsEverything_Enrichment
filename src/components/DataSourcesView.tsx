@@ -445,11 +445,76 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       category: "US Census TIGER Data",
       sources: [
         {
-          name: "Sources Coming Soon...",
-          description: "US Census Bureau TIGER (Topologically Integrated Geographic Encoding and Referencing) data sources will be added in future updates. TIGER provides geographic data including roads, boundaries, water features, and other geographic features for the entire United States.",
+          name: "TIGER Transportation - Primary Roads",
+          description: "US Census TIGER - Primary Roads including Interstates (5M scale, 2.1M scale, and standard) - proximity queries up to 25 miles",
           coverage: "United States",
-          accuracy: "N/A",
-          cost: "N/A"
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer"
+        },
+        {
+          name: "TIGER Transportation - Secondary Roads",
+          description: "US Census TIGER - Secondary Roads including Interstates and US Highways (578k scale, 289-144k scale, 72-1k scale) - proximity queries up to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer"
+        },
+        {
+          name: "TIGER Transportation - Local Roads",
+          description: "US Census TIGER - Local Roads (72k scale and standard) - proximity queries up to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer"
+        },
+        {
+          name: "TIGER Transportation - Railroads",
+          description: "US Census TIGER - Railroad lines - proximity queries up to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer"
+        },
+        {
+          name: "TIGER School Districts - Unified, Secondary, Elementary, and Administrative Areas",
+          description: "US Census TIGER - School District boundaries (BAS 2025, ACS 2024, Census 2020) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/School/MapServer"
+        },
+        {
+          name: "TIGER Special Land Use Areas - National Park Service Areas",
+          description: "US Census TIGER - National Park Service Areas - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Special_Land_Use_Areas/MapServer"
+        },
+        {
+          name: "TIGER Special Land Use Areas - Correctional Facilities",
+          description: "US Census TIGER - Correctional Facilities - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Special_Land_Use_Areas/MapServer"
+        },
+        {
+          name: "TIGER Special Land Use Areas - Colleges and Universities",
+          description: "US Census TIGER - Colleges and Universities - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Special_Land_Use_Areas/MapServer"
+        },
+        {
+          name: "TIGER Special Land Use Areas - Military Installations",
+          description: "US Census TIGER - Military Installations - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Special_Land_Use_Areas/MapServer"
         }
       ]
     },
