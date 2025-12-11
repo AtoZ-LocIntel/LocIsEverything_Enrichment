@@ -10305,8 +10305,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const irishName = centre.irishName || centre.Irish_Name || '';
         const county = centre.county || centre.County || '';
         const contae = centre.contae || centre.Contae || '';
-        const townClass = centre.townClass || centre.Town_Class || '';
-        const classification = centre.classification || centre.Classifica || '';
         const distance = centre.distance_miles !== null && centre.distance_miles !== undefined ? centre.distance_miles.toFixed(2) : '0.00';
         const lat = centre.lat ? centre.lat.toString() : location.lat.toString();
         const lon = centre.lon ? centre.lon.toString() : location.lon.toString();

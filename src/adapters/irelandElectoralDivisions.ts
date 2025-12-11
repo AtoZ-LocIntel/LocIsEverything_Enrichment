@@ -94,7 +94,6 @@ function pointToLineSegmentDistance(
   // Calculate distances
   const d12 = haversineDistance(pointLat, pointLon, segStartLat, segStartLon);
   const d23 = haversineDistance(segStartLat, segStartLon, segEndLat, segEndLon);
-  const d13 = haversineDistance(pointLat, pointLon, segEndLat, segEndLon);
   
   if (d23 === 0) return d12;
   
