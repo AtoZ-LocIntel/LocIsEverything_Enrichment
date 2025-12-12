@@ -166,6 +166,7 @@ import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDi
 import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
 import { getIrelandCivilParishesData } from '../adapters/irelandCivilParishes';
 import { getIrelandBuildingsData } from '../adapters/irelandBuildings';
+import { getIrelandMountainsData } from '../adapters/irelandMountains';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3517,6 +3518,8 @@ export class EnrichmentService {
         return await this.getIrelandBuildingsResidentialCommercial(lat, lon, radius);
       case 'ireland_buildings_commercial':
         return await this.getIrelandBuildingsCommercial(lat, lon, radius);
+      case 'ireland_mountains':
+        return await this.getIrelandMountains(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14676,6 +14679,42 @@ out center;`;
       console.error('Error fetching Ireland Commercial Buildings:', error);
       return {
         ireland_buildings_commercial_count: 0
+      };
+    }
+  }
+
+  private async getIrelandMountains(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getIrelandMountainsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_mountains_count: data.length,
+        ireland_mountains_total_count: data.length
+      };
+      
+      // Add all mountains
+      if (data.length > 0) {
+        result.ireland_mountains_all = data.map(mountain => {
+          const mountainData: any = {
+            objectId: mountain.objectId,
+            fCode: mountain.fCode,
+            name: mountain.name,
+            lat: mountain.lat,
+            lon: mountain.lon,
+            distance_miles: mountain.distance_miles || 0,
+            ...mountain
+          };
+          
+          return mountainData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Mountains:', error);
+      return {
+        ireland_mountains_count: 0
       };
     }
   }

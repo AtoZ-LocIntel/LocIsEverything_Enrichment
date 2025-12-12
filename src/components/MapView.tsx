@@ -947,6 +947,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ireland_buildings_residential_containing' || key === 'ireland_buildings_residential_nearby_features' || key === 'ireland_buildings_residential_all' ||
     key === 'ireland_buildings_residential_commercial_containing' || key === 'ireland_buildings_residential_commercial_nearby_features' || key === 'ireland_buildings_residential_commercial_all' ||
     key === 'ireland_buildings_commercial_containing' || key === 'ireland_buildings_commercial_nearby_features' || key === 'ireland_buildings_commercial_all' ||
+    key === 'ireland_mountains_all' ||
     key === 'ireland_centres_of_population_all' // Skip Ireland arrays (handled separately for map drawing)
   );
 
@@ -17808,6 +17809,91 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing Ireland Centres of Population:', error);
       }
 
+      // Draw Ireland Mountains as markers on the map
+      try {
+        if (enrichments.ireland_mountains_all && Array.isArray(enrichments.ireland_mountains_all)) {
+          let mountainCount = 0;
+          enrichments.ireland_mountains_all.forEach((mountain: any) => {
+            if (mountain.lat && mountain.lon) {
+              try {
+                const mountainMarker = L.marker([mountain.lat, mountain.lon], {
+                  icon: createPOIIcon('⛰️', '#6d28d9')
+                });
+                
+                const name = mountain.name || mountain.NAMN1 || '';
+                const fCode = mountain.fCode || mountain.F_CODE || '';
+                const distance = mountain.distance_miles !== null && mountain.distance_miles !== undefined ? mountain.distance_miles : 0;
+                
+                const displayName = name || 'Unknown Mountain';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ⛰️ ${displayName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${fCode ? `<div><strong>F Code:</strong> ${fCode}</div>` : ''}
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other mountain attributes
+                const excludeFields = ['name', 'NAMN1', 'fCode', 'F_CODE', 'lat', 'lon', 'distance_miles', 'objectId', 'OBJECTID'];
+                Object.entries(mountain).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                mountainMarker.bindPopup(popupContent, { maxWidth: 400 });
+                mountainMarker.addTo(poi);
+                
+                // Store metadata for tabbed popup
+                (mountainMarker as any).__layerType = 'ireland_mountains';
+                (mountainMarker as any).__layerTitle = 'Ireland Mountain Peaks';
+                (mountainMarker as any).__popupContent = popupContent;
+                
+                bounds.extend([mountain.lat, mountain.lon]);
+                mountainCount++;
+              } catch (error) {
+                console.error('Error drawing Ireland Mountain marker:', error);
+              }
+            }
+          });
+          
+          if (mountainCount > 0) {
+            if (!legendAccumulator['ireland_mountains']) {
+              legendAccumulator['ireland_mountains'] = {
+                icon: '⛰️',
+                color: '#6d28d9',
+                title: 'Ireland Mountain Peaks',
+                count: 0,
+              };
+            }
+            legendAccumulator['ireland_mountains'].count += mountainCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Ireland Mountains:', error);
+      }
+
       // Draw USFS National Wilderness Areas as polygons on the map
       try {
         if (enrichments.usfs_wilderness_areas_all && Array.isArray(enrichments.usfs_wilderness_areas_all)) {
@@ -22687,6 +22773,7 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_buildings_commercial_containing') ||
             key.includes('ireland_buildings_commercial_nearby_features') ||
             key.includes('ireland_buildings_commercial_all') ||
+            key.includes('ireland_mountains_all') ||
             key.includes('ireland_centres_of_population_all') ||
             key.includes('ireland_small_areas_containing') ||
             key.includes('ireland_small_areas_nearby_features') ||

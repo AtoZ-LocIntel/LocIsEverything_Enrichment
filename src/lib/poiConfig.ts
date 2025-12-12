@@ -1335,7 +1335,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ireland_civil_parishes', label: 'Irish Civil Parishes', description: 'Irish Civil Parishes - National Statutory Boundaries Ungeneralised 2024 (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ireland', section: 'eu' },
   { id: 'ireland_buildings_residential', label: 'Irish Buildings - Residential', description: 'Irish Buildings - Residential (point-in-polygon and proximity queries up to 5 miles)', isPOI: true, defaultRadius: 1, maxRadius: 5, category: 'ireland', section: 'eu' },
   { id: 'ireland_buildings_residential_commercial', label: 'Irish Buildings - Residential/Commercial', description: 'Irish Buildings - Residential/Commercial (point-in-polygon and proximity queries up to 5 miles)', isPOI: true, defaultRadius: 1, maxRadius: 5, category: 'ireland', section: 'eu' },
-  { id: 'ireland_buildings_commercial', label: 'Irish Buildings - Commercial', description: 'Irish Buildings - Commercial (point-in-polygon and proximity queries up to 5 miles)', isPOI: true, defaultRadius: 1, maxRadius: 5, category: 'ireland', section: 'eu' }
+  { id: 'ireland_buildings_commercial', label: 'Irish Buildings - Commercial', description: 'Irish Buildings - Commercial (point-in-polygon and proximity queries up to 5 miles)', isPOI: true, defaultRadius: 1, maxRadius: 5, category: 'ireland', section: 'eu' },
+  { id: 'ireland_mountains', label: 'Irish Mountain Peaks', description: 'Irish Mountain Peaks - OSi National 1m Map Of Ireland (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 10, maxRadius: 50, category: 'ireland', section: 'eu' }
 ];
 
 class POIConfigManager {

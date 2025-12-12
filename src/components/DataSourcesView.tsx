@@ -2430,6 +2430,99 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
+      category: "Ireland Sources",
+      sources: [
+        {
+          name: "OSi Ireland Provinces",
+          description: "Ireland Provinces - OSi National Statutory Boundaries - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Provinces___OSi_National_Statutory_Boundaries/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Built-Up Areas",
+          description: "Ireland Built-Up Areas - OSi National 1m Map of Ireland - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Built_Up_Areas___OSi_National_1m_Map_Of_Ireland/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Small Areas",
+          description: "Ireland Small Areas - OSi Ungeneralised - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Small_Areas_Ungeneralised/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Centres of Population",
+          description: "Ireland Centres of Population - OSi National Placenames Gazetteer - proximity queries up to 25 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Centres_of_Population___OSi_National_Placenames_Gazetteer/FeatureServer"
+        },
+        {
+          name: "CSO Ireland Electoral Divisions",
+          description: "Irish Electoral Divisions - CSO Electoral Divisions Ungeneralised - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/CSO_Electoral_Divisions_Ungeneralised/FeatureServer"
+        },
+        {
+          name: "Ireland NUTS3 Boundaries",
+          description: "Irish NUTS3 Boundaries - Nomenclature of Territorial Units for Statistics (NUTS) boundaries ungeneralised - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/NUTS3_Boundaries_Ungeneralised/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Civil Parishes",
+          description: "Irish Civil Parishes - National Statutory Boundaries Ungeneralised 2024 - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/CivilParishes_urbanareas_NationalStatutoryBoundaries_Ungeneralised_2024/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Buildings - Residential",
+          description: "Irish Buildings - Residential - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Buildings_OpenDatatest3view/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Buildings - Residential/Commercial",
+          description: "Irish Buildings - Residential/Commercial - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Buildings_OpenDatatest3view/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Buildings - Commercial",
+          description: "Irish Buildings - Commercial - point-in-polygon and proximity queries up to 5 miles",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Buildings_OpenDatatest3view/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Mountain Peaks",
+          description: "Irish Mountain Peaks - OSi National 1m Map Of Ireland - proximity queries up to 50 miles. Point file of Mountains taken from the National 1:1Million Map Of Ireland. This dataset is provided by Tailte Éireann",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Mountains___OSi_National_1m_Map_Of_Ireland/FeatureServer"
+        }
+      ]
+    },
+    {
       category: "Mapping & Basemap Services",
       sources: [
         {
