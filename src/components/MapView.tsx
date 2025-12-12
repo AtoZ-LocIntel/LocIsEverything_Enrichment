@@ -952,7 +952,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
         key === 'ireland_centres_of_population_all' ||
         key === 'ireland_high_water_marks_all' ||
         key === 'ireland_pois_all' ||
-        key === 'australia_railways_all' // Skip arrays (handled separately for map drawing)
+        key === 'australia_railways_all' ||
+        key === 'australia_trams_all' // Skip arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -18364,6 +18365,110 @@ const MapView: React.FC<MapViewProps> = ({
             legendAccumulator['australia_railways'].count += railwayCount;
           }
         }
+
+        // Draw Australia Trams as polylines on the map
+        if (enrichments.australia_trams_all && Array.isArray(enrichments.australia_trams_all)) {
+          let tramCount = 0;
+          enrichments.australia_trams_all.forEach((tram: any) => {
+            if (tram.geometry && tram.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = tram.geometry.paths;
+                if (paths && paths.length > 0) {
+                  tramCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const name = tram.name || tram.Name || 'Unknown Tram';
+                    const operationalStatus = tram.operationalStatus || tram.operational_status || tram.OPERATIONAL_STATUS || null;
+                    const trackGauge = tram.trackGauge || tram.track_gauge || tram.TRACK_GAUGE || null;
+                    const tracks = tram.tracks || tram.Tracks || null;
+                    const lengthKm = tram.lengthKm || tram.length_km || tram.LENGTH_KM || null;
+                    const alternativeName = tram.alternativeName || tram.alternative_name || tram.ALTERNATIVE_NAME || null;
+                    const owner = tram.owner || tram.Owner || null;
+
+                    // Create polyline with green color for trams
+                    const polyline = L.polyline(latlngs, {
+                      color: '#059669', // Green color for trams
+                      weight: 3,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all tram attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🚋 ${name}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${operationalStatus ? `<div><strong>Status:</strong> ${operationalStatus}</div>` : ''}
+                          ${trackGauge ? `<div><strong>Track Gauge:</strong> ${trackGauge}</div>` : ''}
+                          ${tracks ? `<div><strong>Tracks:</strong> ${tracks}</div>` : ''}
+                          ${lengthKm !== null && lengthKm !== undefined ? `<div><strong>Length:</strong> ${lengthKm.toFixed(2)} km</div>` : ''}
+                          ${alternativeName ? `<div><strong>Alternative Name:</strong> ${alternativeName}</div>` : ''}
+                          ${owner ? `<div><strong>Owner:</strong> ${owner}</div>` : ''}
+                          ${tram.distance_miles !== null && tram.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${tram.distance_miles.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all tram attributes (excluding internal fields)
+                    const excludeFields = ['name', 'Name', 'operationalStatus', 'operational_status', 'OPERATIONAL_STATUS', 'trackGauge', 'track_gauge', 'TRACK_GAUGE', 'tracks', 'Tracks', 'lengthKm', 'length_km', 'LENGTH_KM', 'alternativeName', 'alternative_name', 'ALTERNATIVE_NAME', 'owner', 'Owner', 'geometry', 'distance_miles', 'objectId', 'OBJECTID', 'objectid', 'lat', 'lon'];
+                    Object.entries(tram).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let displayValue = '';
+                        
+                        if (typeof value === 'object') {
+                          displayValue = JSON.stringify(value);
+                        } else if (typeof value === 'number') {
+                          displayValue = value.toLocaleString();
+                        } else {
+                          displayValue = String(value);
+                        }
+                        
+                        popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    (polyline as any).__layerType = 'australia_trams';
+                    (polyline as any).__layerTitle = 'Australia Trams';
+                    (polyline as any).__popupContent = popupContent;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(poi);
+                    bounds.extend(polyline.getBounds());
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Australia Tram polyline:', error);
+              }
+            }
+          });
+          
+          if (tramCount > 0) {
+            if (!legendAccumulator['australia_trams']) {
+              legendAccumulator['australia_trams'] = {
+                icon: '🚋',
+                color: '#059669',
+                title: 'Australia Trams',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_trams'].count += tramCount;
+          }
+        }
       } catch (error) {
         console.error('Error processing Ireland Mountains:', error);
       }
@@ -23252,6 +23357,7 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_high_water_marks_all') ||
             key.includes('ireland_pois_all') ||
             key.includes('australia_railways_all') ||
+            key.includes('australia_trams_all') ||
             key.includes('ireland_vegetation_areas_containing') ||
             key.includes('ireland_vegetation_areas_nearby_features') ||
             key.includes('ireland_vegetation_areas_all') ||

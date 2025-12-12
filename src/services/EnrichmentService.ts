@@ -171,6 +171,7 @@ import { getIrelandHighWaterMarksData } from '../adapters/irelandHighWaterMarks'
 import { getIrelandVegetationAreasData } from '../adapters/irelandVegetationAreas';
 import { getIrelandPOIsData } from '../adapters/irelandPOIs';
 import { getAustraliaRailwaysData } from '../adapters/australiaRailways';
+import { getAustraliaTramsData } from '../adapters/australiaTrams';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3532,6 +3533,8 @@ export class EnrichmentService {
         return await this.getIrelandPOIs(lat, lon, radius);
       case 'australia_railways':
         return await this.getAustraliaRailways(lat, lon, radius);
+      case 'australia_trams':
+        return await this.getAustraliaTrams(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14895,6 +14898,35 @@ out center;`;
       console.error('Error fetching Australia Railways:', error);
       return {
         australia_railways_count: 0
+      };
+    }
+  }
+
+  private async getAustraliaTrams(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getAustraliaTramsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        australia_trams_count: data.length,
+        australia_trams_total_count: data.length
+      };
+      
+      // Add all trams
+      if (data.length > 0) {
+        result.australia_trams_all = data.map(tram => {
+          return {
+            ...tram,
+            distance_miles: tram.distance_miles || 0
+          };
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Australia Trams:', error);
+      return {
+        australia_trams_count: 0
       };
     }
   }

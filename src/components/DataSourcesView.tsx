@@ -2556,6 +2556,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Railway_Lines_vw/FeatureServer"
+        },
+        {
+          name: "Digital Atlas AUS - Tram Lines",
+          description: "Australia Trams - Digital Atlas AUS Tram Lines - proximity queries up to 50 miles. Tram infrastructure including operational status, track gauge, and ownership information (polyline dataset). This dataset is provided by the Department of Natural Resources, Mines and Energy, Queensland",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Tram_Lines_vw/FeatureServer"
         }
       ]
     },
