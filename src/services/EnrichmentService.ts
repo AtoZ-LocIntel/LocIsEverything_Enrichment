@@ -14696,17 +14696,10 @@ out center;`;
       // Add all mountains
       if (data.length > 0) {
         result.ireland_mountains_all = data.map(mountain => {
-          const mountainData: any = {
-            objectId: mountain.objectId,
-            fCode: mountain.fCode,
-            name: mountain.name,
-            lat: mountain.lat,
-            lon: mountain.lon,
-            distance_miles: mountain.distance_miles || 0,
-            ...mountain
+          return {
+            ...mountain,
+            distance_miles: mountain.distance_miles || 0
           };
-          
-          return mountainData;
         });
       }
       
