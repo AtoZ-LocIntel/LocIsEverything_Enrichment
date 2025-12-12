@@ -2564,6 +2564,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Tram_Lines_vw/FeatureServer"
+        },
+        {
+            name: "Digital Atlas AUS - Recent Bushfire Accumulation",
+          description: "Recent Australia Bushfires - Digital Atlas AUS 3-Hourly Bushfire Accumulation - point-in-polygon and proximity queries up to 50 miles. Bushfire location points and extents including fire accumulation data (point and polygon dataset). This dataset is provided by the Department of Natural Resources, Mines and Energy, Queensland",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/ArcGIS/rest/services/3-Hourly_Bushfire_Accumulation_2_view/FeatureServer"
         }
       ]
     },

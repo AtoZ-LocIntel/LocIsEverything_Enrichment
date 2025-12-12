@@ -481,6 +481,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ireland_pois_all' ||
         key === 'australia_railways_all' ||
         key === 'australia_trams_all' ||
+        key === 'australia_bushfires_all' ||
+        key === 'australia_bushfires_containing' ||
+        key === 'australia_bushfires_nearby_features' ||
         // TIGER CBSA skip list - BAS 2025
         key === 'tiger_bas2025_cbsa_combined_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_combined_statistical_areas_all' ||
         key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_all' ||
@@ -10818,6 +10821,44 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           lengthKmStr ? `${lengthKmStr} km` : attributesJson,
           trackGauge || '',
           tracks || '',
+          attributesJson,
+          'Digital Atlas AUS'
+        ]);
+      });
+    } else if (key === 'australia_bushfires_all' && Array.isArray(value)) {
+      // Handle Australia Bushfires - each bushfire gets its own row with all attributes
+      value.forEach((bushfire: any) => {
+        const isContaining = bushfire.isContaining || bushfire.distance_miles === 0;
+        const distance = bushfire.distance_miles !== null && bushfire.distance_miles !== undefined ? bushfire.distance_miles.toFixed(2) : (isContaining ? '0.00' : '');
+        const featureType = bushfire.geometry && bushfire.geometry.rings ? 'Extent' : 'Location Point';
+        
+        const allAttributes = { ...bushfire };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Digital Atlas AUS',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_BUSHFIRE',
+          `${isContaining ? 'Containing' : 'Nearby'} - ${featureType}`,
+          (bushfire.lat || location.lat).toString(),
+          (bushfire.lon || location.lon).toString(),
+          distance,
+          featureType,
+          attributesJson,
+          '',
+          '',
           attributesJson,
           'Digital Atlas AUS'
         ]);

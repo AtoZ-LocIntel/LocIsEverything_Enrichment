@@ -164,6 +164,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_cell_towers': { icon: '📡', color: '#8b5cf6', title: 'Cell Towers' },
   
   // Recreation and Leisure
+  'poi_golf_courses': { icon: '⛳', color: '#10b981', title: 'Golf Courses' },
   'poi_theatres': { icon: '🎭', color: '#800080', title: 'Theatres' },
   'poi_museums_historic': { icon: '🏛️', color: '#7c3aed', title: 'Museums, Historic Sites & Memorials' },
   'poi_bars_nightlife': { icon: '🍻', color: '#f59e0b', title: 'Bars & Nightlife' },
@@ -953,7 +954,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
         key === 'ireland_high_water_marks_all' ||
         key === 'ireland_pois_all' ||
         key === 'australia_railways_all' ||
-        key === 'australia_trams_all' // Skip arrays (handled separately for map drawing)
+        key === 'australia_trams_all' ||
+        key === 'australia_bushfires_all' ||
+        key === 'australia_bushfires_containing' ||
+        key === 'australia_bushfires_nearby_features' // Skip arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -18469,6 +18473,149 @@ const MapView: React.FC<MapViewProps> = ({
             legendAccumulator['australia_trams'].count += tramCount;
           }
         }
+
+        // Draw Australia Bushfires as points and polygons on the map
+        if (enrichments.australia_bushfires_all && Array.isArray(enrichments.australia_bushfires_all)) {
+          let bushfireCount = 0;
+          enrichments.australia_bushfires_all.forEach((bushfire: any) => {
+            try {
+              const isContaining = bushfire.isContaining || bushfire.distance_miles === 0;
+              const distance = bushfire.distance_miles !== null && bushfire.distance_miles !== undefined ? bushfire.distance_miles : 0;
+              
+              // Check if it's a polygon (has rings) or a point
+              if (bushfire.geometry && bushfire.geometry.rings) {
+                // Draw as polygon
+                const rings = bushfire.geometry.rings[0]; // Use first ring
+                const latlngs = rings.map((ring: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [ring[1], ring[0]] as [number, number];
+                });
+                
+                const polygon = L.polygon(latlngs, {
+                  color: '#dc2626', // Red color for bushfires
+                  weight: 2,
+                  opacity: 0.8,
+                  fillColor: '#ef4444',
+                  fillOpacity: 0.3
+                });
+                
+                // Build popup content
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🔥 ${isContaining ? 'Containing' : 'Nearby'} Bushfire Extent
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : '<div><strong>Status:</strong> Containing</div>'}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all bushfire attributes
+                const excludeFields = ['geometry', 'distance_miles', 'isContaining', 'objectId', 'OBJECTID', 'objectid', 'lat', 'lon'];
+                Object.entries(bushfire).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                (polygon as any).__layerType = 'australia_bushfires';
+                (polygon as any).__layerTitle = 'Recent Australia Bushfires';
+                (polygon as any).__popupContent = popupContent;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(poi);
+                bounds.extend(polygon.getBounds());
+                bushfireCount++;
+              } else if (bushfire.lat && bushfire.lon) {
+                // Draw as point
+                const bushfireMarker = L.marker([bushfire.lat, bushfire.lon], {
+                  icon: L.divIcon({
+                    className: 'custom-bushfire-marker',
+                    html: '<div style="background-color: #dc2626; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+                    iconSize: [12, 12],
+                    iconAnchor: [6, 6]
+                  })
+                });
+                
+                // Build popup content
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🔥 ${isContaining ? 'Containing' : 'Nearby'} Bushfire Location
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : '<div><strong>Status:</strong> Containing</div>'}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all bushfire attributes
+                const excludeFields = ['geometry', 'distance_miles', 'isContaining', 'objectId', 'OBJECTID', 'objectid', 'lat', 'lon'];
+                Object.entries(bushfire).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                (bushfireMarker as any).__layerType = 'australia_bushfires';
+                (bushfireMarker as any).__layerTitle = 'Recent Australia Bushfires';
+                (bushfireMarker as any).__popupContent = popupContent;
+                
+                bushfireMarker.bindPopup(popupContent, { maxWidth: 400 });
+                bushfireMarker.addTo(poi);
+                bounds.extend([bushfire.lat, bushfire.lon]);
+                bushfireCount++;
+              }
+            } catch (error) {
+              console.error('Error drawing Australia Bushfire:', error);
+            }
+          });
+          
+          if (bushfireCount > 0) {
+            if (!legendAccumulator['australia_bushfires']) {
+              legendAccumulator['australia_bushfires'] = {
+                icon: '🔥',
+                color: '#dc2626',
+                title: 'Recent Australia Bushfires',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_bushfires'].count += bushfireCount;
+          }
+        }
       } catch (error) {
         console.error('Error processing Ireland Mountains:', error);
       }
@@ -23358,6 +23505,9 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_pois_all') ||
             key.includes('australia_railways_all') ||
             key.includes('australia_trams_all') ||
+            key.includes('australia_bushfires_containing') ||
+            key.includes('australia_bushfires_nearby_features') ||
+            key.includes('australia_bushfires_all') ||
             key.includes('ireland_vegetation_areas_containing') ||
             key.includes('ireland_vegetation_areas_nearby_features') ||
             key.includes('ireland_vegetation_areas_all') ||
@@ -24459,7 +24609,7 @@ const MapView: React.FC<MapViewProps> = ({
     >
       {/* Results Header */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 flex-shrink-0">
           <button
             onClick={onBackToConfig}
             className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -24467,10 +24617,16 @@ const MapView: React.FC<MapViewProps> = ({
             <span className="w-5 h-5">←</span>
             <span className="text-sm font-medium">Back to Configuration</span>
           </button>
-          
         </div>
         
-        <div className="flex items-center space-x-4">
+        {/* Centered Title */}
+        <div className="flex-1 flex items-center justify-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gradient">
+            KNOW YOUR LOCATION
+          </h1>
+        </div>
+        
+        <div className="flex items-center space-x-4 flex-shrink-0">
           <div className="text-right">
             <p className="text-sm text-gray-600">{results.length} location{results.length !== 1 ? 's' : ''} processed</p>
           </div>

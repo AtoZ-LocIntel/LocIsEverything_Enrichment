@@ -172,6 +172,7 @@ import { getIrelandVegetationAreasData } from '../adapters/irelandVegetationArea
 import { getIrelandPOIsData } from '../adapters/irelandPOIs';
 import { getAustraliaRailwaysData } from '../adapters/australiaRailways';
 import { getAustraliaTramsData } from '../adapters/australiaTrams';
+import { getAustraliaBushfiresData } from '../adapters/australiaBushfires';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -1443,6 +1444,9 @@ export class EnrichmentService {
       
       case 'poi_museums_historic':
         return await this.getPOICount('poi_museums_historic', lat, lon, radius);
+      
+      case 'poi_tnm_trailheads':
+        return await this.getTrailHeads(lat, lon, radius);
       
       case 'poi_bars_nightlife':
         return await this.getPOICount('poi_bars_nightlife', lat, lon, radius);
@@ -3535,6 +3539,8 @@ export class EnrichmentService {
         return await this.getAustraliaRailways(lat, lon, radius);
       case 'australia_trams':
         return await this.getAustraliaTrams(lat, lon, radius);
+      case 'australia_bushfires':
+        return await this.getAustraliaBushfires(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -6284,6 +6290,7 @@ export class EnrichmentService {
      if (id === "poi_tnm_airports") return ["aeroway=aerodrome", "aeroway=airport"];
      if (id === "poi_tnm_railroads") return ["railway=rail"];
      if (id === "poi_tnm_trails") return ["route=hiking", "route=foot", "leisure=park"];
+     if (id === "poi_tnm_trailheads") return ["highway=trailhead", "information=trailhead", "amenity=trailhead", "parking=trailhead"];
      
      // Comprehensive transportation POI types
     if (id === "poi_bus") return [
@@ -14931,6 +14938,58 @@ out center;`;
     }
   }
 
+  private async getAustraliaBushfires(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getAustraliaBushfiresData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        australia_bushfires_containing_count: data.containing.length,
+        australia_bushfires_nearby_count: data.nearby.length,
+        australia_bushfires_total_count: data._all.length
+      };
+      
+      // Add containing bushfires
+      if (data.containing.length > 0) {
+        result.australia_bushfires_containing = data.containing.map(bushfire => {
+          return {
+            ...bushfire,
+            distance_miles: 0
+          };
+        });
+      }
+      
+      // Add nearby bushfires
+      if (data.nearby.length > 0) {
+        result.australia_bushfires_nearby_features = data.nearby.map(bushfire => {
+          return {
+            ...bushfire,
+            distance_miles: bushfire.distance_miles || 0
+          };
+        });
+      }
+      
+      // Add all bushfires (combined)
+      if (data._all.length > 0) {
+        result.australia_bushfires_all = data._all.map(bushfire => {
+          return {
+            ...bushfire,
+            distance_miles: bushfire.distance_miles || 0
+          };
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Australia Bushfires:', error);
+      return {
+        australia_bushfires_containing_count: 0,
+        australia_bushfires_nearby_count: 0,
+        australia_bushfires_total_count: 0
+      };
+    }
+  }
+
   private async getIrelandBuiltUpAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       const cappedRadius = Math.min(radius || 50, 50);
@@ -21042,6 +21101,144 @@ out center;`;
       return { 
         poi_mail_shipping_summary: 'No mail & shipping locations found due to error.',
         poi_mail_shipping_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getTrailHeads(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🥾 Trailheads query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const radiusMeters = Math.round(radiusMiles * 1609.34);
+      
+      // Build Overpass query using around syntax (more accurate for radius queries)
+      // Primary tag: highway=trailhead (standard OSM tag)
+      // Also include related features that often indicate trailheads:
+      // - tourism=information with guidepost/board (trail information signs)
+      // - amenity=parking near trails (parking areas at trailheads)
+      const query = `[out:json][timeout:30];
+(
+  node["highway"="trailhead"](around:${radiusMeters},${lat},${lon});
+  node["tourism"="information"]["information"~"guidepost|board"](around:${radiusMeters},${lat},${lon});
+  way["highway"="trailhead"](around:${radiusMeters},${lat},${lon});
+);
+out geom;`;
+      
+      console.log(`🥾 Trailheads Overpass query: ${query}`);
+      
+      let response = await fetchJSONSmart('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        body: query,
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' }
+      });
+      
+      // Fallback to alternative server if first fails
+      if (response.error || !response.elements) {
+        console.log(`🥾 Primary server failed or returned error, trying fallback...`);
+        try {
+          response = await fetchJSONSmart('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: { 'Content-Type': 'text/plain;charset=UTF-8' }
+          });
+        } catch (fallbackError) {
+          console.error('🥾 Fallback server also failed:', fallbackError);
+        }
+      }
+      
+      if (response.error) {
+        console.error('🥾 Overpass API Error:', response.error);
+        return {
+          [`poi_tnm_trailheads_count_${radiusMiles}mi`]: 0,
+          poi_tnm_trailheads_detailed: [],
+          poi_tnm_trailheads_all_pois: []
+        };
+      }
+      
+      const elements = response.elements || [];
+      console.log(`🥾 Overpass returned ${elements.length} trailhead elements`);
+      
+      // Process elements and calculate distances
+      const trailheadsWithDistance: any[] = [];
+      for (const element of elements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let locationLat: number | null = null;
+        let locationLon: number | null = null;
+        
+        if (element.type === 'node') {
+          locationLat = element.lat;
+          locationLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          locationLat = element.center?.lat;
+          locationLon = element.center?.lon;
+        }
+        
+        if (locationLat == null || locationLon == null) {
+          console.warn(`🥾 Skipping trailhead ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, locationLat, locationLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include trailheads within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= radiusMiles) {
+          trailheadsWithDistance.push({
+            ...element,
+            lat: locationLat,
+            lon: locationLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      trailheadsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = trailheadsWithDistance.length;
+      console.log(`🥾 Found ${count} trailheads within ${radiusMiles} miles (after distance filtering)`);
+      
+      // Process trailhead details for mapping
+      const trailheadDetails = trailheadsWithDistance.map((element: any) => {
+        // Determine type based on tags
+        let type = 'trailhead';
+        if (element.tags?.['highway'] === 'trailhead') {
+          type = 'trailhead';
+        } else if (element.tags?.['tourism'] === 'information') {
+          type = element.tags?.['information'] || 'trail_information';
+        }
+        
+        return {
+          id: element.id,
+          name: element.tags?.name || 'Unnamed Trailhead',
+          type: type,
+          highway: element.tags?.['highway'] || null,
+          information: element.tags?.['information'] || null,
+          tourism: element.tags?.['tourism'] || null,
+          description: element.tags?.description || element.tags?.note || null,
+          address: element.tags?.['addr:street'] || null,
+          city: element.tags?.['addr:city'] || null,
+          state: element.tags?.['addr:state'] || null,
+          lat: element.lat,
+          lon: element.lon,
+          distance_miles: element.distance_miles,
+          tags: element.tags || {}
+        };
+      });
+      
+      console.log(`🥾 Trailheads: Returning ${trailheadDetails.length} items in poi_tnm_trailheads_detailed`);
+      
+      return {
+        [`poi_tnm_trailheads_count_${radiusMiles}mi`]: count,
+        poi_tnm_trailheads_detailed: trailheadDetails,
+        poi_tnm_trailheads_all_pois: trailheadsWithDistance
+      };
+    } catch (error) {
+      console.error('🥾 Trailheads query failed:', error);
+      return { 
+        [`poi_tnm_trailheads_count_${radiusMiles}mi`]: 0,
+        poi_tnm_trailheads_detailed: [],
+        poi_tnm_trailheads_all_pois: []
       };
     }
   }
