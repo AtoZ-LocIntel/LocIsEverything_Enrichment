@@ -10712,8 +10712,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const tracks = railway.tracks || railway.Tracks || '';
         const lengthKm = railway.lengthKm || railway.length_km || railway.LENGTH_KM || null;
         const lengthKmStr = lengthKm !== null && lengthKm !== undefined ? lengthKm.toFixed(2) : '';
-        const alternativeName = railway.alternativeName || railway.alternative_name || railway.ALTERNATIVE_NAME || '';
-        const owner = railway.owner || railway.Owner || '';
         const distance = railway.distance_miles !== null && railway.distance_miles !== undefined ? railway.distance_miles.toFixed(2) : '';
         
         const allAttributes = { ...railway };
