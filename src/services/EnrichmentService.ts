@@ -14765,13 +14765,8 @@ out center;`;
       if (data.containing.length > 0) {
         result.ireland_vegetation_areas_containing = data.containing.map(area => {
           const areaData: any = {
-            objectId: area.objectId,
-            fcSubtype: area.fcSubtype,
-            name: area.name,
-            shapeArea: area.shapeArea,
-            shapeLength: area.shapeLength,
-            distance_miles: 0,
-            ...area
+            ...area,
+            distance_miles: 0
           };
           
           // Store geometry for map rendering (non-enumerable)
@@ -14791,13 +14786,8 @@ out center;`;
       if (data.nearby.length > 0) {
         result.ireland_vegetation_areas_nearby_features = data.nearby.map(area => {
           const areaData: any = {
-            objectId: area.objectId,
-            fcSubtype: area.fcSubtype,
-            name: area.name,
-            shapeArea: area.shapeArea,
-            shapeLength: area.shapeLength,
-            distance_miles: area.distance_miles || 0,
-            ...area
+            ...area,
+            distance_miles: area.distance_miles || 0
           };
           
           // Store geometry for map rendering (non-enumerable)
@@ -14817,13 +14807,8 @@ out center;`;
       if (all.length > 0) {
         result.ireland_vegetation_areas_all = all.map(area => {
           const areaData: any = {
-            objectId: area.objectId,
-            fcSubtype: area.fcSubtype,
-            name: area.name,
-            shapeArea: area.shapeArea,
-            shapeLength: area.shapeLength,
-            distance_miles: area.distance_miles || 0,
-            ...area
+            ...area,
+            distance_miles: area.distance_miles || 0
           };
           
           // Store geometry for map rendering (non-enumerable)
