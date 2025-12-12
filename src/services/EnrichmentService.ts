@@ -163,6 +163,7 @@ import { getIrelandProvincesData } from '../adapters/irelandProvinces';
 import { getIrelandBuiltUpAreasData } from '../adapters/irelandBuiltUpAreas';
 import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
 import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDivisions';
+import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3504,6 +3505,8 @@ export class EnrichmentService {
         return await this.getIrelandCentresOfPopulation(lat, lon, radius);
       case 'ireland_electoral_divisions':
         return await this.getIrelandElectoralDivisions(lat, lon, radius);
+      case 'ireland_nuts3_boundaries':
+        return await this.getIrelandNUTS3(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14164,6 +14167,137 @@ out center;`;
         ireland_electoral_divisions_containing_count: 0,
         ireland_electoral_divisions_nearby_count: 0,
         ireland_electoral_divisions_total_count: 0
+      };
+    }
+  }
+
+  private async getIrelandNUTS3(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getIrelandNUTS3Data(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_nuts3_boundaries_containing_count: data.containing.length,
+        ireland_nuts3_boundaries_nearby_count: data.nearby_features.length,
+        ireland_nuts3_boundaries_total_count: data._all.length
+      };
+      
+      // Add containing NUTS3 boundaries
+      if (data.containing.length > 0) {
+        result.ireland_nuts3_boundaries_containing = data.containing.map(nuts3 => {
+          const nuts3Data: any = {
+            objectId: nuts3.objectId,
+            nuts1: nuts3.nuts1,
+            nuts1Name: nuts3.nuts1Name,
+            nuts2: nuts3.nuts2,
+            nuts2Name: nuts3.nuts2Name,
+            nuts3: nuts3.nuts3,
+            nuts3Name: nuts3.nuts3Name,
+            guid: nuts3.guid,
+            shapeArea: nuts3.shapeArea,
+            shapeLength: nuts3.shapeLength,
+            distance_miles: 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (nuts3.geometry) {
+            Object.defineProperty(nuts3Data, '__geometry', {
+              value: nuts3.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(nuts3).forEach(key => {
+            if (!['objectId', 'nuts1', 'nuts1Name', 'nuts2', 'nuts2Name', 'nuts3', 'nuts3Name', 'guid', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              nuts3Data[key] = nuts3[key];
+            }
+          });
+          
+          return nuts3Data;
+        });
+      }
+      
+      // Add nearby NUTS3 boundaries
+      if (data.nearby_features.length > 0) {
+        result.ireland_nuts3_boundaries_nearby_features = data.nearby_features.map(nuts3 => {
+          const nuts3Data: any = {
+            objectId: nuts3.objectId,
+            nuts1: nuts3.nuts1,
+            nuts1Name: nuts3.nuts1Name,
+            nuts2: nuts3.nuts2,
+            nuts2Name: nuts3.nuts2Name,
+            nuts3: nuts3.nuts3,
+            nuts3Name: nuts3.nuts3Name,
+            guid: nuts3.guid,
+            shapeArea: nuts3.shapeArea,
+            shapeLength: nuts3.shapeLength,
+            distance_miles: nuts3.distance_miles
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (nuts3.geometry) {
+            Object.defineProperty(nuts3Data, '__geometry', {
+              value: nuts3.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(nuts3).forEach(key => {
+            if (!['objectId', 'nuts1', 'nuts1Name', 'nuts2', 'nuts2Name', 'nuts3', 'nuts3Name', 'guid', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              nuts3Data[key] = nuts3[key];
+            }
+          });
+          
+          return nuts3Data;
+        });
+      }
+      
+      // Add all NUTS3 boundaries
+      if (data._all.length > 0) {
+        result.ireland_nuts3_boundaries_all = data._all.map(nuts3 => {
+          const nuts3Data: any = {
+            objectId: nuts3.objectId,
+            nuts1: nuts3.nuts1,
+            nuts1Name: nuts3.nuts1Name,
+            nuts2: nuts3.nuts2,
+            nuts2Name: nuts3.nuts2Name,
+            nuts3: nuts3.nuts3,
+            nuts3Name: nuts3.nuts3Name,
+            guid: nuts3.guid,
+            shapeArea: nuts3.shapeArea,
+            shapeLength: nuts3.shapeLength,
+            distance_miles: nuts3.distance_miles || 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (nuts3.geometry) {
+            Object.defineProperty(nuts3Data, '__geometry', {
+              value: nuts3.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(nuts3).forEach(key => {
+            if (!['objectId', 'nuts1', 'nuts1Name', 'nuts2', 'nuts2Name', 'nuts3', 'nuts3Name', 'guid', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              nuts3Data[key] = nuts3[key];
+            }
+          });
+          
+          return nuts3Data;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland NUTS3 Boundaries:', error);
+      return {
+        ireland_nuts3_boundaries_count: 0
       };
     }
   }

@@ -468,6 +468,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         // Ireland Small Areas skip list
         key === 'ireland_small_areas_containing' || key === 'ireland_small_areas_nearby_features' || key === 'ireland_small_areas_all' ||
         key === 'ireland_electoral_divisions_containing' || key === 'ireland_electoral_divisions_nearby_features' || key === 'ireland_electoral_divisions_all' ||
+        key === 'ireland_nuts3_boundaries_containing' || key === 'ireland_nuts3_boundaries_nearby_features' || key === 'ireland_nuts3_boundaries_all' ||
         // Ireland Centres of Population skip list
         key === 'ireland_centres_of_population_all' ||
         // TIGER CBSA skip list - BAS 2025
@@ -10426,6 +10427,67 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           province ? `Province: ${province}` : '',
           attributesJson,
           'Central Statistics Office (CSO)'
+        ]);
+      });
+    }
+    
+    // Export Ireland NUTS3 Boundaries data
+    if (key === 'ireland_nuts3_boundaries_all' && Array.isArray(value)) {
+      value.forEach((nuts3: any) => {
+        const nuts1 = nuts3.nuts1 || nuts3.NUTS1 || '';
+        const nuts1Name = nuts3.nuts1Name || nuts3.NUTS1NAME || '';
+        const nuts2 = nuts3.nuts2 || nuts3.NUTS2 || '';
+        const nuts2Name = nuts3.nuts2Name || nuts3.NUTS2NAME || '';
+        const nuts3Code = nuts3.nuts3 || nuts3.NUTS3 || '';
+        const nuts3Name = nuts3.nuts3Name || nuts3.NUTS3NAME || '';
+        const distance = nuts3.distance_miles !== null && nuts3.distance_miles !== undefined ? nuts3.distance_miles.toFixed(2) : '0.00';
+        const lat = location.lat.toString();
+        const lon = location.lon.toString();
+        
+        const allAttributes = { ...nuts3 };
+        delete allAttributes.nuts1;
+        delete allAttributes.NUTS1;
+        delete allAttributes.nuts1Name;
+        delete allAttributes.NUTS1NAME;
+        delete allAttributes.nuts2;
+        delete allAttributes.NUTS2;
+        delete allAttributes.nuts2Name;
+        delete allAttributes.NUTS2NAME;
+        delete allAttributes.nuts3;
+        delete allAttributes.NUTS3;
+        delete allAttributes.nuts3Name;
+        delete allAttributes.NUTS3NAME;
+        delete allAttributes.guid;
+        delete allAttributes.GUID;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_NUTS3_BOUNDARY',
+          nuts3Name || nuts3Code || 'NUTS3 Boundary',
+          lat,
+          lon,
+          distance,
+          distance === '0.00' ? 'Containing NUTS3 Boundary' : `Nearby NUTS3 Boundary (${distance} miles)`,
+          nuts3Name ? `NUTS3 Name: ${nuts3Name}` : '',
+          nuts3Code ? `NUTS3 Code: ${nuts3Code}` : '',
+          nuts2Name ? `NUTS2 Name: ${nuts2Name}` : '',
+          nuts1Name ? `NUTS1 Name: ${nuts1Name}` : '',
+          attributesJson,
+          'Tailte Éireann (OSi)'
         ]);
       });
     }

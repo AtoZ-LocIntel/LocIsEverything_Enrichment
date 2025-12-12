@@ -942,6 +942,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ireland_built_up_areas_containing' || key === 'ireland_built_up_areas_nearby_features' || key === 'ireland_built_up_areas_all' ||
     key === 'ireland_small_areas_containing' || key === 'ireland_small_areas_nearby_features' || key === 'ireland_small_areas_all' ||
     key === 'ireland_electoral_divisions_containing' || key === 'ireland_electoral_divisions_nearby_features' || key === 'ireland_electoral_divisions_all' ||
+    key === 'ireland_nuts3_boundaries_containing' || key === 'ireland_nuts3_boundaries_nearby_features' || key === 'ireland_nuts3_boundaries_all' ||
     key === 'ireland_centres_of_population_all' // Skip Ireland arrays (handled separately for map drawing)
   );
 
@@ -6635,6 +6636,11 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'ireland_electoral_divisions_containing', nearbyKey: 'ireland_electoral_divisions_nearby_features', name: 'Ireland Electoral Divisions', color: '#a855f7', icon: '🗳️', layerType: 'ireland_electoral_divisions' }
       ];
 
+      // Draw Ireland NUTS3 Boundaries as polygons on the map
+      const irelandNUTS3Layers = [
+        { containingKey: 'ireland_nuts3_boundaries_containing', nearbyKey: 'ireland_nuts3_boundaries_nearby_features', name: 'Ireland NUTS3 Boundaries', color: '#9333ea', icon: '🗺️', layerType: 'ireland_nuts3_boundaries' }
+      ];
+
       irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
         
@@ -7303,6 +7309,187 @@ const MapView: React.FC<MapViewProps> = ({
                   // Add all other ED attributes
                   const excludeFields = ['edId', 'ED_ID', 'edEnglish', 'ED_ENGLISH', 'edGaeilge', 'ED_GAEILGE', 'county', 'COUNTY', 'contae', 'CONTAE', 'province', 'PROVINCE', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID_1', 'ESRI_OID', 'centroidX', 'CENTROID_X', 'centroidY', 'CENTROID_Y', 'guid', 'GUID_'];
                   Object.entries(ed).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw Ireland NUTS3 Boundaries as polygons on the map
+      irelandNUTS3Layers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing NUTS3 boundaries
+        if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
+          enrichments[containingKey].forEach((nuts3: any) => {
+            const geometry = nuts3.__geometry || nuts3.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: color,
+                    fillOpacity: 0.4
+                  });
+
+                  const nuts3Code = nuts3.nuts3 || nuts3.NUTS3 || '';
+                  const nuts3Name = nuts3.nuts3Name || nuts3.NUTS3NAME || '';
+                  const nuts2Name = nuts3.nuts2Name || nuts3.NUTS2NAME || '';
+                  const nuts1Name = nuts3.nuts1Name || nuts3.NUTS1NAME || '';
+                  const shapeArea = nuts3.shapeArea || nuts3.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} NUTS3 Boundary
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Containing NUTS3 Boundary</div>
+                        ${nuts3Name ? `<div><strong>NUTS3 Name:</strong> ${nuts3Name}</div>` : ''}
+                        ${nuts3Code ? `<div><strong>NUTS3 Code:</strong> ${nuts3Code}</div>` : ''}
+                        ${nuts2Name ? `<div><strong>NUTS2 Name:</strong> ${nuts2Name}</div>` : ''}
+                        ${nuts1Name ? `<div><strong>NUTS1 Name:</strong> ${nuts1Name}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other NUTS3 attributes
+                  const excludeFields = ['nuts1', 'NUTS1', 'nuts1Name', 'NUTS1NAME', 'nuts2', 'NUTS2', 'nuts2Name', 'NUTS2NAME', 'nuts3', 'NUTS3', 'nuts3Name', 'NUTS3NAME', 'guid', 'GUID', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID'];
+                  Object.entries(nuts3).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing polygon:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby NUTS3 boundaries
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((nuts3: any) => {
+            const geometry = nuts3.__geometry || nuts3.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const nuts3Code = nuts3.nuts3 || nuts3.NUTS3 || '';
+                  const nuts3Name = nuts3.nuts3Name || nuts3.NUTS3NAME || '';
+                  const nuts2Name = nuts3.nuts2Name || nuts3.NUTS2NAME || '';
+                  const nuts1Name = nuts3.nuts1Name || nuts3.NUTS1NAME || '';
+                  const distance = nuts3.distance_miles ? nuts3.distance_miles.toFixed(2) : 'Unknown';
+                  const shapeArea = nuts3.shapeArea || nuts3.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} NUTS3 Boundary
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${nuts3Name ? `<div><strong>NUTS3 Name:</strong> ${nuts3Name}</div>` : ''}
+                        ${nuts3Code ? `<div><strong>NUTS3 Code:</strong> ${nuts3Code}</div>` : ''}
+                        ${nuts2Name ? `<div><strong>NUTS2 Name:</strong> ${nuts2Name}</div>` : ''}
+                        ${nuts1Name ? `<div><strong>NUTS1 Name:</strong> ${nuts1Name}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other NUTS3 attributes
+                  const excludeFields = ['nuts1', 'NUTS1', 'nuts1Name', 'NUTS1NAME', 'nuts2', 'NUTS2', 'nuts2Name', 'NUTS2NAME', 'nuts3', 'NUTS3', 'nuts3Name', 'NUTS3NAME', 'guid', 'GUID', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID'];
+                  Object.entries(nuts3).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       let displayValue = '';
@@ -22127,6 +22314,9 @@ const MapView: React.FC<MapViewProps> = ({
         if (key.includes('ireland_electoral_divisions_containing') || 
             key.includes('ireland_electoral_divisions_nearby_features') || 
             key.includes('ireland_electoral_divisions_all') ||
+            key.includes('ireland_nuts3_boundaries_containing') ||
+            key.includes('ireland_nuts3_boundaries_nearby_features') ||
+            key.includes('ireland_nuts3_boundaries_all') ||
             key.includes('ireland_centres_of_population_all') ||
             key.includes('ireland_small_areas_containing') ||
             key.includes('ireland_small_areas_nearby_features') ||
