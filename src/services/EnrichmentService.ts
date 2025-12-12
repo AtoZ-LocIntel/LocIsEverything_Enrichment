@@ -169,6 +169,7 @@ import { getIrelandBuildingsData } from '../adapters/irelandBuildings';
 import { getIrelandMountainsData } from '../adapters/irelandMountains';
 import { getIrelandHighWaterMarksData } from '../adapters/irelandHighWaterMarks';
 import { getIrelandVegetationAreasData } from '../adapters/irelandVegetationAreas';
+import { getIrelandPOIsData } from '../adapters/irelandPOIs';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3526,6 +3527,8 @@ export class EnrichmentService {
         return await this.getIrelandHighWaterMarks(lat, lon, radius);
       case 'ireland_vegetation_areas':
         return await this.getIrelandVegetationAreas(lat, lon, radius);
+      case 'ireland_pois':
+        return await this.getIrelandPOIs(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14831,6 +14834,35 @@ out center;`;
         ireland_vegetation_areas_containing_count: 0,
         ireland_vegetation_areas_nearby_count: 0,
         ireland_vegetation_areas_total_count: 0
+      };
+    }
+  }
+
+  private async getIrelandPOIs(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 0.5, 1.0);
+      const data = await getIrelandPOIsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_pois_count: data.length,
+        ireland_pois_total_count: data.length
+      };
+      
+      // Add all POIs
+      if (data.length > 0) {
+        result.ireland_pois_all = data.map(poi => {
+          return {
+            ...poi,
+            distance_miles: poi.distance_miles || 0
+          };
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland POIs:', error);
+      return {
+        ireland_pois_count: 0
       };
     }
   }

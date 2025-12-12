@@ -2535,6 +2535,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Vegetation_Areas___OSi_National_250K_Map_of_Ireland/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Points of Interest",
+          description: "Irish Points of Interest - OSi Geodirectory GeoJSON - proximity queries up to 25 miles. Points of interest including organizations, businesses, and facilities with address information (point dataset). This dataset is provided by Tailte Éireann",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Geodirectory_GeoJSON/FeatureServer"
         }
       ]
     },

@@ -478,6 +478,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ireland_mountains_all' ||
         key === 'ireland_high_water_marks_all' ||
         key === 'ireland_vegetation_areas_all' ||
+        key === 'ireland_pois_all' ||
         // TIGER CBSA skip list - BAS 2025
         key === 'tiger_bas2025_cbsa_combined_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_combined_statistical_areas_all' ||
         key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_all' ||
@@ -10745,6 +10746,70 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           areaMeters ? `${areaMeters} m²` : attributesJson,
           '',
           '',
+          attributesJson,
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    } else if (key === 'ireland_pois_all' && Array.isArray(value)) {
+      // Handle Ireland POIs - each POI gets its own row with all attributes
+      value.forEach((poi: any) => {
+        const orgName = poi.orgName || poi.ORG_NAME || '';
+        const category = poi.category || poi.Category || '';
+        const name = poi.name || poi.Name || '';
+        const address = poi.address || poi.Address || '';
+        const eircode = poi.eircode || poi.EIRCODE || '';
+        const town = poi.town || poi.Town || '';
+        const county = poi.county || poi.County || '';
+        const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toFixed(2) : '';
+        
+        // Use ORG_NAME and Category for display as requested
+        const displayName = orgName || name || 'Unknown POI';
+        const displayCategory = category || 'Point of Interest';
+        
+        const allAttributes = { ...poi };
+        delete allAttributes.orgName;
+        delete allAttributes.ORG_NAME;
+        delete allAttributes.category;
+        delete allAttributes.Category;
+        delete allAttributes.name;
+        delete allAttributes.Name;
+        delete allAttributes.address;
+        delete allAttributes.Address;
+        delete allAttributes.eircode;
+        delete allAttributes.EIRCODE;
+        delete allAttributes.town;
+        delete allAttributes.Town;
+        delete allAttributes.county;
+        delete allAttributes.County;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.latitude;
+        delete allAttributes.Latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.Longitude;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.ESRI_OID;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_POI',
+          displayName,
+          (poi.lat || '').toString(),
+          (poi.lon || '').toString(),
+          distance,
+          displayCategory,
+          address || attributesJson,
+          town || '',
+          eircode || '',
           attributesJson,
           'Tailte Éireann (OSi)'
         ]);

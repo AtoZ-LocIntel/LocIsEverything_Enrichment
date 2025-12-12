@@ -949,8 +949,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ireland_buildings_residential_commercial_containing' || key === 'ireland_buildings_residential_commercial_nearby_features' || key === 'ireland_buildings_residential_commercial_all' ||
     key === 'ireland_buildings_commercial_containing' || key === 'ireland_buildings_commercial_nearby_features' || key === 'ireland_buildings_commercial_all' ||
     key === 'ireland_mountains_all' ||
-    key === 'ireland_centres_of_population_all' ||
-    key === 'ireland_high_water_marks_all' // Skip Ireland arrays (handled separately for map drawing)
+        key === 'ireland_centres_of_population_all' ||
+        key === 'ireland_high_water_marks_all' ||
+        key === 'ireland_pois_all' // Skip Ireland arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -18069,6 +18070,97 @@ const MapView: React.FC<MapViewProps> = ({
           }
         }
 
+        // Draw Ireland POIs as points on the map
+        if (enrichments.ireland_pois_all && Array.isArray(enrichments.ireland_pois_all)) {
+          let poiCount = 0;
+          enrichments.ireland_pois_all.forEach((poiItem: any) => {
+            if (poiItem.lat && poiItem.lon) {
+              try {
+                const poiMarker = L.marker([poiItem.lat, poiItem.lon], {
+                  icon: createPOIIcon('📍', '#10b981')
+                });
+                
+                const orgName = poiItem.orgName || poiItem.ORG_NAME || '';
+                const category = poiItem.category || poiItem.Category || '';
+                const name = poiItem.name || poiItem.Name || '';
+                const address = poiItem.address || poiItem.Address || '';
+                const eircode = poiItem.eircode || poiItem.EIRCODE || '';
+                const town = poiItem.town || poiItem.Town || '';
+                const county = poiItem.county || poiItem.County || '';
+                const distance = poiItem.distance_miles !== null && poiItem.distance_miles !== undefined ? poiItem.distance_miles : 0;
+                
+                // Use ORG_NAME and Category for display as requested
+                const displayName = orgName || name || 'Unknown POI';
+                const displayCategory = category || 'Point of Interest';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      📍 ${displayName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${displayCategory ? `<div><strong>Category:</strong> ${displayCategory}</div>` : ''}
+                      ${name && name !== displayName ? `<div><strong>Name:</strong> ${name}</div>` : ''}
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${eircode ? `<div><strong>Eircode:</strong> ${eircode}</div>` : ''}
+                      ${town ? `<div><strong>Town:</strong> ${town}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other POI attributes
+                const excludeFields = ['orgName', 'ORG_NAME', 'category', 'Category', 'name', 'Name', 'address', 'Address', 'eircode', 'EIRCODE', 'town', 'Town', 'county', 'County', 'lat', 'lon', 'latitude', 'Latitude', 'longitude', 'Longitude', 'geometry', 'distance_miles', 'objectId', 'ObjectId', 'OBJECTID', 'ESRI_OID'];
+                Object.entries(poiItem).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                (poiMarker as any).__layerType = 'ireland_pois';
+                (poiMarker as any).__layerTitle = 'Ireland Points of Interest';
+                (poiMarker as any).__popupContent = popupContent;
+                
+                poiMarker.bindPopup(popupContent, { maxWidth: 400 });
+                poiMarker.addTo(poi);
+                bounds.extend([poiItem.lat, poiItem.lon]);
+                poiCount++;
+              } catch (error) {
+                console.error('Error drawing Ireland POI marker:', error);
+              }
+            }
+          });
+          
+          if (poiCount > 0) {
+            if (!legendAccumulator['ireland_pois']) {
+              legendAccumulator['ireland_pois'] = {
+                icon: '📍',
+                color: '#10b981',
+                title: 'Ireland Points of Interest',
+                count: 0,
+              };
+            }
+            legendAccumulator['ireland_pois'].count += poiCount;
+          }
+        }
+
         // Draw Ireland High Water Marks as polylines on the map
         if (enrichments.ireland_high_water_marks_all && Array.isArray(enrichments.ireland_high_water_marks_all)) {
           let waterMarkCount = 0;
@@ -23053,6 +23145,7 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_mountains_all') ||
             key.includes('ireland_centres_of_population_all') ||
             key.includes('ireland_high_water_marks_all') ||
+            key.includes('ireland_pois_all') ||
             key.includes('ireland_vegetation_areas_containing') ||
             key.includes('ireland_vegetation_areas_nearby_features') ||
             key.includes('ireland_vegetation_areas_all') ||
