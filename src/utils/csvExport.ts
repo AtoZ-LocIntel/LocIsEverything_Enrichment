@@ -470,6 +470,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ireland_electoral_divisions_containing' || key === 'ireland_electoral_divisions_nearby_features' || key === 'ireland_electoral_divisions_all' ||
         key === 'ireland_nuts3_boundaries_containing' || key === 'ireland_nuts3_boundaries_nearby_features' || key === 'ireland_nuts3_boundaries_all' ||
         key === 'ireland_civil_parishes_containing' || key === 'ireland_civil_parishes_nearby_features' || key === 'ireland_civil_parishes_all' ||
+        key === 'ireland_buildings_residential_containing' || key === 'ireland_buildings_residential_nearby_features' || key === 'ireland_buildings_residential_all' ||
+        key === 'ireland_buildings_residential_commercial_containing' || key === 'ireland_buildings_residential_commercial_nearby_features' || key === 'ireland_buildings_residential_commercial_all' ||
+        key === 'ireland_buildings_commercial_containing' || key === 'ireland_buildings_commercial_nearby_features' || key === 'ireland_buildings_commercial_all' ||
         // Ireland Centres of Population skip list
         key === 'ireland_centres_of_population_all' ||
         // TIGER CBSA skip list - BAS 2025
@@ -10536,6 +10539,123 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           engName ? `English Name: ${engName}` : '',
           gleName ? `Gaeilge Name: ${gleName}` : '',
           gaeltachtArea ? `Gaeltacht Area: ${gaeltachtArea}` : '',
+          attributesJson,
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    }
+    
+    // Export Ireland Buildings - Residential data
+    if (key === 'ireland_buildings_residential_all' && Array.isArray(value)) {
+      value.forEach((building: any) => {
+        const buildingType = building.buildingType || 'Residential';
+        const distance = building.distance_miles !== null && building.distance_miles !== undefined ? building.distance_miles.toFixed(2) : '0.00';
+        const lat = location.lat.toString();
+        const lon = location.lon.toString();
+        
+        const allAttributes = { ...building };
+        delete allAttributes.buildingType;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.ESRI_OID;
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_BUILDING_RESIDENTIAL',
+          buildingType,
+          lat,
+          lon,
+          distance,
+          distance === '0.00' ? 'Containing Building' : `Nearby Building (${distance} miles)`,
+          `Building Type: ${buildingType}`,
+          '',
+          '',
+          attributesJson,
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    }
+    
+    // Export Ireland Buildings - Residential/Commercial data
+    if (key === 'ireland_buildings_residential_commercial_all' && Array.isArray(value)) {
+      value.forEach((building: any) => {
+        const buildingType = building.buildingType || 'Residential/Commercial';
+        const distance = building.distance_miles !== null && building.distance_miles !== undefined ? building.distance_miles.toFixed(2) : '0.00';
+        const lat = location.lat.toString();
+        const lon = location.lon.toString();
+        
+        const allAttributes = { ...building };
+        delete allAttributes.buildingType;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.ESRI_OID;
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_BUILDING_RESIDENTIAL_COMMERCIAL',
+          buildingType,
+          lat,
+          lon,
+          distance,
+          distance === '0.00' ? 'Containing Building' : `Nearby Building (${distance} miles)`,
+          `Building Type: ${buildingType}`,
+          '',
+          '',
+          attributesJson,
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    }
+    
+    // Export Ireland Buildings - Commercial data
+    if (key === 'ireland_buildings_commercial_all' && Array.isArray(value)) {
+      value.forEach((building: any) => {
+        const buildingType = building.buildingType || 'Commercial';
+        const distance = building.distance_miles !== null && building.distance_miles !== undefined ? building.distance_miles.toFixed(2) : '0.00';
+        const lat = location.lat.toString();
+        const lon = location.lon.toString();
+        
+        const allAttributes = { ...building };
+        delete allAttributes.buildingType;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.ESRI_OID;
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_BUILDING_COMMERCIAL',
+          buildingType,
+          lat,
+          lon,
+          distance,
+          distance === '0.00' ? 'Containing Building' : `Nearby Building (${distance} miles)`,
+          `Building Type: ${buildingType}`,
+          '',
+          '',
           attributesJson,
           'Tailte Éireann (OSi)'
         ]);

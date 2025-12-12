@@ -944,6 +944,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ireland_electoral_divisions_containing' || key === 'ireland_electoral_divisions_nearby_features' || key === 'ireland_electoral_divisions_all' ||
     key === 'ireland_nuts3_boundaries_containing' || key === 'ireland_nuts3_boundaries_nearby_features' || key === 'ireland_nuts3_boundaries_all' ||
     key === 'ireland_civil_parishes_containing' || key === 'ireland_civil_parishes_nearby_features' || key === 'ireland_civil_parishes_all' ||
+    key === 'ireland_buildings_residential_containing' || key === 'ireland_buildings_residential_nearby_features' || key === 'ireland_buildings_residential_all' ||
+    key === 'ireland_buildings_residential_commercial_containing' || key === 'ireland_buildings_residential_commercial_nearby_features' || key === 'ireland_buildings_residential_commercial_all' ||
+    key === 'ireland_buildings_commercial_containing' || key === 'ireland_buildings_commercial_nearby_features' || key === 'ireland_buildings_commercial_all' ||
     key === 'ireland_centres_of_population_all' // Skip Ireland arrays (handled separately for map drawing)
   );
 
@@ -6647,6 +6650,13 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'ireland_civil_parishes_containing', nearbyKey: 'ireland_civil_parishes_nearby_features', name: 'Ireland Civil Parishes', color: '#7c3aed', icon: '⛪', layerType: 'ireland_civil_parishes' }
       ];
 
+      // Draw Ireland Buildings as polygons on the map
+      const irelandBuildingLayers = [
+        { containingKey: 'ireland_buildings_residential_containing', nearbyKey: 'ireland_buildings_residential_nearby_features', name: 'Ireland Buildings - Residential', color: '#6d28d9', icon: '🏠', layerType: 'ireland_buildings_residential' },
+        { containingKey: 'ireland_buildings_residential_commercial_containing', nearbyKey: 'ireland_buildings_residential_commercial_nearby_features', name: 'Ireland Buildings - Residential/Commercial', color: '#5b21b6', icon: '🏢', layerType: 'ireland_buildings_residential_commercial' },
+        { containingKey: 'ireland_buildings_commercial_containing', nearbyKey: 'ireland_buildings_commercial_nearby_features', name: 'Ireland Buildings - Commercial', color: '#4c1d95', icon: '🏬', layerType: 'ireland_buildings_commercial' }
+      ];
+
       irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
         
@@ -7673,6 +7683,171 @@ const MapView: React.FC<MapViewProps> = ({
                   // Add all other parish attributes
                   const excludeFields = ['engName', 'ENG_NAME_VALUE', 'gleName', 'GLE_NAME_VALUE', 'gaeltachtArea', 'GAELTACHT_AREA', 'guid', 'GUID', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID'];
                   Object.entries(parish).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw Ireland Buildings as polygons on the map
+      irelandBuildingLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing buildings
+        if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
+          enrichments[containingKey].forEach((building: any) => {
+            const geometry = building.__geometry || building.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.8,
+                    fillColor: color,
+                    fillOpacity: 0.3
+                  });
+
+                  const buildingType = building.buildingType || 'Building';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${buildingType}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Containing Building</div>
+                        <div><strong>Building Type:</strong> ${buildingType}</div>
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other building attributes
+                  const excludeFields = ['buildingType', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID', 'ESRI_OID'];
+                  Object.entries(building).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing polygon:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby buildings
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((building: any) => {
+            const geometry = building.__geometry || building.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 1,
+                    opacity: 0.5,
+                    fillColor: color,
+                    fillOpacity: 0.15
+                  });
+
+                  const buildingType = building.buildingType || 'Building';
+                  const distance = building.distance_miles ? building.distance_miles.toFixed(2) : 'Unknown';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${buildingType}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        <div><strong>Building Type:</strong> ${buildingType}</div>
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other building attributes
+                  const excludeFields = ['buildingType', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID', 'ESRI_OID'];
+                  Object.entries(building).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       let displayValue = '';
@@ -22503,6 +22678,15 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_civil_parishes_containing') ||
             key.includes('ireland_civil_parishes_nearby_features') ||
             key.includes('ireland_civil_parishes_all') ||
+            key.includes('ireland_buildings_residential_containing') ||
+            key.includes('ireland_buildings_residential_nearby_features') ||
+            key.includes('ireland_buildings_residential_all') ||
+            key.includes('ireland_buildings_residential_commercial_containing') ||
+            key.includes('ireland_buildings_residential_commercial_nearby_features') ||
+            key.includes('ireland_buildings_residential_commercial_all') ||
+            key.includes('ireland_buildings_commercial_containing') ||
+            key.includes('ireland_buildings_commercial_nearby_features') ||
+            key.includes('ireland_buildings_commercial_all') ||
             key.includes('ireland_centres_of_population_all') ||
             key.includes('ireland_small_areas_containing') ||
             key.includes('ireland_small_areas_nearby_features') ||

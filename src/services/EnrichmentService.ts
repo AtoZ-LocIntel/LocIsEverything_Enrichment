@@ -165,6 +165,7 @@ import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
 import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDivisions';
 import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
 import { getIrelandCivilParishesData } from '../adapters/irelandCivilParishes';
+import { getIrelandBuildingsData } from '../adapters/irelandBuildings';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3510,6 +3511,12 @@ export class EnrichmentService {
         return await this.getIrelandNUTS3(lat, lon, radius);
       case 'ireland_civil_parishes':
         return await this.getIrelandCivilParishes(lat, lon, radius);
+      case 'ireland_buildings_residential':
+        return await this.getIrelandBuildingsResidential(lat, lon, radius);
+      case 'ireland_buildings_residential_commercial':
+        return await this.getIrelandBuildingsResidentialCommercial(lat, lon, radius);
+      case 'ireland_buildings_commercial':
+        return await this.getIrelandBuildingsCommercial(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14423,6 +14430,252 @@ out center;`;
       console.error('Error fetching Ireland Civil Parishes:', error);
       return {
         ireland_civil_parishes_count: 0
+      };
+    }
+  }
+
+  private async getIrelandBuildingsResidential(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 5, 5);
+      const data = await getIrelandBuildingsData(lat, lon, cappedRadius, 0, 'Residential');
+      
+      const result: Record<string, any> = {
+        ireland_buildings_residential_containing_count: data.containing.length,
+        ireland_buildings_residential_nearby_count: data.nearby_features.length,
+        ireland_buildings_residential_total_count: data._all.length
+      };
+      
+      // Add containing buildings
+      if (data.containing.length > 0) {
+        result.ireland_buildings_residential_containing = data.containing.map(building => {
+          const buildingData: any = {
+            ...building,
+            distance_miles: 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (building.geometry) {
+            Object.defineProperty(buildingData, '__geometry', {
+              value: building.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return buildingData;
+        });
+      }
+      
+      // Add nearby buildings
+      if (data.nearby_features.length > 0) {
+        result.ireland_buildings_residential_nearby_features = data.nearby_features.map(building => {
+          const buildingData: any = {
+            ...building
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (building.geometry) {
+            Object.defineProperty(buildingData, '__geometry', {
+              value: building.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return buildingData;
+        });
+      }
+      
+      // Add all buildings
+      if (data._all.length > 0) {
+        result.ireland_buildings_residential_all = data._all.map(building => {
+          const buildingData: any = {
+            ...building,
+            distance_miles: building.distance_miles || 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (building.geometry) {
+            Object.defineProperty(buildingData, '__geometry', {
+              value: building.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return buildingData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Residential Buildings:', error);
+      return {
+        ireland_buildings_residential_count: 0
+      };
+    }
+  }
+
+  private async getIrelandBuildingsResidentialCommercial(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 5, 5);
+      const data = await getIrelandBuildingsData(lat, lon, cappedRadius, 1, 'Residential/Commercial');
+      
+      const result: Record<string, any> = {
+        ireland_buildings_residential_commercial_containing_count: data.containing.length,
+        ireland_buildings_residential_commercial_nearby_count: data.nearby_features.length,
+        ireland_buildings_residential_commercial_total_count: data._all.length
+      };
+      
+      // Add containing buildings
+      if (data.containing.length > 0) {
+        result.ireland_buildings_residential_commercial_containing = data.containing.map(building => {
+          const buildingData: any = {
+            ...building,
+            distance_miles: 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (building.geometry) {
+            Object.defineProperty(buildingData, '__geometry', {
+              value: building.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return buildingData;
+        });
+      }
+      
+      // Add nearby buildings
+      if (data.nearby_features.length > 0) {
+        result.ireland_buildings_residential_commercial_nearby_features = data.nearby_features.map(building => {
+          const buildingData: any = {
+            ...building
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (building.geometry) {
+            Object.defineProperty(buildingData, '__geometry', {
+              value: building.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return buildingData;
+        });
+      }
+      
+      // Add all buildings
+      if (data._all.length > 0) {
+        result.ireland_buildings_residential_commercial_all = data._all.map(building => {
+          const buildingData: any = {
+            ...building,
+            distance_miles: building.distance_miles || 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (building.geometry) {
+            Object.defineProperty(buildingData, '__geometry', {
+              value: building.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return buildingData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Residential/Commercial Buildings:', error);
+      return {
+        ireland_buildings_residential_commercial_count: 0
+      };
+    }
+  }
+
+  private async getIrelandBuildingsCommercial(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 5, 5);
+      const data = await getIrelandBuildingsData(lat, lon, cappedRadius, 2, 'Commercial');
+      
+      const result: Record<string, any> = {
+        ireland_buildings_commercial_containing_count: data.containing.length,
+        ireland_buildings_commercial_nearby_count: data.nearby_features.length,
+        ireland_buildings_commercial_total_count: data._all.length
+      };
+      
+      // Add containing buildings
+      if (data.containing.length > 0) {
+        result.ireland_buildings_commercial_containing = data.containing.map(building => {
+          const buildingData: any = {
+            ...building,
+            distance_miles: 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (building.geometry) {
+            Object.defineProperty(buildingData, '__geometry', {
+              value: building.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return buildingData;
+        });
+      }
+      
+      // Add nearby buildings
+      if (data.nearby_features.length > 0) {
+        result.ireland_buildings_commercial_nearby_features = data.nearby_features.map(building => {
+          const buildingData: any = {
+            ...building
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (building.geometry) {
+            Object.defineProperty(buildingData, '__geometry', {
+              value: building.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return buildingData;
+        });
+      }
+      
+      // Add all buildings
+      if (data._all.length > 0) {
+        result.ireland_buildings_commercial_all = data._all.map(building => {
+          const buildingData: any = {
+            ...building,
+            distance_miles: building.distance_miles || 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (building.geometry) {
+            Object.defineProperty(buildingData, '__geometry', {
+              value: building.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return buildingData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Commercial Buildings:', error);
+      return {
+        ireland_buildings_commercial_count: 0
       };
     }
   }
