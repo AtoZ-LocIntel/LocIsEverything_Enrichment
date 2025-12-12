@@ -2519,6 +2519,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Mountains___OSi_National_1m_Map_Of_Ireland/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Coastal High Water Marks",
+          description: "Irish Coastal High Water Marks - OSi National Water Marks Ungeneralised 2024 - proximity queries up to 25 miles. Digital representation of high water marks (polyline dataset). This dataset is provided by Tailte Éireann",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/HighWaterMark_NationalWaterMarks_Ungeneralised_2024/FeatureServer"
         }
       ]
     },

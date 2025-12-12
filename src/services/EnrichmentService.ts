@@ -167,6 +167,7 @@ import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
 import { getIrelandCivilParishesData } from '../adapters/irelandCivilParishes';
 import { getIrelandBuildingsData } from '../adapters/irelandBuildings';
 import { getIrelandMountainsData } from '../adapters/irelandMountains';
+import { getIrelandHighWaterMarksData } from '../adapters/irelandHighWaterMarks';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3520,6 +3521,8 @@ export class EnrichmentService {
         return await this.getIrelandBuildingsCommercial(lat, lon, radius);
       case 'ireland_mountains':
         return await this.getIrelandMountains(lat, lon, radius);
+      case 'ireland_high_water_marks':
+        return await this.getIrelandHighWaterMarks(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14708,6 +14711,35 @@ out center;`;
       console.error('Error fetching Ireland Mountains:', error);
       return {
         ireland_mountains_count: 0
+      };
+    }
+  }
+
+  private async getIrelandHighWaterMarks(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getIrelandHighWaterMarksData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_high_water_marks_count: data.length,
+        ireland_high_water_marks_total_count: data.length
+      };
+      
+      // Add all high water marks
+      if (data.length > 0) {
+        result.ireland_high_water_marks_all = data.map(waterMark => {
+          return {
+            ...waterMark,
+            distance_miles: waterMark.distance_miles || 0
+          };
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland High Water Marks:', error);
+      return {
+        ireland_high_water_marks_count: 0
       };
     }
   }

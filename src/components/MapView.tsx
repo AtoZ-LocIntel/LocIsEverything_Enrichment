@@ -948,7 +948,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ireland_buildings_residential_commercial_containing' || key === 'ireland_buildings_residential_commercial_nearby_features' || key === 'ireland_buildings_residential_commercial_all' ||
     key === 'ireland_buildings_commercial_containing' || key === 'ireland_buildings_commercial_nearby_features' || key === 'ireland_buildings_commercial_all' ||
     key === 'ireland_mountains_all' ||
-    key === 'ireland_centres_of_population_all' // Skip Ireland arrays (handled separately for map drawing)
+    key === 'ireland_centres_of_population_all' ||
+    key === 'ireland_high_water_marks_all' // Skip Ireland arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -17890,6 +17891,105 @@ const MapView: React.FC<MapViewProps> = ({
             legendAccumulator['ireland_mountains'].count += mountainCount;
           }
         }
+
+        // Draw Ireland High Water Marks as polylines on the map
+        if (enrichments.ireland_high_water_marks_all && Array.isArray(enrichments.ireland_high_water_marks_all)) {
+          let waterMarkCount = 0;
+          enrichments.ireland_high_water_marks_all.forEach((waterMark: any) => {
+            if (waterMark.geometry && waterMark.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                // ESRI polylines have paths (array of coordinate arrays)
+                const paths = waterMark.geometry.paths;
+                if (paths && paths.length > 0) {
+                  waterMarkCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const guid = waterMark.guid || waterMark.GUID || 'Unknown';
+                    const bdyTypeValue = waterMark.bdyTypeValue || waterMark.BDY_TYPE_VALUE || null;
+                    const shapeLength = waterMark.shapeLength || waterMark.Shape__Length || waterMark.SHAPE__LENGTH || null;
+
+                    // Create polyline with blue color for water marks
+                    const polyline = L.polyline(latlngs, {
+                      color: '#0284c7', // Blue color for water marks
+                      weight: 3,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all water mark attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🌊 High Water Mark
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${guid ? `<div><strong>GUID:</strong> ${guid}</div>` : ''}
+                          ${bdyTypeValue ? `<div><strong>Boundary Type:</strong> ${bdyTypeValue}</div>` : ''}
+                          ${shapeLength !== null && shapeLength !== undefined ? `<div><strong>Length:</strong> ${shapeLength.toFixed(2)} m</div>` : ''}
+                          ${waterMark.distance_miles !== null && waterMark.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${waterMark.distance_miles.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all water mark attributes (excluding internal fields)
+                    const excludeFields = ['guid', 'GUID', 'bdyTypeValue', 'BDY_TYPE_VALUE', 'shapeLength', 'Shape__Length', 'SHAPE__LENGTH', 'geometry', 'distance_miles', 'objectId', 'OBJECTID'];
+                    Object.entries(waterMark).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let displayValue = '';
+                        
+                        if (typeof value === 'object') {
+                          displayValue = JSON.stringify(value);
+                        } else if (typeof value === 'number') {
+                          displayValue = value.toLocaleString();
+                        } else {
+                          displayValue = String(value);
+                        }
+                        
+                        popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    (polyline as any).__layerType = 'ireland_high_water_marks';
+                    (polyline as any).__layerTitle = 'Ireland Coastal High Water Marks';
+                    (polyline as any).__popupContent = popupContent;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(poi);
+                    bounds.extend(polyline.getBounds());
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Ireland High Water Mark polyline:', error);
+              }
+            }
+          });
+          
+          if (waterMarkCount > 0) {
+            if (!legendAccumulator['ireland_high_water_marks']) {
+              legendAccumulator['ireland_high_water_marks'] = {
+                icon: '🌊',
+                color: '#0284c7',
+                title: 'Ireland Coastal High Water Marks',
+                count: 0,
+              };
+            }
+            legendAccumulator['ireland_high_water_marks'].count += waterMarkCount;
+          }
+        }
       } catch (error) {
         console.error('Error processing Ireland Mountains:', error);
       }
@@ -22775,6 +22875,7 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_buildings_commercial_all') ||
             key.includes('ireland_mountains_all') ||
             key.includes('ireland_centres_of_population_all') ||
+            key.includes('ireland_high_water_marks_all') ||
             key.includes('ireland_small_areas_containing') ||
             key.includes('ireland_small_areas_nearby_features') ||
             key.includes('ireland_small_areas_all') ||
