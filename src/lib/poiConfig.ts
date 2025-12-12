@@ -100,6 +100,18 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'Canada.webp'
   },
   {
+    id: 'australia',
+    title: 'Australian Open Data',
+    description: 'Australian geographic and statistical open data',
+    icon: 'Australia.webp'
+  },
+  {
+    id: 'newzealand',
+    title: 'New Zealand Open Data',
+    description: 'New Zealand geographic and statistical open data',
+    icon: 'NewZealand.webp'
+  },
+  {
     id: 'quirky',
     title: 'Quirky & Fun',
     description: 'Interesting and unique nearby places',

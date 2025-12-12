@@ -58,6 +58,8 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   tiger: <img src="/assets/TIGERweb.webp" alt="US Census TIGER Data" className="w-5 h-5" />,
   eu: <img src="/assets/EU.webp" alt="European Union Data" className="w-5 h-5" />,
   canada: <img src="/assets/Canada.webp" alt="Canadian Open Data" className="w-5 h-5" />,
+  australia: <img src="/assets/Australia.webp" alt="Australian Open Data" className="w-5 h-5" />,
+  newzealand: <img src="/assets/NewZealand.webp" alt="New Zealand Open Data" className="w-5 h-5" />,
   quirky: <span className="text-xl">☕</span>,
   wildfire: <img src="/assets/wildfire.webp" alt="Natural Hazards" className="w-5 h-5" />,
   at: <img src="/assets/at.webp" alt="Appalachian Trail" className="w-5 h-5" />,
@@ -125,6 +127,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [viewingCASubCategories, setViewingCASubCategories] = useState(false);
   const [viewingEUSubCategories, setViewingEUSubCategories] = useState(false);
   const [viewingCanadaSubCategories, setViewingCanadaSubCategories] = useState(false);
+  const [viewingAustraliaSubCategories, setViewingAustraliaSubCategories] = useState(false);
+  const [viewingNewZealandSubCategories, setViewingNewZealandSubCategories] = useState(false);
   const [viewingGASubCategories, setViewingGASubCategories] = useState(false);
   const [viewingSCSubCategories, setViewingSCSubCategories] = useState(false);
   const [viewingNCSubCategories, setViewingNCSubCategories] = useState(false);
@@ -184,13 +188,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [cameFromILSubCategories, setCameFromILSubCategories] = useState(false);
   const [cameFromEUSubCategories, setCameFromEUSubCategories] = useState(false);
   const [cameFromCanadaSubCategories, setCameFromCanadaSubCategories] = useState(false);
+  const [cameFromAustraliaSubCategories, setCameFromAustraliaSubCategories] = useState(false);
+  const [cameFromNewZealandSubCategories, setCameFromNewZealandSubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories || viewingNYSubCategories || viewingPASubCategories || viewingRISubCategories || viewingVTSubCategories || viewingTXSubCategories || viewingNMSubCategories || viewingAZSubCategories || viewingAKSubCategories || viewingHISubCategories || viewingWASubCategories || viewingORSubCategories || viewingMTSubCategories || viewingWYSubCategories || viewingNVSubCategories || viewingIDSubCategories || viewingUTSubCategories || viewingCOSubCategories || viewingILSubCategories || viewingEUSubCategories || viewingCanadaSubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories || viewingNYSubCategories || viewingPASubCategories || viewingRISubCategories || viewingVTSubCategories || viewingTXSubCategories || viewingNMSubCategories || viewingAZSubCategories || viewingAKSubCategories || viewingHISubCategories || viewingWASubCategories || viewingORSubCategories || viewingMTSubCategories || viewingWYSubCategories || viewingNVSubCategories || viewingIDSubCategories || viewingUTSubCategories || viewingCOSubCategories || viewingILSubCategories || viewingEUSubCategories || viewingCanadaSubCategories || viewingAustraliaSubCategories || viewingNewZealandSubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, viewingTXSubCategories, viewingNMSubCategories, viewingAZSubCategories, viewingAKSubCategories, viewingHISubCategories, viewingWASubCategories, viewingORSubCategories, viewingMTSubCategories, viewingWYSubCategories, viewingNVSubCategories, viewingIDSubCategories, viewingUTSubCategories, viewingCOSubCategories, viewingILSubCategories, viewingEUSubCategories, viewingCanadaSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, viewingTXSubCategories, viewingNMSubCategories, viewingAZSubCategories, viewingAKSubCategories, viewingHISubCategories, viewingWASubCategories, viewingORSubCategories, viewingMTSubCategories, viewingWYSubCategories, viewingNVSubCategories, viewingIDSubCategories, viewingUTSubCategories, viewingCOSubCategories, viewingILSubCategories, viewingEUSubCategories, viewingCanadaSubCategories, viewingAustraliaSubCategories, viewingNewZealandSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   
@@ -971,6 +977,30 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        // Special handling for Australia - add sub-categories (empty for now)
+        if (section.id === 'australia') {
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
+        // Special handling for New Zealand - add sub-categories (empty for now)
+        if (section.id === 'newzealand') {
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
         return {
           id: section.id,
           title: section.title,
@@ -1097,7 +1127,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'il': 'IL',
       'tiger': 'TIGERweb',
       'eu': 'EU',
-      'canada': 'Canada'
+      'canada': 'Canada',
+      'australia': 'Australia',
+      'newzealand': 'NewZealand'
     };
     return iconMap[categoryId] || categoryId;
   };
@@ -2101,6 +2133,24 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   );
   if (canadaSubCategoriesPage) return canadaSubCategoriesPage;
 
+  const australiaSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingAustraliaSubCategories,
+    setViewingAustraliaSubCategories,
+    'australia',
+    'Australian Open Data',
+    setCameFromAustraliaSubCategories
+  );
+  if (australiaSubCategoriesPage) return australiaSubCategoriesPage;
+
+  const newZealandSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingNewZealandSubCategories,
+    setViewingNewZealandSubCategories,
+    'newzealand',
+    'New Zealand Open Data',
+    setCameFromNewZealandSubCategories
+  );
+  if (newZealandSubCategoriesPage) return newZealandSubCategoriesPage;
+
   const vtSubCategoriesPage = renderStateSubCategoriesPage(
     viewingVTSubCategories,
     setViewingVTSubCategories,
@@ -2766,6 +2816,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromCanadaSubCategories(false);
                               setActiveModal(null);
                               setViewingCanadaSubCategories(true);
+                            } else if (cameFromAustraliaSubCategories) {
+                              // Go back to Australia sub-categories page
+                              setCameFromAustraliaSubCategories(false);
+                              setActiveModal(null);
+                              setViewingAustraliaSubCategories(true);
+                            } else if (cameFromNewZealandSubCategories) {
+                              // Go back to New Zealand sub-categories page
+                              setCameFromNewZealandSubCategories(false);
+                              setActiveModal(null);
+                              setViewingNewZealandSubCategories(true);
                             } else if (cameFromNJSubCategories) {
                               // Go back to NJ sub-categories page
                               setCameFromNJSubCategories(false);
@@ -3551,10 +3611,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 // For NH, MA, and other states, count sub-category enrichments too
-                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada') && category.subCategories
+                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada' || category.id === 'australia' || category.id === 'newzealand') && category.subCategories
                   ? category.subCategories.flatMap(sc => sc.enrichments)
                   : [];
-                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada')
+                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada' || category.id === 'australia' || category.id === 'newzealand')
                   ? stateSubCategoryEnrichments 
                   : categoryEnrichments;
                 const selectedCount = allCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -3592,6 +3652,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setViewingEUSubCategories(true);
                       } else if (category.id === 'canada') {
                         setViewingCanadaSubCategories(true);
+                      } else if (category.id === 'australia') {
+                        setViewingAustraliaSubCategories(true);
+                      } else if (category.id === 'newzealand') {
+                        setViewingNewZealandSubCategories(true);
                       } else if (category.id === 'wv') {
                         setViewingWVSubCategories(true);
                       } else if (category.id === 'ca' && category.subCategories && category.subCategories.length > 0) {
