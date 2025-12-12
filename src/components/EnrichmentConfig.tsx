@@ -977,15 +977,41 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
-        // Special handling for Australia - add sub-categories (empty for now)
+        // Special handling for Australia - add sub-categories based on data sources
         if (section.id === 'australia') {
+          // Get Digital Atlas AUS enrichments (filter POIs where section is 'australia' and category is 'digitalatlasaus' or id starts with 'digitalatlasaus_')
+          const digitalAtlasAUSPOIs = poiTypes.filter(poi => 
+            poi.section === 'australia' && 
+            (poi.category === 'digitalatlasaus' || poi.id.startsWith('digitalatlasaus_'))
+          );
+          
+          const digitalAtlasAUSEnrichments = digitalAtlasAUSPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Define Australia sub-categories (organized by data source)
+          const australiaSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'digitalatlasaus',
+              title: 'Digital Atlas AUS',
+              icon: <img src="/assets/DigitalAtlasAUS.webp" alt="Digital Atlas AUS" className="w-full h-full object-cover rounded-full" />,
+              description: 'Digital Atlas AUS data layers',
+              enrichments: digitalAtlasAUSEnrichments
+            }
+          ];
+          
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
-            subCategories: []
+            enrichments: [], // Australia parent category has no direct enrichments
+            subCategories: australiaSubCategories
           };
         }
         
@@ -1129,7 +1155,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'eu': 'EU',
       'canada': 'Canada',
       'australia': 'Australia',
-      'newzealand': 'NewZealand'
+      'newzealand': 'NewZealand',
+      'digitalatlasaus': 'DigitalAtlasAUS'
     };
     return iconMap[categoryId] || categoryId;
   };

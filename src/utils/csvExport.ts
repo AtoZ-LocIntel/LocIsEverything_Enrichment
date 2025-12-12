@@ -479,6 +479,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ireland_high_water_marks_all' ||
         key === 'ireland_vegetation_areas_all' ||
         key === 'ireland_pois_all' ||
+        key === 'australia_railways_all' ||
         // TIGER CBSA skip list - BAS 2025
         key === 'tiger_bas2025_cbsa_combined_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_combined_statistical_areas_all' ||
         key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_all' ||
@@ -10700,6 +10701,67 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'Tailte Éireann (OSi)'
+        ]);
+      });
+    } else if (key === 'australia_railways_all' && Array.isArray(value)) {
+      // Handle Australia Railways - each railway gets its own row with all attributes
+      value.forEach((railway: any) => {
+        const name = railway.name || railway.Name || 'Unknown Railway';
+        const operationalStatus = railway.operationalStatus || railway.operational_status || railway.OPERATIONAL_STATUS || '';
+        const trackGauge = railway.trackGauge || railway.track_gauge || railway.TRACK_GAUGE || '';
+        const tracks = railway.tracks || railway.Tracks || '';
+        const lengthKm = railway.lengthKm || railway.length_km || railway.LENGTH_KM || null;
+        const lengthKmStr = lengthKm !== null && lengthKm !== undefined ? lengthKm.toFixed(2) : '';
+        const alternativeName = railway.alternativeName || railway.alternative_name || railway.ALTERNATIVE_NAME || '';
+        const owner = railway.owner || railway.Owner || '';
+        const distance = railway.distance_miles !== null && railway.distance_miles !== undefined ? railway.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...railway };
+        delete allAttributes.name;
+        delete allAttributes.Name;
+        delete allAttributes.operationalStatus;
+        delete allAttributes.operational_status;
+        delete allAttributes.OPERATIONAL_STATUS;
+        delete allAttributes.trackGauge;
+        delete allAttributes.track_gauge;
+        delete allAttributes.TRACK_GAUGE;
+        delete allAttributes.tracks;
+        delete allAttributes.Tracks;
+        delete allAttributes.lengthKm;
+        delete allAttributes.length_km;
+        delete allAttributes.LENGTH_KM;
+        delete allAttributes.alternativeName;
+        delete allAttributes.alternative_name;
+        delete allAttributes.ALTERNATIVE_NAME;
+        delete allAttributes.owner;
+        delete allAttributes.Owner;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Digital Atlas AUS',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_RAILWAY',
+          name,
+          location.lat.toString(), // Use search location for railway (it's a line, not a point)
+          location.lon.toString(),
+          distance,
+          operationalStatus || 'Railway Line',
+          lengthKmStr ? `${lengthKmStr} km` : attributesJson,
+          trackGauge || '',
+          tracks || '',
+          attributesJson,
+          'Digital Atlas AUS'
         ]);
       });
     } else if (key === 'ireland_vegetation_areas_all' && Array.isArray(value)) {

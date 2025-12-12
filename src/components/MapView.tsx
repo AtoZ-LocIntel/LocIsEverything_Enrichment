@@ -951,7 +951,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ireland_mountains_all' ||
         key === 'ireland_centres_of_population_all' ||
         key === 'ireland_high_water_marks_all' ||
-        key === 'ireland_pois_all' // Skip Ireland arrays (handled separately for map drawing)
+        key === 'ireland_pois_all' ||
+        key === 'australia_railways_all' // Skip arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -18259,6 +18260,110 @@ const MapView: React.FC<MapViewProps> = ({
             legendAccumulator['ireland_high_water_marks'].count += waterMarkCount;
           }
         }
+
+        // Draw Australia Railways as polylines on the map
+        if (enrichments.australia_railways_all && Array.isArray(enrichments.australia_railways_all)) {
+          let railwayCount = 0;
+          enrichments.australia_railways_all.forEach((railway: any) => {
+            if (railway.geometry && railway.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = railway.geometry.paths;
+                if (paths && paths.length > 0) {
+                  railwayCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const name = railway.name || railway.Name || 'Unknown Railway';
+                    const operationalStatus = railway.operationalStatus || railway.operational_status || railway.OPERATIONAL_STATUS || null;
+                    const trackGauge = railway.trackGauge || railway.track_gauge || railway.TRACK_GAUGE || null;
+                    const tracks = railway.tracks || railway.Tracks || null;
+                    const lengthKm = railway.lengthKm || railway.length_km || railway.LENGTH_KM || null;
+                    const alternativeName = railway.alternativeName || railway.alternative_name || railway.ALTERNATIVE_NAME || null;
+                    const owner = railway.owner || railway.Owner || null;
+
+                    // Create polyline with brown/rust color for railways
+                    const polyline = L.polyline(latlngs, {
+                      color: '#b45309', // Brown/rust color for railways
+                      weight: 3,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all railway attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🚂 ${name}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${operationalStatus ? `<div><strong>Status:</strong> ${operationalStatus}</div>` : ''}
+                          ${trackGauge ? `<div><strong>Track Gauge:</strong> ${trackGauge}</div>` : ''}
+                          ${tracks ? `<div><strong>Tracks:</strong> ${tracks}</div>` : ''}
+                          ${lengthKm !== null && lengthKm !== undefined ? `<div><strong>Length:</strong> ${lengthKm.toFixed(2)} km</div>` : ''}
+                          ${alternativeName ? `<div><strong>Alternative Name:</strong> ${alternativeName}</div>` : ''}
+                          ${owner ? `<div><strong>Owner:</strong> ${owner}</div>` : ''}
+                          ${railway.distance_miles !== null && railway.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${railway.distance_miles.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all railway attributes (excluding internal fields)
+                    const excludeFields = ['name', 'Name', 'operationalStatus', 'operational_status', 'OPERATIONAL_STATUS', 'trackGauge', 'track_gauge', 'TRACK_GAUGE', 'tracks', 'Tracks', 'lengthKm', 'length_km', 'LENGTH_KM', 'alternativeName', 'alternative_name', 'ALTERNATIVE_NAME', 'owner', 'Owner', 'geometry', 'distance_miles', 'objectId', 'OBJECTID', 'objectid', 'lat', 'lon'];
+                    Object.entries(railway).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let displayValue = '';
+                        
+                        if (typeof value === 'object') {
+                          displayValue = JSON.stringify(value);
+                        } else if (typeof value === 'number') {
+                          displayValue = value.toLocaleString();
+                        } else {
+                          displayValue = String(value);
+                        }
+                        
+                        popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    (polyline as any).__layerType = 'australia_railways';
+                    (polyline as any).__layerTitle = 'Australia Railways';
+                    (polyline as any).__popupContent = popupContent;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(poi);
+                    bounds.extend(polyline.getBounds());
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Australia Railway polyline:', error);
+              }
+            }
+          });
+          
+          if (railwayCount > 0) {
+            if (!legendAccumulator['australia_railways']) {
+              legendAccumulator['australia_railways'] = {
+                icon: '🚂',
+                color: '#b45309',
+                title: 'Australia Railways',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_railways'].count += railwayCount;
+          }
+        }
       } catch (error) {
         console.error('Error processing Ireland Mountains:', error);
       }
@@ -23146,6 +23251,7 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_centres_of_population_all') ||
             key.includes('ireland_high_water_marks_all') ||
             key.includes('ireland_pois_all') ||
+            key.includes('australia_railways_all') ||
             key.includes('ireland_vegetation_areas_containing') ||
             key.includes('ireland_vegetation_areas_nearby_features') ||
             key.includes('ireland_vegetation_areas_all') ||

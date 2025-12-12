@@ -2547,6 +2547,19 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
+      category: "Australia Sources",
+      sources: [
+        {
+          name: "Digital Atlas AUS - Railway Lines",
+          description: "Australia Railways - Digital Atlas AUS Railway Lines - proximity queries up to 50 miles. Railway infrastructure including operational status, track gauge, and ownership information (polyline dataset). This dataset is provided by the Department of Natural Resources, Mines and Energy, Queensland",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Railway_Lines_vw/FeatureServer"
+        }
+      ]
+    },
+    {
       category: "Mapping & Basemap Services",
       sources: [
         {

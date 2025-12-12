@@ -170,6 +170,7 @@ import { getIrelandMountainsData } from '../adapters/irelandMountains';
 import { getIrelandHighWaterMarksData } from '../adapters/irelandHighWaterMarks';
 import { getIrelandVegetationAreasData } from '../adapters/irelandVegetationAreas';
 import { getIrelandPOIsData } from '../adapters/irelandPOIs';
+import { getAustraliaRailwaysData } from '../adapters/australiaRailways';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3529,6 +3530,8 @@ export class EnrichmentService {
         return await this.getIrelandVegetationAreas(lat, lon, radius);
       case 'ireland_pois':
         return await this.getIrelandPOIs(lat, lon, radius);
+      case 'australia_railways':
+        return await this.getAustraliaRailways(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14863,6 +14866,35 @@ out center;`;
       console.error('Error fetching Ireland POIs:', error);
       return {
         ireland_pois_count: 0
+      };
+    }
+  }
+
+  private async getAustraliaRailways(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getAustraliaRailwaysData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        australia_railways_count: data.length,
+        australia_railways_total_count: data.length
+      };
+      
+      // Add all railways
+      if (data.length > 0) {
+        result.australia_railways_all = data.map(railway => {
+          return {
+            ...railway,
+            distance_miles: railway.distance_miles || 0
+          };
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Australia Railways:', error);
+      return {
+        australia_railways_count: 0
       };
     }
   }
