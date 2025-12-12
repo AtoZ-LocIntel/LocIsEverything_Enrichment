@@ -10759,7 +10759,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const address = poi.address || poi.Address || '';
         const eircode = poi.eircode || poi.EIRCODE || '';
         const town = poi.town || poi.Town || '';
-        const county = poi.county || poi.County || '';
         const distance = poi.distance_miles !== null && poi.distance_miles !== undefined ? poi.distance_miles.toFixed(2) : '';
         
         // Use ORG_NAME and Category for display as requested
