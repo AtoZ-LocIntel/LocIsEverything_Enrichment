@@ -164,6 +164,7 @@ import { getIrelandBuiltUpAreasData } from '../adapters/irelandBuiltUpAreas';
 import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
 import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDivisions';
 import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
+import { getIrelandCivilParishesData } from '../adapters/irelandCivilParishes';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3507,6 +3508,8 @@ export class EnrichmentService {
         return await this.getIrelandElectoralDivisions(lat, lon, radius);
       case 'ireland_nuts3_boundaries':
         return await this.getIrelandNUTS3(lat, lon, radius);
+      case 'ireland_civil_parishes':
+        return await this.getIrelandCivilParishes(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14298,6 +14301,128 @@ out center;`;
       console.error('Error fetching Ireland NUTS3 Boundaries:', error);
       return {
         ireland_nuts3_boundaries_count: 0
+      };
+    }
+  }
+
+  private async getIrelandCivilParishes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getIrelandCivilParishesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        ireland_civil_parishes_containing_count: data.containing.length,
+        ireland_civil_parishes_nearby_count: data.nearby_features.length,
+        ireland_civil_parishes_total_count: data._all.length
+      };
+      
+      // Add containing civil parishes
+      if (data.containing.length > 0) {
+        result.ireland_civil_parishes_containing = data.containing.map(parish => {
+          const parishData: any = {
+            objectId: parish.objectId,
+            guid: parish.guid,
+            engName: parish.engName,
+            gleName: parish.gleName,
+            gaeltachtArea: parish.gaeltachtArea,
+            shapeArea: parish.shapeArea,
+            shapeLength: parish.shapeLength,
+            distance_miles: 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (parish.geometry) {
+            Object.defineProperty(parishData, '__geometry', {
+              value: parish.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(parish).forEach(key => {
+            if (!['objectId', 'guid', 'engName', 'gleName', 'gaeltachtArea', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              parishData[key] = parish[key];
+            }
+          });
+          
+          return parishData;
+        });
+      }
+      
+      // Add nearby civil parishes
+      if (data.nearby_features.length > 0) {
+        result.ireland_civil_parishes_nearby_features = data.nearby_features.map(parish => {
+          const parishData: any = {
+            objectId: parish.objectId,
+            guid: parish.guid,
+            engName: parish.engName,
+            gleName: parish.gleName,
+            gaeltachtArea: parish.gaeltachtArea,
+            shapeArea: parish.shapeArea,
+            shapeLength: parish.shapeLength,
+            distance_miles: parish.distance_miles
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (parish.geometry) {
+            Object.defineProperty(parishData, '__geometry', {
+              value: parish.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(parish).forEach(key => {
+            if (!['objectId', 'guid', 'engName', 'gleName', 'gaeltachtArea', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              parishData[key] = parish[key];
+            }
+          });
+          
+          return parishData;
+        });
+      }
+      
+      // Add all civil parishes
+      if (data._all.length > 0) {
+        result.ireland_civil_parishes_all = data._all.map(parish => {
+          const parishData: any = {
+            objectId: parish.objectId,
+            guid: parish.guid,
+            engName: parish.engName,
+            gleName: parish.gleName,
+            gaeltachtArea: parish.gaeltachtArea,
+            shapeArea: parish.shapeArea,
+            shapeLength: parish.shapeLength,
+            distance_miles: parish.distance_miles || 0
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (parish.geometry) {
+            Object.defineProperty(parishData, '__geometry', {
+              value: parish.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          // Add all other attributes
+          Object.keys(parish).forEach(key => {
+            if (!['objectId', 'guid', 'engName', 'gleName', 'gaeltachtArea', 'shapeArea', 'shapeLength', 'distance_miles', 'geometry'].includes(key)) {
+              parishData[key] = parish[key];
+            }
+          });
+          
+          return parishData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Civil Parishes:', error);
+      return {
+        ireland_civil_parishes_count: 0
       };
     }
   }

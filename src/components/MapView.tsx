@@ -943,6 +943,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ireland_small_areas_containing' || key === 'ireland_small_areas_nearby_features' || key === 'ireland_small_areas_all' ||
     key === 'ireland_electoral_divisions_containing' || key === 'ireland_electoral_divisions_nearby_features' || key === 'ireland_electoral_divisions_all' ||
     key === 'ireland_nuts3_boundaries_containing' || key === 'ireland_nuts3_boundaries_nearby_features' || key === 'ireland_nuts3_boundaries_all' ||
+    key === 'ireland_civil_parishes_containing' || key === 'ireland_civil_parishes_nearby_features' || key === 'ireland_civil_parishes_all' ||
     key === 'ireland_centres_of_population_all' // Skip Ireland arrays (handled separately for map drawing)
   );
 
@@ -6641,6 +6642,11 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'ireland_nuts3_boundaries_containing', nearbyKey: 'ireland_nuts3_boundaries_nearby_features', name: 'Ireland NUTS3 Boundaries', color: '#9333ea', icon: '🗺️', layerType: 'ireland_nuts3_boundaries' }
       ];
 
+      // Draw Ireland Civil Parishes as polygons on the map
+      const irelandCivilParishLayers = [
+        { containingKey: 'ireland_civil_parishes_containing', nearbyKey: 'ireland_civil_parishes_nearby_features', name: 'Ireland Civil Parishes', color: '#7c3aed', icon: '⛪', layerType: 'ireland_civil_parishes' }
+      ];
+
       irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
         
@@ -7490,6 +7496,183 @@ const MapView: React.FC<MapViewProps> = ({
                   // Add all other NUTS3 attributes
                   const excludeFields = ['nuts1', 'NUTS1', 'nuts1Name', 'NUTS1NAME', 'nuts2', 'NUTS2', 'nuts2Name', 'NUTS2NAME', 'nuts3', 'NUTS3', 'nuts3Name', 'NUTS3NAME', 'guid', 'GUID', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID'];
                   Object.entries(nuts3).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw Ireland Civil Parishes as polygons on the map
+      irelandCivilParishLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing civil parishes
+        if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
+          enrichments[containingKey].forEach((parish: any) => {
+            const geometry = parish.__geometry || parish.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: color,
+                    fillOpacity: 0.4
+                  });
+
+                  const engName = parish.engName || parish.ENG_NAME_VALUE || '';
+                  const gleName = parish.gleName || parish.GLE_NAME_VALUE || '';
+                  const gaeltachtArea = parish.gaeltachtArea || parish.GAELTACHT_AREA || '';
+                  const shapeArea = parish.shapeArea || parish.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} Civil Parish
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Containing Civil Parish</div>
+                        ${engName ? `<div><strong>English Name:</strong> ${engName}</div>` : ''}
+                        ${gleName ? `<div><strong>Gaeilge Name:</strong> ${gleName}</div>` : ''}
+                        ${gaeltachtArea ? `<div><strong>Gaeltacht Area:</strong> ${gaeltachtArea}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other parish attributes
+                  const excludeFields = ['engName', 'ENG_NAME_VALUE', 'gleName', 'GLE_NAME_VALUE', 'gaeltachtArea', 'GAELTACHT_AREA', 'guid', 'GUID', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID'];
+                  Object.entries(parish).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing polygon:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby civil parishes
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((parish: any) => {
+            const geometry = parish.__geometry || parish.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const engName = parish.engName || parish.ENG_NAME_VALUE || '';
+                  const gleName = parish.gleName || parish.GLE_NAME_VALUE || '';
+                  const gaeltachtArea = parish.gaeltachtArea || parish.GAELTACHT_AREA || '';
+                  const distance = parish.distance_miles ? parish.distance_miles.toFixed(2) : 'Unknown';
+                  const shapeArea = parish.shapeArea || parish.Shape__Area || 0;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} Civil Parish
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${engName ? `<div><strong>English Name:</strong> ${engName}</div>` : ''}
+                        ${gleName ? `<div><strong>Gaeilge Name:</strong> ${gleName}</div>` : ''}
+                        ${gaeltachtArea ? `<div><strong>Gaeltacht Area:</strong> ${gaeltachtArea}</div>` : ''}
+                        ${shapeArea ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other parish attributes
+                  const excludeFields = ['engName', 'ENG_NAME_VALUE', 'gleName', 'GLE_NAME_VALUE', 'gaeltachtArea', 'GAELTACHT_AREA', 'guid', 'GUID', 'shapeArea', 'Shape__Area', 'shapeLength', 'Shape__Length', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID'];
+                  Object.entries(parish).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       let displayValue = '';
@@ -22317,6 +22500,9 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_nuts3_boundaries_containing') ||
             key.includes('ireland_nuts3_boundaries_nearby_features') ||
             key.includes('ireland_nuts3_boundaries_all') ||
+            key.includes('ireland_civil_parishes_containing') ||
+            key.includes('ireland_civil_parishes_nearby_features') ||
+            key.includes('ireland_civil_parishes_all') ||
             key.includes('ireland_centres_of_population_all') ||
             key.includes('ireland_small_areas_containing') ||
             key.includes('ireland_small_areas_nearby_features') ||
