@@ -135,7 +135,6 @@ function distanceToPolygon(lat: number, lon: number, rings: number[][]): number 
     // Calculate distance from point to line segment using haversine
     const distance = haversineDistance(lat, lon, lat1, lon1);
     const distance2 = haversineDistance(lat, lon, lat2, lon2);
-    const segmentDistance = haversineDistance(lat1, lon1, lat2, lon2);
     
     // Use minimum of distances to endpoints for simplicity
     minDistance = Math.min(minDistance, distance, distance2);
