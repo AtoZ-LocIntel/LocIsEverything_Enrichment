@@ -2527,6 +2527,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/HighWaterMark_NationalWaterMarks_Ungeneralised_2024/FeatureServer"
+        },
+        {
+          name: "OSi Ireland Vegetation Areas",
+          description: "Irish Vegetation Areas - OSi National 250K Map of Ireland - point-in-polygon and proximity queries up to 25 miles. Land used for growing vegetation (polygon dataset). This dataset is provided by Tailte Éireann",
+          coverage: "Ireland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Vegetation_Areas___OSi_National_250K_Map_of_Ireland/FeatureServer"
         }
       ]
     },

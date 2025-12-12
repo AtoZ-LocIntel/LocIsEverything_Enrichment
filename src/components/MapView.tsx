@@ -940,6 +940,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     // Ireland skip list
     key === 'ireland_provinces_containing' || key === 'ireland_provinces_nearby_features' || key === 'ireland_provinces_all' ||
     key === 'ireland_built_up_areas_containing' || key === 'ireland_built_up_areas_nearby_features' || key === 'ireland_built_up_areas_all' ||
+    key === 'ireland_vegetation_areas_containing' || key === 'ireland_vegetation_areas_nearby_features' || key === 'ireland_vegetation_areas_all' ||
     key === 'ireland_small_areas_containing' || key === 'ireland_small_areas_nearby_features' || key === 'ireland_small_areas_all' ||
     key === 'ireland_electoral_divisions_containing' || key === 'ireland_electoral_divisions_nearby_features' || key === 'ireland_electoral_divisions_all' ||
     key === 'ireland_nuts3_boundaries_containing' || key === 'ireland_nuts3_boundaries_nearby_features' || key === 'ireland_nuts3_boundaries_all' ||
@@ -6659,6 +6660,11 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'ireland_buildings_commercial_containing', nearbyKey: 'ireland_buildings_commercial_nearby_features', name: 'Ireland Buildings - Commercial', color: '#4c1d95', icon: '🏬', layerType: 'ireland_buildings_commercial' }
       ];
 
+      // Draw Ireland Vegetation Areas as polygons on the map
+      const irelandVegetationAreaLayers = [
+        { containingKey: 'ireland_vegetation_areas_containing', nearbyKey: 'ireland_vegetation_areas_nearby_features', name: 'Ireland Vegetation Areas', color: '#16a34a', icon: '🌿', layerType: 'ireland_vegetation_areas' }
+      ];
+
       irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
         
@@ -6989,6 +6995,177 @@ const MapView: React.FC<MapViewProps> = ({
         }
         
         // Add to legend
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw Ireland Vegetation Areas as polygons on the map
+      irelandVegetationAreaLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing vegetation areas
+        if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
+          enrichments[containingKey].forEach((area: any) => {
+            const geometry = area.__geometry || area.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: color,
+                    fillOpacity: 0.4
+                  });
+
+                  const areaName = area.name || area.NAMN1 || area.NAME || 'Vegetation Area';
+                  const fcSubtype = area.fcSubtype || area.FCsubtype || area.FCSUBTYPE || null;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${areaName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Containing Vegetation Area</div>
+                        ${fcSubtype !== null ? `<div><strong>FC Subtype:</strong> ${fcSubtype}</div>` : ''}
+                        ${area.shapeArea ? `<div><strong>Area:</strong> ${area.shapeArea.toFixed(2)} m²</div>` : ''}
+                        ${area.shapeLength ? `<div><strong>Perimeter:</strong> ${area.shapeLength.toFixed(2)} m</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other area attributes
+                  const excludeFields = ['name', 'NAMN1', 'NAME', 'fcSubtype', 'FCsubtype', 'FCSUBTYPE', 'shapeArea', 'Shape__Area', 'SHAPE__AREA', 'shapeLength', 'Shape__Length', 'SHAPE__LENGTH', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID', 'ESRI_OID'];
+                  Object.entries(area).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing polygon:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby vegetation areas
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((area: any) => {
+            const geometry = area.__geometry || area.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 1,
+                    opacity: 0.5,
+                    fillColor: color,
+                    fillOpacity: 0.15
+                  });
+
+                  const areaName = area.name || area.NAMN1 || area.NAME || 'Vegetation Area';
+                  const fcSubtype = area.fcSubtype || area.FCsubtype || area.FCSUBTYPE || null;
+                  const distance = area.distance_miles ? area.distance_miles.toFixed(2) : 'Unknown';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${areaName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Nearby Vegetation Area</div>
+                        ${fcSubtype !== null ? `<div><strong>FC Subtype:</strong> ${fcSubtype}</div>` : ''}
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${area.shapeArea ? `<div><strong>Area:</strong> ${area.shapeArea.toFixed(2)} m²</div>` : ''}
+                        ${area.shapeLength ? `<div><strong>Perimeter:</strong> ${area.shapeLength.toFixed(2)} m</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other area attributes
+                  const excludeFields = ['name', 'NAMN1', 'NAME', 'fcSubtype', 'FCsubtype', 'FCSUBTYPE', 'shapeArea', 'Shape__Area', 'SHAPE__AREA', 'shapeLength', 'Shape__Length', 'SHAPE__LENGTH', 'geometry', '__geometry', 'distance_miles', 'objectId', 'OBJECTID', 'ESRI_OID'];
+                  Object.entries(area).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+
         if (featureCount > 0) {
           if (!legendAccumulator[layerType]) {
             legendAccumulator[layerType] = {
@@ -22876,6 +23053,9 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_mountains_all') ||
             key.includes('ireland_centres_of_population_all') ||
             key.includes('ireland_high_water_marks_all') ||
+            key.includes('ireland_vegetation_areas_containing') ||
+            key.includes('ireland_vegetation_areas_nearby_features') ||
+            key.includes('ireland_vegetation_areas_all') ||
             key.includes('ireland_small_areas_containing') ||
             key.includes('ireland_small_areas_nearby_features') ||
             key.includes('ireland_small_areas_all') ||

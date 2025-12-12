@@ -168,6 +168,7 @@ import { getIrelandCivilParishesData } from '../adapters/irelandCivilParishes';
 import { getIrelandBuildingsData } from '../adapters/irelandBuildings';
 import { getIrelandMountainsData } from '../adapters/irelandMountains';
 import { getIrelandHighWaterMarksData } from '../adapters/irelandHighWaterMarks';
+import { getIrelandVegetationAreasData } from '../adapters/irelandVegetationAreas';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3523,6 +3524,8 @@ export class EnrichmentService {
         return await this.getIrelandMountains(lat, lon, radius);
       case 'ireland_high_water_marks':
         return await this.getIrelandHighWaterMarks(lat, lon, radius);
+      case 'ireland_vegetation_areas':
+        return await this.getIrelandVegetationAreas(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14740,6 +14743,109 @@ out center;`;
       console.error('Error fetching Ireland High Water Marks:', error);
       return {
         ireland_high_water_marks_count: 0
+      };
+    }
+  }
+
+  private async getIrelandVegetationAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getIrelandVegetationAreasData(lat, lon, cappedRadius);
+      
+      // Combine containing and nearby for _all
+      const all = [...data.containing, ...data.nearby];
+      
+      const result: Record<string, any> = {
+        ireland_vegetation_areas_containing_count: data.containing.length,
+        ireland_vegetation_areas_nearby_count: data.nearby.length,
+        ireland_vegetation_areas_total_count: all.length
+      };
+      
+      // Add containing vegetation areas
+      if (data.containing.length > 0) {
+        result.ireland_vegetation_areas_containing = data.containing.map(area => {
+          const areaData: any = {
+            objectId: area.objectId,
+            fcSubtype: area.fcSubtype,
+            name: area.name,
+            shapeArea: area.shapeArea,
+            shapeLength: area.shapeLength,
+            distance_miles: 0,
+            ...area
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (area.geometry) {
+            Object.defineProperty(areaData, '__geometry', {
+              value: area.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return areaData;
+        });
+      }
+      
+      // Add nearby vegetation areas
+      if (data.nearby.length > 0) {
+        result.ireland_vegetation_areas_nearby_features = data.nearby.map(area => {
+          const areaData: any = {
+            objectId: area.objectId,
+            fcSubtype: area.fcSubtype,
+            name: area.name,
+            shapeArea: area.shapeArea,
+            shapeLength: area.shapeLength,
+            distance_miles: area.distance_miles || 0,
+            ...area
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (area.geometry) {
+            Object.defineProperty(areaData, '__geometry', {
+              value: area.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return areaData;
+        });
+      }
+      
+      // Add all vegetation areas (combined)
+      if (all.length > 0) {
+        result.ireland_vegetation_areas_all = all.map(area => {
+          const areaData: any = {
+            objectId: area.objectId,
+            fcSubtype: area.fcSubtype,
+            name: area.name,
+            shapeArea: area.shapeArea,
+            shapeLength: area.shapeLength,
+            distance_miles: area.distance_miles || 0,
+            ...area
+          };
+          
+          // Store geometry for map rendering (non-enumerable)
+          if (area.geometry) {
+            Object.defineProperty(areaData, '__geometry', {
+              value: area.geometry,
+              enumerable: false,
+              writable: true
+            });
+          }
+          
+          return areaData;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching Ireland Vegetation Areas:', error);
+      return {
+        ireland_vegetation_areas_containing_count: 0,
+        ireland_vegetation_areas_nearby_count: 0,
+        ireland_vegetation_areas_total_count: 0
       };
     }
   }

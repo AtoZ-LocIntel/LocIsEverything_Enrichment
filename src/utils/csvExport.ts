@@ -475,6 +475,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ireland_buildings_commercial_containing' || key === 'ireland_buildings_commercial_nearby_features' || key === 'ireland_buildings_commercial_all' ||
         // Ireland Centres of Population skip list
         key === 'ireland_centres_of_population_all' ||
+        key === 'ireland_mountains_all' ||
+        key === 'ireland_high_water_marks_all' ||
+        key === 'ireland_vegetation_areas_all' ||
         // TIGER CBSA skip list - BAS 2025
         key === 'tiger_bas2025_cbsa_combined_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_combined_statistical_areas_all' ||
         key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_containing' || key === 'tiger_bas2025_cbsa_metro_micropolitan_statistical_areas_all' ||
@@ -10621,10 +10624,132 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'Tailte Éireann (OSi)'
         ]);
       });
-    }
-    
-    // Export Ireland Buildings - Commercial data
-    if (key === 'ireland_buildings_commercial_all' && Array.isArray(value)) {
+    } else if (key === 'ireland_mountains_all' && Array.isArray(value)) {
+      // Handle Ireland Mountains - each mountain gets its own row with all attributes
+      value.forEach((mountain: any) => {
+        const mountainName = mountain.name || mountain.NAMN1 || mountain.NAME || 'Unknown Mountain';
+        const fCode = mountain.fCode || mountain.F_CODE || '';
+        const distance = mountain.distance_miles !== null && mountain.distance_miles !== undefined ? mountain.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...mountain };
+        delete allAttributes.name;
+        delete allAttributes.NAMN1;
+        delete allAttributes.NAME;
+        delete allAttributes.fCode;
+        delete allAttributes.F_CODE;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_MOUNTAIN',
+          mountainName,
+          (mountain.lat || '').toString(),
+          (mountain.lon || '').toString(),
+          distance,
+          fCode || 'Mountain Peak',
+          attributesJson,
+          '',
+          '',
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    } else if (key === 'ireland_high_water_marks_all' && Array.isArray(value)) {
+      // Handle Ireland High Water Marks - each water mark gets its own row with all attributes
+      value.forEach((waterMark: any) => {
+        const guid = waterMark.guid || waterMark.GUID || 'Unknown';
+        const bdyTypeValue = waterMark.bdyTypeValue || waterMark.BDY_TYPE_VALUE || '';
+        const shapeLength = waterMark.shapeLength || waterMark.Shape__Length || waterMark.SHAPE__LENGTH || null;
+        const lengthMeters = shapeLength ? shapeLength.toFixed(2) : '';
+        const distance = waterMark.distance_miles !== null && waterMark.distance_miles !== undefined ? waterMark.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...waterMark };
+        delete allAttributes.guid;
+        delete allAttributes.GUID;
+        delete allAttributes.bdyTypeValue;
+        delete allAttributes.BDY_TYPE_VALUE;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.SHAPE__LENGTH;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann (OSi)',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_HIGH_WATER_MARK',
+          `High Water Mark - ${bdyTypeValue || guid}`,
+          location.lat.toString(), // Use search location for water mark (it's a line, not a point)
+          location.lon.toString(),
+          distance,
+          bdyTypeValue || 'High Water Mark',
+          lengthMeters ? `${lengthMeters} m` : attributesJson,
+          '',
+          '',
+          attributesJson,
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    } else if (key === 'ireland_vegetation_areas_all' && Array.isArray(value)) {
+      // Handle Ireland Vegetation Areas - each area gets its own row with all attributes
+      value.forEach((area: any) => {
+        const areaName = area.name || area.NAMN1 || area.NAME || 'Vegetation Area';
+        const fcSubtype = area.fcSubtype || area.FCsubtype || area.FCSUBTYPE || '';
+        const shapeArea = area.shapeArea || area.Shape__Area || area.SHAPE__AREA || null;
+        const areaMeters = shapeArea ? shapeArea.toFixed(2) : '';
+        const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles.toFixed(2) : (area.isContaining ? '0.00' : '');
+        const isContaining = area.isContaining || distance === '0.00' ? 'Containing' : 'Nearby';
+        
+        const allAttributes = { ...area };
+        delete allAttributes.name;
+        delete allAttributes.NAMN1;
+        delete allAttributes.NAME;
+        delete allAttributes.fcSubtype;
+        delete allAttributes.FCsubtype;
+        delete allAttributes.FCSUBTYPE;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.SHAPE__AREA;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.SHAPE__LENGTH;
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Tailte Éireann',
+          (location.confidence || 'N/A').toString(),
+          'IRELAND_VEGETATION_AREA',
+          `${isContaining} - ${areaName}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          fcSubtype || 'Vegetation Area',
+          areaMeters ? `${areaMeters} m²` : attributesJson,
+          '',
+          '',
+          attributesJson,
+          'Tailte Éireann (OSi)'
+        ]);
+      });
+    } else if (key === 'ireland_buildings_commercial_all' && Array.isArray(value)) {
       value.forEach((building: any) => {
         const buildingType = building.buildingType || 'Commercial';
         const distance = building.distance_miles !== null && building.distance_miles !== undefined ? building.distance_miles.toFixed(2) : '0.00';
