@@ -955,6 +955,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
         key === 'ireland_pois_all' ||
         key === 'australia_railways_all' ||
         key === 'australia_trams_all' ||
+        key === 'australia_national_roads_all' ||
+        key === 'australia_major_roads_all' ||
         key === 'australia_bushfires_all' ||
         key === 'australia_bushfires_containing' ||
         key === 'australia_bushfires_nearby_features' ||
@@ -18481,6 +18483,214 @@ const MapView: React.FC<MapViewProps> = ({
           }
         }
 
+        // Draw Australia National Roads as polylines on the map
+        if (enrichments.australia_national_roads_all && Array.isArray(enrichments.australia_national_roads_all)) {
+          let roadCount = 0;
+          enrichments.australia_national_roads_all.forEach((road: any) => {
+            if (road.geometry && road.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = road.geometry.paths;
+                if (paths && paths.length > 0) {
+                  roadCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const name = road.fullStreetName || `${road.streetName || 'Unnamed'} ${road.streetType || ''}`.trim() || 'Unnamed Road';
+                    const hierarchy = road.hierarchy || null;
+                    const status = road.status || null;
+                    const surface = road.surface || null;
+                    const state = road.state || null;
+                    const oneWay = road.oneWay || null;
+                    const laneDescription = road.laneDescription || null;
+
+                    // Create polyline with blue color for national roads
+                    const polyline = L.polyline(latlngs, {
+                      color: '#2563eb', // Blue color for national roads
+                      weight: 3,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all road attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🛣️ ${name}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${hierarchy ? `<div><strong>Hierarchy:</strong> ${hierarchy}</div>` : ''}
+                          ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                          ${surface ? `<div><strong>Surface:</strong> ${surface}</div>` : ''}
+                          ${state ? `<div><strong>State:</strong> ${state}</div>` : ''}
+                          ${oneWay ? `<div><strong>One Way:</strong> ${oneWay}</div>` : ''}
+                          ${laneDescription ? `<div><strong>Lanes:</strong> ${laneDescription}</div>` : ''}
+                          ${road.distance_miles !== null && road.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${road.distance_miles.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all road attributes (excluding internal fields)
+                    const excludeFields = ['fullStreetName', 'FULL_STREET_NAME', 'streetName', 'STREET_NAME', 'street_name_label', 'STREET_NAME_LABEL', 'streetType', 'STREET_TYPE', 'street_type_label', 'STREET_TYPE_LABEL', 'hierarchy', 'HIERARCHY', 'status', 'STATUS', 'surface', 'SURFACE', 'state', 'STATE', 'oneWay', 'ONE_WAY', 'laneDescription', 'LANE_DESCRIPTION', 'geometry', 'distance_miles', 'objectId', 'OBJECTID', 'objectid', 'roadId', 'ROAD_ID', 'lat', 'lon'];
+                    Object.entries(road).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let displayValue = '';
+                        
+                        if (typeof value === 'object') {
+                          displayValue = JSON.stringify(value);
+                        } else if (typeof value === 'number') {
+                          displayValue = value.toLocaleString();
+                        } else {
+                          displayValue = String(value);
+                        }
+                        
+                        popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    (polyline as any).__layerType = 'australia_national_roads';
+                    (polyline as any).__layerTitle = 'Australia National Roads';
+                    (polyline as any).__popupContent = popupContent;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(poi);
+                    bounds.extend(polyline.getBounds());
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Australia National Road polyline:', error);
+              }
+            }
+          });
+          
+          if (roadCount > 0) {
+            if (!legendAccumulator['australia_national_roads']) {
+              legendAccumulator['australia_national_roads'] = {
+                icon: '🛣️',
+                color: '#2563eb',
+                title: 'Australia National Roads',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_national_roads'].count += roadCount;
+          }
+        }
+
+        // Draw Australia Major Roads as polylines on the map
+        if (enrichments.australia_major_roads_all && Array.isArray(enrichments.australia_major_roads_all)) {
+          let roadCount = 0;
+          enrichments.australia_major_roads_all.forEach((road: any) => {
+            if (road.geometry && road.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = road.geometry.paths;
+                if (paths && paths.length > 0) {
+                  roadCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const name = road.fullStreetName || `${road.streetName || 'Unnamed'} ${road.streetType || ''}`.trim() || 'Unnamed Road';
+                    const hierarchy = road.hierarchy || null;
+                    const status = road.status || null;
+                    const surface = road.surface || null;
+                    const state = road.state || null;
+                    const oneWay = road.oneWay || null;
+                    const laneDescription = road.laneDescription || null;
+
+                    // Create polyline with red color for major roads
+                    const polyline = L.polyline(latlngs, {
+                      color: '#dc2626', // Red color for major roads
+                      weight: 3,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all road attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🛣️ ${name}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${hierarchy ? `<div><strong>Hierarchy:</strong> ${hierarchy}</div>` : ''}
+                          ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                          ${surface ? `<div><strong>Surface:</strong> ${surface}</div>` : ''}
+                          ${state ? `<div><strong>State:</strong> ${state}</div>` : ''}
+                          ${oneWay ? `<div><strong>One Way:</strong> ${oneWay}</div>` : ''}
+                          ${laneDescription ? `<div><strong>Lanes:</strong> ${laneDescription}</div>` : ''}
+                          ${road.distance_miles !== null && road.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${road.distance_miles.toFixed(2)} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all road attributes (excluding internal fields)
+                    const excludeFields = ['fullStreetName', 'FULL_STREET_NAME', 'streetName', 'STREET_NAME', 'street_name_label', 'STREET_NAME_LABEL', 'streetType', 'STREET_TYPE', 'street_type_label', 'STREET_TYPE_LABEL', 'hierarchy', 'HIERARCHY', 'status', 'STATUS', 'surface', 'SURFACE', 'state', 'STATE', 'oneWay', 'ONE_WAY', 'laneDescription', 'LANE_DESCRIPTION', 'geometry', 'distance_miles', 'objectId', 'OBJECTID', 'objectid', 'roadId', 'ROAD_ID', 'lat', 'lon'];
+                    Object.entries(road).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let displayValue = '';
+                        
+                        if (typeof value === 'object') {
+                          displayValue = JSON.stringify(value);
+                        } else if (typeof value === 'number') {
+                          displayValue = value.toLocaleString();
+                        } else {
+                          displayValue = String(value);
+                        }
+                        
+                        popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    (polyline as any).__layerType = 'australia_major_roads';
+                    (polyline as any).__layerTitle = 'Australia Major Roads';
+                    (polyline as any).__popupContent = popupContent;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(poi);
+                    bounds.extend(polyline.getBounds());
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Australia Major Road polyline:', error);
+              }
+            }
+          });
+          
+          if (roadCount > 0) {
+            if (!legendAccumulator['australia_major_roads']) {
+              legendAccumulator['australia_major_roads'] = {
+                icon: '🛣️',
+                color: '#dc2626',
+                title: 'Australia Major Roads',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_major_roads'].count += roadCount;
+          }
+        }
+
         // Draw Australia Bushfires as points and polygons on the map
         if (enrichments.australia_bushfires_all && Array.isArray(enrichments.australia_bushfires_all)) {
           let bushfireCount = 0;
@@ -23851,7 +24061,13 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_high_water_marks_all') ||
             key.includes('ireland_pois_all') ||
             key.includes('australia_railways_all') ||
+            key.includes('australia_railways_detailed') ||
             key.includes('australia_trams_all') ||
+            key.includes('australia_trams_detailed') ||
+            key.includes('australia_national_roads_all') ||
+            key.includes('australia_national_roads_detailed') ||
+            key.includes('australia_major_roads_all') ||
+            key.includes('australia_major_roads_detailed') ||
             key.includes('australia_bushfires_containing') ||
             key.includes('australia_bushfires_nearby_features') ||
             key.includes('australia_bushfires_all') ||

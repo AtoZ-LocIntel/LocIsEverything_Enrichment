@@ -176,6 +176,8 @@ import { getAustraliaBushfiresData } from '../adapters/australiaBushfires';
 import { getAustraliaMinesData } from '../adapters/australiaMines';
 import { getAustraliaBuiltUpAreasData } from '../adapters/australiaBuiltUpAreas';
 import { getAustraliaNPIFacilitiesData } from '../adapters/australiaNPIFacilities';
+import { getAustraliaNationalRoadsData } from '../adapters/australiaNationalRoads';
+import { getAustraliaMajorRoadsData } from '../adapters/australiaMajorRoads';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3559,6 +3561,12 @@ export class EnrichmentService {
       
       case 'australia_npi_facilities':
         return await this.getAustraliaNPIFacilities(lat, lon, radius);
+      
+      case 'australia_national_roads':
+        return await this.getAustraliaNationalRoads(lat, lon, radius);
+      
+      case 'australia_major_roads':
+        return await this.getAustraliaMajorRoads(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -15192,6 +15200,82 @@ out center;`;
         [`australia_npi_facilities_count_${radius || 50}mi`]: 0,
         australia_npi_facilities_detailed: [],
         australia_npi_facilities_all_pois: []
+      };
+    }
+  }
+
+  private async getAustraliaNationalRoads(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 1.0, 1.0);
+      const data = await getAustraliaNationalRoadsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        [`australia_national_roads_count_${cappedRadius}mi`]: data.length,
+        australia_national_roads_detailed: data.map(road => ({
+          id: road.roadId || road.objectId,
+          name: road.fullStreetName || `${road.streetName || 'Unnamed'} ${road.streetType || ''}`.trim() || 'Unnamed Road',
+          fullStreetName: road.fullStreetName,
+          streetName: road.streetName,
+          streetType: road.streetType,
+          hierarchy: road.hierarchy,
+          status: road.status,
+          surface: road.surface,
+          state: road.state,
+          oneWay: road.oneWay,
+          laneDescription: road.laneDescription,
+          lat: road.lat,
+          lon: road.lon,
+          distance_miles: road.distance_miles,
+          tags: road.attributes || {}
+        })),
+        australia_national_roads_all: data
+      };
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Australia National Roads:', error);
+      return {
+        [`australia_national_roads_count_${radius || 1.0}mi`]: 0,
+        australia_national_roads_detailed: [],
+        australia_national_roads_all: []
+      };
+    }
+  }
+
+  private async getAustraliaMajorRoads(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 1.0, 1.0);
+      const data = await getAustraliaMajorRoadsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        [`australia_major_roads_count_${cappedRadius}mi`]: data.length,
+        australia_major_roads_detailed: data.map(road => ({
+          id: road.roadId || road.objectId,
+          name: road.fullStreetName || `${road.streetName || 'Unnamed'} ${road.streetType || ''}`.trim() || 'Unnamed Road',
+          fullStreetName: road.fullStreetName,
+          streetName: road.streetName,
+          streetType: road.streetType,
+          hierarchy: road.hierarchy,
+          status: road.status,
+          surface: road.surface,
+          state: road.state,
+          oneWay: road.oneWay,
+          laneDescription: road.laneDescription,
+          lat: road.lat,
+          lon: road.lon,
+          distance_miles: road.distance_miles,
+          tags: road.attributes || {}
+        })),
+        australia_major_roads_all: data
+      };
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Australia Major Roads:', error);
+      return {
+        [`australia_major_roads_count_${radius || 1.0}mi`]: 0,
+        australia_major_roads_detailed: [],
+        australia_major_roads_all: []
       };
     }
   }

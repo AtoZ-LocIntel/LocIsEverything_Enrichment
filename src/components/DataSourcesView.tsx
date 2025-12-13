@@ -3039,6 +3039,22 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/National_Pollutant_Inventory/FeatureServer/0"
+        },
+        {
+          name: "Digital Atlas AUS - National Roads",
+          description: "Australia National Roads - Comprehensive national road network from Digital Atlas AUS (proximity queries up to 1 mile: 0.25, 0.50, 0.75, 1.0 miles). Includes all road types with attributes for street names, hierarchy, status, surface type, state, and lane information.",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/National_Roads/FeatureServer/0"
+        },
+        {
+          name: "Digital Atlas AUS - Major Roads",
+          description: "Australia Major Roads - Major road network from Digital Atlas AUS (proximity queries up to 1 mile: 0.25, 0.50, 0.75, 1.0 miles). Includes major highways, arterials, and primary roads with attributes for street names, hierarchy, status, surface type, state, and lane information.",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/MajorRoads/FeatureServer/0"
         }
       ]
     },

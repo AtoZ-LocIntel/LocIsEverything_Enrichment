@@ -489,6 +489,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'australia_built_up_areas_containing' ||
         key === 'australia_built_up_areas_nearby_features' ||
         key === 'australia_npi_facilities_all_pois' ||
+        key === 'australia_national_roads_all' ||
+        key === 'australia_major_roads_all' ||
         key === 'australia_bushfires_containing' ||
         key === 'australia_bushfires_nearby_features' ||
         // TIGER CBSA skip list - BAS 2025
@@ -11004,6 +11006,124 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           attributesJson,
           '',
           '',
+          attributesJson,
+          'Digital Atlas AUS'
+        ]);
+      });
+    } else if (key === 'australia_national_roads_all' && Array.isArray(value)) {
+      // Handle Australia National Roads - each road gets its own row
+      value.forEach((road: any) => {
+        const name = road.fullStreetName || `${road.streetName || 'Unnamed'} ${road.streetType || ''}`.trim() || 'Unnamed Road';
+        const fullStreetName = road.fullStreetName || '';
+        const streetName = road.streetName || '';
+        const streetType = road.streetType || '';
+        const hierarchy = road.hierarchy || '';
+        const status = road.status || '';
+        const surface = road.surface || '';
+        const state = road.state || '';
+        const oneWay = road.oneWay || '';
+        const laneDescription = road.laneDescription || '';
+        const distance = road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...road };
+        delete allAttributes.fullStreetName;
+        delete allAttributes.streetName;
+        delete allAttributes.streetType;
+        delete allAttributes.hierarchy;
+        delete allAttributes.status;
+        delete allAttributes.surface;
+        delete allAttributes.state;
+        delete allAttributes.oneWay;
+        delete allAttributes.laneDescription;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Digital Atlas AUS',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_NATIONAL_ROAD',
+          name,
+          fullStreetName,
+          streetName,
+          streetType,
+          hierarchy,
+          status,
+          surface,
+          state,
+          oneWay,
+          laneDescription,
+          distance,
+          road.lat?.toString() || '',
+          road.lon?.toString() || '',
+          attributesJson,
+          'Digital Atlas AUS'
+        ]);
+      });
+    } else if (key === 'australia_major_roads_all' && Array.isArray(value)) {
+      // Handle Australia Major Roads - each road gets its own row
+      value.forEach((road: any) => {
+        const name = road.fullStreetName || `${road.streetName || 'Unnamed'} ${road.streetType || ''}`.trim() || 'Unnamed Road';
+        const fullStreetName = road.fullStreetName || '';
+        const streetName = road.streetName || '';
+        const streetType = road.streetType || '';
+        const hierarchy = road.hierarchy || '';
+        const status = road.status || '';
+        const surface = road.surface || '';
+        const state = road.state || '';
+        const oneWay = road.oneWay || '';
+        const laneDescription = road.laneDescription || '';
+        const distance = road.distance_miles !== null && road.distance_miles !== undefined ? road.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...road };
+        delete allAttributes.fullStreetName;
+        delete allAttributes.streetName;
+        delete allAttributes.streetType;
+        delete allAttributes.hierarchy;
+        delete allAttributes.status;
+        delete allAttributes.surface;
+        delete allAttributes.state;
+        delete allAttributes.oneWay;
+        delete allAttributes.laneDescription;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Digital Atlas AUS',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_MAJOR_ROAD',
+          name,
+          fullStreetName,
+          streetName,
+          streetType,
+          hierarchy,
+          status,
+          surface,
+          state,
+          oneWay,
+          laneDescription,
+          distance,
+          road.lat?.toString() || '',
+          road.lon?.toString() || '',
           attributesJson,
           'Digital Atlas AUS'
         ]);
