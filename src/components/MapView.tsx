@@ -957,7 +957,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
         key === 'australia_trams_all' ||
         key === 'australia_bushfires_all' ||
         key === 'australia_bushfires_containing' ||
-        key === 'australia_bushfires_nearby_features' // Skip arrays (handled separately for map drawing)
+        key === 'australia_bushfires_nearby_features' ||
+        key === 'australia_operating_mines_all_pois' ||
+        key === 'australia_developing_mines_all_pois' ||
+        key === 'australia_care_maintenance_mines_all_pois' // Skip arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -18617,8 +18620,178 @@ const MapView: React.FC<MapViewProps> = ({
           }
         }
       } catch (error) {
-        console.error('Error processing Ireland Mountains:', error);
+        console.error('Error processing Australia Bushfires:', error);
       }
+
+      // Draw Australia Operating Mines
+      try {
+        if (enrichments.australia_operating_mines_all_pois && Array.isArray(enrichments.australia_operating_mines_all_pois)) {
+          let mineCount = 0;
+          enrichments.australia_operating_mines_all_pois.forEach((mine: any) => {
+            if (mine.lat && mine.lon) {
+              try {
+                const mineMarker = L.marker([mine.lat, mine.lon], {
+                  icon: createPOIIcon('⛏️', '#f59e0b')
+                });
+                
+                const name = mine.mineName || mine.name || 'Unnamed Mine';
+                const distance = mine.distance_miles !== null && mine.distance_miles !== undefined ? mine.distance_miles : 0;
+                const commodity = mine.commodity || '';
+                const state = mine.state || '';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ⛏️ ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Status:</strong> Operating Mine</div>
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      ${commodity ? `<div><strong>Commodity:</strong> ${commodity}</div>` : ''}
+                      ${state ? `<div><strong>State:</strong> ${state}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                mineMarker.bindPopup(popupContent, { maxWidth: 400 });
+                mineMarker.addTo(poi);
+                bounds.extend([mine.lat, mine.lon]);
+                mineCount++;
+              } catch (error) {
+                console.error('Error drawing Australia Operating Mine:', error);
+              }
+            }
+          });
+          
+          if (mineCount > 0) {
+            if (!legendAccumulator['australia_operating_mines']) {
+              legendAccumulator['australia_operating_mines'] = {
+                icon: '⛏️',
+                color: '#f59e0b',
+                title: 'Australia Operating Mines',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_operating_mines'].count += mineCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Australia Operating Mines:', error);
+      }
+
+      // Draw Australia Developing Mines
+      try {
+        if (enrichments.australia_developing_mines_all_pois && Array.isArray(enrichments.australia_developing_mines_all_pois)) {
+          let mineCount = 0;
+          enrichments.australia_developing_mines_all_pois.forEach((mine: any) => {
+            if (mine.lat && mine.lon) {
+              try {
+                const mineMarker = L.marker([mine.lat, mine.lon], {
+                  icon: createPOIIcon('🏗️', '#3b82f6')
+                });
+                
+                const name = mine.mineName || mine.name || 'Unnamed Mine';
+                const distance = mine.distance_miles !== null && mine.distance_miles !== undefined ? mine.distance_miles : 0;
+                const commodity = mine.commodity || '';
+                const state = mine.state || '';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏗️ ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Status:</strong> Developing Mine</div>
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      ${commodity ? `<div><strong>Commodity:</strong> ${commodity}</div>` : ''}
+                      ${state ? `<div><strong>State:</strong> ${state}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                mineMarker.bindPopup(popupContent, { maxWidth: 400 });
+                mineMarker.addTo(poi);
+                bounds.extend([mine.lat, mine.lon]);
+                mineCount++;
+              } catch (error) {
+                console.error('Error drawing Australia Developing Mine:', error);
+              }
+            }
+          });
+          
+          if (mineCount > 0) {
+            if (!legendAccumulator['australia_developing_mines']) {
+              legendAccumulator['australia_developing_mines'] = {
+                icon: '🏗️',
+                color: '#3b82f6',
+                title: 'Australia Developing Mines',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_developing_mines'].count += mineCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Australia Developing Mines:', error);
+      }
+
+      // Draw Australia Care/Maintenance Mines
+      try {
+        if (enrichments.australia_care_maintenance_mines_all_pois && Array.isArray(enrichments.australia_care_maintenance_mines_all_pois)) {
+          let mineCount = 0;
+          enrichments.australia_care_maintenance_mines_all_pois.forEach((mine: any) => {
+            if (mine.lat && mine.lon) {
+              try {
+                const mineMarker = L.marker([mine.lat, mine.lon], {
+                  icon: createPOIIcon('⚙️', '#6b7280')
+                });
+                
+                const name = mine.mineName || mine.name || 'Unnamed Mine';
+                const distance = mine.distance_miles !== null && mine.distance_miles !== undefined ? mine.distance_miles : 0;
+                const commodity = mine.commodity || '';
+                const state = mine.state || '';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ⚙️ ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Status:</strong> Care/Maintenance Mine</div>
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      ${commodity ? `<div><strong>Commodity:</strong> ${commodity}</div>` : ''}
+                      ${state ? `<div><strong>State:</strong> ${state}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                mineMarker.bindPopup(popupContent, { maxWidth: 400 });
+                mineMarker.addTo(poi);
+                bounds.extend([mine.lat, mine.lon]);
+                mineCount++;
+              } catch (error) {
+                console.error('Error drawing Australia Care/Maintenance Mine:', error);
+              }
+            }
+          });
+          
+          if (mineCount > 0) {
+            if (!legendAccumulator['australia_care_maintenance_mines']) {
+              legendAccumulator['australia_care_maintenance_mines'] = {
+                icon: '⚙️',
+                color: '#6b7280',
+                title: 'Australia Care/Maintenance Mines',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_care_maintenance_mines'].count += mineCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Australia Care/Maintenance Mines:', error);
+      }
+
+      // Draw USFS National Wilderness Areas as polygons on the map
 
       // Draw USFS National Wilderness Areas as polygons on the map
       try {
@@ -23451,6 +23624,7 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing CA Marine Oil Terminals:', error);
       }
 
+
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)
       Object.entries(enrichments).forEach(([key, value]) => {
         if (!Array.isArray(value)) {
@@ -23458,6 +23632,14 @@ const MapView: React.FC<MapViewProps> = ({
         }
 
         if (!/_detailed$|_elements$|_features$|_facilities$|_all_pois$|_all$/i.test(key)) {
+          return;
+        }
+
+        // CRITICAL: Skip Australia mine arrays - they're drawn above with correct icons
+        if (key === 'australia_operating_mines_all_pois' ||
+            key === 'australia_developing_mines_all_pois' ||
+            key === 'australia_care_maintenance_mines_all_pois') {
+          console.log(`⛏️ EXCLUDING ${key} from generic handler - already drawn above`);
           return;
         }
 
@@ -23508,6 +23690,9 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('australia_bushfires_containing') ||
             key.includes('australia_bushfires_nearby_features') ||
             key.includes('australia_bushfires_all') ||
+            key.includes('australia_operating_mines_all_pois') ||
+            key.includes('australia_developing_mines_all_pois') ||
+            key.includes('australia_care_maintenance_mines_all_pois') ||
             key.includes('ireland_vegetation_areas_containing') ||
             key.includes('ireland_vegetation_areas_nearby_features') ||
             key.includes('ireland_vegetation_areas_all') ||
@@ -23524,6 +23709,18 @@ const MapView: React.FC<MapViewProps> = ({
         }
 
         const baseKey = key.replace(/_(detailed|elements|features|facilities|all_pois|all)$/i, '');
+        
+        // ABSOLUTE CHECK: If this is a mine array, skip it completely
+        if (baseKey.includes('australia_operating_mines') || 
+            baseKey.includes('australia_developing_mines') || 
+            baseKey.includes('australia_care_maintenance_mines') ||
+            key.includes('australia_operating_mines') ||
+            key.includes('australia_developing_mines') ||
+            key.includes('australia_care_maintenance_mines')) {
+          console.log(`🚫 BLOCKING ${key} from generic handler`);
+          return;
+        }
+        
         const poiInfo = POI_ICONS[baseKey] || POI_ICONS['default'];
         const poiMeta = poiConfigManager.getPOIType(baseKey);
         const iconEmoji = poiInfo.icon || '📍';
@@ -23582,6 +23779,24 @@ const MapView: React.FC<MapViewProps> = ({
             return;
           }
 
+          // CRITICAL: Check if a mine marker already exists at this location
+          let mineMarkerExists = false;
+          poi.eachLayer((layer: any) => {
+            if (layer instanceof L.Marker && (layer as any).__isMineMarker) {
+              const layerLat = (layer as any).getLatLng().lat;
+              const layerLon = (layer as any).getLatLng().lon;
+              // Check if coordinates are very close (within 0.0001 degrees, ~11 meters)
+              if (Math.abs(layerLat - poiLat) < 0.0001 && Math.abs(layerLon - poiLon) < 0.0001) {
+                mineMarkerExists = true;
+              }
+            }
+          });
+          
+          if (mineMarkerExists) {
+            // Skip creating generic marker - mine marker already exists
+            return;
+          }
+          
           const poiMarker = L.marker([poiLat, poiLon], { icon: leafletIcon });
           // Store metadata for tabbed popup functionality
           (poiMarker as any).__layerType = baseKey;
@@ -23653,11 +23868,15 @@ const MapView: React.FC<MapViewProps> = ({
         
         // Bring location marker to front to ensure it's always visible on top of all features
         if (results[0]?.location && mapInstanceRef.current) {
-          primary.eachLayer((layer: any) => {
-            if (layer.__isLocationMarker) {
-              layer.bringToFront();
-            }
-          });
+          try {
+            primary.eachLayer((layer: any) => {
+              if (layer.__isLocationMarker && typeof layer.bringToFront === 'function') {
+                layer.bringToFront();
+              }
+            });
+          } catch (error) {
+            console.warn('Error bringing location marker to front:', error);
+          }
         }
         
         // Add map click handler for tabbed popup functionality

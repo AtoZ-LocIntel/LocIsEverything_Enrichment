@@ -2572,6 +2572,30 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/ArcGIS/rest/services/3-Hourly_Bushfire_Accumulation_2_view/FeatureServer"
+        },
+        {
+          name: "Geoscience Australia - Australian Operating Mines",
+          description: "Australia Operating Mines - Geoscience Australia Operating Mines - proximity queries up to 50 miles. Location and status of Australian operating mines including commodity and state information (point dataset). This dataset is provided by Geoscience Australia under Creative Commons Attribution 4.0 International Licence.",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.ga.gov.au/gis/rest/services/AustralianOperatingMines/MapServer"
+        },
+        {
+          name: "Geoscience Australia - Australian Developing Mines",
+          description: "Australia Developing Mines - Geoscience Australia Developing Mines - proximity queries up to 50 miles. Mines under development where the project has a positive feasibility study, development has commenced or all approvals have been received (point dataset). This dataset is provided by Geoscience Australia under Creative Commons Attribution 4.0 International Licence.",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.ga.gov.au/gis/rest/services/AustralianOperatingMines/MapServer"
+        },
+        {
+          name: "Geoscience Australia - Australian Care/Maintenance Mines",
+          description: "Australia Care/Maintenance Mines - Geoscience Australia Mines Under Care and Maintenance - proximity queries up to 50 miles. Mines under care and maintenance with known resource estimations that may be mined or developed in the future (point dataset). This dataset is provided by Geoscience Australia under Creative Commons Attribution 4.0 International Licence.",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.ga.gov.au/gis/rest/services/AustralianOperatingMines/MapServer"
         }
       ]
     },

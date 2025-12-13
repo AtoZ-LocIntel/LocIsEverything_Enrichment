@@ -482,6 +482,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'australia_railways_all' ||
         key === 'australia_trams_all' ||
         key === 'australia_bushfires_all' ||
+        key === 'australia_operating_mines_all_pois' ||
+        key === 'australia_developing_mines_all_pois' ||
+        key === 'australia_care_maintenance_mines_all_pois' ||
         key === 'australia_bushfires_containing' ||
         key === 'australia_bushfires_nearby_features' ||
         // TIGER CBSA skip list - BAS 2025
@@ -10628,6 +10631,144 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'Tailte Éireann (OSi)'
+        ]);
+      });
+    } else if (key === 'australia_operating_mines_all_pois' && Array.isArray(value)) {
+      // Handle Australia Operating Mines - each mine gets its own row with all attributes
+      value.forEach((mine: any) => {
+        const name = mine.mineName || mine.name || mine.Name || 'Unknown Mine';
+        const status = mine.status || 'Operating';
+        const commodity = mine.commodity || mine.COMMODITY || '';
+        const state = mine.state || mine.STATE || '';
+        const distance = mine.distance_miles !== null && mine.distance_miles !== undefined ? mine.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...mine };
+        delete allAttributes.mineName;
+        delete allAttributes.name;
+        delete allAttributes.Name;
+        delete allAttributes.status;
+        delete allAttributes.commodity;
+        delete allAttributes.COMMODITY;
+        delete allAttributes.state;
+        delete allAttributes.STATE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Geoscience Australia',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_OPERATING_MINE',
+          name,
+          (mine.lat || location.lat).toString(),
+          (mine.lon || location.lon).toString(),
+          distance,
+          status,
+          commodity,
+          state,
+          attributesJson,
+          'Geoscience Australia'
+        ]);
+      });
+    } else if (key === 'australia_developing_mines_all_pois' && Array.isArray(value)) {
+      // Handle Australia Developing Mines - each mine gets its own row with all attributes
+      value.forEach((mine: any) => {
+        const name = mine.mineName || mine.name || mine.Name || 'Unknown Mine';
+        const status = mine.status || 'Developing';
+        const commodity = mine.commodity || mine.COMMODITY || '';
+        const state = mine.state || mine.STATE || '';
+        const distance = mine.distance_miles !== null && mine.distance_miles !== undefined ? mine.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...mine };
+        delete allAttributes.mineName;
+        delete allAttributes.name;
+        delete allAttributes.Name;
+        delete allAttributes.status;
+        delete allAttributes.commodity;
+        delete allAttributes.COMMODITY;
+        delete allAttributes.state;
+        delete allAttributes.STATE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Geoscience Australia',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_DEVELOPING_MINE',
+          name,
+          (mine.lat || location.lat).toString(),
+          (mine.lon || location.lon).toString(),
+          distance,
+          status,
+          commodity,
+          state,
+          attributesJson,
+          'Geoscience Australia'
+        ]);
+      });
+    } else if (key === 'australia_care_maintenance_mines_all_pois' && Array.isArray(value)) {
+      // Handle Australia Care/Maintenance Mines - each mine gets its own row with all attributes
+      value.forEach((mine: any) => {
+        const name = mine.mineName || mine.name || mine.Name || 'Unknown Mine';
+        const status = mine.status || 'Care/Maintenance';
+        const commodity = mine.commodity || mine.COMMODITY || '';
+        const state = mine.state || mine.STATE || '';
+        const distance = mine.distance_miles !== null && mine.distance_miles !== undefined ? mine.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...mine };
+        delete allAttributes.mineName;
+        delete allAttributes.name;
+        delete allAttributes.Name;
+        delete allAttributes.status;
+        delete allAttributes.commodity;
+        delete allAttributes.COMMODITY;
+        delete allAttributes.state;
+        delete allAttributes.STATE;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Geoscience Australia',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_CARE_MAINTENANCE_MINE',
+          name,
+          (mine.lat || location.lat).toString(),
+          (mine.lon || location.lon).toString(),
+          distance,
+          status,
+          commodity,
+          state,
+          attributesJson,
+          'Geoscience Australia'
         ]);
       });
     } else if (key === 'ireland_mountains_all' && Array.isArray(value)) {

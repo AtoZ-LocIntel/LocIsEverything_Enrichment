@@ -173,6 +173,7 @@ import { getIrelandPOIsData } from '../adapters/irelandPOIs';
 import { getAustraliaRailwaysData } from '../adapters/australiaRailways';
 import { getAustraliaTramsData } from '../adapters/australiaTrams';
 import { getAustraliaBushfiresData } from '../adapters/australiaBushfires';
+import { getAustraliaMinesData } from '../adapters/australiaMines';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3541,6 +3542,15 @@ export class EnrichmentService {
         return await this.getAustraliaTrams(lat, lon, radius);
       case 'australia_bushfires':
         return await this.getAustraliaBushfires(lat, lon, radius);
+      
+      case 'australia_operating_mines':
+        return await this.getAustraliaOperatingMines(lat, lon, radius);
+      
+      case 'australia_developing_mines':
+        return await this.getAustraliaDevelopingMines(lat, lon, radius);
+      
+      case 'australia_care_maintenance_mines':
+        return await this.getAustraliaCareMaintenanceMines(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -14986,6 +14996,102 @@ out center;`;
         australia_bushfires_containing_count: 0,
         australia_bushfires_nearby_count: 0,
         australia_bushfires_total_count: 0
+      };
+    }
+  }
+
+  private async getAustraliaOperatingMines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getAustraliaMinesData(lat, lon, cappedRadius, 0); // Layer 0 = Operating_Mines
+      
+      const result: Record<string, any> = {
+        [`australia_operating_mines_count_${cappedRadius}mi`]: data.length,
+        australia_operating_mines_detailed: data.map(mine => ({
+          id: mine.objectId,
+          name: mine.mineName || 'Unnamed Mine',
+          status: mine.status,
+          commodity: mine.commodity,
+          state: mine.state,
+          lat: mine.lat,
+          lon: mine.lon,
+          distance_miles: mine.distance_miles,
+          tags: mine.attributes || {}
+        })),
+        australia_operating_mines_all_pois: data
+      };
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Australia Operating Mines:', error);
+      return {
+        [`australia_operating_mines_count_${radius || 50}mi`]: 0,
+        australia_operating_mines_detailed: [],
+        australia_operating_mines_all_pois: []
+      };
+    }
+  }
+
+  private async getAustraliaDevelopingMines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getAustraliaMinesData(lat, lon, cappedRadius, 1); // Layer 1 = Developing_Mines
+      
+      const result: Record<string, any> = {
+        [`australia_developing_mines_count_${cappedRadius}mi`]: data.length,
+        australia_developing_mines_detailed: data.map(mine => ({
+          id: mine.objectId,
+          name: mine.mineName || 'Unnamed Mine',
+          status: mine.status,
+          commodity: mine.commodity,
+          state: mine.state,
+          lat: mine.lat,
+          lon: mine.lon,
+          distance_miles: mine.distance_miles,
+          tags: mine.attributes || {}
+        })),
+        australia_developing_mines_all_pois: data
+      };
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Australia Developing Mines:', error);
+      return {
+        [`australia_developing_mines_count_${radius || 50}mi`]: 0,
+        australia_developing_mines_detailed: [],
+        australia_developing_mines_all_pois: []
+      };
+    }
+  }
+
+  private async getAustraliaCareMaintenanceMines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getAustraliaMinesData(lat, lon, cappedRadius, 2); // Layer 2 = Care_Maintenance_Mines
+      
+      const result: Record<string, any> = {
+        [`australia_care_maintenance_mines_count_${cappedRadius}mi`]: data.length,
+        australia_care_maintenance_mines_detailed: data.map(mine => ({
+          id: mine.objectId,
+          name: mine.mineName || 'Unnamed Mine',
+          status: mine.status,
+          commodity: mine.commodity,
+          state: mine.state,
+          lat: mine.lat,
+          lon: mine.lon,
+          distance_miles: mine.distance_miles,
+          tags: mine.attributes || {}
+        })),
+        australia_care_maintenance_mines_all_pois: data
+      };
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Australia Care/Maintenance Mines:', error);
+      return {
+        [`australia_care_maintenance_mines_count_${radius || 50}mi`]: 0,
+        australia_care_maintenance_mines_detailed: [],
+        australia_care_maintenance_mines_all_pois: []
       };
     }
   }
