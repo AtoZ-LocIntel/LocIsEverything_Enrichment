@@ -485,6 +485,10 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'australia_operating_mines_all_pois' ||
         key === 'australia_developing_mines_all_pois' ||
         key === 'australia_care_maintenance_mines_all_pois' ||
+        key === 'australia_built_up_areas_all' ||
+        key === 'australia_built_up_areas_containing' ||
+        key === 'australia_built_up_areas_nearby_features' ||
+        key === 'australia_npi_facilities_all_pois' ||
         key === 'australia_bushfires_containing' ||
         key === 'australia_bushfires_nearby_features' ||
         // TIGER CBSA skip list - BAS 2025
@@ -11000,6 +11004,69 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           attributesJson,
           '',
           '',
+          attributesJson,
+          'Digital Atlas AUS'
+        ]);
+      });
+    } else if (key === 'australia_npi_facilities_all_pois' && Array.isArray(value)) {
+      // Handle Australia NPI Facilities - each facility gets its own row with all attributes
+      value.forEach((facility: any) => {
+        const name = facility.facilityName || facility.registeredBusinessName || facility.name || 'Unknown Facility';
+        const facilityName = facility.facilityName || '';
+        const registeredBusinessName = facility.registeredBusinessName || '';
+        const primaryAnzsicClassName = facility.primaryAnzsicClassName || '';
+        const mainActivities = facility.mainActivities || '';
+        const state = facility.state || '';
+        const suburb = facility.suburb || '';
+        const streetAddress = facility.streetAddress || '';
+        const postcode = facility.postcode || '';
+        const latestReportYear = facility.latestReportYear || '';
+        const distance = facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...facility };
+        delete allAttributes.facilityName;
+        delete allAttributes.registeredBusinessName;
+        delete allAttributes.name;
+        delete allAttributes.Name;
+        delete allAttributes.primaryAnzsicClassName;
+        delete allAttributes.mainActivities;
+        delete allAttributes.state;
+        delete allAttributes.suburb;
+        delete allAttributes.streetAddress;
+        delete allAttributes.postcode;
+        delete allAttributes.latestReportYear;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Digital Atlas AUS',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_NPI_FACILITY',
+          name,
+          (facility.latitude || facility.lat || location.lat).toString(),
+          (facility.longitude || facility.lon || location.lon).toString(),
+          distance,
+          facilityName,
+          registeredBusinessName,
+          primaryAnzsicClassName,
+          mainActivities,
+          state,
+          suburb,
+          streetAddress,
+          postcode,
+          latestReportYear,
           attributesJson,
           'Digital Atlas AUS'
         ]);

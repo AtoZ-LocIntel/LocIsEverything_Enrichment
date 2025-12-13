@@ -5,6 +5,15 @@ interface DataSourcesViewProps {
   onBackToMain: () => void;
 }
 
+interface DataSource {
+  name: string;
+  description: string;
+  coverage: string;
+  accuracy: string;
+  cost: string;
+  url?: string;
+}
+
 const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
   const dataSources = [
     {
@@ -15,28 +24,32 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Open-source geocoding service providing worldwide address and location data",
           coverage: "Global",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nominatim.openstreetmap.org/"
         },
         {
           name: "US Census Bureau Geocoding",
           description: "Official US address validation and geocoding with high precision",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://geocoding.geo.census.gov/geocoder/"
         },
         {
           name: "GeoNames",
           description: "Geographic database covering all countries with administrative divisions",
           coverage: "Global",
           accuracy: "High",
-          cost: "Free (with limits)"
+          cost: "Free (with limits)",
+          url: "https://www.geonames.org/"
         },
         {
           name: "Postcodes.io",
           description: "UK postcode lookup service with detailed geographic information",
           coverage: "United Kingdom",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://postcodes.io/"
         }
       ]
     },
@@ -48,35 +61,40 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Global elevation data with high precision, converted to feet for US users",
           coverage: "Global",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://api.open-meteo.com/v1/elevation"
         },
         {
           name: "Open-Meteo Weather API",
           description: "Current weather conditions, forecasts, and historical weather data",
           coverage: "Global",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://api.open-meteo.com/"
         },
         {
           name: "Air Quality Index (AQI)",
           description: "Real-time air quality measurements and pollution levels",
           coverage: "Global",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://api.waqi.info/"
         },
         {
           name: "National Weather Service Alerts",
           description: "Active weather alerts, warnings, and advisories",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://api.weather.gov/alerts"
         },
         {
           name: "EPA Walkability Index",
           description: "Neighborhood walkability scores based on street connectivity, population density, and land use mix",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://edg.epa.gov/EPADataCommons/public/OA/EPA_SmartLocationDatabase_V3_Jan_2021_Final.csv"
         }
       ]
     },
@@ -88,14 +106,16 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Population, income, age demographics, and FIPS codes",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.census.gov/data/developers/data-sets.html"
         },
         {
           name: "American Community Survey",
           description: "Detailed demographic and economic characteristics",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.census.gov/data/developers/data-sets/acs-5year.html"
         }
       ]
     },
@@ -107,35 +127,40 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Community-contributed points of interest including businesses, amenities, and landmarks",
           coverage: "Global",
           accuracy: "Variable",
-          cost: "Free"
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
         },
         {
           name: "USDA Local Food Portal",
           description: "Farmers markets, CSA programs, agritourism, food hubs, and on-farm markets",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://data.nal.usda.gov/dataset/local-food-directories"
         },
         {
           name: "OpenChargeMap API",
           description: "Electric vehicle charging stations and infrastructure",
           coverage: "Global",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://openchargemap.org/site/develop/api"
         },
         {
           name: "USGS Trail and National Map",
           description: "Hiking trailheads, trails, and outdoor recreation data",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://apps.nationalmap.gov/services/"
         },
         {
           name: "Wikipedia API",
           description: "Haunted sites, historic oddities, museums, and quirky landmarks",
           coverage: "Global",
           accuracy: "Variable",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.mediawiki.org/wiki/API:Main_page"
         }
       ]
     },
@@ -147,84 +172,96 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Wildland Fire Interagency Geospatial Services - current wildfire incidents, perimeters, and containment status",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Current_Wildland_Fire_Locations/FeatureServer"
         },
         {
           name: "USDA Wildfire Hazard Potential",
           description: "USDA Forest Service - Composite wildfire risk index (1-5: Very Low to Very High) with automatic proximity search",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
         },
         {
           name: "USDA Burn Probability",
           description: "USDA Forest Service - Annual probability of wildfire occurrence (0-1 scale) with automatic proximity search",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
         },
         {
           name: "USDA Conditional Flame Length",
           description: "USDA Forest Service - Expected flame length if fire occurs (feet) with automatic proximity search",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
         },
         {
           name: "USDA Risk to Potential Structures",
           description: "USDA Forest Service - Structure exposure risk assessment with automatic proximity search",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
         },
         {
           name: "USDA Housing Unit Risk",
           description: "USDA Forest Service - Housing unit count, density, exposure, impact, and risk assessments",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
         },
         {
           name: "USDA Population Count",
           description: "USDA Forest Service - Population count and density data for wildfire risk assessment",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
         },
         {
           name: "FEMA Flood Zones",
           description: "National Flood Hazard Layer with flood zone classifications",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
         },
         {
           name: "USGS Earthquakes",
           description: "Historical earthquake events and seismic activity",
           coverage: "Global",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://earthquake.usgs.gov/earthquakes/feed/"
         },
         {
           name: "USGS Volcanoes",
           description: "Active and dormant volcano locations and status",
           coverage: "Global",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://volcanoes.usgs.gov/vsc/api/volcanoApi/geojson"
         },
         {
           name: "USGS Wetlands",
           description: "National Wetlands Inventory - wetland types and locations",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.fws.gov/program/national-wetlands-inventory"
         },
         {
           name: "USGS Flood Reference Points",
           description: "Real-time flooding reference points and actively flooding locations",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://waterwatch.usgs.gov/"
         }
       ]
     },
@@ -236,7 +273,8 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Aurora hunting data including curated viewing locations and live solar wind metrics (Bz, speed, density, Kp forecasts)",
           coverage: "High-latitude regions worldwide",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://auroras.live/api-docs/"
         }
       ]
     },
@@ -248,70 +286,80 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "The Location Is Everything Company data - Live API from LocationFriend with collision records for CA, TX, ID, IA, NH, and FARS",
           coverage: "United States (CA, TX, ID, IA, NH)",
           accuracy: "High",
-          cost: "Paid"
+          cost: "Paid",
+          url: "https://locationfriend.com/"
         },
         {
           name: "EPA Superfund Sites",
           description: "Hazardous waste sites including National Priorities List locations",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.epa.gov/superfund/search-superfund-sites-where-you-live"
         },
         {
           name: "EPA Brownfields",
           description: "Assessment, Cleanup and Redevelopment Exchange System sites",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.epa.gov/brownfields"
         },
         {
           name: "EPA TRI Facilities",
           description: "Toxics Release Inventory facilities reporting chemical releases. Includes: All TRI Facilities, TRI Facilities (Tribal Land), Manufacturing Facilities, Metal Mining Facilities, Electric Utility Facilities, Wood Products Facilities, Automotive Manufacturing, PFAS Facilities, Lead Facilities, Dioxins Facilities, Ethylene Oxide Facilities, Carcinogens Facilities, Mercury Facilities, and Federal TRI Facilities",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://geodata.epa.gov/arcgis/rest/services/OCSPP/TRI_NA_WhereYouLive_2023/MapServer"
         },
         {
           name: "EPA Air Facilities",
           description: "Air Facility System - stationary sources of air pollution",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://echo.epa.gov/"
         },
         {
           name: "EPA RCRA Facilities",
           description: "Resource Conservation and Recovery Act - hazardous waste generators, treaters, storers, transporters, and disposers",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://echo.epa.gov/"
         },
         {
           name: "EPA NPDES Permits",
           description: "National Pollutant Discharge Elimination System - permitted wastewater discharge facilities",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://echo.epa.gov/"
         },
         {
           name: "EPA Radiation Facilities",
           description: "RADINFO - facilities dealing with radioactivity or radiation",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.epa.gov/radnet"
         },
         {
           name: "EPA Power Generation",
           description: "EGRID/EIA-860 - power plant and generation facilities",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.epa.gov/egrid"
         },
         {
           name: "EPA Oil Spill Response",
           description: "SPCC/FRP - countermeasure and facility response plan subject facilities",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.epa.gov/oil-spills-prevention-and-preparedness-regulations"
         }
       ]
     },
@@ -323,14 +371,16 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Electric power generation facilities and energy infrastructure",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://data.openei.org/api/views/f9yf-3pn4/rows.geojson"
         },
         {
           name: "OpenStreetMap Infrastructure",
           description: "Electrical substations, powerlines, and cellular communication towers",
           coverage: "Global",
           accuracy: "Variable",
-          cost: "Free"
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
         }
       ]
     },
@@ -342,7 +392,8 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Colleges, universities, gas stations, mail & shipping locations, schools, hospitals, parks, and other community facilities via OSM Overpass API",
           coverage: "Global",
           accuracy: "Variable",
-          cost: "Free"
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
         }
       ]
     },
@@ -354,7 +405,8 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Cinemas, theatres, museums, historic sites, hotels, golf courses, boat ramps, and nightlife venues",
           coverage: "Global",
           accuracy: "Variable",
-          cost: "Free"
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
         }
       ]
     },
@@ -366,35 +418,40 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Beaches, lakes, ponds, rivers, streams, mountains, and peaks",
           coverage: "Global",
           accuracy: "Variable",
-          cost: "Free"
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
         },
         {
           name: "US Fish and Wildlife Service (FWS)",
           description: "Endangered/threatened species, critical habitat, wildlife refuges, wetlands, marine mammals, migratory birds, and fish hatcheries within proximity",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://ecos.fws.gov/ecp/"
         },
         {
           name: "eBird API (Cornell Lab of Ornithology)",
           description: "Birding hotspots, recent species observations, and community-sourced ornithological data",
           coverage: "Global (observer-dependent)",
           accuracy: "Community reported / curated",
-          cost: "Free (API key)"
+          cost: "Free (API key)",
+          url: "https://ebird.org/api/v2/"
         },
         {
           name: "NOAA National Marine Sanctuaries",
           description: "National Marine Sanctuaries - point-in-polygon and proximity queries (up to 25 miles)",
           coverage: "United States (coastal waters)",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://sanctuaries.noaa.gov/"
         },
         {
           name: "ISRIC SoilGrids (via ESRI Living Atlas)",
           description: "World Soils 250m Organic Carbon Density - point-in-pixel queries for soil organic carbon density (kg/m²)",
           coverage: "Global",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.isric.org/explore/soilgrids"
         }
       ]
     },
@@ -406,7 +463,168 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Protected Areas Database - public land boundaries, manager info, access status, and protection levels",
           coverage: "United States",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer"
+        },
+        {
+          name: "BLM National GTLF Public Managed Trails",
+          description: "Bureau of Land Management - National GTLF Public Managed Trails - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_GTLF_Public_Managed_Trails/FeatureServer/2"
+        },
+        {
+          name: "BLM National GTLF Public Motorized Trails",
+          description: "Bureau of Land Management - National GTLF Public Motorized Trails - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_GTLF_Public_Motorized_Trails/FeatureServer/4"
+        },
+        {
+          name: "BLM National GTLF Public Nonmotorized Trails",
+          description: "Bureau of Land Management - National GTLF Public Nonmotorized Trails - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_GTLF_Public_Nonmotorized_Trails/FeatureServer/6"
+        },
+        {
+          name: "BLM National GTLF Limited Public Motorized Roads",
+          description: "Bureau of Land Management - National GTLF Limited Public Motorized Roads - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_GTLF_Limited_Public_Motorized_Roads/FeatureServer/0"
+        },
+        {
+          name: "BLM National GTLF Public Motorized Roads",
+          description: "Bureau of Land Management - National GTLF Public Motorized Roads - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_GTLF_Public_Motorized_Roads/FeatureServer/3"
+        },
+        {
+          name: "BLM National Grazing Pasture Polygons",
+          description: "Bureau of Land Management - National Grazing Pasture Polygons - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Grazing_Pasture_Polygons/FeatureServer/0"
+        },
+        {
+          name: "BLM National Areas of Critical Environmental Concern",
+          description: "Bureau of Land Management - National Areas of Critical Environmental Concern - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Areas_of_Critical_Environmental_Concern/FeatureServer/1"
+        },
+        {
+          name: "BLM National Sheep and Goat Billed Grazing Allotments",
+          description: "Bureau of Land Management - National Sheep and Goat Billed Grazing Allotments - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Sheep_and_Goat_Billed_Grazing_Allotments/FeatureServer/3"
+        },
+        {
+          name: "BLM National Sheep and Goat Authorized Grazing Allotments",
+          description: "Bureau of Land Management - National Sheep and Goat Authorized Grazing Allotments - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Sheep_and_Goat_Authorized_Grazing_Allotments/FeatureServer/2"
+        },
+        {
+          name: "BLM National NLCS National Monuments and National Conservation Areas",
+          description: "Bureau of Land Management - National NLCS National Monuments and National Conservation Areas - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_NLCS_National_Monuments_National_Conservation_Areas_Polygons/FeatureServer/0"
+        },
+        {
+          name: "BLM National Wild Horse and Burro Herd Areas",
+          description: "Bureau of Land Management - National Wild Horse and Burro Herd Areas - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Wild_Horse_and_Burro_Heard_Area_Polygons/FeatureServer/4"
+        },
+        {
+          name: "BLM National Recreation Site Polygons",
+          description: "Bureau of Land Management - National Recreation Site Polygons - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Recreation_Site_Polygons/FeatureServer/3"
+        },
+        {
+          name: "BLM National Fire Perimeters",
+          description: "Bureau of Land Management - National Fire Perimeters - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Fire_Perimeters_Polygon/FeatureServer/0"
+        },
+        {
+          name: "BLM National Land and Water Conservation Fund (LWCF) Polygons",
+          description: "Bureau of Land Management - National Land and Water Conservation Fund (LWCF) Polygons - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/KbxwQRRfWyEYLgp4/arcgis/rest/services/BLM_Natl_Land_and_Water_Conservation_Fund_LWCF_Polygons/FeatureServer/2"
+        },
+        {
+          name: "USFS Forest System Boundaries",
+          description: "US Forest Service - Forest System Boundaries - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_ForestSystemBoundaries_01/MapServer/1"
+        },
+        {
+          name: "USFS National Wilderness Areas",
+          description: "US Forest Service - National Wilderness Areas - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_Wilderness_01/MapServer/0"
+        },
+        {
+          name: "USFS National Grassland Units",
+          description: "US Forest Service - National Grassland Units - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_NationalGrassland_01/MapServer/0"
+        },
+        {
+          name: "NPS National Parks",
+          description: "National Parks Service - National Parks boundaries - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0"
+        },
+        {
+          name: "NPS National Register of Historic Places (NRHP) Locations",
+          description: "National Parks Service - National Register of Historic Places locations - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://mapservices.nps.gov/arcgis/rest/services/cultural_resources/nrhp_locations/MapServer/0"
+        },
+        {
+          name: "National Rivers Inventory (NRI) Rivers",
+          description: "National Parks Service - National Rivers Inventory rivers - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/Nationwide_Rivers_Inventory_Official/FeatureServer/0"
         }
       ]
     },
@@ -418,7 +636,8 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Craft breweries with names, types, addresses, and contact information",
           coverage: "United States",
           accuracy: "High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www.openbrewerydb.org/"
         }
       ]
     },
@@ -430,14 +649,16 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "AT facilities including bridges, campsites, parking, shelters, water sources, and trail features via ArcGIS services",
           coverage: "Appalachian Trail Corridor",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/4ez8hDeiCPBjc5e7/arcgis/rest/services/Appalachian_Trail_Features/FeatureServer"
         },
         {
           name: "Pacific Crest Trail (PCT) Features",
           description: "PCT centerline, sheriff offices, side trails, mile markers, and resupply towns via ArcGIS services",
           coverage: "Pacific Crest Trail Corridor",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services5.arcgis.com/ZldHa25efPFpMmfB/ArcGIS/rest/services/PCT_Centerline/FeatureServer"
         }
       ]
     },
@@ -662,70 +883,80 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Massachusetts Department of Environmental Protection wetland areas - point-in-polygon and proximity queries",
           coverage: "Massachusetts",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/DEP_Wetlands/FeatureServer/1"
         },
         {
           name: "MA Protected and Recreational Open Space",
           description: "Massachusetts protected and recreational open space areas - point-in-polygon and proximity queries",
           coverage: "Massachusetts",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/openspace/FeatureServer/0"
         },
         {
           name: "MA Hiking and Wilderness Trails",
           description: "Massachusetts hiking and wilderness trails - line dataset with proximity queries up to 25 miles",
           coverage: "Massachusetts",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Trails/FeatureServer/0"
         },
         {
           name: "MA NHESP Natural Communities",
           description: "Massachusetts Natural Heritage & Endangered Species Program (NHESP) natural communities - point-in-polygon and proximity queries (0.1, 0.25, 0.5, 0.75, 1.0 miles)",
           coverage: "Massachusetts",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/NHESP_Natural_Communities/FeatureServer/0"
         },
         {
           name: "MA Lakes and Ponds",
           description: "Massachusetts lakes and ponds from MassGIS Hydro_Major FeatureServer - point-in-polygon and proximity queries (0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0 miles)",
           coverage: "Massachusetts",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hydro_Major/FeatureServer/2"
         },
         {
           name: "MA Rivers and Streams",
           description: "Massachusetts rivers and streams from MassGIS Hydro_Major FeatureServer - proximity queries (0.5, 1, 2.5, 5, 10 miles)",
           coverage: "Massachusetts",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hydro_Major/FeatureServer/1"
         },
         {
           name: "MA Regional Planning Agencies",
           description: "Massachusetts Regional Planning Agencies (RPAs) from MassGIS - point-in-polygon queries",
           coverage: "Massachusetts",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/RPAs/FeatureServer/0"
         },
         {
           name: "MA Areas of Critical Environmental Concern (ACECs)",
           description: "MassGIS - Massachusetts Areas of Critical Environmental Concern (point-in-polygon and proximity queries up to 25 miles)",
           coverage: "Massachusetts",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/ACECs/FeatureServer/0"
         },
         {
           name: "Massachusetts Property Tax Parcels",
           description: "MassGIS Level 3 Assessors' Parcel Mapping data - point-in-polygon and proximity queries (0.3, 0.5, 0.75, 1.0 miles)",
           coverage: "Massachusetts (350 of 351 cities and towns)",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/hGdibHYSPO59RG1h/ArcGIS/rest/services/L3_TAXPAR_POLY_ASSESS_gdb/FeatureServer/0"
         },
         {
           name: "Cape Cod Zoning Map",
           description: "Cape Cod zoning districts and boundaries - point-in-polygon and proximity queries",
           coverage: "Cape Cod, Massachusetts",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis-services.capecodcommission.org/arcgis/rest/services/Reference/Boundaries/MapServer/20"
         }
       ]
     },
@@ -736,6 +967,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           name: "CT Parcels",
           description: "Connecticut State Parcel Layer 2023 - point-in-polygon and proximity queries (0.25, 0.5, 0.75, 1.0 miles)",
           coverage: "Connecticut (169 municipalities)",
+          url: "https://services3.arcgis.com/3FL1kr7L4LvwA2Kb/ArcGIS/rest/services/Connecticut_State_Parcel_Layer_2023/FeatureServer/0",
           accuracy: "Very High",
           cost: "Free"
         },
@@ -744,84 +976,96 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Connecticut 2D building footprints - point-in-polygon and proximity queries (0.25, 0.5, 0.75, 1.0 miles)",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/3FL1kr7L4LvwA2Kb/arcgis/rest/services/2D_Building_Footprints/FeatureServer/0"
         },
         {
           name: "CT Roads and Trails",
           description: "Connecticut roads and trails network - proximity queries up to 5 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Road/FeatureServer/0"
         },
         {
           name: "CT Urgent Care",
           description: "Connecticut urgent care facilities - proximity queries up to 25 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/3FL1kr7L4LvwA2Kb/ArcGIS/rest/services/CTUrgentCare/FeatureServer/26"
         },
         {
           name: "CT DEEP Properties",
           description: "Connecticut Department of Energy and Environmental Protection (DEEP) properties - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0"
         },
         {
           name: "CT Tribal Lands",
           description: "Connecticut Tribal Lands (State and Federally Recognized) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/3FL1kr7L4LvwA2Kb/ArcGIS/rest/services/Connecticut_Tribal_Lands/FeatureServer/0"
         },
         {
           name: "CT Drinking Water Watersheds",
           description: "Connecticut Drinking Water Watersheds - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/3FL1kr7L4LvwA2Kb/ArcGIS/rest/services/Drinking_Water_Watersheds/FeatureServer/0"
         },
         {
           name: "CT 2025 Broadband Availability by Block",
           description: "Connecticut 2025 Broadband Availability by Census Block - point-in-polygon and proximity queries up to 5 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/3FL1kr7L4LvwA2Kb/ArcGIS/rest/services/2025_Broadband_Availability_WFL1/FeatureServer/0"
         },
         {
           name: "CT Water Pollution Control Facilities",
           description: "Connecticut Water Pollution Control Facilities - proximity queries up to 25 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/WATER_POLLUTION_CONTROL_FACILITIES/FeatureServer/0"
         },
         {
           name: "CT Boat Launches",
           description: "Connecticut DEEP Boat Launches - proximity queries up to 25 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Boat_Launches/FeatureServer/0"
         },
         {
           name: "CT Federal Open Space",
           description: "Connecticut Federal Open Space - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Federal_Open_Space/FeatureServer/0"
         },
         {
           name: "CT HUC Watershed Boundaries",
           description: "Connecticut HUC (Hydrologic Unit Code) Watershed Boundaries - point-in-polygon queries",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Watershed_Boundary_Dataset/FeatureServer/2"
         },
         {
           name: "CT Soils Parent Material Name",
           description: "Connecticut Soils Parent Material Name (SSURGO) - point-in-polygon queries",
           coverage: "Connecticut",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Soils_Parent_Material_Name/FeatureServer/1"
         }
       ]
     },
@@ -833,287 +1077,328 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "California Power Outage Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services.arcgis.com/BLN4oKB0N1YSgvY8/arcgis/rest/services/Power_Outages_(View)/FeatureServer/1"
         },
         {
           name: "CA Fire Perimeters (All)",
           description: "California Historic Fire Perimeters (all historical fires) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/California_Historic_Fire_Perimeters/FeatureServer/0"
         },
         {
           name: "CA Recent Large Fire Perimeters",
           description: "California Recent Large Fire Perimeters (GT 5000 acres) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/California_Historic_Fire_Perimeters/FeatureServer/1"
         },
         {
           name: "CA Fire Perimeters (1950+)",
           description: "California Fire Perimeters (1950+) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/California_Historic_Fire_Perimeters/FeatureServer/2"
         },
         {
           name: "CA Land Ownership",
           description: "California Land Ownership (CAL FIRE FRAP) - point-in-polygon queries",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://egis.fire.ca.gov/arcgis/rest/services/FRAP/ownership/FeatureServer/0"
         },
         {
           name: "CA Wildland Fire Direct Protection Areas",
           description: "California Wildland Fire Direct Protection Areas (USFS) - point-in-polygon queries",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/T4QMspbfLg3qTGWY/ArcGIS/rest/services/CA_WF_Direct_Protection_Areas_Public/FeatureServer/0"
         },
         {
           name: "CA CalVTP Treatment Areas",
           description: "California CalVTP Treatment Areas (CAL FIRE) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/CalVTP_treatement_areas_public_view/FeatureServer/0"
         },
         {
           name: "CA State Parks Entry Points",
           description: "California State Parks Entry Points - proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/AhxrK3F6WM8ECvDi/arcgis/rest/services/ParkEntryPoints/FeatureServer/2"
         },
         {
           name: "CA State Parks Parking Lots",
           description: "California State Parks Parking Lots - proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/AhxrK3F6WM8ECvDi/arcgis/rest/services/ParkingPoints/FeatureServer/0"
         },
         {
           name: "CA State Parks Boundaries",
           description: "California State Parks Boundaries - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/AhxrK3F6WM8ECvDi/arcgis/rest/services/ParkBoundaries/FeatureServer/0"
         },
         {
           name: "CA State Parks Campgrounds",
           description: "California State Parks Campgrounds - proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/AhxrK3F6WM8ECvDi/arcgis/rest/services/Campgrounds/FeatureServer/0"
         },
         {
           name: "CA Condor Range",
           description: "California Condor Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/Uq9r85Potqm3MfRV/arcgis/rest/services/biosds916_fpu/FeatureServer/0"
         },
         {
           name: "CA Black Bear Range",
           description: "California Black Bear Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/Uq9r85Potqm3MfRV/arcgis/rest/services/biosds792_fpu/FeatureServer/0"
         },
         {
           name: "CA Brush Rabbit Range",
           description: "California Brush Rabbit Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/Uq9r85Potqm3MfRV/arcgis/rest/services/biosds1839_fpu/FeatureServer/0"
         },
         {
           name: "CA Great Gray Owl Range",
           description: "California Great Gray Owl Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/Uq9r85Potqm3MfRV/arcgis/rest/services/biosds898_fpu/FeatureServer/0"
         },
         {
           name: "CA Sandhill Crane Range",
           description: "California Sandhill Crane Range (CDFW BIOS) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/Uq9r85Potqm3MfRV/arcgis/rest/services/biosds1459_fpu/FeatureServer/0"
         },
         {
           name: "CA Highway Rest Areas",
           description: "California Highway Rest Areas (Caltrans GIS) - proximity queries up to 50 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/Rest_Areas/FeatureServer/0"
         },
         {
           name: "CA CGS Landslide Zones",
           description: "California Geological Survey (CGS) Landslide Zones - point-in-polygon and proximity queries up to 10 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Landslide_Zones/FeatureServer/0"
         },
         {
           name: "CA CGS Liquefaction Zones",
           description: "California Geological Survey (CGS) Liquefaction Zones - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/zr3KAIbsRSUyARHG/arcgis/rest/services/CGS_Liquefaction_Zones/FeatureServer/0"
         },
         {
           name: "CA State Parks Recreational Routes",
           description: "California State Parks Recreational Routes - proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/AhxrK3F6WM8ECvDi/arcgis/rest/services/RecreationalRoutes/FeatureServer/0"
         },
         {
           name: "CA Marine Oil Terminals",
           description: "California Marine Oil Terminals - proximity queries up to 50 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/5aaQCuq3e4GRvkFG/arcgis/rest/services/Marine_Oil_Terminals/FeatureServer/0"
         },
         {
           name: "CA Post-Fire Damage Inspections (DINS)",
           description: "CAL FIRE Damage Inspection Program (DINS) database of structures damaged and destroyed by wildland fire since 2013 - proximity queries up to 50 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/POSTFIRE_MASTER_DATA_SHARE/FeatureServer/0"
         },
         {
           name: "CA Medium and Heavy Duty Infrastructure",
           description: "Location of publicly accessible medium- and heavy-duty (MDHD) hydrogen refueling and charging stations - proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/bWPjFyq029ChCGur/arcgis/rest/services/MDHD_Dashboard_ArcGIS_Updated_Nov/FeatureServer/0"
         },
         {
           name: "CA Facilities for Wildland Fire Protection",
           description: "California State and Local Facilities for Wildland Fire Protection - proximity queries up to 50 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://egis.fire.ca.gov/arcgis/rest/services/FRAP/Facilities/FeatureServer/0"
         },
         {
           name: "CA Solar Footprints",
           description: "Solar footprint feature class combining existing datasets with imagery interpretation to create footprints of medium to large scale solar facilities - proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/bWPjFyq029ChCGur/arcgis/rest/services/Solar_Footprints_V2/FeatureServer/0"
         },
         {
           name: "CA Natural Gas Service Areas",
           description: "California Natural Gas Service Areas - point-in-polygon queries",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services3.arcgis.com/bWPjFyq029ChCGur/arcgis/rest/services/Natural_Gas_Service_Area/FeatureServer/0"
         },
         {
           name: "CA Public Land Survey Sections",
           description: "California Public Land Survey Sections (PLSS) - point-in-polygon queries to identify Township and Range values",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.conservation.ca.gov/server/rest/services/Base/Base_PLSS/MapServer/1"
         },
         {
           name: "CA Geothermal Wells",
           description: "California Geothermal Wells (WellSTAR) - proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.conservation.ca.gov/server/rest/services/WellSTAR/Wells/MapServer/1"
         },
         {
           name: "CA Oil and Gas Wells",
           description: "California Oil and Gas Wells (WellSTAR) - proximity queries up to 25 miles",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.conservation.ca.gov/server/rest/services/WellSTAR/Wells/MapServer/0"
         },
         {
           name: "CA Eco Regions",
           description: "USDA Ecoregion Sections for California - point-in-polygon queries",
           coverage: "California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/USDA_Ecoregion_Sections_07_3__California/FeatureServer/0"
         },
         {
           name: "City of Los Angeles Zoning Polygons",
           description: "City of Los Angeles Zoning Polygons - point-in-polygon and proximity queries up to 1 mile",
           coverage: "Los Angeles, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/12"
         },
         {
           name: "LA County Street Inventory",
           description: "StreetsLA GeoHub Street Inventory - proximity queries up to 5 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/22"
         },
         {
           name: "LA County Points of Interest",
           description: "Los Angeles County Points of Interest including Arts and Recreation, Education, Hospitals, Municipal Services, Physical Features, Public Safety, and Transportation - proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/27"
         },
         {
           name: "LA County Historic Cultural Monuments",
           description: "Los Angeles County Historic Cultural Monuments - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/26"
         },
         {
           name: "LA County Housing with Potential Lead Risk",
           description: "Los Angeles County Housing with Potential Lead Risk - point-in-polygon and proximity queries up to 5 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/25"
         },
         {
           name: "LA County School District Boundaries",
           description: "Los Angeles County School District Boundaries - point-in-polygon queries",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/24"
         },
         {
           name: "LA County MTA Metro Lines",
           description: "Los Angeles County Metropolitan Transportation Authority (MTA) Metro Lines - proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/23"
         },
         {
           name: "LA County Hazards",
           description: "Los Angeles County Hazards including Fire Hazards, Fire Hazard Responsibility Areas, Fire Hazard Severity Zones, Earthquake Hazards, Alquist-Priolo Fault Traces and Zones, USGS Faults, Tsunami Inundation Zones, Landslide Zones, Liquefaction Zones, Flood Hazards, 100-Year and 500-Year Flood Plains, and Dam Inundation Areas - point-in-polygon and proximity queries",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/20"
         },
         {
           name: "LA County Basemaps and Grids",
           description: "Los Angeles County Basemaps and Grids including US National Grid (USNG) at various scales and Township Range Section Rancho Boundaries - point-in-polygon queries",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/21"
         },
         {
           name: "LA County Hydrology",
           description: "Los Angeles County Hydrology data including Lakes, Streams, Watershed Boundaries, and comprehensive Storm Drain Network components (Inlets/Outlets, Maintenance Holes, Basins, Catch Basins, Low Flow Diversions, Pump Stations, Channels, Drains, Laterals, Culverts, Permitted Connections, Force Mains, Natural Drainage) - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/19"
         },
         {
           name: "LA County Infrastructure",
           description: "Los Angeles County Infrastructure including County Facilities, County-owned Buildings, County-owned Parcels, Government-owned Parcels, and Schools - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/18"
         },
         {
           name: "LA County Fire Hydrants",
@@ -1128,49 +1413,56 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Los Angeles County Administrative Boundaries including ISD Facilities Operations Service Maintenance Districts, School District Boundaries, Park Planning Areas, DCFS Office Boundaries, Health Districts, Service Planning Areas, Disaster Management Areas, Zipcodes, Regional Centers, Public Safety, Reporting Districts, Station Boundaries, Fire Station Boundaries, PSAP Boundaries, Library, Planning Areas, Service Areas, State Enterprise Zones, and Animal Care and Control Service Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/17"
         },
         {
           name: "LA County Elevation",
           description: "Los Angeles County Elevation data including Contours at various scales (LARIAC Contours 1000FT, 250FT, 50FT, 10FT, 2FT, 1FT), Elevation Points, Elevation Data (Raster), LARIAC Hillshade, Digital Elevation Model (DEM), and Digital Surface Model (DSM) - proximity queries for queryable layers, raster visualization for raster layers",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/16"
         },
         {
           name: "LA County Demographics",
           description: "Los Angeles County Demographics including Census data from 1990, 2000, 2010, and 2020, as well as 2018 Estimates - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/15"
         },
         {
           name: "LA County LMS Data",
           description: "Los Angeles County Location Management System (LMS) Data - comprehensive dataset of 193 layers covering various points of interest, facilities, and infrastructure - proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer"
         },
         {
           name: "LA County Political Boundaries",
           description: "Los Angeles County Political Boundaries including Districts (2021, 2011, 2001, 1971-1991), Supervisorial Districts, Congressional Districts, State Assembly Districts, State Senate Districts, Board of Equalization, LA City Council Districts, School Districts, Registrar Recorder Precincts, Election Precincts, City and County Boundaries, Community Boundaries, and City Annexations - point-in-polygon queries",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/13"
         },
         {
           name: "LA County Redistricting Data (2011)",
           description: "Los Angeles County Redistricting Data from 2011 including Redistricting Geography, Communities, Home and Income Information, Housing Data, Income Data, Population Density, Voter Registration Data, Citizen Voting Age Population, Demographic Data, and Language data - point-in-polygon and proximity queries up to 5 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/12"
         },
         {
           name: "LA County Transportation",
           description: "Los Angeles County Transportation data including Transportation, Milepost Markers, Rail Transportation, Freeways, Disaster Routes, Highway Shields, Metro Park and Ride, Metro Stations, Metrolink Stations, Metrolink Lines, Metro Lines, and Railroads - proximity queries up to 25 miles",
           coverage: "Los Angeles County, California",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/LACounty_Dynamic/LMS_Data_Public_2014/MapServer/11"
         }
       ]
     },
@@ -1227,7 +1519,8 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "NYC parcel-level precision geocoding for New York City addresses",
           coverage: "New York City, New York",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page"
         },
         {
           name: "NYC MapPLUTO Tax Lots",
@@ -1309,6 +1602,9 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         {
           name: "HoustonCO Neighborhoods",
           description: "HoustonCO Neighborhoods from City of Houston - point-in-polygon and proximity queries up to 10 miles",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
           url: "https://services.arcgis.com/NummVBqZSIJKUeVR/ArcGIS/rest/services/CoHoustonNeighborhoods/FeatureServer/0"
         },
         {
@@ -1341,7 +1637,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Houston, Texas",
           accuracy: "High",
           cost: "Free",
-          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_OLC_GRIDS/FeatureServer"
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_OLC_GRIDS/FeatureServer/0"
         },
         {
           name: "Houston Fire Stations",
@@ -1358,6 +1654,54 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Tax_Incentive_Reinvestment_Zones_view/FeatureServer/5"
+        },
+        {
+          name: "Houston Metro Bus Routes",
+          description: "Houston METRO Bus Routes from City of Houston - proximity queries up to 25 miles",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_METRO_Bus_Routes_view/FeatureServer/29"
+        },
+        {
+          name: "Houston Metro Park and Ride",
+          description: "Houston METRO Park and Ride locations from City of Houston - proximity queries up to 25 miles",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_METRO_Park_and_Ride_Locations_view/FeatureServer/9"
+        },
+        {
+          name: "Houston Metro Transit Centers",
+          description: "Houston METRO Transit Centers from City of Houston - proximity queries up to 25 miles",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Metro_Transit_Centers_view/FeatureServer/7"
+        },
+        {
+          name: "Houston Metro Rail Stations",
+          description: "Houston METRO Rail Stations (current) from City of Houston - proximity queries up to 25 miles",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Metro_Rail_Stations_(current)_view/FeatureServer/13"
+        },
+        {
+          name: "Houston Bikeways",
+          description: "Houston Bikeways (Existing) from City of Houston - proximity queries up to 25 miles",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Bikeways_Existing_LC_view/FeatureServer/28"
+        },
+        {
+          name: "Houston Airports",
+          description: "Houston Airports from City of Houston - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Airports_view/FeatureServer/18"
         }
       ]
     },
@@ -1369,203 +1713,232 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Soil Survey Geographic (SSURGO) database for New Hampshire - point-in-polygon queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GG_SSURGO_Soils/FeatureServer/0"
         },
         {
           name: "NH Bedrock Geology - Formations",
           description: "New Hampshire bedrock geology formations - point-in-polygon queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GG_BedrockGeology/FeatureServer/1"
         },
         {
           name: "NH Geographic Names Information System (Places of Interest)",
           description: "New Hampshire geographic names and places of interest - proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GV_BaseLayers/FeatureServer/0"
         },
         {
           name: "NH House of Representatives Districts",
           description: "New Hampshire House of Representatives district boundaries for 2022 - point-in-polygon queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/APB_ElectoralDistricts/FeatureServer/8"
         },
         {
           name: "NH Voting Wards",
           description: "New Hampshire political districts and voting wards - point-in-polygon queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/APB_ElectoralDistricts/FeatureServer/5"
         },
         {
           name: "NH Senate Districts",
           description: "New Hampshire Senate district boundaries for 2022 - point-in-polygon queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/APB_ElectoralDistricts/FeatureServer/10"
         },
         {
           name: "NH Parcels",
           description: "New Hampshire parcel mosaics with proximity queries (0.25, 0.50, 0.75, 1.0 miles) - identifies containing parcel and nearby parcels",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CAD_ParcelMosaic/FeatureServer/1"
         },
         {
           name: "NH Key Destinations",
           description: "New Hampshire key destination points - proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_OpenData_MiscVectorData/FeatureServer/3"
         },
         {
           name: "NH Nursing Homes",
           description: "New Hampshire nursing homes and long-term care facilities - proximity queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_HSIP_ServiceFacilities/FeatureServer/5"
         },
         {
           name: "NH Emergency Medical Services",
           description: "New Hampshire EMS facilities and emergency medical services - proximity queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_HSIP_ServiceFacilities/FeatureServer/1"
         },
         {
           name: "NH Fire Stations",
           description: "New Hampshire fire stations and fire department facilities - proximity queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_HSIP_ServiceFacilities/FeatureServer/2"
         },
         {
           name: "NH Places of Worship",
           description: "New Hampshire places of worship including churches, synagogues, mosques, and other religious facilities - proximity queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_HSIP_ServiceFacilities/FeatureServer/6"
         },
         {
           name: "NH Hospitals",
           description: "New Hampshire hospitals and medical facilities - proximity queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_HSIP_ServiceFacilities/FeatureServer/3"
         },
         {
           name: "NH Access Sites to Public Waters",
           description: "New Hampshire public access sites to lakes, rivers, and other water bodies - proximity queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_RecreationResources/FeatureServer/0"
         },
         {
           name: "NH Law Enforcement",
           description: "New Hampshire police departments, sheriff offices, and law enforcement facilities - proximity queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_HSIP_ServiceFacilities/FeatureServer/4"
         },
         {
           name: "NH Recreation Trails",
           description: "New Hampshire recreation trails and hiking paths - line dataset with proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/CSD_RecreationResources/FeatureServer/2"
         },
         {
           name: "NH DOT Roads",
           description: "New Hampshire Department of Transportation road network - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GV_BaseLayers/FeatureServer/18"
         },
         {
           name: "NH Railroads",
           description: "New Hampshire railroad network including active and abandoned lines - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GV_BaseLayers/FeatureServer/11"
         },
         {
           name: "NH Transmission/Pipelines",
           description: "New Hampshire transmission lines and pipelines - line dataset with proximity queries (0.5, 1, 2.5, 5, 10 miles)",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GV_BaseLayers/FeatureServer/17"
         },
         {
           name: "NH Personal Wireless Service Facilities",
           description: "New Hampshire cell towers and wireless communication facilities - proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GV_BaseLayers/FeatureServer/1"
         },
         {
           name: "NH Stone Walls",
           description: "New Hampshire stone walls - line dataset with proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services9.arcgis.com/wnvDDrXX8EouLkZP/arcgis/rest/services/NH_Stone_Wall_Layer_Public_View/FeatureServer/0"
         },
         {
           name: "NH Underground Storage Tank Sites",
           description: "New Hampshire underground storage tank sites from the Department of Environmental Services - proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.des.nh.gov/server/rest/services/Core_GIS_Datasets/DES_Data_Public/MapServer/13"
         },
         {
           name: "NH Water Well Inventory",
           description: "New Hampshire water well inventory from the Department of Environmental Services - proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.des.nh.gov/server/rest/services/Core_GIS_Datasets/DES_Data_Secure/MapServer/6"
         },
         {
           name: "NH Public Water Supply Wells",
           description: "New Hampshire public water supply wells from the Department of Environmental Services - proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.des.nh.gov/server/rest/services/Core_GIS_Datasets/DES_Data_Secure/MapServer/2"
         },
         {
           name: "NH Remediation Sites",
           description: "New Hampshire remediation sites from the Department of Environmental Services - proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.des.nh.gov/server/rest/services/Core_GIS_Datasets/DES_Data_Public/MapServer/11"
         },
         {
           name: "NH Automobile Salvage Yards",
           description: "New Hampshire automobile salvage yards from the Department of Environmental Services - proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.des.nh.gov/server/rest/services/Core_GIS_Datasets/DES_Data_Public/MapServer/3"
         },
         {
           name: "NH Solid Waste Facilities",
           description: "New Hampshire solid waste facilities from the Department of Environmental Services - proximity queries up to 25 miles",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.des.nh.gov/server/rest/services/Core_GIS_Datasets/DES_Data_Public/MapServer/12"
         },
         {
           name: "NH Source Water Protection Areas",
           description: "New Hampshire source water protection areas from the Department of Environmental Services - point-in-polygon queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://gis.des.nh.gov/server/rest/services/Core_GIS_Datasets/DES_Data_Secure/MapServer/4"
         },
         {
           name: "NH National Wetland Inventory (NWI) Plus",
           description: "New Hampshire National Wetland Inventory Plus from the Department of Environmental Services - point-in-polygon queries",
           coverage: "New Hampshire",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GG_NWI_Plus/FeatureServer/0"
         }
       ]
     },
@@ -1577,76 +1950,88 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "New Jersey Tax Parcels from NJGIN - point-in-polygon and proximity queries (0.25, 0.50, 0.75, 1.0 miles)",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/arcgis/rest/services/Parcels_Composite_NJ_WM/FeatureServer/0"
         },
         {
           name: "NJ Address Points",
           description: "New Jersey Address Points from NJGIN - comprehensive statewide NG9-1-1 database meeting NENA 2018 NG9-1-1 GIS Data Standard - proximity queries up to 5 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/ArcGIS/rest/services/AddressPoints/FeatureServer/3"
         },
         {
           name: "NJ Bus Stops",
           description: "New Jersey Transit Bus Stops from NJGIN - single point bus stops for NJ Transit routes - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services6.arcgis.com/M0t0HPE53pFK525U/arcgis/rest/services/Single_Point_Bus_Stops_of_NJ_Transit/FeatureServer/0"
         },
         {
           name: "NJ Safety Service Patrol",
           description: "New Jersey Department of Transportation Safety Service Patrol routes from NJGIN - highway patrol coverage areas - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services.arcgis.com/HggmsDF7UJsNN1FK/arcgis/rest/services/Safety_Service_Patrol/FeatureServer/0"
         },
         {
           name: "NJ Service Areas",
           description: "New Jersey Service Areas from NJGIN - highway service areas and rest stops - proximity queries up to 50 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services.arcgis.com/HggmsDF7UJsNN1FK/arcgis/rest/services/NJServiceArea/FeatureServer/0"
         },
         {
           name: "NJ Roadway Network",
           description: "New Jersey Department of Transportation Roadway Network from NJGIN - comprehensive road network including highways, routes, and ramps - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services.arcgis.com/HggmsDF7UJsNN1FK/arcgis/rest/services/NJDOT_Roadway_Network/FeatureServer/0"
         },
         {
           name: "NJ Known Contaminated Sites",
           description: "New Jersey Department of Environmental Protection (NJDEP) Known Contaminated Sites from Environmental NJEMS - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://mapsdep.nj.gov/arcgis/rest/services/Features/Environmental_NJEMS/MapServer/0"
         },
         {
           name: "NJ Alternative Fueled Vehicle Fueling Stations",
           description: "New Jersey Department of Environmental Protection (NJDEP) Alternative Fueled Vehicle Fueling Stations from Structures MapServer - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://mapsdep.nj.gov/arcgis/rest/services/Features/Structures/MapServer/1"
         },
         {
           name: "NJ Power Plants",
           description: "New Jersey Department of Environmental Protection (NJDEP) Power Plants from Utilities MapServer - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://mapsdep.nj.gov/arcgis/rest/services/Features/Utilities/MapServer/20"
         },
         {
           name: "NJ Public Solar Facilities",
           description: "New Jersey Department of Environmental Protection (NJDEP) Solar PV at Public Facilities from Utilities MapServer - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
+          cost: "Free",
+          url: "https://mapsdep.nj.gov/arcgis/rest/services/Features/Utilities/MapServer/17"
         },
         {
           name: "NJ Public Places to Keep Cool",
           description: "New Jersey Department of Environmental Protection (NJDEP) Public Places to Keep Cool from FeatureServer - proximity queries up to 25 miles",
           coverage: "New Jersey",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://services1.arcgis.com/QWdNfRs7lkPq4g4Q/arcgis/rest/services/Public_Places_to_Keep_Cool_in_New_Jersey/FeatureServer/0"
         }
       ]
     },
@@ -1658,294 +2043,336 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Delaware State Forest lands managed by the Delaware Forest Service - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Biota/DE_Forestry/FeatureServer/0"
         },
         {
           name: "DE Pine Plantations",
           description: "Locations of Pine Plantations in Delaware - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Biota/DE_Forestry/FeatureServer/1"
         },
         {
           name: "DE Urban Tree Canopy Estimates",
           description: "Urban Tree Canopy calculations for Delaware municipalities, communities, and parks - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Biota/DE_Forestry/FeatureServer/2"
         },
         {
           name: "DE Forest Cover 2007",
           description: "2007 Aerial imagery based forest cover for Delaware - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Biota/DE_Forestry/FeatureServer/3"
         },
         {
           name: "DE No Build Points - Bay",
           description: "No Build Points along Delaware Bay coast - proximity queries up to 25 miles",
           coverage: "Delaware Bay Coast",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/0"
         },
         {
           name: "DE No Build Line - Bay",
           description: "No Build Line along Delaware Bay coast - proximity queries up to 25 miles",
           coverage: "Delaware Bay Coast",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/1"
         },
         {
           name: "DE No Build Points - Ocean",
           description: "No Build Points along Delaware Ocean coast - proximity queries up to 25 miles",
           coverage: "Delaware Ocean Coast",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/2"
         },
         {
           name: "DE No Build Line - Ocean",
           description: "No Build Line along Delaware Ocean coast - proximity queries up to 25 miles",
           coverage: "Delaware Ocean Coast",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/3"
         },
         {
           name: "DE Park Facilities",
           description: "Outdoor recreational facilities throughout Delaware - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/4"
         },
         {
           name: "DE Natural Areas",
           description: "Natural Areas Inventory boundaries for voluntary land protection - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/5"
         },
         {
           name: "DE Outdoor Recreation, Parks and Trails Program Lands",
           description: "Lands where Delaware Outdoor Recreation, Parks and Trails Program monies have been invested - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/6"
         },
         {
           name: "DE Land and Water Conservation Fund",
           description: "Lands protected under the Land and Water Conservation Fund - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/7"
         },
         {
           name: "DE Nature Preserves",
           description: "Lands preserved under the Delaware Nature Preserves Program - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/8"
         },
         {
           name: "DE Outdoor Recreation Areas",
           description: "Outdoor Recreation Inventory (ORI) - publicly and privately owned protected lands - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/9"
         },
         {
           name: "DE Outdoor Recreation, Parks and Trails Program Open Space",
           description: "Land protected in perpetuity under the Outdoor Recreation, Parks and Trails Program - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/10"
         },
         {
           name: "DE Public Protected Lands",
           description: "Lands that are publicly owned and open to public access - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/11"
         },
         {
           name: "DE Conservation Easements",
           description: "Conservation Easements held by Delaware State Parks and other agencies/NGOs - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/12"
         },
         {
           name: "DE Trails and Pathways",
           description: "Recreational trails and pathways throughout Delaware - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/13"
         },
         {
           name: "DE Seasonal Restricted Areas",
           description: "Portions of Delaware State Parks closed to public access during different seasons - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/14"
         },
         {
           name: "DE Permanent Restricted Areas",
           description: "Portions of Delaware State Parks closed to public access all year long - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/15"
         },
         {
           name: "DE Wildlife Area Boundaries",
           description: "Wildlife Area locations within the State of Delaware - point-in-polygon and proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Environmental/DE_Protected_Natural_Resources/FeatureServer/17"
         },
         {
           name: "DE State Parcels",
           description: "Delaware state parcels with ownership information - point-in-polygon and proximity queries up to 1 mile",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/PlanningCadastre/DE_StateParcels/FeatureServer/0"
         },
         {
           name: "DE Land Use Land Cover 2007",
           description: "2007 Land Use Land Cover for Delaware based on Delaware Modified Anderson System - point-in-polygon queries",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/PlanningCadastre/DE_LULC/FeatureServer/0"
         },
         {
           name: "DE Land Use Land Cover 2007 (Revised)",
           description: "Revised 2007 Land Use Land Cover for Delaware - point-in-polygon queries",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/PlanningCadastre/DE_LULC/FeatureServer/1"
         },
         {
           name: "DE Land Use Land Cover 2012",
           description: "2012 Land Use Land Cover for Delaware - point-in-polygon queries",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/PlanningCadastre/DE_LULC/FeatureServer/2"
         },
         {
           name: "DE Land Use Land Cover 2017",
           description: "2017 Land Use Land Cover for Delaware - point-in-polygon queries",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/PlanningCadastre/DE_LULC/FeatureServer/3"
         },
         {
           name: "DE Land Use Land Cover 2022",
           description: "2022 Land Use Land Cover for Delaware - point-in-polygon queries",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/PlanningCadastre/DE_LULC/FeatureServer/4"
         },
         {
           name: "DE Child Care Centers",
           description: "Delaware Child Care Centers - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_ChildCareCenters/FeatureServer/0"
         },
         {
           name: "DE Fishing Access",
           description: "Delaware Fishing Access locations (boat docks, ramps, piers, shoreline fishing) - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Fishing_Access/FeatureServer/0"
         },
         {
           name: "DE Trout Streams",
           description: "Delaware Trout Streams in New Castle County - proximity queries up to 25 miles",
           coverage: "New Castle County, Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Fishing_Access/FeatureServer/1"
         },
         {
           name: "DE Public Schools",
           description: "Delaware Public Schools - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Schools/FeatureServer/0"
         },
         {
           name: "DE Private Schools",
           description: "Delaware Private Schools - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Schools/FeatureServer/1"
         },
         {
           name: "DE VoTech School Districts",
           description: "Delaware VoTech School Districts - point-in-polygon queries",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Schools/FeatureServer/2"
         },
         {
           name: "DE School Districts",
           description: "Delaware Public School Districts - point-in-polygon queries",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Schools/FeatureServer/3"
         },
         {
           name: "DE Wildlife Areas Stands Blinds and Fields",
           description: "Wildlife Area Stands, Blinds, and Fields - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Wildlife/FeatureServer/0"
         },
         {
           name: "DE Wildlife Areas Boat Ramps",
           description: "Wildlife Area Boat Ramps - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Wildlife/FeatureServer/1"
         },
         {
           name: "DE Wildlife Areas Facilities",
           description: "Wildlife Area Facilities - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Wildlife/FeatureServer/2"
         },
         {
           name: "DE Wildlife Areas Parking",
           description: "Wildlife Area Parking - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Wildlife/FeatureServer/3"
         },
         {
           name: "DE Wildlife Areas Restrooms",
           description: "Wildlife Area Restrooms - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Wildlife/FeatureServer/4"
         },
         {
           name: "DE Wildlife Areas Safety Zones",
           description: "Wildlife Area Safety Zones - point-in-polygon queries",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Wildlife/FeatureServer/5"
         },
         {
           name: "DE Wildlife Management Zones",
           description: "Wildlife Management Zones for deer harvesting - point-in-polygon queries",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Society/DE_Wildlife/FeatureServer/6"
         },
         {
           name: "DE Rail Lines",
           description: "Delaware Rail Lines - proximity queries up to 25 miles",
           coverage: "Delaware",
           accuracy: "Very High",
-          cost: "Free"
+          cost: "Free",
+          url: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services/Transportation/DE_Multimodal/FeatureServer/18"
         }
       ]
     },
@@ -2438,7 +2865,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Provinces___OSi_National_Statutory_Boundaries/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Provinces___OSi_National_Statutory_Boundaries/FeatureServer/0"
         },
         {
           name: "OSi Ireland Built-Up Areas",
@@ -2446,7 +2873,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Built_Up_Areas___OSi_National_1m_Map_Of_Ireland/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Built_Up_Areas___OSi_National_1m_Map_Of_Ireland/FeatureServer/0"
         },
         {
           name: "OSi Ireland Small Areas",
@@ -2454,7 +2881,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Small_Areas_Ungeneralised/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Small_Areas_Ungeneralised/FeatureServer/0"
         },
         {
           name: "OSi Ireland Centres of Population",
@@ -2462,7 +2889,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Centres_of_Population___OSi_National_Placenames_Gazetteer/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Centres_of_Population___OSi_National_Placenames_Gazetteer/FeatureServer/0"
         },
         {
           name: "CSO Ireland Electoral Divisions",
@@ -2470,7 +2897,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/CSO_Electoral_Divisions_Ungeneralised/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/CSO_Electoral_Divisions_Ungeneralised/FeatureServer/0"
         },
         {
           name: "Ireland NUTS3 Boundaries",
@@ -2478,7 +2905,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/NUTS3_Boundaries_Ungeneralised/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/NUTS3_Boundaries_Ungeneralised/FeatureServer/0"
         },
         {
           name: "OSi Ireland Civil Parishes",
@@ -2486,7 +2913,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/CivilParishes_urbanareas_NationalStatutoryBoundaries_Ungeneralised_2024/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/CivilParishes_urbanareas_NationalStatutoryBoundaries_Ungeneralised_2024/FeatureServer/1"
         },
         {
           name: "OSi Ireland Buildings - Residential",
@@ -2494,7 +2921,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Buildings_OpenDatatest3view/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Buildings_OpenDatatest3view/FeatureServer/0"
         },
         {
           name: "OSi Ireland Buildings - Residential/Commercial",
@@ -2502,7 +2929,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Buildings_OpenDatatest3view/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Buildings_OpenDatatest3view/FeatureServer/1"
         },
         {
           name: "OSi Ireland Buildings - Commercial",
@@ -2510,7 +2937,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Buildings_OpenDatatest3view/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Buildings_OpenDatatest3view/FeatureServer/2"
         },
         {
           name: "OSi Ireland Mountain Peaks",
@@ -2518,7 +2945,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Mountains___OSi_National_1m_Map_Of_Ireland/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/arcgis/rest/services/Mountains___OSi_National_1m_Map_Of_Ireland/FeatureServer/0"
         },
         {
           name: "OSi Ireland Coastal High Water Marks",
@@ -2526,7 +2953,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/HighWaterMark_NationalWaterMarks_Ungeneralised_2024/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/HighWaterMark_NationalWaterMarks_Ungeneralised_2024/FeatureServer/0"
         },
         {
           name: "OSi Ireland Vegetation Areas",
@@ -2534,7 +2961,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Vegetation_Areas___OSi_National_250K_Map_of_Ireland/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Vegetation_Areas___OSi_National_250K_Map_of_Ireland/FeatureServer/0"
         },
         {
           name: "OSi Ireland Points of Interest",
@@ -2542,7 +2969,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Ireland",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Geodirectory_GeoJSON/FeatureServer"
+          url: "https://services-eu1.arcgis.com/FH5XCsx8rYXqnjF5/ArcGIS/rest/services/Geodirectory_GeoJSON/FeatureServer/0"
         }
       ]
     },
@@ -2555,7 +2982,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Australia",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Railway_Lines_vw/FeatureServer"
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Railway_Lines_vw/FeatureServer/0"
         },
         {
           name: "Digital Atlas AUS - Tram Lines",
@@ -2563,7 +2990,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Australia",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Tram_Lines_vw/FeatureServer"
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Tram_Lines_vw/FeatureServer/0"
         },
         {
             name: "Digital Atlas AUS - Recent Bushfire Accumulation",
@@ -2596,6 +3023,22 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services.ga.gov.au/gis/rest/services/AustralianOperatingMines/MapServer"
+        },
+        {
+          name: "Digital Atlas AUS - Australia Built-Up Areas",
+          description: "Australia Built-Up Areas - Digital Atlas AUS Built-Up Areas (point-in-polygon and proximity queries up to 50 miles). Built up area polygons represent where buildings are clustered together, such as urban areas. The product has been designed for AUSTopo - Australian Digital Topographic Map Series 250k.",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Built_Up_Areas/FeatureServer/0"
+        },
+        {
+          name: "Digital Atlas AUS - National Pollutant Inventory Facilities",
+          description: "Australia National Pollutant Inventory Facilities - Industrial facilities that report to the NPI (proximity queries up to 50 miles). The NPI dataset features over 8,000 facilities including mines, power stations, factories, waste management sites, and intensive animal agricultural facilities. Attributes provide identifying details, business information, main activities, industry classification, location and links to latest reports.",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/National_Pollutant_Inventory/FeatureServer/0"
         }
       ]
     },
@@ -2607,7 +3050,8 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           description: "Professional basemap tiles including streets, satellite, topographic, hybrid, landscape, and specialized map styles",
           coverage: "Global",
           accuracy: "Very High",
-          cost: "Free (with API key)"
+          cost: "Free (with API key)",
+          url: "https://www.maptiler.com/"
         }
       ]
     }
@@ -2648,11 +3092,25 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
               </div>
               
               <div className="p-6 space-y-4">
-                {category.sources.map((source, sourceIndex) => (
+                {category.sources.map((source: DataSource, sourceIndex) => (
                   <div key={sourceIndex} className="border-b border-gray-100 last:border-b-0 pb-4 last:pb-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{source.name}</h3>
+                        <h3 className="text-lg font-semibold mb-2">
+                          {source.url ? (
+                            <a 
+                              href={source.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center space-x-1 cursor-pointer"
+                            >
+                              <span>{source.name}</span>
+                              <ExternalLink className="w-4 h-4 ml-1" />
+                            </a>
+                          ) : (
+                            <span className="text-gray-900">{source.name}</span>
+                          )}
+                        </h3>
                         <p className="text-gray-600 mb-3">{source.description}</p>
                         
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

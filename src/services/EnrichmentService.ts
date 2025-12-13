@@ -174,6 +174,8 @@ import { getAustraliaRailwaysData } from '../adapters/australiaRailways';
 import { getAustraliaTramsData } from '../adapters/australiaTrams';
 import { getAustraliaBushfiresData } from '../adapters/australiaBushfires';
 import { getAustraliaMinesData } from '../adapters/australiaMines';
+import { getAustraliaBuiltUpAreasData } from '../adapters/australiaBuiltUpAreas';
+import { getAustraliaNPIFacilitiesData } from '../adapters/australiaNPIFacilities';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3551,6 +3553,12 @@ export class EnrichmentService {
       
       case 'australia_care_maintenance_mines':
         return await this.getAustraliaCareMaintenanceMines(lat, lon, radius);
+      
+      case 'australia_built_up_areas':
+        return await this.getAustraliaBuiltUpAreas(lat, lon, radius);
+      
+      case 'australia_npi_facilities':
+        return await this.getAustraliaNPIFacilities(lat, lon, radius);
       
       default:
       if (enrichmentId.startsWith('at_')) {
@@ -15092,6 +15100,98 @@ out center;`;
         [`australia_care_maintenance_mines_count_${radius || 50}mi`]: 0,
         australia_care_maintenance_mines_detailed: [],
         australia_care_maintenance_mines_all_pois: []
+      };
+    }
+  }
+
+  private async getAustraliaBuiltUpAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getAustraliaBuiltUpAreasData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        australia_built_up_areas_containing_count: data.containing.length,
+        australia_built_up_areas_nearby_count: data.nearby.length,
+        australia_built_up_areas_total_count: data._all.length
+      };
+      
+      // Add containing areas
+      if (data.containing.length > 0) {
+        result.australia_built_up_areas_containing = data.containing.map(area => {
+          return {
+            ...area,
+            distance_miles: 0
+          };
+        });
+      }
+      
+      // Add nearby areas
+      if (data.nearby.length > 0) {
+        result.australia_built_up_areas_nearby_features = data.nearby.map(area => {
+          return {
+            ...area,
+            distance_miles: area.distance_miles || 0
+          };
+        });
+      }
+      
+      // Add all areas (combined)
+      if (data._all.length > 0) {
+        result.australia_built_up_areas_all = data._all.map(area => {
+          return {
+            ...area,
+            distance_miles: area.distance_miles || 0
+          };
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Australia Built-Up Areas:', error);
+      return {
+        australia_built_up_areas_containing_count: 0,
+        australia_built_up_areas_nearby_count: 0,
+        australia_built_up_areas_total_count: 0,
+        australia_built_up_areas_all: []
+      };
+    }
+  }
+
+  private async getAustraliaNPIFacilities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getAustraliaNPIFacilitiesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        [`australia_npi_facilities_count_${cappedRadius}mi`]: data.facilities.length,
+        australia_npi_facilities_detailed: data.facilities.map(facility => ({
+          id: facility.facilityId || facility.objectId,
+          name: facility.facilityName || facility.registeredBusinessName || 'Unnamed Facility',
+          facilityName: facility.facilityName,
+          registeredBusinessName: facility.registeredBusinessName,
+          primaryAnzsicClassName: facility.primaryAnzsicClassName,
+          mainActivities: facility.mainActivities,
+          state: facility.state,
+          suburb: facility.suburb,
+          streetAddress: facility.streetAddress,
+          postcode: facility.postcode,
+          latestReportYear: facility.latestReportYear,
+          latestReportUrl: facility.latestReportUrl,
+          lat: facility.latitude,
+          lon: facility.longitude,
+          distance_miles: facility.distance_miles,
+          tags: facility.attributes || {}
+        })),
+        australia_npi_facilities_all_pois: data.facilities
+      };
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Australia NPI Facilities:', error);
+      return {
+        [`australia_npi_facilities_count_${radius || 50}mi`]: 0,
+        australia_npi_facilities_detailed: [],
+        australia_npi_facilities_all_pois: []
       };
     }
   }

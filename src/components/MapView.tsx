@@ -958,9 +958,13 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
         key === 'australia_bushfires_all' ||
         key === 'australia_bushfires_containing' ||
         key === 'australia_bushfires_nearby_features' ||
+        key === 'australia_built_up_areas_all' ||
+        key === 'australia_built_up_areas_containing' ||
+        key === 'australia_built_up_areas_nearby_features' ||
         key === 'australia_operating_mines_all_pois' ||
         key === 'australia_developing_mines_all_pois' ||
-        key === 'australia_care_maintenance_mines_all_pois' // Skip arrays (handled separately for map drawing)
+        key === 'australia_care_maintenance_mines_all_pois' ||
+        key === 'australia_npi_facilities_all_pois' // Skip arrays (handled separately for map drawing)
   );
 
   const categorizeField = (key: string) => {
@@ -18151,7 +18155,7 @@ const MapView: React.FC<MapViewProps> = ({
                 poiMarker.addTo(poi);
                 bounds.extend([poiItem.lat, poiItem.lon]);
                 poiCount++;
-              } catch (error) {
+      } catch (error) {
                 console.error('Error drawing Ireland POI marker:', error);
               }
             }
@@ -18623,6 +18627,101 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing Australia Bushfires:', error);
       }
 
+      // Draw Australia Built-Up Areas as yellow polygons
+      try {
+        if (enrichments.australia_built_up_areas_all && Array.isArray(enrichments.australia_built_up_areas_all)) {
+          let areaCount = 0;
+          enrichments.australia_built_up_areas_all.forEach((area: any) => {
+            try {
+              const isContaining = area.isContaining || area.distance_miles === 0;
+              const distance = area.distance_miles !== null && area.distance_miles !== undefined ? area.distance_miles : 0;
+              
+              // Check if it has polygon geometry
+              if (area.geometry && area.geometry.rings) {
+                // Draw as polygon
+                const rings = area.geometry.rings[0]; // Use first ring
+                const latlngs = rings.map((ring: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [ring[1], ring[0]] as [number, number];
+                });
+                
+                const polygon = L.polygon(latlngs, {
+                  color: '#eab308', // Yellow border
+                  weight: 2,
+                  opacity: 0.8,
+                  fillColor: '#fde047', // Yellow fill
+                  fillOpacity: 0.3
+                });
+                
+                // Build popup content
+                const areaName = area.featureType || area.name || 'Built-Up Area';
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏙️ ${isContaining ? 'Containing' : 'Nearby'} Built-Up Area
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> ${areaName}</div>
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : '<div><strong>Status:</strong> Containing</div>'}
+                      ${area.shapeArea ? `<div><strong>Area:</strong> ${(area.shapeArea / 1000000).toFixed(2)} km²</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all area attributes
+                const excludeFields = ['geometry', 'distance_miles', 'isContaining', 'objectId', 'OBJECTID', 'objectid', 'lat', 'lon'];
+                Object.entries(area).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                (polygon as any).__layerType = 'australia_built_up_areas';
+                (polygon as any).__layerTitle = 'Australia Built-Up Areas';
+                (polygon as any).__popupContent = popupContent;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(poi);
+                bounds.extend(polygon.getBounds());
+                areaCount++;
+              }
+            } catch (error) {
+              console.error('Error drawing Australia Built-Up Area:', error);
+            }
+          });
+          
+          if (areaCount > 0) {
+            if (!legendAccumulator['australia_built_up_areas']) {
+              legendAccumulator['australia_built_up_areas'] = {
+                icon: '🏙️',
+                color: '#fde047',
+                title: 'Australia Built-Up Areas',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_built_up_areas'].count += areaCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Australia Built-Up Areas:', error);
+      }
+
       // Draw Australia Operating Mines
       try {
         if (enrichments.australia_operating_mines_all_pois && Array.isArray(enrichments.australia_operating_mines_all_pois)) {
@@ -18789,6 +18888,71 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Australia Care/Maintenance Mines:', error);
+      }
+
+      // Draw Australia NPI Facilities
+      try {
+        if (enrichments.australia_npi_facilities_all_pois && Array.isArray(enrichments.australia_npi_facilities_all_pois)) {
+          let facilityCount = 0;
+          enrichments.australia_npi_facilities_all_pois.forEach((facility: any) => {
+            const facilityLat = facility.latitude || facility.lat;
+            const facilityLon = facility.longitude || facility.lon;
+            if (facilityLat && facilityLon) {
+              try {
+                const facilityMarker = L.marker([facilityLat, facilityLon], {
+                  icon: createPOIIcon('🏭', '#dc2626')
+                });
+                
+                const name = facility.facilityName || facility.registeredBusinessName || 'Unnamed Facility';
+                const distance = facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles : 0;
+                const primaryAnzsicClassName = facility.primaryAnzsicClassName || '';
+                const mainActivities = facility.mainActivities || '';
+                const state = facility.state || '';
+                const suburb = facility.suburb || '';
+                const latestReportYear = facility.latestReportYear || '';
+                const latestReportUrl = facility.latestReportUrl || '';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏭 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${primaryAnzsicClassName ? `<div><strong>Industry:</strong> ${primaryAnzsicClassName}</div>` : ''}
+                      ${mainActivities ? `<div><strong>Activities:</strong> ${mainActivities}</div>` : ''}
+                      ${state ? `<div><strong>State:</strong> ${state}</div>` : ''}
+                      ${suburb ? `<div><strong>Suburb:</strong> ${suburb}</div>` : ''}
+                      ${latestReportYear ? `<div><strong>Latest Report:</strong> ${latestReportYear}</div>` : ''}
+                      ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      ${latestReportUrl ? `<div style="margin-top: 8px;"><a href="${latestReportUrl}" target="_blank" style="color: #3b82f6; text-decoration: underline;">View NPI Report →</a></div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                facilityMarker.bindPopup(popupContent, { maxWidth: 400 });
+                facilityMarker.addTo(poi);
+                bounds.extend([facilityLat, facilityLon]);
+                facilityCount++;
+              } catch (error) {
+                console.error('Error drawing Australia NPI Facility:', error);
+              }
+            }
+          });
+          
+          if (facilityCount > 0) {
+            if (!legendAccumulator['australia_npi_facilities']) {
+              legendAccumulator['australia_npi_facilities'] = {
+                icon: '🏭',
+                color: '#dc2626',
+                title: 'Australia NPI Facilities',
+                count: 0,
+              };
+            }
+            legendAccumulator['australia_npi_facilities'].count += facilityCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Australia NPI Facilities:', error);
       }
 
       // Draw USFS National Wilderness Areas as polygons on the map
@@ -23638,7 +23802,8 @@ const MapView: React.FC<MapViewProps> = ({
         // CRITICAL: Skip Australia mine arrays - they're drawn above with correct icons
         if (key === 'australia_operating_mines_all_pois' ||
             key === 'australia_developing_mines_all_pois' ||
-            key === 'australia_care_maintenance_mines_all_pois') {
+            key === 'australia_care_maintenance_mines_all_pois' ||
+            key === 'australia_npi_facilities_all_pois') {
           console.log(`⛏️ EXCLUDING ${key} from generic handler - already drawn above`);
           return;
         }
@@ -23690,9 +23855,13 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('australia_bushfires_containing') ||
             key.includes('australia_bushfires_nearby_features') ||
             key.includes('australia_bushfires_all') ||
+            key.includes('australia_built_up_areas_all') ||
+            key.includes('australia_built_up_areas_containing') ||
+            key.includes('australia_built_up_areas_nearby_features') ||
             key.includes('australia_operating_mines_all_pois') ||
             key.includes('australia_developing_mines_all_pois') ||
             key.includes('australia_care_maintenance_mines_all_pois') ||
+            key.includes('australia_npi_facilities_all_pois') ||
             key.includes('ireland_vegetation_areas_containing') ||
             key.includes('ireland_vegetation_areas_nearby_features') ||
             key.includes('ireland_vegetation_areas_all') ||
@@ -23796,7 +23965,7 @@ const MapView: React.FC<MapViewProps> = ({
             // Skip creating generic marker - mine marker already exists
             return;
           }
-          
+
           const poiMarker = L.marker([poiLat, poiLon], { icon: leafletIcon });
           // Store metadata for tabbed popup functionality
           (poiMarker as any).__layerType = baseKey;
@@ -23869,11 +24038,11 @@ const MapView: React.FC<MapViewProps> = ({
         // Bring location marker to front to ensure it's always visible on top of all features
         if (results[0]?.location && mapInstanceRef.current) {
           try {
-            primary.eachLayer((layer: any) => {
+          primary.eachLayer((layer: any) => {
               if (layer.__isLocationMarker && typeof layer.bringToFront === 'function') {
-                layer.bringToFront();
-              }
-            });
+              layer.bringToFront();
+            }
+          });
           } catch (error) {
             console.warn('Error bringing location marker to front:', error);
           }
@@ -24837,7 +25006,7 @@ const MapView: React.FC<MapViewProps> = ({
             <span className="text-sm font-medium">Back to Configuration</span>
           </button>
         </div>
-        
+          
         {/* Centered Title */}
         <div className="flex-1 flex items-center justify-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-gradient">
