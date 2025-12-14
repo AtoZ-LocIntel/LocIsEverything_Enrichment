@@ -244,6 +244,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'houston_olc_grid_6digit': { icon: '🗺️', color: '#8b5cf6', title: 'Houston OLC Grid - 6 Digits' },
   'houston_olc_grid_8digit': { icon: '🗺️', color: '#a855f7', title: 'Houston OLC Grid - 8 Digits' },
   'houston_fire_stations': { icon: '🚒', color: '#dc2626', title: 'Houston Fire Stations' },
+  'houston_fire_hydrants': { icon: '🚰', color: '#ef4444', title: 'Houston Fire Hydrants' },
   'houston_tirz': { icon: '🏛️', color: '#f59e0b', title: 'Houston Tax Incentive Reinvestment Zones' },
   'houston_affordability': { icon: '🏘️', color: '#10b981', title: 'Houston Affordability (by Census Tract)' },
   'poi_osm_health_medical_care': { icon: '🏥', color: '#dc2626', title: 'OSM Medical Care' },
@@ -825,6 +826,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'houston_olc_grid_6digit_all' || // Skip Houston OLC Grid 6-digit array (handled separately for map drawing)
     key === 'houston_olc_grid_8digit_all' || // Skip Houston OLC Grid 8-digit array (handled separately for map drawing)
     key === 'houston_fire_stations_all' || // Skip Houston Fire Stations array (handled separately for map drawing)
+    key === 'houston_fire_hydrants_all' || // Skip Houston Fire Hydrants array (handled separately for map drawing)
     key === 'houston_tirz_all' || // Skip Houston TIRZ array (handled separately for map drawing)
     key === 'houston_affordability_all' || // Skip Houston Affordability array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
@@ -16177,6 +16179,188 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Houston Affordability:', error);
+      }
+
+      // Draw Houston Fire Hydrants as point markers on the map
+      try {
+        if (enrichments.houston_fire_hydrants_all && Array.isArray(enrichments.houston_fire_hydrants_all)) {
+          let hydrantCount = 0;
+          enrichments.houston_fire_hydrants_all.forEach((hydrant: any) => {
+            if (hydrant.geometry && hydrant.geometry.x !== undefined && hydrant.geometry.y !== undefined) {
+              try {
+                // Extract coordinates from geometry (already in WGS84)
+                const lat = hydrant.geometry.y;
+                const lon = hydrant.geometry.x;
+                
+                const address = hydrant.address || hydrant.ADDRESS || 'Unknown Location';
+                const hydrantNumber = hydrant.hydrantNumber || hydrant.HYDRANTNUMBER || null;
+                const zone = hydrant.zone || hydrant.ZONE || null;
+                const councilDistrict = hydrant.councilDistrict || hydrant.COUNCILDISTRICT || null;
+                const owner = hydrant.owner || hydrant.OWNER || null;
+                const barrelDiameter = hydrant.barrelDiameter !== null && hydrant.barrelDiameter !== undefined ? hydrant.barrelDiameter : (hydrant.BARRELDIAMETER !== null && hydrant.BARRELDIAMETER !== undefined ? Number(hydrant.BARRELDIAMETER) : null);
+                const lineSize = hydrant.lineSize !== null && hydrant.lineSize !== undefined ? hydrant.lineSize : (hydrant.LINESIZE !== null && hydrant.LINESIZE !== undefined ? Number(hydrant.LINESIZE) : null);
+                const mainDiameter = hydrant.mainDiameter !== null && hydrant.mainDiameter !== undefined ? hydrant.mainDiameter : (hydrant.MAINDIAMETER !== null && hydrant.MAINDIAMETER !== undefined ? Number(hydrant.MAINDIAMETER) : null);
+                const distance = hydrant.distance_miles !== null && hydrant.distance_miles !== undefined ? hydrant.distance_miles : 0;
+                
+                // Create marker with fire hydrant icon
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚰', '#ef4444')
+                });
+                
+                // Build popup content
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚰 Fire Hydrant
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${hydrantNumber ? `<div><strong>Hydrant Number:</strong> ${hydrantNumber}</div>` : ''}
+                      ${zone ? `<div><strong>Zone:</strong> ${zone}</div>` : ''}
+                      ${councilDistrict ? `<div><strong>Council District:</strong> ${councilDistrict}</div>` : ''}
+                      ${owner ? `<div><strong>Owner:</strong> ${owner}</div>` : ''}
+                      ${barrelDiameter !== null && barrelDiameter !== undefined ? `<div><strong>Barrel Diameter:</strong> ${barrelDiameter}"</div>` : ''}
+                      ${lineSize !== null && lineSize !== undefined ? `<div><strong>Line Size:</strong> ${lineSize}"</div>` : ''}
+                      ${mainDiameter !== null && mainDiameter !== undefined ? `<div><strong>Main Diameter:</strong> ${mainDiameter}"</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all hydrant attributes (excluding internal fields)
+                const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'address', 'ADDRESS', 'hydrantNumber', 'HYDRANTNUMBER', 'zone', 'ZONE', 'councilDistrict', 'COUNCILDISTRICT', 'owner', 'OWNER', 'barrelDiameter', 'BARRELDIAMETER', 'lineSize', 'LINESIZE', 'mainDiameter', 'MAINDIAMETER'];
+                Object.entries(hydrant).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                hydrantCount++;
+              } catch (error) {
+                console.error('Error drawing Houston Fire Hydrant marker:', error);
+              }
+            }
+          });
+          
+          if (hydrantCount > 0) {
+            if (!legendAccumulator['houston_fire_hydrants']) {
+              legendAccumulator['houston_fire_hydrants'] = {
+                icon: '🚰',
+                color: '#ef4444',
+                title: 'Houston Fire Hydrants',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_fire_hydrants'].count += hydrantCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Fire Hydrants:', error);
+      }
+
+      // Draw Houston Fire Stations as point markers on the map
+      try {
+        if (enrichments.houston_fire_stations_all && Array.isArray(enrichments.houston_fire_stations_all)) {
+          let stationCount = 0;
+          enrichments.houston_fire_stations_all.forEach((station: any) => {
+            // Try multiple coordinate sources
+            let lat: number | null = null;
+            let lon: number | null = null;
+            
+            if (station.geometry && station.geometry.x !== undefined && station.geometry.y !== undefined) {
+              lat = station.geometry.y;
+              lon = station.geometry.x;
+            } else if (station.lat !== null && station.lat !== undefined && station.long !== null && station.long !== undefined) {
+              lat = station.lat;
+              lon = station.long;
+            } else if (station.yCoord !== null && station.yCoord !== undefined && station.xCoord !== null && station.xCoord !== undefined) {
+              lat = station.yCoord;
+              lon = station.xCoord;
+            }
+            
+            if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+              try {
+                const name = station.name || station.NAME || station.text || station.TEXT_ || station.label || station.LABEL || `Fire Station ${station.distSta || station.DIST_STA || ''}` || 'Unknown Fire Station';
+                const distSta = station.distSta || station.DIST_STA || null;
+                const admin = station.admin || station.Admin || station.ADMIN || null;
+                const ladders = station.ladders || station.LADDERS || null;
+                const inDist = station.inDist !== null && station.inDist !== undefined ? station.inDist : null;
+                const distance = station.distance_miles !== null && station.distance_miles !== undefined ? station.distance_miles : 0;
+                
+                // Create marker with fire station icon
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚒', '#dc2626')
+                });
+                
+                // Build popup content
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚒 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${distSta ? `<div><strong>District/Station:</strong> ${distSta}</div>` : ''}
+                      ${admin ? `<div><strong>Admin:</strong> ${admin}</div>` : ''}
+                      ${ladders ? `<div><strong>Ladders:</strong> ${ladders}</div>` : ''}
+                      ${inDist !== null && inDist !== undefined ? `<div><strong>In District:</strong> ${inDist}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all station attributes (excluding internal fields)
+                const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'globalId', 'name', 'NAME', 'label', 'LABEL', 'text', 'TEXT_', 'distSta', 'DIST_STA', 'admin', 'Admin', 'ADMIN', 'ladders', 'LADDERS', 'inDist', 'IN_DIST', 'lat', 'LAT', 'long', 'LONG', 'xCoord', 'X_COORD', 'yCoord', 'Y_COORD'];
+                Object.entries(station).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                stationCount++;
+              } catch (error) {
+                console.error('Error drawing Houston Fire Station marker:', error);
+              }
+            }
+          });
+          
+          if (stationCount > 0) {
+            if (!legendAccumulator['houston_fire_stations']) {
+              legendAccumulator['houston_fire_stations'] = {
+                icon: '🚒',
+                color: '#dc2626',
+                title: 'Houston Fire Stations',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_fire_stations'].count += stationCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Fire Stations:', error);
       }
 
       // Draw Houston METRO Park and Ride Locations as point markers on the map

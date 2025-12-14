@@ -1730,6 +1730,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           url: "https://services.arcgis.com/NummVBqZSIJKUeVR/ArcGIS/rest/services/HFD_FireStations_AOI_SZ/FeatureServer/15"
         },
         {
+          name: "Houston Fire Hydrants",
+          description: "Houston Fire Hydrants from City of Houston - proximity queries up to 1 mile",
+          coverage: "Houston, Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Houston_Fire_Hydrant_view/FeatureServer/9"
+        },
+        {
           name: "Houston Tax Incentive Reinvestment Zones",
           description: "Houston Tax Incentive Reinvestment Zones (TIRZ) from City of Houston - point-in-polygon and proximity queries",
           coverage: "Houston, Texas",

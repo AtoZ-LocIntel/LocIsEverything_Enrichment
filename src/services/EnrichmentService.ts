@@ -123,6 +123,7 @@ import { getHoustonMetroTransitCentersData } from '../adapters/houstonMetroTrans
 import { getHoustonBikewaysData } from '../adapters/houstonBikeways';
 import { getHoustonMetroRailStationsData } from '../adapters/houstonMetroRailStations';
 import { getHoustonAirportsData } from '../adapters/houstonAirports';
+import { getHoustonFireHydrantsData } from '../adapters/houstonFireHydrants';
 import { getBLMNationalTrailsData } from '../adapters/blmNationalTrails';
 import { getBLMNationalMotorizedTrailsData } from '../adapters/blmNationalMotorizedTrails';
 import { getBLMNationalNonmotorizedTrailsData } from '../adapters/blmNationalNonmotorizedTrails';
@@ -2345,6 +2346,10 @@ export class EnrichmentService {
       // Houston METRO Rail Stations - Proximity query only (max 25 miles)
       case 'houston_metro_rail_stations':
         return await this.getHoustonMetroRailStations(lat, lon, radius);
+      
+      // Houston Fire Hydrants - Proximity query only (max 1 mile)
+      case 'houston_fire_hydrants':
+        return await this.getHoustonFireHydrants(lat, lon, radius);
       
       // Houston Airports - Point-in-polygon and proximity query (max 25 miles)
       case 'houston_airports':
@@ -11843,6 +11848,58 @@ out center;`;
         houston_airports_count: 0,
         houston_airports_all: [],
         houston_airports_summary: 'Error querying airports'
+      };
+    }
+  }
+
+  private async getHoustonFireHydrants(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      // Cap radius at 1 mile
+      const cappedRadius = radius ? Math.min(radius, 1.0) : 0.25;
+      
+      const fireHydrants = await getHoustonFireHydrantsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (fireHydrants.length === 0) {
+        result.houston_fire_hydrants_count = 0;
+        result.houston_fire_hydrants_all = [];
+        result.houston_fire_hydrants_summary = 'No fire hydrants found within the search radius.';
+      } else {
+        result.houston_fire_hydrants_count = fireHydrants.length;
+        result.houston_fire_hydrants_all = fireHydrants.map(hydrant => ({
+          ...hydrant.attributes,
+          objectId: hydrant.objectId,
+          facilityId: hydrant.facilityId,
+          address: hydrant.address,
+          hydrantNumber: hydrant.hydrantNumber,
+          zone: hydrant.zone,
+          councilDistrict: hydrant.councilDistrict,
+          owner: hydrant.owner,
+          barrelDiameter: hydrant.barrelDiameter,
+          nozzleDiameter1: hydrant.nozzleDiameter1,
+          nozzleDiameter2: hydrant.nozzleDiameter2,
+          nozzleDiameter3: hydrant.nozzleDiameter3,
+          lineSize: hydrant.lineSize,
+          mainDiameter: hydrant.mainDiameter,
+          hydrantLeadDiameter: hydrant.hydrantLeadDiameter,
+          inServiceDate: hydrant.inServiceDate,
+          hfdDelivery: hydrant.hfdDelivery,
+          keyMap: hydrant.keyMap,
+          geometry: hydrant.geometry,
+          distance_miles: hydrant.distance_miles
+        }));
+        
+        result.houston_fire_hydrants_summary = `Found ${fireHydrants.length} fire hydrant(s) within ${cappedRadius} miles.`;
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Fire Hydrants data:', error);
+      return {
+        houston_fire_hydrants_count: 0,
+        houston_fire_hydrants_all: [],
+        houston_fire_hydrants_summary: 'Error querying fire hydrants'
       };
     }
   }

@@ -593,6 +593,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'usfs_co_roadless_areas_all' ||
         key === 'houston_tirz_all' ||
         key === 'houston_affordability_all' ||
+        key === 'houston_fire_hydrants_all' ||
         key === 'poi_osm_health_medical_care_elements' ||
         key === 'poi_osm_health_medical_care_all_pois' ||
         key === 'poi_osm_health_mental_behavioral_elements' ||
@@ -9533,6 +9534,52 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           isContaining,
           '', '', '', '', '', '',
           attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_fire_hydrants_all' && Array.isArray(value)) {
+      value.forEach((hydrant: any) => {
+        const address = hydrant.address || hydrant.ADDRESS || 'Unknown Location';
+        const hydrantNumber = hydrant.hydrantNumber || hydrant.HYDRANTNUMBER || 'Unknown';
+        const distance = hydrant.distance_miles !== null && hydrant.distance_miles !== undefined ? hydrant.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (point)
+        let lat = '';
+        let lon = '';
+        if (hydrant.geometry && hydrant.geometry.x !== undefined && hydrant.geometry.y !== undefined) {
+          lat = hydrant.geometry.y.toString();
+          lon = hydrant.geometry.x.toString();
+        }
+        
+        const allAttributes = { ...hydrant };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.facilityId;
+        delete allAttributes.FACILITYID;
+        delete allAttributes.address;
+        delete allAttributes.ADDRESS;
+        delete allAttributes.hydrantNumber;
+        delete allAttributes.HYDRANTNUMBER;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'HOUSTON_FIRE_HYDRANTS',
+          hydrantNumber,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          address,
+          attributesJson,
+          '',
+          '',
           'City of Houston'
         ]);
       });
