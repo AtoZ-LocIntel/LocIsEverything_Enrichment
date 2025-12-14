@@ -146,7 +146,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "USDA Local Food Portal",
@@ -292,7 +292,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "High-latitude regions worldwide",
           accuracy: "High",
           cost: "Free",
-          url: "https://auroras.live/api-docs/"
+          url: "https://auroras.live/#/"
         }
       ]
     },
@@ -398,7 +398,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "OSM Health & Wellness - Mental & Behavioral Health",
@@ -406,7 +406,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "OSM Health & Wellness - Pharmacy & Diagnostics",
@@ -414,7 +414,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "OSM Health & Wellness - Fitness & Movement",
@@ -422,7 +422,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "OSM Health & Wellness - Wellness & Alternative Care",
@@ -430,7 +430,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "OSM Health & Wellness - Dental & Vision",
@@ -438,7 +438,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "OSM Health & Wellness - Public & Community Health",
@@ -446,7 +446,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "OSM Health & Wellness - Senior & Assisted Care",
@@ -454,7 +454,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "OpenStreetMap Infrastructure",
@@ -462,7 +462,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         }
       ]
     },
@@ -475,7 +475,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         }
       ]
     },
@@ -488,7 +488,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         }
       ]
     },
@@ -501,7 +501,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
-          url: "https://overpass-api.de/api/interpreter"
+          url: "https://overpass-api.de/"
         },
         {
           name: "US Fish and Wildlife Service (FWS)",
