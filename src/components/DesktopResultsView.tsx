@@ -54,6 +54,22 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
     if (Array.isArray(value)) {
       if (value.length === 0) return 'None found';
       
+      // Skip geometry arrays (arrays of coordinates or geometry objects)
+      // Check if this is a geometry array by looking at the structure
+      if (value.length > 0) {
+        const firstItem = value[0];
+        // Check if it's an array of coordinate pairs (geometry rings/paths)
+        if (Array.isArray(firstItem) && (Array.isArray(firstItem[0]) || typeof firstItem[0] === 'number')) {
+          return 'N/A'; // Skip geometry coordinate arrays
+        }
+        // Check if it's an array of objects with geometry properties
+        if (typeof firstItem === 'object' && firstItem !== null) {
+          if ('geometry' in firstItem || '__geometry' in firstItem || 'rings' in firstItem || 'paths' in firstItem || 'x' in firstItem && 'y' in firstItem) {
+            return 'N/A'; // Skip arrays of geometry objects
+          }
+        }
+      }
+      
       // For detailed POI data, show count only in form view
       if (key.includes('_all_pois') || key.includes('_detailed') || key.includes('_elements') || key.includes('_features') || key.includes('nh_key_destinations_all') || key.includes('nh_nursing_homes_all') || key.includes('nh_ems_all') || key.includes('nh_fire_stations_all') || key.includes('nh_places_of_worship_all') || key.includes('nh_hospitals_all') || key.includes('nh_public_waters_access_all') || key.includes('nh_law_enforcement_all') || key.includes('nh_recreation_trails_all') || key.includes('nh_dot_roads_all') || key.includes('nh_railroads_all') || key.includes('nh_transmission_pipelines_all') || key.includes('nh_cell_towers_all') || key.includes('nh_underground_storage_tanks_all') || key.includes('nh_water_wells_all') || key.includes('nh_public_water_supply_wells_all') || key.includes('nh_remediation_sites_all') || key.includes('nh_automobile_salvage_yards_all') || key.includes('nh_solid_waste_facilities_all') || key.includes('nh_nwi_plus_all') || key.includes('ma_dep_wetlands_all') || key.includes('ma_open_space_all') || key.includes('cape_cod_zoning_all') || key.includes('ma_trails_all') || key.includes('ma_nhesp_natural_communities_all') || key.includes('ct_roads_all') || key.includes('ct_building_footprints_all')) {
         return `${value.length} found (see CSV for details)`;
@@ -72,7 +88,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       // Regular array handling for non-POI data
       return value.map((item: any) => {
         if (typeof item === 'object' && item !== null) {
-          return item.name || item.title || JSON.stringify(item);
+          // Filter out geometry properties from objects in arrays
+          const filteredItem = { ...item };
+          delete (filteredItem as any).geometry;
+          delete (filteredItem as any).__geometry;
+          return item.name || item.title || JSON.stringify(filteredItem);
         }
         return String(item);
       }).join('; ');
@@ -143,8 +163,23 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       }
       
       // Skip geometry fields (raw JSON data, used for map drawing but not displayed in summary)
-      if (key.includes('_geometry') || key.endsWith('_geometry') || key === 'geometry') {
+      if (key.includes('_geometry') || key.endsWith('_geometry') || key === 'geometry' || key === 'rings' || key === 'paths' || key === 'coordinates') {
         return acc;
+      }
+      
+      // Skip geometry arrays (arrays of coordinates or geometry objects)
+      if (Array.isArray(value) && value.length > 0) {
+        const firstItem = value[0];
+        // Check if it's an array of coordinate pairs (geometry rings/paths)
+        if (Array.isArray(firstItem) && (Array.isArray(firstItem[0]) || typeof firstItem[0] === 'number')) {
+          return acc; // Skip geometry coordinate arrays
+        }
+        // Check if it's an array of objects with geometry properties
+        if (typeof firstItem === 'object' && firstItem !== null) {
+          if ('geometry' in firstItem || '__geometry' in firstItem || 'rings' in firstItem || 'paths' in firstItem || ('x' in firstItem && 'y' in firstItem)) {
+            return acc; // Skip arrays of geometry objects
+          }
+        }
       }
       
       // Only show fields for selected enrichments (plus core fields that are always shown)

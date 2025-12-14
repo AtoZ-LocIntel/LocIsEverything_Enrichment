@@ -1018,6 +1018,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_all' || // Skip TIGER CBSA arrays (handled separately for map drawing)
     // Ireland skip list
     key === 'ireland_provinces_containing' || key === 'ireland_provinces_nearby_features' || key === 'ireland_provinces_all' ||
+    key === 'uk_local_authority_districts_containing' || key === 'uk_local_authority_districts_nearby' || key === 'uk_local_authority_districts_all' ||
     key === 'ireland_built_up_areas_containing' || key === 'ireland_built_up_areas_nearby_features' || key === 'ireland_built_up_areas_all' ||
     key === 'ireland_vegetation_areas_containing' || key === 'ireland_vegetation_areas_nearby_features' || key === 'ireland_vegetation_areas_all' ||
     key === 'ireland_small_areas_containing' || key === 'ireland_small_areas_nearby_features' || key === 'ireland_small_areas_all' ||
@@ -6761,6 +6762,11 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'ireland_vegetation_areas_containing', nearbyKey: 'ireland_vegetation_areas_nearby_features', name: 'Ireland Vegetation Areas', color: '#16a34a', icon: '🌿', layerType: 'ireland_vegetation_areas' }
       ];
 
+      // Draw UK Local Authority Districts as polygons on the map
+      const ukLocalAuthorityDistrictLayers = [
+        { containingKey: 'uk_local_authority_districts_containing', nearbyKey: 'uk_local_authority_districts_nearby', name: 'UK Local Authority Districts', color: '#dc2626', icon: '🇬🇧', layerType: 'uk_local_authority_districts' }
+      ];
+
       irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
         
@@ -7105,6 +7111,182 @@ const MapView: React.FC<MapViewProps> = ({
       });
 
       // Draw Ireland Vegetation Areas as polygons on the map
+      ukLocalAuthorityDistrictLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing districts
+        if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
+          enrichments[containingKey].forEach((district: any) => {
+            const geometry = district.__geometry || district.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: color,
+                    fillOpacity: 0.4
+                  });
+
+                  const districtName = district.lad25nm || district.LAD25NM || 'Local Authority District';
+                  const districtCode = district.lad25cd || district.LAD25CD || null;
+                  const bngE = district.bngE || district.BNG_E || null;
+                  const bngN = district.bngN || district.BNG_N || null;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${districtName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Containing Local Authority District</div>
+                        ${districtCode ? `<div><strong>LAD Code:</strong> ${districtCode}</div>` : ''}
+                        ${bngE !== null && bngN !== null ? `<div><strong>BNG Coordinates:</strong> E: ${bngE}, N: ${bngN}</div>` : ''}
+                        ${district.shapeArea ? `<div><strong>Area:</strong> ${district.shapeArea.toFixed(2)} sq units</div>` : ''}
+                        ${district.shapeLength ? `<div><strong>Perimeter:</strong> ${district.shapeLength.toFixed(2)} units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other district attributes
+                  const excludeFields = ['lad25nm', 'LAD25NM', 'lad25cd', 'LAD25CD', 'lad25nmw', 'LAD25NMW', 'bngE', 'BNG_E', 'bngN', 'BNG_N', 'shapeArea', 'Shape__Area', 'SHAPE__AREA', 'shapeLength', 'Shape__Length', 'SHAPE__LENGTH', 'geometry', '__geometry', 'distance_miles', 'isContaining', 'objectId', 'OBJECTID', 'FID', 'fid', 'ESRI_OID', 'GlobalID', 'GLOBALID', 'globalId', 'long', 'LONG', 'lat', 'LAT'];
+                  Object.entries(district).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing polygon:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby districts
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((district: any) => {
+            const geometry = district.__geometry || district.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 1,
+                    opacity: 0.5,
+                    fillColor: color,
+                    fillOpacity: 0.15
+                  });
+
+                  const districtName = district.lad25nm || district.LAD25NM || 'Local Authority District';
+                  const districtCode = district.lad25cd || district.LAD25CD || null;
+                  const bngE = district.bngE || district.BNG_E || null;
+                  const bngN = district.bngN || district.BNG_N || null;
+                  const distance = district.distance_miles ? district.distance_miles.toFixed(2) : 'Unknown';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${districtName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Nearby Local Authority District</div>
+                        ${districtCode ? `<div><strong>LAD Code:</strong> ${districtCode}</div>` : ''}
+                        ${bngE !== null && bngN !== null ? `<div><strong>BNG Coordinates:</strong> E: ${bngE}, N: ${bngN}</div>` : ''}
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${district.shapeArea ? `<div><strong>Area:</strong> ${district.shapeArea.toFixed(2)} sq units</div>` : ''}
+                        ${district.shapeLength ? `<div><strong>Perimeter:</strong> ${district.shapeLength.toFixed(2)} units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other district attributes
+                  const excludeFields = ['lad25nm', 'LAD25NM', 'lad25cd', 'LAD25CD', 'lad25nmw', 'LAD25NMW', 'bngE', 'BNG_E', 'bngN', 'BNG_N', 'shapeArea', 'Shape__Area', 'SHAPE__AREA', 'shapeLength', 'Shape__Length', 'SHAPE__LENGTH', 'geometry', '__geometry', 'distance_miles', 'isContaining', 'objectId', 'OBJECTID', 'FID', 'fid', 'ESRI_OID', 'GlobalID', 'GLOBALID', 'globalId', 'long', 'LONG', 'lat', 'LAT'];
+                  Object.entries(district).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+
+        if (featureCount > 0) {
+          if (!legendAccumulator[layerType]) {
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
       irelandVegetationAreaLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
         

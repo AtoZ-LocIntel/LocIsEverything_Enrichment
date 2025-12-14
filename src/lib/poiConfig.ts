@@ -100,6 +100,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'Canada.webp'
   },
   {
+    id: 'uk',
+    title: 'UK Open Data',
+    description: 'United Kingdom geographic and statistical open data',
+    icon: 'UK.webp'
+  },
+  {
     id: 'australia',
     title: 'Australian Open Data',
     description: 'Australian geographic and statistical open data',
@@ -1371,7 +1377,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ireland_buildings_commercial', label: 'Irish Buildings - Commercial', description: 'Irish Buildings - Commercial (point-in-polygon and proximity queries up to 5 miles)', isPOI: true, defaultRadius: 1, maxRadius: 5, category: 'ireland', section: 'eu' },
   { id: 'ireland_mountains', label: 'Irish Mountain Peaks', description: 'Irish Mountain Peaks - OSi National 1m Map Of Ireland (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 10, maxRadius: 50, category: 'ireland', section: 'eu' },
   { id: 'ireland_high_water_marks', label: 'Irish Coastal High Water Marks', description: 'Irish Coastal High Water Marks - OSi National Water Marks Ungeneralised 2024 (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ireland', section: 'eu' },
-  { id: 'ireland_vegetation_areas', label: 'Irish Vegetation Areas', description: 'Irish Vegetation Areas - OSi National 250K Map of Ireland (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ireland', section: 'eu' }
+  { id: 'ireland_vegetation_areas', label: 'Irish Vegetation Areas', description: 'Irish Vegetation Areas - OSi National 250K Map of Ireland (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'ireland', section: 'eu' },
+  // UK Office for National Statistics
+  { id: 'uk_local_authority_districts', label: 'UK Local Authority Districts', description: 'UK Office for National Statistics - Local Authority Districts (point-in-polygon and proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'ukstats', section: 'uk' }
 ];
 
 class POIConfigManager {

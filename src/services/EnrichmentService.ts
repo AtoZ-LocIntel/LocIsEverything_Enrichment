@@ -163,6 +163,7 @@ import { getTIGERCBSAData } from '../adapters/tigerCBSA';
 import { getTIGERUrbanData } from '../adapters/tigerUrban';
 import { getIrelandProvincesData } from '../adapters/irelandProvinces';
 import { getIrelandBuiltUpAreasData } from '../adapters/irelandBuiltUpAreas';
+import { getUKLocalAuthorityDistrictsData } from '../adapters/ukLocalAuthorityDistricts';
 import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
 import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDivisions';
 import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
@@ -3552,6 +3553,8 @@ export class EnrichmentService {
         return await this.getIrelandVegetationAreas(lat, lon, radius);
       case 'ireland_pois':
         return await this.getIrelandPOIs(lat, lon, radius);
+      case 'uk_local_authority_districts':
+        return await this.getUKLocalAuthorityDistricts(lat, lon, radius);
       case 'australia_railways':
         return await this.getAustraliaRailways(lat, lon, radius);
       case 'australia_trams':
@@ -15038,6 +15041,99 @@ out center;`;
       console.error('Error fetching Ireland POIs:', error);
       return {
         ireland_pois_count: 0
+      };
+    }
+  }
+
+  private async getUKLocalAuthorityDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getUKLocalAuthorityDistrictsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        uk_local_authority_districts_containing_count: data.containing.length,
+        uk_local_authority_districts_nearby_count: data.nearby_features.length,
+        uk_local_authority_districts_total_count: data._all.length
+      };
+      
+      if (data.containing.length > 0) {
+        result.uk_local_authority_districts_containing = data.containing.map(district => ({
+          ...district,
+          objectId: district.objectId,
+          lad25cd: district.lad25cd,
+          lad25nm: district.lad25nm,
+          lad25nmw: district.lad25nmw,
+          bngE: district.bngE,
+          bngN: district.bngN,
+          long: district.long,
+          lat: district.lat,
+          shapeArea: district.shapeArea,
+          shapeLength: district.shapeLength,
+          globalId: district.globalId,
+          geometry: district.geometry,
+          distance_miles: district.distance_miles,
+          isContaining: district.isContaining
+        }));
+        result.uk_local_authority_districts_containing_message = `Location is within ${data.containing[0].lad25nm || 'a Local Authority District'}`;
+      } else {
+        result.uk_local_authority_districts_containing = null;
+        result.uk_local_authority_districts_containing_message = 'No Local Authority District found containing this location';
+      }
+      
+      if (data.nearby_features.length > 0) {
+        result.uk_local_authority_districts_nearby = data.nearby_features.map(district => ({
+          ...district,
+          objectId: district.objectId,
+          lad25cd: district.lad25cd,
+          lad25nm: district.lad25nm,
+          lad25nmw: district.lad25nmw,
+          bngE: district.bngE,
+          bngN: district.bngN,
+          long: district.long,
+          lat: district.lat,
+          shapeArea: district.shapeArea,
+          shapeLength: district.shapeLength,
+          globalId: district.globalId,
+          geometry: district.geometry,
+          distance_miles: district.distance_miles,
+          isContaining: district.isContaining
+        }));
+      } else {
+        result.uk_local_authority_districts_nearby = [];
+      }
+      
+      result.uk_local_authority_districts_all = data._all.map(district => ({
+        ...district,
+        objectId: district.objectId,
+        lad25cd: district.lad25cd,
+        lad25nm: district.lad25nm,
+        lad25nmw: district.lad25nmw,
+        bngE: district.bngE,
+        bngN: district.bngN,
+        long: district.long,
+        lat: district.lat,
+        shapeArea: district.shapeArea,
+        shapeLength: district.shapeLength,
+        globalId: district.globalId,
+        geometry: district.geometry,
+        distance_miles: district.distance_miles,
+        isContaining: district.isContaining
+      }));
+      
+      result.uk_local_authority_districts_summary = `Found ${data.containing.length} containing district(s) and ${data.nearby_features.length} nearby district(s) within ${cappedRadius} miles.`;
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK Local Authority Districts data:', error);
+      return {
+        uk_local_authority_districts_containing_count: 0,
+        uk_local_authority_districts_nearby_count: 0,
+        uk_local_authority_districts_total_count: 0,
+        uk_local_authority_districts_containing: null,
+        uk_local_authority_districts_containing_message: 'Error querying Local Authority Districts',
+        uk_local_authority_districts_nearby: [],
+        uk_local_authority_districts_all: [],
+        uk_local_authority_districts_summary: 'Error querying Local Authority Districts'
       };
     }
   }

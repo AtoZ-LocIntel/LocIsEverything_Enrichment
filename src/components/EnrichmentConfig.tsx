@@ -58,6 +58,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   tiger: <img src="/assets/TIGERweb.webp" alt="US Census TIGER Data" className="w-5 h-5" />,
   eu: <img src="/assets/EU.webp" alt="European Union Data" className="w-5 h-5" />,
   canada: <img src="/assets/Canada.webp" alt="Canadian Open Data" className="w-5 h-5" />,
+  uk: <img src="/assets/UK.webp" alt="UK Open Data" className="w-5 h-5" />,
   australia: <img src="/assets/Australia.webp" alt="Australian Open Data" className="w-5 h-5" />,
   newzealand: <img src="/assets/NewZealand.webp" alt="New Zealand Open Data" className="w-5 h-5" />,
   quirky: <span className="text-xl">☕</span>,
@@ -127,6 +128,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [viewingCASubCategories, setViewingCASubCategories] = useState(false);
   const [viewingEUSubCategories, setViewingEUSubCategories] = useState(false);
   const [viewingCanadaSubCategories, setViewingCanadaSubCategories] = useState(false);
+  const [viewingUKSubCategories, setViewingUKSubCategories] = useState(false);
   const [viewingAustraliaSubCategories, setViewingAustraliaSubCategories] = useState(false);
   const [viewingNewZealandSubCategories, setViewingNewZealandSubCategories] = useState(false);
   const [viewingGASubCategories, setViewingGASubCategories] = useState(false);
@@ -188,15 +190,16 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [cameFromILSubCategories, setCameFromILSubCategories] = useState(false);
   const [cameFromEUSubCategories, setCameFromEUSubCategories] = useState(false);
   const [cameFromCanadaSubCategories, setCameFromCanadaSubCategories] = useState(false);
+  const [cameFromUKSubCategories, setCameFromUKSubCategories] = useState(false);
   const [cameFromAustraliaSubCategories, setCameFromAustraliaSubCategories] = useState(false);
   const [cameFromNewZealandSubCategories, setCameFromNewZealandSubCategories] = useState(false);
   
   // Notify parent when modal state changes
   useEffect(() => {
     if (onModalStateChange) {
-      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories || viewingNYSubCategories || viewingPASubCategories || viewingRISubCategories || viewingVTSubCategories || viewingTXSubCategories || viewingNMSubCategories || viewingAZSubCategories || viewingAKSubCategories || viewingHISubCategories || viewingWASubCategories || viewingORSubCategories || viewingMTSubCategories || viewingWYSubCategories || viewingNVSubCategories || viewingIDSubCategories || viewingUTSubCategories || viewingCOSubCategories || viewingILSubCategories || viewingEUSubCategories || viewingCanadaSubCategories || viewingAustraliaSubCategories || viewingNewZealandSubCategories);
+      onModalStateChange(activeModal !== null || viewingNHSubCategories || viewingMASubCategories || viewingCTSubCategories || viewingDESubCategories || viewingNJSubCategories || viewingWVSubCategories || viewingCASubCategories || viewingGASubCategories || viewingSCSubCategories || viewingNCSubCategories || viewingMDSubCategories || viewingDCSubCategories || viewingVASubCategories || viewingFLSubCategories || viewingNYSubCategories || viewingPASubCategories || viewingRISubCategories || viewingVTSubCategories || viewingTXSubCategories || viewingNMSubCategories || viewingAZSubCategories || viewingAKSubCategories || viewingHISubCategories || viewingWASubCategories || viewingORSubCategories || viewingMTSubCategories || viewingWYSubCategories || viewingNVSubCategories || viewingIDSubCategories || viewingUTSubCategories || viewingCOSubCategories || viewingILSubCategories || viewingEUSubCategories || viewingCanadaSubCategories || viewingUKSubCategories || viewingAustraliaSubCategories || viewingNewZealandSubCategories);
     }
-  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, viewingTXSubCategories, viewingNMSubCategories, viewingAZSubCategories, viewingAKSubCategories, viewingHISubCategories, viewingWASubCategories, viewingORSubCategories, viewingMTSubCategories, viewingWYSubCategories, viewingNVSubCategories, viewingIDSubCategories, viewingUTSubCategories, viewingCOSubCategories, viewingILSubCategories, viewingEUSubCategories, viewingCanadaSubCategories, viewingAustraliaSubCategories, viewingNewZealandSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
+  }, [activeModal, viewingNHSubCategories, viewingMASubCategories, viewingCTSubCategories, viewingDESubCategories, viewingNJSubCategories, viewingWVSubCategories, viewingCASubCategories, viewingGASubCategories, viewingSCSubCategories, viewingNCSubCategories, viewingMDSubCategories, viewingDCSubCategories, viewingVASubCategories, viewingFLSubCategories, viewingNYSubCategories, viewingPASubCategories, viewingRISubCategories, viewingVTSubCategories, viewingTXSubCategories, viewingNMSubCategories, viewingAZSubCategories, viewingAKSubCategories, viewingHISubCategories, viewingWASubCategories, viewingORSubCategories, viewingMTSubCategories, viewingWYSubCategories, viewingNVSubCategories, viewingIDSubCategories, viewingUTSubCategories, viewingCOSubCategories, viewingILSubCategories, viewingEUSubCategories, viewingCanadaSubCategories, viewingUKSubCategories, viewingAustraliaSubCategories, viewingNewZealandSubCategories, onModalStateChange]); // Track if viewing state sub-categories page
   const [isMobile, setIsMobile] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
   
@@ -977,6 +980,44 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        // Special handling for UK - add sub-categories based on data sources
+        if (section.id === 'uk') {
+          // Get UK Office for National Statistics enrichments (filter POIs where section is 'uk' and category is 'ukstats' or id starts with 'uk_')
+          const ukstatsPOIs = poiTypes.filter(poi => 
+            poi.section === 'uk' && 
+            (poi.category === 'ukstats' || poi.id.startsWith('uk_'))
+          );
+          
+          const ukstatsEnrichments = ukstatsPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Define UK sub-categories (organized by data source)
+          const ukSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'ukstats',
+              title: 'UK Office for National Statistics',
+              icon: <img src="/assets/UKstats.webp" alt="UK Office for National Statistics" className="w-full h-full object-cover rounded-full" />,
+              description: 'UK Office for National Statistics data layers',
+              enrichments: ukstatsEnrichments
+            }
+          ];
+          
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [], // UK parent category has no direct enrichments
+            subCategories: ukSubCategories
+          };
+        }
+        
         // Special handling for Australia - add sub-categories based on data sources
         if (section.id === 'australia') {
           // Get Digital Atlas AUS enrichments (filter POIs where section is 'australia' and category is 'digitalatlasaus' or id starts with 'digitalatlasaus_')
@@ -1154,6 +1195,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'tiger': 'TIGERweb',
       'eu': 'EU',
       'canada': 'Canada',
+      'uk': 'UK',
       'australia': 'Australia',
       'newzealand': 'NewZealand',
       'digitalatlasaus': 'DigitalAtlasAUS'
@@ -2160,6 +2202,15 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   );
   if (canadaSubCategoriesPage) return canadaSubCategoriesPage;
 
+  const ukSubCategoriesPage = renderStateSubCategoriesPage(
+    viewingUKSubCategories,
+    setViewingUKSubCategories,
+    'uk',
+    'UK Open Data',
+    setCameFromUKSubCategories
+  );
+  if (ukSubCategoriesPage) return ukSubCategoriesPage;
+
   const australiaSubCategoriesPage = renderStateSubCategoriesPage(
     viewingAustraliaSubCategories,
     setViewingAustraliaSubCategories,
@@ -2843,6 +2894,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setCameFromCanadaSubCategories(false);
                               setActiveModal(null);
                               setViewingCanadaSubCategories(true);
+                            } else if (cameFromUKSubCategories) {
+                              // Go back to UK sub-categories page
+                              setCameFromUKSubCategories(false);
+                              setActiveModal(null);
+                              setViewingUKSubCategories(true);
                             } else if (cameFromAustraliaSubCategories) {
                               // Go back to Australia sub-categories page
                               setCameFromAustraliaSubCategories(false);
@@ -3638,10 +3694,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               {enrichmentCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 // For NH, MA, and other states, count sub-category enrichments too
-                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada' || category.id === 'australia' || category.id === 'newzealand') && category.subCategories
+                const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada' || category.id === 'uk' || category.id === 'australia' || category.id === 'newzealand') && category.subCategories
                   ? category.subCategories.flatMap(sc => sc.enrichments)
                   : [];
-                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada' || category.id === 'australia' || category.id === 'newzealand')
+                const allCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada' || category.id === 'uk' || category.id === 'australia' || category.id === 'newzealand')
                   ? stateSubCategoryEnrichments 
                   : categoryEnrichments;
                 const selectedCount = allCategoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
@@ -3679,6 +3735,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setViewingEUSubCategories(true);
                       } else if (category.id === 'canada') {
                         setViewingCanadaSubCategories(true);
+                      } else if (category.id === 'uk') {
+                        setViewingUKSubCategories(true);
                       } else if (category.id === 'australia') {
                         setViewingAustraliaSubCategories(true);
                       } else if (category.id === 'newzealand') {

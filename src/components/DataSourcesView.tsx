@@ -2955,6 +2955,19 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     },
     {
+      category: "UK Open Data",
+      sources: [
+        {
+          name: "UK Local Authority Districts",
+          description: "UK Office for National Statistics - Local Authority Districts (LAD) - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United Kingdom",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LAD_MAY_2025_UK_BUC/FeatureServer/0"
+        }
+      ]
+    },
+    {
       category: "Ireland Sources",
       sources: [
         {
@@ -3169,6 +3182,18 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/MajorRoads/FeatureServer/0"
+        }
+      ]
+    },
+    {
+      category: "UK Open Data",
+      sources: [
+        {
+          name: "Sources Coming Soon...",
+          description: "UK open data sources will be added in future updates",
+          coverage: "United Kingdom",
+          accuracy: "N/A",
+          cost: "N/A"
         }
       ]
     },

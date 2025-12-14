@@ -463,6 +463,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'tiger_urban_urban_areas_containing' || key === 'tiger_urban_urban_areas_all' ||
         // Ireland Provinces skip list
         key === 'ireland_provinces_containing' || key === 'ireland_provinces_nearby_features' || key === 'ireland_provinces_all' ||
+        // UK Local Authority Districts skip list
+        key === 'uk_local_authority_districts_containing' || key === 'uk_local_authority_districts_nearby' || key === 'uk_local_authority_districts_all' ||
         // Ireland Built-Up Areas skip list
         key === 'ireland_built_up_areas_containing' || key === 'ireland_built_up_areas_nearby_features' || key === 'ireland_built_up_areas_all' ||
         // Ireland Small Areas skip list
@@ -10271,6 +10273,88 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'LA County Public GIS'
+        ]);
+      });
+    }
+    
+    // Export UK Local Authority Districts data
+    if (key === 'uk_local_authority_districts_all' && Array.isArray(value)) {
+      value.forEach((district: any) => {
+        const districtName = district.lad25nm || district.LAD25NM || 'Unknown District';
+        const districtCode = district.lad25cd || district.LAD25CD || '';
+        const bngE = district.bngE !== null && district.bngE !== undefined ? district.bngE.toString() : (district.BNG_E !== null && district.BNG_E !== undefined ? district.BNG_E.toString() : '');
+        const bngN = district.bngN !== null && district.bngN !== undefined ? district.bngN.toString() : (district.BNG_N !== null && district.BNG_N !== undefined ? district.BNG_N.toString() : '');
+        const distance = district.distance_miles !== null && district.distance_miles !== undefined ? district.distance_miles.toFixed(2) : (district.isContaining ? '0.00' : '');
+        const isContaining = district.isContaining ? 'Yes' : 'No';
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (district.geometry && district.geometry.rings && district.geometry.rings.length > 0) {
+          const outerRing = district.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else if (district.lat !== null && district.lat !== undefined && district.long !== null && district.long !== undefined) {
+          lat = district.lat.toString();
+          lon = district.long.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+        
+        const allAttributes = { ...district };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.lad25cd;
+        delete allAttributes.LAD25CD;
+        delete allAttributes.lad25nm;
+        delete allAttributes.LAD25NM;
+        delete allAttributes.lad25nmw;
+        delete allAttributes.LAD25NMW;
+        delete allAttributes.bngE;
+        delete allAttributes.BNG_E;
+        delete allAttributes.bngN;
+        delete allAttributes.BNG_N;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_LOCAL_AUTHORITY_DISTRICTS',
+          districtCode || districtName,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          districtName,
+          isContaining,
+          bngE || '',
+          bngN || '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
         ]);
       });
     }
