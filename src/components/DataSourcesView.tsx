@@ -199,7 +199,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
+          url: "https://www.fs.usda.gov/"
         },
         {
           name: "USDA Burn Probability",
@@ -207,7 +207,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
+          url: "https://www.fs.usda.gov/"
         },
         {
           name: "USDA Conditional Flame Length",
@@ -215,7 +215,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
+          url: "https://www.fs.usda.gov/"
         },
         {
           name: "USDA Risk to Potential Structures",
@@ -223,7 +223,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
+          url: "https://www.fs.usda.gov/"
         },
         {
           name: "USDA Housing Unit Risk",
@@ -231,7 +231,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
+          url: "https://www.fs.usda.gov/"
         },
         {
           name: "USDA Population Count",
@@ -239,7 +239,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://www.fs.usda.gov/rds/archive/products/RDS-2015-0013-2/"
+          url: "https://www.fs.usda.gov/"
         },
         {
           name: "FEMA Flood Zones",
@@ -666,7 +666,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_ForestSystemBoundaries_01/MapServer/1"
+          url: "https://www.fs.usda.gov/"
         },
         {
           name: "USFS National Wilderness Areas",
@@ -674,7 +674,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_Wilderness_01/MapServer/0"
+          url: "https://www.fs.usda.gov/"
         },
         {
           name: "USFS National Grassland Units",
@@ -682,7 +682,7 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
-          url: "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_NationalGrassland_01/MapServer/0"
+          url: "https://www.fs.usda.gov/"
         },
         {
           name: "NPS National Parks",
