@@ -592,6 +592,23 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'usfs_mvum_all' ||
         key === 'usfs_co_roadless_areas_all' ||
         key === 'houston_tirz_all' ||
+        key === 'houston_affordability_all' ||
+        key === 'poi_osm_health_medical_care_elements' ||
+        key === 'poi_osm_health_medical_care_all_pois' ||
+        key === 'poi_osm_health_mental_behavioral_elements' ||
+        key === 'poi_osm_health_mental_behavioral_all_pois' ||
+        key === 'poi_osm_health_pharmacy_diagnostics_elements' ||
+        key === 'poi_osm_health_pharmacy_diagnostics_all_pois' ||
+        key === 'poi_osm_health_fitness_movement_elements' ||
+        key === 'poi_osm_health_fitness_movement_all_pois' ||
+        key === 'poi_osm_health_wellness_alternative_elements' ||
+        key === 'poi_osm_health_wellness_alternative_all_pois' ||
+        key === 'poi_osm_health_dental_vision_elements' ||
+        key === 'poi_osm_health_dental_vision_all_pois' ||
+        key === 'poi_osm_health_public_community_elements' ||
+        key === 'poi_osm_health_public_community_all_pois' ||
+        key === 'poi_osm_health_senior_assisted_elements' ||
+        key === 'poi_osm_health_senior_assisted_all_pois' ||
         key === 'la_county_historic_cultural_monuments_all' ||
         key === 'la_county_housing_lead_risk_all' ||
         key === 'la_county_school_district_boundaries_all' ||
@@ -9462,6 +9479,59 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           areaAcres || 'N/A',
           shapeLength || 'N/A',
           isContaining,
+          attributesJson,
+          'City of Houston'
+        ]);
+      });
+    } else if (key === 'houston_affordability_all' && Array.isArray(value)) {
+      value.forEach((tract: any) => {
+        const tractId = tract.tractId || tract.TRACT || tract.tract || tract.TRACTCE || tract.tractce || `Tract ${tract.objectId || 'Unknown'}`;
+        const htaIndex = tract.htaIndex !== null && tract.htaIndex !== undefined ? tract.htaIndex.toFixed(2) : (tract.HTA_INDEX !== null && tract.HTA_INDEX !== undefined ? tract.HTA_INDEX.toFixed(2) : 'N/A');
+        const distance = tract.distance_miles !== null && tract.distance_miles !== undefined ? tract.distance_miles.toFixed(2) : (tract.isContaining ? '0.00' : '');
+        const isContaining = tract.isContaining ? 'Yes' : 'No';
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (tract.geometry && tract.geometry.rings && tract.geometry.rings.length > 0) {
+          const outerRing = tract.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...tract };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.tractId;
+        delete allAttributes.TRACT;
+        delete allAttributes.tract;
+        delete allAttributes.TRACTCE;
+        delete allAttributes.tractce;
+        delete allAttributes.htaIndex;
+        delete allAttributes.HTA_INDEX;
+        delete allAttributes.hta_index;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'City of Houston',
+          (location.confidence || 'N/A').toString(),
+          'HOUSTON_AFFORDABILITY_TRACT',
+          tractId,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          htaIndex,
+          isContaining,
+          '', '', '', '', '', '',
           attributesJson,
           'City of Houston'
         ]);

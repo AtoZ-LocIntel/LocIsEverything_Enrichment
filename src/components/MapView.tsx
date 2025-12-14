@@ -245,6 +245,15 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'houston_olc_grid_8digit': { icon: '🗺️', color: '#a855f7', title: 'Houston OLC Grid - 8 Digits' },
   'houston_fire_stations': { icon: '🚒', color: '#dc2626', title: 'Houston Fire Stations' },
   'houston_tirz': { icon: '🏛️', color: '#f59e0b', title: 'Houston Tax Incentive Reinvestment Zones' },
+  'houston_affordability': { icon: '🏘️', color: '#10b981', title: 'Houston Affordability (by Census Tract)' },
+  'poi_osm_health_medical_care': { icon: '🏥', color: '#dc2626', title: 'OSM Medical Care' },
+  'poi_osm_health_mental_behavioral': { icon: '🧠', color: '#7c3aed', title: 'OSM Mental & Behavioral Health' },
+  'poi_osm_health_pharmacy_diagnostics': { icon: '💊', color: '#3b82f6', title: 'OSM Pharmacy & Diagnostics' },
+  'poi_osm_health_fitness_movement': { icon: '🏃', color: '#f59e0b', title: 'OSM Fitness & Movement' },
+  'poi_osm_health_wellness_alternative': { icon: '🧘', color: '#10b981', title: 'OSM Wellness & Alternative Care' },
+  'poi_osm_health_dental_vision': { icon: '🦷', color: '#06b6d4', title: 'OSM Dental & Vision' },
+  'poi_osm_health_public_community': { icon: '🏛️', color: '#8b5cf6', title: 'OSM Public & Community Health' },
+  'poi_osm_health_senior_assisted': { icon: '♿', color: '#ec4899', title: 'OSM Senior & Assisted Care' },
   // LA County Hazards
   'la_county_fire_hazards': { icon: '🔥', color: '#dc2626', title: 'LA County Fire Hazards' },
   'la_county_fire_hazard_responsibility_areas': { icon: '🔥', color: '#ef4444', title: 'LA County Fire Hazard Responsibility Areas' },
@@ -817,6 +826,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'houston_olc_grid_8digit_all' || // Skip Houston OLC Grid 8-digit array (handled separately for map drawing)
     key === 'houston_fire_stations_all' || // Skip Houston Fire Stations array (handled separately for map drawing)
     key === 'houston_tirz_all' || // Skip Houston TIRZ array (handled separately for map drawing)
+    key === 'houston_affordability_all' || // Skip Houston Affordability array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)
     key === 'la_county_housing_lead_risk_all' || // Skip LA County Housing Lead Risk array (handled separately for map drawing)
     key === 'la_county_school_district_boundaries_all' || // Skip LA County School District Boundaries array (handled separately for map drawing)
@@ -16047,6 +16057,126 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Houston TIRZ:', error);
+      }
+
+      // Houston Affordability Tracts
+      try {
+        if (enrichments.houston_affordability_all && Array.isArray(enrichments.houston_affordability_all)) {
+          let tractCount = 0;
+          enrichments.houston_affordability_all.forEach((tract: any) => {
+            if (tract.geometry && tract.geometry.rings && Array.isArray(tract.geometry.rings)) {
+              try {
+                const rings = tract.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('Houston Affordability polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = tract.isContaining;
+                  const layerType = tract.layerType || null;
+                  
+                  // Different colors for boundary layers vs tracts
+                  let color: string;
+                  let icon: string;
+                  let title: string;
+                  
+                  if (layerType === 'CITY_LIMIT') {
+                    color = isContaining ? '#3b82f6' : '#60a5fa'; // Blue for city limit
+                    icon = '🏙️';
+                    title = 'City of Houston City Limit';
+                  } else if (layerType === 'ETJ') {
+                    color = isContaining ? '#8b5cf6' : '#a78bfa'; // Purple for ETJ
+                    icon = '🏘️';
+                    title = 'City of Houston ETJ (Extra-Territorial Jurisdiction)';
+                  } else {
+                    color = isContaining ? '#10b981' : '#34d399'; // Green/emerald for affordability tracts
+                    icon = '🏘️';
+                    title = 'Census Tract';
+                  }
+                  
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const tractId = tract.tractId || tract.TRACT || tract.tract || tract.TRACTCE || tract.tractce || `Tract ${tract.objectId || 'Unknown'}`;
+                  const htaIndex = tract.htaIndex !== null && tract.htaIndex !== undefined ? tract.htaIndex : (tract.HTA_INDEX !== null && tract.HTA_INDEX !== undefined ? tract.HTA_INDEX : null);
+                  const tractObjectId = tract.objectId || tract.OBJECTID || tract.objectid || null;
+                  const distance = tract.distance_miles !== null && tract.distance_miles !== undefined ? tract.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${title}${layerType ? '' : ` ${tractId}`}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${layerType ? `<div><strong>Type:</strong> ${layerType === 'CITY_LIMIT' ? 'City Limit' : 'ETJ'}</div>` : ''}
+                        ${htaIndex !== null ? `<div><strong>HTA Index:</strong> ${htaIndex.toFixed(2)}</div>` : ''}
+                        ${tractObjectId ? `<div><strong>${layerType ? 'Object ID' : 'Tract ID'}:</strong> ${tractObjectId}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all tract attributes (excluding internal fields)
+                  const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'isContaining', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'globalId', 'tractId', 'TRACT', 'tract', 'TRACTCE', 'tractce', 'htaIndex', 'HTA_INDEX', 'hta_index', 'layerType'];
+                  Object.entries(tract).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  tractCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing Houston Affordability polygon:', error);
+              }
+            }
+          });
+          
+          if (tractCount > 0) {
+            if (!legendAccumulator['houston_affordability']) {
+              legendAccumulator['houston_affordability'] = {
+                icon: '🏘️',
+                color: '#10b981',
+                title: 'Houston Affordability (by Census Tract)',
+                count: 0,
+              };
+            }
+            legendAccumulator['houston_affordability'].count += tractCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Houston Affordability:', error);
       }
 
       // Draw Houston METRO Park and Ride Locations as point markers on the map

@@ -118,6 +118,7 @@ import { getHoustonFireStationsData } from '../adapters/houstonFireStations';
 import { getHoustonTIRZData } from '../adapters/houstonTIRZ';
 import { getHoustonMetroBusRoutesData } from '../adapters/houstonMetroBusRoutes';
 import { getHoustonMetroParkAndRideData } from '../adapters/houstonMetroParkAndRide';
+import { getHoustonAffordabilityData } from '../adapters/houstonAffordability';
 import { getHoustonMetroTransitCentersData } from '../adapters/houstonMetroTransitCenters';
 import { getHoustonBikewaysData } from '../adapters/houstonBikeways';
 import { getHoustonMetroRailStationsData } from '../adapters/houstonMetroRailStations';
@@ -2320,6 +2321,10 @@ export class EnrichmentService {
       // Houston TIRZ - Point-in-polygon and proximity query (max 10 miles)
       case 'houston_tirz':
         return await this.getHoustonTIRZ(lat, lon, radius);
+      
+      // Houston Affordability - Point-in-polygon and proximity query (max 5 miles)
+      case 'houston_affordability':
+        return await this.getHoustonAffordability(lat, lon, radius);
       
       // Houston Metro Bus Routes - Proximity query only (max 5 miles)
       case 'houston_metro_bus_routes':
@@ -6290,6 +6295,23 @@ export class EnrichmentService {
     if (id === "poi_doctors_clinics") return ["amenity=clinic", "amenity=doctors"];
     if (id === "poi_dentists") return ["amenity=dentist"];
     if (id === "poi_gyms") return ["leisure=fitness_centre", "leisure=gym"];
+    
+    // OSM Health & Wellness layers
+    if (id === "poi_osm_health_medical_care") return ["amenity=hospital", "healthcare=hospital", "amenity=clinic", "healthcare=clinic", "healthcare=centre", "healthcare=doctor", "healthcare=specialist"];
+    if (id === "poi_osm_health_mental_behavioral") return ["healthcare=psychotherapist", "healthcare=psychologist", "healthcare=psychiatrist", "healthcare=clinic", "social_facility=drug_rehabilitation", "healthcare=social_worker"];
+    if (id === "poi_osm_health_pharmacy_diagnostics") return ["amenity=pharmacy", "healthcare=pharmacy", "healthcare=laboratory", "healthcare=diagnostic_centre"];
+    if (id === "poi_osm_health_fitness_movement") return ["leisure=fitness_centre", "sport=fitness", "leisure=sports_centre", "amenity=gym", "healthcare=physiotherapist", "healthcare=rehabilitation"];
+    if (id === "poi_osm_health_wellness_alternative") return ["healthcare=chiropractor", "healthcare=acupuncture", "healthcare=alternative", "healthcare=massage", "healthcare=naturopath", "healthcare=osteopath"];
+    if (id === "poi_osm_health_dental_vision") return [
+      "amenity=dentist", 
+      "healthcare=dentist", 
+      "healthcare=orthodontist", 
+      "healthcare=oral_surgeon", 
+      "healthcare=optometrist", 
+      "healthcare=ophthalmologist"
+    ];
+    if (id === "poi_osm_health_public_community") return ["healthcare=public_health", "healthcare=clinic", "amenity=social_facility", "healthcare=community_health_centre"];
+    if (id === "poi_osm_health_senior_assisted") return ["amenity=nursing_home", "social_facility=assisted_living", "healthcare=rehabilitation", "healthcare=hospice"];
     if (id === "poi_cinemas") return ["amenity=cinema"];
     if (id === "poi_theatres") return ["amenity=theatre"];
     if (id === "poi_museums_historic") return ["tourism=museum", "historic=memorial", "historic=monument", "historic=castle", "historic=ruins", "historic=archaeological_site"];
@@ -6578,17 +6600,42 @@ out center;`;
       // Calculate accurate bounding box using proven 111,320 meters per degree formula
       const bbox = this.calculateBoundingBox(lat, lon, radiusMiles);
       
-          // Build query using your exact working syntax - ALL element types for POIs
-    let queryParts: string[] = [];
-    filters.forEach(filter => {
-      // Fix: Overpass needs separate quotes around key and value: ["key"="value"]
-      const [key, value] = filter.split('=');
-      // Overpass expects bbox in parentheses: (south,west,north,east)
-      // The bbox variable already contains the comma-separated values
-      queryParts.push(`  node["${key}"="${value}"](${bbox});`);
-      queryParts.push(`  way["${key}"="${value}"](${bbox});`);
-      queryParts.push(`  relation["${key}"="${value}"](${bbox});`);
-    });
+      // Special handling for dental/vision queries - use advanced Overpass syntax
+      const isDentalVisionQuery = filters.some(f => 
+        f.includes('dentist') || 
+        f.includes('orthodontist') || 
+        f.includes('oral_surgeon') || 
+        f.includes('optometrist') || 
+        f.includes('ophthalmologist')
+      );
+      
+      let queryParts: string[] = [];
+      
+      if (isDentalVisionQuery) {
+        // Use advanced Overpass query with regex matching and multiple tag conditions
+        queryParts.push(`  nwr["healthcare"="dentist"](${bbox});`);
+        queryParts.push(`  nwr["healthcare"="orthodontist"](${bbox});`);
+        queryParts.push(`  nwr["amenity"="dentist"](${bbox});`);
+        queryParts.push(`  nwr["amenity"="clinic"]["healthcare"~"dentist|orthodontist"](${bbox});`);
+        queryParts.push(`  nwr["amenity"="clinic"]["healthcare:specialty"~"dentistry|orthodontics"](${bbox});`);
+        queryParts.push(`  nwr["amenity"="doctors"]["healthcare:specialty"~"dentist|dentistry"](${bbox});`);
+        queryParts.push(`  nwr["healthcare"="oral_surgeon"](${bbox});`);
+        queryParts.push(`  nwr["healthcare"="optometrist"](${bbox});`);
+        queryParts.push(`  nwr["healthcare"="ophthalmologist"](${bbox});`);
+        // Name-based soft inference (case-insensitive)
+        queryParts.push(`  nwr["name"~"Dental|Dentistry|DDS|DMD|Orthodontic|Oral Surgery|Oral Surgeon", i](${bbox});`);
+      } else {
+        // Build query using standard syntax - ALL element types for POIs
+        filters.forEach(filter => {
+          // Fix: Overpass needs separate quotes around key and value: ["key"="value"]
+          const [key, value] = filter.split('=');
+          // Overpass expects bbox in parentheses: (south,west,north,east)
+          // The bbox variable already contains the comma-separated values
+          queryParts.push(`  node["${key}"="${value}"](${bbox});`);
+          queryParts.push(`  way["${key}"="${value}"](${bbox});`);
+          queryParts.push(`  relation["${key}"="${value}"](${bbox});`);
+        });
+      }
       
              const q = `[out:json][timeout:60];
  (
@@ -6645,6 +6692,30 @@ out center;`;
         const distanceMiles = this.calculateDistance(lat, lon, latc, lonc) * 0.621371;
         if (!Number.isFinite(distanceMiles) || distanceMiles > radiusMiles) {
           continue;
+        }
+        
+        // For dental/vision queries, the advanced Overpass query already filters most results,
+        // but we can do additional name-based filtering for edge cases
+        if (filters.some(f => f.includes('dentist') || f.includes('orthodontist') || f.includes('oral_surgeon') || f.includes('optometrist') || f.includes('ophthalmologist'))) {
+          const tags = el.tags || {};
+          const name = (tags.name || '').toLowerCase();
+          const healthcare = tags.healthcare || '';
+          const amenity = tags.amenity || '';
+          
+          // If it's a name-based match (from the regex query), verify it's actually dental/vision related
+          // This helps filter out false positives from the name regex
+          if (name && (name.includes('dental') || name.includes('dentist') || name.includes('orthodont') || 
+              name.includes('oral surgery') || name.includes('oral surgeon') || name.includes('optometr') || 
+              name.includes('ophthalm') || name.includes('vision') || name.includes('eye') ||
+              name.includes('dds') || name.includes('dmd'))) {
+            // Name-based match - include it
+          } else if (healthcare === 'dentist' || healthcare === 'orthodontist' || healthcare === 'oral_surgeon' || 
+                     healthcare === 'optometrist' || healthcare === 'ophthalmologist' || amenity === 'dentist') {
+            // Tag-based match - include it
+          } else {
+            // If it doesn't match our criteria, skip it (this filters out non-dental/vision results from broad queries)
+            continue;
+          }
         }
         
         const nameOrType =
@@ -15971,6 +16042,100 @@ out center;`;
         houston_tirz_count: 0,
         houston_tirz_all: [],
         houston_tirz_summary: 'Error querying TIRZ zones'
+      };
+    }
+  }
+
+  private async getHoustonAffordability(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏘️ Fetching Houston Affordability data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 5 miles
+      const cappedRadius = radius ? Math.min(radius, 5.0) : undefined;
+      
+      const data = await getHoustonAffordabilityData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (!data.containing && data.nearby.length === 0) {
+        result.houston_affordability_containing = null;
+        result.houston_affordability_containing_message = 'No affordability tract found containing this location';
+        result.houston_affordability_count = 0;
+        result.houston_affordability_all = [];
+        result.houston_affordability_summary = 'No affordability tracts found.';
+      } else {
+        if (data.containing) {
+          result.houston_affordability_containing = data.containing.tractId || `Tract ${data.containing.objectId}`;
+          result.houston_affordability_containing_hta_index = data.containing.htaIndex;
+          result.houston_affordability_containing_message = `Location is within affordability tract: ${data.containing.tractId || `Tract ${data.containing.objectId}`}${data.containing.htaIndex !== null ? ` (HTA Index: ${data.containing.htaIndex})` : ''}`;
+        } else {
+          result.houston_affordability_containing = null;
+          result.houston_affordability_containing_hta_index = null;
+          result.houston_affordability_containing_message = 'No affordability tract found containing this location';
+        }
+        
+        const allTracts = data.containing ? [data.containing, ...data.nearby] : data.nearby;
+        const allFeatures = [
+          ...(data.cityLimit ? [data.cityLimit] : []),
+          ...(data.etj ? [data.etj] : []),
+          ...allTracts
+        ];
+        result.houston_affordability_count = allTracts.length;
+        result.houston_affordability_all = allFeatures.map(feature => ({
+          ...feature.attributes,
+          objectId: feature.objectId,
+          tractId: feature.tractId,
+          htaIndex: feature.htaIndex,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerType: feature.layerType || null
+        }));
+        
+        // Add boundary info separately
+        if (data.cityLimit) {
+          result.houston_affordability_city_limit = {
+            ...data.cityLimit.attributes,
+            objectId: data.cityLimit.objectId,
+            geometry: data.cityLimit.geometry,
+            isContaining: data.cityLimit.isContaining
+          };
+        }
+        if (data.etj) {
+          result.houston_affordability_etj = {
+            ...data.etj.attributes,
+            objectId: data.etj.objectId,
+            geometry: data.etj.geometry,
+            isContaining: data.etj.isContaining
+          };
+        }
+        
+        const containingCount = data.containing ? 1 : 0;
+        const proximityCount = data.nearby.length;
+        if (containingCount > 0 && proximityCount > 0) {
+          result.houston_affordability_summary = `Found ${containingCount} containing tract(s) and ${proximityCount} nearby tract(s)${cappedRadius ? ` within ${cappedRadius} miles` : ''}.`;
+        } else if (containingCount > 0) {
+          result.houston_affordability_summary = `Found ${containingCount} containing tract(s).`;
+        } else {
+          result.houston_affordability_summary = `Found ${proximityCount} tract(s)${cappedRadius ? ` within ${cappedRadius} miles` : ''}.`;
+        }
+      }
+      
+      console.log(`✅ Houston Affordability data processed:`, {
+        totalCount: result.houston_affordability_count,
+        containing: result.houston_affordability_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Houston Affordability data:', error);
+      return {
+        houston_affordability_containing: null,
+        houston_affordability_containing_hta_index: null,
+        houston_affordability_containing_message: 'Error querying affordability tracts',
+        houston_affordability_count: 0,
+        houston_affordability_all: [],
+        houston_affordability_summary: 'Error querying affordability tracts'
       };
     }
   }

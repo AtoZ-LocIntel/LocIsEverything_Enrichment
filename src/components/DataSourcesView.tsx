@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Globe, Database, CheckCircle, ExternalLink, X } from 'lucide-react';
 
 interface DataSourcesViewProps {
@@ -16,6 +16,22 @@ interface DataSource {
 
 const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const headerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Use fixed positioning instead of sticky due to root overflow issue
+  useEffect(() => {
+    // The root div has overflow which breaks sticky, so we'll use fixed positioning
+    // and add padding to the content to account for the fixed header
+    if (headerRef.current && containerRef.current) {
+      const headerHeight = headerRef.current.offsetHeight;
+      // Add padding to content to account for fixed header
+      const content = containerRef.current.querySelector('.content-wrapper') as HTMLElement;
+      if (content) {
+        content.style.paddingTop = `${headerHeight}px`;
+      }
+    }
+  }, []);
   
   const dataSources = [
     {
@@ -375,6 +391,70 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "High",
           cost: "Free",
           url: "https://data.openei.org/api/views/f9yf-3pn4/rows.geojson"
+        },
+        {
+          name: "OSM Health & Wellness - Medical Care",
+          description: "OpenStreetMap - Hospitals, clinics, doctors, specialists via Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
+        },
+        {
+          name: "OSM Health & Wellness - Mental & Behavioral Health",
+          description: "OpenStreetMap - Psychotherapists, psychologists, psychiatrists, mental health clinics via Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
+        },
+        {
+          name: "OSM Health & Wellness - Pharmacy & Diagnostics",
+          description: "OpenStreetMap - Pharmacies, laboratories, diagnostic centers via Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
+        },
+        {
+          name: "OSM Health & Wellness - Fitness & Movement",
+          description: "OpenStreetMap - Fitness centers, gyms, sports centers, physiotherapists via Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
+        },
+        {
+          name: "OSM Health & Wellness - Wellness & Alternative Care",
+          description: "OpenStreetMap - Chiropractors, acupuncturists, massage, naturopaths, osteopaths via Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
+        },
+        {
+          name: "OSM Health & Wellness - Dental & Vision",
+          description: "OpenStreetMap - Dentists, orthodontists, oral surgeons, optometrists, ophthalmologists via Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
+        },
+        {
+          name: "OSM Health & Wellness - Public & Community Health",
+          description: "OpenStreetMap - Public health facilities, community health centers via Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
+        },
+        {
+          name: "OSM Health & Wellness - Senior & Assisted Care",
+          description: "OpenStreetMap - Nursing homes, assisted living, rehabilitation, hospices via Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/api/interpreter"
         },
         {
           name: "OpenStreetMap Infrastructure",
@@ -1656,6 +1736,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Tax_Incentive_Reinvestment_Zones_view/FeatureServer/5"
+        },
+        {
+          name: "Houston Affordability (by Census Tract)",
+          description: "Houston Affordability by Census Tract (HTA Index) from City of Houston - point-in-polygon and proximity queries up to 5 miles. Housing and Transportation Affordability Index by census tract.",
+          coverage: "Houston, Texas",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/ArcGIS/rest/services/Affordability/FeatureServer"
         },
         {
           name: "Houston Metro Bus Routes",
@@ -3092,9 +3180,21 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header with Back Button */}
-      <div className="bg-white shadow-lg border-b border-gray-300 sticky top-0 z-50">
+    <div ref={containerRef} className="min-h-screen bg-gray-50" style={{ position: 'relative' }}>
+      {/* Header with Back Button - Fixed Header (using fixed instead of sticky due to root overflow) */}
+      <div 
+        ref={headerRef}
+        className="bg-white shadow-lg border-b border-gray-300"
+        style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          backgroundColor: '#ffffff',
+          width: '100%'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
@@ -3187,8 +3287,8 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      {/* Content - Add padding for fixed header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8" style={{ paddingTop: '80px' }}>
         <div className="space-y-8 mt-4">
           {(() => {
             // Filter data sources based on search query
