@@ -489,6 +489,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'australia_built_up_areas_containing' ||
         key === 'australia_built_up_areas_nearby_features' ||
         key === 'australia_npi_facilities_all_pois' ||
+        key === 'australia_waste_management_facilities_all' ||
+        key === 'australia_maritime_ports_all' ||
         key === 'australia_national_roads_all' ||
         key === 'australia_major_roads_all' ||
         key === 'australia_bushfires_containing' ||
@@ -11187,6 +11189,84 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           streetAddress,
           postcode,
           latestReportYear,
+          attributesJson,
+          'Digital Atlas AUS'
+        ]);
+      });
+    } else if (key === 'australia_waste_management_facilities_all' && Array.isArray(value)) {
+      // Handle Australia Waste Management Facilities - each facility gets its own row with all attributes
+      value.forEach((facility: any) => {
+        const name = facility.name || facility.Name || facility.NAME || facility.facilityName || 'Unknown Facility';
+        const distance = facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...facility };
+        delete allAttributes.name;
+        delete allAttributes.Name;
+        delete allAttributes.NAME;
+        delete allAttributes.facilityName;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Geoscience Australia',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_WASTE_MANAGEMENT_FACILITY',
+          name,
+          (facility.latitude || facility.lat || location.lat).toString(),
+          (facility.longitude || facility.lon || location.lon).toString(),
+          distance,
+          '', '', '', '', '', '', '', '', '',
+          attributesJson,
+          'Geoscience Australia'
+        ]);
+      });
+    } else if (key === 'australia_maritime_ports_all' && Array.isArray(value)) {
+      // Handle Australia Maritime Ports - each port gets its own row with all attributes
+      value.forEach((port: any) => {
+        const name = port.name || port.Name || port.NAME || port.portName || 'Unknown Port';
+        const distance = port.distance_miles !== null && port.distance_miles !== undefined ? port.distance_miles.toFixed(2) : '';
+        
+        const allAttributes = { ...port };
+        delete allAttributes.name;
+        delete allAttributes.Name;
+        delete allAttributes.NAME;
+        delete allAttributes.portName;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.ObjectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Digital Atlas AUS',
+          (location.confidence || 'N/A').toString(),
+          'AUSTRALIA_MARITIME_PORT',
+          name,
+          (port.latitude || port.lat || location.lat).toString(),
+          (port.longitude || port.lon || location.lon).toString(),
+          distance,
+          '', '', '', '', '', '', '', '', '',
           attributesJson,
           'Digital Atlas AUS'
         ]);

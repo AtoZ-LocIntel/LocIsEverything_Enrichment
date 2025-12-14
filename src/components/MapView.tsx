@@ -393,8 +393,74 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'tiger_urban_census2020_2020_urban_areas': { icon: '🏙️', color: '#4c1d95', title: 'TIGER Census 2020 2020 Urban Areas' },
   'tiger_urban_urban_areas': { icon: '🏙️', color: '#3b1a7a', title: 'TIGER Urban Areas' },
   
+  'australia_waste_management_facilities': { icon: '🗑️', color: '#8b5cf6', title: 'Australia Waste Management Facilities' },
+  'australia_maritime_ports': { icon: '⚓', color: '#0ea5e9', title: 'Australia Maritime Ports' },
   'default': { icon: '📍', color: '#6b7280', title: 'POI' }
 };
+
+// Color uniqueness system for point features
+// Palette of distinct colors that are visually different
+const UNIQUE_COLOR_PALETTE = [
+  '#dc2626', '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
+  '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#2563eb', '#6366f1',
+  '#7c3aed', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#8b5cf6',
+  '#9333ea', '#7e22ce', '#6b21a8', '#581c87', '#4c1d95', '#3730a3', '#312e81',
+  '#1e1b4b', '#1e3a8a', '#1e40af', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa',
+  '#38bdf8', '#22d3ee', '#06b6d4', '#0891b2', '#0e7490', '#155e75', '#164e63',
+  '#075985', '#0c4a6e', '#082f49', '#172554', '#1e293b', '#334155', '#475569',
+  '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0', '#f1f5f9', '#f8fafc', '#ffffff'
+];
+
+// Track used colors for point features to ensure uniqueness
+const usedColors = new Map<string, string>(); // Maps POI key to color
+const colorUsage = new Map<string, string[]>(); // Maps color to array of POI keys using it
+
+/**
+ * Reset the color tracking system (call at start of each map render)
+ */
+function resetColorTracking(): void {
+  usedColors.clear();
+  colorUsage.clear();
+}
+
+/**
+ * Get a unique color for a point feature, ensuring no duplicates
+ */
+function getUniqueColorForPointFeature(poiKey: string, defaultColor: string): string {
+  // Check if this POI already has an assigned color
+  if (usedColors.has(poiKey)) {
+    return usedColors.get(poiKey)!;
+  }
+
+  // Check if default color is already used
+  const currentUsers = colorUsage.get(defaultColor) || [];
+  
+  if (currentUsers.length === 0) {
+    // Color is available, use it
+    usedColors.set(poiKey, defaultColor);
+    colorUsage.set(defaultColor, [poiKey]);
+    return defaultColor;
+  }
+
+  // Color is already used, find a unique one from palette
+  for (const candidateColor of UNIQUE_COLOR_PALETTE) {
+    const users = colorUsage.get(candidateColor) || [];
+    if (users.length === 0) {
+      // Found an unused color
+      usedColors.set(poiKey, candidateColor);
+      colorUsage.set(candidateColor, [poiKey]);
+      console.log(`🎨 Assigned unique color ${candidateColor} to ${poiKey} (default ${defaultColor} was already used)`);
+      return candidateColor;
+    }
+  }
+
+  // All colors used? Generate a random one (shouldn't happen in practice)
+  const randomColor = `#${Math.floor(Math.random()*16777215).toString(16)}`;
+  usedColors.set(poiKey, randomColor);
+  colorUsage.set(randomColor, [poiKey]);
+  console.warn(`⚠️ All palette colors used, generated random color ${randomColor} for ${poiKey}`);
+  return randomColor;
+}
 
 // Create custom POI marker icons
 const createPOIIcon = (emoji: string, color: string) => {
@@ -1544,6 +1610,8 @@ const MapView: React.FC<MapViewProps> = ({
     // Add all enrichment features - use requestAnimationFrame for smooth rendering
     requestAnimationFrame(() => {
         console.log('🗺️ STEP 2: Inside setTimeout, starting to draw features');
+        // Reset color tracking to ensure unique colors for this map render
+        resetColorTracking();
         const bounds = L.latLngBounds([]);
         const legendAccumulator: Record<string, LegendItem> = {};
         
@@ -1551,7 +1619,7 @@ const MapView: React.FC<MapViewProps> = ({
         if (results[0]?.location) {
           bounds.extend(L.latLng(results[0].location.lat, results[0].location.lon));
         }
-
+        
     results.forEach((result) => {
       const { location, enrichments } = result;
       if (!location) {
@@ -24109,7 +24177,9 @@ const MapView: React.FC<MapViewProps> = ({
         const poiInfo = POI_ICONS[baseKey] || POI_ICONS['default'];
         const poiMeta = poiConfigManager.getPOIType(baseKey);
         const iconEmoji = poiInfo.icon || '📍';
-        const iconColor = poiInfo.color || '#2563eb';
+        const defaultColor = poiInfo.color || '#2563eb';
+        // Ensure unique color for point features
+        const iconColor = getUniqueColorForPointFeature(baseKey, defaultColor);
         const legendTitle = poiMeta?.label || poiInfo.title || formatPopupFieldName(baseKey);
 
         if (!legendAccumulator[baseKey]) {
@@ -24119,6 +24189,9 @@ const MapView: React.FC<MapViewProps> = ({
             title: legendTitle,
             count: 0,
           };
+        } else {
+          // Update color to ensure uniqueness even if entry exists
+          legendAccumulator[baseKey].color = iconColor;
         }
 
         const itemsArray = value as Array<any>;

@@ -178,6 +178,8 @@ import { getAustraliaBuiltUpAreasData } from '../adapters/australiaBuiltUpAreas'
 import { getAustraliaNPIFacilitiesData } from '../adapters/australiaNPIFacilities';
 import { getAustraliaNationalRoadsData } from '../adapters/australiaNationalRoads';
 import { getAustraliaMajorRoadsData } from '../adapters/australiaMajorRoads';
+import { getAustraliaWasteManagementFacilitiesData } from '../adapters/australiaWasteManagementFacilities';
+import { getAustraliaMaritimePortsData } from '../adapters/australiaMaritimePorts';
 import { getIrelandCentresOfPopulationData } from '../adapters/irelandCentresOfPopulation';
 import { getCACondorRangeData } from '../adapters/caCondorRange';
 import { getCABlackBearRangeData } from '../adapters/caBlackBearRange';
@@ -3561,6 +3563,12 @@ export class EnrichmentService {
       
       case 'australia_npi_facilities':
         return await this.getAustraliaNPIFacilities(lat, lon, radius);
+      
+      case 'australia_waste_management_facilities':
+        return await this.getAustraliaWasteManagementFacilities(lat, lon, radius);
+      
+      case 'australia_maritime_ports':
+        return await this.getAustraliaMaritimePorts(lat, lon, radius);
       
       case 'australia_national_roads':
         return await this.getAustraliaNationalRoads(lat, lon, radius);
@@ -15200,6 +15208,90 @@ out center;`;
         [`australia_npi_facilities_count_${radius || 50}mi`]: 0,
         australia_npi_facilities_detailed: [],
         australia_npi_facilities_all_pois: []
+      };
+    }
+  }
+
+  private async getAustraliaWasteManagementFacilities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗑️ Fetching Australia Waste Management Facilities data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          australia_waste_management_facilities_count: 0,
+          australia_waste_management_facilities_all: []
+        };
+      }
+      
+      const cappedRadius = Math.min(radius, 50.0);
+      const data = await getAustraliaWasteManagementFacilitiesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+      
+      result.australia_waste_management_facilities_count = data.facilities.length;
+      result.australia_waste_management_facilities_all = data.facilities.map(facility => ({
+        ...facility.attributes,
+        objectId: facility.objectId,
+        latitude: facility.latitude,
+        longitude: facility.longitude,
+        geometry: facility.geometry,
+        distance_miles: facility.distance_miles
+      }));
+      
+      result.australia_waste_management_facilities_summary = `Found ${data.facilities.length} waste management facility/facilities within ${cappedRadius} miles.`;
+      
+      console.log(`✅ Australia Waste Management Facilities data processed:`, {
+        totalCount: result.australia_waste_management_facilities_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Australia Waste Management Facilities data:', error);
+      return {
+        australia_waste_management_facilities_count: 0,
+        australia_waste_management_facilities_all: []
+      };
+    }
+  }
+
+  private async getAustraliaMaritimePorts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⚓ Fetching Australia Maritime Ports data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      if (!radius || radius <= 0) {
+        return {
+          australia_maritime_ports_count: 0,
+          australia_maritime_ports_all: []
+        };
+      }
+      
+      const cappedRadius = Math.min(radius, 50.0);
+      const data = await getAustraliaMaritimePortsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+      
+      result.australia_maritime_ports_count = data.ports.length;
+      result.australia_maritime_ports_all = data.ports.map(port => ({
+        ...port.attributes,
+        objectId: port.objectId,
+        latitude: port.latitude,
+        longitude: port.longitude,
+        geometry: port.geometry,
+        distance_miles: port.distance_miles
+      }));
+      
+      result.australia_maritime_ports_summary = `Found ${data.ports.length} maritime port(s) within ${cappedRadius} miles.`;
+      
+      console.log(`✅ Australia Maritime Ports data processed:`, {
+        totalCount: result.australia_maritime_ports_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Australia Maritime Ports data:', error);
+      return {
+        australia_maritime_ports_count: 0,
+        australia_maritime_ports_all: []
       };
     }
   }

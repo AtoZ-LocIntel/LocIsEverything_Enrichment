@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowLeft, Globe, Database, CheckCircle, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Globe, Database, CheckCircle, ExternalLink, X } from 'lucide-react';
 
 interface DataSourcesViewProps {
   onBackToMain: () => void;
@@ -15,6 +15,8 @@ interface DataSource {
 }
 
 const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  
   const dataSources = [
     {
       category: "Geocoding Services",
@@ -3041,6 +3043,22 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/National_Pollutant_Inventory/FeatureServer/0"
         },
         {
+          name: "Geoscience Australia - Waste Management Facilities",
+          description: "Australia Waste Management Facilities - Geoscience Australia Waste Management Facilities (proximity queries up to 50 miles). Point feature service for waste management facilities across Australia.",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.ga.gov.au/gis/rest/services/Waste_Management_Facilities/MapServer/0"
+        },
+        {
+          name: "Digital Atlas AUS - Major Maritime Ports",
+          description: "Australia Maritime Ports - Major maritime ports and facilities (proximity queries up to 50 miles). Point feature service for major maritime ports across Australia.",
+          coverage: "Australia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/Major_Maritime_Ports_vw/FeatureServer/0"
+        },
+        {
           name: "Digital Atlas AUS - National Roads",
           description: "Australia National Roads - Comprehensive national road network from Digital Atlas AUS (proximity queries up to 1 mile: 0.25, 0.50, 0.75, 1.0 miles). Includes all road types with attributes for street names, hierarchy, status, surface type, state, and lane information.",
           coverage: "Australia",
@@ -3087,6 +3105,80 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
               <span>Back to Main</span>
             </button>
             
+            {/* Search Bar */}
+            <div className="flex-1 max-w-md mx-2 sm:mx-4" style={{ minWidth: '200px' }}>
+              <div style={{ position: 'relative', width: '100%' }}>
+                <span style={{ 
+                  position: 'absolute', 
+                  left: '12px', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  fontSize: '16px', 
+                  zIndex: 10, 
+                  pointerEvents: 'none',
+                  color: '#9ca3af'
+                }}>🔍</span>
+                <input
+                  id="data-sources-search-input"
+                  type="text"
+                  placeholder="Search data sources..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{ 
+                    width: '100%',
+                    backgroundColor: '#ffffff',
+                    paddingLeft: '36px',
+                    paddingRight: searchQuery ? '36px' : '12px',
+                    paddingTop: '8px',
+                    paddingBottom: '8px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '400',
+                    color: '#111827',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={{
+                      position: 'absolute',
+                      right: '8px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#9ca3af',
+                      zIndex: 10
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#6b7280';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#9ca3af';
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+            
             <div className="flex items-center space-x-2">
               <Globe className="w-6 h-6 text-blue-600" />
               <h1 className="text-xl font-bold text-gray-900">Data Sources & APIs</h1>
@@ -3098,7 +3190,37 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="space-y-8 mt-4">
-          {dataSources.map((category, categoryIndex) => (
+          {(() => {
+            // Filter data sources based on search query
+            // Prioritizes exact layer name matches (the hyperlink text) for more granular filtering
+            const filteredDataSources = searchQuery.trim() === '' 
+              ? dataSources 
+              : dataSources.map(category => {
+                  const searchLower = searchQuery.toLowerCase().trim();
+                  const filteredSources = category.sources.filter(source => {
+                    const nameLower = source.name.toLowerCase();
+                    const descriptionLower = source.description.toLowerCase();
+                    const coverageLower = source.coverage.toLowerCase();
+                    const accuracyLower = source.accuracy.toLowerCase();
+                    const costLower = source.cost.toLowerCase();
+                    const categoryLower = category.category.toLowerCase();
+                    
+                    // Check for matches - layer name (hyperlink text) is checked first for priority
+                    return nameLower.includes(searchLower) ||
+                           nameLower.startsWith(searchLower) || // Prioritize starts-with matches on layer name
+                           descriptionLower.includes(searchLower) ||
+                           coverageLower.includes(searchLower) ||
+                           accuracyLower.includes(searchLower) ||
+                           costLower.includes(searchLower) ||
+                           categoryLower.includes(searchLower);
+                  });
+                  // Only include category if it has matching sources
+                  return filteredSources.length > 0 
+                    ? { ...category, sources: filteredSources }
+                    : null;
+                }).filter(category => category !== null) as typeof dataSources;
+            
+            return filteredDataSources.map((category, categoryIndex) => (
             <div key={categoryIndex} className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl">
                 <h2 className="text-xl font-bold text-white p-4 flex items-center space-x-2">
@@ -3153,7 +3275,46 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
                 ))}
               </div>
             </div>
-          ))}
+            ));
+          })()}
+          
+          {/* Show message if no results found */}
+          {searchQuery.trim() !== '' && (() => {
+            const searchLower = searchQuery.toLowerCase().trim();
+            const hasResults = dataSources.some(category => 
+              category.sources.some(source => {
+                const nameLower = source.name.toLowerCase();
+                const descriptionLower = source.description.toLowerCase();
+                const coverageLower = source.coverage.toLowerCase();
+                const accuracyLower = source.accuracy.toLowerCase();
+                const costLower = source.cost.toLowerCase();
+                const categoryLower = category.category.toLowerCase();
+                
+                // Check for matches - layer name (hyperlink text) is checked first
+                return nameLower.includes(searchLower) ||
+                       nameLower.startsWith(searchLower) ||
+                       descriptionLower.includes(searchLower) ||
+                       coverageLower.includes(searchLower) ||
+                       accuracyLower.includes(searchLower) ||
+                       costLower.includes(searchLower) ||
+                       categoryLower.includes(searchLower);
+              })
+            );
+            
+            if (!hasResults) {
+              return (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+                  <p className="text-gray-600 text-lg">
+                    No data sources found matching "{searchQuery}"
+                  </p>
+                  <p className="text-gray-500 text-sm mt-2">
+                    Try searching with different keywords
+                  </p>
+                </div>
+              );
+            }
+            return null;
+          })()}
           
           {/* Additional Information */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
