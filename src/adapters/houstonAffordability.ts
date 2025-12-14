@@ -7,7 +7,6 @@
 import { fetchJSONSmart } from '../services/EnrichmentService';
 
 const BASE_SERVICE_URL = 'https://services.arcgis.com/NummVBqZSIJKUeVR/ArcGIS/rest/services/Affordability/FeatureServer';
-const ALL_LAYER_IDS = [0, 1, 2, 3]; // All layers: 0=CITY_LIMIT, 1=ETJ, 2&3=HGACTracts_HTAindex
 const TRACT_LAYER_IDS = [2, 3]; // HGACTracts_HTAindex layers (for affordability data)
 const BOUNDARY_LAYER_IDS = [0, 1]; // Boundary layers (CITY_LIMIT and ETJ)
 
@@ -58,7 +57,7 @@ function calculatePolygonCentroid(ring: number[][]): [number, number] {
 /**
  * Convert ESRI geometry coordinates to lat/lon
  */
-function esriToLatLon(x: number, y: number, spatialRef?: any): [number, number] {
+function esriToLatLon(x: number, y: number, _spatialRef?: any): [number, number] {
   // If spatial reference is 2278 (Texas State Plane), we need to convert
   // For now, assume coordinates are already in WGS84 or will be converted by the service
   // The service should handle coordinate transformation with inSR/outSR parameters
