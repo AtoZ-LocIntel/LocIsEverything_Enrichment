@@ -258,8 +258,8 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
               return (
                 <div key={enrichment.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
-                  {/* Layer Name and Toggle */}
-                  <div className="flex items-start gap-3" style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
+                  {/* Layer Name, Description, and Toggle */}
+                  <div className="flex items-start gap-3">
                     <button
                       type="button"
                       onClick={() => handleToggleEnrichment(enrichment.id)}
@@ -268,29 +268,27 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
                           ? 'bg-blue-600 border-blue-600' 
                           : 'bg-gray-800 border-gray-700'
                       }`}
-                      style={{ flexShrink: 0 }}
                     >
                       {isSelected && (
                         <Check className="w-6 h-6 text-white" />
                       )}
                     </button>
                     
-                    <div style={{ flex: '1 1 0%', minWidth: 0, maxWidth: '100%', overflow: 'hidden', boxSizing: 'border-box' }}>
+                    <div className="flex-1 min-w-0">
                       <label 
                         htmlFor={`checkbox-${enrichment.id}`} 
-                        className="text-base font-semibold text-white cursor-pointer block mb-1"
+                        className="text-base font-semibold text-white cursor-pointer block mb-1 break-words"
                         onClick={() => handleToggleEnrichment(enrichment.id)}
-                        style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
                       >
                         {enrichment.label}
                       </label>
-                      <p className="text-sm text-gray-300 leading-relaxed" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{enrichment.description}</p>
+                      <p className="text-sm text-gray-300 leading-relaxed break-words">{enrichment.description}</p>
                     </div>
                   </div>
 
-                  {/* POI Radius Configuration */}
+                  {/* POI Radius Configuration - Right below toggle/name */}
                   {enrichment.isPOI && isSelected && (
-                    <div className="mt-3 pt-3 border-t border-gray-700">
+                    <div className="pt-3 border-t border-gray-700">
                       <div className="flex items-center space-x-2 mb-3">
                         <Settings className="w-4 h-4 text-blue-400" />
                         <span className="text-sm font-medium text-white">Search Radius</span>
@@ -366,7 +364,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
                   {/* Year filter for Chicago Traffic Crashes */}
                   {enrichment.id === 'chicago_traffic_crashes' && isSelected && (
-                    <div className="mt-3 pt-3 border-t border-gray-700">
+                    <div className="pt-3 border-t border-gray-700">
                       <label className="text-sm font-medium text-white block mb-2">
                         Year Filter (Crash Date):
                       </label>
