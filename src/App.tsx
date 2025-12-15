@@ -11,6 +11,7 @@ import DataSourcesView from './components/DataSourcesView';
 import EnrichmentCategoryView from './components/EnrichmentCategoryView';
 import EnrichmentConfig from './components/EnrichmentConfig';
 import ProTipsPage from './components/ProTipsPage';
+import DataSourcesPage from './components/DataSourcesPage';
 import { exportEnrichmentResultsToCSV } from './utils/csvExport';
 import LoadingModal from './components/LoadingModal';
 import DonateModal from './components/DonateModal';
@@ -364,9 +365,15 @@ function App() {
           onDownloadCSV={handleDownloadCSV}
         />
       ) : viewMode === 'data-sources' ? (
-        <DataSourcesView
-          onBackToMain={handleBackToMain}
-        />
+        isMobile ? (
+          <DataSourcesPage
+            onBack={handleBackToMain}
+          />
+        ) : (
+          <DataSourcesView
+            onBackToMain={handleBackToMain}
+          />
+        )
       ) : viewMode === 'pro-tips' ? (
         <ProTipsPage
           onBack={handleBackToMain}
