@@ -258,32 +258,36 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
               return (
                 <div key={enrichment.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
-                  {/* Layer Name, Description, and Toggle */}
-                  <div className="flex items-start gap-3">
+                  {/* Layer Name and Description */}
+                  <div>
+                    <label 
+                      htmlFor={`checkbox-${enrichment.id}`} 
+                      className="text-base font-semibold text-white cursor-pointer block mb-2"
+                      onClick={() => handleToggleEnrichment(enrichment.id)}
+                    >
+                      {enrichment.label}
+                    </label>
+                    <p className="text-sm text-gray-300 leading-relaxed mb-3">{enrichment.description}</p>
+                    
+                    {/* Toggle Button */}
                     <button
                       type="button"
                       onClick={() => handleToggleEnrichment(enrichment.id)}
-                      className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
+                      className={`w-full py-3 px-4 border-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                         isSelected 
-                          ? 'bg-blue-600 border-blue-600' 
-                          : 'bg-gray-800 border-gray-700'
+                          ? 'bg-blue-600 border-blue-600 text-white' 
+                          : 'bg-gray-800 border-gray-700 text-gray-400'
                       }`}
                     >
-                      {isSelected && (
-                        <Check className="w-6 h-6 text-white" />
+                      {isSelected ? (
+                        <span className="flex items-center gap-2">
+                          <Check className="w-5 h-5" />
+                          <span className="font-medium">Enabled</span>
+                        </span>
+                      ) : (
+                        <span className="font-medium">Enable Layer</span>
                       )}
                     </button>
-                    
-                    <div className="flex-1 min-w-0">
-                      <label 
-                        htmlFor={`checkbox-${enrichment.id}`} 
-                        className="text-base font-semibold text-white cursor-pointer block mb-1 break-words"
-                        onClick={() => handleToggleEnrichment(enrichment.id)}
-                      >
-                        {enrichment.label}
-                      </label>
-                      <p className="text-sm text-gray-300 leading-relaxed break-words">{enrichment.description}</p>
-                    </div>
                   </div>
 
                   {/* POI Radius Configuration - Right below toggle/name */}
