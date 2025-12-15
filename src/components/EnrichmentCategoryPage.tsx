@@ -188,14 +188,14 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
       {/* Content - Mobile Optimized Scrollable */}
       <main
-        className="flex-1 overflow-y-auto px-4 py-4 min-h-0"
+        className="flex-1 overflow-y-auto px-4 py-4 min-h-0 w-full"
         style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
       >
-        <div className="max-w-xl mx-auto space-y-4">
+        <div className="w-full max-w-xl mx-auto space-y-4" style={{ maxWidth: '100%', boxSizing: 'border-box' }}>
           {/* Category Description */}
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h2 className="text-base font-semibold text-white mb-2">About {category.title}</h2>
-            <p className="text-sm text-gray-300 leading-relaxed">{category.description}</p>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 w-full" style={{ boxSizing: 'border-box' }}>
+            <h2 className="text-base font-semibold text-white mb-2 break-words">About {category.title}</h2>
+            <p className="text-sm text-gray-300 leading-relaxed break-words">{category.description}</p>
           </div>
 
           {/* Enrichment Options */}
@@ -257,9 +257,9 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
                 Number.isInteger(value) ? value.toString() : value.toFixed(1);
 
               return (
-                <div key={enrichment.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
+                <div key={enrichment.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3 w-full" style={{ boxSizing: 'border-box', maxWidth: '100%' }}>
                   {/* Layer Name and Toggle */}
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3 w-full" style={{ boxSizing: 'border-box', maxWidth: '100%' }}>
                     <button
                       type="button"
                       onClick={() => handleToggleEnrichment(enrichment.id)}
@@ -268,21 +268,23 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
                           ? 'bg-blue-600 border-blue-600' 
                           : 'bg-gray-800 border-gray-700'
                       }`}
+                      style={{ flexShrink: 0 }}
                     >
                       {isSelected && (
                         <Check className="w-6 h-6 text-white" />
                       )}
                     </button>
                     
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0" style={{ width: 0, maxWidth: '100%', overflow: 'hidden' }}>
                       <label 
                         htmlFor={`checkbox-${enrichment.id}`} 
-                        className="text-base font-semibold text-white cursor-pointer block mb-1"
+                        className="text-base font-semibold text-white cursor-pointer block mb-1 break-words"
                         onClick={() => handleToggleEnrichment(enrichment.id)}
+                        style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
                       >
                         {enrichment.label}
                       </label>
-                      <p className="text-sm text-gray-300 leading-relaxed">{enrichment.description}</p>
+                      <p className="text-sm text-gray-300 leading-relaxed break-words" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{enrichment.description}</p>
                     </div>
                   </div>
 
