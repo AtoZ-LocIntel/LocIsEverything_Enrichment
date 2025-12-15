@@ -37,7 +37,7 @@ const DataSourcesPage: React.FC<DataSourcesPageProps> = ({ onBack }) => {
       }).filter(category => category !== null) as DataSourceCategory[];
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
       {/* Header */}
       <header className="bg-black border-b border-gray-800 px-4 py-4 flex items-center space-x-3 flex-shrink-0">
         <button
@@ -76,7 +76,7 @@ const DataSourcesPage: React.FC<DataSourcesPageProps> = ({ onBack }) => {
 
       {/* Content - Mobile Optimized Scrollable */}
       <main
-        className="flex-1 overflow-y-auto px-4 py-4"
+        className="flex-1 overflow-y-auto px-4 py-4 min-h-0"
         style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
       >
         <div className="max-w-xl mx-auto space-y-6">
