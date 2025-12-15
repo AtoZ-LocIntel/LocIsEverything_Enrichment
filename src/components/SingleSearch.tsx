@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Loader2, Lightbulb, X, Database } from 'lucide-react';
-import DataSourcesView from './DataSourcesView';
+import { Search, Loader2, Lightbulb, X } from 'lucide-react';
 
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
   onLocationSearch?: () => Promise<void>;
   searchInput: string;
   onSearchInputChange: (value: string) => void;
+  onViewProTips?: () => void;
 }
 
-const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, searchInput, onSearchInputChange }) => {
+const SingleSearch: React.FC<SingleSearchProps> = ({
+  onSearch,
+  onLocationSearch,
+  searchInput,
+  onSearchInputChange,
+  onViewProTips
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [showProTips, setShowProTips] = useState(false);
-  const [showDataSources, setShowDataSources] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile device
@@ -62,7 +67,13 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             
             {/* Pro Tips Lightbulb */}
             <button
-              onClick={() => setShowProTips(!showProTips)}
+              onClick={() => {
+                if (isMobile && onViewProTips) {
+                  onViewProTips();
+                } else {
+                  setShowProTips(!showProTips);
+                }
+              }}
               className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
               title="Pro Tips"
             >
@@ -178,36 +189,8 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             {/* Scrollable Content */}
             <div 
               className="flex-1 overflow-y-auto px-6 py-4 min-h-0"
-              style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
             >
               <div className="space-y-3">
-              {/* Data Sources Link - Mobile Only (moved to top for visibility) */}
-              {isMobile && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <div className="flex flex-col space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Database className="w-5 h-5 text-blue-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        View Data Sources & APIs
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-700">
-                      Browse all data sources and APIs used in this platform, including coverage and attribution details.
-                    </p>
-                    <button
-                      onClick={() => {
-                        setShowProTips(false);
-                        setShowDataSources(true);
-                      }}
-                      className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
-                    >
-                      <Database className="w-4 h-4" />
-                      <span>Open Data Sources</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {/* Data Service Disclaimer */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <div className="text-sm text-gray-700 space-y-2">
@@ -252,34 +235,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
         </div>
       )}
 
-      {/* Data Sources Modal - Mobile Only */}
-      {showDataSources && isMobile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999]">
-          <div className="bg-white rounded-t-xl w-full h-[90vh] flex flex-col" style={{ maxHeight: '90vh' }}>
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-xl flex-shrink-0 z-10">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-                <Database className="w-5 h-5 text-blue-600" />
-                <span>Data Sources & APIs</span>
-              </h3>
-              <button
-                onClick={() => setShowDataSources(false)}
-                className="text-gray-400 hover:text-gray-600 p-1"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            {/* Scrollable Content */}
-            <div 
-              className="flex-1 overflow-y-auto min-h-0"
-              style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
-            >
-              <DataSourcesView onBackToMain={() => setShowDataSources(false)} />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Data Sources Modal - Mobile Only (unused now; mobile uses full Data Sources view via App) */}
     </>
   );
 };

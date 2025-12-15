@@ -10,6 +10,7 @@ import DesktopResultsView from './components/DesktopResultsView';
 import DataSourcesView from './components/DataSourcesView';
 import EnrichmentCategoryView from './components/EnrichmentCategoryView';
 import EnrichmentConfig from './components/EnrichmentConfig';
+import ProTipsPage from './components/ProTipsPage';
 import { exportEnrichmentResultsToCSV } from './utils/csvExport';
 import LoadingModal from './components/LoadingModal';
 import DonateModal from './components/DonateModal';
@@ -17,7 +18,7 @@ import { EnrichmentService } from './services/EnrichmentService';
 import { GeocodeResult } from './lib/types';
 import { Heart } from 'lucide-react';
 
-export type ViewMode = 'config' | 'map' | 'mobile-results' | 'desktop-results' | 'data-sources' | 'enrichment-category';
+export type ViewMode = 'config' | 'map' | 'mobile-results' | 'desktop-results' | 'data-sources' | 'enrichment-category' | 'pro-tips';
 
 export interface EnrichmentResult {
   location: GeocodeResult;
@@ -196,9 +197,12 @@ function App() {
   };
 
 
-
   const handleViewDataSources = () => {
     setViewMode('data-sources');
+  };
+
+  const handleViewProTips = () => {
+    setViewMode('pro-tips');
   };
 
   const handleViewEnrichmentCategory = (category: any) => {
@@ -302,6 +306,8 @@ function App() {
                   onLocationSearch={handleLocationSearch}
                   searchInput={searchInput}
                   onSearchInputChange={setSearchInput}
+                  onViewProTips={isMobile ? handleViewProTips : undefined}
+                  onViewDataSourcesMobile={isMobile ? handleViewDataSources : undefined}
                 />
               </div>
               {!isMobile && (
@@ -361,6 +367,11 @@ function App() {
       ) : viewMode === 'data-sources' ? (
         <DataSourcesView
           onBackToMain={handleBackToMain}
+        />
+      ) : viewMode === 'pro-tips' ? (
+        <ProTipsPage
+          onBack={handleBackToMain}
+          onViewDataSources={handleViewDataSources}
         />
       ) : viewMode === 'enrichment-category' ? (
         <EnrichmentCategoryView
