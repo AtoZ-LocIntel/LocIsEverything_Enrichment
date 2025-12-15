@@ -5,7 +5,7 @@ interface DataSourcesViewProps {
   onBackToMain: () => void;
 }
 
-interface DataSource {
+export interface DataSource {
   name: string;
   description: string;
   coverage: string;
@@ -14,26 +14,14 @@ interface DataSource {
   url?: string;
 }
 
-const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const headerRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Use fixed positioning instead of sticky due to root overflow issue
-  useEffect(() => {
-    // The root div has overflow which breaks sticky, so we'll use fixed positioning
-    // and add padding to the content to account for the fixed header
-    if (headerRef.current && containerRef.current) {
-      const headerHeight = headerRef.current.offsetHeight;
-      // Add padding to content to account for fixed header
-      const content = containerRef.current.querySelector('.content-wrapper') as HTMLElement;
-      if (content) {
-        content.style.paddingTop = `${headerHeight}px`;
-      }
-    }
-  }, []);
-  
-  const dataSources = [
+export interface DataSourceCategory {
+  category: string;
+  sources: DataSource[];
+}
+
+// Export the dataSources array so it can be shared with mobile view
+export const getDataSources = (): DataSourceCategory[] => {
+  return [
     {
       category: "Geocoding Services",
       sources: [
@@ -3271,6 +3259,28 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       ]
     }
   ];
+};
+
+const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const headerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Use fixed positioning instead of sticky due to root overflow issue
+  useEffect(() => {
+    // The root div has overflow which breaks sticky, so we'll use fixed positioning
+    // and add padding to the content to account for the fixed header
+    if (headerRef.current && containerRef.current) {
+      const headerHeight = headerRef.current.offsetHeight;
+      // Add padding to content to account for fixed header
+      const content = containerRef.current.querySelector('.content-wrapper') as HTMLElement;
+      if (content) {
+        content.style.paddingTop = `${headerHeight}px`;
+      }
+    }
+  }, []);
+  
+  const dataSources = getDataSources();
 
   return (
     <div ref={containerRef} className="min-h-screen bg-gray-50" style={{ position: 'relative' }}>
