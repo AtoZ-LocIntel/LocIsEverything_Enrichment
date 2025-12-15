@@ -6935,12 +6935,17 @@ const MapView: React.FC<MapViewProps> = ({
         }
 
         if (featureCount > 0) {
-          legendEntries.push({
-            label: name,
-            icon,
-            color,
-            type: 'polygon'
-          });
+          const existing = legendAccumulator[name];
+          if (existing) {
+            existing.count += featureCount;
+          } else {
+            legendAccumulator[name] = {
+              icon,
+              color,
+              title: name,
+              count: featureCount
+            };
+          }
         }
       });
 

@@ -171,7 +171,6 @@ import { getUKCancerAlliancesData } from '../adapters/ukCancerAlliances';
 import { getUKGeostatGridData } from '../adapters/ukGeostatGrid';
 import { getUKFireRescueAuthoritiesData } from '../adapters/ukFireRescueAuthorities';
 import { getUKPoliceForceAreasData } from '../adapters/ukPoliceForceAreas';
-import { getUKEuropeanElectoralRegionsData } from '../adapters/ukEuropeanElectoralRegions';
 import { getUKBuiltUpAreas2024Data } from '../adapters/ukBuiltUpAreas';
 import { getUKEuropeanElectoralRegionsData } from '../adapters/ukEuropeanElectoralRegions';
 import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
