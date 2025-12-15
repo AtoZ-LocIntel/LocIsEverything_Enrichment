@@ -188,10 +188,10 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
       {/* Content - Mobile Optimized Scrollable */}
       <main
-        className="flex-1 overflow-y-auto px-4 py-4 min-h-0 w-full"
+        className="flex-1 overflow-y-auto px-4 py-4 min-h-0"
         style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
       >
-        <div className="w-full space-y-4">
+        <div className="max-w-xl mx-auto space-y-4 w-full">
           {/* Category Description */}
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 w-full">
             <h2 className="text-base font-semibold text-white mb-2 break-words">About {category.title}</h2>
