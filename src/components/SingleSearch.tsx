@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Search, Loader2, Lightbulb, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Loader2, Lightbulb, X, Database } from 'lucide-react';
+import DataSourcesView from './DataSourcesView';
 
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
@@ -10,9 +11,20 @@ interface SingleSearchProps {
 
 const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch, searchInput, onSearchInputChange }) => {
   const [isLoading, setIsLoading] = useState(false);
-
   const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [showProTips, setShowProTips] = useState(false);
+  const [showDataSources, setShowDataSources] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,6 +203,25 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                   🔧 <strong>Customize your search:</strong> Scroll down to configure which enrichment data to include and set search radii for points of interest
                 </p>
               </div>
+
+              {/* Data Sources Link - Mobile Only */}
+              {isMobile && (
+                <div className="pt-4 border-t border-gray-200 mt-4">
+                  <button
+                    onClick={() => {
+                      setShowProTips(false);
+                      setShowDataSources(true);
+                    }}
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    <Database className="w-5 h-5" />
+                    <span>View Data Sources</span>
+                  </button>
+                  <p className="text-xs text-gray-600 mt-2 text-center">
+                    Browse all data sources and APIs used in this platform
+                  </p>
+                </div>
+              )}
             </div>
             
             <div className="mt-6 flex justify-end">
@@ -200,6 +231,32 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
               >
                 Got it!
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Data Sources Modal - Mobile Only */}
+      {showDataSources && isMobile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-0">
+          <div className="bg-white rounded-t-xl w-full h-full max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-xl sticky top-0 z-10">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <Database className="w-5 h-5 text-blue-600" />
+                <span>Data Sources & APIs</span>
+              </h3>
+              <button
+                onClick={() => setShowDataSources(false)}
+                className="text-gray-400 hover:text-gray-600 p-1"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto">
+              <DataSourcesView onBackToMain={() => setShowDataSources(false)} />
             </div>
           </div>
         </div>
