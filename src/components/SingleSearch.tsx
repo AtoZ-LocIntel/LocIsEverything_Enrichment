@@ -160,7 +160,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
       {/* Pro Tips Modal - Outside of card structure */}
       {showProTips && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className={`bg-white rounded-xl max-w-md w-full flex flex-col ${isMobile ? 'max-h-[90vh]' : ''}`}>
+          <div className={`bg-white rounded-xl max-w-md w-full flex flex-col ${isMobile ? 'h-full max-h-[90vh]' : ''}`}>
             {/* Header - Fixed */}
             <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
@@ -178,7 +178,34 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             {/* Scrollable Content */}
             <div className={`flex-1 overflow-y-auto px-6 py-4 ${isMobile ? 'min-h-0' : ''}`}>
               <div className="space-y-3">
-              {/* Data Service Disclaimer - At the top */}
+              {/* Data Sources Link - Mobile Only (moved to top for visibility) */}
+              {isMobile && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Database className="w-5 h-5 text-blue-600" />
+                      <span className="text-sm font-semibold text-gray-900">
+                        View Data Sources & APIs
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-700">
+                      Browse all data sources and APIs used in this platform, including coverage and attribution details.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setShowProTips(false);
+                        setShowDataSources(true);
+                      }}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                    >
+                      <Database className="w-4 h-4" />
+                      <span>Open Data Sources</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Data Service Disclaimer */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <div className="text-sm text-gray-700 space-y-2">
                   <p className="font-semibold text-gray-900">
@@ -206,25 +233,6 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                   🔧 <strong>Customize your search:</strong> Scroll down to configure which enrichment data to include and set search radii for points of interest
                 </p>
               </div>
-
-              {/* Data Sources Link - Mobile Only */}
-              {isMobile && (
-                <div className="pt-4 border-t border-gray-200 mt-4">
-                  <button
-                    onClick={() => {
-                      setShowProTips(false);
-                      setShowDataSources(true);
-                    }}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    <Database className="w-5 h-5" />
-                    <span>View Data Sources</span>
-                  </button>
-                  <p className="text-xs text-gray-600 mt-2 text-center">
-                    Browse all data sources and APIs used in this platform
-                  </p>
-                </div>
-              )}
               </div>
             </div>
             
