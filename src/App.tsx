@@ -9,6 +9,7 @@ import MobileResultsView from './components/MobileResultsView';
 import DesktopResultsView from './components/DesktopResultsView';
 import DataSourcesView from './components/DataSourcesView';
 import EnrichmentCategoryView from './components/EnrichmentCategoryView';
+import EnrichmentCategoryPage from './components/EnrichmentCategoryPage';
 import EnrichmentConfig from './components/EnrichmentConfig';
 import ProTipsPage from './components/ProTipsPage';
 import DataSourcesPage from './components/DataSourcesPage';
@@ -380,16 +381,29 @@ function App() {
           onViewDataSources={handleViewDataSources}
         />
       ) : viewMode === 'enrichment-category' ? (
-        <EnrichmentCategoryView
-          category={activeCategory}
-          selectedEnrichments={selectedEnrichments}
-          poiRadii={poiRadii}
-          poiYears={poiYears}
-          onSelectionChange={setSelectedEnrichments}
-          onPoiRadiiChange={setPoiRadii}
-          onPoiYearsChange={setPoiYears}
-          onBackToConfig={handleBackToConfig}
-        />
+        isMobile ? (
+          <EnrichmentCategoryPage
+            category={activeCategory}
+            selectedEnrichments={selectedEnrichments}
+            poiRadii={poiRadii}
+            poiYears={poiYears}
+            onSelectionChange={setSelectedEnrichments}
+            onPoiRadiiChange={setPoiRadii}
+            onPoiYearsChange={setPoiYears}
+            onBackToConfig={handleBackToConfig}
+          />
+        ) : (
+          <EnrichmentCategoryView
+            category={activeCategory}
+            selectedEnrichments={selectedEnrichments}
+            poiRadii={poiRadii}
+            poiYears={poiYears}
+            onSelectionChange={setSelectedEnrichments}
+            onPoiRadiiChange={setPoiRadii}
+            onPoiYearsChange={setPoiYears}
+            onBackToConfig={handleBackToConfig}
+          />
+        )
       ) : (
         <div className="flex-1 h-full">
           <MapView
