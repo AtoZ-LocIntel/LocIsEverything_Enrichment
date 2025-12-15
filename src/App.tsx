@@ -307,7 +307,6 @@ function App() {
                   searchInput={searchInput}
                   onSearchInputChange={setSearchInput}
                   onViewProTips={isMobile ? handleViewProTips : undefined}
-                  onViewDataSourcesMobile={isMobile ? handleViewDataSources : undefined}
                 />
               </div>
               {!isMobile && (
