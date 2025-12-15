@@ -160,7 +160,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
       {/* Pro Tips Modal - Outside of card structure */}
       {showProTips && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className={`bg-white rounded-xl max-w-md w-full flex flex-col ${isMobile ? 'h-full max-h-[90vh]' : ''}`}>
+          <div className={`bg-white rounded-xl max-w-md w-full flex flex-col ${isMobile ? 'h-[90vh]' : ''}`} style={isMobile ? { maxHeight: '90vh' } : {}}>
             {/* Header - Fixed */}
             <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
@@ -176,7 +176,10 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             </div>
             
             {/* Scrollable Content */}
-            <div className={`flex-1 overflow-y-auto px-6 py-4 ${isMobile ? 'min-h-0' : ''}`}>
+            <div 
+              className="flex-1 overflow-y-auto px-6 py-4 min-h-0"
+              style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+            >
               <div className="space-y-3">
               {/* Data Sources Link - Mobile Only (moved to top for visibility) */}
               {isMobile && (
@@ -251,10 +254,10 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
 
       {/* Data Sources Modal - Mobile Only */}
       {showDataSources && isMobile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-0">
-          <div className="bg-white rounded-t-xl w-full h-full max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999]">
+          <div className="bg-white rounded-t-xl w-full h-[90vh] flex flex-col" style={{ maxHeight: '90vh' }}>
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-xl sticky top-0 z-10">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-xl flex-shrink-0 z-10">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
                 <Database className="w-5 h-5 text-blue-600" />
                 <span>Data Sources & APIs</span>
@@ -268,7 +271,10 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
             </div>
             
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto">
+            <div 
+              className="flex-1 overflow-y-auto min-h-0"
+              style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+            >
               <DataSourcesView onBackToMain={() => setShowDataSources(false)} />
             </div>
           </div>
