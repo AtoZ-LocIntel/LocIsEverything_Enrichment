@@ -160,8 +160,9 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
       {/* Pro Tips Modal - Outside of card structure */}
       {showProTips && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className={`bg-white rounded-xl max-w-md w-full flex flex-col ${isMobile ? 'max-h-[90vh]' : ''}`}>
+            {/* Header - Fixed */}
+            <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
                 <Lightbulb className="w-5 h-5 text-yellow-500" />
                 <span>Pro Tips</span>
@@ -174,7 +175,9 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
               </button>
             </div>
             
-            <div className="space-y-3">
+            {/* Scrollable Content */}
+            <div className={`flex-1 overflow-y-auto px-6 py-4 ${isMobile ? 'min-h-0' : ''}`}>
+              <div className="space-y-3">
               {/* Data Service Disclaimer - At the top */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <div className="text-sm text-gray-700 space-y-2">
@@ -222,9 +225,11 @@ const SingleSearch: React.FC<SingleSearchProps> = ({ onSearch, onLocationSearch,
                   </p>
                 </div>
               )}
+              </div>
             </div>
             
-            <div className="mt-6 flex justify-end">
+            {/* Footer - Fixed */}
+            <div className="p-6 pt-4 flex-shrink-0 border-t border-gray-200 flex justify-end">
               <button
                 onClick={() => setShowProTips(false)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
