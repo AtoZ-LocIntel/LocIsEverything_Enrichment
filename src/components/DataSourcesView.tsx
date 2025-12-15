@@ -2958,6 +2958,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
       category: "UK Open Data",
       sources: [
         {
+          name: "UK Built-Up Areas (Dec 2024)",
+          description: "UK Office for National Statistics - Built-Up Areas 2024 (England & Wales) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "England & Wales",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/main_ONS_BUA_2024_EW/FeatureServer/0"
+        },
+        {
           name: "UK Local Authority Districts",
           description: "UK Office for National Statistics - Local Authority Districts (LAD) - point-in-polygon and proximity queries up to 50 miles",
           coverage: "United Kingdom",
@@ -3020,6 +3028,14 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LSOA_2021_EW_BSC_V4_RUC/FeatureServer/0"
+      },
+      {
+        name: "European Electoral Regions (Dec 2018)",
+        description: "European Electoral Regions December 2018 Boundaries (United Kingdom) - point-in-polygon and proximity queries up to 25 miles",
+        coverage: "United Kingdom",
+        accuracy: "Very High",
+        cost: "Free",
+        url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/European_Electoral_Regions_Dec_2018_FCB_UK_2022/FeatureServer/0"
         }
       ]
     },

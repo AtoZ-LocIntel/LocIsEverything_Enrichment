@@ -10598,6 +10598,170 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       });
     }
 
+    // Export UK Built-Up Areas 2024 data
+    if (key === 'uk_built_up_areas_2024_all' && Array.isArray(value)) {
+      value.forEach((area: any) => {
+        const buaCode = area.bua24cd || area.BUA24CD || 'Unknown Built-Up Area';
+        const buaName = area.bua24nm || area.BUA24NM || '';
+        const gsscode = area.gsscode || area.GSSCODE || '';
+        const areaHectares = area.areahectar !== null && area.areahectar !== undefined
+          ? area.areahectar.toString()
+          : '';
+        const distance = area.distance_miles !== null && area.distance_miles !== undefined
+          ? area.distance_miles.toFixed(2)
+          : (area.isContaining ? '0.00' : '');
+        const isContaining = area.isContaining ? 'Yes' : 'No';
+
+        let lat = '';
+        let lon = '';
+        if (area.geometry && area.geometry.rings && area.geometry.rings.length > 0) {
+          const outerRing = area.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...area };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.gsscode;
+        delete allAttributes.GSSCODE;
+        delete allAttributes.bua24cd;
+        delete allAttributes.BUA24CD;
+        delete allAttributes.bua24nm;
+        delete allAttributes.BUA24NM;
+        delete allAttributes.bua24nmw;
+        delete allAttributes.BUA24NMW;
+        delete allAttributes.areahectar;
+        delete allAttributes.geometry_a;
+        delete allAttributes.geometry_A;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.shapeArea;
+        delete allAttributes.shapeLength;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_BUILT_UP_AREAS_2024',
+          buaCode,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          buaName || buaCode,
+          isContaining,
+          gsscode || '',
+          areaHectares,
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+    }
+
+    // Export UK European Electoral Regions data
+    if (key === 'uk_european_electoral_regions_all' && Array.isArray(value)) {
+      value.forEach((region: any) => {
+        const regionCode = region.eurg18cd || region.EURG18CD || 'Unknown Region';
+        const regionName = region.eurg18nm || region.EURG18NM || '';
+        const bngE = region.bngE !== null && region.bngE !== undefined
+          ? region.bngE.toString()
+          : (region.BNG_E !== null && region.BNG_E !== undefined ? region.BNG_E.toString() : '');
+        const bngN = region.bngN !== null && region.bngN !== undefined
+          ? region.bngN.toString()
+          : (region.BNG_N !== null && region.BNG_N !== undefined ? region.BNG_N.toString() : '');
+        const distance = region.distance_miles !== null && region.distance_miles !== undefined
+          ? region.distance_miles.toFixed(2)
+          : (region.isContaining ? '0.00' : '');
+        const isContaining = region.isContaining ? 'Yes' : 'No';
+
+        let lat = '';
+        let lon = '';
+        if (region.geometry && region.geometry.rings && region.geometry.rings.length > 0) {
+          const outerRing = region.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else if (region.lat !== null && region.lat !== undefined && region.long !== null && region.long !== undefined) {
+          lat = region.lat.toString();
+          lon = region.long.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...region };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.eurg18cd;
+        delete allAttributes.EURG18CD;
+        delete allAttributes.eurg18nm;
+        delete allAttributes.EURG18NM;
+        delete allAttributes.bngE;
+        delete allAttributes.BNG_E;
+        delete allAttributes.bngN;
+        delete allAttributes.BNG_N;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_EUROPEAN_ELECTORAL_REGIONS_2018',
+          regionCode,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          regionName || regionCode,
+          isContaining,
+          bngE || '',
+          bngN || '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+    }
+
     // Export UK Cancer Alliances data
     if (key === 'uk_cancer_alliances_all' && Array.isArray(value)) {
       value.forEach((alliance: any) => {

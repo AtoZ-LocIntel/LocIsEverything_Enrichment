@@ -6762,8 +6762,9 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'ireland_vegetation_areas_containing', nearbyKey: 'ireland_vegetation_areas_nearby_features', name: 'Ireland Vegetation Areas', color: '#16a34a', icon: '🌿', layerType: 'ireland_vegetation_areas' }
       ];
 
-      // Draw UK Local Authority Districts and other UK stats polygons on the map
+      // Draw UK Local Authority Districts, Built-Up Areas, and other UK stats polygons on the map
       const ukLocalAuthorityDistrictLayers = [
+        { containingKey: 'uk_built_up_areas_2024_containing', nearbyKey: 'uk_built_up_areas_2024_nearby', name: 'UK Built-Up Areas (Dec 2024)', color: '#16a34a', icon: '🏙️', layerType: 'uk_built_up_areas_2024' },
         { containingKey: 'uk_local_authority_districts_containing', nearbyKey: 'uk_local_authority_districts_nearby', name: 'UK Local Authority Districts', color: '#dc2626', icon: '🇬🇧', layerType: 'uk_local_authority_districts' },
         { containingKey: 'uk_counties_unitary_authorities_containing', nearbyKey: 'uk_counties_unitary_authorities_nearby', name: 'UK Counties & Unitary Authorities', color: '#7c3aed', icon: '🗺️', layerType: 'uk_counties_unitary_authorities' },
         { containingKey: 'uk_cancer_alliances_containing', nearbyKey: 'uk_cancer_alliances_nearby', name: 'Cancer Alliances (July 2023)', color: '#ec4899', icon: '🎗️', layerType: 'uk_cancer_alliances' },
@@ -6771,12 +6772,14 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'uk_fire_rescue_authorities_containing', nearbyKey: 'uk_fire_rescue_authorities_nearby', name: 'Fire & Rescue Authorities (Dec 2023)', color: '#f97316', icon: '🚒', layerType: 'uk_fire_rescue_authorities' },
         { containingKey: 'uk_police_force_areas_containing', nearbyKey: 'uk_police_force_areas_nearby', name: 'Police Force Areas (Dec 2023)', color: '#0ea5e9', icon: '🚓', layerType: 'uk_police_force_areas' },
         { containingKey: 'uk_workplace_zones_containing', nearbyKey: 'uk_workplace_zones_nearby', name: 'Workplace Zones (2011)', color: '#f97316', icon: '🏢', layerType: 'uk_workplace_zones' },
-        { containingKey: 'uk_lsoa_2021_ruc_containing', nearbyKey: 'uk_lsoa_2021_ruc_nearby', name: 'Lower Layer Super Output Areas (LSOA 2021)', color: '#0ea5e9', icon: '🧭', layerType: 'uk_lsoa_2021_ruc' }
+        { containingKey: 'uk_lsoa_2021_ruc_containing', nearbyKey: 'uk_lsoa_2021_ruc_nearby', name: 'Lower Layer Super Output Areas (LSOA 2021)', color: '#0ea5e9', icon: '🧭', layerType: 'uk_lsoa_2021_ruc' },
+        { containingKey: 'uk_european_electoral_regions_containing', nearbyKey: 'uk_european_electoral_regions_nearby', name: 'European Electoral Regions (Dec 2018)', color: '#22c55e', icon: '🇪🇺', layerType: 'uk_european_electoral_regions' }
       ];
 
+      // Draw Ireland Provinces as polygons on the map
       irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
-        
+
         // Draw containing province
         if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
           enrichments[containingKey].forEach((province: any) => {
@@ -6784,11 +6787,11 @@ const MapView: React.FC<MapViewProps> = ({
             if (geometry && geometry.rings) {
               try {
                 const rings = geometry.rings;
-                if (rings && rings.length > 0) {
-                  const outerRing = rings[0];
-                  const latlngs = outerRing.map((coord: number[]) => {
-                    return [coord[1], coord[0]] as [number, number];
-                  });
+                if (Array.isArray(rings) && rings.length > 0) {
+                  // Convert all rings to Leaflet lat/lngs so we draw every part
+                  const latlngs = rings.map((ring: number[][]) =>
+                    ring.map((coord: number[]) => [coord[1], coord[0]] as [number, number])
+                  );
 
                   const polygon = L.polygon(latlngs, {
                     color: color,
@@ -6818,6 +6821,279 @@ const MapView: React.FC<MapViewProps> = ({
                   // Add all other province attributes
                   const excludeFields = ['name', 'provinceId', 'area', 'geometry', '__geometry', 'distance_miles', 'objectId', 'guid', 'centroidX', 'centroidY'];
                   Object.entries(province).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} containing province:`, error);
+              }
+            }
+          });
+        }
+
+        // Draw nearby provinces
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((province: any) => {
+            const geometry = province.__geometry || province.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (Array.isArray(rings) && rings.length > 0) {
+                  // Convert all rings to Leaflet lat/lngs so we draw every part
+                  const latlngs = rings.map((ring: number[][]) =>
+                    ring.map((coord: number[]) => [coord[1], coord[0]] as [number, number])
+                  );
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 1,
+                    opacity: 0.5,
+                    fillColor: color,
+                    fillOpacity: 0.15
+                  });
+
+                  const provinceName = province.name || 'Unknown Province';
+                  const provinceId = province.provinceId || '';
+                  const area = province.area || 0;
+                  const distance = province.distance_miles ? province.distance_miles.toFixed(2) : 'Unknown';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${provinceName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> Nearby Province</div>
+                        ${provinceId ? `<div><strong>Province ID:</strong> ${provinceId}</div>` : ''}
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${area ? `<div><strong>Area:</strong> ${area.toLocaleString()} sq units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other province attributes
+                  const excludeFields = ['name', 'provinceId', 'area', 'geometry', '__geometry', 'distance_miles', 'objectId', 'guid', 'centroidX', 'centroidY'];
+                  Object.entries(province).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby province:`, error);
+              }
+            }
+          });
+        }
+
+        if (featureCount > 0) {
+          legendEntries.push({
+            label: name,
+            icon,
+            color,
+            type: 'polygon'
+          });
+        }
+      });
+
+      // Draw UK stats polygons (including Built-Up Areas) on the map
+      ukLocalAuthorityDistrictLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing polygon(s) for UK stats layers (including Built-Up Areas)
+        const containingFeatures: any[] = Array.isArray(enrichments[containingKey])
+          ? enrichments[containingKey]
+          : [];
+
+        if (layerType === 'uk_built_up_areas_2024') {
+          console.log('UK Built-Up Areas – containing features length:', containingFeatures.length);
+        }
+
+        if (containingFeatures.length > 0) {
+          containingFeatures.forEach((feature: any) => {
+            const geometry = feature.__geometry || feature.geometry;
+            if (geometry && geometry.rings) {
+              try {
+                const rings = geometry.rings;
+                if (Array.isArray(rings) && rings.length > 0) {
+                  let latlngs: L.LatLngExpression[] | L.LatLngExpression[][] = [];
+
+                  if (layerType === 'uk_built_up_areas_2024') {
+                    // For Built-Up Areas, pick the largest polygon (by ring area) to draw,
+                    // so we emphasize the main part of the multipart geometry.
+                    const ringAreas = rings.map((ring: number[][]) => {
+                      if (!Array.isArray(ring) || ring.length < 3) return 0;
+                      // Shoelace formula on lon/lat as a rough area proxy
+                      let area = 0;
+                      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+                        const [x1, y1] = ring[i];
+                        const [x2, y2] = ring[j];
+                        area += (x1 * y2 - x2 * y1);
+                      }
+                      return Math.abs(area) / 2;
+                    });
+
+                    let maxIndex = 0;
+                    let maxArea = ringAreas[0] || 0;
+                    for (let i = 1; i < ringAreas.length; i++) {
+                      if (ringAreas[i] > maxArea) {
+                        maxArea = ringAreas[i];
+                        maxIndex = i;
+                      }
+                    }
+
+                    const largestRing = rings[maxIndex];
+                    latlngs = largestRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  } else {
+                    // For other UK stats layers, continue to draw the full polygon (outer ring only).
+                    const outerRing = rings[0];
+                    latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  }
+
+                  const polygon = L.polygon(latlngs as any, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: color,
+                    fillOpacity: 0.4
+                  });
+
+                  // Determine display name / code / type label per UK layer
+                  let displayName: string = 'Feature';
+                  let displayCode: string | null = null;
+                  let typeLabel: string = 'Containing Area';
+
+                  if (layerType === 'uk_built_up_areas_2024') {
+                    displayName = feature.bua24nm || feature.BUA24NM || 'Built-Up Area';
+                    displayCode = feature.bua24cd || feature.BUA24CD || null;
+                    typeLabel = 'Containing Built-Up Area';
+                  } else if (layerType === 'uk_local_authority_districts') {
+                    displayName = feature.lad25nm || feature.LAD25NM || 'Local Authority District';
+                    displayCode = feature.lad25cd || feature.LAD25CD || null;
+                    typeLabel = 'Containing Local Authority District';
+                  } else if (layerType === 'uk_counties_unitary_authorities') {
+                    displayName = feature.ctyua21nm || feature.CTYUA21NM || 'County / Unitary Authority';
+                    displayCode = feature.ctyua21cd || feature.CTYUA21CD || null;
+                    typeLabel = 'Containing County / Unitary Authority';
+                  } else if (layerType === 'uk_cancer_alliances') {
+                    displayName = feature.cal23nm || feature.CAL23NM || 'Cancer Alliance';
+                    displayCode = feature.cal23cd || feature.CAL23CD || null;
+                    typeLabel = 'Containing Cancer Alliance';
+                  } else if (layerType === 'uk_geostat_grid') {
+                    displayName =
+                      feature.grd_newid || feature.GRD_NEWID ||
+                      feature.grd_fixid || feature.GRD_FIXID ||
+                      'GEOSTAT Grid Cell';
+                    typeLabel = 'Containing GEOSTAT Grid Cell';
+                  } else if (layerType === 'uk_fire_rescue_authorities') {
+                    displayName = feature.fra23nm || feature.FRA23NM || 'Fire & Rescue Authority';
+                    displayCode = feature.fra23cd || feature.FRA23CD || null;
+                    typeLabel = 'Containing Fire & Rescue Authority';
+                  } else if (layerType === 'uk_police_force_areas') {
+                    displayName = feature.pfa23nm || feature.PFA23NM || 'Police Force Area';
+                    displayCode = feature.pfa23cd || feature.PFA23CD || null;
+                    typeLabel = 'Containing Police Force Area';
+                  } else if (layerType === 'uk_workplace_zones') {
+                    displayName = feature.wz11cd || feature.WZ11CD || 'Workplace Zone';
+                    displayCode = feature.wz11cd || feature.WZ11CD || null;
+                    typeLabel = 'Containing Workplace Zone';
+                  } else if (layerType === 'uk_lsoa_2021_ruc') {
+                    displayName = feature.lsoa21nm || feature.LSOA21NM || 'LSOA 2021';
+                    displayCode = feature.lsoa21cd || feature.LSOA21CD || null;
+                    typeLabel = 'Containing LSOA 2021';
+                  } else if (layerType === 'uk_european_electoral_regions') {
+                    displayName = feature.eurg18nm || feature.EURG18NM || 'European Electoral Region';
+                    displayCode = feature.eurg18cd || feature.EURG18CD || null;
+                    typeLabel = 'Containing European Electoral Region';
+                  }
+
+                  const bngE = feature.bngE || feature.BNG_E || null;
+                  const bngN = feature.bngN || feature.BNG_N || null;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${displayName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> ${typeLabel}</div>
+                        ${displayCode ? `<div><strong>Code:</strong> ${displayCode}</div>` : ''}
+                        ${bngE !== null && bngN !== null ? `<div><strong>BNG Coordinates:</strong> E: ${bngE}, N: ${bngN}</div>` : ''}
+                        ${feature.shapeArea ? `<div><strong>Area:</strong> ${feature.shapeArea.toFixed(2)} sq units</div>` : ''}
+                        ${feature.shapeLength ? `<div><strong>Perimeter:</strong> ${feature.shapeLength.toFixed(2)} units</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all other attributes (excluding IDs/geometry already surfaced)
+                  const excludeFields = [
+                    'lad25nm', 'LAD25NM', 'lad25cd', 'LAD25CD', 'lad25nmw', 'LAD25NMW',
+                    'ctyua21nm', 'CTYUA21NM', 'ctyua21cd', 'CTYUA21CD', 'ctyua21nmw', 'CTYUA21NMW',
+                    'cal23nm', 'CAL23NM', 'cal23cd', 'CAL23CD',
+                    'eurg18nm', 'EURG18NM', 'eurg18cd', 'EURG18CD',
+                    'fra23nm', 'FRA23NM', 'fra23cd', 'FRA23CD',
+                    'pfa23nm', 'PFA23NM', 'pfa23cd', 'PFA23CD',
+                    'wz11cd', 'WZ11CD',
+                    'lsoa21nm', 'LSOA21NM', 'lsoa21cd', 'LSOA21CD',
+                    'bua24nm', 'BUA24NM', 'bua24cd', 'BUA24CD', 'bua24nmw', 'BUA24NMW',
+                    'gsscode', 'GSSCODE',
+                    'areahectar',
+                    'bngE', 'BNG_E', 'bngN', 'BNG_N',
+                    'shapeArea', 'Shape__Area', 'SHAPE__AREA',
+                    'shapeLength', 'Shape__Length', 'SHAPE__LENGTH',
+                    'geometry', '__geometry', 'distance_miles', 'isContaining',
+                    'objectId', 'OBJECTID', 'FID', 'fid', 'ESRI_OID',
+                    'GlobalID', 'GLOBALID', 'globalId', 'long', 'LONG', 'lat', 'LAT'
+                  ];
+                  Object.entries(feature).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       let displayValue = '';
@@ -7121,10 +7397,10 @@ const MapView: React.FC<MapViewProps> = ({
       ukLocalAuthorityDistrictLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
         let featureCount = 0;
         
-        // Draw containing districts
+        // Draw containing districts / areas
         if (enrichments[containingKey] && Array.isArray(enrichments[containingKey]) && enrichments[containingKey].length > 0) {
-          enrichments[containingKey].forEach((district: any) => {
-            const geometry = district.__geometry || district.geometry;
+          enrichments[containingKey].forEach((feature: any) => {
+            const geometry = feature.__geometry || feature.geometry;
             if (geometry && geometry.rings) {
               try {
                 const rings = geometry.rings;
@@ -7142,29 +7418,94 @@ const MapView: React.FC<MapViewProps> = ({
                     fillOpacity: 0.4
                   });
 
-                  const districtName = district.lad25nm || district.LAD25NM || 'Local Authority District';
-                  const districtCode = district.lad25cd || district.LAD25CD || null;
-                  const bngE = district.bngE || district.BNG_E || null;
-                  const bngN = district.bngN || district.BNG_N || null;
+                  // Determine display name / code / type label per UK layer
+                  let displayName: string = 'Feature';
+                  let displayCode: string | null = null;
+                  let typeLabel: string = 'Containing Area';
+
+                  if (layerType === 'uk_built_up_areas_2024') {
+                    displayName = feature.bua24nm || feature.BUA24NM || 'Built-Up Area';
+                    displayCode = feature.bua24cd || feature.BUA24CD || null;
+                    typeLabel = 'Containing Built-Up Area';
+                  } else if (layerType === 'uk_local_authority_districts') {
+                    displayName = feature.lad25nm || feature.LAD25NM || 'Local Authority District';
+                    displayCode = feature.lad25cd || feature.LAD25CD || null;
+                    typeLabel = 'Containing Local Authority District';
+                  } else if (layerType === 'uk_counties_unitary_authorities') {
+                    displayName = feature.ctyua21nm || feature.CTYUA21NM || 'County / Unitary Authority';
+                    displayCode = feature.ctyua21cd || feature.CTYUA21CD || null;
+                    typeLabel = 'Containing County / Unitary Authority';
+                  } else if (layerType === 'uk_cancer_alliances') {
+                    displayName = feature.cal23nm || feature.CAL23NM || 'Cancer Alliance';
+                    displayCode = feature.cal23cd || feature.CAL23CD || null;
+                    typeLabel = 'Containing Cancer Alliance';
+                  } else if (layerType === 'uk_geostat_grid') {
+                    displayName =
+                      feature.grd_newid || feature.GRD_NEWID ||
+                      feature.grd_fixid || feature.GRD_FIXID ||
+                      'GEOSTAT Grid Cell';
+                    typeLabel = 'Containing GEOSTAT Grid Cell';
+                  } else if (layerType === 'uk_fire_rescue_authorities') {
+                    displayName = feature.fra23nm || feature.FRA23NM || 'Fire & Rescue Authority';
+                    displayCode = feature.fra23cd || feature.FRA23CD || null;
+                    typeLabel = 'Containing Fire & Rescue Authority';
+                  } else if (layerType === 'uk_police_force_areas') {
+                    displayName = feature.pfa23nm || feature.PFA23NM || 'Police Force Area';
+                    displayCode = feature.pfa23cd || feature.PFA23CD || null;
+                    typeLabel = 'Containing Police Force Area';
+                  } else if (layerType === 'uk_workplace_zones') {
+                    displayName = feature.wz11cd || feature.WZ11CD || 'Workplace Zone';
+                    displayCode = feature.wz11cd || feature.WZ11CD || null;
+                    typeLabel = 'Containing Workplace Zone';
+                  } else if (layerType === 'uk_lsoa_2021_ruc') {
+                    displayName = feature.lsoa21nm || feature.LSOA21NM || 'LSOA 2021';
+                    displayCode = feature.lsoa21cd || feature.LSOA21CD || null;
+                    typeLabel = 'Containing LSOA 2021';
+                  } else if (layerType === 'uk_european_electoral_regions') {
+                    displayName = feature.eurg18nm || feature.EURG18NM || 'European Electoral Region';
+                    displayCode = feature.eurg18cd || feature.EURG18CD || null;
+                    typeLabel = 'Containing European Electoral Region';
+                  }
+
+                  const bngE = feature.bngE || feature.BNG_E || null;
+                  const bngN = feature.bngN || feature.BNG_N || null;
 
                   let popupContent = `
                     <div style="min-width: 250px; max-width: 400px;">
                       <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                        ${icon} ${districtName}
+                        ${icon} ${displayName}
                       </h3>
                       <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                        <div><strong>Type:</strong> Containing Local Authority District</div>
-                        ${districtCode ? `<div><strong>LAD Code:</strong> ${districtCode}</div>` : ''}
+                        <div><strong>Type:</strong> ${typeLabel}</div>
+                        ${displayCode ? `<div><strong>Code:</strong> ${displayCode}</div>` : ''}
                         ${bngE !== null && bngN !== null ? `<div><strong>BNG Coordinates:</strong> E: ${bngE}, N: ${bngN}</div>` : ''}
-                        ${district.shapeArea ? `<div><strong>Area:</strong> ${district.shapeArea.toFixed(2)} sq units</div>` : ''}
-                        ${district.shapeLength ? `<div><strong>Perimeter:</strong> ${district.shapeLength.toFixed(2)} units</div>` : ''}
+                        ${feature.shapeArea ? `<div><strong>Area:</strong> ${feature.shapeArea.toFixed(2)} sq units</div>` : ''}
+                        ${feature.shapeLength ? `<div><strong>Perimeter:</strong> ${feature.shapeLength.toFixed(2)} units</div>` : ''}
                       </div>
                       <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
                   `;
                   
-                  // Add all other district attributes
-                  const excludeFields = ['lad25nm', 'LAD25NM', 'lad25cd', 'LAD25CD', 'lad25nmw', 'LAD25NMW', 'bngE', 'BNG_E', 'bngN', 'BNG_N', 'shapeArea', 'Shape__Area', 'SHAPE__AREA', 'shapeLength', 'Shape__Length', 'SHAPE__LENGTH', 'geometry', '__geometry', 'distance_miles', 'isContaining', 'objectId', 'OBJECTID', 'FID', 'fid', 'ESRI_OID', 'GlobalID', 'GLOBALID', 'globalId', 'long', 'LONG', 'lat', 'LAT'];
-                  Object.entries(district).forEach(([key, value]) => {
+                  // Add all other attributes (excluding IDs/geometry already surfaced)
+                  const excludeFields = [
+                    'lad25nm', 'LAD25NM', 'lad25cd', 'LAD25CD', 'lad25nmw', 'LAD25NMW',
+                    'ctyua21nm', 'CTYUA21NM', 'ctyua21cd', 'CTYUA21CD', 'ctyua21nmw', 'CTYUA21NMW',
+                    'cal23nm', 'CAL23NM', 'cal23cd', 'CAL23CD',
+                    'eurg18nm', 'EURG18NM', 'eurg18cd', 'EURG18CD',
+                    'fra23nm', 'FRA23NM', 'fra23cd', 'FRA23CD',
+                    'pfa23nm', 'PFA23NM', 'pfa23cd', 'PFA23CD',
+                    'wz11cd', 'WZ11CD',
+                    'lsoa21nm', 'LSOA21NM', 'lsoa21cd', 'LSOA21CD',
+                    'bua24nm', 'BUA24NM', 'bua24cd', 'BUA24CD', 'bua24nmw', 'BUA24NMW',
+                    'gsscode', 'GSSCODE',
+                    'areahectar',
+                    'bngE', 'BNG_E', 'bngN', 'BNG_N',
+                    'shapeArea', 'Shape__Area', 'SHAPE__AREA',
+                    'shapeLength', 'Shape__Length', 'SHAPE__LENGTH',
+                    'geometry', '__geometry', 'distance_miles', 'isContaining',
+                    'objectId', 'OBJECTID', 'FID', 'fid', 'ESRI_OID',
+                    'GlobalID', 'GLOBALID', 'globalId', 'long', 'LONG', 'lat', 'LAT'
+                  ];
+                  Object.entries(feature).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       let displayValue = '';
@@ -7200,20 +7541,47 @@ const MapView: React.FC<MapViewProps> = ({
           });
         }
 
-        // Draw nearby districts
+        // Draw nearby districts / areas
         if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
-          enrichments[nearbyKey].forEach((district: any) => {
-            const geometry = district.__geometry || district.geometry;
+          enrichments[nearbyKey].forEach((feature: any) => {
+            const geometry = feature.__geometry || feature.geometry;
             if (geometry && geometry.rings) {
               try {
                 const rings = geometry.rings;
-                if (rings && rings.length > 0) {
-                  const outerRing = rings[0];
-                  const latlngs = outerRing.map((coord: number[]) => {
-                    return [coord[1], coord[0]] as [number, number];
-                  });
+                if (Array.isArray(rings) && rings.length > 0) {
+                  let latlngs: L.LatLngExpression[] | L.LatLngExpression[][] = [];
 
-                  const polygon = L.polygon(latlngs, {
+                  if (layerType === 'uk_built_up_areas_2024') {
+                    // For Built-Up Areas (nearby), also pick the largest polygon to keep
+                    // the map clean and focused.
+                    const ringAreas = rings.map((ring: number[][]) => {
+                      if (!Array.isArray(ring) || ring.length < 3) return 0;
+                      let area = 0;
+                      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+                        const [x1, y1] = ring[i];
+                        const [x2, y2] = ring[j];
+                        area += (x1 * y2 - x2 * y1);
+                      }
+                      return Math.abs(area) / 2;
+                    });
+
+                    let maxIndex = 0;
+                    let maxArea = ringAreas[0] || 0;
+                    for (let i = 1; i < ringAreas.length; i++) {
+                      if (ringAreas[i] > maxArea) {
+                        maxArea = ringAreas[i];
+                        maxIndex = i;
+                      }
+                    }
+
+                    const largestRing = rings[maxIndex];
+                    latlngs = largestRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  } else {
+                    const outerRing = rings[0];
+                    latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  }
+
+                  const polygon = L.polygon(latlngs as any, {
                     color: color,
                     weight: 1,
                     opacity: 0.5,
@@ -7221,31 +7589,96 @@ const MapView: React.FC<MapViewProps> = ({
                     fillOpacity: 0.15
                   });
 
-                  const districtName = district.lad25nm || district.LAD25NM || 'Local Authority District';
-                  const districtCode = district.lad25cd || district.LAD25CD || null;
-                  const bngE = district.bngE || district.BNG_E || null;
-                  const bngN = district.bngN || district.BNG_N || null;
-                  const distance = district.distance_miles ? district.distance_miles.toFixed(2) : 'Unknown';
+                  // Determine display name / code / type label per UK layer (nearby)
+                  let displayName: string = 'Feature';
+                  let displayCode: string | null = null;
+                  let typeLabel: string = 'Nearby Area';
+
+                  if (layerType === 'uk_built_up_areas_2024') {
+                    displayName = feature.bua24nm || feature.BUA24NM || 'Built-Up Area';
+                    displayCode = feature.bua24cd || feature.BUA24CD || null;
+                    typeLabel = 'Nearby Built-Up Area';
+                  } else if (layerType === 'uk_local_authority_districts') {
+                    displayName = feature.lad25nm || feature.LAD25NM || 'Local Authority District';
+                    displayCode = feature.lad25cd || feature.LAD25CD || null;
+                    typeLabel = 'Nearby Local Authority District';
+                  } else if (layerType === 'uk_counties_unitary_authorities') {
+                    displayName = feature.ctyua21nm || feature.CTYUA21NM || 'County / Unitary Authority';
+                    displayCode = feature.ctyua21cd || feature.CTYUA21CD || null;
+                    typeLabel = 'Nearby County / Unitary Authority';
+                  } else if (layerType === 'uk_cancer_alliances') {
+                    displayName = feature.cal23nm || feature.CAL23NM || 'Cancer Alliance';
+                    displayCode = feature.cal23cd || feature.CAL23CD || null;
+                    typeLabel = 'Nearby Cancer Alliance';
+                  } else if (layerType === 'uk_geostat_grid') {
+                    displayName =
+                      feature.grd_newid || feature.GRD_NEWID ||
+                      feature.grd_fixid || feature.GRD_FIXID ||
+                      'GEOSTAT Grid Cell';
+                    typeLabel = 'Nearby GEOSTAT Grid Cell';
+                  } else if (layerType === 'uk_fire_rescue_authorities') {
+                    displayName = feature.fra23nm || feature.FRA23NM || 'Fire & Rescue Authority';
+                    displayCode = feature.fra23cd || feature.FRA23CD || null;
+                    typeLabel = 'Nearby Fire & Rescue Authority';
+                  } else if (layerType === 'uk_police_force_areas') {
+                    displayName = feature.pfa23nm || feature.PFA23NM || 'Police Force Area';
+                    displayCode = feature.pfa23cd || feature.PFA23CD || null;
+                    typeLabel = 'Nearby Police Force Area';
+                  } else if (layerType === 'uk_workplace_zones') {
+                    displayName = feature.wz11cd || feature.WZ11CD || 'Workplace Zone';
+                    displayCode = feature.wz11cd || feature.WZ11CD || null;
+                    typeLabel = 'Nearby Workplace Zone';
+                  } else if (layerType === 'uk_lsoa_2021_ruc') {
+                    displayName = feature.lsoa21nm || feature.LSOA21NM || 'LSOA 2021';
+                    displayCode = feature.lsoa21cd || feature.LSOA21CD || null;
+                    typeLabel = 'Nearby LSOA 2021';
+                  } else if (layerType === 'uk_european_electoral_regions') {
+                    displayName = feature.eurg18nm || feature.EURG18NM || 'European Electoral Region';
+                    displayCode = feature.eurg18cd || feature.EURG18CD || null;
+                    typeLabel = 'Nearby European Electoral Region';
+                  }
+
+                  const bngE = feature.bngE || feature.BNG_E || null;
+                  const bngN = feature.bngN || feature.BNG_N || null;
+                  const distance = feature.distance_miles ? feature.distance_miles.toFixed(2) : 'Unknown';
 
                   let popupContent = `
                     <div style="min-width: 250px; max-width: 400px;">
                       <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                        ${icon} ${districtName}
+                        ${icon} ${displayName}
                       </h3>
                       <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                        <div><strong>Type:</strong> Nearby Local Authority District</div>
-                        ${districtCode ? `<div><strong>LAD Code:</strong> ${districtCode}</div>` : ''}
+                        <div><strong>Type:</strong> ${typeLabel}</div>
+                        ${displayCode ? `<div><strong>Code:</strong> ${displayCode}</div>` : ''}
                         ${bngE !== null && bngN !== null ? `<div><strong>BNG Coordinates:</strong> E: ${bngE}, N: ${bngN}</div>` : ''}
                         <div><strong>Distance:</strong> ${distance} miles</div>
-                        ${district.shapeArea ? `<div><strong>Area:</strong> ${district.shapeArea.toFixed(2)} sq units</div>` : ''}
-                        ${district.shapeLength ? `<div><strong>Perimeter:</strong> ${district.shapeLength.toFixed(2)} units</div>` : ''}
+                        ${feature.shapeArea ? `<div><strong>Area:</strong> ${feature.shapeArea.toFixed(2)} sq units</div>` : ''}
+                        ${feature.shapeLength ? `<div><strong>Perimeter:</strong> ${feature.shapeLength.toFixed(2)} units</div>` : ''}
                       </div>
                       <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
                   `;
                   
-                  // Add all other district attributes
-                  const excludeFields = ['lad25nm', 'LAD25NM', 'lad25cd', 'LAD25CD', 'lad25nmw', 'LAD25NMW', 'bngE', 'BNG_E', 'bngN', 'BNG_N', 'shapeArea', 'Shape__Area', 'SHAPE__AREA', 'shapeLength', 'Shape__Length', 'SHAPE__LENGTH', 'geometry', '__geometry', 'distance_miles', 'isContaining', 'objectId', 'OBJECTID', 'FID', 'fid', 'ESRI_OID', 'GlobalID', 'GLOBALID', 'globalId', 'long', 'LONG', 'lat', 'LAT'];
-                  Object.entries(district).forEach(([key, value]) => {
+                  // Add all other attributes (excluding IDs/geometry already surfaced)
+                  const excludeFields = [
+                    'lad25nm', 'LAD25NM', 'lad25cd', 'LAD25CD', 'lad25nmw', 'LAD25NMW',
+                    'ctyua21nm', 'CTYUA21NM', 'ctyua21cd', 'CTYUA21CD', 'ctyua21nmw', 'CTYUA21NMW',
+                    'cal23nm', 'CAL23NM', 'cal23cd', 'CAL23CD',
+                    'eurg18nm', 'EURG18NM', 'eurg18cd', 'EURG18CD',
+                    'fra23nm', 'FRA23NM', 'fra23cd', 'FRA23CD',
+                    'pfa23nm', 'PFA23NM', 'pfa23cd', 'PFA23CD',
+                    'wz11cd', 'WZ11CD',
+                    'lsoa21nm', 'LSOA21NM', 'lsoa21cd', 'LSOA21CD',
+                    'bua24nm', 'BUA24NM', 'bua24cd', 'BUA24CD', 'bua24nmw', 'BUA24NMW',
+                    'gsscode', 'GSSCODE',
+                    'areahectar',
+                    'bngE', 'BNG_E', 'bngN', 'BNG_N',
+                    'shapeArea', 'Shape__Area', 'SHAPE__AREA',
+                    'shapeLength', 'Shape__Length', 'SHAPE__LENGTH',
+                    'geometry', '__geometry', 'distance_miles', 'isContaining',
+                    'objectId', 'OBJECTID', 'FID', 'fid', 'ESRI_OID',
+                    'GlobalID', 'GLOBALID', 'globalId', 'long', 'LONG', 'lat', 'LAT'
+                  ];
+                  Object.entries(feature).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       let displayValue = '';
@@ -25136,29 +25569,50 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } else if (layer instanceof L.Polygon) {
         polygonCount++;
-        // Polygon feature - check if point is inside
+        // Polygon feature - check if point is inside (supports multi-ring / multi-polygon)
         const bounds = (layer as L.Polygon).getBounds();
         if (bounds.contains(clickPoint)) {
-          // More precise check using point-in-polygon
-          const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
-          if (Array.isArray(latlngs) && latlngs.length > 0) {
-            intersects = isPointInPolygon(clickPoint, latlngs);
-            
-            if (intersects) {
-              console.log(`🔍 [TABBED POPUP] Polygon ${polygonCount} intersects!`);
-              const popup = (layer as L.Polygon).getPopup();
-              if (popup) {
-                popupContent = popup.getContent() as string;
-                console.log('🔍 [TABBED POPUP] Polygon popup content length:', popupContent?.length || 0);
-              } else {
-                // Fallback to stored popup content
-                popupContent = (layer as any).__popupContent || '';
-                console.warn('⚠️ [TABBED POPUP] Polygon has no popup, using stored content:', popupContent?.length || 0);
-              }
-              layerType = storedType || extractLayerTypeFromPopup(popupContent) || 'polygon';
-              layerTitle = storedTitle || extractLayerTitleFromPopup(popupContent) || 'Polygon Feature';
-              console.log('🔍 [TABBED POPUP] Polygon layer type:', layerType, 'title:', layerTitle);
+          // Leaflet can return nested arrays for polygons with multiple rings / multipolygons.
+          const rawLatLngs = (layer as L.Polygon).getLatLngs();
+          const rings: L.LatLng[][] = [];
+
+          const flattenRings = (arr: any) => {
+            if (!Array.isArray(arr) || arr.length === 0) return;
+            // If this level is an array of LatLngs, treat it as a ring
+            if (arr[0] instanceof L.LatLng) {
+              rings.push(arr as L.LatLng[]);
+              return;
             }
+            // Otherwise recurse into sub-arrays
+            arr.forEach((sub: any) => flattenRings(sub));
+          };
+
+          flattenRings(rawLatLngs);
+
+          if (rings.length > 0) {
+            for (const ring of rings) {
+              if (!Array.isArray(ring) || ring.length === 0) continue;
+              if (isPointInPolygon(clickPoint, ring)) {
+                intersects = true;
+                break;
+              }
+            }
+          }
+
+          if (intersects) {
+            console.log(`🔍 [TABBED POPUP] Polygon ${polygonCount} intersects! (multi-ring aware)`);
+            const popup = (layer as L.Polygon).getPopup();
+            if (popup) {
+              popupContent = popup.getContent() as string;
+              console.log('🔍 [TABBED POPUP] Polygon popup content length:', popupContent?.length || 0);
+            } else {
+              // Fallback to stored popup content
+              popupContent = (layer as any).__popupContent || '';
+              console.warn('⚠️ [TABBED POPUP] Polygon has no popup, using stored content:', popupContent?.length || 0);
+            }
+            layerType = storedType || extractLayerTypeFromPopup(popupContent) || 'polygon';
+            layerTitle = storedTitle || extractLayerTitleFromPopup(popupContent) || 'Polygon Feature';
+            console.log('🔍 [TABBED POPUP] Polygon layer type:', layerType, 'title:', layerTitle);
           }
         }
       } else if (layer instanceof L.Polyline) {

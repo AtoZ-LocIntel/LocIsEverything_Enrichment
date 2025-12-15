@@ -284,6 +284,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Ireland Data';
     }
     
+    // UK Open Data (UK Office for National Statistics)
+    if (key.startsWith('uk_')) {
+      return 'UK Open Data';
+    }
+    
     // Demographics
     if (key.includes('acs_')) {
       return 'Demographics';

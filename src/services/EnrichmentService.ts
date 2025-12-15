@@ -171,6 +171,9 @@ import { getUKCancerAlliancesData } from '../adapters/ukCancerAlliances';
 import { getUKGeostatGridData } from '../adapters/ukGeostatGrid';
 import { getUKFireRescueAuthoritiesData } from '../adapters/ukFireRescueAuthorities';
 import { getUKPoliceForceAreasData } from '../adapters/ukPoliceForceAreas';
+import { getUKEuropeanElectoralRegionsData } from '../adapters/ukEuropeanElectoralRegions';
+import { getUKBuiltUpAreas2024Data } from '../adapters/ukBuiltUpAreas';
+import { getUKEuropeanElectoralRegionsData } from '../adapters/ukEuropeanElectoralRegions';
 import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
 import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDivisions';
 import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
@@ -3560,6 +3563,8 @@ export class EnrichmentService {
         return await this.getIrelandVegetationAreas(lat, lon, radius);
       case 'ireland_pois':
         return await this.getIrelandPOIs(lat, lon, radius);
+      case 'uk_built_up_areas_2024':
+        return await this.getUKBuiltUpAreas2024(lat, lon, radius);
       case 'uk_local_authority_districts':
         return await this.getUKLocalAuthorityDistricts(lat, lon, radius);
       case 'uk_counties_unitary_authorities':
@@ -3572,6 +3577,8 @@ export class EnrichmentService {
         return await this.getUKFireRescueAuthorities(lat, lon, radius);
       case 'uk_police_force_areas':
         return await this.getUKPoliceForceAreas(lat, lon, radius);
+      case 'uk_european_electoral_regions':
+        return await this.getUKEuropeanElectoralRegions(lat, lon, radius);
       case 'uk_workplace_zones':
         return await this.getUKWorkplaceZones(lat, lon, radius);
       case 'uk_lsoa_2021_ruc':
@@ -15623,6 +15630,189 @@ out center;`;
         uk_police_force_areas_nearby: [],
         uk_police_force_areas_all: [],
         uk_police_force_areas_summary: 'Error querying Police Force Areas'
+      };
+    }
+  }
+
+  private async getUKEuropeanElectoralRegions(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getUKEuropeanElectoralRegionsData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_european_electoral_regions_containing_count: data.containing.length,
+        uk_european_electoral_regions_nearby_count: data.nearby_features.length,
+        uk_european_electoral_regions_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_european_electoral_regions_containing = data.containing.map(region => ({
+          ...region,
+          objectId: region.objectId,
+          eurg18cd: region.eurg18cd,
+          eurg18nm: region.eurg18nm,
+          bngE: region.bngE,
+          bngN: region.bngN,
+          long: region.long,
+          lat: region.lat,
+          shapeArea: region.shapeArea,
+          shapeLength: region.shapeLength,
+          globalId: region.globalId,
+          geometry: region.geometry,
+          distance_miles: region.distance_miles,
+          isContaining: region.isContaining
+        }));
+        result.uk_european_electoral_regions_containing_message =
+          `Location is within European Electoral Region ${data.containing[0].eurg18nm || data.containing[0].eurg18cd || ''}`;
+      } else {
+        result.uk_european_electoral_regions_containing = null;
+        result.uk_european_electoral_regions_containing_message =
+          'No European Electoral Region found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_european_electoral_regions_nearby = data.nearby_features.map(region => ({
+          ...region,
+          objectId: region.objectId,
+          eurg18cd: region.eurg18cd,
+          eurg18nm: region.eurg18nm,
+          bngE: region.bngE,
+          bngN: region.bngN,
+          long: region.long,
+          lat: region.lat,
+          shapeArea: region.shapeArea,
+          shapeLength: region.shapeLength,
+          globalId: region.globalId,
+          geometry: region.geometry,
+          distance_miles: region.distance_miles,
+          isContaining: region.isContaining
+        }));
+      } else {
+        result.uk_european_electoral_regions_nearby = [];
+      }
+
+      result.uk_european_electoral_regions_all = data._all.map(region => ({
+        ...region,
+        objectId: region.objectId,
+        eurg18cd: region.eurg18cd,
+        eurg18nm: region.eurg18nm,
+        bngE: region.bngE,
+        bngN: region.bngN,
+        long: region.long,
+        lat: region.lat,
+        shapeArea: region.shapeArea,
+        shapeLength: region.shapeLength,
+        globalId: region.globalId,
+        geometry: region.geometry,
+        distance_miles: region.distance_miles,
+        isContaining: region.isContaining
+      }));
+
+      result.uk_european_electoral_regions_summary =
+        `Found ${data.containing.length} containing European Electoral Region(s) and ${data.nearby_features.length} nearby region(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK European Electoral Regions data:', error);
+      return {
+        uk_european_electoral_regions_containing_count: 0,
+        uk_european_electoral_regions_nearby_count: 0,
+        uk_european_electoral_regions_total_count: 0,
+        uk_european_electoral_regions_containing: null,
+        uk_european_electoral_regions_containing_message: 'Error querying European Electoral Regions',
+        uk_european_electoral_regions_nearby: [],
+        uk_european_electoral_regions_all: [],
+        uk_european_electoral_regions_summary: 'Error querying European Electoral Regions'
+      };
+    }
+  }
+
+  private async getUKBuiltUpAreas2024(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getUKBuiltUpAreas2024Data(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_built_up_areas_2024_containing_count: data.containing.length,
+        uk_built_up_areas_2024_nearby_count: data.nearby_features.length,
+        uk_built_up_areas_2024_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_built_up_areas_2024_containing = data.containing.map(area => ({
+          ...area,
+          objectId: area.objectId,
+          gsscode: area.gsscode,
+          bua24cd: area.bua24cd,
+          bua24nm: area.bua24nm,
+          bua24nmw: area.bua24nmw,
+          areahectar: area.areahectar,
+          shapeArea: area.shapeArea,
+          shapeLength: area.shapeLength,
+          globalId: area.globalId,
+          geometry: area.geometry,
+          distance_miles: area.distance_miles,
+          isContaining: area.isContaining
+        }));
+        result.uk_built_up_areas_2024_containing_message =
+          `Location is within Built-Up Area ${data.containing[0].bua24nm || data.containing[0].bua24cd || ''}`;
+      } else {
+        result.uk_built_up_areas_2024_containing = null;
+        result.uk_built_up_areas_2024_containing_message =
+          'No Built-Up Area found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_built_up_areas_2024_nearby = data.nearby_features.map(area => ({
+          ...area,
+          objectId: area.objectId,
+          gsscode: area.gsscode,
+          bua24cd: area.bua24cd,
+          bua24nm: area.bua24nm,
+          bua24nmw: area.bua24nmw,
+          areahectar: area.areahectar,
+          shapeArea: area.shapeArea,
+          shapeLength: area.shapeLength,
+          globalId: area.globalId,
+          geometry: area.geometry,
+          distance_miles: area.distance_miles,
+          isContaining: area.isContaining
+        }));
+      } else {
+        result.uk_built_up_areas_2024_nearby = [];
+      }
+
+      result.uk_built_up_areas_2024_all = data._all.map(area => ({
+        ...area,
+        objectId: area.objectId,
+        gsscode: area.gsscode,
+        bua24cd: area.bua24cd,
+        bua24nm: area.bua24nm,
+        bua24nmw: area.bua24nmw,
+        areahectar: area.areahectar,
+        shapeArea: area.shapeArea,
+        shapeLength: area.shapeLength,
+        globalId: area.globalId,
+        geometry: area.geometry,
+        distance_miles: area.distance_miles,
+        isContaining: area.isContaining
+      }));
+
+      result.uk_built_up_areas_2024_summary =
+        `Found ${data.containing.length} containing Built-Up Area(s) and ${data.nearby_features.length} nearby area(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK Built-Up Areas 2024 data:', error);
+      return {
+        uk_built_up_areas_2024_containing_count: 0,
+        uk_built_up_areas_2024_nearby_count: 0,
+        uk_built_up_areas_2024_total_count: 0,
+        uk_built_up_areas_2024_containing: null,
+        uk_built_up_areas_2024_containing_message: 'Error querying Built-Up Areas 2024',
+        uk_built_up_areas_2024_nearby: [],
+        uk_built_up_areas_2024_all: [],
+        uk_built_up_areas_2024_summary: 'Error querying Built-Up Areas 2024'
       };
     }
   }
