@@ -2964,6 +2964,62 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LAD_MAY_2025_UK_BUC/FeatureServer/0"
+        },
+        {
+          name: "UK Counties & Unitary Authorities",
+          description: "UK Office for National Statistics - Counties and Unitary Authorities (point-in-polygon and proximity queries up to 50 miles)",
+          coverage: "United Kingdom",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Counties_and_Unitary_Authorities_December_2021_UK_BGC_2022/FeatureServer/0"
+        },
+        {
+          name: "Cancer Alliances (July 2023)",
+          description: "Cancer Alliances July 2023 Boundaries (England) - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "England",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Cancer_Alliances_July_2023_Boundaries_EN_BFC/FeatureServer/0"
+        },
+        {
+          name: "GEOSTAT Grid (2011)",
+          description: "GEOSTAT Dec 2011 Grid in the United Kingdom - population and households (point-in-polygon and proximity queries up to 50 miles)",
+          coverage: "United Kingdom",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/GEOSTAT_Dec_2011_GEC_in_the_United_Kingdom_2022/FeatureServer/0"
+        },
+        {
+          name: "Fire & Rescue Authorities (Dec 2023)",
+          description: "Fire and Rescue Authorities December 2023 Boundaries (England & Wales) - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "England & Wales",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Fire_and_Rescue_Authorities_December_2023_EW_BFC/FeatureServer/0"
+        },
+        {
+          name: "Police Force Areas (Dec 2023)",
+          description: "Police Force Areas December 2023 Boundaries (England & Wales) - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "England & Wales",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Police_Force_Areas_December_2023_EW_BFC/FeatureServer/0"
+        },
+        {
+          name: "Workplace Zones (2011)",
+          description: "Workplace Zones December 2011 Boundaries (England & Wales) - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "England & Wales",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Workplace_Zones_Dec_2011_FCB_in_England_and_Wales_2022/FeatureServer/0"
+        },
+        {
+          name: "LSOA 2021 (Rural-Urban Classification)",
+          description: "Lower Layer Super Output Areas 2021 (England & Wales) with Rural-Urban Classification - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "England & Wales",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LSOA_2021_EW_BSC_V4_RUC/FeatureServer/0"
         }
       ]
     },
@@ -3182,18 +3238,6 @@ const DataSourcesView: React.FC<DataSourcesViewProps> = ({ onBackToMain }) => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-ap1.arcgis.com/ypkPEy1AmwPKGNNv/arcgis/rest/services/MajorRoads/FeatureServer/0"
-        }
-      ]
-    },
-    {
-      category: "UK Open Data",
-      sources: [
-        {
-          name: "Sources Coming Soon...",
-          description: "UK open data sources will be added in future updates",
-          coverage: "United Kingdom",
-          accuracy: "N/A",
-          cost: "N/A"
         }
       ]
     },

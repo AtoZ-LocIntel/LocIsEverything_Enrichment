@@ -164,6 +164,13 @@ import { getTIGERUrbanData } from '../adapters/tigerUrban';
 import { getIrelandProvincesData } from '../adapters/irelandProvinces';
 import { getIrelandBuiltUpAreasData } from '../adapters/irelandBuiltUpAreas';
 import { getUKLocalAuthorityDistrictsData } from '../adapters/ukLocalAuthorityDistricts';
+import { getUKCountiesUnitaryAuthoritiesData } from '../adapters/ukCountiesUnitaryAuthorities';
+import { getUKWorkplaceZonesData } from '../adapters/ukWorkplaceZones';
+import { getUKLSOAData } from '../adapters/ukLSOA';
+import { getUKCancerAlliancesData } from '../adapters/ukCancerAlliances';
+import { getUKGeostatGridData } from '../adapters/ukGeostatGrid';
+import { getUKFireRescueAuthoritiesData } from '../adapters/ukFireRescueAuthorities';
+import { getUKPoliceForceAreasData } from '../adapters/ukPoliceForceAreas';
 import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
 import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDivisions';
 import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
@@ -3555,6 +3562,20 @@ export class EnrichmentService {
         return await this.getIrelandPOIs(lat, lon, radius);
       case 'uk_local_authority_districts':
         return await this.getUKLocalAuthorityDistricts(lat, lon, radius);
+      case 'uk_counties_unitary_authorities':
+        return await this.getUKCountiesUnitaryAuthorities(lat, lon, radius);
+      case 'uk_cancer_alliances':
+        return await this.getUKCancerAlliances(lat, lon, radius);
+      case 'uk_geostat_grid':
+        return await this.getUKGeostatGrid(lat, lon, radius);
+      case 'uk_fire_rescue_authorities':
+        return await this.getUKFireRescueAuthorities(lat, lon, radius);
+      case 'uk_police_force_areas':
+        return await this.getUKPoliceForceAreas(lat, lon, radius);
+      case 'uk_workplace_zones':
+        return await this.getUKWorkplaceZones(lat, lon, radius);
+      case 'uk_lsoa_2021_ruc':
+        return await this.getUKLSOA(lat, lon, radius);
       case 'australia_railways':
         return await this.getAustraliaRailways(lat, lon, radius);
       case 'australia_trams':
@@ -15134,6 +15155,666 @@ out center;`;
         uk_local_authority_districts_nearby: [],
         uk_local_authority_districts_all: [],
         uk_local_authority_districts_summary: 'Error querying Local Authority Districts'
+      };
+    }
+  }
+
+  private async getUKCountiesUnitaryAuthorities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getUKCountiesUnitaryAuthoritiesData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_counties_unitary_authorities_containing_count: data.containing.length,
+        uk_counties_unitary_authorities_nearby_count: data.nearby_features.length,
+        uk_counties_unitary_authorities_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_counties_unitary_authorities_containing = data.containing.map(unit => ({
+          ...unit,
+          objectId: unit.objectId,
+          ctyua21cd: unit.ctyua21cd,
+          ctyua21nm: unit.ctyua21nm,
+          ctyua21nmw: unit.ctyua21nmw,
+          bngE: unit.bngE,
+          bngN: unit.bngN,
+          long: unit.long,
+          lat: unit.lat,
+          shapeArea: unit.shapeArea,
+          shapeLength: unit.shapeLength,
+          globalId: unit.globalId,
+          geometry: unit.geometry,
+          distance_miles: unit.distance_miles,
+          isContaining: unit.isContaining
+        }));
+        result.uk_counties_unitary_authorities_containing_message =
+          `Location is within ${data.containing[0].ctyua21nm || 'a County or Unitary Authority'}`;
+      } else {
+        result.uk_counties_unitary_authorities_containing = null;
+        result.uk_counties_unitary_authorities_containing_message =
+          'No County or Unitary Authority found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_counties_unitary_authorities_nearby = data.nearby_features.map(unit => ({
+          ...unit,
+          objectId: unit.objectId,
+          ctyua21cd: unit.ctyua21cd,
+          ctyua21nm: unit.ctyua21nm,
+          ctyua21nmw: unit.ctyua21nmw,
+          bngE: unit.bngE,
+          bngN: unit.bngN,
+          long: unit.long,
+          lat: unit.lat,
+          shapeArea: unit.shapeArea,
+          shapeLength: unit.shapeLength,
+          globalId: unit.globalId,
+          geometry: unit.geometry,
+          distance_miles: unit.distance_miles,
+          isContaining: unit.isContaining
+        }));
+      } else {
+        result.uk_counties_unitary_authorities_nearby = [];
+      }
+
+      result.uk_counties_unitary_authorities_all = data._all.map(unit => ({
+        ...unit,
+        objectId: unit.objectId,
+        ctyua21cd: unit.ctyua21cd,
+        ctyua21nm: unit.ctyua21nm,
+        ctyua21nmw: unit.ctyua21nmw,
+        bngE: unit.bngE,
+        bngN: unit.bngN,
+        long: unit.long,
+        lat: unit.lat,
+        shapeArea: unit.shapeArea,
+        shapeLength: unit.shapeLength,
+        globalId: unit.globalId,
+        geometry: unit.geometry,
+        distance_miles: unit.distance_miles,
+        isContaining: unit.isContaining
+      }));
+
+      result.uk_counties_unitary_authorities_summary =
+        `Found ${data.containing.length} containing unit(s) and ${data.nearby_features.length} nearby unit(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK Counties and Unitary Authorities data:', error);
+      return {
+        uk_counties_unitary_authorities_containing_count: 0,
+        uk_counties_unitary_authorities_nearby_count: 0,
+        uk_counties_unitary_authorities_total_count: 0,
+        uk_counties_unitary_authorities_containing: null,
+        uk_counties_unitary_authorities_containing_message: 'Error querying Counties and Unitary Authorities',
+        uk_counties_unitary_authorities_nearby: [],
+        uk_counties_unitary_authorities_all: [],
+        uk_counties_unitary_authorities_summary: 'Error querying Counties and Unitary Authorities'
+      };
+    }
+  }
+
+  private async getUKWorkplaceZones(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getUKWorkplaceZonesData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_workplace_zones_containing_count: data.containing.length,
+        uk_workplace_zones_nearby_count: data.nearby_features.length,
+        uk_workplace_zones_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_workplace_zones_containing = data.containing.map(zone => ({
+          ...zone,
+          objectId: zone.objectId,
+          wz11cd: zone.wz11cd,
+          lad11cd: zone.lad11cd,
+          lad11nm: zone.lad11nm,
+          lad11nmw: zone.lad11nmw,
+          shapeArea: zone.shapeArea,
+          shapeLength: zone.shapeLength,
+          globalId: zone.globalId,
+          geometry: zone.geometry,
+          distance_miles: zone.distance_miles,
+          isContaining: zone.isContaining
+        }));
+        result.uk_workplace_zones_containing_message =
+          `Location is within workplace zone ${data.containing[0].wz11cd || ''} (${data.containing[0].lad11nm || 'Unknown LSOA'})`;
+      } else {
+        result.uk_workplace_zones_containing = null;
+        result.uk_workplace_zones_containing_message =
+          'No Workplace Zone found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_workplace_zones_nearby = data.nearby_features.map(zone => ({
+          ...zone,
+          objectId: zone.objectId,
+          wz11cd: zone.wz11cd,
+          lad11cd: zone.lad11cd,
+          lad11nm: zone.lad11nm,
+          lad11nmw: zone.lad11nmw,
+          shapeArea: zone.shapeArea,
+          shapeLength: zone.shapeLength,
+          globalId: zone.globalId,
+          geometry: zone.geometry,
+          distance_miles: zone.distance_miles,
+          isContaining: zone.isContaining
+        }));
+      } else {
+        result.uk_workplace_zones_nearby = [];
+      }
+
+      result.uk_workplace_zones_all = data._all.map(zone => ({
+        ...zone,
+        objectId: zone.objectId,
+        wz11cd: zone.wz11cd,
+        lad11cd: zone.lad11cd,
+        lad11nm: zone.lad11nm,
+        lad11nmw: zone.lad11nmw,
+        shapeArea: zone.shapeArea,
+        shapeLength: zone.shapeLength,
+        globalId: zone.globalId,
+        geometry: zone.geometry,
+        distance_miles: zone.distance_miles,
+        isContaining: zone.isContaining
+      }));
+
+      result.uk_workplace_zones_summary =
+        `Found ${data.containing.length} containing workplace zone(s) and ${data.nearby_features.length} nearby zone(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK Workplace Zones data:', error);
+      return {
+        uk_workplace_zones_containing_count: 0,
+        uk_workplace_zones_nearby_count: 0,
+        uk_workplace_zones_total_count: 0,
+        uk_workplace_zones_containing: null,
+        uk_workplace_zones_containing_message: 'Error querying Workplace Zones',
+        uk_workplace_zones_nearby: [],
+        uk_workplace_zones_all: [],
+        uk_workplace_zones_summary: 'Error querying Workplace Zones'
+      };
+    }
+  }
+
+  private async getUKLSOA(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getUKLSOAData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_lsoa_2021_ruc_containing_count: data.containing.length,
+        uk_lsoa_2021_ruc_nearby_count: data.nearby_features.length,
+        uk_lsoa_2021_ruc_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_lsoa_2021_ruc_containing = data.containing.map(lsoa => ({
+          ...lsoa,
+          objectId: lsoa.objectId,
+          lsoa21cd: lsoa.lsoa21cd,
+          lsoa21nm: lsoa.lsoa21nm,
+          lsoa21nmw: lsoa.lsoa21nmw,
+          lat: lsoa.lat,
+          long: lsoa.long,
+          ruc21cd: lsoa.ruc21cd,
+          ruc21nm: lsoa.ruc21nm,
+          urban_rural: lsoa.urban_rural,
+          shapeArea: lsoa.shapeArea,
+          shapeLength: lsoa.shapeLength,
+          globalId: lsoa.globalId,
+          geometry: lsoa.geometry,
+          distance_miles: lsoa.distance_miles,
+          isContaining: lsoa.isContaining
+        }));
+        result.uk_lsoa_2021_ruc_containing_message =
+          `Location is within LSOA ${data.containing[0].lsoa21cd || ''} (${data.containing[0].lsoa21nm || 'Unknown LSOA'})`;
+      } else {
+        result.uk_lsoa_2021_ruc_containing = null;
+        result.uk_lsoa_2021_ruc_containing_message =
+          'No LSOA found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_lsoa_2021_ruc_nearby = data.nearby_features.map(lsoa => ({
+          ...lsoa,
+          objectId: lsoa.objectId,
+          lsoa21cd: lsoa.lsoa21cd,
+          lsoa21nm: lsoa.lsoa21nm,
+          lsoa21nmw: lsoa.lsoa21nmw,
+          lat: lsoa.lat,
+          long: lsoa.long,
+          ruc21cd: lsoa.ruc21cd,
+          ruc21nm: lsoa.ruc21nm,
+          urban_rural: lsoa.urban_rural,
+          shapeArea: lsoa.shapeArea,
+          shapeLength: lsoa.shapeLength,
+          globalId: lsoa.globalId,
+          geometry: lsoa.geometry,
+          distance_miles: lsoa.distance_miles,
+          isContaining: lsoa.isContaining
+        }));
+      } else {
+        result.uk_lsoa_2021_ruc_nearby = [];
+      }
+
+      result.uk_lsoa_2021_ruc_all = data._all.map(lsoa => ({
+        ...lsoa,
+        objectId: lsoa.objectId,
+        lsoa21cd: lsoa.lsoa21cd,
+        lsoa21nm: lsoa.lsoa21nm,
+        lsoa21nmw: lsoa.lsoa21nmw,
+        lat: lsoa.lat,
+        long: lsoa.long,
+        ruc21cd: lsoa.ruc21cd,
+        ruc21nm: lsoa.ruc21nm,
+        urban_rural: lsoa.urban_rural,
+        shapeArea: lsoa.shapeArea,
+        shapeLength: lsoa.shapeLength,
+        globalId: lsoa.globalId,
+        geometry: lsoa.geometry,
+        distance_miles: lsoa.distance_miles,
+        isContaining: lsoa.isContaining
+      }));
+
+      result.uk_lsoa_2021_ruc_summary =
+        `Found ${data.containing.length} containing LSOA(s) and ${data.nearby_features.length} nearby LSOA(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK LSOA 2021 data:', error);
+      return {
+        uk_lsoa_2021_ruc_containing_count: 0,
+        uk_lsoa_2021_ruc_nearby_count: 0,
+        uk_lsoa_2021_ruc_total_count: 0,
+        uk_lsoa_2021_ruc_containing: null,
+        uk_lsoa_2021_ruc_containing_message: 'Error querying LSOA 2021',
+        uk_lsoa_2021_ruc_nearby: [],
+        uk_lsoa_2021_ruc_all: [],
+        uk_lsoa_2021_ruc_summary: 'Error querying LSOA 2021'
+      };
+    }
+  }
+
+  private async getUKFireRescueAuthorities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getUKFireRescueAuthoritiesData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_fire_rescue_authorities_containing_count: data.containing.length,
+        uk_fire_rescue_authorities_nearby_count: data.nearby_features.length,
+        uk_fire_rescue_authorities_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_fire_rescue_authorities_containing = data.containing.map(area => ({
+          ...area,
+          objectId: area.objectId,
+          fra23cd: area.fra23cd,
+          fra23nm: area.fra23nm,
+          bngE: area.bngE,
+          bngN: area.bngN,
+          long: area.long,
+          lat: area.lat,
+          shapeArea: area.shapeArea,
+          shapeLength: area.shapeLength,
+          globalId: area.globalId,
+          geometry: area.geometry,
+          distance_miles: area.distance_miles,
+          isContaining: area.isContaining
+        }));
+        result.uk_fire_rescue_authorities_containing_message =
+          `Location is within Fire & Rescue Authority ${data.containing[0].fra23nm || data.containing[0].fra23cd || ''}`;
+      } else {
+        result.uk_fire_rescue_authorities_containing = null;
+        result.uk_fire_rescue_authorities_containing_message =
+          'No Fire & Rescue Authority found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_fire_rescue_authorities_nearby = data.nearby_features.map(area => ({
+          ...area,
+          objectId: area.objectId,
+          fra23cd: area.fra23cd,
+          fra23nm: area.fra23nm,
+          bngE: area.bngE,
+          bngN: area.bngN,
+          long: area.long,
+          lat: area.lat,
+          shapeArea: area.shapeArea,
+          shapeLength: area.shapeLength,
+          globalId: area.globalId,
+          geometry: area.geometry,
+          distance_miles: area.distance_miles,
+          isContaining: area.isContaining
+        }));
+      } else {
+        result.uk_fire_rescue_authorities_nearby = [];
+      }
+
+      result.uk_fire_rescue_authorities_all = data._all.map(area => ({
+        ...area,
+        objectId: area.objectId,
+        fra23cd: area.fra23cd,
+        fra23nm: area.fra23nm,
+        bngE: area.bngE,
+        bngN: area.bngN,
+        long: area.long,
+        lat: area.lat,
+        shapeArea: area.shapeArea,
+        shapeLength: area.shapeLength,
+        globalId: area.globalId,
+        geometry: area.geometry,
+        distance_miles: area.distance_miles,
+        isContaining: area.isContaining
+      }));
+
+      result.uk_fire_rescue_authorities_summary =
+        `Found ${data.containing.length} containing Fire & Rescue Authority area(s) and ${data.nearby_features.length} nearby area(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK Fire & Rescue Authorities data:', error);
+      return {
+        uk_fire_rescue_authorities_containing_count: 0,
+        uk_fire_rescue_authorities_nearby_count: 0,
+        uk_fire_rescue_authorities_total_count: 0,
+        uk_fire_rescue_authorities_containing: null,
+        uk_fire_rescue_authorities_containing_message: 'Error querying Fire & Rescue Authorities',
+        uk_fire_rescue_authorities_nearby: [],
+        uk_fire_rescue_authorities_all: [],
+        uk_fire_rescue_authorities_summary: 'Error querying Fire & Rescue Authorities'
+      };
+    }
+  }
+
+  private async getUKPoliceForceAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getUKPoliceForceAreasData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_police_force_areas_containing_count: data.containing.length,
+        uk_police_force_areas_nearby_count: data.nearby_features.length,
+        uk_police_force_areas_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_police_force_areas_containing = data.containing.map(area => ({
+          ...area,
+          objectId: area.objectId,
+          pfa23cd: area.pfa23cd,
+          pfa23nm: area.pfa23nm,
+          bngE: area.bngE,
+          bngN: area.bngN,
+          long: area.long,
+          lat: area.lat,
+          shapeArea: area.shapeArea,
+          shapeLength: area.shapeLength,
+          globalId: area.globalId,
+          geometry: area.geometry,
+          distance_miles: area.distance_miles,
+          isContaining: area.isContaining
+        }));
+        result.uk_police_force_areas_containing_message =
+          `Location is within Police Force Area ${data.containing[0].pfa23nm || data.containing[0].pfa23cd || ''}`;
+      } else {
+        result.uk_police_force_areas_containing = null;
+        result.uk_police_force_areas_containing_message =
+          'No Police Force Area found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_police_force_areas_nearby = data.nearby_features.map(area => ({
+          ...area,
+          objectId: area.objectId,
+          pfa23cd: area.pfa23cd,
+          pfa23nm: area.pfa23nm,
+          bngE: area.bngE,
+          bngN: area.bngN,
+          long: area.long,
+          lat: area.lat,
+          shapeArea: area.shapeArea,
+          shapeLength: area.shapeLength,
+          globalId: area.globalId,
+          geometry: area.geometry,
+          distance_miles: area.distance_miles,
+          isContaining: area.isContaining
+        }));
+      } else {
+        result.uk_police_force_areas_nearby = [];
+      }
+
+      result.uk_police_force_areas_all = data._all.map(area => ({
+        ...area,
+        objectId: area.objectId,
+        pfa23cd: area.pfa23cd,
+        pfa23nm: area.pfa23nm,
+        bngE: area.bngE,
+        bngN: area.bngN,
+        long: area.long,
+        lat: area.lat,
+        shapeArea: area.shapeArea,
+        shapeLength: area.shapeLength,
+        globalId: area.globalId,
+        geometry: area.geometry,
+        distance_miles: area.distance_miles,
+        isContaining: area.isContaining
+      }));
+
+      result.uk_police_force_areas_summary =
+        `Found ${data.containing.length} containing Police Force Area(s) and ${data.nearby_features.length} nearby area(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK Police Force Areas data:', error);
+      return {
+        uk_police_force_areas_containing_count: 0,
+        uk_police_force_areas_nearby_count: 0,
+        uk_police_force_areas_total_count: 0,
+        uk_police_force_areas_containing: null,
+        uk_police_force_areas_containing_message: 'Error querying Police Force Areas',
+        uk_police_force_areas_nearby: [],
+        uk_police_force_areas_all: [],
+        uk_police_force_areas_summary: 'Error querying Police Force Areas'
+      };
+    }
+  }
+
+  private async getUKCancerAlliances(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getUKCancerAlliancesData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_cancer_alliances_containing_count: data.containing.length,
+        uk_cancer_alliances_nearby_count: data.nearby_features.length,
+        uk_cancer_alliances_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_cancer_alliances_containing = data.containing.map(alliance => ({
+          ...alliance,
+          objectId: alliance.objectId,
+          cal23cd: alliance.cal23cd,
+          cal23nm: alliance.cal23nm,
+          bngE: alliance.bngE,
+          bngN: alliance.bngN,
+          long: alliance.long,
+          lat: alliance.lat,
+          shapeArea: alliance.shapeArea,
+          shapeLength: alliance.shapeLength,
+          globalId: alliance.globalId,
+          geometry: alliance.geometry,
+          distance_miles: alliance.distance_miles,
+          isContaining: alliance.isContaining
+        }));
+        result.uk_cancer_alliances_containing_message =
+          `Location is within Cancer Alliance ${data.containing[0].cal23nm || data.containing[0].cal23cd || ''}`;
+      } else {
+        result.uk_cancer_alliances_containing = null;
+        result.uk_cancer_alliances_containing_message =
+          'No Cancer Alliance found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_cancer_alliances_nearby = data.nearby_features.map(alliance => ({
+          ...alliance,
+          objectId: alliance.objectId,
+          cal23cd: alliance.cal23cd,
+          cal23nm: alliance.cal23nm,
+          bngE: alliance.bngE,
+          bngN: alliance.bngN,
+          long: alliance.long,
+          lat: alliance.lat,
+          shapeArea: alliance.shapeArea,
+          shapeLength: alliance.shapeLength,
+          globalId: alliance.globalId,
+          geometry: alliance.geometry,
+          distance_miles: alliance.distance_miles,
+          isContaining: alliance.isContaining
+        }));
+      } else {
+        result.uk_cancer_alliances_nearby = [];
+      }
+
+      result.uk_cancer_alliances_all = data._all.map(alliance => ({
+        ...alliance,
+        objectId: alliance.objectId,
+        cal23cd: alliance.cal23cd,
+        cal23nm: alliance.cal23nm,
+        bngE: alliance.bngE,
+        bngN: alliance.bngN,
+        long: alliance.long,
+        lat: alliance.lat,
+        shapeArea: alliance.shapeArea,
+        shapeLength: alliance.shapeLength,
+        globalId: alliance.globalId,
+        geometry: alliance.geometry,
+        distance_miles: alliance.distance_miles,
+        isContaining: alliance.isContaining
+      }));
+
+      result.uk_cancer_alliances_summary =
+        `Found ${data.containing.length} containing Cancer Alliance(s) and ${data.nearby_features.length} nearby alliance(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK Cancer Alliances data:', error);
+      return {
+        uk_cancer_alliances_containing_count: 0,
+        uk_cancer_alliances_nearby_count: 0,
+        uk_cancer_alliances_total_count: 0,
+        uk_cancer_alliances_containing: null,
+        uk_cancer_alliances_containing_message: 'Error querying Cancer Alliances',
+        uk_cancer_alliances_nearby: [],
+        uk_cancer_alliances_all: [],
+        uk_cancer_alliances_summary: 'Error querying Cancer Alliances'
+      };
+    }
+  }
+
+  private async getUKGeostatGrid(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getUKGeostatGridData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_geostat_grid_containing_count: data.containing.length,
+        uk_geostat_grid_nearby_count: data.nearby_features.length,
+        uk_geostat_grid_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_geostat_grid_containing = data.containing.map(cell => ({
+          ...cell,
+          objectId: cell.objectId,
+          grd_fixid: cell.grd_fixid,
+          grd_floaid: cell.grd_floaid,
+          grd_newid: cell.grd_newid,
+          pcd_count: cell.pcd_count,
+          tot_p: cell.tot_p,
+          tot_m: cell.tot_m,
+          tot_f: cell.tot_f,
+          tot_hh: cell.tot_hh,
+          shapeArea: cell.shapeArea,
+          shapeLength: cell.shapeLength,
+          globalId: cell.globalId,
+          geometry: cell.geometry,
+          distance_miles: cell.distance_miles,
+          isContaining: cell.isContaining
+        }));
+        result.uk_geostat_grid_containing_message =
+          `Location is within GEOSTAT grid cell ${data.containing[0].grd_newid || data.containing[0].grd_fixid || ''}`;
+      } else {
+        result.uk_geostat_grid_containing = null;
+        result.uk_geostat_grid_containing_message =
+          'No GEOSTAT grid cell found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_geostat_grid_nearby = data.nearby_features.map(cell => ({
+          ...cell,
+          objectId: cell.objectId,
+          grd_fixid: cell.grd_fixid,
+          grd_floaid: cell.grd_floaid,
+          grd_newid: cell.grd_newid,
+          pcd_count: cell.pcd_count,
+          tot_p: cell.tot_p,
+          tot_m: cell.tot_m,
+          tot_f: cell.tot_f,
+          tot_hh: cell.tot_hh,
+          shapeArea: cell.shapeArea,
+          shapeLength: cell.shapeLength,
+          globalId: cell.globalId,
+          geometry: cell.geometry,
+          distance_miles: cell.distance_miles,
+          isContaining: cell.isContaining
+        }));
+      } else {
+        result.uk_geostat_grid_nearby = [];
+      }
+
+      result.uk_geostat_grid_all = data._all.map(cell => ({
+        ...cell,
+        objectId: cell.objectId,
+        grd_fixid: cell.grd_fixid,
+        grd_floaid: cell.grd_floaid,
+        grd_newid: cell.grd_newid,
+        pcd_count: cell.pcd_count,
+        tot_p: cell.tot_p,
+        tot_m: cell.tot_m,
+        tot_f: cell.tot_f,
+        tot_hh: cell.tot_hh,
+        shapeArea: cell.shapeArea,
+        shapeLength: cell.shapeLength,
+        globalId: cell.globalId,
+        geometry: cell.geometry,
+        distance_miles: cell.distance_miles,
+        isContaining: cell.isContaining
+      }));
+
+      result.uk_geostat_grid_summary =
+        `Found ${data.containing.length} containing grid cell(s) and ${data.nearby_features.length} nearby grid cell(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK GEOSTAT Grid data:', error);
+      return {
+        uk_geostat_grid_containing_count: 0,
+        uk_geostat_grid_nearby_count: 0,
+        uk_geostat_grid_total_count: 0,
+        uk_geostat_grid_containing: null,
+        uk_geostat_grid_containing_message: 'Error querying GEOSTAT grid',
+        uk_geostat_grid_nearby: [],
+        uk_geostat_grid_all: [],
+        uk_geostat_grid_summary: 'Error querying GEOSTAT grid'
       };
     }
   }

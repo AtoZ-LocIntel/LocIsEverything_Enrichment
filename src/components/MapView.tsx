@@ -6762,9 +6762,16 @@ const MapView: React.FC<MapViewProps> = ({
         { containingKey: 'ireland_vegetation_areas_containing', nearbyKey: 'ireland_vegetation_areas_nearby_features', name: 'Ireland Vegetation Areas', color: '#16a34a', icon: '🌿', layerType: 'ireland_vegetation_areas' }
       ];
 
-      // Draw UK Local Authority Districts as polygons on the map
+      // Draw UK Local Authority Districts and other UK stats polygons on the map
       const ukLocalAuthorityDistrictLayers = [
-        { containingKey: 'uk_local_authority_districts_containing', nearbyKey: 'uk_local_authority_districts_nearby', name: 'UK Local Authority Districts', color: '#dc2626', icon: '🇬🇧', layerType: 'uk_local_authority_districts' }
+        { containingKey: 'uk_local_authority_districts_containing', nearbyKey: 'uk_local_authority_districts_nearby', name: 'UK Local Authority Districts', color: '#dc2626', icon: '🇬🇧', layerType: 'uk_local_authority_districts' },
+        { containingKey: 'uk_counties_unitary_authorities_containing', nearbyKey: 'uk_counties_unitary_authorities_nearby', name: 'UK Counties & Unitary Authorities', color: '#7c3aed', icon: '🗺️', layerType: 'uk_counties_unitary_authorities' },
+        { containingKey: 'uk_cancer_alliances_containing', nearbyKey: 'uk_cancer_alliances_nearby', name: 'Cancer Alliances (July 2023)', color: '#ec4899', icon: '🎗️', layerType: 'uk_cancer_alliances' },
+        { containingKey: 'uk_geostat_grid_containing', nearbyKey: 'uk_geostat_grid_nearby', name: 'GEOSTAT Grid (2011)', color: '#22c55e', icon: '📊', layerType: 'uk_geostat_grid' },
+        { containingKey: 'uk_fire_rescue_authorities_containing', nearbyKey: 'uk_fire_rescue_authorities_nearby', name: 'Fire & Rescue Authorities (Dec 2023)', color: '#f97316', icon: '🚒', layerType: 'uk_fire_rescue_authorities' },
+        { containingKey: 'uk_police_force_areas_containing', nearbyKey: 'uk_police_force_areas_nearby', name: 'Police Force Areas (Dec 2023)', color: '#0ea5e9', icon: '🚓', layerType: 'uk_police_force_areas' },
+        { containingKey: 'uk_workplace_zones_containing', nearbyKey: 'uk_workplace_zones_nearby', name: 'Workplace Zones (2011)', color: '#f97316', icon: '🏢', layerType: 'uk_workplace_zones' },
+        { containingKey: 'uk_lsoa_2021_ruc_containing', nearbyKey: 'uk_lsoa_2021_ruc_nearby', name: 'Lower Layer Super Output Areas (LSOA 2021)', color: '#0ea5e9', icon: '🧭', layerType: 'uk_lsoa_2021_ruc' }
       ];
 
       irelandProvinceLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {

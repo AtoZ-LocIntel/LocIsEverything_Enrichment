@@ -10358,6 +10358,574 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         ]);
       });
     }
+
+    // Export UK Counties & Unitary Authorities data
+    if (key === 'uk_counties_unitary_authorities_all' && Array.isArray(value)) {
+      value.forEach((unit: any) => {
+        const unitName = unit.ctyua21nm || unit.CTYUA21NM || 'Unknown County / Unitary Authority';
+        const unitCode = unit.ctyua21cd || unit.CTYUA21CD || '';
+        const bngE = unit.bngE !== null && unit.bngE !== undefined
+          ? unit.bngE.toString()
+          : (unit.BNG_E !== null && unit.BNG_E !== undefined ? unit.BNG_E.toString() : '');
+        const bngN = unit.bngN !== null && unit.bngN !== undefined
+          ? unit.bngN.toString()
+          : (unit.BNG_N !== null && unit.BNG_N !== undefined ? unit.BNG_N.toString() : '');
+        const distance = unit.distance_miles !== null && unit.distance_miles !== undefined
+          ? unit.distance_miles.toFixed(2)
+          : (unit.isContaining ? '0.00' : '');
+        const isContaining = unit.isContaining ? 'Yes' : 'No';
+
+        // Extract coordinates from geometry (polygon - use first coordinate) or lat/long, else location
+        let lat = '';
+        let lon = '';
+        if (unit.geometry && unit.geometry.rings && unit.geometry.rings.length > 0) {
+          const outerRing = unit.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else if (unit.lat !== null && unit.lat !== undefined && unit.long !== null && unit.long !== undefined) {
+          lat = unit.lat.toString();
+          lon = unit.long.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...unit };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.ctyua21cd;
+        delete allAttributes.CTYUA21CD;
+        delete allAttributes.ctyua21nm;
+        delete allAttributes.CTYUA21NM;
+        delete allAttributes.ctyua21nmw;
+        delete allAttributes.CTYUA21NMW;
+        delete allAttributes.bngE;
+        delete allAttributes.BNG_E;
+        delete allAttributes.bngN;
+        delete allAttributes.BNG_N;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_COUNTIES_UNITARY_AUTHORITIES',
+          unitCode || unitName,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          unitName,
+          isContaining,
+          bngE || '',
+          bngN || '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+    }
+
+    // Export UK Workplace Zones data
+    if (key === 'uk_workplace_zones_all' && Array.isArray(value)) {
+      value.forEach((zone: any) => {
+        const wzCode = zone.wz11cd || zone.WZ11CD || 'Unknown Workplace Zone';
+        const ladCode = zone.lad11cd || zone.LAD11CD || '';
+        const ladName = zone.lad11nm || zone.LAD11NM || '';
+        const distance = zone.distance_miles !== null && zone.distance_miles !== undefined
+          ? zone.distance_miles.toFixed(2)
+          : (zone.isContaining ? '0.00' : '');
+        const isContaining = zone.isContaining ? 'Yes' : 'No';
+
+        // Use feature centroid if available, else location
+        let lat = '';
+        let lon = '';
+        if (zone.lat !== null && zone.lat !== undefined && zone.long !== null && zone.long !== undefined) {
+          lat = zone.lat.toString();
+          lon = zone.long.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...zone };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.wz11cd;
+        delete allAttributes.WZ11CD;
+        delete allAttributes.lad11cd;
+        delete allAttributes.LAD11CD;
+        delete allAttributes.lad11nm;
+        delete allAttributes.LAD11NM;
+        delete allAttributes.lad11nmw;
+        delete allAttributes.LAD11NMW;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_WORKPLACE_ZONES_2011',
+          wzCode,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          ladName || ladCode,
+          isContaining,
+          '',
+          '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+    }
+
+    // Export UK LSOA 2021 (RUC) data
+    if (key === 'uk_lsoa_2021_ruc_all' && Array.isArray(value)) {
+      value.forEach((lsoa: any) => {
+        const lsoaCode = lsoa.lsoa21cd || lsoa.LSOA21CD || 'Unknown LSOA';
+        const lsoaName = lsoa.lsoa21nm || lsoa.LSOA21NM || '';
+        const rucName = lsoa.ruc21nm || lsoa.RUC21NM || '';
+        const urbanRural = lsoa.urban_rural || lsoa.Urban_rura || '';
+        const distance = lsoa.distance_miles !== null && lsoa.distance_miles !== undefined
+          ? lsoa.distance_miles.toFixed(2)
+          : (lsoa.isContaining ? '0.00' : '');
+        const isContaining = lsoa.isContaining ? 'Yes' : 'No';
+
+        // Use feature lat/long if available, else location
+        let lat = '';
+        let lon = '';
+        if (lsoa.lat !== null && lsoa.lat !== undefined && lsoa.long !== null && lsoa.long !== undefined) {
+          lat = lsoa.lat.toString();
+          lon = lsoa.long.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...lsoa };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.lsoa21cd;
+        delete allAttributes.LSOA21CD;
+        delete allAttributes.lsoa21nm;
+        delete allAttributes.LSOA21NM;
+        delete allAttributes.lsoa21nmw;
+        delete allAttributes.LSOA21NMW;
+        delete allAttributes.ruc21cd;
+        delete allAttributes.RUC21CD;
+        delete allAttributes.ruc21nm;
+        delete allAttributes.RUC21NM;
+        delete allAttributes.Urban_rura;
+        delete allAttributes.urban_rural;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_LSOA_2021_RUC',
+          lsoaCode,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          lsoaName || lsoaCode,
+          isContaining,
+          rucName || '',
+          urbanRural || '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+    }
+
+    // Export UK Cancer Alliances data
+    if (key === 'uk_cancer_alliances_all' && Array.isArray(value)) {
+      value.forEach((alliance: any) => {
+        const allianceName = alliance.cal23nm || alliance.CAL23NM || 'Unknown Cancer Alliance';
+        const allianceCode = alliance.cal23cd || alliance.CAL23CD || '';
+        const bngE = alliance.bngE !== null && alliance.bngE !== undefined
+          ? alliance.bngE.toString()
+          : (alliance.BNG_E !== null && alliance.BNG_E !== undefined ? alliance.BNG_E.toString() : '');
+        const bngN = alliance.bngN !== null && alliance.bngN !== undefined
+          ? alliance.bngN.toString()
+          : (alliance.BNG_N !== null && alliance.BNG_N !== undefined ? alliance.BNG_N.toString() : '');
+        const distance = alliance.distance_miles !== null && alliance.distance_miles !== undefined
+          ? alliance.distance_miles.toFixed(2)
+          : (alliance.isContaining ? '0.00' : '');
+        const isContaining = alliance.isContaining ? 'Yes' : 'No';
+
+        // Extract coordinates from geometry (polygon - use first coordinate) or lat/long, else location
+        let lat = '';
+        let lon = '';
+        if (alliance.geometry && alliance.geometry.rings && alliance.geometry.rings.length > 0) {
+          const outerRing = alliance.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else if (alliance.lat !== null && alliance.lat !== undefined && alliance.long !== null && alliance.long !== undefined) {
+          lat = alliance.lat.toString();
+          lon = alliance.long.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...alliance };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.cal23cd;
+        delete allAttributes.CAL23CD;
+        delete allAttributes.cal23nm;
+        delete allAttributes.CAL23NM;
+        delete allAttributes.bngE;
+        delete allAttributes.BNG_E;
+        delete allAttributes.bngN;
+        delete allAttributes.BNG_N;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_CANCER_ALLIANCES_2023',
+          allianceCode || allianceName,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          allianceName,
+          isContaining,
+          bngE || '',
+          bngN || '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+    }
+
+    // Export UK Fire & Rescue Authorities data
+    if (key === 'uk_fire_rescue_authorities_all' && Array.isArray(value)) {
+      value.forEach((area: any) => {
+        const areaName = area.fra23nm || area.FRA23NM || 'Unknown Fire & Rescue Authority';
+        const areaCode = area.fra23cd || area.FRA23CD || '';
+        const bngE = area.bngE !== null && area.bngE !== undefined
+          ? area.bngE.toString()
+          : (area.BNG_E !== null && area.BNG_E !== undefined ? area.BNG_E.toString() : '');
+        const bngN = area.bngN !== null && area.bngN !== undefined
+          ? area.bngN.toString()
+          : (area.BNG_N !== null && area.BNG_N !== undefined ? area.BNG_N.toString() : '');
+        const distance = area.distance_miles !== null && area.distance_miles !== undefined
+          ? area.distance_miles.toFixed(2)
+          : (area.isContaining ? '0.00' : '');
+        const isContaining = area.isContaining ? 'Yes' : 'No';
+
+        let lat = '';
+        let lon = '';
+        if (area.geometry && area.geometry.rings && area.geometry.rings.length > 0) {
+          const outerRing = area.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else if (area.lat !== null && area.lat !== undefined && area.long !== null && area.long !== undefined) {
+          lat = area.lat.toString();
+          lon = area.long.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...area };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.fra23cd;
+        delete allAttributes.FRA23CD;
+        delete allAttributes.fra23nm;
+        delete allAttributes.FRA23NM;
+        delete allAttributes.bngE;
+        delete allAttributes.BNG_E;
+        delete allAttributes.bngN;
+        delete allAttributes.BNG_N;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_FIRE_RESCUE_AUTHORITIES_2023',
+          areaCode || areaName,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          areaName,
+          isContaining,
+          bngE || '',
+          bngN || '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+    }
+
+    // Export UK Police Force Areas data
+    if (key === 'uk_police_force_areas_all' && Array.isArray(value)) {
+      value.forEach((area: any) => {
+        const areaName = area.pfa23nm || area.PFA23NM || 'Unknown Police Force Area';
+        const areaCode = area.pfa23cd || area.PFA23CD || '';
+        const bngE = area.bngE !== null && area.bngE !== undefined
+          ? area.bngE.toString()
+          : (area.BNG_E !== null && area.BNG_E !== undefined ? area.BNG_E.toString() : '');
+        const bngN = area.bngN !== null && area.bngN !== undefined
+          ? area.bngN.toString()
+          : (area.BNG_N !== null && area.BNG_N !== undefined ? area.BNG_N.toString() : '');
+        const distance = area.distance_miles !== null && area.distance_miles !== undefined
+          ? area.distance_miles.toFixed(2)
+          : (area.isContaining ? '0.00' : '');
+        const isContaining = area.isContaining ? 'Yes' : 'No';
+
+        let lat = '';
+        let lon = '';
+        if (area.geometry && area.geometry.rings && area.geometry.rings.length > 0) {
+          const outerRing = area.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else if (area.lat !== null && area.lat !== undefined && area.long !== null && area.long !== undefined) {
+          lat = area.lat.toString();
+          lon = area.long.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...area };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.pfa23cd;
+        delete allAttributes.PFA23CD;
+        delete allAttributes.pfa23nm;
+        delete allAttributes.PFA23NM;
+        delete allAttributes.bngE;
+        delete allAttributes.BNG_E;
+        delete allAttributes.bngN;
+        delete allAttributes.BNG_N;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_POLICE_FORCE_AREAS_2023',
+          areaCode || areaName,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          areaName,
+          isContaining,
+          bngE || '',
+          bngN || '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+    }
+
+    // Export UK GEOSTAT Grid data
+    if (key === 'uk_geostat_grid_all' && Array.isArray(value)) {
+      value.forEach((cell: any) => {
+        const gridId = cell.grd_newid || cell.GRD_NEWID || cell.grd_fixid || cell.GRD_FIXID || 'Unknown Grid Cell';
+        const pcdCount = cell.pcd_count !== null && cell.pcd_count !== undefined ? cell.pcd_count : null;
+        const totP = cell.tot_p !== null && cell.tot_p !== undefined ? cell.tot_p : null;
+        const totHH = cell.tot_hh !== null && cell.tot_hh !== undefined ? cell.tot_hh : null;
+        const distance = cell.distance_miles !== null && cell.distance_miles !== undefined
+          ? cell.distance_miles.toFixed(2)
+          : (cell.isContaining ? '0.00' : '');
+        const isContaining = cell.isContaining ? 'Yes' : 'No';
+
+        // Use approximate cell coordinate from geometry, else location
+        let lat = '';
+        let lon = '';
+        if (cell.geometry && cell.geometry.rings && cell.geometry.rings.length > 0) {
+          const outerRing = cell.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...cell };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.grd_fixid;
+        delete allAttributes.GRD_FIXID;
+        delete allAttributes.grd_floaid;
+        delete allAttributes.GRD_FLOAID;
+        delete allAttributes.grd_newid;
+        delete allAttributes.GRD_NEWID;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics / Eurostat',
+          (location.confidence || 'N/A').toString(),
+          'UK_GEOSTAT_GRID_2011',
+          gridId,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          totP !== null ? totP.toString() : '',
+          isContaining,
+          pcdCount !== null ? pcdCount.toString() : '',
+          totHH !== null ? totHH.toString() : '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics / Eurostat'
+        ]);
+      });
+    }
     
     // Export Ireland Provinces data
     if (key === 'ireland_provinces_all' && Array.isArray(value)) {
