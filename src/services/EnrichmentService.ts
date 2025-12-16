@@ -107,6 +107,8 @@ import { getLakeCountyFacilitySitePolygonsData } from '../adapters/lakeCountyFac
 import { getLakeCountyHighSchoolDistrictsData } from '../adapters/lakeCountyHighSchoolDistricts';
 import { getNWSWatchesWarningsData } from '../adapters/nwsWatchesWarnings';
 import { getNWSDroughtCurrentData } from '../adapters/nwsDroughtCurrent';
+import { getNWSActiveHurricanesData } from '../adapters/nwsActiveHurricanes';
+import { getNWSNDFDWindForecastData } from '../adapters/nwsNDFDWindForecast';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
@@ -132,6 +134,7 @@ import { getHoustonBikewaysData } from '../adapters/houstonBikeways';
 import { getHoustonMetroRailStationsData } from '../adapters/houstonMetroRailStations';
 import { getHoustonAirportsData } from '../adapters/houstonAirports';
 import { getHoustonFireHydrantsData } from '../adapters/houstonFireHydrants';
+import { getSatelliteVIIRSFireActivityData } from '../adapters/satelliteVIIRSFireActivity';
 import { getBLMNationalTrailsData } from '../adapters/blmNationalTrails';
 import { getBLMNationalMotorizedTrailsData } from '../adapters/blmNationalMotorizedTrails';
 import { getBLMNationalNonmotorizedTrailsData } from '../adapters/blmNationalNonmotorizedTrails';
@@ -2315,6 +2318,46 @@ export class EnrichmentService {
       case 'nws_drought_current':
         return await this.getNWSDroughtCurrent(lat, lon);
       
+      // NWS Active Hurricanes - Point-in-polygon and proximity queries (up to 100 miles)
+      case 'nws_hurricane_forecast_position':
+        return await this.getNWSActiveHurricanes(lat, lon, 0, 'Forecast Position', enrichmentId, radius);
+      case 'nws_hurricane_observed_position':
+        return await this.getNWSActiveHurricanes(lat, lon, 1, 'Observed Position', enrichmentId, radius);
+      case 'nws_hurricane_forecast_track':
+        return await this.getNWSActiveHurricanes(lat, lon, 2, 'Forecast Track', enrichmentId, radius);
+      case 'nws_hurricane_observed_track':
+        return await this.getNWSActiveHurricanes(lat, lon, 3, 'Observed Track', enrichmentId, radius);
+      case 'nws_hurricane_forecast_error_cone':
+        return await this.getNWSActiveHurricanes(lat, lon, 4, 'Forecast Error Cone and Danger Area', enrichmentId, radius);
+      case 'nws_hurricane_watches_warnings':
+        return await this.getNWSActiveHurricanes(lat, lon, 5, 'Watches and Warnings', enrichmentId, radius);
+      case 'nws_hurricane_tropical_storm_force':
+        return await this.getNWSActiveHurricanes(lat, lon, 7, 'Tropical Storm Force (34kts)', enrichmentId, radius);
+      case 'nws_hurricane_strong_tropical_storm':
+        return await this.getNWSActiveHurricanes(lat, lon, 8, 'Strong Tropical Storm (50kts)', enrichmentId, radius);
+      case 'nws_hurricane_force':
+        return await this.getNWSActiveHurricanes(lat, lon, 9, 'Hurricane Force (64kts+)', enrichmentId, radius);
+      case 'nws_hurricane_raw_data':
+        return await this.getNWSActiveHurricanes(lat, lon, 10, 'Raw 1/10th Degree Data (All)', enrichmentId, radius);
+      case 'nws_hurricane_observed_wind_swath':
+        return await this.getNWSActiveHurricanes(lat, lon, 11, 'Observed Wind Swath', enrichmentId, radius);
+      
+      // NWS NDFD Wind Forecast - Proximity queries (up to 25 miles)
+      case 'nws_ndfd_wind_national':
+        return await this.getNWSNDFDWindForecast(lat, lon, 0, 'Wind at National Level', enrichmentId, radius);
+      case 'nws_ndfd_wind_regional':
+        return await this.getNWSNDFDWindForecast(lat, lon, 1, 'Wind at Regional Level', enrichmentId, radius);
+      case 'nws_ndfd_wind_state':
+        return await this.getNWSNDFDWindForecast(lat, lon, 2, 'Wind at State Level', enrichmentId, radius);
+      case 'nws_ndfd_wind_county':
+        return await this.getNWSNDFDWindForecast(lat, lon, 3, 'Wind at County Level', enrichmentId, radius);
+      case 'nws_ndfd_wind_district':
+        return await this.getNWSNDFDWindForecast(lat, lon, 4, 'Wind at District Level', enrichmentId, radius);
+      case 'nws_ndfd_wind_block_group':
+        return await this.getNWSNDFDWindForecast(lat, lon, 5, 'Wind at Block Group Level', enrichmentId, radius);
+      case 'nws_ndfd_wind_city':
+        return await this.getNWSNDFDWindForecast(lat, lon, 6, 'Wind at City Level', enrichmentId, radius);
+      
       // Chicago Traffic Crashes - Proximity query (max 1 mile) with optional year filter
       case 'chicago_traffic_crashes':
         const crashYear = poiYears?.[enrichmentId];
@@ -2423,6 +2466,10 @@ export class EnrichmentService {
       // Houston Fire Hydrants - Proximity query only (max 1 mile)
       case 'houston_fire_hydrants':
         return await this.getHoustonFireHydrants(lat, lon, radius);
+      
+      // Satellite VIIRS Fire Activity - Proximity query only (max 25 miles)
+      case 'satellite_viirs_fire_activity':
+        return await this.getSatelliteVIIRSFireActivity(lat, lon, radius);
       
       // Houston Airports - Point-in-polygon and proximity query (max 25 miles)
       case 'houston_airports':
@@ -11043,6 +11090,117 @@ out center;`;
     return result;
   }
 
+  private async getNWSActiveHurricanes(lat: number, lon: number, layerId: number, layerName: string, enrichmentId: string, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      [`${enrichmentId}_containing`]: [],
+      [`${enrichmentId}_nearby`]: [],
+      [`${enrichmentId}_all`]: [],
+      [`${enrichmentId}_count`]: 0,
+    };
+
+    try {
+      const features = await getNWSActiveHurricanesData(lat, lon, layerId, layerName, radius);
+      
+      result[`${enrichmentId}_count`] = features.length;
+      result[`${enrichmentId}_all`] = features.map(feature => ({
+        objectId: feature.objectId,
+        attributes: feature.attributes,
+        distance: feature.distance,
+        containing: feature.containing,
+        geometry: feature.geometry,
+        layerId: feature.layerId,
+        layerName: feature.layerName
+        // Note: Not including lat/lon to prevent point markers from being drawn - only geometry
+      }));
+
+      // Separate containing and nearby
+      result[`${enrichmentId}_containing`] = features
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          geometry: f.geometry,
+          layerId: f.layerId,
+          layerName: f.layerName
+        }));
+
+      result[`${enrichmentId}_nearby`] = features
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          distance: f.distance,
+          geometry: f.geometry,
+          layerId: f.layerId,
+          layerName: f.layerName
+        }));
+    } catch (error) {
+      console.error(`Error fetching NWS ${layerName}:`, error);
+    }
+
+    return result;
+  }
+
+  private async getNWSNDFDWindForecast(lat: number, lon: number, layerId: number, layerName: string, enrichmentId: string, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      [`${enrichmentId}_containing`]: [],
+      [`${enrichmentId}_nearby`]: [],
+      [`${enrichmentId}_all`]: [],
+      [`${enrichmentId}_count`]: 0,
+    };
+
+    try {
+      console.log(`💨 EnrichmentService: Fetching NWS ${layerName} (Layer ${layerId}) for [${lat}, ${lon}] with radius ${radius}`);
+      const features = await getNWSNDFDWindForecastData(lat, lon, layerId, layerName, radius);
+      console.log(`💨 EnrichmentService: Received ${features.length} features from adapter`);
+      console.log(`💨 EnrichmentService: Setting count field '${enrichmentId}_count' to ${features.length}`);
+      
+      result[`${enrichmentId}_count`] = features.length;
+      console.log(`💨 EnrichmentService: Count field set. Result object keys:`, Object.keys(result));
+      result[`${enrichmentId}_all`] = features.map(feature => ({
+        objectId: feature.objectId,
+        attributes: feature.attributes,
+        distance: feature.distance,
+        containing: feature.containing,
+        geometry: feature.geometry,
+        lat: feature.lat,
+        lon: feature.lon,
+        layerId: feature.layerId,
+        layerName: feature.layerName
+      }));
+
+      // Separate containing and nearby
+      result[`${enrichmentId}_containing`] = features
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          geometry: f.geometry,
+          lat: f.lat,
+          lon: f.lon,
+          layerId: f.layerId,
+          layerName: f.layerName
+        }));
+
+      result[`${enrichmentId}_nearby`] = features
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          distance: f.distance,
+          geometry: f.geometry,
+          lat: f.lat,
+          lon: f.lon,
+          layerId: f.layerId,
+          layerName: f.layerName
+        }));
+    } catch (error) {
+      console.error(`Error fetching NWS ${layerName}:`, error);
+    }
+
+    return result;
+  }
+
   private async getChicagoBuildingFootprints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`🏢 Fetching Chicago Building Footprints data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
@@ -12465,6 +12623,72 @@ out center;`;
         houston_fire_hydrants_count: 0,
         houston_fire_hydrants_all: [],
         houston_fire_hydrants_summary: 'Error querying fire hydrants'
+      };
+    }
+  }
+
+  private async getSatelliteVIIRSFireActivity(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 5.0;
+      
+      const hotspots = await getSatelliteVIIRSFireActivityData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {
+        satellite_viirs_fire_activity_containing: [],
+        satellite_viirs_fire_activity_nearby: [],
+        satellite_viirs_fire_activity_all: [],
+        satellite_viirs_fire_activity_count: 0,
+      };
+
+      if (hotspots.length === 0) {
+        result.satellite_viirs_fire_activity_summary = 'No satellite VIIRS fire activity hotspots found within the search radius.';
+      } else {
+        result.satellite_viirs_fire_activity_count = hotspots.length;
+        result.satellite_viirs_fire_activity_all = hotspots.map(hotspot => ({
+          objectId: hotspot.objectId,
+          attributes: hotspot.attributes,
+          geometry: hotspot.geometry,
+          lat: hotspot.lat,
+          lon: hotspot.lon,
+          distance: hotspot.distance,
+          containing: hotspot.containing
+        }));
+        
+        // Separate containing and nearby
+        result.satellite_viirs_fire_activity_containing = hotspots
+          .filter(h => h.containing)
+          .map(h => ({
+            objectId: h.objectId,
+            attributes: h.attributes,
+            geometry: h.geometry,
+            lat: h.lat,
+            lon: h.lon
+          }));
+
+        result.satellite_viirs_fire_activity_nearby = hotspots
+          .filter(h => !h.containing)
+          .map(h => ({
+            objectId: h.objectId,
+            attributes: h.attributes,
+            geometry: h.geometry,
+            lat: h.lat,
+            lon: h.lon,
+            distance: h.distance
+          }));
+        
+        result.satellite_viirs_fire_activity_summary = `Found ${hotspots.length} satellite VIIRS fire activity hotspot(s) within ${cappedRadius} miles.`;
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Satellite VIIRS Fire Activity data:', error);
+      return {
+        satellite_viirs_fire_activity_containing: [],
+        satellite_viirs_fire_activity_nearby: [],
+        satellite_viirs_fire_activity_all: [],
+        satellite_viirs_fire_activity_count: 0,
+        satellite_viirs_fire_activity_summary: 'Error querying satellite VIIRS fire activity'
       };
     }
   }

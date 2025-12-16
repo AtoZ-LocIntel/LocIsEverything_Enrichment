@@ -1697,6 +1697,150 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/US_Drought_Intensity_v1/FeatureServer/3"
         },
         {
+          name: "NWS Hurricane Forecast Position",
+          description: "Hurricane forecast positions - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/0"
+        },
+        {
+          name: "NWS Hurricane Observed Position",
+          description: "Hurricane observed positions - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/1"
+        },
+        {
+          name: "NWS Hurricane Forecast Track",
+          description: "Hurricane forecast tracks - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/2"
+        },
+        {
+          name: "NWS Hurricane Observed Track",
+          description: "Hurricane observed tracks - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/3"
+        },
+        {
+          name: "NWS Hurricane Forecast Error Cone",
+          description: "Hurricane forecast error cone and danger area - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/4"
+        },
+        {
+          name: "NWS Hurricane Watches and Warnings",
+          description: "Hurricane watches and warnings - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/5"
+        },
+        {
+          name: "NWS Tropical Storm Force (34kts)",
+          description: "Tropical storm force wind areas (34kts) - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/7"
+        },
+        {
+          name: "NWS Strong Tropical Storm (50kts)",
+          description: "Strong tropical storm wind areas (50kts) - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/8"
+        },
+        {
+          name: "NWS Hurricane Force (64kts+)",
+          description: "Hurricane force wind areas (64kts+) - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/9"
+        },
+        {
+          name: "NWS Hurricane Raw Data",
+          description: "Raw 1/10th degree hurricane data - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/10"
+        },
+        {
+          name: "NWS Hurricane Observed Wind Swath",
+          description: "Hurricane observed wind swath - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Active_Hurricanes_v1/FeatureServer/11"
+        },
+        {
+          name: "NWS NDFD Wind Forecast - National",
+          description: "NDFD Wind Forecast at National Level - proximity queries from 0.25 to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_WindForecast_v1/FeatureServer/0"
+        },
+        {
+          name: "NWS NDFD Wind Forecast - Regional",
+          description: "NDFD Wind Forecast at Regional Level - proximity queries from 0.25 to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_WindForecast_v1/FeatureServer/1"
+        },
+        {
+          name: "NWS NDFD Wind Forecast - State",
+          description: "NDFD Wind Forecast at State Level - proximity queries from 0.25 to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_WindForecast_v1/FeatureServer/2"
+        },
+        {
+          name: "NWS NDFD Wind Forecast - County",
+          description: "NDFD Wind Forecast at County Level - proximity queries from 0.25 to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_WindForecast_v1/FeatureServer/3"
+        },
+        {
+          name: "NWS NDFD Wind Forecast - District",
+          description: "NDFD Wind Forecast at District Level - proximity queries from 0.25 to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_WindForecast_v1/FeatureServer/4"
+        },
+        {
+          name: "NWS NDFD Wind Forecast - Block Group",
+          description: "NDFD Wind Forecast at Block Group Level - proximity queries from 0.25 to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_WindForecast_v1/FeatureServer/5"
+        },
+        {
+          name: "NWS NDFD Wind Forecast - City",
+          description: "NDFD Wind Forecast at City Level - proximity queries from 0.25 to 25 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_WindForecast_v1/FeatureServer/6"
+        },
+        {
           name: "Chicago Building Centroids",
           description: "Building centroids from the City of Chicago Data Portal - proximity queries from 0.25 to 1 mile",
           coverage: "City of Chicago, Illinois",

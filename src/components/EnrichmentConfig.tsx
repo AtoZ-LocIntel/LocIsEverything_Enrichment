@@ -707,6 +707,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           // Get Houston enrichments (when added, they will start with 'houston_')
           const houstonEnrichments = sectionEnrichments.filter(e => e.id.startsWith('houston_'));
           
+          // Filter enrichments for TX Education Agency sub-category
+          const txEducationEnrichments = poiTypes.filter(poi => poi.section === 'tx' && poi.category === 'tx' && poi.subCategory === 'TX Education Agency Open Data');
+          
           const txSubCategories: EnrichmentCategory[] = [
             {
               id: 'houston_data_portal',
@@ -714,6 +717,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               icon: <img src="/assets/Houston.webp" alt="Houston Data Portal" className="w-full h-full object-cover rounded-full" />,
               description: 'Houston Data Portal data layers',
               enrichments: houstonEnrichments
+            },
+            {
+              id: 'tx_education_agency',
+              title: 'TX Education Agency Open Data',
+              icon: <img src="/assets/TXed.webp" alt="TX Education Agency Open Data" className="w-full h-full object-cover rounded-full" />,
+              description: 'Texas Education Agency Open Data layers',
+              enrichments: txEducationEnrichments
             }
           ];
           

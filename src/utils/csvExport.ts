@@ -6674,10 +6674,36 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
               lat = (sumLat / count).toString();
               lon = (sumLon / count).toString();
             }
+          } else if (feature.geometry.points && Array.isArray(feature.geometry.points) && feature.geometry.points.length > 0) {
+            // Multipoint geometry - use first point
+            const firstPoint = feature.geometry.points[0];
+            if (firstPoint && firstPoint.length >= 2) {
+              let pointLon = firstPoint[0];
+              let pointLat = firstPoint[1];
+              
+              // Check if Web Mercator or WGS84
+              const isWebMercator = Math.abs(pointLon) > 180 || Math.abs(pointLat) > 90;
+              if (isWebMercator) {
+                // Convert from Web Mercator to WGS84
+                pointLon = (pointLon / 20037508.34) * 180;
+                let mercLat = (pointLat / 20037508.34) * 180;
+                pointLat = 180 / Math.PI * (2 * Math.atan(Math.exp(mercLat * Math.PI / 180)) - Math.PI / 2);
+              }
+              lat = pointLat.toString();
+              lon = pointLon.toString();
+            }
           } else if (feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
             // Point geometry
             lat = feature.geometry.y.toString();
             lon = feature.geometry.x.toString();
+          } else if (feature.geometry.paths && feature.geometry.paths[0] && feature.geometry.paths[0].length > 0) {
+            // Polyline geometry - use first point of first path
+            const firstPath = feature.geometry.paths[0];
+            const firstCoord = firstPath[0];
+            if (firstCoord && firstCoord.length >= 2) {
+              lat = firstCoord[1].toString(); // ESRI format is [lon, lat]
+              lon = firstCoord[0].toString();
+            }
           }
         }
         
@@ -10000,6 +10026,43 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', '', '', '', '', '',
           attributesJson,
           'City of Houston'
+        ]);
+      });
+    } else if (key === 'satellite_viirs_fire_activity_all' && Array.isArray(value)) {
+      value.forEach((hotspot: any) => {
+        const objectId = hotspot.objectId || hotspot.OBJECTID || hotspot.attributes?.OBJECTID || 'Unknown';
+        const distance = hotspot.distance !== null && hotspot.distance !== undefined ? hotspot.distance.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (point)
+        let lat = '';
+        let lon = '';
+        if (hotspot.geometry && hotspot.geometry.x !== undefined && hotspot.geometry.y !== undefined) {
+          lat = hotspot.geometry.y.toString();
+          lon = hotspot.geometry.x.toString();
+        }
+        
+        // Extract attributes
+        const attributes = hotspot.attributes || {};
+        const acqDate = attributes.ACQ_DATE || attributes.acq_date || '';
+        const confidence = attributes.CONFIDENCE || attributes.confidence || '';
+        const brightness = attributes.BRIGHTNESS || attributes.brightness || '';
+        
+        rows.push([
+          result.location.name || '',
+          result.location.lat?.toString() || '',
+          result.location.lon?.toString() || '',
+          'Satellite VIIRS Fire Activity',
+          confidence,
+          'Satellite VIIRS Fire Activity',
+          `Hotspot ${objectId}`,
+          lat,
+          lon,
+          distance,
+          'Natural Hazards',
+          '',
+          '',
+          '',
+          'Satellite VIIRS Thermal Hotspots and Fire Activity'
         ]);
       });
     } else if (key === 'houston_fire_hydrants_all' && Array.isArray(value)) {

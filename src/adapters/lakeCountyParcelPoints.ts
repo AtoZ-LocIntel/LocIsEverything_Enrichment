@@ -87,7 +87,7 @@ export async function getLakeCountyParcelPointsData(
     
     // Process features and calculate distances
     const results: LakeCountyParcelPointInfo[] = allFeatures
-      .map((feature: any) => {
+      .map((feature: any): LakeCountyParcelPointInfo | null => {
         const geometry = feature.geometry;
         if (!geometry || (geometry.x === undefined && geometry.y === undefined)) {
           return null;
@@ -120,7 +120,11 @@ export async function getLakeCountyParcelPointsData(
         return null;
       })
       .filter((point): point is LakeCountyParcelPointInfo => point !== null)
-      .sort((a, b) => (a.distance || 0) - (b.distance || 0));
+      .sort((a, b) => {
+        const distA = a.distance ?? 0;
+        const distB = b.distance ?? 0;
+        return distA - distB;
+      });
     
     console.log(`✅ Found ${results.length} Lake County Parcel Point(s) within ${maxRadius} miles`);
     
