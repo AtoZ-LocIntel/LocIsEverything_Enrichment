@@ -15537,7 +15537,15 @@ const MapView: React.FC<MapViewProps> = ({
         'nws_severe_events',
         'nws_moderate_events',
         'nws_minor_events',
-        'nws_other_events'
+        'nws_other_events',
+        // NWS NDFD Wind layers
+        'nws_ndfd_wind_national',
+        'nws_ndfd_wind_regional',
+        'nws_ndfd_wind_state',
+        'nws_ndfd_wind_county',
+        'nws_ndfd_wind_district',
+        'nws_ndfd_wind_block_group',
+        'nws_ndfd_wind_city'
       ];
       
       const nwsColors: Record<string, string> = {
@@ -15591,6 +15599,23 @@ const MapView: React.FC<MapViewProps> = ({
                         const distance = feature.distance || 0;
                         const containing = feature.containing || false;
                         const attrs = feature.attributes || {};
+                        const isWindLayer = layerKey.startsWith('nws_ndfd_wind');
+                        const windFieldConfigs = [
+                          { key: 'IntervalStart', label: 'Interval Start' },
+                          { key: 'WindDir', label: 'Wind Direction' },
+                          { key: 'WindSpeed', label: 'Wind Speed' },
+                          { key: 'WindGust', label: 'Wind Gust' },
+                          { key: 'DeltaDir', label: 'Delta Direction' },
+                          { key: 'DeltaSpeed', label: 'Delta Speed' },
+                          { key: 'DeltaGust', label: 'Delta Gust' }
+                        ];
+                        const formatDateValue = (value: any) => {
+                          if (typeof value === 'number') {
+                            const date = new Date(value);
+                            if (!isNaN(date.getTime())) return date.toLocaleString();
+                          }
+                          return value;
+                        };
                         
                         let popupContent = `
                           <div style="max-width: 300px;">
@@ -15598,13 +15623,23 @@ const MapView: React.FC<MapViewProps> = ({
                             <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
                         `;
                         
-                        // Add key attributes to popup
-                        Object.keys(attrs).slice(0, 10).forEach(key => {
-                          if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
-                            const value = typeof attrs[key] === 'object' ? JSON.stringify(attrs[key]) : attrs[key];
-                            popupContent += `<p style="margin: 4px 0;"><strong>${key}:</strong> ${value}</p>`;
-                          }
-                        });
+                        if (isWindLayer) {
+                          windFieldConfigs.forEach(({ key, label }) => {
+                            const value = attrs[key];
+                            if (value !== null && value !== undefined && value !== '') {
+                              const displayValue = key === 'IntervalStart' ? formatDateValue(value) : value;
+                              popupContent += `<p style="margin: 4px 0;"><strong>${label}:</strong> ${displayValue}</p>`;
+                            }
+                          });
+                        } else {
+                          // Add key attributes to popup (limited)
+                          Object.keys(attrs).slice(0, 10).forEach(key => {
+                            if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
+                              const value = typeof attrs[key] === 'object' ? JSON.stringify(attrs[key]) : attrs[key];
+                              popupContent += `<p style="margin: 4px 0;"><strong>${key}:</strong> ${value}</p>`;
+                            }
+                          });
+                        }
                         
                         if (!containing && distance > 0) {
                           popupContent += `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance.toFixed(3)} miles</p>`;
@@ -15640,6 +15675,23 @@ const MapView: React.FC<MapViewProps> = ({
                       const distance = feature.distance || 0;
                       const containing = feature.containing || false;
                       const attrs = feature.attributes || {};
+                      const isWindLayer = layerKey.startsWith('nws_ndfd_wind');
+                      const windFieldConfigs = [
+                        { key: 'IntervalStart', label: 'Interval Start' },
+                        { key: 'WindDir', label: 'Wind Direction' },
+                        { key: 'WindSpeed', label: 'Wind Speed' },
+                        { key: 'WindGust', label: 'Wind Gust' },
+                        { key: 'DeltaDir', label: 'Delta Direction' },
+                        { key: 'DeltaSpeed', label: 'Delta Speed' },
+                        { key: 'DeltaGust', label: 'Delta Gust' }
+                      ];
+                      const formatDateValue = (value: any) => {
+                        if (typeof value === 'number') {
+                          const date = new Date(value);
+                          if (!isNaN(date.getTime())) return date.toLocaleString();
+                        }
+                        return value;
+                      };
                       
                       let popupContent = `
                         <div style="max-width: 300px;">
@@ -15647,13 +15699,23 @@ const MapView: React.FC<MapViewProps> = ({
                           <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
                       `;
                       
-                      // Add key attributes to popup
-                      Object.keys(attrs).slice(0, 10).forEach(key => {
-                        if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
-                          const value = typeof attrs[key] === 'object' ? JSON.stringify(attrs[key]) : attrs[key];
-                          popupContent += `<p style="margin: 4px 0;"><strong>${key}:</strong> ${value}</p>`;
-                        }
-                      });
+                      if (isWindLayer) {
+                        windFieldConfigs.forEach(({ key, label }) => {
+                          const value = attrs[key];
+                          if (value !== null && value !== undefined && value !== '') {
+                            const displayValue = key === 'IntervalStart' ? formatDateValue(value) : value;
+                            popupContent += `<p style="margin: 4px 0;"><strong>${label}:</strong> ${displayValue}</p>`;
+                          }
+                        });
+                      } else {
+                        // Add key attributes to popup (limited)
+                        Object.keys(attrs).slice(0, 10).forEach(key => {
+                          if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
+                            const value = typeof attrs[key] === 'object' ? JSON.stringify(attrs[key]) : attrs[key];
+                            popupContent += `<p style="margin: 4px 0;"><strong>${key}:</strong> ${value}</p>`;
+                          }
+                        });
+                      }
                       
                       if (!containing && distance > 0) {
                         popupContent += `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance.toFixed(3)} miles</p>`;
