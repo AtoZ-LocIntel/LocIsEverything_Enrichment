@@ -36,15 +36,13 @@ const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode }) 
         }}
       >
         <div 
-          className="absolute inset-0 w-full h-full"
+          className="w-full h-full min-h-0"
           style={{
             height: '100%',
             width: '100%',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
           <MapView

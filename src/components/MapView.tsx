@@ -1311,21 +1311,39 @@ const MapView: React.FC<MapViewProps> = ({
       
       // For mobile, ensure container has explicit height from parent
       if (isMobile) {
-        const parent = container.parentElement;
-        if (parent) {
-          const parentRect = parent.getBoundingClientRect();
+        // Walk up DOM to find the main flex container
+        let parent = container.parentElement;
+        let mainContainer = null;
+        while (parent) {
+          if (parent.tagName === 'MAIN' || parent.classList.contains('flex-1')) {
+            mainContainer = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+        
+        if (mainContainer) {
+          const parentRect = mainContainer.getBoundingClientRect();
           if (parentRect.height > 0 && parentRect.width > 0) {
+            // Set explicit dimensions - critical for Leaflet
             container.style.height = `${parentRect.height}px`;
             container.style.width = `${parentRect.width}px`;
+            container.style.minHeight = '0';
+            container.style.flex = '1 1 auto';
           } else {
             // Parent not ready yet, retry
             setTimeout(initializeMap, 100);
             return;
           }
         } else {
-          // No parent yet, retry
-          setTimeout(initializeMap, 100);
-          return;
+          // Fallback: use viewport height minus header
+          const viewportHeight = window.innerHeight || window.screen.height;
+          const headerHeight = 64; // Approximate header height
+          const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
+          container.style.height = `${calculatedHeight}px`;
+          container.style.width = '100%';
+          container.style.minHeight = '0';
+          container.style.flex = '1 1 auto';
         }
       }
       
@@ -1349,7 +1367,7 @@ const MapView: React.FC<MapViewProps> = ({
       const map = L.map(mapRef.current, {
         center: initialCenter,
         zoom: initialZoom,
-        zoomControl: !isMobile,
+        zoomControl: true, // Enable zoom controls for mobile too
         attributionControl: true,
         fadeAnimation: true,
         zoomAnimation: true,
@@ -1388,34 +1406,83 @@ const MapView: React.FC<MapViewProps> = ({
           if (mapInstanceRef.current && mapRef.current) {
             // Force container dimensions on mobile
             if (isMobile) {
-              const parent = mapRef.current.parentElement;
-              if (parent) {
-                const parentRect = parent.getBoundingClientRect();
+              // Find the main container
+              let parent = mapRef.current.parentElement;
+              let mainContainer = null;
+              while (parent) {
+                if (parent.tagName === 'MAIN' || parent.classList.contains('flex-1')) {
+                  mainContainer = parent;
+                  break;
+                }
+                parent = parent.parentElement;
+              }
+              
+              if (mainContainer) {
+                const parentRect = mainContainer.getBoundingClientRect();
                 if (parentRect.height > 0 && parentRect.width > 0) {
                   mapRef.current.style.height = `${parentRect.height}px`;
                   mapRef.current.style.width = `${parentRect.width}px`;
+                  mapRef.current.style.minHeight = '0';
                 }
+              } else {
+                // Fallback: use viewport height minus header
+                const viewportHeight = window.innerHeight || window.screen.height;
+                const headerHeight = 64;
+                const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
+                mapRef.current.style.height = `${calculatedHeight}px`;
+                mapRef.current.style.width = '100%';
+                mapRef.current.style.minHeight = '0';
               }
             }
+            // Critical: invalidateSize forces Leaflet to recalculate dimensions
             mapInstanceRef.current.invalidateSize(true); // Force recalculation
             setIsMapReady(true);
           }
         }, delay);
       });
       
-      // Additional invalidation for mobile after a longer delay
+      // Additional invalidation for mobile after a longer delay (critical for mobile)
       if (isMobile) {
         setTimeout(() => {
           if (mapInstanceRef.current && mapRef.current) {
-            const parent = mapRef.current.parentElement;
-            if (parent) {
-              const parentRect = parent.getBoundingClientRect();
+            // Find the main container
+            let parent = mapRef.current.parentElement;
+            let mainContainer = null;
+            while (parent) {
+              if (parent.tagName === 'MAIN' || parent.classList.contains('flex-1')) {
+                mainContainer = parent;
+                break;
+              }
+              parent = parent.parentElement;
+            }
+            
+            if (mainContainer) {
+              const parentRect = mainContainer.getBoundingClientRect();
               if (parentRect.height > 0 && parentRect.width > 0) {
                 mapRef.current.style.height = `${parentRect.height}px`;
                 mapRef.current.style.width = `${parentRect.width}px`;
+                mapRef.current.style.minHeight = '0';
               }
+            } else {
+              // Fallback: use viewport height minus header
+              const viewportHeight = window.innerHeight || window.screen.height;
+              const headerHeight = 64;
+              const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
+              mapRef.current.style.height = `${calculatedHeight}px`;
+              mapRef.current.style.width = '100%';
+              mapRef.current.style.minHeight = '0';
             }
+            // Critical: invalidateSize again after delay to ensure proper rendering
             mapInstanceRef.current.invalidateSize(true);
+            
+            // Center map on geocoded location if we have results
+            if (results && results.length > 0 && results[0]?.location) {
+              mapInstanceRef.current.setView(
+                [results[0].location.lat, results[0].location.lon],
+                15,
+                { animate: false }
+              );
+            }
           }
         }, 500);
       }
@@ -26287,31 +26354,30 @@ const MapView: React.FC<MapViewProps> = ({
   if (isMobile) {
     return (
       <div
-        className="relative w-full h-full bg-white"
+        className="relative w-full h-full bg-white min-h-0"
         style={{ 
           height: '100%',
           width: '100%',
           position: 'relative',
           overflow: 'hidden',
-          minHeight: '400px'
+          display: 'flex',
+          flexDirection: 'column',
+          flex: '1 1 auto'
         }}
       >
         {/* Map Container - Full Screen */}
         <div 
           ref={mapRef} 
-          className="w-full h-full"
+          className="w-full h-full min-h-0"
           style={{
             height: '100%',
             width: '100%',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            position: 'relative',
+            flex: '1 1 auto',
+            minHeight: 0,
             zIndex: 1,
             margin: 0,
-            padding: 0,
-            minHeight: '400px'
+            padding: 0
           }}
         />
           
