@@ -1277,7 +1277,7 @@ const MapView: React.FC<MapViewProps> = ({
   results,
   onBackToConfig,
   isMobile = false,
-  previousViewMode,
+  previousViewMode: _previousViewMode,
 }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
