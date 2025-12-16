@@ -1759,7 +1759,7 @@ const MapView: React.FC<MapViewProps> = ({
       // Create a simpler icon for mobile, complex pin for desktop
       const locationIcon = isMobile 
         ? L.divIcon({
-            className: 'custom-location-marker',
+            className: 'custom-location-marker-mobile',
             html: `<div style="
               width: 32px;
               height: 32px;
@@ -1786,8 +1786,7 @@ const MapView: React.FC<MapViewProps> = ({
             </div>`,
             iconSize: [32, 32],
             iconAnchor: [16, 16],
-            popupAnchor: [0, -16],
-            className: 'custom-location-marker-mobile'
+            popupAnchor: [0, -16]
           })
         : L.divIcon({
             className: 'custom-location-marker',
