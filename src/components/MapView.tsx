@@ -489,6 +489,8 @@ const createPOIIcon = (emoji: string, color: string) => {
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+      line-height: 1;
     ">${emoji}</div>`,
     className: 'poi-marker',
     iconSize: [32, 32],
@@ -1339,20 +1341,16 @@ const MapView: React.FC<MapViewProps> = ({
             return;
           }
         } else {
-          // Fallback: use viewport height minus header and bottom padding
+          // Fallback: use viewport height minus header
           const viewportHeight = window.innerHeight || window.screen.height;
           const headerHeight = 64; // Approximate header height
-          const bottomPadding = 200; // Space for legend and zoom controls
-          const calculatedHeight = Math.max(viewportHeight - headerHeight - bottomPadding, 400);
+          const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
           container.style.height = `${calculatedHeight}px`;
           container.style.width = '100%';
           container.style.minHeight = '0';
           container.style.flex = '1 1 auto';
-          container.style.position = 'absolute';
-          container.style.top = '0';
-          container.style.left = '0';
-          container.style.right = '0';
-          container.style.bottom = `${bottomPadding}px`;
+          container.style.position = 'relative';
+          container.style.touchAction = 'pan-x pan-y pinch-zoom';
         }
       }
       
@@ -1429,15 +1427,14 @@ const MapView: React.FC<MapViewProps> = ({
           if (mapInstanceRef.current && mapRef.current) {
             const viewportHeight = window.innerHeight || window.screen.height;
             const headerHeight = 64;
-            const bottomPadding = 200; // Space for legend and zoom controls
-            const calculatedHeight = Math.max(viewportHeight - headerHeight - bottomPadding, 400);
+            // Use full available height, let Leaflet controls position themselves
+            const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
             mapRef.current.style.height = `${calculatedHeight}px`;
             mapRef.current.style.width = '100%';
-            mapRef.current.style.position = 'absolute';
+            mapRef.current.style.position = 'relative';
             mapRef.current.style.top = '0';
             mapRef.current.style.left = '0';
-            mapRef.current.style.right = '0';
-            mapRef.current.style.bottom = `${bottomPadding}px`;
+            mapRef.current.style.touchAction = 'pan-x pan-y pinch-zoom';
             mapInstanceRef.current.invalidateSize(true);
           }
         });
@@ -1447,16 +1444,11 @@ const MapView: React.FC<MapViewProps> = ({
           if (mapInstanceRef.current && mapRef.current) {
             const viewportHeight = window.innerHeight || window.screen.height;
             const headerHeight = 64;
-            // Account for legend and zoom controls at bottom (approximately 200px)
-            const bottomPadding = 200;
-            const calculatedHeight = Math.max(viewportHeight - headerHeight - bottomPadding, 400);
+            const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
             mapRef.current.style.height = `${calculatedHeight}px`;
             mapRef.current.style.width = '100%';
-            mapRef.current.style.position = 'absolute';
-            mapRef.current.style.top = '0';
-            mapRef.current.style.left = '0';
-            mapRef.current.style.right = '0';
-            mapRef.current.style.bottom = `${bottomPadding}px`; // Leave space for controls/legend
+            mapRef.current.style.position = 'relative';
+            mapRef.current.style.touchAction = 'pan-x pan-y pinch-zoom';
             mapInstanceRef.current.invalidateSize(true);
             
             // Force tile layer to redraw
@@ -26443,15 +26435,12 @@ const MapView: React.FC<MapViewProps> = ({
           style={{
             height: '100%',
             width: '100%',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            position: 'relative',
             zIndex: 10,
             margin: 0,
             padding: 0,
-            backgroundColor: '#e5e7eb' // Temporary background to see if container is visible
+            backgroundColor: '#e5e7eb',
+            touchAction: 'pan-x pan-y pinch-zoom'
           }}
         />
           
