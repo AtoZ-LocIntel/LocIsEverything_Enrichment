@@ -1382,6 +1382,11 @@ const MapView: React.FC<MapViewProps> = ({
         zoomAnimationThreshold: 4,
         preferCanvas: false, // Use SVG for better mobile compatibility
       });
+      
+      // Position zoom controls for mobile
+      if (isMobile) {
+        map.zoomControl.setPosition('topleft');
+      }
 
       // Initialize with hybrid basemap
       const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.hybrid;
@@ -1765,17 +1770,24 @@ const MapView: React.FC<MapViewProps> = ({
               display: flex;
               align-items: center;
               justify-content: center;
+              box-sizing: border-box;
+              line-height: 1;
+              margin: 0;
+              padding: 0;
             ">
               <div style="
                 width: 12px;
                 height: 12px;
                 background-color: white;
                 border-radius: 50%;
+                margin: 0;
+                padding: 0;
               "></div>
             </div>`,
             iconSize: [32, 32],
             iconAnchor: [16, 16],
-            popupAnchor: [0, -16]
+            popupAnchor: [0, -16],
+            className: 'custom-location-marker-mobile'
           })
         : L.divIcon({
             className: 'custom-location-marker',
@@ -26461,9 +26473,10 @@ const MapView: React.FC<MapViewProps> = ({
           
           {/* Mobile Legend - Bottom Right (very compact for mobile) */}
           {legendItems.length > 0 && (
-            <div className="absolute bottom-2 right-2 bg-white rounded shadow-lg p-2 max-w-[180px] z-[1000] max-h-[35vh] overflow-y-auto" style={{ 
-              maxHeight: 'calc(35vh - 80px)', // Account for zoom controls and padding
-              marginBottom: '60px' // Space above zoom controls
+            <div className="absolute bottom-2 right-2 bg-white rounded shadow-lg p-2 max-w-[180px] z-[1000] max-h-[40vh] overflow-y-auto" style={{ 
+              maxHeight: '40vh',
+              touchAction: 'pan-y',
+              pointerEvents: 'auto'
             }}>
               <h4 className="text-[9px] font-semibold text-gray-900 mb-1 sticky top-0 bg-white pb-1">Legend</h4>
               <div className="space-y-0.5">
