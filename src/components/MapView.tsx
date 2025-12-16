@@ -26218,23 +26218,16 @@ const MapView: React.FC<MapViewProps> = ({
 
   // CSV export now handled by shared utility function
 
-  // Mobile: Full screen map with overlay back button
+  // Mobile: Full screen map within container (no fixed positioning, works with MapPage wrapper)
   if (isMobile) {
     return (
       <div
-        className="fixed inset-0 bg-white"
+        className="relative w-full h-full bg-white"
         style={{ 
-          height: '100dvh', 
-          width: '100vw',
-          zIndex: 9999,
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          overflow: 'hidden',
-          margin: 0,
-          padding: 0
+          height: '100%',
+          width: '100%',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
         {/* Map Container - Full Screen */}
@@ -26254,15 +26247,8 @@ const MapView: React.FC<MapViewProps> = ({
           }}
         />
           
-          {/* Back Button Overlay - Top Left (very compact for mobile) */}
-          <button
-            onClick={onBackToConfig}
-            className="absolute top-1 left-1 z-[1000] bg-white rounded shadow-md px-1.5 py-1 flex items-center text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors"
-            style={{ zIndex: 1000 }}
-          >
-            <span className="text-sm">←</span>
-            <span className="text-[10px] font-medium ml-0.5">Back</span>
-          </button>
+          {/* Back Button Overlay - Hidden since MapPage has its own header */}
+          {/* Download Button Overlay - Top Right (icon only, very compact for mobile) */}
           
           {/* Download Button Overlay - Top Right (icon only, very compact for mobile) */}
           {results.length === 1 && (

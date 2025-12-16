@@ -13,6 +13,7 @@ import EnrichmentCategoryPage from './components/EnrichmentCategoryPage';
 import EnrichmentConfig from './components/EnrichmentConfig';
 import ProTipsPage from './components/ProTipsPage';
 import DataSourcesPage from './components/DataSourcesPage';
+import MapPage from './components/MapPage';
 import { exportEnrichmentResultsToCSV } from './utils/csvExport';
 import LoadingModal from './components/LoadingModal';
 import DonateModal from './components/DonateModal';
@@ -404,16 +405,24 @@ function App() {
             onBackToConfig={handleBackToConfig}
           />
         )
-      ) : (
-        <div className="flex-1 h-full">
-          <MapView
+      ) : viewMode === 'map' ? (
+        isMobile ? (
+          <MapPage
             results={enrichmentResults}
-            onBackToConfig={handleBackToConfig}
-            isMobile={isMobile}
-            previousViewMode={previousViewMode}
+            onBack={handleBackToConfig}
+            previousViewMode={previousViewMode || undefined}
           />
-        </div>
-      )}
+        ) : (
+          <div className="flex-1 h-full">
+            <MapView
+              results={enrichmentResults}
+              onBackToConfig={handleBackToConfig}
+              isMobile={isMobile}
+              previousViewMode={previousViewMode}
+            />
+          </div>
+        )
+      ) : null}
 
       {/* Donate Modal - Available on all views */}
       {showDonate && (
