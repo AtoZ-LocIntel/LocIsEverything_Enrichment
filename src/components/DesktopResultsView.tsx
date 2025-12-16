@@ -18,6 +18,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
   onDownloadCSV
 }) => {
   const formatFieldName = (key: string): string => {
+    // Special case for Lake County Building Footprints count
+    if (key === 'lake_county_building_footprints_count') {
+      return 'Lake County Buildings Nearby';
+    }
+    
     return key
       .replace(/^poi_/g, 'POI ')
       .replace(/^at_/g, 'AT ')
@@ -574,6 +579,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NYC Data';
       } else if (key.includes('houston_')) {
         category = 'Houston Data';
+      } else if (key.includes('chicago_') || key.includes('lake_county_')) {
+        category = 'IL Open Data';
       } else if (key.includes('ct_parcel') || key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
         category = 'Connecticut Data';
       } else if (key.includes('de_state_forest') || key.includes('de_pine_plantations') || key.includes('de_urban_tree_canopy') || key.includes('de_forest_cover_2007') || key.includes('de_')) {

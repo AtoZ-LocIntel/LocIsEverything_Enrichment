@@ -99,6 +99,7 @@ import { getLACountyTransportationData } from '../adapters/laCountyTransportatio
 import { getLACountyFireHydrantsData } from '../adapters/laCountyFireHydrants';
 import { getChicago311Data } from '../adapters/chicago311';
 import { getChicagoBuildingFootprintsData } from '../adapters/chicagoBuildingFootprints';
+import { getLakeCountyBuildingFootprintsData } from '../adapters/lakeCountyBuildingFootprints';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
@@ -2254,6 +2255,10 @@ export class EnrichmentService {
       // Chicago Building Footprints - Proximity query (max 1 mile)
       case 'chicago_building_footprints':
         return await this.getChicagoBuildingFootprints(lat, lon, radius);
+      
+      // Lake County Building Footprints - Point-in-polygon and proximity query (max 1 mile)
+      case 'lake_county_building_footprints':
+        return await this.getLakeCountyBuildingFootprints(lat, lon, radius);
       
       // Chicago Traffic Crashes - Proximity query (max 1 mile) with optional year filter
       case 'chicago_traffic_crashes':
@@ -10515,6 +10520,64 @@ out center;`;
         chicago_311_all: []
       };
     }
+  }
+
+  private async getLakeCountyBuildingFootprints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      lake_county_building_footprints_containing: [],
+      lake_county_building_footprints_nearby: [],
+      lake_county_building_footprints_all: [],
+      lake_county_building_footprints_count: 0,
+    };
+
+    try {
+      const footprints = await getLakeCountyBuildingFootprintsData(lat, lon, radius);
+      
+      result.lake_county_building_footprints_count = footprints.length;
+      result.lake_county_building_footprints_all = footprints.map(footprint => ({
+        objectId: footprint.objectId,
+        buildingClass: footprint.buildingClass,
+        featureCode: footprint.featureCode,
+        shapeArea: footprint.shapeArea,
+        shapeLength: footprint.shapeLength,
+        distance: footprint.distance,
+        containing: footprint.containing,
+        geometry: footprint.geometry
+        // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+      }));
+
+      // Separate containing and nearby
+      result.lake_county_building_footprints_containing = footprints
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          buildingClass: f.buildingClass,
+          featureCode: f.featureCode,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          lat: f.lat,
+          lon: f.lon,
+          geometry: f.geometry
+        }));
+
+      result.lake_county_building_footprints_nearby = footprints
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          buildingClass: f.buildingClass,
+          featureCode: f.featureCode,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          lat: f.lat,
+          lon: f.lon,
+          distance: f.distance,
+          geometry: f.geometry
+        }));
+    } catch (error) {
+      console.error('Error fetching Lake County Building Footprints:', error);
+    }
+
+    return result;
   }
 
   private async getChicagoBuildingFootprints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {

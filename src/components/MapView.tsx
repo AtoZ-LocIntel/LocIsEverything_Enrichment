@@ -806,6 +806,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_fire_hydrants_all' || // Skip LA County Fire Hydrants array (handled separately for map drawing)
     key === 'chicago_311_all' || // Skip Chicago 311 array (handled separately for map drawing)
     key === 'chicago_building_footprints_all' || // Skip Chicago Building Footprints array (handled separately for map drawing)
+    key === 'lake_county_building_footprints_all' || // Skip Lake County Building Footprints array (handled separately for map drawing)
     key === 'chicago_traffic_crashes_all' || // Skip Chicago Traffic Crashes array (handled separately for map drawing)
     key === 'chicago_speed_cameras_all' || // Skip Chicago Speed Cameras array (handled separately for map drawing)
     key === 'chicago_red_light_cameras_all' || // Skip Chicago Red Light Cameras array (handled separately for map drawing)
@@ -15143,6 +15144,84 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Chicago Building Centroids:', error);
+      }
+
+      // Draw Lake County Building Footprints as polygons
+      try {
+        if (enrichments.lake_county_building_footprints_all && Array.isArray(enrichments.lake_county_building_footprints_all)) {
+          let lakeCountyBuildingFootprintsCount = 0;
+          
+          enrichments.lake_county_building_footprints_all.forEach((footprint: any) => {
+            if (footprint.geometry && footprint.geometry.rings) {
+              try {
+                const rings = footprint.geometry.rings;
+                if (rings && rings.length > 0 && rings[0] && rings[0].length > 0) {
+                  // Convert ESRI rings to Leaflet latlngs
+                  const latlngs = rings[0].map((ring: number[]) => {
+                    if (Array.isArray(ring) && ring.length >= 2) {
+                      return [ring[1], ring[0]] as [number, number]; // ESRI format is [lon, lat], Leaflet needs [lat, lon]
+                    }
+                    return null;
+                  }).filter((coord: any): coord is [number, number] => coord !== null);
+                  
+                  if (latlngs.length > 0) {
+                    const polygon = L.polygon(latlngs, {
+                      color: '#10b981',
+                      weight: 2,
+                      opacity: 0.7,
+                      fillColor: '#10b981',
+                      fillOpacity: 0.3
+                    }).addTo(primary);
+                    
+                    const featureCode = footprint.featureCode || 'Building General';
+                    const buildingClass = footprint.buildingClass || 0;
+                    const shapeArea = footprint.shapeArea || 0;
+                    const shapeLength = footprint.shapeLength || 0;
+                    const distance = footprint.distance || 0;
+                    const containing = footprint.containing || false;
+                    
+                    const popupContent = `
+                      <div style="max-width: 300px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">${containing ? 'Containing' : 'Nearby'}: Lake County Building Footprint</h3>
+                        <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                          <p style="margin: 4px 0;"><strong>Feature Code:</strong> ${featureCode}</p>
+                          <p style="margin: 4px 0;"><strong>Building Class:</strong> ${buildingClass}</p>
+                          <p style="margin: 4px 0;"><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</p>
+                          <p style="margin: 4px 0;"><strong>Perimeter:</strong> ${shapeLength.toLocaleString()} units</p>
+                          ${!containing && distance > 0 ? `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance.toFixed(3)} miles</p>` : ''}
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    
+                    // Extend bounds to include polygon
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    
+                    lakeCountyBuildingFootprintsCount++;
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing Lake County Building Footprint:', error);
+              }
+            }
+          });
+          
+          if (lakeCountyBuildingFootprintsCount > 0) {
+            if (!legendAccumulator['lake_county_building_footprints']) {
+              legendAccumulator['lake_county_building_footprints'] = {
+                icon: '🏢',
+                color: '#10b981',
+                title: 'Lake County Building Footprints',
+                count: 0
+              };
+            }
+            legendAccumulator['lake_county_building_footprints'].count += lakeCountyBuildingFootprintsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Lake County Building Footprints:', error);
       }
 
       // Draw Chicago Speed Camera Locations as point markers

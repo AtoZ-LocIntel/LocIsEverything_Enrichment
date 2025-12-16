@@ -20,6 +20,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   const { location, enrichments } = result;
 
   const formatFieldName = (key: string): string => {
+    // Special case for Lake County Building Footprints count
+    if (key === 'lake_county_building_footprints_count') {
+      return 'Lake County Buildings Nearby';
+    }
+    
     return key
       .replace(/^poi_/g, 'POI ')
       .replace(/^at_/g, 'AT ')
@@ -259,6 +264,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     // Houston Data - check before other state data
     if (key.includes('houston_')) {
       return 'Houston Data';
+    }
+    
+    // IL Open Data - check before other state data
+    if (key.includes('chicago_') || key.includes('lake_county_')) {
+      return 'IL Open Data';
     }
     
     // Connecticut Data

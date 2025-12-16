@@ -6439,6 +6439,56 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'LA County GeoHub'
         ]);
       });
+    } else if (key === 'lake_county_building_footprints_all' && Array.isArray(value)) {
+      value.forEach((footprint: any) => {
+        const objectId = footprint.objectId || '';
+        const buildingClass = footprint.buildingClass || '';
+        const featureCode = footprint.featureCode || '';
+        const shapeArea = footprint.shapeArea || '';
+        const shapeLength = footprint.shapeLength || '';
+        const distance = footprint.distance !== null && footprint.distance !== undefined ? footprint.distance.toFixed(3) : (footprint.containing ? '0' : '');
+        // Calculate centroid from geometry if needed for CSV
+        let lat = '';
+        let lon = '';
+        if (footprint.geometry && footprint.geometry.rings && footprint.geometry.rings[0] && footprint.geometry.rings[0].length > 0) {
+          const rings = footprint.geometry.rings[0];
+          let sumLat = 0;
+          let sumLon = 0;
+          let count = 0;
+          rings.forEach((coord: number[]) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              sumLon += coord[0]; // ESRI format is [lon, lat]
+              sumLat += coord[1];
+              count++;
+            }
+          });
+          if (count > 0) {
+            lat = (sumLat / count).toString();
+            lon = (sumLon / count).toString();
+          }
+        }
+        const containing = footprint.containing ? 'Yes' : 'No';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Lake County, Illinois',
+          (location.confidence || 'N/A').toString(),
+          'LAKE_COUNTY_BUILDING_FOOTPRINT',
+          `${featureCode}${buildingClass ? ` (Class ${buildingClass})` : ''}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Building Footprint',
+          containing,
+          objectId.toString(),
+          buildingClass.toString(),
+          featureCode,
+          shapeArea.toString(),
+          shapeLength.toString()
+        ]);
+      });
     } else if (key === 'chicago_building_footprints_all' && Array.isArray(value)) {
       value.forEach((footprint: any) => {
         const bldgId = footprint.bldg_id || footprint.BLDG_ID || 'Unknown';

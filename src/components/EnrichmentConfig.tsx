@@ -874,6 +874,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           // IL sub-categories
           // Get Chicago Data Portal enrichments
           const chicagoEnrichments = sectionEnrichments.filter(e => e.id.startsWith('chicago_'));
+          // Get Lake County enrichments
+          const lakeCountyEnrichments = sectionEnrichments.filter(e => e.id.startsWith('lake_county_'));
           
           const ilSubCategories: EnrichmentCategory[] = [
             {
@@ -882,6 +884,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               icon: <img src="/assets/ChicagoDataPortal.webp" alt="Chicago Data Portal" className="w-full h-full object-cover rounded-full" />,
               description: 'Chicago Data Portal data layers',
               enrichments: chicagoEnrichments
+            },
+            {
+              id: 'lake_county',
+              title: 'Lake County',
+              icon: <img src="/assets/LakeCountyIL.webp" alt="Lake County" className="w-full h-full object-cover rounded-full" />,
+              description: 'Lake County data layers',
+              enrichments: lakeCountyEnrichments
             }
           ];
           

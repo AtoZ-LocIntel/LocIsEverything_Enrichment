@@ -1548,6 +1548,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://data.cityofchicago.org/api/v3/views/v6vf-nfxy"
         },
         {
+          name: "Lake County Building Footprints",
+          description: "Building footprints from Lake County Planimetrics - point-in-polygon and proximity queries from 0.25 to 1 mile",
+          coverage: "Lake County, Illinois",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/HESxeTbDliKKvec2/arcgis/rest/services/LakeCounty_Planimetrics/FeatureServer/1"
+        },
+        {
           name: "Chicago Building Centroids",
           description: "Building centroids from the City of Chicago Data Portal - proximity queries from 0.25 to 1 mile",
           coverage: "City of Chicago, Illinois",
