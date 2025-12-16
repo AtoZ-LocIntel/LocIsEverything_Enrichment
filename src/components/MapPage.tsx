@@ -29,9 +29,24 @@ const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode }) 
       {/* Map Container - Full height, properly constrained like DataSourcesPage */}
       <main 
         className="flex-1 relative min-h-0 overflow-hidden"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        style={{ 
+          WebkitOverflowScrolling: 'touch',
+          height: '100%',
+          width: '100%'
+        }}
       >
-        <div className="absolute inset-0 w-full h-full">
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{
+            height: '100%',
+            width: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}
+        >
           <MapView
             results={results}
             onBackToConfig={onBack}

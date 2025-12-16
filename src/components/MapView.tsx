@@ -1308,6 +1308,27 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Ensure container has dimensions (don't check opacity as it may start at 0 for fade-in)
       const container = mapRef.current;
+      
+      // For mobile, ensure container has explicit height from parent
+      if (isMobile) {
+        const parent = container.parentElement;
+        if (parent) {
+          const parentRect = parent.getBoundingClientRect();
+          if (parentRect.height > 0 && parentRect.width > 0) {
+            container.style.height = `${parentRect.height}px`;
+            container.style.width = `${parentRect.width}px`;
+          } else {
+            // Parent not ready yet, retry
+            setTimeout(initializeMap, 100);
+            return;
+          }
+        } else {
+          // No parent yet, retry
+          setTimeout(initializeMap, 100);
+          return;
+        }
+      }
+      
       const rect = container.getBoundingClientRect();
       const computedStyle = window.getComputedStyle(container);
       // Only check if display is none or visibility is hidden, not opacity (allows fade-in)
@@ -1315,7 +1336,7 @@ const MapView: React.FC<MapViewProps> = ({
       
       if (rect.width === 0 || rect.height === 0 || isHidden) {
         // Container not ready yet, retry after a short delay
-        setTimeout(initializeMap, 50);
+        setTimeout(initializeMap, isMobile ? 100 : 50);
         return;
       }
 
@@ -1360,14 +1381,44 @@ const MapView: React.FC<MapViewProps> = ({
 
       // After map is initialized, invalidate size to ensure proper rendering
       // Use requestAnimationFrame to ensure DOM is fully updated
+      // For mobile, use longer delays to ensure container is properly sized
+      const delay = isMobile ? 300 : 100;
       requestAnimationFrame(() => {
         setTimeout(() => {
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.invalidateSize(false);
+          if (mapInstanceRef.current && mapRef.current) {
+            // Force container dimensions on mobile
+            if (isMobile) {
+              const parent = mapRef.current.parentElement;
+              if (parent) {
+                const parentRect = parent.getBoundingClientRect();
+                if (parentRect.height > 0 && parentRect.width > 0) {
+                  mapRef.current.style.height = `${parentRect.height}px`;
+                  mapRef.current.style.width = `${parentRect.width}px`;
+                }
+              }
+            }
+            mapInstanceRef.current.invalidateSize(true); // Force recalculation
             setIsMapReady(true);
           }
-        }, 100);
+        }, delay);
       });
+      
+      // Additional invalidation for mobile after a longer delay
+      if (isMobile) {
+        setTimeout(() => {
+          if (mapInstanceRef.current && mapRef.current) {
+            const parent = mapRef.current.parentElement;
+            if (parent) {
+              const parentRect = parent.getBoundingClientRect();
+              if (parentRect.height > 0 && parentRect.width > 0) {
+                mapRef.current.style.height = `${parentRect.height}px`;
+                mapRef.current.style.width = `${parentRect.width}px`;
+              }
+            }
+            mapInstanceRef.current.invalidateSize(true);
+          }
+        }, 500);
+      }
     };
 
     // Small delay to ensure container is rendered in DOM
@@ -1441,19 +1492,33 @@ const MapView: React.FC<MapViewProps> = ({
 
     // When map view is first shown, ensure proper sizing
     // Use a small delay to allow CSS transitions to complete
+    // For mobile, use longer delay and force container sizing
+    const delay = isMobile ? 500 : 300;
     const timeoutId = setTimeout(() => {
       if (mapInstanceRef.current && mapRef.current) {
+        // For mobile, ensure container has explicit dimensions
+        if (isMobile) {
+          const parent = mapRef.current.parentElement;
+          if (parent) {
+            const parentRect = parent.getBoundingClientRect();
+            if (parentRect.height > 0 && parentRect.width > 0) {
+              mapRef.current.style.height = `${parentRect.height}px`;
+              mapRef.current.style.width = `${parentRect.width}px`;
+            }
+          }
+        }
+        
         const rect = mapRef.current.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
-          mapInstanceRef.current.invalidateSize(false);
+          mapInstanceRef.current.invalidateSize(true); // Force recalculation on mobile
         }
       }
-    }, 300); // Wait for fade-in transition to complete
+    }, delay);
 
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [isInitialized]);
+  }, [isInitialized, isMobile]);
 
   useEffect(() => {
     if (!mapRef.current || !mapInstanceRef.current || typeof ResizeObserver === 'undefined') {
@@ -26227,12 +26292,14 @@ const MapView: React.FC<MapViewProps> = ({
           height: '100%',
           width: '100%',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          minHeight: '400px'
         }}
       >
         {/* Map Container - Full Screen */}
         <div 
           ref={mapRef} 
+          className="w-full h-full"
           style={{
             height: '100%',
             width: '100%',
@@ -26243,7 +26310,8 @@ const MapView: React.FC<MapViewProps> = ({
             bottom: 0,
             zIndex: 1,
             margin: 0,
-            padding: 0
+            padding: 0,
+            minHeight: '400px'
           }}
         />
           
