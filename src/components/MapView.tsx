@@ -6765,6 +6765,7 @@ const MapView: React.FC<MapViewProps> = ({
       // Draw UK Local Authority Districts, Built-Up Areas, and other UK stats polygons on the map
       const ukLocalAuthorityDistrictLayers = [
         { containingKey: 'uk_built_up_areas_2024_containing', nearbyKey: 'uk_built_up_areas_2024_nearby', name: 'UK Built-Up Areas (Dec 2024)', color: '#16a34a', icon: '🏙️', layerType: 'uk_built_up_areas_2024' },
+        { containingKey: 'uk_wales_local_health_boards_containing', nearbyKey: 'uk_wales_local_health_boards_nearby', name: 'Wales Local Health Boards', color: '#0ea5e9', icon: '🏥', layerType: 'uk_wales_local_health_boards' },
         { containingKey: 'uk_local_authority_districts_containing', nearbyKey: 'uk_local_authority_districts_nearby', name: 'UK Local Authority Districts', color: '#dc2626', icon: '🇬🇧', layerType: 'uk_local_authority_districts' },
         { containingKey: 'uk_counties_unitary_authorities_containing', nearbyKey: 'uk_counties_unitary_authorities_nearby', name: 'UK Counties & Unitary Authorities', color: '#7c3aed', icon: '🗺️', layerType: 'uk_counties_unitary_authorities' },
         { containingKey: 'uk_cancer_alliances_containing', nearbyKey: 'uk_cancer_alliances_nearby', name: 'Cancer Alliances (July 2023)', color: '#ec4899', icon: '🎗️', layerType: 'uk_cancer_alliances' },
@@ -6971,32 +6972,16 @@ const MapView: React.FC<MapViewProps> = ({
                 if (Array.isArray(rings) && rings.length > 0) {
                   let latlngs: L.LatLngExpression[] | L.LatLngExpression[][] = [];
 
-                  if (layerType === 'uk_built_up_areas_2024') {
-                    // For Built-Up Areas, pick the largest polygon (by ring area) to draw,
-                    // so we emphasize the main part of the multipart geometry.
-                    const ringAreas = rings.map((ring: number[][]) => {
-                      if (!Array.isArray(ring) || ring.length < 3) return 0;
-                      // Shoelace formula on lon/lat as a rough area proxy
-                      let area = 0;
-                      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-                        const [x1, y1] = ring[i];
-                        const [x2, y2] = ring[j];
-                        area += (x1 * y2 - x2 * y1);
-                      }
-                      return Math.abs(area) / 2;
-                    });
-
-                    let maxIndex = 0;
-                    let maxArea = ringAreas[0] || 0;
-                    for (let i = 1; i < ringAreas.length; i++) {
-                      if (ringAreas[i] > maxArea) {
-                        maxArea = ringAreas[i];
-                        maxIndex = i;
-                      }
-                    }
-
-                    const largestRing = rings[maxIndex];
-                    latlngs = largestRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  if (layerType === 'uk_built_up_areas_2024' || layerType === 'uk_wales_local_health_boards') {
+                    // For Built-Up Areas and Wales Local Health Boards, draw ALL rings of the multipart polygon
+                    // Convert all rings to latlngs format for multipolygon
+                    const allRings = rings.map((ring: number[][]) => {
+                      if (!Array.isArray(ring) || ring.length < 3) return [];
+                      return ring.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                    }).filter(ring => ring.length > 0);
+                    
+                    // Use multipolygon format: array of arrays of coordinates
+                    latlngs = allRings as L.LatLngExpression[][];
                   } else {
                     // For other UK stats layers, continue to draw the full polygon (outer ring only).
                     const outerRing = rings[0];
@@ -7020,6 +7005,10 @@ const MapView: React.FC<MapViewProps> = ({
                     displayName = feature.bua24nm || feature.BUA24NM || 'Built-Up Area';
                     displayCode = feature.bua24cd || feature.BUA24CD || null;
                     typeLabel = 'Containing Built-Up Area';
+                  } else if (layerType === 'uk_wales_local_health_boards') {
+                    displayName = feature.lhb23nm || feature.LHB23NM || 'Local Health Board';
+                    displayCode = feature.lhb23cd || feature.LHB23CD || null;
+                    typeLabel = 'Containing Local Health Board';
                   } else if (layerType === 'uk_local_authority_districts') {
                     displayName = feature.lad25nm || feature.LAD25NM || 'Local Authority District';
                     displayCode = feature.lad25cd || feature.LAD25CD || null;
@@ -7432,6 +7421,10 @@ const MapView: React.FC<MapViewProps> = ({
                     displayName = feature.bua24nm || feature.BUA24NM || 'Built-Up Area';
                     displayCode = feature.bua24cd || feature.BUA24CD || null;
                     typeLabel = 'Containing Built-Up Area';
+                  } else if (layerType === 'uk_wales_local_health_boards') {
+                    displayName = feature.lhb23nm || feature.LHB23NM || 'Local Health Board';
+                    displayCode = feature.lhb23cd || feature.LHB23CD || null;
+                    typeLabel = 'Containing Local Health Board';
                   } else if (layerType === 'uk_local_authority_districts') {
                     displayName = feature.lad25nm || feature.LAD25NM || 'Local Authority District';
                     displayCode = feature.lad25cd || feature.LAD25CD || null;
@@ -7556,31 +7549,16 @@ const MapView: React.FC<MapViewProps> = ({
                 if (Array.isArray(rings) && rings.length > 0) {
                   let latlngs: L.LatLngExpression[] | L.LatLngExpression[][] = [];
 
-                  if (layerType === 'uk_built_up_areas_2024') {
-                    // For Built-Up Areas (nearby), also pick the largest polygon to keep
-                    // the map clean and focused.
-                    const ringAreas = rings.map((ring: number[][]) => {
-                      if (!Array.isArray(ring) || ring.length < 3) return 0;
-                      let area = 0;
-                      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-                        const [x1, y1] = ring[i];
-                        const [x2, y2] = ring[j];
-                        area += (x1 * y2 - x2 * y1);
-                      }
-                      return Math.abs(area) / 2;
-                    });
-
-                    let maxIndex = 0;
-                    let maxArea = ringAreas[0] || 0;
-                    for (let i = 1; i < ringAreas.length; i++) {
-                      if (ringAreas[i] > maxArea) {
-                        maxArea = ringAreas[i];
-                        maxIndex = i;
-                      }
-                    }
-
-                    const largestRing = rings[maxIndex];
-                    latlngs = largestRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  if (layerType === 'uk_built_up_areas_2024' || layerType === 'uk_wales_local_health_boards') {
+                    // For Built-Up Areas and Wales Local Health Boards (nearby), draw ALL rings of the multipart polygon
+                    // Convert all rings to latlngs format for multipolygon
+                    const allRings = rings.map((ring: number[][]) => {
+                      if (!Array.isArray(ring) || ring.length < 3) return [];
+                      return ring.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                    }).filter(ring => ring.length > 0);
+                    
+                    // Use multipolygon format: array of arrays of coordinates
+                    latlngs = allRings as L.LatLngExpression[][];
                   } else {
                     const outerRing = rings[0];
                     latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
@@ -7603,6 +7581,14 @@ const MapView: React.FC<MapViewProps> = ({
                     displayName = feature.bua24nm || feature.BUA24NM || 'Built-Up Area';
                     displayCode = feature.bua24cd || feature.BUA24CD || null;
                     typeLabel = 'Nearby Built-Up Area';
+                  } else if (layerType === 'uk_wales_local_health_boards') {
+                    displayName = feature.lhb23nm || feature.LHB23NM || 'Local Health Board';
+                    displayCode = feature.lhb23cd || feature.LHB23CD || null;
+                    typeLabel = 'Nearby Local Health Board';
+                  } else if (layerType === 'uk_wales_local_health_boards') {
+                    displayName = feature.lhb23nm || feature.LHB23NM || 'Local Health Board';
+                    displayCode = feature.lhb23cd || feature.LHB23CD || null;
+                    typeLabel = 'Nearby Local Health Board';
                   } else if (layerType === 'uk_local_authority_districts') {
                     displayName = feature.lad25nm || feature.LAD25NM || 'Local Authority District';
                     displayCode = feature.lad25cd || feature.LAD25CD || null;

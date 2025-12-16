@@ -173,6 +173,7 @@ import { getUKFireRescueAuthoritiesData } from '../adapters/ukFireRescueAuthorit
 import { getUKPoliceForceAreasData } from '../adapters/ukPoliceForceAreas';
 import { getUKBuiltUpAreas2024Data } from '../adapters/ukBuiltUpAreas';
 import { getUKEuropeanElectoralRegionsData } from '../adapters/ukEuropeanElectoralRegions';
+import { getUKWalesLocalHealthBoardsData } from '../adapters/ukWalesLocalHealthBoards';
 import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
 import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDivisions';
 import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
@@ -3578,6 +3579,8 @@ export class EnrichmentService {
         return await this.getUKPoliceForceAreas(lat, lon, radius);
       case 'uk_european_electoral_regions':
         return await this.getUKEuropeanElectoralRegions(lat, lon, radius);
+      case 'uk_wales_local_health_boards':
+        return await this.getUKWalesLocalHealthBoards(lat, lon, radius);
       case 'uk_workplace_zones':
         return await this.getUKWorkplaceZones(lat, lon, radius);
       case 'uk_lsoa_2021_ruc':
@@ -15722,6 +15725,87 @@ out center;`;
         uk_european_electoral_regions_nearby: [],
         uk_european_electoral_regions_all: [],
         uk_european_electoral_regions_summary: 'Error querying European Electoral Regions'
+      };
+    }
+  }
+
+  private async getUKWalesLocalHealthBoards(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      const data = await getUKWalesLocalHealthBoardsData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_wales_local_health_boards_containing_count: data.containing.length,
+        uk_wales_local_health_boards_nearby_count: data.nearby_features.length,
+        uk_wales_local_health_boards_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_wales_local_health_boards_containing = data.containing.map(board => ({
+          ...board,
+          objectId: board.objectId,
+          lhb23cd: board.lhb23cd,
+          lhb23nm: board.lhb23nm,
+          shapeArea: board.shapeArea,
+          shapeLength: board.shapeLength,
+          globalId: board.globalId,
+          geometry: board.geometry,
+          distance_miles: board.distance_miles,
+          isContaining: board.isContaining
+        }));
+        result.uk_wales_local_health_boards_containing_message =
+          `Location is within ${data.containing[0].lhb23nm || 'a Local Health Board'}`;
+      } else {
+        result.uk_wales_local_health_boards_containing = null;
+        result.uk_wales_local_health_boards_containing_message =
+          'No Local Health Board found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_wales_local_health_boards_nearby = data.nearby_features.map(board => ({
+          ...board,
+          objectId: board.objectId,
+          lhb23cd: board.lhb23cd,
+          lhb23nm: board.lhb23nm,
+          shapeArea: board.shapeArea,
+          shapeLength: board.shapeLength,
+          globalId: board.globalId,
+          geometry: board.geometry,
+          distance_miles: board.distance_miles,
+          isContaining: board.isContaining
+        }));
+      } else {
+        result.uk_wales_local_health_boards_nearby = [];
+      }
+
+      result.uk_wales_local_health_boards_all = data._all.map(board => ({
+        ...board,
+        objectId: board.objectId,
+        lhb23cd: board.lhb23cd,
+        lhb23nm: board.lhb23nm,
+        shapeArea: board.shapeArea,
+        shapeLength: board.shapeLength,
+        globalId: board.globalId,
+        geometry: board.geometry,
+        distance_miles: board.distance_miles,
+        isContaining: board.isContaining
+      }));
+
+      result.uk_wales_local_health_boards_summary =
+        `Found ${data.containing.length} containing Local Health Board(s) and ${data.nearby_features.length} nearby board(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK Wales Local Health Boards data:', error);
+      return {
+        uk_wales_local_health_boards_containing_count: 0,
+        uk_wales_local_health_boards_nearby_count: 0,
+        uk_wales_local_health_boards_total_count: 0,
+        uk_wales_local_health_boards_containing: null,
+        uk_wales_local_health_boards_containing_message: 'Error querying Local Health Boards',
+        uk_wales_local_health_boards_nearby: [],
+        uk_wales_local_health_boards_all: [],
+        uk_wales_local_health_boards_summary: 'Error querying Local Health Boards'
       };
     }
   }

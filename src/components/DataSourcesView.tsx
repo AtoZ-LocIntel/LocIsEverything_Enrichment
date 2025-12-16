@@ -2954,6 +2954,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/main_ONS_BUA_2024_EW/FeatureServer/0"
         },
         {
+          name: "Wales Local Health Boards",
+          description: "UK Office for National Statistics - Wales Local Health Boards December 2023 - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "Wales",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Local_Health_Boards_December_2023_WA_BFC/FeatureServer/0"
+        },
+        {
           name: "UK Local Authority Districts",
           description: "UK Office for National Statistics - Local Authority Districts (LAD) - point-in-polygon and proximity queries up to 50 miles",
           coverage: "United Kingdom",

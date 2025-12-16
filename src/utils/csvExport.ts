@@ -10599,6 +10599,28 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     }
 
     // Export UK Built-Up Areas 2024 data
+    if (key === 'uk_wales_local_health_boards_all' && Array.isArray(value)) {
+      value.forEach((board: any) => {
+        const lhbCode = board.lhb23cd || board.LHB23CD || 'Unknown Health Board';
+        const lhbName = board.lhb23nm || board.LHB23NM || '';
+        const distance = board.distance_miles !== null && board.distance_miles !== undefined
+          ? board.distance_miles.toFixed(2)
+          : '';
+        const isContaining = board.isContaining ? 'Yes' : 'No';
+        
+        csvRows.push({
+          'Layer': 'Wales Local Health Boards',
+          'Code': lhbCode,
+          'Name': lhbName,
+          'Distance (miles)': distance,
+          'Contains Location': isContaining,
+          'Shape Area': board.shapeArea || '',
+          'Shape Length': board.shapeLength || ''
+        });
+      });
+      return;
+    }
+    
     if (key === 'uk_built_up_areas_2024_all' && Array.isArray(value)) {
       value.forEach((area: any) => {
         const buaCode = area.bua24cd || area.BUA24CD || 'Unknown Built-Up Area';
