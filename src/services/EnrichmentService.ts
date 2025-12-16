@@ -174,6 +174,8 @@ import { getUKPoliceForceAreasData } from '../adapters/ukPoliceForceAreas';
 import { getUKBuiltUpAreas2024Data } from '../adapters/ukBuiltUpAreas';
 import { getUKEuropeanElectoralRegionsData } from '../adapters/ukEuropeanElectoralRegions';
 import { getUKWalesLocalHealthBoardsData } from '../adapters/ukWalesLocalHealthBoards';
+import { getUKNSPLPostcodeCentroidsData } from '../adapters/ukNSPLPostcodeCentroids';
+import { getUKNationalParksData } from '../adapters/ukNationalParks';
 import { getIrelandSmallAreasData } from '../adapters/irelandSmallAreas';
 import { getIrelandElectoralDivisionsData } from '../adapters/irelandElectoralDivisions';
 import { getIrelandNUTS3Data } from '../adapters/irelandNUTS3';
@@ -3581,6 +3583,10 @@ export class EnrichmentService {
         return await this.getUKEuropeanElectoralRegions(lat, lon, radius);
       case 'uk_wales_local_health_boards':
         return await this.getUKWalesLocalHealthBoards(lat, lon, radius);
+      case 'uk_nspl_postcode_centroids':
+        return await this.getUKNSPLPostcodeCentroids(lat, lon, radius);
+      case 'uk_national_parks':
+        return await this.getUKNationalParks(lat, lon, radius);
       case 'uk_workplace_zones':
         return await this.getUKWorkplaceZones(lat, lon, radius);
       case 'uk_lsoa_2021_ruc':
@@ -15806,6 +15812,165 @@ out center;`;
         uk_wales_local_health_boards_nearby: [],
         uk_wales_local_health_boards_all: [],
         uk_wales_local_health_boards_summary: 'Error querying Local Health Boards'
+      };
+    }
+  }
+
+  private async getUKNSPLPostcodeCentroids(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 1, 1);
+      const data = await getUKNSPLPostcodeCentroidsData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_nspl_postcode_centroids_nearby_count: data.nearby_features.length,
+        uk_nspl_postcode_centroids_total_count: data._all.length
+      };
+
+      if (data.nearby_features.length > 0) {
+        result.uk_nspl_postcode_centroids_nearby = data.nearby_features.map(postcode => ({
+          ...postcode,
+          objectId: postcode.objectId,
+          pcd7: postcode.pcd7,
+          pcd8: postcode.pcd8,
+          pcds: postcode.pcds,
+          lat: postcode.lat,
+          lon: postcode.lon || postcode.long, // Use 'lon' for MapView compatibility
+          long: postcode.long || postcode.lon, // Keep 'long' for backward compatibility
+          oa21cd: postcode.oa21cd,
+          lad25cd: postcode.lad25cd,
+          lsoa21cd: postcode.lsoa21cd,
+          msoa21cd: postcode.msoa21cd,
+          geometry: postcode.geometry,
+          distance_miles: postcode.distance_miles
+        }));
+      } else {
+        result.uk_nspl_postcode_centroids_nearby = [];
+      }
+
+      result.uk_nspl_postcode_centroids_all = data._all.map(postcode => ({
+        ...postcode,
+        objectId: postcode.objectId,
+        pcd7: postcode.pcd7,
+        pcd8: postcode.pcd8,
+        pcds: postcode.pcds,
+        lat: postcode.lat,
+        long: postcode.long,
+        oa21cd: postcode.oa21cd,
+        lad25cd: postcode.lad25cd,
+        lsoa21cd: postcode.lsoa21cd,
+        msoa21cd: postcode.msoa21cd,
+        geometry: postcode.geometry,
+        distance_miles: postcode.distance_miles
+      }));
+
+      result.uk_nspl_postcode_centroids_summary =
+        `Found ${data.nearby_features.length} postcode centroid(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK NSPL Postcode Centroids data:', error);
+      return {
+        uk_nspl_postcode_centroids_nearby_count: 0,
+        uk_nspl_postcode_centroids_total_count: 0,
+        uk_nspl_postcode_centroids_nearby: [],
+        uk_nspl_postcode_centroids_all: [],
+        uk_nspl_postcode_centroids_summary: 'Error querying Postcode Centroids'
+      };
+    }
+  }
+
+  private async getUKNationalParks(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      const data = await getUKNationalParksData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {
+        uk_national_parks_containing_count: data.containing.length,
+        uk_national_parks_nearby_count: data.nearby_features.length,
+        uk_national_parks_total_count: data._all.length
+      };
+
+      if (data.containing.length > 0) {
+        result.uk_national_parks_containing = data.containing.map(park => ({
+          ...park,
+          objectId: park.objectId,
+          npark22cd: park.npark22cd,
+          npark22nm: park.npark22nm,
+          npark22nmw: park.npark22nmw,
+          bngE: park.bngE,
+          bngN: park.bngN,
+          long: park.long,
+          lat: park.lat,
+          shapeArea: park.shapeArea,
+          shapeLength: park.shapeLength,
+          globalId: park.globalId,
+          geometry: park.geometry,
+          distance_miles: park.distance_miles,
+          isContaining: park.isContaining
+        }));
+        result.uk_national_parks_containing_message =
+          `Location is within ${data.containing[0].npark22nm || 'a National Park'}`;
+      } else {
+        result.uk_national_parks_containing = null;
+        result.uk_national_parks_containing_message =
+          'No National Park found containing this location';
+      }
+
+      if (data.nearby_features.length > 0) {
+        result.uk_national_parks_nearby = data.nearby_features.map(park => ({
+          ...park,
+          objectId: park.objectId,
+          npark22cd: park.npark22cd,
+          npark22nm: park.npark22nm,
+          npark22nmw: park.npark22nmw,
+          bngE: park.bngE,
+          bngN: park.bngN,
+          long: park.long,
+          lat: park.lat,
+          shapeArea: park.shapeArea,
+          shapeLength: park.shapeLength,
+          globalId: park.globalId,
+          geometry: park.geometry,
+          distance_miles: park.distance_miles,
+          isContaining: park.isContaining
+        }));
+      } else {
+        result.uk_national_parks_nearby = [];
+      }
+
+      result.uk_national_parks_all = data._all.map(park => ({
+        ...park,
+        objectId: park.objectId,
+        npark22cd: park.npark22cd,
+        npark22nm: park.npark22nm,
+        npark22nmw: park.npark22nmw,
+        bngE: park.bngE,
+        bngN: park.bngN,
+        long: park.long,
+        lat: park.lat,
+        shapeArea: park.shapeArea,
+        shapeLength: park.shapeLength,
+        globalId: park.globalId,
+        geometry: park.geometry,
+        distance_miles: park.distance_miles,
+        isContaining: park.isContaining
+      }));
+
+      result.uk_national_parks_summary =
+        `Found ${data.containing.length} containing National Park(s) and ${data.nearby_features.length} nearby park(s) within ${cappedRadius} miles.`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching UK National Parks data:', error);
+      return {
+        uk_national_parks_containing_count: 0,
+        uk_national_parks_nearby_count: 0,
+        uk_national_parks_total_count: 0,
+        uk_national_parks_containing: null,
+        uk_national_parks_containing_message: 'Error querying National Parks',
+        uk_national_parks_nearby: [],
+        uk_national_parks_all: [],
+        uk_national_parks_summary: 'Error querying National Parks'
       };
     }
   }

@@ -221,7 +221,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
               let radiusOptions: number[];
               if (enrichment.id === 'poi_aurora_viewing_sites') {
                 radiusOptions = [5, 10, 25, 50, 100];
-              } else if (enrichment.id === 'nh_parcels' || enrichment.id === 'nj_parcels' || enrichment.id === 'ireland_pois') {
+              } else if (enrichment.id === 'nh_parcels' || enrichment.id === 'nj_parcels' || enrichment.id === 'ireland_pois' || enrichment.id === 'uk_nspl_postcode_centroids') {
                 radiusOptions = [0.25, 0.50, 0.75, 1.0];
               } else if (enrichment.id === 'nh_nwi_plus' || enrichment.id === 'ma_dep_wetlands' || enrichment.id === 'ma_open_space' || enrichment.id === 'cape_cod_zoning') {
                 radiusOptions = [0.1, 0.25, 0.5, 0.75, 1.0];

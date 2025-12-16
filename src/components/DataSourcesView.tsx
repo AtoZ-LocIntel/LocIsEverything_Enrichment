@@ -2962,6 +2962,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Local_Health_Boards_December_2023_WA_BFC/FeatureServer/0"
         },
         {
+          name: "NSPL Latest Postcode Centroids",
+          description: "UK Office for National Statistics - NSPL Latest Postcode Centroids - proximity queries up to 5 miles",
+          coverage: "United Kingdom",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/NSPL_LATEST_UK/FeatureServer/1"
+        },
+        {
+          name: "National Parks (December 2022) Boundaries GB BFE (V3)",
+          description: "UK Office for National Statistics - National Parks (December 2022) Boundaries GB BFE (V3) - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "Great Britain",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/NPARK_DEC_2022_GB_BFE_V3/FeatureServer/0"
+        },
+        {
           name: "UK Local Authority Districts",
           description: "UK Office for National Statistics - Local Authority Districts (LAD) - point-in-polygon and proximity queries up to 50 miles",
           coverage: "United Kingdom",

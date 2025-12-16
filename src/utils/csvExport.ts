@@ -10598,25 +10598,223 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       });
     }
 
-    // Export UK Built-Up Areas 2024 data
+    // Export UK Wales Local Health Boards data
     if (key === 'uk_wales_local_health_boards_all' && Array.isArray(value)) {
       value.forEach((board: any) => {
         const lhbCode = board.lhb23cd || board.LHB23CD || 'Unknown Health Board';
         const lhbName = board.lhb23nm || board.LHB23NM || '';
         const distance = board.distance_miles !== null && board.distance_miles !== undefined
           ? board.distance_miles.toFixed(2)
-          : '';
+          : (board.isContaining ? '0.00' : '');
         const isContaining = board.isContaining ? 'Yes' : 'No';
-        
-        csvRows.push({
-          'Layer': 'Wales Local Health Boards',
-          'Code': lhbCode,
-          'Name': lhbName,
-          'Distance (miles)': distance,
-          'Contains Location': isContaining,
-          'Shape Area': board.shapeArea || '',
-          'Shape Length': board.shapeLength || ''
-        });
+
+        let lat = '';
+        let lon = '';
+        if (board.geometry && board.geometry.rings && board.geometry.rings.length > 0) {
+          const outerRing = board.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...board };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.lhb23cd;
+        delete allAttributes.LHB23CD;
+        delete allAttributes.lhb23nm;
+        delete allAttributes.LHB23NM;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_WALES_LOCAL_HEALTH_BOARDS',
+          lhbCode,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          lhbName || lhbCode,
+          isContaining,
+          '',
+          '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+      return;
+    }
+    
+    // Export UK NSPL Postcode Centroids data
+    if (key === 'uk_nspl_postcode_centroids_all' && Array.isArray(value)) {
+      value.forEach((postcode: any) => {
+        const pcd7 = postcode.pcd7 || postcode.PCD7 || 'Unknown Postcode';
+        const pcd8 = postcode.pcd8 || postcode.PCD8 || '';
+        const pcds = postcode.pcds || postcode.PCDS || '';
+        const distance = postcode.distance_miles !== null && postcode.distance_miles !== undefined
+          ? postcode.distance_miles.toFixed(2)
+          : '';
+        const lat = postcode.lat !== null && postcode.lat !== undefined ? postcode.lat.toString() : '';
+        const lon = (postcode.lon !== null && postcode.lon !== undefined) ? postcode.lon.toString() : 
+                    (postcode.long !== null && postcode.long !== undefined ? postcode.long.toString() : '');
+        const oa21cd = postcode.oa21cd || postcode.OA21CD || '';
+        const lad25cd = postcode.lad25cd || postcode.LAD25CD || '';
+        const lsoa21cd = postcode.lsoa21cd || postcode.LSOA21CD || '';
+        const msoa21cd = postcode.msoa21cd || postcode.MSOA21CD || '';
+
+        const allAttributes = { ...postcode };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.pcd7;
+        delete allAttributes.PCD7;
+        delete allAttributes.pcd8;
+        delete allAttributes.PCD8;
+        delete allAttributes.pcds;
+        delete allAttributes.PCDS;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        delete allAttributes.oa21cd;
+        delete allAttributes.OA21CD;
+        delete allAttributes.lad25cd;
+        delete allAttributes.LAD25CD;
+        delete allAttributes.lsoa21cd;
+        delete allAttributes.LSOA21CD;
+        delete allAttributes.msoa21cd;
+        delete allAttributes.MSOA21CD;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_NSPL_POSTCODE_CENTROIDS',
+          pcd7,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          pcd8 || pcds || pcd7,
+          '',
+          oa21cd || '',
+          lad25cd || '',
+          lsoa21cd || '',
+          msoa21cd || '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
+      });
+      return;
+    }
+    
+    // Export UK National Parks data
+    if (key === 'uk_national_parks_all' && Array.isArray(value)) {
+      value.forEach((park: any) => {
+        const parkCode = park.npark22cd || park.NPARK22CD || 'Unknown Park';
+        const parkName = park.npark22nm || park.NPARK22NM || '';
+        const parkNameW = park.npark22nmw || park.NPARK22NMW || '';
+        const distance = park.distance_miles !== null && park.distance_miles !== undefined
+          ? park.distance_miles.toFixed(2)
+          : (park.isContaining ? '0.00' : '');
+        const isContaining = park.isContaining ? 'Yes' : 'No';
+
+        let lat = '';
+        let lon = '';
+        if (park.geometry && park.geometry.rings && park.geometry.rings.length > 0) {
+          const outerRing = park.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        } else if (park.lat !== null && park.lat !== undefined && park.long !== null && park.long !== undefined) {
+          lat = park.lat.toString();
+          lon = park.long.toString();
+        } else {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+
+        const allAttributes = { ...park };
+        delete allAttributes.geometry;
+        delete allAttributes.__geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.FID;
+        delete allAttributes.fid;
+        delete allAttributes.npark22cd;
+        delete allAttributes.NPARK22CD;
+        delete allAttributes.npark22nm;
+        delete allAttributes.NPARK22NM;
+        delete allAttributes.npark22nmw;
+        delete allAttributes.NPARK22NMW;
+        delete allAttributes.bngE;
+        delete allAttributes.BNG_E;
+        delete allAttributes.bngN;
+        delete allAttributes.BNG_N;
+        delete allAttributes.lat;
+        delete allAttributes.LAT;
+        delete allAttributes.long;
+        delete allAttributes.LONG;
+        delete allAttributes.shapeArea;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.shapeLength;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.globalId;
+        delete allAttributes.GlobalID;
+        delete allAttributes.GLOBALID;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'UK Office for National Statistics',
+          (location.confidence || 'N/A').toString(),
+          'UK_NATIONAL_PARKS',
+          parkCode,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          parkName || parkCode,
+          isContaining,
+          parkNameW || '',
+          '',
+          '',
+          '',
+          attributesJson,
+          'UK Office for National Statistics'
+        ]);
       });
       return;
     }

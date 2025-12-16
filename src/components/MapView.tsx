@@ -316,6 +316,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'de_rail_lines': { icon: '🚂', color: '#1f2937', title: 'DE Rail Lines' },
   'nj_parcels': { icon: '🏠', color: '#059669', title: 'NJ Tax Parcels' },
   'nj_address_points': { icon: '📍', color: '#3b82f6', title: 'NJ Address Points' },
+  'uk_nspl_postcode_centroids': { icon: '📮', color: '#dc2626', title: 'NSPL Latest Postcode Centroids' },
   'nj_bus_stops': { icon: '🚌', color: '#f59e0b', title: 'NJ Bus Stops' },
   'nj_safety_service_patrol': { icon: '🚨', color: '#dc2626', title: 'NJ Safety Service Patrol' },
   'nj_service_areas': { icon: '🛣️', color: '#8b5cf6', title: 'NJ Service Areas' },
@@ -6766,6 +6767,7 @@ const MapView: React.FC<MapViewProps> = ({
       const ukLocalAuthorityDistrictLayers = [
         { containingKey: 'uk_built_up_areas_2024_containing', nearbyKey: 'uk_built_up_areas_2024_nearby', name: 'UK Built-Up Areas (Dec 2024)', color: '#16a34a', icon: '🏙️', layerType: 'uk_built_up_areas_2024' },
         { containingKey: 'uk_wales_local_health_boards_containing', nearbyKey: 'uk_wales_local_health_boards_nearby', name: 'Wales Local Health Boards', color: '#0ea5e9', icon: '🏥', layerType: 'uk_wales_local_health_boards' },
+        { containingKey: 'uk_national_parks_containing', nearbyKey: 'uk_national_parks_nearby', name: 'National Parks (Dec 2022)', color: '#059669', icon: '🏞️', layerType: 'uk_national_parks' },
         { containingKey: 'uk_local_authority_districts_containing', nearbyKey: 'uk_local_authority_districts_nearby', name: 'UK Local Authority Districts', color: '#dc2626', icon: '🇬🇧', layerType: 'uk_local_authority_districts' },
         { containingKey: 'uk_counties_unitary_authorities_containing', nearbyKey: 'uk_counties_unitary_authorities_nearby', name: 'UK Counties & Unitary Authorities', color: '#7c3aed', icon: '🗺️', layerType: 'uk_counties_unitary_authorities' },
         { containingKey: 'uk_cancer_alliances_containing', nearbyKey: 'uk_cancer_alliances_nearby', name: 'Cancer Alliances (July 2023)', color: '#ec4899', icon: '🎗️', layerType: 'uk_cancer_alliances' },
@@ -6972,8 +6974,8 @@ const MapView: React.FC<MapViewProps> = ({
                 if (Array.isArray(rings) && rings.length > 0) {
                   let latlngs: L.LatLngExpression[] | L.LatLngExpression[][] = [];
 
-                  if (layerType === 'uk_built_up_areas_2024' || layerType === 'uk_wales_local_health_boards') {
-                    // For Built-Up Areas and Wales Local Health Boards, draw ALL rings of the multipart polygon
+                  if (layerType === 'uk_built_up_areas_2024' || layerType === 'uk_wales_local_health_boards' || layerType === 'uk_national_parks') {
+                    // For Built-Up Areas, Wales Local Health Boards, and National Parks, draw ALL rings of the multipart polygon
                     // Convert all rings to latlngs format for multipolygon
                     const allRings = rings.map((ring: number[][]) => {
                       if (!Array.isArray(ring) || ring.length < 3) return [];
@@ -7009,6 +7011,10 @@ const MapView: React.FC<MapViewProps> = ({
                     displayName = feature.lhb23nm || feature.LHB23NM || 'Local Health Board';
                     displayCode = feature.lhb23cd || feature.LHB23CD || null;
                     typeLabel = 'Containing Local Health Board';
+                  } else if (layerType === 'uk_national_parks') {
+                    displayName = feature.npark22nmw || feature.NPARK22NMW || feature.npark22nm || feature.NPARK22NM || 'National Park';
+                    displayCode = feature.npark22cd || feature.NPARK22CD || null;
+                    typeLabel = 'Containing National Park';
                   } else if (layerType === 'uk_local_authority_districts') {
                     displayName = feature.lad25nm || feature.LAD25NM || 'Local Authority District';
                     displayCode = feature.lad25cd || feature.LAD25CD || null;
@@ -7123,20 +7129,35 @@ const MapView: React.FC<MapViewProps> = ({
           });
         }
 
-        // Draw nearby provinces
-        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
-          enrichments[nearbyKey].forEach((province: any) => {
-            const geometry = province.__geometry || province.geometry;
+        // Draw nearby UK stats features
+        const nearbyFeatures: any[] = Array.isArray(enrichments[nearbyKey])
+          ? enrichments[nearbyKey]
+          : [];
+
+        if (nearbyFeatures.length > 0) {
+          nearbyFeatures.forEach((feature: any) => {
+            const geometry = feature.__geometry || feature.geometry;
             if (geometry && geometry.rings) {
               try {
                 const rings = geometry.rings;
-                if (rings && rings.length > 0) {
-                  const outerRing = rings[0];
-                  const latlngs = outerRing.map((coord: number[]) => {
-                    return [coord[1], coord[0]] as [number, number];
-                  });
+                if (Array.isArray(rings) && rings.length > 0) {
+                  let latlngs: L.LatLngExpression[] | L.LatLngExpression[][] = [];
 
-                  const polygon = L.polygon(latlngs, {
+                  if (layerType === 'uk_built_up_areas_2024' || layerType === 'uk_wales_local_health_boards' || layerType === 'uk_national_parks') {
+                    // For Built-Up Areas, Wales Local Health Boards, and National Parks, draw ALL rings of the multipart polygon
+                    const allRings = rings.map((ring: number[][]) => {
+                      if (!Array.isArray(ring) || ring.length < 3) return [];
+                      return ring.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                    }).filter(ring => ring.length > 0);
+                    
+                    latlngs = allRings as L.LatLngExpression[][];
+                  } else {
+                    // For other UK stats layers, draw outer ring only
+                    const outerRing = rings[0];
+                    latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  }
+
+                  const polygon = L.polygon(latlngs as any, {
                     color: color,
                     weight: 2,
                     opacity: 0.6,
@@ -7144,27 +7165,106 @@ const MapView: React.FC<MapViewProps> = ({
                     fillOpacity: 0.2
                   });
 
-                  const provinceName = province.name || 'Unknown Province';
-                  const distance = province.distance_miles ? province.distance_miles.toFixed(2) : 'Unknown';
-                  const provinceId = province.provinceId || '';
-                  const area = province.area || 0;
+                  // Determine display name / code / type label per UK layer
+                  let displayName: string = 'Feature';
+                  let displayCode: string | null = null;
+                  let typeLabel: string = 'Nearby Area';
+                  const distance = feature.distance_miles ? feature.distance_miles.toFixed(2) : 'Unknown';
+
+                  if (layerType === 'uk_built_up_areas_2024') {
+                    displayName = feature.bua24nm || feature.BUA24NM || 'Built-Up Area';
+                    displayCode = feature.bua24cd || feature.BUA24CD || null;
+                    typeLabel = 'Nearby Built-Up Area';
+                  } else if (layerType === 'uk_wales_local_health_boards') {
+                    displayName = feature.lhb23nm || feature.LHB23NM || 'Local Health Board';
+                    displayCode = feature.lhb23cd || feature.LHB23CD || null;
+                    typeLabel = 'Nearby Local Health Board';
+                  } else if (layerType === 'uk_national_parks') {
+                    displayName = feature.npark22nmw || feature.NPARK22NMW || feature.npark22nm || feature.NPARK22NM || 'National Park';
+                    displayCode = feature.npark22cd || feature.NPARK22CD || null;
+                    typeLabel = 'Nearby National Park';
+                  } else if (layerType === 'uk_local_authority_districts') {
+                    displayName = feature.lad25nm || feature.LAD25NM || 'Local Authority District';
+                    displayCode = feature.lad25cd || feature.LAD25CD || null;
+                    typeLabel = 'Nearby Local Authority District';
+                  } else if (layerType === 'uk_counties_unitary_authorities') {
+                    displayName = feature.ctyua21nm || feature.CTYUA21NM || 'County / Unitary Authority';
+                    displayCode = feature.ctyua21cd || feature.CTYUA21CD || null;
+                    typeLabel = 'Nearby County / Unitary Authority';
+                  } else if (layerType === 'uk_cancer_alliances') {
+                    displayName = feature.cal23nm || feature.CAL23NM || 'Cancer Alliance';
+                    displayCode = feature.cal23cd || feature.CAL23CD || null;
+                    typeLabel = 'Nearby Cancer Alliance';
+                  } else if (layerType === 'uk_geostat_grid') {
+                    displayName =
+                      feature.grd_newid || feature.GRD_NEWID ||
+                      feature.grd_fixid || feature.GRD_FIXID ||
+                      'GEOSTAT Grid Cell';
+                    typeLabel = 'Nearby GEOSTAT Grid Cell';
+                  } else if (layerType === 'uk_fire_rescue_authorities') {
+                    displayName = feature.fra23nm || feature.FRA23NM || 'Fire & Rescue Authority';
+                    displayCode = feature.fra23cd || feature.FRA23CD || null;
+                    typeLabel = 'Nearby Fire & Rescue Authority';
+                  } else if (layerType === 'uk_police_force_areas') {
+                    displayName = feature.pfa23nm || feature.PFA23NM || 'Police Force Area';
+                    displayCode = feature.pfa23cd || feature.PFA23CD || null;
+                    typeLabel = 'Nearby Police Force Area';
+                  } else if (layerType === 'uk_workplace_zones') {
+                    displayName = feature.wz11cd || feature.WZ11CD || 'Workplace Zone';
+                    displayCode = feature.wz11cd || feature.WZ11CD || null;
+                    typeLabel = 'Nearby Workplace Zone';
+                  } else if (layerType === 'uk_lsoa_2021_ruc') {
+                    displayName = feature.lsoa21nm || feature.LSOA21NM || 'LSOA 2021';
+                    displayCode = feature.lsoa21cd || feature.LSOA21CD || null;
+                    typeLabel = 'Nearby LSOA 2021';
+                  } else if (layerType === 'uk_european_electoral_regions') {
+                    displayName = feature.eurg18nm || feature.EURG18NM || 'European Electoral Region';
+                    displayCode = feature.eurg18cd || feature.EURG18CD || null;
+                    typeLabel = 'Nearby European Electoral Region';
+                  }
+
+                  const bngE = feature.bngE || feature.BNG_E || null;
+                  const bngN = feature.bngN || feature.BNG_N || null;
 
                   let popupContent = `
                     <div style="min-width: 250px; max-width: 400px;">
                       <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                        ${icon} ${provinceName}
+                        ${icon} ${displayName}
                       </h3>
                       <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Type:</strong> ${typeLabel}</div>
                         <div><strong>Distance:</strong> ${distance} miles</div>
-                        ${provinceId ? `<div><strong>Province ID:</strong> ${provinceId}</div>` : ''}
-                        ${area ? `<div><strong>Area:</strong> ${area.toLocaleString()} sq units</div>` : ''}
+                        ${displayCode ? `<div><strong>Code:</strong> ${displayCode}</div>` : ''}
+                        ${bngE !== null && bngN !== null ? `<div><strong>BNG Coordinates:</strong> E: ${bngE}, N: ${bngN}</div>` : ''}
+                        ${feature.shapeArea ? `<div><strong>Area:</strong> ${feature.shapeArea.toFixed(2)} sq units</div>` : ''}
+                        ${feature.shapeLength ? `<div><strong>Perimeter:</strong> ${feature.shapeLength.toFixed(2)} units</div>` : ''}
                       </div>
                       <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
                   `;
                   
-                  // Add all other province attributes
-                  const excludeFields = ['name', 'provinceId', 'area', 'geometry', '__geometry', 'distance_miles', 'objectId', 'guid', 'centroidX', 'centroidY'];
-                  Object.entries(province).forEach(([key, value]) => {
+                  // Add all other attributes (excluding IDs/geometry already surfaced)
+                  const excludeFields = [
+                    'lad25nm', 'LAD25NM', 'lad25cd', 'LAD25CD', 'lad25nmw', 'LAD25NMW',
+                    'ctyua21nm', 'CTYUA21NM', 'ctyua21cd', 'CTYUA21CD', 'ctyua21nmw', 'CTYUA21NMW',
+                    'cal23nm', 'CAL23NM', 'cal23cd', 'CAL23CD',
+                    'eurg18nm', 'EURG18NM', 'eurg18cd', 'EURG18CD',
+                    'fra23nm', 'FRA23NM', 'fra23cd', 'FRA23CD',
+                    'pfa23nm', 'PFA23NM', 'pfa23cd', 'PFA23CD',
+                    'wz11cd', 'WZ11CD',
+                    'lsoa21nm', 'LSOA21NM', 'lsoa21cd', 'LSOA21CD',
+                    'bua24nm', 'BUA24NM', 'bua24cd', 'BUA24CD', 'bua24nmw', 'BUA24NMW',
+                    'lhb23nm', 'LHB23NM', 'lhb23cd', 'LHB23CD',
+                    'npark22nm', 'NPARK22NM', 'npark22nmw', 'NPARK22NMW', 'npark22cd', 'NPARK22CD',
+                    'gsscode', 'GSSCODE',
+                    'areahectar',
+                    'bngE', 'BNG_E', 'bngN', 'BNG_N',
+                    'shapeArea', 'Shape__Area', 'SHAPE__AREA',
+                    'shapeLength', 'Shape__Length', 'SHAPE__LENGTH',
+                    'geometry', '__geometry', 'distance_miles', 'isContaining',
+                    'objectId', 'OBJECTID', 'FID', 'fid', 'ESRI_OID',
+                    'GlobalID', 'GLOBALID', 'globalId', 'long', 'LONG', 'lat', 'LAT'
+                  ];
+                  Object.entries(feature).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       let displayValue = '';
