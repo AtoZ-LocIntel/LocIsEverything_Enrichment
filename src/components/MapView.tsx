@@ -487,6 +487,8 @@ const createPOIIcon = (emoji: string, color: string) => {
       justify-content: center;
       font-size: 16px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      margin: 0;
+      padding: 0;
     ">${emoji}</div>`,
     className: 'poi-marker',
     iconSize: [32, 32],
@@ -1275,6 +1277,7 @@ const MapView: React.FC<MapViewProps> = ({
   results,
   onBackToConfig,
   isMobile = false,
+  previousViewMode,
 }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -1336,14 +1339,20 @@ const MapView: React.FC<MapViewProps> = ({
             return;
           }
         } else {
-          // Fallback: use viewport height minus header
+          // Fallback: use viewport height minus header and bottom padding
           const viewportHeight = window.innerHeight || window.screen.height;
           const headerHeight = 64; // Approximate header height
-          const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
+          const bottomPadding = 200; // Space for legend and zoom controls
+          const calculatedHeight = Math.max(viewportHeight - headerHeight - bottomPadding, 400);
           container.style.height = `${calculatedHeight}px`;
           container.style.width = '100%';
           container.style.minHeight = '0';
           container.style.flex = '1 1 auto';
+          container.style.position = 'absolute';
+          container.style.top = '0';
+          container.style.left = '0';
+          container.style.right = '0';
+          container.style.bottom = `${bottomPadding}px`;
         }
       }
       
@@ -1420,14 +1429,15 @@ const MapView: React.FC<MapViewProps> = ({
           if (mapInstanceRef.current && mapRef.current) {
             const viewportHeight = window.innerHeight || window.screen.height;
             const headerHeight = 64;
-            const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
+            const bottomPadding = 200; // Space for legend and zoom controls
+            const calculatedHeight = Math.max(viewportHeight - headerHeight - bottomPadding, 400);
             mapRef.current.style.height = `${calculatedHeight}px`;
             mapRef.current.style.width = '100%';
             mapRef.current.style.position = 'absolute';
             mapRef.current.style.top = '0';
             mapRef.current.style.left = '0';
             mapRef.current.style.right = '0';
-            mapRef.current.style.bottom = '0';
+            mapRef.current.style.bottom = `${bottomPadding}px`;
             mapInstanceRef.current.invalidateSize(true);
           }
         });
@@ -1437,14 +1447,16 @@ const MapView: React.FC<MapViewProps> = ({
           if (mapInstanceRef.current && mapRef.current) {
             const viewportHeight = window.innerHeight || window.screen.height;
             const headerHeight = 64;
-            const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
+            // Account for legend and zoom controls at bottom (approximately 200px)
+            const bottomPadding = 200;
+            const calculatedHeight = Math.max(viewportHeight - headerHeight - bottomPadding, 400);
             mapRef.current.style.height = `${calculatedHeight}px`;
             mapRef.current.style.width = '100%';
             mapRef.current.style.position = 'absolute';
             mapRef.current.style.top = '0';
             mapRef.current.style.left = '0';
             mapRef.current.style.right = '0';
-            mapRef.current.style.bottom = '0';
+            mapRef.current.style.bottom = `${bottomPadding}px`; // Leave space for controls/legend
             mapInstanceRef.current.invalidateSize(true);
             
             // Force tile layer to redraw
@@ -1747,33 +1759,58 @@ const MapView: React.FC<MapViewProps> = ({
     
     // Add location marker (larger blue pin)
     if (results[0]?.location) {
-      // Create a larger custom icon for the geocoded location
-      const locationIcon = L.divIcon({
-        className: 'custom-location-marker',
-        html: `<div style="
-          width: 40px;
-          height: 40px;
-          background-color: #3b82f6;
-          border: 4px solid white;
-          border-radius: 50% 50% 50% 0;
-          transform: rotate(-45deg);
-          box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        ">
-          <div style="
-            transform: rotate(45deg);
-            width: 16px;
-            height: 16px;
-            background-color: white;
-            border-radius: 50%;
-          "></div>
-        </div>`,
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-        popupAnchor: [0, -40]
-      });
+      // Create a simpler icon for mobile, complex pin for desktop
+      const locationIcon = isMobile 
+        ? L.divIcon({
+            className: 'custom-location-marker',
+            html: `<div style="
+              width: 32px;
+              height: 32px;
+              background-color: #3b82f6;
+              border: 3px solid white;
+              border-radius: 50%;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">
+              <div style="
+                width: 12px;
+                height: 12px;
+                background-color: white;
+                border-radius: 50%;
+              "></div>
+            </div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -16]
+          })
+        : L.divIcon({
+            className: 'custom-location-marker',
+            html: `<div style="
+              width: 40px;
+              height: 40px;
+              background-color: #3b82f6;
+              border: 4px solid white;
+              border-radius: 50% 50% 50% 0;
+              transform: rotate(-45deg);
+              box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">
+              <div style="
+                transform: rotate(45deg);
+                width: 16px;
+                height: 16px;
+                background-color: white;
+                border-radius: 50%;
+              "></div>
+            </div>`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40]
+          });
       
       const locationMarker = L.marker([results[0].location.lat, results[0].location.lon], {
         title: results[0].location.name,
@@ -26435,8 +26472,11 @@ const MapView: React.FC<MapViewProps> = ({
           
           {/* Mobile Legend - Bottom Right (very compact for mobile) */}
           {legendItems.length > 0 && (
-            <div className="absolute bottom-1 right-1 bg-white rounded shadow-md p-1.5 max-w-[160px] z-[1000] max-h-[40vh] overflow-y-auto">
-              <h4 className="text-[9px] font-semibold text-gray-900 mb-1">Legend</h4>
+            <div className="absolute bottom-2 right-2 bg-white rounded shadow-lg p-2 max-w-[180px] z-[1000] max-h-[35vh] overflow-y-auto" style={{ 
+              maxHeight: 'calc(35vh - 80px)', // Account for zoom controls and padding
+              marginBottom: '60px' // Space above zoom controls
+            }}>
+              <h4 className="text-[9px] font-semibold text-gray-900 mb-1 sticky top-0 bg-white pb-1">Legend</h4>
               <div className="space-y-0.5">
                 {legendItems.map((item, index) => (
                   <div key={index}>
