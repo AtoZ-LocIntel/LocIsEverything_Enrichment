@@ -37,16 +37,16 @@ export async function getSatelliteVIIRSFireActivityData(
   try {
     const { fetchJSONSmart } = await import('../services/EnrichmentService');
     
-    // Cap radius at 25 miles
-    if (radiusMiles && radiusMiles > 25.0) {
-      radiusMiles = 25.0;
+    // Cap radius at 50 miles
+    if (radiusMiles && radiusMiles > 50.0) {
+      radiusMiles = 50.0;
     }
     
     if (!radiusMiles || radiusMiles <= 0) {
       return [];
     }
     
-    const maxRadius = radiusMiles;
+    const maxRadius = radiusMiles || 50.0;
     const results: SatelliteVIIRSFireActivityInfo[] = [];
     const serviceUrl = `${BASE_SERVICE_URL}/0`;
     
