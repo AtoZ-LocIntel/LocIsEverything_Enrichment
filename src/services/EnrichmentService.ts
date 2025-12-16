@@ -100,6 +100,12 @@ import { getLACountyFireHydrantsData } from '../adapters/laCountyFireHydrants';
 import { getChicago311Data } from '../adapters/chicago311';
 import { getChicagoBuildingFootprintsData } from '../adapters/chicagoBuildingFootprints';
 import { getLakeCountyBuildingFootprintsData } from '../adapters/lakeCountyBuildingFootprints';
+import { getLakeCountyPavementBoundariesData } from '../adapters/lakeCountyPavementBoundaries';
+import { getLakeCountyParcelPointsData } from '../adapters/lakeCountyParcelPoints';
+import { getLakeCountyParcelsData } from '../adapters/lakeCountyParcels';
+import { getLakeCountyFacilitySitePolygonsData } from '../adapters/lakeCountyFacilitySitePolygons';
+import { getLakeCountyHighSchoolDistrictsData } from '../adapters/lakeCountyHighSchoolDistricts';
+import { getNWSWatchesWarningsData } from '../adapters/nwsWatchesWarnings';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
@@ -2259,6 +2265,50 @@ export class EnrichmentService {
       // Lake County Building Footprints - Point-in-polygon and proximity query (max 1 mile)
       case 'lake_county_building_footprints':
         return await this.getLakeCountyBuildingFootprints(lat, lon, radius);
+      
+      // Lake County Pavement Boundaries - Point-in-polygon and proximity query (max 1 mile)
+      case 'lake_county_pavement_boundaries':
+        return await this.getLakeCountyPavementBoundaries(lat, lon, radius);
+      
+      // Lake County Parcel Points - Proximity query (max 1 mile)
+      case 'lake_county_parcel_points':
+        return await this.getLakeCountyParcelPoints(lat, lon, radius);
+      
+      // Lake County Parcels - Point-in-polygon and proximity query (max 1 mile)
+      case 'lake_county_parcels':
+        return await this.getLakeCountyParcels(lat, lon, radius);
+      
+      // Lake County Facility Site Polygons - Point-in-polygon and proximity query (max 5 miles)
+      case 'lake_county_facility_site_polygons':
+        return await this.getLakeCountyFacilitySitePolygons(lat, lon, radius);
+      
+      // Lake County High School Districts - Point-in-polygon and proximity query (max 25 miles)
+      case 'lake_county_high_school_districts':
+        return await this.getLakeCountyHighSchoolDistricts(lat, lon, radius);
+      
+      // NWS Watches and Warnings layers - Point-in-polygon and proximity query (max 100 miles)
+      case 'nws_public_forecast_zones':
+        return await this.getNWSWatchesWarnings(lat, lon, 1, 'Public Forecast Zones', enrichmentId, radius);
+      case 'nws_fire_forecast_zones':
+        return await this.getNWSWatchesWarnings(lat, lon, 2, 'Fire Forecast Zones', enrichmentId, radius);
+      case 'nws_us_counties':
+        return await this.getNWSWatchesWarnings(lat, lon, 3, 'US Counties', enrichmentId, radius);
+      case 'nws_us_states_territories':
+        return await this.getNWSWatchesWarnings(lat, lon, 4, 'US States and Territories', enrichmentId, radius);
+      case 'nws_coastal_marine_zones':
+        return await this.getNWSWatchesWarnings(lat, lon, 5, 'Coastal and Offshore Marine Zones', enrichmentId, radius);
+      case 'nws_events_ordered':
+        return await this.getNWSWatchesWarnings(lat, lon, 6, 'Events Ordered by Size and Severity', enrichmentId, radius);
+      case 'nws_extreme_events':
+        return await this.getNWSWatchesWarnings(lat, lon, 8, 'Extreme Events', enrichmentId, radius);
+      case 'nws_severe_events':
+        return await this.getNWSWatchesWarnings(lat, lon, 9, 'Severe Events', enrichmentId, radius);
+      case 'nws_moderate_events':
+        return await this.getNWSWatchesWarnings(lat, lon, 10, 'Moderate Events', enrichmentId, radius);
+      case 'nws_minor_events':
+        return await this.getNWSWatchesWarnings(lat, lon, 11, 'Minor Events', enrichmentId, radius);
+      case 'nws_other_events':
+        return await this.getNWSWatchesWarnings(lat, lon, 12, 'Other Events', enrichmentId, radius);
       
       // Chicago Traffic Crashes - Proximity query (max 1 mile) with optional year filter
       case 'chicago_traffic_crashes':
@@ -10575,6 +10625,341 @@ out center;`;
         }));
     } catch (error) {
       console.error('Error fetching Lake County Building Footprints:', error);
+    }
+
+    return result;
+  }
+
+  private async getLakeCountyPavementBoundaries(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      lake_county_pavement_boundaries_containing: [],
+      lake_county_pavement_boundaries_nearby: [],
+      lake_county_pavement_boundaries_all: [],
+      lake_county_pavement_boundaries_count: 0,
+    };
+
+    try {
+      const boundaries = await getLakeCountyPavementBoundariesData(lat, lon, radius);
+      
+      result.lake_county_pavement_boundaries_count = boundaries.length;
+      result.lake_county_pavement_boundaries_all = boundaries.map(boundary => ({
+        objectId: boundary.objectId,
+        type: boundary.type,
+        shapeArea: boundary.shapeArea,
+        shapeLength: boundary.shapeLength,
+        distance: boundary.distance,
+        containing: boundary.containing,
+        geometry: boundary.geometry
+        // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+      }));
+
+      // Separate containing and nearby
+      result.lake_county_pavement_boundaries_containing = boundaries
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          type: f.type,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          geometry: f.geometry
+          // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+        }));
+
+      result.lake_county_pavement_boundaries_nearby = boundaries
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          type: f.type,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          distance: f.distance,
+          geometry: f.geometry
+          // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+        }));
+    } catch (error) {
+      console.error('Error fetching Lake County Pavement Boundaries:', error);
+    }
+
+    return result;
+  }
+
+  private async getLakeCountyParcelPoints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      lake_county_parcel_points_all: [],
+      lake_county_parcel_points_count: 0,
+    };
+
+    try {
+      const points = await getLakeCountyParcelPointsData(lat, lon, radius);
+      
+      result.lake_county_parcel_points_count = points.length;
+      result.lake_county_parcel_points_all = points.map(point => ({
+        objectId: point.objectId,
+        lat: point.lat,
+        lon: point.lon,
+        distance: point.distance,
+        attributes: point.attributes
+      }));
+    } catch (error) {
+      console.error('Error fetching Lake County Parcel Points:', error);
+    }
+
+    return result;
+  }
+
+  private async getLakeCountyParcels(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      lake_county_parcels_containing: [],
+      lake_county_parcels_nearby: [],
+      lake_county_parcels_all: [],
+      lake_county_parcels_count: 0,
+    };
+
+    try {
+      const parcels = await getLakeCountyParcelsData(lat, lon, radius);
+      
+      result.lake_county_parcels_count = parcels.length;
+      result.lake_county_parcels_all = parcels.map(parcel => ({
+        objectId: parcel.objectId,
+        distance: parcel.distance,
+        containing: parcel.containing,
+        geometry: parcel.geometry
+        // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+      }));
+
+      // Separate containing and nearby
+      result.lake_county_parcels_containing = parcels
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          geometry: f.geometry
+          // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+        }));
+
+      result.lake_county_parcels_nearby = parcels
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          distance: f.distance,
+          geometry: f.geometry
+          // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+        }));
+    } catch (error) {
+      console.error('Error fetching Lake County Parcels:', error);
+    }
+
+    return result;
+  }
+
+  private async getLakeCountyFacilitySitePolygons(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      lake_county_facility_site_polygons_containing: [],
+      lake_county_facility_site_polygons_nearby: [],
+      lake_county_facility_site_polygons_all: [],
+      lake_county_facility_site_polygons_count: 0,
+    };
+
+    try {
+      const facilities = await getLakeCountyFacilitySitePolygonsData(lat, lon, radius);
+      
+      result.lake_county_facility_site_polygons_count = facilities.length;
+      result.lake_county_facility_site_polygons_all = facilities.map(facility => ({
+        objectId: facility.objectId,
+        facilityId: facility.facilityId,
+        name: facility.name,
+        fcode: facility.fcode,
+        ownType: facility.ownType,
+        lastUpdate: facility.lastUpdate,
+        subTypeField: facility.subTypeField,
+        shapeArea: facility.shapeArea,
+        shapeLength: facility.shapeLength,
+        distance: facility.distance,
+        containing: facility.containing,
+        geometry: facility.geometry
+        // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+      }));
+
+      // Separate containing and nearby
+      result.lake_county_facility_site_polygons_containing = facilities
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          facilityId: f.facilityId,
+          name: f.name,
+          fcode: f.fcode,
+          ownType: f.ownType,
+          lastUpdate: f.lastUpdate,
+          subTypeField: f.subTypeField,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          geometry: f.geometry
+          // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+        }));
+
+      result.lake_county_facility_site_polygons_nearby = facilities
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          facilityId: f.facilityId,
+          name: f.name,
+          fcode: f.fcode,
+          ownType: f.ownType,
+          lastUpdate: f.lastUpdate,
+          subTypeField: f.subTypeField,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          distance: f.distance,
+          geometry: f.geometry
+          // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+        }));
+    } catch (error) {
+      console.error('Error fetching Lake County Facility Site Polygons:', error);
+    }
+
+    return result;
+  }
+
+  private async getLakeCountyHighSchoolDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      lake_county_high_school_districts_containing: [],
+      lake_county_high_school_districts_nearby: [],
+      lake_county_high_school_districts_all: [],
+      lake_county_high_school_districts_count: 0,
+    };
+
+    try {
+      const districts = await getLakeCountyHighSchoolDistrictsData(lat, lon, radius);
+      
+      result.lake_county_high_school_districts_count = districts.length;
+      result.lake_county_high_school_districts_all = districts.map(district => ({
+        objectId: district.objectId,
+        distId: district.distId,
+        hsdid: district.hsdid,
+        highName: district.highName,
+        highDist: district.highDist,
+        district: district.district,
+        name: district.name,
+        addr: district.addr,
+        addr2: district.addr2,
+        city: district.city,
+        zip: district.zip,
+        phone: district.phone,
+        fax: district.fax,
+        email: district.email,
+        url: district.url,
+        mapUrl: district.mapUrl,
+        shapeArea: district.shapeArea,
+        shapeLength: district.shapeLength,
+        distance: district.distance,
+        containing: district.containing,
+        geometry: district.geometry
+        // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+      }));
+
+      // Separate containing and nearby
+      result.lake_county_high_school_districts_containing = districts
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          distId: f.distId,
+          hsdid: f.hsdid,
+          highName: f.highName,
+          highDist: f.highDist,
+          district: f.district,
+          name: f.name,
+          addr: f.addr,
+          addr2: f.addr2,
+          city: f.city,
+          zip: f.zip,
+          phone: f.phone,
+          fax: f.fax,
+          email: f.email,
+          url: f.url,
+          mapUrl: f.mapUrl,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          geometry: f.geometry
+          // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+        }));
+
+      result.lake_county_high_school_districts_nearby = districts
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          distId: f.distId,
+          hsdid: f.hsdid,
+          highName: f.highName,
+          highDist: f.highDist,
+          district: f.district,
+          name: f.name,
+          addr: f.addr,
+          addr2: f.addr2,
+          city: f.city,
+          zip: f.zip,
+          phone: f.phone,
+          fax: f.fax,
+          email: f.email,
+          url: f.url,
+          mapUrl: f.mapUrl,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          distance: f.distance,
+          geometry: f.geometry
+          // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+        }));
+    } catch (error) {
+      console.error('Error fetching Lake County High School Districts:', error);
+    }
+
+    return result;
+  }
+
+  private async getNWSWatchesWarnings(lat: number, lon: number, layerId: number, layerName: string, enrichmentId: string, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      [`${enrichmentId}_containing`]: [],
+      [`${enrichmentId}_nearby`]: [],
+      [`${enrichmentId}_all`]: [],
+      [`${enrichmentId}_count`]: 0,
+    };
+
+    try {
+      const features = await getNWSWatchesWarningsData(lat, lon, layerId, layerName, radius);
+      
+      result[`${enrichmentId}_count`] = features.length;
+      result[`${enrichmentId}_all`] = features.map(feature => ({
+        objectId: feature.objectId,
+        attributes: feature.attributes,
+        distance: feature.distance,
+        containing: feature.containing,
+        geometry: feature.geometry,
+        layerId: feature.layerId,
+        layerName: feature.layerName
+        // Note: Not including lat/lon to prevent point markers from being drawn - only geometry
+      }));
+
+      // Separate containing and nearby
+      result[`${enrichmentId}_containing`] = features
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          geometry: f.geometry,
+          layerId: f.layerId,
+          layerName: f.layerName
+        }));
+
+      result[`${enrichmentId}_nearby`] = features
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          distance: f.distance,
+          geometry: f.geometry,
+          layerId: f.layerId,
+          layerName: f.layerName
+        }));
+    } catch (error) {
+      console.error(`Error fetching NWS ${layerName}:`, error);
     }
 
     return result;

@@ -45,6 +45,7 @@ const CORE_ENRICHMENTS = [
 // Icon mapping for sections
 const SECTION_ICONS: Record<string, React.ReactNode> = {
   core: <Settings className="w-5 h-5" />,
+  nws: <img src="/assets/NWS.webp" alt="National Weather Service Watches and Warnings" className="w-5 h-5" />,
   hazards: <img src="/assets/human_hazards.webp" alt="Human Caused Hazards" className="w-8 h-8" />,
   community: <span className="text-xl">👥</span>,
   retail: <span className="text-xl">🏢</span>,
@@ -1155,6 +1156,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   // Map category IDs to icon file names
   const getIconFileName = (categoryId: string): string => {
     const iconMap: { [key: string]: string } = {
+      'nws': 'NWS',
       'hazards': 'hazards_risk',
       'community': 'community_services',
       'retail': 'retail_commerce',

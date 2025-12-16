@@ -807,6 +807,12 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'chicago_311_all' || // Skip Chicago 311 array (handled separately for map drawing)
     key === 'chicago_building_footprints_all' || // Skip Chicago Building Footprints array (handled separately for map drawing)
     key === 'lake_county_building_footprints_all' || // Skip Lake County Building Footprints array (handled separately for map drawing)
+    key === 'lake_county_pavement_boundaries_all' || // Skip Lake County Pavement Boundaries array (handled separately for map drawing)
+    key === 'lake_county_parcel_points_all' || // Skip Lake County Parcel Points array (handled separately for map drawing)
+    key === 'lake_county_parcels_all' || // Skip Lake County Parcels array (handled separately for map drawing)
+    key === 'lake_county_facility_site_polygons_all' || // Skip Lake County Facility Site Polygons array (handled separately for map drawing)
+    key === 'lake_county_high_school_districts_all' || // Skip Lake County High School Districts array (handled separately for map drawing)
+    key.startsWith('nws_') && key.endsWith('_all') || // Skip NWS layers arrays (handled separately for map drawing)
     key === 'chicago_traffic_crashes_all' || // Skip Chicago Traffic Crashes array (handled separately for map drawing)
     key === 'chicago_speed_cameras_all' || // Skip Chicago Speed Cameras array (handled separately for map drawing)
     key === 'chicago_red_light_cameras_all' || // Skip Chicago Red Light Cameras array (handled separately for map drawing)
@@ -15223,6 +15229,471 @@ const MapView: React.FC<MapViewProps> = ({
       } catch (error) {
         console.error('Error processing Lake County Building Footprints:', error);
       }
+
+      // Draw Lake County Pavement Boundaries as polygons
+      try {
+        if (enrichments.lake_county_pavement_boundaries_all && Array.isArray(enrichments.lake_county_pavement_boundaries_all)) {
+          let lakeCountyPavementBoundariesCount = 0;
+          
+          enrichments.lake_county_pavement_boundaries_all.forEach((boundary: any) => {
+            if (boundary.geometry && boundary.geometry.rings) {
+              try {
+                const rings = boundary.geometry.rings;
+                // Only draw the outer ring (rings[0]) - same approach as building footprints
+                // Additional rings are either inner rings (holes) or separate polygon parts
+                // For now, we'll only draw the outer boundary to avoid filled-in appearance
+                if (rings && rings.length > 0 && rings[0] && rings[0].length > 0) {
+                  const outerRing = rings[0]; // First ring is the outer boundary
+                  // Convert ESRI ring coordinates to Leaflet latlngs
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    if (Array.isArray(coord) && coord.length >= 2) {
+                      return [coord[1], coord[0]] as [number, number]; // ESRI format is [lon, lat], Leaflet needs [lat, lon]
+                    }
+                    return null;
+                  }).filter((coord: any): coord is [number, number] => coord !== null);
+                  
+                  if (latlngs.length >= 2) { // Need at least 2 points for a polyline
+                    // Draw as polyline (outline only) instead of filled polygon
+                    // This shows the road boundary without filling in the area
+                    const polyline = L.polyline(latlngs, {
+                      color: '#f59e0b',
+                      weight: 3,
+                      opacity: 0.8
+                    }).addTo(primary);
+                    
+                    const type = boundary.type || 'Unknown';
+                    const shapeArea = boundary.shapeArea || 0;
+                    const shapeLength = boundary.shapeLength || 0;
+                    const distance = boundary.distance || 0;
+                    const containing = boundary.containing || false;
+                    
+                    const popupContent = `
+                      <div style="max-width: 300px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">${containing ? 'Containing' : 'Nearby'}: Lake County Pavement Boundary</h3>
+                        <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                          <p style="margin: 4px 0;"><strong>Type:</strong> ${type}</p>
+                          <p style="margin: 4px 0;"><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</p>
+                          <p style="margin: 4px 0;"><strong>Perimeter:</strong> ${shapeLength.toLocaleString()} units</p>
+                          ${!containing && distance > 0 ? `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance.toFixed(3)} miles</p>` : ''}
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+                    
+                    // Extend bounds to include polyline
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                    
+                    lakeCountyPavementBoundariesCount++;
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing Lake County Pavement Boundary:', error);
+              }
+            }
+          });
+          
+          if (lakeCountyPavementBoundariesCount > 0) {
+            if (!legendAccumulator['lake_county_pavement_boundaries']) {
+              legendAccumulator['lake_county_pavement_boundaries'] = {
+                icon: '🛣️',
+                color: '#f59e0b',
+                title: 'Lake County Pavement Boundaries',
+                count: 0
+              };
+            }
+            legendAccumulator['lake_county_pavement_boundaries'].count += lakeCountyPavementBoundariesCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Lake County Pavement Boundaries:', error);
+      }
+
+      // Draw Lake County Parcel Points as point markers
+      try {
+        if (enrichments.lake_county_parcel_points_all && Array.isArray(enrichments.lake_county_parcel_points_all)) {
+          let lakeCountyParcelPointsCount = 0;
+          
+          enrichments.lake_county_parcel_points_all.forEach((point: any) => {
+            if (point.lat && point.lon && !isNaN(point.lat) && !isNaN(point.lon)) {
+              try {
+                const marker = L.marker([point.lat, point.lon], {
+                  icon: L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `<div style="background-color: #8b5cf6; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">🏘️</div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                  })
+                });
+                
+                const distance = point.distance !== null && point.distance !== undefined ? point.distance.toFixed(3) : '';
+                const objectId = point.objectId || '';
+                
+                const popupContent = `
+                  <div style="max-width: 300px;">
+                    <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">Lake County Parcel Point</h3>
+                    <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                      ${objectId ? `<p style="margin: 4px 0;"><strong>Object ID:</strong> ${objectId}</p>` : ''}
+                      ${distance ? `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance} miles</p>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                marker.addTo(primary);
+                bounds.extend([point.lat, point.lon]);
+                lakeCountyParcelPointsCount++;
+              } catch (error) {
+                console.error('Error drawing Lake County Parcel Point:', error);
+              }
+            }
+          });
+          
+          if (lakeCountyParcelPointsCount > 0) {
+            if (!legendAccumulator['lake_county_parcel_points']) {
+              legendAccumulator['lake_county_parcel_points'] = {
+                icon: '🏘️',
+                color: '#8b5cf6',
+                title: 'Lake County Parcel Points',
+                count: 0
+              };
+            }
+            legendAccumulator['lake_county_parcel_points'].count += lakeCountyParcelPointsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Lake County Parcel Points:', error);
+      }
+
+      // Draw Lake County Parcels as polygons
+      try {
+        if (enrichments.lake_county_parcels_all && Array.isArray(enrichments.lake_county_parcels_all)) {
+          let lakeCountyParcelsCount = 0;
+          
+          enrichments.lake_county_parcels_all.forEach((parcel: any) => {
+            if (parcel.geometry && parcel.geometry.rings) {
+              try {
+                const rings = parcel.geometry.rings;
+                if (rings && rings.length > 0 && rings[0] && rings[0].length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    if (Array.isArray(coord) && coord.length >= 2) {
+                      return [coord[1], coord[0]] as [number, number];
+                    }
+                    return null;
+                  }).filter((coord: any): coord is [number, number] => coord !== null);
+                  
+                  if (latlngs.length >= 3) {
+                    const polygon = L.polygon(latlngs, {
+                      color: '#8b5cf6',
+                      weight: 2,
+                      opacity: 0.7,
+                      fillColor: '#8b5cf6',
+                      fillOpacity: 0.2
+                    }).addTo(primary);
+                    
+                    const objectId = parcel.objectId || 0;
+                    const distance = parcel.distance || 0;
+                    const containing = parcel.containing || false;
+                    
+                    const popupContent = `
+                      <div style="max-width: 300px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">${containing ? 'Containing' : 'Nearby'}: Lake County Parcel</h3>
+                        <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                          <p style="margin: 4px 0;"><strong>Object ID:</strong> ${objectId}</p>
+                          ${!containing && distance > 0 ? `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance.toFixed(3)} miles</p>` : ''}
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    lakeCountyParcelsCount++;
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing Lake County Parcel:', error);
+              }
+            }
+          });
+          
+          if (lakeCountyParcelsCount > 0) {
+            if (!legendAccumulator['lake_county_parcels']) {
+              legendAccumulator['lake_county_parcels'] = {
+                icon: '🏘️',
+                color: '#8b5cf6',
+                title: 'Lake County Parcels',
+                count: 0
+              };
+            }
+            legendAccumulator['lake_county_parcels'].count += lakeCountyParcelsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Lake County Parcels:', error);
+      }
+
+      // Draw Lake County High School Districts as polygons
+      try {
+        if (enrichments.lake_county_high_school_districts_all && Array.isArray(enrichments.lake_county_high_school_districts_all)) {
+          let lakeCountyHighSchoolDistrictsCount = 0;
+          
+          enrichments.lake_county_high_school_districts_all.forEach((district: any) => {
+            if (district.geometry && district.geometry.rings) {
+              try {
+                const rings = district.geometry.rings;
+                if (rings && rings.length > 0 && rings[0] && rings[0].length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    if (Array.isArray(coord) && coord.length >= 2) {
+                      return [coord[1], coord[0]] as [number, number];
+                    }
+                    return null;
+                  }).filter((coord: any): coord is [number, number] => coord !== null);
+                  
+                  if (latlngs.length >= 3) {
+                    const polygon = L.polygon(latlngs, {
+                      color: '#6366f1',
+                      weight: 2,
+                      opacity: 0.7,
+                      fillColor: '#6366f1',
+                      fillOpacity: 0.2
+                    }).addTo(primary);
+                    
+                    const highName = district.highName || district.name || 'Unknown';
+                    const districtNum = district.district || district.highDist || '';
+                    const addr = district.addr || '';
+                    const city = district.city || '';
+                    const zip = district.zip || '';
+                    const phone = district.phone || '';
+                    const url = district.url || '';
+                    const shapeArea = district.shapeArea || 0;
+                    const shapeLength = district.shapeLength || 0;
+                    const distance = district.distance || 0;
+                    const containing = district.containing || false;
+                    
+                    let address = '';
+                    if (addr) {
+                      address = addr;
+                      if (city) address += `, ${city}`;
+                      if (zip) address += ` ${zip}`;
+                    }
+                    
+                    const popupContent = `
+                      <div style="max-width: 300px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">${containing ? 'Containing' : 'Nearby'}: ${highName}</h3>
+                        <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                          ${districtNum ? `<p style="margin: 4px 0;"><strong>District:</strong> ${districtNum}</p>` : ''}
+                          ${address ? `<p style="margin: 4px 0;"><strong>Address:</strong> ${address}</p>` : ''}
+                          ${phone ? `<p style="margin: 4px 0;"><strong>Phone:</strong> ${phone}</p>` : ''}
+                          ${url ? `<p style="margin: 4px 0;"><strong>Website:</strong> <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></p>` : ''}
+                          <p style="margin: 4px 0;"><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</p>
+                          <p style="margin: 4px 0;"><strong>Perimeter:</strong> ${shapeLength.toLocaleString()} units</p>
+                          ${!containing && distance > 0 ? `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance.toFixed(3)} miles</p>` : ''}
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    lakeCountyHighSchoolDistrictsCount++;
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing Lake County High School District:', error);
+              }
+            }
+          });
+          
+          if (lakeCountyHighSchoolDistrictsCount > 0) {
+            if (!legendAccumulator['lake_county_high_school_districts']) {
+              legendAccumulator['lake_county_high_school_districts'] = {
+                icon: '🏫',
+                color: '#6366f1',
+                title: 'Lake County High School Districts',
+                count: 0
+              };
+            }
+            legendAccumulator['lake_county_high_school_districts'].count += lakeCountyHighSchoolDistrictsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Lake County High School Districts:', error);
+      }
+
+      // Draw NWS Watches and Warnings layers
+      const nwsLayers = [
+        'nws_public_forecast_zones',
+        'nws_fire_forecast_zones',
+        'nws_us_counties',
+        'nws_us_states_territories',
+        'nws_coastal_marine_zones',
+        'nws_events_ordered',
+        'nws_extreme_events',
+        'nws_severe_events',
+        'nws_moderate_events',
+        'nws_minor_events',
+        'nws_other_events'
+      ];
+      
+      const nwsColors: Record<string, string> = {
+        'nws_public_forecast_zones': '#3b82f6',
+        'nws_fire_forecast_zones': '#ef4444',
+        'nws_us_counties': '#8b5cf6',
+        'nws_us_states_territories': '#6366f1',
+        'nws_coastal_marine_zones': '#06b6d4',
+        'nws_events_ordered': '#f59e0b',
+        'nws_extreme_events': '#dc2626',
+        'nws_severe_events': '#ea580c',
+        'nws_moderate_events': '#f59e0b',
+        'nws_minor_events': '#eab308',
+        'nws_other_events': '#6b7280'
+      };
+      
+      nwsLayers.forEach(layerKey => {
+        try {
+          const allKey = `${layerKey}_all`;
+          if (enrichments[allKey] && Array.isArray(enrichments[allKey])) {
+            let nwsCount = 0;
+            const color = nwsColors[layerKey] || '#3b82f6';
+            
+            enrichments[allKey].forEach((feature: any) => {
+              if (feature.geometry) {
+                try {
+                  const geom = feature.geometry;
+                  
+                  if (geom.rings) {
+                    // Polygon geometry
+                    const rings = geom.rings;
+                    if (rings && rings.length > 0 && rings[0] && rings[0].length > 0) {
+                      const outerRing = rings[0];
+                      const latlngs = outerRing.map((coord: number[]) => {
+                        if (Array.isArray(coord) && coord.length >= 2) {
+                          return [coord[1], coord[0]] as [number, number];
+                        }
+                        return null;
+                      }).filter((coord: any): coord is [number, number] => coord !== null);
+                      
+                      if (latlngs.length >= 3) {
+                        const polygon = L.polygon(latlngs, {
+                          color: color,
+                          weight: 2,
+                          opacity: 0.7,
+                          fillColor: color,
+                          fillOpacity: 0.2
+                        }).addTo(primary);
+                        
+                        const layerName = feature.layerName || 'NWS Feature';
+                        const distance = feature.distance || 0;
+                        const containing = feature.containing || false;
+                        const attrs = feature.attributes || {};
+                        
+                        let popupContent = `
+                          <div style="max-width: 300px;">
+                            <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">${containing ? 'Containing' : 'Nearby'}: ${layerName}</h3>
+                            <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                        `;
+                        
+                        // Add key attributes to popup
+                        Object.keys(attrs).slice(0, 10).forEach(key => {
+                          if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
+                            const value = typeof attrs[key] === 'object' ? JSON.stringify(attrs[key]) : attrs[key];
+                            popupContent += `<p style="margin: 4px 0;"><strong>${key}:</strong> ${value}</p>`;
+                          }
+                        });
+                        
+                        if (!containing && distance > 0) {
+                          popupContent += `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance.toFixed(3)} miles</p>`;
+                        }
+                        
+                        popupContent += `
+                            </div>
+                          </div>
+                        `;
+                        
+                        polygon.bindPopup(popupContent);
+                        const polygonBounds = L.latLngBounds(latlngs);
+                        bounds.extend(polygonBounds);
+                        nwsCount++;
+                      }
+                    }
+                  } else if (geom.x !== undefined && geom.y !== undefined) {
+                    // Point geometry
+                    const lat = geom.y;
+                    const lon = geom.x;
+                    
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                      const marker = L.marker([lat, lon], {
+                        icon: L.divIcon({
+                          className: 'custom-marker-icon',
+                          html: `<div style="background-color: ${color}; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">🌦️</div>`,
+                          iconSize: [20, 20],
+                          iconAnchor: [10, 10]
+                        })
+                      });
+                      
+                      const layerName = feature.layerName || 'NWS Feature';
+                      const distance = feature.distance || 0;
+                      const containing = feature.containing || false;
+                      const attrs = feature.attributes || {};
+                      
+                      let popupContent = `
+                        <div style="max-width: 300px;">
+                          <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">${containing ? 'Containing' : 'Nearby'}: ${layerName}</h3>
+                          <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                      `;
+                      
+                      // Add key attributes to popup
+                      Object.keys(attrs).slice(0, 10).forEach(key => {
+                        if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
+                          const value = typeof attrs[key] === 'object' ? JSON.stringify(attrs[key]) : attrs[key];
+                          popupContent += `<p style="margin: 4px 0;"><strong>${key}:</strong> ${value}</p>`;
+                        }
+                      });
+                      
+                      if (!containing && distance > 0) {
+                        popupContent += `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance.toFixed(3)} miles</p>`;
+                      }
+                      
+                      popupContent += `
+                          </div>
+                        </div>
+                      `;
+                      
+                      marker.bindPopup(popupContent);
+                      marker.addTo(primary);
+                      bounds.extend([lat, lon]);
+                      nwsCount++;
+                    }
+                  }
+                } catch (error) {
+                  console.error(`Error drawing NWS ${layerKey} feature:`, error);
+                }
+              }
+            });
+            
+            if (nwsCount > 0) {
+              const firstFeature = enrichments[allKey] && enrichments[allKey].length > 0 ? enrichments[allKey][0] : null;
+              const layerTitle = firstFeature?.layerName || layerKey.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+              
+              if (!legendAccumulator[layerKey]) {
+                legendAccumulator[layerKey] = {
+                  icon: '🌦️',
+                  color: color,
+                  title: layerTitle,
+                  count: 0
+                };
+              }
+              legendAccumulator[layerKey].count += nwsCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing NWS ${layerKey}:`, error);
+        }
+      });
 
       // Draw Chicago Speed Camera Locations as point markers
       try {

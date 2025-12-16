@@ -1556,6 +1556,139 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services3.arcgis.com/HESxeTbDliKKvec2/arcgis/rest/services/LakeCounty_Planimetrics/FeatureServer/1"
         },
         {
+          name: "Lake County Pavement Boundaries",
+          description: "Pavement boundaries (roads, parking) traced from aerial photography (March-April 2018) - point-in-polygon and proximity queries from 0.25 to 1 mile",
+          coverage: "Lake County, Illinois",
+          accuracy: "National Map Accuracy Standards for 1:1200 product",
+          cost: "Free",
+          url: "https://services3.arcgis.com/HESxeTbDliKKvec2/arcgis/rest/services/LakeCounty_Planimetrics/FeatureServer/0"
+        },
+        {
+          name: "Lake County Parcel Points",
+          description: "Tax parcel point locations - proximity queries from 0.25 to 1 mile",
+          coverage: "Lake County, Illinois",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/HESxeTbDliKKvec2/arcgis/rest/services/OpenData_ParcelPolygons/FeatureServer/1"
+        },
+        {
+          name: "Lake County Parcels",
+          description: "Tax parcel polygons - point-in-polygon and proximity queries from 0.25 to 1 mile",
+          coverage: "Lake County, Illinois",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/HESxeTbDliKKvec2/arcgis/rest/services/OpenData_ParcelPolygons/FeatureServer/0"
+        },
+        {
+          name: "Lake County Facility Site Polygons",
+          description: "Facility site polygons (parks, libraries, community centers, museums, etc.) - point-in-polygon and proximity queries from 0.25 to 5 miles",
+          coverage: "Lake County, Illinois",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/HESxeTbDliKKvec2/arcgis/rest/services/LakeCounty_Landmarks/FeatureServer/1"
+        },
+        {
+          name: "Lake County High School Districts",
+          description: "High school district boundaries - point-in-polygon and proximity queries from 0.25 to 25 miles",
+          coverage: "Lake County, Illinois",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/HESxeTbDliKKvec2/arcgis/rest/services/LakeCounty_TaxDistricts/FeatureServer/6"
+        },
+      ]
+    },
+    {
+      category: "National Weather Service Watches and Warnings",
+      sources: [
+        {
+          name: "NWS Public Forecast Zones",
+          description: "Public forecast zones - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/1"
+        },
+        {
+          name: "NWS Fire Forecast Zones",
+          description: "Fire forecast zones - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/2"
+        },
+        {
+          name: "NWS US Counties",
+          description: "US counties - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/3"
+        },
+        {
+          name: "NWS US States and Territories",
+          description: "US states and territories - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/4"
+        },
+        {
+          name: "NWS Coastal and Offshore Marine Zones",
+          description: "Coastal and offshore marine zones - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/5"
+        },
+        {
+          name: "NWS Events Ordered by Size and Severity",
+          description: "Events ordered by size and severity - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/6"
+        },
+        {
+          name: "NWS Extreme Events",
+          description: "Extreme weather events - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/8"
+        },
+        {
+          name: "NWS Severe Events",
+          description: "Severe weather events - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/9"
+        },
+        {
+          name: "NWS Moderate Events",
+          description: "Moderate weather events - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/10"
+        },
+        {
+          name: "NWS Minor Events",
+          description: "Minor weather events - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/11"
+        },
+        {
+          name: "NWS Other Events",
+          description: "Other weather events - point-in-polygon and proximity queries from 0.25 to 100 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/12"
+        },
+        {
           name: "Chicago Building Centroids",
           description: "Building centroids from the City of Chicago Data Portal - proximity queries from 0.25 to 1 mile",
           coverage: "City of Chicago, Illinois",

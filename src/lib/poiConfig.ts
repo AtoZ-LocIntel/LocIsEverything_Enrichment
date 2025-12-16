@@ -22,6 +22,12 @@ export interface POISection {
 // Default POI sections
 export const DEFAULT_POI_SECTIONS: POISection[] = [
   {
+    id: 'nws',
+    title: 'National Weather Service Watches and Warnings',
+    description: 'National Weather Service watches, warnings, and alerts',
+    icon: 'NWS.webp'
+  },
+  {
     id: 'hazards',
     title: 'Human Caused Hazards',
     description: 'Man-made environmental hazards and pollution sources',
@@ -720,6 +726,23 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'chicago_311', label: 'Chicago 311 Service Requests', description: 'Chicago - 311 service requests from the City of Chicago Data Portal for proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
   { id: 'chicago_building_footprints', label: 'Chicago Building Centroids', description: 'Chicago - Building centroids from the City of Chicago Data Portal for proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
   { id: 'lake_county_building_footprints', label: 'Lake County Building Footprints', description: 'Lake County - Building footprints for point-in-polygon and proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Lake County' },
+  { id: 'lake_county_pavement_boundaries', label: 'Lake County Pavement Boundaries', description: 'Lake County - Pavement boundaries (roads, parking) traced from aerial photography for point-in-polygon and proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Lake County' },
+  { id: 'lake_county_parcel_points', label: 'Lake County Parcel Points', description: 'Lake County - Tax parcel point locations for proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Lake County' },
+  { id: 'lake_county_parcels', label: 'Lake County Parcels', description: 'Lake County - Tax parcel polygons for point-in-polygon and proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Lake County' },
+  { id: 'lake_county_facility_site_polygons', label: 'Lake County Facility Site Polygons', description: 'Lake County - Facility site polygons (parks, libraries, community centers, etc.) for point-in-polygon and proximity queries (up to 5 miles)', isPOI: true, defaultRadius: 1, maxRadius: 5, category: 'il', section: 'il', subCategory: 'Lake County' },
+  { id: 'lake_county_high_school_districts', label: 'Lake County High School Districts', description: 'Lake County - High school district boundaries for point-in-polygon and proximity queries (up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'il', section: 'il', subCategory: 'Lake County' },
+  // NWS Watches and Warnings layers
+  { id: 'nws_public_forecast_zones', label: 'NWS Public Forecast Zones', description: 'National Weather Service - Public Forecast Zones for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_fire_forecast_zones', label: 'NWS Fire Forecast Zones', description: 'National Weather Service - Fire Forecast Zones for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_us_counties', label: 'NWS US Counties', description: 'National Weather Service - US Counties for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_us_states_territories', label: 'NWS US States and Territories', description: 'National Weather Service - US States and Territories for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_coastal_marine_zones', label: 'NWS Coastal and Offshore Marine Zones', description: 'National Weather Service - Coastal and Offshore Marine Zones for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_events_ordered', label: 'NWS Events Ordered by Size and Severity', description: 'National Weather Service - Events Ordered by Size and Severity for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_extreme_events', label: 'NWS Extreme Events', description: 'National Weather Service - Extreme Events for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_severe_events', label: 'NWS Severe Events', description: 'National Weather Service - Severe Events for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_moderate_events', label: 'NWS Moderate Events', description: 'National Weather Service - Moderate Events for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_minor_events', label: 'NWS Minor Events', description: 'National Weather Service - Minor Events for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
+  { id: 'nws_other_events', label: 'NWS Other Events', description: 'National Weather Service - Other Events for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'nws', section: 'nws', subCategory: '' },
   { id: 'chicago_traffic_crashes', label: 'Chicago Traffic Crashes', description: 'Chicago - Traffic crashes from the City of Chicago Data Portal for proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
   { id: 'chicago_speed_cameras', label: 'Chicago Speed Camera Locations', description: 'Chicago - Speed camera locations from the City of Chicago Data Portal for proximity queries (up to 5 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
   { id: 'chicago_red_light_cameras', label: 'Chicago Red Light Camera Locations', description: 'Chicago - Red light camera locations from the City of Chicago Data Portal for proximity queries (up to 5 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },

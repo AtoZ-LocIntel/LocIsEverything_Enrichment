@@ -6439,6 +6439,316 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'LA County GeoHub'
         ]);
       });
+    } else if (key === 'lake_county_parcel_points_all' && Array.isArray(value)) {
+      value.forEach((point: any) => {
+        const objectId = point.objectId || '';
+        const lat = point.lat || '';
+        const lon = point.lon || '';
+        const distance = point.distance !== null && point.distance !== undefined ? point.distance.toFixed(3) : '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Lake County, Illinois',
+          (location.confidence || 'N/A').toString(),
+          'LAKE_COUNTY_PARCEL_POINT',
+          `Parcel Point ${objectId}`,
+          lat.toString(),
+          lon.toString(),
+          distance,
+          'Parcel Point',
+          '',
+          '',
+          '',
+          JSON.stringify(point.attributes || {}),
+          'Lake County, Illinois'
+        ]);
+      });
+    } else if (key === 'lake_county_high_school_districts_all' && Array.isArray(value)) {
+      value.forEach((district: any) => {
+        const objectId = district.objectId || '';
+        const distId = district.distId || '';
+        const hsdid = district.hsdid || '';
+        const highName = district.highName || district.name || '';
+        const highDist = district.highDist || '';
+        const districtNum = district.district || '';
+        const name = district.name || '';
+        const addr = district.addr || '';
+        const addr2 = district.addr2 || '';
+        const city = district.city || '';
+        const zip = district.zip || '';
+        const phone = district.phone || '';
+        const fax = district.fax || '';
+        const email = district.email || '';
+        const url = district.url || '';
+        const mapUrl = district.mapUrl || '';
+        const shapeArea = district.shapeArea || '';
+        const shapeLength = district.shapeLength || '';
+        const distance = district.distance !== null && district.distance !== undefined ? district.distance.toFixed(3) : (district.containing ? '0' : '');
+        // Calculate centroid from geometry if needed for CSV
+        let lat = '';
+        let lon = '';
+        if (district.geometry && district.geometry.rings && district.geometry.rings[0] && district.geometry.rings[0].length > 0) {
+          const rings = district.geometry.rings[0];
+          let sumLat = 0;
+          let sumLon = 0;
+          let count = 0;
+          rings.forEach((coord: number[]) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              sumLon += coord[0]; // ESRI format is [lon, lat]
+              sumLat += coord[1];
+              count++;
+            }
+          });
+          if (count > 0) {
+            lat = (sumLat / count).toString();
+            lon = (sumLon / count).toString();
+          }
+        }
+        const containing = district.containing ? 'Yes' : 'No';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Lake County, Illinois',
+          (location.confidence || 'N/A').toString(),
+          'LAKE_COUNTY_HIGH_SCHOOL_DISTRICT',
+          highName || name,
+          lat,
+          lon,
+          distance,
+          'High School District',
+          containing,
+          objectId.toString(),
+          distId,
+          hsdid,
+          highName,
+          highDist,
+          districtNum,
+          name,
+          addr,
+          addr2,
+          city,
+          zip,
+          phone,
+          fax,
+          email,
+          url,
+          mapUrl,
+          shapeArea.toString(),
+          shapeLength.toString()
+        ]);
+      });
+    } else if (key.startsWith('nws_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('_all', '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+      value.forEach((feature: any) => {
+        const objectId = feature.objectId || '';
+        const distance = feature.distance !== null && feature.distance !== undefined ? feature.distance.toFixed(3) : (feature.containing ? '0' : '');
+        const containing = feature.containing ? 'Yes' : 'No';
+        const attrs = feature.attributes || {};
+        const layerNameField = feature.layerName || layerName;
+        
+        // Calculate centroid from geometry if needed for CSV
+        let lat = '';
+        let lon = '';
+        if (feature.geometry) {
+          if (feature.geometry.rings && feature.geometry.rings[0] && feature.geometry.rings[0].length > 0) {
+            // Polygon geometry
+            const rings = feature.geometry.rings[0];
+            let sumLat = 0;
+            let sumLon = 0;
+            let count = 0;
+            rings.forEach((coord: number[]) => {
+              if (Array.isArray(coord) && coord.length >= 2) {
+                sumLon += coord[0]; // ESRI format is [lon, lat]
+                sumLat += coord[1];
+                count++;
+              }
+            });
+            if (count > 0) {
+              lat = (sumLat / count).toString();
+              lon = (sumLon / count).toString();
+            }
+          } else if (feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
+            // Point geometry
+            lat = feature.geometry.y.toString();
+            lon = feature.geometry.x.toString();
+          }
+        }
+        
+        // Build attribute string
+        const attrString = Object.keys(attrs).slice(0, 10).map(k => `${k}: ${attrs[k]}`).join('; ');
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'National Weather Service',
+          (location.confidence || 'N/A').toString(),
+          layerNameField.toUpperCase().replace(/\s+/g, '_'),
+          layerNameField,
+          lat,
+          lon,
+          distance,
+          'NWS Feature',
+          containing,
+          objectId.toString(),
+          attrString
+        ]);
+      });
+    } else if (key === 'lake_county_facility_site_polygons_all' && Array.isArray(value)) {
+      value.forEach((facility: any) => {
+        const objectId = facility.objectId || '';
+        const facilityId = facility.facilityId || '';
+        const name = facility.name || '';
+        const fcode = facility.fcode || '';
+        const ownType = facility.ownType || '';
+        const lastUpdate = facility.lastUpdate || '';
+        const subTypeField = facility.subTypeField || '';
+        const shapeArea = facility.shapeArea || '';
+        const shapeLength = facility.shapeLength || '';
+        const distance = facility.distance !== null && facility.distance !== undefined ? facility.distance.toFixed(3) : (facility.containing ? '0' : '');
+        // Calculate centroid from geometry if needed for CSV
+        let lat = '';
+        let lon = '';
+        if (facility.geometry && facility.geometry.rings && facility.geometry.rings[0] && facility.geometry.rings[0].length > 0) {
+          const rings = facility.geometry.rings[0];
+          let sumLat = 0;
+          let sumLon = 0;
+          let count = 0;
+          rings.forEach((coord: number[]) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              sumLon += coord[0]; // ESRI format is [lon, lat]
+              sumLat += coord[1];
+              count++;
+            }
+          });
+          if (count > 0) {
+            lat = (sumLat / count).toString();
+            lon = (sumLon / count).toString();
+          }
+        }
+        const containing = facility.containing ? 'Yes' : 'No';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Lake County, Illinois',
+          (location.confidence || 'N/A').toString(),
+          'LAKE_COUNTY_FACILITY_SITE_POLYGON',
+          name || fcode,
+          lat,
+          lon,
+          distance,
+          'Facility Site',
+          containing,
+          objectId.toString(),
+          facilityId,
+          fcode,
+          ownType,
+          lastUpdate,
+          subTypeField.toString(),
+          shapeArea.toString(),
+          shapeLength.toString()
+        ]);
+      });
+    } else if (key === 'lake_county_parcels_all' && Array.isArray(value)) {
+      value.forEach((parcel: any) => {
+        const objectId = parcel.objectId || '';
+        const distance = parcel.distance !== null && parcel.distance !== undefined ? parcel.distance.toFixed(3) : (parcel.containing ? '0' : '');
+        // Calculate centroid from geometry if needed for CSV
+        let lat = '';
+        let lon = '';
+        if (parcel.geometry && parcel.geometry.rings && parcel.geometry.rings[0] && parcel.geometry.rings[0].length > 0) {
+          const rings = parcel.geometry.rings[0];
+          let sumLat = 0;
+          let sumLon = 0;
+          let count = 0;
+          rings.forEach((coord: number[]) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              sumLon += coord[0]; // ESRI format is [lon, lat]
+              sumLat += coord[1];
+              count++;
+            }
+          });
+          if (count > 0) {
+            lat = (sumLat / count).toString();
+            lon = (sumLon / count).toString();
+          }
+        }
+        const containing = parcel.containing ? 'Yes' : 'No';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Lake County, Illinois',
+          (location.confidence || 'N/A').toString(),
+          'LAKE_COUNTY_PARCEL',
+          `Parcel ${objectId}`,
+          lat,
+          lon,
+          distance,
+          'Parcel',
+          containing,
+          objectId.toString(),
+          '',
+          '',
+          '',
+          'Lake County, Illinois'
+        ]);
+      });
+    } else if (key === 'lake_county_pavement_boundaries_all' && Array.isArray(value)) {
+      value.forEach((boundary: any) => {
+        const objectId = boundary.objectId || '';
+        const type = boundary.type || '';
+        const shapeArea = boundary.shapeArea || '';
+        const shapeLength = boundary.shapeLength || '';
+        const distance = boundary.distance !== null && boundary.distance !== undefined ? boundary.distance.toFixed(3) : (boundary.containing ? '0' : '');
+        // Calculate centroid from geometry if needed for CSV
+        let lat = '';
+        let lon = '';
+        if (boundary.geometry && boundary.geometry.rings && boundary.geometry.rings[0] && boundary.geometry.rings[0].length > 0) {
+          const rings = boundary.geometry.rings[0];
+          let sumLat = 0;
+          let sumLon = 0;
+          let count = 0;
+          rings.forEach((coord: number[]) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              sumLon += coord[0]; // ESRI format is [lon, lat]
+              sumLat += coord[1];
+              count++;
+            }
+          });
+          if (count > 0) {
+            lat = (sumLat / count).toString();
+            lon = (sumLon / count).toString();
+          }
+        }
+        const containing = boundary.containing ? 'Yes' : 'No';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Lake County, Illinois',
+          (location.confidence || 'N/A').toString(),
+          'LAKE_COUNTY_PAVEMENT_BOUNDARY',
+          type,
+          lat,
+          lon,
+          distance,
+          'Pavement Boundary',
+          containing,
+          objectId.toString(),
+          type,
+          shapeArea.toString(),
+          shapeLength.toString()
+        ]);
+      });
     } else if (key === 'lake_county_building_footprints_all' && Array.isArray(value)) {
       value.forEach((footprint: any) => {
         const objectId = footprint.objectId || '';
