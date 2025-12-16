@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, ArrowLeft } from 'lucide-react';
+import { Download, ArrowLeft, Map } from 'lucide-react';
 import { EnrichmentResult } from '../App';
 
 interface MobileResultsViewProps {
@@ -7,13 +7,15 @@ interface MobileResultsViewProps {
   selectedEnrichments: string[];
   onBackToSearch: () => void;
   onDownloadCSV: () => void;
+  onViewMap: () => void;
 }
 
 const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   result,
   selectedEnrichments,
   onBackToSearch,
-  onDownloadCSV
+  onDownloadCSV,
+  onViewMap
 }) => {
   const { location, enrichments } = result;
 
@@ -679,6 +681,13 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
           
           <div className="flex items-center space-x-3">
             <button
+              onClick={onViewMap}
+              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Map className="w-4 h-4" />
+              <span>Map</span>
+            </button>
+            <button
               onClick={onDownloadCSV}
               className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
             >
@@ -822,13 +831,23 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
             <span>Back to Search</span>
           </button>
           
-          <button
-            onClick={onDownloadCSV}
-            className="flex-1 bg-green-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
-          >
-            <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>Download CSV</span>
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={onViewMap}
+              className="flex-1 bg-blue-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
+            >
+              <Map className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>View Map</span>
+            </button>
+            
+            <button
+              onClick={onDownloadCSV}
+              className="flex-1 bg-green-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
+            >
+              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Download CSV</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
