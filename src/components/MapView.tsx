@@ -812,7 +812,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'lake_county_parcels_all' || // Skip Lake County Parcels array (handled separately for map drawing)
     key === 'lake_county_facility_site_polygons_all' || // Skip Lake County Facility Site Polygons array (handled separately for map drawing)
     key === 'lake_county_high_school_districts_all' || // Skip Lake County High School Districts array (handled separately for map drawing)
-    key.startsWith('nws_') && key.endsWith('_all') || // Skip NWS layers arrays (handled separately for map drawing)
+    (key.startsWith('nws_') && key.endsWith('_all') && key !== 'nws_drought_current_all') || // Skip NWS layers arrays (handled separately for map drawing), except drought current
+    key === 'nws_drought_current_all' || // Skip NWS Current Drought Conditions array (handled separately for map drawing)
     key === 'chicago_traffic_crashes_all' || // Skip Chicago Traffic Crashes array (handled separately for map drawing)
     key === 'chicago_speed_cameras_all' || // Skip Chicago Speed Cameras array (handled separately for map drawing)
     key === 'chicago_red_light_cameras_all' || // Skip Chicago Red Light Cameras array (handled separately for map drawing)
@@ -15694,6 +15695,144 @@ const MapView: React.FC<MapViewProps> = ({
           console.error(`Error processing NWS ${layerKey}:`, error);
         }
       });
+
+      // Draw NWS Current Drought Conditions as polygons
+      try {
+        if (enrichments.nws_drought_current_all && Array.isArray(enrichments.nws_drought_current_all)) {
+          console.log(`🌵 Processing ${enrichments.nws_drought_current_all.length} NWS Current Drought Condition feature(s)`);
+          let nwsDroughtCount = 0;
+          
+          enrichments.nws_drought_current_all.forEach((drought: any, index: number) => {
+            console.log(`🌵 Processing drought feature ${index + 1}:`, {
+              hasGeometry: !!drought.geometry,
+              hasRings: !!(drought.geometry && drought.geometry.rings),
+              ringsCount: drought.geometry?.rings?.length || 0,
+              dm: drought.dm
+            });
+            
+            if (drought.geometry && drought.geometry.rings) {
+              try {
+                const rings = drought.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Process all rings (for multipart polygons)
+                  rings.forEach((ring: number[][], ringIndex: number) => {
+                    if (ring && ring.length > 0) {
+                      // Check if coordinates are in Web Mercator or WGS84
+                      const firstCoord = ring[0];
+                      if (!firstCoord || firstCoord.length < 2) {
+                        console.warn(`🌵 Ring ${ringIndex} has invalid first coordinate`);
+                        return;
+                      }
+                      
+                      const isWebMercator = Math.abs(firstCoord[0]) > 180 || Math.abs(firstCoord[1]) > 90;
+                      
+                      const latlngs = ring.map((coord: number[]) => {
+                        if (Array.isArray(coord) && coord.length >= 2) {
+                          if (isWebMercator) {
+                            // Convert from Web Mercator to WGS84
+                            const lon = (coord[0] / 20037508.34) * 180;
+                            let lat = (coord[1] / 20037508.34) * 180;
+                            lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
+                            return [lat, lon] as [number, number];
+                          } else {
+                            // Already in WGS84 - ESRI format is [lon, lat], Leaflet needs [lat, lon]
+                            return [coord[1], coord[0]] as [number, number];
+                          }
+                        }
+                        return null;
+                      }).filter((coord: any): coord is [number, number] => coord !== null);
+                      
+                      if (latlngs.length >= 3) {
+                        console.log(`🌵 Drawing polygon with ${latlngs.length} coordinates from ring ${ringIndex}`);
+                        
+                        // Color based on drought intensity (dm value)
+                        const dm = drought.dm !== undefined && drought.dm !== null ? drought.dm : -1;
+                        const colors: Record<number, string> = {
+                          0: '#f0dfa6', // Abnormally Dry
+                          1: '#edc97b', // Drought - Moderate
+                          2: '#eb9550', // Drought - Severe
+                          3: '#d94d23', // Drought - Extreme
+                          4: '#990000'  // Drought - Exceptional
+                        };
+                        const color = colors[dm] || '#cccccc';
+                        
+                        const polygon = L.polygon(latlngs, {
+                          color: color,
+                          weight: 2,
+                          opacity: 0.8,
+                          fillColor: color,
+                          fillOpacity: 0.4
+                        }).addTo(primary);
+                        
+                        const droughtLabel = drought.dm !== undefined && drought.dm !== null 
+                          ? (drought.dm === 0 ? 'Abnormally Dry' : 
+                             drought.dm === 1 ? 'Drought - Moderate' :
+                             drought.dm === 2 ? 'Drought - Severe' :
+                             drought.dm === 3 ? 'Drought - Extreme' :
+                             drought.dm === 4 ? 'Drought - Exceptional' : 'Unknown')
+                          : 'Unknown';
+                        const period = drought.period || '';
+                        const ddate = drought.ddate || '';
+                        const shapeArea = drought.shapeArea || 0;
+                        const shapeLength = drought.shapeLength || 0;
+                        
+                        const popupContent = `
+                          <div style="max-width: 300px;">
+                            <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">Current Drought: ${droughtLabel}</h3>
+                            <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                              ${period ? `<p style="margin: 4px 0;"><strong>Period:</strong> ${period}</p>` : ''}
+                              ${ddate ? `<p style="margin: 4px 0;"><strong>Date:</strong> ${ddate}</p>` : ''}
+                              ${drought.dm !== undefined && drought.dm !== null ? `<p style="margin: 4px 0;"><strong>Drought Monitor Class:</strong> D${drought.dm}</p>` : ''}
+                              ${drought.d0 !== undefined ? `<p style="margin: 4px 0;"><strong>D0 (Abnormally Dry):</strong> ${drought.d0.toFixed(1)}%</p>` : ''}
+                              ${drought.d1 !== undefined ? `<p style="margin: 4px 0;"><strong>D1 (Moderate):</strong> ${drought.d1.toFixed(1)}%</p>` : ''}
+                              ${drought.d2 !== undefined ? `<p style="margin: 4px 0;"><strong>D2 (Severe):</strong> ${drought.d2.toFixed(1)}%</p>` : ''}
+                              ${drought.d3 !== undefined ? `<p style="margin: 4px 0;"><strong>D3 (Extreme):</strong> ${drought.d3.toFixed(1)}%</p>` : ''}
+                              ${drought.d4 !== undefined ? `<p style="margin: 4px 0;"><strong>D4 (Exceptional):</strong> ${drought.d4.toFixed(1)}%</p>` : ''}
+                              <p style="margin: 4px 0;"><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</p>
+                              <p style="margin: 4px 0;"><strong>Perimeter:</strong> ${shapeLength.toLocaleString()} units</p>
+                            </div>
+                          </div>
+                        `;
+                        
+                        polygon.bindPopup(popupContent);
+                        const polygonBounds = L.latLngBounds(latlngs);
+                        bounds.extend(polygonBounds);
+                        nwsDroughtCount++;
+                      } else {
+                        console.warn(`🌵 Ring ${ringIndex} has insufficient coordinates (${latlngs.length})`);
+                      }
+                    }
+                  });
+                } else {
+                  console.warn(`🌵 Drought feature ${index + 1} has no rings`);
+                }
+              } catch (error) {
+                console.error(`🌵 Error drawing NWS Current Drought Condition feature ${index + 1}:`, error);
+              }
+            } else {
+              console.warn(`🌵 Drought feature ${index + 1} missing geometry or rings`);
+            }
+          });
+          
+          console.log(`🌵 Successfully drew ${nwsDroughtCount} NWS Current Drought Condition polygon(s)`);
+          
+          if (nwsDroughtCount > 0) {
+            if (!legendAccumulator['nws_drought_current']) {
+              legendAccumulator['nws_drought_current'] = {
+                icon: '🌵',
+                color: '#d94d23',
+                title: 'NWS Current Drought Conditions',
+                count: 0
+              };
+            }
+            legendAccumulator['nws_drought_current'].count += nwsDroughtCount;
+          }
+        } else {
+          console.log(`🌵 No NWS Current Drought Conditions data found in enrichments`);
+        }
+      } catch (error) {
+        console.error('🌵 Error processing NWS Current Drought Conditions:', error);
+      }
 
       // Draw Chicago Speed Camera Locations as point markers
       try {

@@ -318,7 +318,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_epa_')) {
       return 'Human Caused Hazards';
     }
-                if (key.includes('open_meteo_weather')) {
+                if (key.startsWith('nws_')) {
+              return 'Watching the Weather';
+            }
+            if (key.includes('open_meteo_weather')) {
               return 'Weather & Alerts';
             }
             if (key.includes('nws_weather_alerts')) {

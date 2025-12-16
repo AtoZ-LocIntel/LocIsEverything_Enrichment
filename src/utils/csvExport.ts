@@ -6541,6 +6541,109 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           shapeLength.toString()
         ]);
       });
+    } else if (key === 'nws_drought_current_all' && Array.isArray(value)) {
+      value.forEach((drought: any) => {
+        const objectId = drought.objectId || '';
+        const period = drought.period || '';
+        const dm = drought.dm !== undefined && drought.dm !== null ? drought.dm.toString() : '';
+        const droughtLabel = drought.dm !== undefined && drought.dm !== null 
+          ? (drought.dm === 0 ? 'Abnormally Dry' : 
+             drought.dm === 1 ? 'Drought - Moderate' :
+             drought.dm === 2 ? 'Drought - Severe' :
+             drought.dm === 3 ? 'Drought - Extreme' :
+             drought.dm === 4 ? 'Drought - Exceptional' : 'Unknown')
+          : 'Unknown';
+        const filename = drought.filename || '';
+        const endyear = drought.endyear !== undefined ? drought.endyear.toString() : '';
+        const endmonth = drought.endmonth !== undefined ? drought.endmonth.toString() : '';
+        const endday = drought.endday !== undefined ? drought.endday.toString() : '';
+        const ddate = drought.ddate || '';
+        const zipname = drought.zipname || '';
+        const source = drought.source || '';
+        const nothing = drought.nothing !== undefined ? drought.nothing.toString() : '';
+        const d0 = drought.d0 !== undefined ? drought.d0.toString() : '';
+        const d1 = drought.d1 !== undefined ? drought.d1.toString() : '';
+        const d2 = drought.d2 !== undefined ? drought.d2.toString() : '';
+        const d3 = drought.d3 !== undefined ? drought.d3.toString() : '';
+        const d4 = drought.d4 !== undefined ? drought.d4.toString() : '';
+        const d0_d4 = drought.d0_d4 !== undefined ? drought.d0_d4.toString() : '';
+        const d1_d4 = drought.d1_d4 !== undefined ? drought.d1_d4.toString() : '';
+        const d2_d4 = drought.d2_d4 !== undefined ? drought.d2_d4.toString() : '';
+        const d3_d4 = drought.d3_d4 !== undefined ? drought.d3_d4.toString() : '';
+        const shapeArea = drought.shapeArea !== undefined ? drought.shapeArea.toString() : '';
+        const shapeLength = drought.shapeLength !== undefined ? drought.shapeLength.toString() : '';
+        const containing = drought.containing ? 'Yes' : 'No';
+        
+        // Calculate centroid from geometry if needed for CSV
+        let lat = '';
+        let lon = '';
+        if (drought.geometry && drought.geometry.rings && drought.geometry.rings[0] && drought.geometry.rings[0].length > 0) {
+          const rings = drought.geometry.rings[0];
+          let sumLat = 0;
+          let sumLon = 0;
+          let count = 0;
+          rings.forEach((coord: number[]) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              // Check if Web Mercator or WGS84
+              const isWebMercator = Math.abs(coord[0]) > 180 || Math.abs(coord[1]) > 90;
+              if (isWebMercator) {
+                // Convert from Web Mercator to WGS84
+                const lon_merc = (coord[0] / 20037508.34) * 180;
+                let lat_merc = (coord[1] / 20037508.34) * 180;
+                lat_merc = 180 / Math.PI * (2 * Math.atan(Math.exp(lat_merc * Math.PI / 180)) - Math.PI / 2);
+                sumLon += lon_merc;
+                sumLat += lat_merc;
+              } else {
+                // Already in WGS84 - ESRI format is [lon, lat]
+                sumLon += coord[0];
+                sumLat += coord[1];
+              }
+              count++;
+            }
+          });
+          if (count > 0) {
+            lat = (sumLat / count).toString();
+            lon = (sumLon / count).toString();
+          }
+        }
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'National Weather Service',
+          (location.confidence || 'N/A').toString(),
+          'NWS_DROUGHT_CURRENT',
+          droughtLabel,
+          lat,
+          lon,
+          '0', // Distance is always 0 for point-in-polygon
+          'Drought Condition',
+          containing,
+          objectId.toString(),
+          period,
+          dm,
+          filename,
+          endyear,
+          endmonth,
+          endday,
+          ddate,
+          zipname,
+          source,
+          nothing,
+          d0,
+          d1,
+          d2,
+          d3,
+          d4,
+          d0_d4,
+          d1_d4,
+          d2_d4,
+          d3_d4,
+          shapeArea,
+          shapeLength
+        ]);
+      });
     } else if (key.startsWith('nws_') && key.endsWith('_all') && Array.isArray(value)) {
       const layerName = key.replace('_all', '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
       value.forEach((feature: any) => {

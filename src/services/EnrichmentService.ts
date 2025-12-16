@@ -106,6 +106,7 @@ import { getLakeCountyParcelsData } from '../adapters/lakeCountyParcels';
 import { getLakeCountyFacilitySitePolygonsData } from '../adapters/lakeCountyFacilitySitePolygons';
 import { getLakeCountyHighSchoolDistrictsData } from '../adapters/lakeCountyHighSchoolDistricts';
 import { getNWSWatchesWarningsData } from '../adapters/nwsWatchesWarnings';
+import { getNWSDroughtCurrentData } from '../adapters/nwsDroughtCurrent';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
@@ -2309,6 +2310,10 @@ export class EnrichmentService {
         return await this.getNWSWatchesWarnings(lat, lon, 11, 'Minor Events', enrichmentId, radius);
       case 'nws_other_events':
         return await this.getNWSWatchesWarnings(lat, lon, 12, 'Other Events', enrichmentId, radius);
+      
+      // NWS Current Drought Conditions - Point-in-polygon only (no proximity)
+      case 'nws_drought_current':
+        return await this.getNWSDroughtCurrent(lat, lon);
       
       // Chicago Traffic Crashes - Proximity query (max 1 mile) with optional year filter
       case 'chicago_traffic_crashes':
@@ -10960,6 +10965,79 @@ out center;`;
         }));
     } catch (error) {
       console.error(`Error fetching NWS ${layerName}:`, error);
+    }
+
+    return result;
+  }
+
+  private async getNWSDroughtCurrent(lat: number, lon: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      nws_drought_current_containing: [],
+      nws_drought_current_all: [],
+      nws_drought_current_count: 0,
+    };
+
+    try {
+      const features = await getNWSDroughtCurrentData(lat, lon);
+      
+      result.nws_drought_current_count = features.length;
+      result.nws_drought_current_all = features.map(feature => ({
+        objectId: feature.objectId,
+        period: feature.period,
+        dm: feature.dm,
+        filename: feature.filename,
+        endyear: feature.endyear,
+        endmonth: feature.endmonth,
+        endday: feature.endday,
+        ddate: feature.ddate,
+        zipname: feature.zipname,
+        source: feature.source,
+        nothing: feature.nothing,
+        d0: feature.d0,
+        d1: feature.d1,
+        d2: feature.d2,
+        d3: feature.d3,
+        d4: feature.d4,
+        d0_d4: feature.d0_d4,
+        d1_d4: feature.d1_d4,
+        d2_d4: feature.d2_d4,
+        d3_d4: feature.d3_d4,
+        shapeArea: feature.shapeArea,
+        shapeLength: feature.shapeLength,
+        containing: feature.containing,
+        geometry: feature.geometry
+        // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+      }));
+
+      // All features are containing (point-in-polygon only)
+      result.nws_drought_current_containing = features.map(f => ({
+        objectId: f.objectId,
+        period: f.period,
+        dm: f.dm,
+        filename: f.filename,
+        endyear: f.endyear,
+        endmonth: f.endmonth,
+        endday: f.endday,
+        ddate: f.ddate,
+        zipname: f.zipname,
+        source: f.source,
+        nothing: f.nothing,
+        d0: f.d0,
+        d1: f.d1,
+        d2: f.d2,
+        d3: f.d3,
+        d4: f.d4,
+        d0_d4: f.d0_d4,
+        d1_d4: f.d1_d4,
+        d2_d4: f.d2_d4,
+        d3_d4: f.d3_d4,
+        shapeArea: f.shapeArea,
+        shapeLength: f.shapeLength,
+        geometry: f.geometry
+        // Note: Not including lat/lon to prevent point markers from being drawn - only polygons
+      }));
+    } catch (error) {
+      console.error('Error fetching NWS Current Drought Conditions:', error);
     }
 
     return result;

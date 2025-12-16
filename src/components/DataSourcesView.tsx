@@ -1689,6 +1689,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NWS_Watches_Warnings_v1/FeatureServer/12"
         },
         {
+          name: "NWS Current Drought Conditions",
+          description: "Current drought intensity conditions - point-in-polygon queries only",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/US_Drought_Intensity_v1/FeatureServer/3"
+        },
+        {
           name: "Chicago Building Centroids",
           description: "Building centroids from the City of Chicago Data Portal - proximity queries from 0.25 to 1 mile",
           coverage: "City of Chicago, Illinois",

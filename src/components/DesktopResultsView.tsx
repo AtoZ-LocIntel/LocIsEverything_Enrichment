@@ -537,6 +537,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'FWS Species & Wildlife';
       } else if (key.includes('poi_') && key.includes('count') && !key.includes('wildfire')) {
         category = 'Points of Interest Nearby';
+      } else if (key.startsWith('nws_')) {
+        category = 'Watching the Weather';
       } else if (key.includes('weather') || key.includes('climate')) {
         category = 'Weather & Climate';
       } else if (key.includes('hospital') || key.includes('healthcare')) {
