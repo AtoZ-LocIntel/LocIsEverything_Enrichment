@@ -840,7 +840,6 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'houston_olc_grid_8digit_all' || // Skip Houston OLC Grid 8-digit array (handled separately for map drawing)
     key === 'houston_fire_stations_all' || // Skip Houston Fire Stations array (handled separately for map drawing)
     key === 'houston_fire_hydrants_all' || // Skip Houston Fire Hydrants array (handled separately for map drawing)
-    key === 'satellite_viirs_fire_activity_all' || // Skip Satellite VIIRS Fire Activity array (handled separately for map drawing)
     key === 'houston_tirz_all' || // Skip Houston TIRZ array (handled separately for map drawing)
     key === 'houston_affordability_all' || // Skip Houston Affordability array (handled separately for map drawing)
     key === 'la_county_historic_cultural_monuments_all' || // Skip LA County Historic Cultural Monuments array (handled separately for map drawing)

@@ -10043,9 +10043,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         
         // Extract attributes
         const attributes = hotspot.attributes || {};
-        const acqDate = attributes.ACQ_DATE || attributes.acq_date || '';
         const confidence = attributes.CONFIDENCE || attributes.confidence || '';
-        const brightness = attributes.BRIGHTNESS || attributes.brightness || '';
         
         rows.push([
           result.location.name || '',
