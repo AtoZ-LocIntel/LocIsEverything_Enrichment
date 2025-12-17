@@ -140,7 +140,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
     <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
       {/* Header */}
       <header 
-        className="border-b border-gray-800 px-4 py-4 flex-shrink-0"
+        className="border-b border-gray-800 px-4 py-4 flex-shrink-0 sticky top-0 z-30"
         style={{ backgroundColor: getCategoryColor() }}
       >
         <div className="flex items-center justify-between gap-3 mb-3">
