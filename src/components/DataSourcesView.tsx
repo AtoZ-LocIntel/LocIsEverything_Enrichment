@@ -238,6 +238,262 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer"
         },
         {
+          name: "FEMA NFHL Availability",
+          description: "NFHL availability footprint (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/0"
+        },
+        {
+          name: "FEMA FIRM Panels",
+          description: "FIRM panels index (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/1"
+        },
+        {
+          name: "FEMA LOMRs",
+          description: "Letters of Map Revision (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/2"
+        },
+        {
+          name: "FEMA LOMAs",
+          description: "Letters of Map Amendment (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/3"
+        },
+        {
+          name: "FEMA Political Jurisdictions",
+          description: "FEMA political jurisdictions (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/4"
+        },
+        {
+          name: "FEMA Profile Baselines",
+          description: "Profile baselines (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/5"
+        },
+        {
+          name: "FEMA Water Lines",
+          description: "Water lines (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/6"
+        },
+        {
+          name: "FEMA Cross-Sections",
+          description: "Cross-sections (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/7"
+        },
+        {
+          name: "FEMA Base Flood Elevations",
+          description: "Base flood elevations (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/8"
+        },
+        {
+          name: "FEMA Levees",
+          description: "Levees (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/9"
+        },
+        {
+          name: "FEMA Submittal Info",
+          description: "Submittal information (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/11"
+        },
+        {
+          name: "FEMA Coastal Transects",
+          description: "Coastal transects (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/12"
+        },
+        {
+          name: "FEMA Transect Baselines",
+          description: "Transect baselines (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/13"
+        },
+        {
+          name: "FEMA General Structures",
+          description: "General structures (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/14"
+        },
+        {
+          name: "FEMA River Mile Markers",
+          description: "River mile markers (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/15"
+        },
+        {
+          name: "FEMA Water Areas",
+          description: "Water areas (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/16"
+        },
+        {
+          name: "FEMA PLSS",
+          description: "Public Land Survey System (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/17"
+        },
+        {
+          name: "FEMA Limit of Moderate Wave Action",
+          description: "LiMWA (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/18"
+        },
+        {
+          name: "FEMA Flood Hazard Boundaries",
+          description: "Flood hazard boundaries (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/19"
+        },
+        {
+          name: "FEMA Flood Hazard Zones",
+          description: "Flood hazard zones (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/20"
+        },
+        {
+          name: "FEMA Primary Frontal Dunes",
+          description: "Primary frontal dunes (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/21"
+        },
+        {
+          name: "FEMA Base Index",
+          description: "Base index (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/22"
+        },
+        {
+          name: "FEMA Topographic Low Confidence Areas",
+          description: "Topographic low confidence areas (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/23"
+        },
+        {
+          name: "FEMA Datum Conversion Points",
+          description: "Datum conversion points (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/24"
+        },
+        {
+          name: "FEMA Coastal Gages",
+          description: "Coastal gages (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/25"
+        },
+        {
+          name: "FEMA Gages",
+          description: "Gages (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/26"
+        },
+        {
+          name: "FEMA Nodes",
+          description: "Nodes (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/27"
+        },
+        {
+          name: "FEMA High Water Marks",
+          description: "High water marks (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/28"
+        },
+        {
+          name: "FEMA Station Start Points",
+          description: "Station start points (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/29"
+        },
+        {
+          name: "FEMA Hydrologic Reaches",
+          description: "Hydrologic reaches (proximity up to 10 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/30"
+        },
+        {
+          name: "FEMA Alluvial Fans",
+          description: "Alluvial fans (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/31"
+        },
+        {
+          name: "FEMA Subbasins",
+          description: "Subbasins (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/32"
+        },
+        {
           name: "USGS Earthquakes",
           description: "Historical earthquake events and seismic activity",
           coverage: "Global",
