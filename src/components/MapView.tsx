@@ -15997,7 +15997,7 @@ const MapView: React.FC<MapViewProps> = ({
                     });
                   }
                   
-                  rings.forEach((ring: any, ringIdx: number) => {
+                  rings.forEach((ring: any) => {
                     if (!ring || !Array.isArray(ring) || ring.length === 0) {
                       return;
                     }
