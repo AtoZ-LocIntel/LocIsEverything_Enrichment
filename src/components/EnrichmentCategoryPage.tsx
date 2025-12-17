@@ -192,8 +192,8 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
         style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
       >
         <div className="max-w-xl mx-auto space-y-4">
-          {/* Category Description */}
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          {/* Category Description (hide on mobile to avoid search overlap) */}
+          <div className="hidden sm:block bg-gray-900 border border-gray-800 rounded-lg p-4">
             <h2 className="text-base font-semibold text-white mb-2 break-words">About {category.title}</h2>
             <p className="text-sm text-gray-300 leading-relaxed break-words">{category.description}</p>
           </div>
