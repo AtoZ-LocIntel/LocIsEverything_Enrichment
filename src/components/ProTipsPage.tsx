@@ -8,16 +8,35 @@ interface ProTipsPageProps {
 
 const ProTipsPage: React.FC<ProTipsPageProps> = ({ onBack, onViewDataSources }) => {
   const mainRef = useRef<HTMLElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
 
   // Scroll to top when component mounts (when Pro Tips page opens)
   useEffect(() => {
-    // Scroll window to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Use setTimeout to ensure DOM is fully rendered
+    const scrollToTop = () => {
+      // Scroll window to top immediately (no smooth behavior for instant positioning)
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      
+      // Also scroll the main content area to top if it exists
+      if (mainRef.current) {
+        mainRef.current.scrollTop = 0;
+      }
+      
+      // Scroll the top container into view if it exists
+      if (topRef.current) {
+        topRef.current.scrollIntoView({ behavior: 'auto', block: 'start' });
+      }
+    };
     
-    // Also scroll the main content area to top if it exists
-    if (mainRef.current) {
-      mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // Immediate scroll
+    scrollToTop();
+    
+    // Also try after a brief delay to catch any layout shifts
+    const timeoutId = setTimeout(scrollToTop, 0);
+    
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
@@ -42,7 +61,7 @@ const ProTipsPage: React.FC<ProTipsPageProps> = ({ onBack, onViewDataSources }) 
         className="flex-1 overflow-y-auto px-4 py-4"
         style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
       >
-        <div className="max-w-xl mx-auto space-y-4">
+        <div ref={topRef} className="max-w-xl mx-auto space-y-4">
           {/* Data Sources CTA */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex flex-col space-y-2">
