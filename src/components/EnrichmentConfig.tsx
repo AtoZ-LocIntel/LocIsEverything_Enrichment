@@ -63,6 +63,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   australia: <img src="/assets/Australia.webp" alt="Australian Open Data" className="w-5 h-5" />,
   newzealand: <img src="/assets/NewZealand.webp" alt="New Zealand Open Data" className="w-5 h-5" />,
   quirky: <span className="text-xl">☕</span>,
+  natural_hazards: <img src="/assets/wildfire.webp" alt="Natural Hazards" className="w-5 h-5" />,
   wildfire: <img src="/assets/wildfire.webp" alt="Natural Hazards" className="w-5 h-5" />,
   at: <img src="/assets/at.webp" alt="Appalachian Trail" className="w-5 h-5" />,
   pct: <img src="/assets/pct.webp" alt="Pacific Crest Trail" className="w-5 h-5" />,

@@ -105,6 +105,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   const getCategoryColor = () => {
     const colorMap: Record<string, string> = {
       'hazards': '#991b1b',
+      'natural_hazards': '#b91c1c',
       'community': '#1e40af',
       'retail': '#6b21a8',
       'health': '#9d174d',

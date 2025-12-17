@@ -111,6 +111,7 @@ import { getNWSActiveHurricanesData } from '../adapters/nwsActiveHurricanes';
 import { getNWSNDFDWindForecastData } from '../adapters/nwsNDFDWindForecast';
 import { getNWSNDFDGridForecastData } from '../adapters/nwsNDFDGridForecast';
 import { getLiveStreamGaugesData } from '../adapters/liveStreamGauges';
+import { getFemaNFHLData } from '../adapters/femaNFHL';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
@@ -2377,6 +2378,72 @@ export class EnrichmentService {
       // Live Stream Gauges (points, proximity up to 25 miles)
       case 'nws_stream_gauges_live':
         return await this.getLiveStreamGauges(lat, lon, enrichmentId, radius, 'USGS Stream Gauges (Live)');
+      
+      // FEMA NFHL (Natural Hazards)
+      case 'fema_nfhl_availability':
+        return await this.getFemaNFHL(lat, lon, 0, 'FEMA NFHL Availability', enrichmentId, false, 0);
+      case 'fema_nfhl_firm_panels':
+        return await this.getFemaNFHL(lat, lon, 1, 'FEMA FIRM Panels', enrichmentId, false, 0);
+      case 'fema_nfhl_lomrs':
+        return await this.getFemaNFHL(lat, lon, 2, 'FEMA LOMRs', enrichmentId, false, 0);
+      case 'fema_nfhl_lomas':
+        return await this.getFemaNFHL(lat, lon, 3, 'FEMA LOMAs', enrichmentId, false, 0);
+      case 'fema_nfhl_political_jurisdictions':
+        return await this.getFemaNFHL(lat, lon, 4, 'FEMA Political Jurisdictions', enrichmentId, false, 0);
+      case 'fema_nfhl_profile_baselines':
+        return await this.getFemaNFHL(lat, lon, 5, 'FEMA Profile Baselines', enrichmentId, true, 10);
+      case 'fema_nfhl_water_lines':
+        return await this.getFemaNFHL(lat, lon, 6, 'FEMA Water Lines', enrichmentId, true, 10);
+      case 'fema_nfhl_cross_sections':
+        return await this.getFemaNFHL(lat, lon, 7, 'FEMA Cross-Sections', enrichmentId, false, 0);
+      case 'fema_nfhl_base_flood_elevations':
+        return await this.getFemaNFHL(lat, lon, 8, 'FEMA Base Flood Elevations', enrichmentId, false, 0);
+      case 'fema_nfhl_levees':
+        return await this.getFemaNFHL(lat, lon, 9, 'FEMA Levees', enrichmentId, true, 10);
+      case 'fema_nfhl_submittal_info':
+        return await this.getFemaNFHL(lat, lon, 11, 'FEMA Submittal Info', enrichmentId, false, 0);
+      case 'fema_nfhl_coastal_transects':
+        return await this.getFemaNFHL(lat, lon, 12, 'FEMA Coastal Transects', enrichmentId, false, 0);
+      case 'fema_nfhl_transect_baselines':
+        return await this.getFemaNFHL(lat, lon, 13, 'FEMA Transect Baselines', enrichmentId, true, 10);
+      case 'fema_nfhl_general_structures':
+        return await this.getFemaNFHL(lat, lon, 14, 'FEMA General Structures', enrichmentId, true, 10);
+      case 'fema_nfhl_river_mile_markers':
+        return await this.getFemaNFHL(lat, lon, 15, 'FEMA River Mile Markers', enrichmentId, true, 10);
+      case 'fema_nfhl_water_areas':
+        return await this.getFemaNFHL(lat, lon, 16, 'FEMA Water Areas', enrichmentId, false, 0);
+      case 'fema_nfhl_plss':
+        return await this.getFemaNFHL(lat, lon, 17, 'FEMA PLSS', enrichmentId, false, 0);
+      case 'fema_nfhl_limit_moderate_wave_action':
+        return await this.getFemaNFHL(lat, lon, 18, 'FEMA Limit of Moderate Wave Action', enrichmentId, false, 0);
+      case 'fema_nfhl_flood_hazard_boundaries':
+        return await this.getFemaNFHL(lat, lon, 19, 'FEMA Flood Hazard Boundaries', enrichmentId, false, 0);
+      case 'fema_nfhl_flood_hazard_zones':
+        return await this.getFemaNFHL(lat, lon, 20, 'FEMA Flood Hazard Zones', enrichmentId, false, 0);
+      case 'fema_nfhl_primary_frontal_dunes':
+        return await this.getFemaNFHL(lat, lon, 21, 'FEMA Primary Frontal Dunes', enrichmentId, false, 0);
+      case 'fema_nfhl_base_index':
+        return await this.getFemaNFHL(lat, lon, 22, 'FEMA Base Index', enrichmentId, false, 0);
+      case 'fema_nfhl_topographic_low_confidence':
+        return await this.getFemaNFHL(lat, lon, 23, 'FEMA Topographic Low Confidence Areas', enrichmentId, false, 0);
+      case 'fema_nfhl_datum_conversion_points':
+        return await this.getFemaNFHL(lat, lon, 24, 'FEMA Datum Conversion Points', enrichmentId, true, 10);
+      case 'fema_nfhl_coastal_gages':
+        return await this.getFemaNFHL(lat, lon, 25, 'FEMA Coastal Gages', enrichmentId, true, 10);
+      case 'fema_nfhl_gages':
+        return await this.getFemaNFHL(lat, lon, 26, 'FEMA Gages', enrichmentId, true, 10);
+      case 'fema_nfhl_nodes':
+        return await this.getFemaNFHL(lat, lon, 27, 'FEMA Nodes', enrichmentId, true, 10);
+      case 'fema_nfhl_high_water_marks':
+        return await this.getFemaNFHL(lat, lon, 28, 'FEMA High Water Marks', enrichmentId, true, 10);
+      case 'fema_nfhl_station_start_points':
+        return await this.getFemaNFHL(lat, lon, 29, 'FEMA Station Start Points', enrichmentId, true, 10);
+      case 'fema_nfhl_hydrologic_reaches':
+        return await this.getFemaNFHL(lat, lon, 30, 'FEMA Hydrologic Reaches', enrichmentId, true, 10);
+      case 'fema_nfhl_alluvial_fans':
+        return await this.getFemaNFHL(lat, lon, 31, 'FEMA Alluvial Fans', enrichmentId, false, 0);
+      case 'fema_nfhl_subbasins':
+        return await this.getFemaNFHL(lat, lon, 32, 'FEMA Subbasins', enrichmentId, false, 0);
       
       // Quirky & Fun - Median Sea Ice Extent
       case 'median_sea_ice_extent_antarctic':
@@ -11333,6 +11400,79 @@ out center;`;
         }));
     } catch (error) {
       console.error('Error fetching Live Stream Gauges:', error);
+    }
+
+    return result;
+  }
+
+  private async getFemaNFHL(
+    lat: number,
+    lon: number,
+    layerId: number,
+    layerName: string,
+    enrichmentId: string,
+    isPointLayer: boolean,
+    radiusMiles: number,
+    isLineProximity = false
+  ): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      [`${enrichmentId}_containing`]: [],
+      [`${enrichmentId}_nearby`]: [],
+      [`${enrichmentId}_all`]: [],
+      [`${enrichmentId}_count`]: 0,
+    };
+
+    try {
+      const features = await getFemaNFHLData(lat, lon, layerId, layerName, isPointLayer, radiusMiles, isLineProximity);
+      result[`${enrichmentId}_count`] = features.length;
+      result[`${enrichmentId}_all`] = features.map(f => ({
+        objectId: f.objectId,
+        attributes: f.attributes,
+        distance: f.distance,
+        containing: f.containing,
+        geometry: f.geometry,
+        lat: f.lat,
+        lon: f.lon,
+        layerName: f.layerName
+      }));
+
+      if (isPointLayer) {
+        result[`${enrichmentId}_containing`] = features
+          .filter(f => f.containing)
+          .map(f => ({
+            objectId: f.objectId,
+            attributes: f.attributes,
+            geometry: f.geometry,
+            lat: f.lat,
+            lon: f.lon,
+            layerName: f.layerName
+          }));
+
+        result[`${enrichmentId}_nearby`] = features
+          .filter(f => !f.containing)
+          .map(f => ({
+            objectId: f.objectId,
+            attributes: f.attributes,
+            distance: f.distance,
+            geometry: f.geometry,
+            lat: f.lat,
+            lon: f.lon,
+            layerName: f.layerName
+          }));
+      } else {
+        // Non-point, non-proximity: treat all as containing; remove nearby to avoid “Nearby” in summaries
+        result[`${enrichmentId}_containing`] = features.map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          geometry: f.geometry,
+          lat: f.lat,
+          lon: f.lon,
+          layerName: f.layerName
+        }));
+        delete result[`${enrichmentId}_nearby`];
+      }
+    } catch (error) {
+      console.error(`Error fetching FEMA NFHL ${layerName}:`, error);
     }
 
     return result;
