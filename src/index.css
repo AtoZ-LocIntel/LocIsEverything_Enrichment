@@ -1374,7 +1374,7 @@ body.modal-open {
   /* Fix button grid layout in EnrichmentConfig - Responsive Circular */
   .grid.grid-cols-2 {
     gap: 20px !important;
-    padding: 16px 20px !important;
+    padding: 16px 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     justify-items: center !important;
