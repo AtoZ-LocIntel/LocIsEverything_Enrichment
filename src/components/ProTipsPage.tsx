@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Lightbulb, Database, ArrowLeft } from 'lucide-react';
 
 interface ProTipsPageProps {
@@ -7,6 +7,19 @@ interface ProTipsPageProps {
 }
 
 const ProTipsPage: React.FC<ProTipsPageProps> = ({ onBack, onViewDataSources }) => {
+  const mainRef = useRef<HTMLElement>(null);
+
+  // Scroll to top when component mounts (when Pro Tips page opens)
+  useEffect(() => {
+    // Scroll window to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Also scroll the main content area to top if it exists
+    if (mainRef.current) {
+      mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
@@ -25,6 +38,7 @@ const ProTipsPage: React.FC<ProTipsPageProps> = ({ onBack, onViewDataSources }) 
 
       {/* Content */}
       <main
+        ref={mainRef}
         className="flex-1 overflow-y-auto px-4 py-4"
         style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
       >

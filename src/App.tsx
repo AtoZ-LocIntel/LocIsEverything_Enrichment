@@ -206,6 +206,8 @@ function App() {
 
   const handleViewProTips = () => {
     setViewMode('pro-tips');
+    // Scroll to top when opening Pro Tips page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleViewEnrichmentCategory = (category: any) => {
