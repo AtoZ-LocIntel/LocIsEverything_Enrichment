@@ -833,7 +833,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const high = attrs.high_cont || attrs.high || '';
         const valley = attrs.valley || '';
         const shapeArea = attrs.Shape__Area || attrs.Shape_Area || attrs.SHAPE__AREA || '';
-        const shapeLength = attrs.Shape__Length || attrs.Shape_Length || attrs.SHAPE__LENGTH || '';
         
         // Build a readable name/description
         const hazardZoneName = mmi ? `Seismic Hazard Zone - MMI: ${mmi}` : `Seismic Hazard Zone - ID: ${objectId}`;

@@ -15967,7 +15967,6 @@ const MapView: React.FC<MapViewProps> = ({
             if (feature.geometry) {
               try {
                 const geom = feature.geometry;
-                let latlngs: [number, number][] = [];
                 
                 // Check if geometry has rings (polygon)
                 if (geom.rings && Array.isArray(geom.rings) && geom.rings.length > 0) {
@@ -15981,28 +15980,29 @@ const MapView: React.FC<MapViewProps> = ({
                   // Process all rings - each ring becomes a polygon part
                   const allPolygonParts: [number, number][][] = [];
                   
+                  // Determine coordinate conversion once for all rings (they should all be in the same CRS)
+                  let needsConversion = isWebMercator;
+                  if (rings.length > 0 && rings[0] && rings[0].length > 0) {
+                    const firstCoord = rings[0][0];
+                    const coordIsWebMercator = firstCoord && Array.isArray(firstCoord) && 
+                      (Math.abs(firstCoord[0]) > 180 || Math.abs(firstCoord[1]) > 90);
+                    needsConversion = isWebMercator || coordIsWebMercator;
+                    
+                    console.log(`🌍 Feature ${idx} coordinate conversion:`, {
+                      spatialRefWkid: spatialRef?.wkid,
+                      spatialRefLatestWkid: spatialRef?.latestWkid,
+                      isWebMercator,
+                      coordIsWebMercator,
+                      needsConversion
+                    });
+                  }
+                  
                   rings.forEach((ring: any, ringIdx: number) => {
                     if (!ring || !Array.isArray(ring) || ring.length === 0) {
                       return;
                     }
                     
-                    // Check coordinate values as fallback for first ring
-                    if (ringIdx === 0) {
-                      const firstCoord = ring[0];
-                      const coordIsWebMercator = firstCoord && Array.isArray(firstCoord) && 
-                        (Math.abs(firstCoord[0]) > 180 || Math.abs(firstCoord[1]) > 90);
-                      const needsConversion = isWebMercator || coordIsWebMercator;
-                      
-                      console.log(`🌍 Feature ${idx} coordinate conversion:`, {
-                        spatialRefWkid: spatialRef?.wkid,
-                        spatialRefLatestWkid: spatialRef?.latestWkid,
-                        isWebMercator,
-                        coordIsWebMercator,
-                        needsConversion
-                      });
-                    }
-                    
-                    const ringLatlngs = ring.map((coord: any, coordIdx: number) => {
+                    const ringLatlngs = ring.map((coord: any) => {
                       // Handle both [lon, lat] arrays and {x, y} objects
                       let lon: number, lat: number;
                       
@@ -16023,11 +16023,6 @@ const MapView: React.FC<MapViewProps> = ({
                       }
                       
                       let finalLat: number, finalLon: number;
-                      
-                      const firstCoord = ring[0];
-                      const coordIsWebMercator = firstCoord && Array.isArray(firstCoord) && 
-                        (Math.abs(firstCoord[0]) > 180 || Math.abs(firstCoord[1]) > 90);
-                      const needsConversion = isWebMercator || (spatialRef?.wkid === 3857 || spatialRef?.latestWkid === 3857);
                       
                       if (needsConversion) {
                         // Convert from Web Mercator (3857) to WGS84 (4326)
