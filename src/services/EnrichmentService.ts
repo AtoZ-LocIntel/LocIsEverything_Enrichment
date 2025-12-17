@@ -109,6 +109,7 @@ import { getNWSWatchesWarningsData } from '../adapters/nwsWatchesWarnings';
 import { getNWSDroughtCurrentData } from '../adapters/nwsDroughtCurrent';
 import { getNWSActiveHurricanesData } from '../adapters/nwsActiveHurricanes';
 import { getNWSNDFDWindForecastData } from '../adapters/nwsNDFDWindForecast';
+import { getNWSNDFDGridForecastData } from '../adapters/nwsNDFDGridForecast';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
@@ -2357,6 +2358,26 @@ export class EnrichmentService {
         return await this.getNWSNDFDWindForecast(lat, lon, 5, 'Wind at Block Group Level', enrichmentId, radius);
       case 'nws_ndfd_wind_city':
         return await this.getNWSNDFDWindForecast(lat, lon, 6, 'Wind at City Level', enrichmentId, radius);
+      
+      // NWS Forecasted Snowfall & Precipitation - Point-in-polygon and proximity (up to 100 miles)
+      case 'nws_forecasted_snowfall':
+        return await this.getNWSNDFDGridForecast(lat, lon, 'Forecasted Snowfall', 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_SnowFall_v1/FeatureServer/2', enrichmentId, radius, 100);
+      case 'nws_forecasted_precipitation':
+        return await this.getNWSNDFDGridForecast(lat, lon, 'Forecasted Precipitation', 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_Precipitation_v1/FeatureServer/2', enrichmentId, radius, 100);
+      
+      // NWS NDFD Ice - Point-in-polygon and proximity (up to 50 miles)
+      case 'nws_ndfd_ice_amount_by_time':
+        return await this.getNWSNDFDGridForecast(lat, lon, 'NDFD Ice - Amount by Time', 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_Ice_v1/FeatureServer/0', enrichmentId, radius, 50, true);
+      case 'nws_ndfd_ice_accumulation_by_time':
+        return await this.getNWSNDFDGridForecast(lat, lon, 'NDFD Ice - Accumulation by Time', 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_Ice_v1/FeatureServer/1', enrichmentId, radius, 50, true);
+      case 'nws_ndfd_ice_cumulative_total':
+        return await this.getNWSNDFDGridForecast(lat, lon, 'NDFD Ice - Cumulative Total', 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_Ice_v1/FeatureServer/2', enrichmentId, radius, 50, true);
+      
+      // Quirky & Fun - Median Sea Ice Extent
+      case 'median_sea_ice_extent_antarctic':
+        return await this.getNWSNDFDGridForecast(lat, lon, 'Median Sea Ice Extent - Antarctic', 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Median_Sea_Ice_Extent_for_the_Antarctic/FeatureServer/0', enrichmentId, radius, 100);
+      case 'median_sea_ice_extent_arctic':
+        return await this.getNWSNDFDGridForecast(lat, lon, 'Median Sea Ice Extent - Arctic', 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/Median_Sea_Ice_Extent_for_the_Arctic/FeatureServer/0', enrichmentId, radius, 100);
       
       // Chicago Traffic Crashes - Proximity query (max 1 mile) with optional year filter
       case 'chicago_traffic_crashes':
@@ -11192,6 +11213,68 @@ out center;`;
           lat: f.lat,
           lon: f.lon,
           layerId: f.layerId,
+          layerName: f.layerName
+        }));
+    } catch (error) {
+      console.error(`Error fetching NWS ${layerName}:`, error);
+    }
+
+    return result;
+  }
+
+  private async getNWSNDFDGridForecast(
+    lat: number,
+    lon: number,
+    layerName: string,
+    serviceUrl: string,
+    enrichmentId: string,
+    radius?: number,
+    maxRadius = 100,
+    polygonsOnly = false
+  ): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      [`${enrichmentId}_containing`]: [],
+      [`${enrichmentId}_nearby`]: [],
+      [`${enrichmentId}_all`]: [],
+      [`${enrichmentId}_count`]: 0,
+    };
+
+    try {
+      const cappedRadius = radius ? Math.min(radius, maxRadius) : maxRadius;
+      console.log(`🌧️ EnrichmentService: Fetching NWS ${layerName} for [${lat}, ${lon}] with radius ${cappedRadius} (max ${maxRadius})`);
+      const features = await getNWSNDFDGridForecastData(lat, lon, layerName, serviceUrl, cappedRadius, polygonsOnly);
+      result[`${enrichmentId}_count`] = features.length;
+      result[`${enrichmentId}_all`] = features.map(feature => ({
+        objectId: feature.objectId,
+        attributes: feature.attributes,
+        distance: feature.distance,
+        containing: feature.containing,
+        geometry: feature.geometry,
+        lat: feature.lat,
+        lon: feature.lon,
+        layerName: feature.layerName
+      }));
+
+      result[`${enrichmentId}_containing`] = features
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          geometry: f.geometry,
+          lat: f.lat,
+          lon: f.lon,
+          layerName: f.layerName
+        }));
+
+      result[`${enrichmentId}_nearby`] = features
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          distance: f.distance,
+          geometry: f.geometry,
+          lat: f.lat,
+          lon: f.lon,
           layerName: f.layerName
         }));
     } catch (error) {

@@ -15545,7 +15545,14 @@ const MapView: React.FC<MapViewProps> = ({
         'nws_ndfd_wind_county',
         'nws_ndfd_wind_district',
         'nws_ndfd_wind_block_group',
-        'nws_ndfd_wind_city'
+        'nws_ndfd_wind_city',
+        // NWS NDFD Grid Forecast layers
+        'nws_forecasted_snowfall',
+        'nws_forecasted_precipitation',
+        // NWS NDFD Ice layers
+        'nws_ndfd_ice_amount_by_time',
+        'nws_ndfd_ice_accumulation_by_time',
+        'nws_ndfd_ice_cumulative_total'
       ];
       
       const nwsColors: Record<string, string> = {
@@ -15559,7 +15566,12 @@ const MapView: React.FC<MapViewProps> = ({
         'nws_severe_events': '#ea580c',
         'nws_moderate_events': '#f59e0b',
         'nws_minor_events': '#eab308',
-        'nws_other_events': '#6b7280'
+        'nws_other_events': '#6b7280',
+        'nws_forecasted_snowfall': '#0ea5e9',
+        'nws_forecasted_precipitation': '#10b981',
+        'nws_ndfd_ice_amount_by_time': '#60a5fa',
+        'nws_ndfd_ice_accumulation_by_time': '#93c5fd',
+        'nws_ndfd_ice_cumulative_total': '#1d4ed8'
       };
       
       nwsLayers.forEach(layerKey => {
@@ -15573,6 +15585,14 @@ const MapView: React.FC<MapViewProps> = ({
               if (feature.geometry) {
                 try {
                   const geom = feature.geometry;
+                  const attrs = feature.attributes || {};
+                  const isWindLayer = layerKey.startsWith('nws_ndfd_wind');
+                  const isIceLayer = layerKey.startsWith('nws_ndfd_ice_');
+
+                  // For ice layers, skip any feature that is not a polygon (rings)
+                  if (isIceLayer && !geom.rings) {
+                    return;
+                  }
                   
                   if (geom.rings) {
                     // Polygon geometry
@@ -15598,8 +15618,6 @@ const MapView: React.FC<MapViewProps> = ({
                         const layerName = feature.layerName || 'NWS Feature';
                         const distance = feature.distance || 0;
                         const containing = feature.containing || false;
-                        const attrs = feature.attributes || {};
-                        const isWindLayer = layerKey.startsWith('nws_ndfd_wind');
                         const windFieldConfigs = [
                           { key: 'IntervalStart', label: 'Interval Start' },
                           { key: 'WindDir', label: 'Wind Direction' },
@@ -15631,6 +15649,19 @@ const MapView: React.FC<MapViewProps> = ({
                               popupContent += `<p style="margin: 4px 0;"><strong>${label}:</strong> ${displayValue}</p>`;
                             }
                           });
+                        } else if (isIceLayer) {
+                          const iceLabel = attrs.label || attrs.Label || '';
+                          if (iceLabel) {
+                            popupContent += `<p style="margin: 4px 0;"><strong>Label:</strong> ${iceLabel}</p>`;
+                          }
+                          // Show a few key attributes if available
+                          Object.keys(attrs).slice(0, 5).forEach(key => {
+                            if (['label', 'Label'].includes(key)) return;
+                            if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
+                              const value = typeof attrs[key] === 'object' ? JSON.stringify(attrs[key]) : attrs[key];
+                              popupContent += `<p style="margin: 4px 0;"><strong>${key}:</strong> ${value}</p>`;
+                            }
+                          });
                         } else {
                           // Add key attributes to popup (limited)
                           Object.keys(attrs).slice(0, 10).forEach(key => {
@@ -15657,6 +15688,10 @@ const MapView: React.FC<MapViewProps> = ({
                       }
                     }
                   } else if (geom.x !== undefined && geom.y !== undefined) {
+                    if (isIceLayer) {
+                      console.warn(`🥶 Ice layer ${layerKey} returned point geometry; skipping marker. Attributes:`, attrs);
+                      return;
+                    }
                     // Point geometry
                     const lat = geom.y;
                     const lon = geom.x;
@@ -15676,6 +15711,7 @@ const MapView: React.FC<MapViewProps> = ({
                       const containing = feature.containing || false;
                       const attrs = feature.attributes || {};
                       const isWindLayer = layerKey.startsWith('nws_ndfd_wind');
+                      const isIceLayer = layerKey.startsWith('nws_ndfd_ice_');
                       const windFieldConfigs = [
                         { key: 'IntervalStart', label: 'Interval Start' },
                         { key: 'WindDir', label: 'Wind Direction' },
@@ -15705,6 +15741,18 @@ const MapView: React.FC<MapViewProps> = ({
                           if (value !== null && value !== undefined && value !== '') {
                             const displayValue = key === 'IntervalStart' ? formatDateValue(value) : value;
                             popupContent += `<p style="margin: 4px 0;"><strong>${label}:</strong> ${displayValue}</p>`;
+                          }
+                        });
+                      } else if (isIceLayer) {
+                        const iceLabel = attrs.label || attrs.Label || '';
+                        if (iceLabel) {
+                          popupContent += `<p style="margin: 4px 0;"><strong>Label:</strong> ${iceLabel}</p>`;
+                        }
+                        Object.keys(attrs).slice(0, 5).forEach(key => {
+                          if (['label', 'Label'].includes(key)) return;
+                          if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
+                            const value = typeof attrs[key] === 'object' ? JSON.stringify(attrs[key]) : attrs[key];
+                            popupContent += `<p style="margin: 4px 0;"><strong>${key}:</strong> ${value}</p>`;
                           }
                         });
                       } else {
@@ -26146,6 +26194,12 @@ const MapView: React.FC<MapViewProps> = ({
         }
 
         const baseKey = key.replace(/_(detailed|elements|features|facilities|all_pois|all)$/i, '');
+
+        // Explicitly skip POI marker rendering for ice layers to avoid points while keeping proximity support
+        if (baseKey.startsWith('nws_ndfd_ice_')) {
+          console.warn(`🥶 Skipping POI marker rendering for ice layer ${baseKey} (polygon-only)`);
+          return;
+        }
         
         // ABSOLUTE CHECK: If this is a mine array, skip it completely
         if (baseKey.includes('australia_operating_mines') || 
