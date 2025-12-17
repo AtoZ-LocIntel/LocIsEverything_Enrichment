@@ -15552,7 +15552,9 @@ const MapView: React.FC<MapViewProps> = ({
         // NWS NDFD Ice layers
         'nws_ndfd_ice_amount_by_time',
         'nws_ndfd_ice_accumulation_by_time',
-        'nws_ndfd_ice_cumulative_total'
+        'nws_ndfd_ice_cumulative_total',
+        // Live Stream Gauges (points)
+        'nws_stream_gauges_live'
       ];
       
       const nwsColors: Record<string, string> = {
@@ -15571,7 +15573,8 @@ const MapView: React.FC<MapViewProps> = ({
         'nws_forecasted_precipitation': '#10b981',
         'nws_ndfd_ice_amount_by_time': '#60a5fa',
         'nws_ndfd_ice_accumulation_by_time': '#93c5fd',
-        'nws_ndfd_ice_cumulative_total': '#1d4ed8'
+        'nws_ndfd_ice_cumulative_total': '#1d4ed8',
+        'nws_stream_gauges_live': '#2563eb'
       };
       
       nwsLayers.forEach(layerKey => {
@@ -26198,6 +26201,11 @@ const MapView: React.FC<MapViewProps> = ({
         // Explicitly skip POI marker rendering for ice layers to avoid points while keeping proximity support
         if (baseKey.startsWith('nws_ndfd_ice_')) {
           console.warn(`🥶 Skipping POI marker rendering for ice layer ${baseKey} (polygon-only)`);
+          return;
+        }
+        // Skip POI marker rendering for Stream Gauges (handled in NWS renderer)
+        if (baseKey === 'nws_stream_gauges_live') {
+          console.warn(`💧 Skipping POI marker rendering for ${baseKey} (handled as NWS layer)`);
           return;
         }
         

@@ -110,6 +110,7 @@ import { getNWSDroughtCurrentData } from '../adapters/nwsDroughtCurrent';
 import { getNWSActiveHurricanesData } from '../adapters/nwsActiveHurricanes';
 import { getNWSNDFDWindForecastData } from '../adapters/nwsNDFDWindForecast';
 import { getNWSNDFDGridForecastData } from '../adapters/nwsNDFDGridForecast';
+import { getLiveStreamGaugesData } from '../adapters/liveStreamGauges';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
@@ -2372,6 +2373,10 @@ export class EnrichmentService {
         return await this.getNWSNDFDGridForecast(lat, lon, 'NDFD Ice - Accumulation by Time', 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_Ice_v1/FeatureServer/1', enrichmentId, radius, 50, true);
       case 'nws_ndfd_ice_cumulative_total':
         return await this.getNWSNDFDGridForecast(lat, lon, 'NDFD Ice - Cumulative Total', 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/NDFD_Ice_v1/FeatureServer/2', enrichmentId, radius, 50, true);
+      
+      // Live Stream Gauges (points, proximity up to 25 miles)
+      case 'nws_stream_gauges_live':
+        return await this.getLiveStreamGauges(lat, lon, enrichmentId, radius, 'USGS Stream Gauges (Live)');
       
       // Quirky & Fun - Median Sea Ice Extent
       case 'median_sea_ice_extent_antarctic':
@@ -11279,6 +11284,55 @@ out center;`;
         }));
     } catch (error) {
       console.error(`Error fetching NWS ${layerName}:`, error);
+    }
+
+    return result;
+  }
+
+  private async getLiveStreamGauges(
+    lat: number,
+    lon: number,
+    enrichmentId: string,
+    radius?: number,
+    layerName = 'USGS Stream Gauges (Live)'
+  ): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      [`${enrichmentId}_containing`]: [],
+      [`${enrichmentId}_nearby`]: [],
+      [`${enrichmentId}_all`]: [],
+      [`${enrichmentId}_count`]: 0,
+    };
+
+    try {
+      const cappedRadius = radius ? Math.min(radius, 25) : 25;
+      const features = await getLiveStreamGaugesData(lat, lon, cappedRadius, layerName);
+      result[`${enrichmentId}_count`] = features.length;
+      result[`${enrichmentId}_all`] = features.map(f => ({
+        objectId: f.objectId,
+        attributes: f.attributes,
+        distance: f.distance,
+        containing: false,
+        geometry: f.geometry,
+        lat: f.lat,
+        lon: f.lon,
+        layerName: f.layerName,
+      }));
+
+      // Gauges are points only; treat all as nearby
+      result[`${enrichmentId}_containing`] = [];
+      result[`${enrichmentId}_nearby`] = features
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          distance: f.distance,
+          geometry: f.geometry,
+          lat: f.lat,
+          lon: f.lon,
+          layerName: f.layerName,
+        }));
+    } catch (error) {
+      console.error('Error fetching Live Stream Gauges:', error);
     }
 
     return result;
