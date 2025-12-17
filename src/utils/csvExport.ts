@@ -617,6 +617,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'la_county_school_district_boundaries_all' ||
         key === 'la_county_metro_lines_all' ||
         key === 'la_county_street_inventory_all' || // Skip LA County Hazards arrays (handled separately)
+        key === 'national_seismic_hazard_2023_all' || // Skip seismic hazard array (handled separately)
+        key === 'tornado_tracks_1950_2017_all' || // Skip tornado tracks array (handled separately)
         key === 'la_county_fire_hazards_all' ||
         key === 'la_county_fire_hazard_responsibility_areas_all' ||
         key === 'la_county_fire_hazard_severity_zones_all' ||
@@ -812,6 +814,76 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // POI_Phone
           '', // POI_Website
           'PAD-US'
+        ]);
+      });
+      return;
+    }
+    
+    // Handle 2023 National Seismic Hazard Model
+    if (key === 'national_seismic_hazard_2023_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const attrs = feature.attributes || feature;
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || 'Unknown';
+        
+        // Map fields using csvMapping: hazard_zone: 'MMI', modified_mercalli_intensity: 'low_c', etc.
+        const mmi = attrs.MMI || attrs.mmi || '';
+        const modifiedMercalliIntensity = attrs.low_c || attrs.low_c || '';
+        const range = attrs.range_cont || attrs.range || '';
+        const low = attrs.low_cont || attrs.low || '';
+        const high = attrs.high_cont || attrs.high || '';
+        const valley = attrs.valley || '';
+        const shapeArea = attrs.Shape__Area || attrs.Shape_Area || attrs.SHAPE__AREA || '';
+        const shapeLength = attrs.Shape__Length || attrs.Shape_Length || attrs.SHAPE__LENGTH || '';
+        
+        // Build a readable name/description
+        const hazardZoneName = mmi ? `Seismic Hazard Zone - MMI: ${mmi}` : `Seismic Hazard Zone - ID: ${objectId}`;
+        
+        // Collect all attributes as JSON for full data access
+        const allAttributes = { ...attrs };
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        // Calculate centroid for lat/lon if available
+        let featureLat = '';
+        let featureLon = '';
+        if (feature.lat !== undefined && feature.lon !== undefined) {
+          featureLat = feature.lat.toString();
+          featureLon = feature.lon.toString();
+        } else if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          // Calculate centroid from first ring
+          const ring = feature.geometry.rings[0];
+          if (ring && ring.length > 0) {
+            let sumLat = 0, sumLon = 0, count = 0;
+            ring.forEach((coord: any) => {
+              if (Array.isArray(coord) && coord.length >= 2) {
+                sumLon += coord[0];
+                sumLat += coord[1];
+                count++;
+              }
+            });
+            if (count > 0) {
+              featureLat = (sumLat / count).toString();
+              featureLon = (sumLon / count).toString();
+            }
+          }
+        }
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS',
+          (location.confidence || 'N/A').toString(),
+          'NATIONAL_SEISMIC_HAZARD_2023',
+          hazardZoneName,
+          featureLat,
+          featureLon,
+          feature.containing ? '0' : '', // Distance is 0 for containing, empty for PIP only
+          mmi || 'N/A', // POI_Category - use MMI as category
+          `MMI: ${mmi || 'N/A'}, Modified Mercalli Intensity: ${modifiedMercalliIntensity || 'N/A'}, Range: ${range || 'N/A'}, Low: ${low || 'N/A'}, High: ${high || 'N/A'}${valley ? `, Valley: ${valley}` : ''}`, // POI_Address - use for key fields
+          shapeArea ? `Area: ${shapeArea}` : '', // POI_Phone - use for area
+          attributesJson, // POI_Website - full attributes JSON
+          'USGS'
         ]);
       });
       return;

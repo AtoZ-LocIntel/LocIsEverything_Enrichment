@@ -494,6 +494,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/32"
         },
         {
+          name: "2023 National Seismic Hazard Model",
+          description: "USGS Modified Mercalli Intensity polygons (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/2023_National_Seismic_Hazard_Model/FeatureServer/0"
+        },
+        {
+          name: "Tornado Tracks 1950-2017",
+          description: "Historical tornado tracks (polyline) with proximity up to 50 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Tornado_Tracks_1950_2017_1/FeatureServer/0"
+        },
+        {
           name: "USGS Earthquakes",
           description: "Historical earthquake events and seismic activity",
           coverage: "Global",

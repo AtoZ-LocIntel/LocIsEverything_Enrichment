@@ -15947,6 +15947,197 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('🌵 Error processing NWS Current Drought Conditions:', error);
       }
 
+      // Draw 2023 National Seismic Hazard Model polygons
+      try {
+        if (enrichments.national_seismic_hazard_2023_all && Array.isArray(enrichments.national_seismic_hazard_2023_all)) {
+          console.log(`🌍 Processing ${enrichments.national_seismic_hazard_2023_all.length} Seismic Hazard feature(s)`);
+          let seismicCount = 0;
+          const seismicColor = '#dc2626';
+          
+          enrichments.national_seismic_hazard_2023_all.forEach((feature: any, idx: number) => {
+            console.log(`🌍 MapView Feature ${idx}:`, {
+              hasGeometry: !!feature.geometry,
+              geometryKeys: feature.geometry ? Object.keys(feature.geometry) : [],
+              hasRings: !!(feature.geometry && feature.geometry.rings),
+              ringsLength: feature.geometry?.rings?.length,
+              spatialRef: feature.geometry?.spatialReference,
+              firstRingSample: feature.geometry?.rings?.[0]?.[0]
+            });
+            
+            if (feature.geometry) {
+              try {
+                const geom = feature.geometry;
+                let latlngs: [number, number][] = [];
+                
+                // Check if geometry has rings (polygon)
+                if (geom.rings && Array.isArray(geom.rings) && geom.rings.length > 0) {
+                  const rings = geom.rings;
+                  console.log(`🌍 Feature ${idx} has ${rings.length} ring(s) - drawing all rings as multipolygon`);
+                  
+                  // Check spatial reference - Web Mercator is 3857, WGS84 is 4326
+                  const spatialRef = geom.spatialReference;
+                  const isWebMercator = spatialRef?.wkid === 3857 || spatialRef?.latestWkid === 3857;
+                  
+                  // Process all rings - each ring becomes a polygon part
+                  const allPolygonParts: [number, number][][] = [];
+                  
+                  rings.forEach((ring: any, ringIdx: number) => {
+                    if (!ring || !Array.isArray(ring) || ring.length === 0) {
+                      return;
+                    }
+                    
+                    // Check coordinate values as fallback for first ring
+                    if (ringIdx === 0) {
+                      const firstCoord = ring[0];
+                      const coordIsWebMercator = firstCoord && Array.isArray(firstCoord) && 
+                        (Math.abs(firstCoord[0]) > 180 || Math.abs(firstCoord[1]) > 90);
+                      const needsConversion = isWebMercator || coordIsWebMercator;
+                      
+                      console.log(`🌍 Feature ${idx} coordinate conversion:`, {
+                        spatialRefWkid: spatialRef?.wkid,
+                        spatialRefLatestWkid: spatialRef?.latestWkid,
+                        isWebMercator,
+                        coordIsWebMercator,
+                        needsConversion
+                      });
+                    }
+                    
+                    const ringLatlngs = ring.map((coord: any, coordIdx: number) => {
+                      // Handle both [lon, lat] arrays and {x, y} objects
+                      let lon: number, lat: number;
+                      
+                      if (Array.isArray(coord) && coord.length >= 2) {
+                        lon = coord[0];
+                        lat = coord[1];
+                      } else if (coord && typeof coord === 'object' && 'x' in coord && 'y' in coord) {
+                        lon = coord.x;
+                        lat = coord.y;
+                      } else {
+                        return null;
+                      }
+                      
+                      // Validate coordinates are numbers
+                      if (typeof lon !== 'number' || typeof lat !== 'number' || 
+                          isNaN(lon) || isNaN(lat) || !isFinite(lon) || !isFinite(lat)) {
+                        return null;
+                      }
+                      
+                      let finalLat: number, finalLon: number;
+                      
+                      const firstCoord = ring[0];
+                      const coordIsWebMercator = firstCoord && Array.isArray(firstCoord) && 
+                        (Math.abs(firstCoord[0]) > 180 || Math.abs(firstCoord[1]) > 90);
+                      const needsConversion = isWebMercator || (spatialRef?.wkid === 3857 || spatialRef?.latestWkid === 3857);
+                      
+                      if (needsConversion) {
+                        // Convert from Web Mercator (3857) to WGS84 (4326)
+                        const lonDeg = (lon / 20037508.34) * 180;
+                        let latDeg = (lat / 20037508.34) * 180;
+                        latDeg = 180 / Math.PI * (2 * Math.atan(Math.exp(latDeg * Math.PI / 180)) - Math.PI / 2);
+                        finalLat = latDeg;
+                        finalLon = lonDeg;
+                      } else {
+                        // Already in WGS84 - ESRI format is [lon, lat], Leaflet needs [lat, lon]
+                        finalLat = lat;
+                        finalLon = lon;
+                      }
+                      
+                      // Final validation - ensure coordinates are in valid ranges
+                      if (finalLat < -90 || finalLat > 90 || finalLon < -180 || finalLon > 180) {
+                        return null;
+                      }
+                      
+                      return [finalLat, finalLon] as [number, number];
+                    }).filter((coord: any): coord is [number, number] => coord !== null);
+                    
+                    // Ensure ring is closed (first and last point should be the same)
+                    if (ringLatlngs.length >= 3) {
+                      const first = ringLatlngs[0];
+                      const last = ringLatlngs[ringLatlngs.length - 1];
+                      if (first[0] !== last[0] || first[1] !== last[1]) {
+                        ringLatlngs.push([first[0], first[1]]);
+                      }
+                      allPolygonParts.push(ringLatlngs);
+                    }
+                  });
+                  
+                  console.log(`🌍 Feature ${idx} processed ${allPolygonParts.length} valid ring(s) out of ${rings.length}`);
+                  
+                  if (allPolygonParts.length > 0) {
+                    // Draw as multipolygon (all rings together)
+                    const polygon = L.polygon(allPolygonParts, {
+                      color: seismicColor,
+                      weight: 3,
+                      opacity: 0.8,
+                      fillColor: seismicColor,
+                      fillOpacity: 0.3
+                    }).addTo(primary);
+                    
+                    // Make sure polygon is visible
+                    polygon.bringToFront();
+                    
+                    const attrs = feature.attributes || {};
+                    const mmi = attrs.MMI || attrs.mmi || attrs.low_c || 'N/A';
+                    const range = attrs.range_cont || attrs.range || '';
+                    const low = attrs.low_cont || attrs.low || '';
+                    const high = attrs.high_cont || attrs.high || '';
+                    
+                    const popupContent = `
+                      <div style="max-width: 300px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">Seismic Hazard Zone</h3>
+                        <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                          ${mmi ? `<p style="margin: 4px 0;"><strong>MMI:</strong> ${mmi}</p>` : ''}
+                          ${range ? `<p style="margin: 4px 0;"><strong>Range:</strong> ${range}</p>` : ''}
+                          ${low ? `<p style="margin: 4px 0;"><strong>Low:</strong> ${low}</p>` : ''}
+                          ${high ? `<p style="margin: 4px 0;"><strong>High:</strong> ${high}</p>` : ''}
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    
+                    // Extend map bounds to include this polygon
+                    try {
+                      const polygonBounds = polygon.getBounds();
+                      bounds.extend(polygonBounds);
+                      console.log(`🌍 Extended bounds to include multipolygon ${idx} with ${allPolygonParts.length} parts`);
+                    } catch (e) {
+                      console.warn(`🌍 Could not get bounds for multipolygon ${idx}:`, e);
+                    }
+                    
+                    seismicCount++;
+                    console.log(`🌍 Successfully drew multipolygon ${idx} with ${allPolygonParts.length} parts, visible: ${(polygon.options.opacity || 0) > 0}`);
+                  } else {
+                    console.warn(`🌍 Feature ${idx} has no valid rings after processing`);
+                  }
+                }
+              } catch (error) {
+                console.error(`🌍 Error drawing Seismic Hazard feature ${idx}:`, error, feature);
+              }
+            } else {
+              console.warn(`🌍 Feature ${idx} has no geometry:`, feature);
+            }
+          });
+          
+          if (seismicCount > 0) {
+            if (!legendAccumulator['national_seismic_hazard_2023']) {
+              legendAccumulator['national_seismic_hazard_2023'] = {
+                icon: '🌍',
+                color: seismicColor,
+                title: '2023 National Seismic Hazard Model',
+                count: 0
+              };
+            }
+            legendAccumulator['national_seismic_hazard_2023'].count += seismicCount;
+            console.log(`🌍 Successfully drew ${seismicCount} Seismic Hazard polygon(s)`);
+          } else {
+            console.warn(`🌍 No Seismic Hazard polygons drawn despite ${enrichments.national_seismic_hazard_2023_all.length} features`);
+          }
+        }
+      } catch (error) {
+        console.error('🌍 Error processing Seismic Hazard:', error);
+      }
+
       // Draw Chicago Speed Camera Locations as point markers
       try {
         if (enrichments.chicago_speed_cameras_all && Array.isArray(enrichments.chicago_speed_cameras_all)) {

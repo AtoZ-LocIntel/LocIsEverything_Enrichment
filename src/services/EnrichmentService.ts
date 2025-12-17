@@ -112,6 +112,8 @@ import { getNWSNDFDWindForecastData } from '../adapters/nwsNDFDWindForecast';
 import { getNWSNDFDGridForecastData } from '../adapters/nwsNDFDGridForecast';
 import { getLiveStreamGaugesData } from '../adapters/liveStreamGauges';
 import { getFemaNFHLData } from '../adapters/femaNFHL';
+import { getNationalSeismicHazardData } from '../adapters/nationalSeismicHazard';
+import { getTornadoTracksData } from '../adapters/tornadoTracks';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
@@ -2444,6 +2446,14 @@ export class EnrichmentService {
         return await this.getFemaNFHL(lat, lon, 31, 'FEMA Alluvial Fans', enrichmentId, false, 0);
       case 'fema_nfhl_subbasins':
         return await this.getFemaNFHL(lat, lon, 32, 'FEMA Subbasins', enrichmentId, false, 0);
+      
+      // 2023 National Seismic Hazard Model (polygon, p-i-p + proximity up to 50 miles)
+      case 'national_seismic_hazard_2023':
+        return await this.getNationalSeismicHazard(lat, lon, enrichmentId, '2023 National Seismic Hazard Model');
+      
+      // Tornado Tracks 1950-2017 (polyline, proximity up to 50 miles)
+      case 'tornado_tracks_1950_2017':
+        return await this.getTornadoTracks(lat, lon, enrichmentId, radius, 'Tornado Tracks 1950-2017');
       
       // Quirky & Fun - Median Sea Ice Extent
       case 'median_sea_ice_extent_antarctic':
@@ -11477,6 +11487,100 @@ out center;`;
 
     return result;
   }
+
+  private async getNationalSeismicHazard(
+    lat: number,
+    lon: number,
+    enrichmentId: string,
+    layerName = '2023 National Seismic Hazard Model'
+  ): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      [`${enrichmentId}_containing`]: [],
+      [`${enrichmentId}_nearby`]: [],
+      [`${enrichmentId}_all`]: [],
+      [`${enrichmentId}_count`]: 0,
+    };
+
+    try {
+      const features = await getNationalSeismicHazardData(lat, lon, layerName);
+      result[`${enrichmentId}_count`] = features.length;
+      result[`${enrichmentId}_all`] = features.map(f => ({
+        objectId: f.objectId,
+        attributes: f.attributes,
+        distance: f.distance,
+        containing: f.containing,
+        geometry: f.geometry,
+        layerName: f.layerName
+        // Note: Not including lat/lon to prevent point markers - only polygon geometry
+      }));
+
+      result[`${enrichmentId}_containing`] = features
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          geometry: f.geometry,
+          layerName: f.layerName
+          // Note: Not including lat/lon to prevent point markers - only polygon geometry
+        }));
+
+      // PIP only; no nearby bucket
+      delete result[`${enrichmentId}_nearby`];
+    } catch (error) {
+      console.error('Error fetching 2023 National Seismic Hazard Model:', error);
+    }
+
+    return result;
+  }
+
+  private async getTornadoTracks(
+    lat: number,
+    lon: number,
+    enrichmentId: string,
+    radius?: number,
+    layerName = 'Tornado Tracks 1950-2017'
+  ): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      [`${enrichmentId}_containing`]: [],
+      [`${enrichmentId}_nearby`]: [],
+      [`${enrichmentId}_all`]: [],
+      [`${enrichmentId}_count`]: 0,
+    };
+
+    try {
+      const cappedRadius = radius ? Math.min(radius, 50) : 50;
+      const features = await getTornadoTracksData(lat, lon, layerName, cappedRadius);
+      result[`${enrichmentId}_count`] = features.length;
+      result[`${enrichmentId}_all`] = features.map(f => ({
+        objectId: f.objectId,
+        attributes: f.attributes,
+        distance: f.distance,
+        containing: f.containing,
+        geometry: f.geometry,
+        lat: f.lat,
+        lon: f.lon,
+        layerName: f.layerName
+      }));
+
+      // Treat polyline proximity as nearby
+      result[`${enrichmentId}_nearby`] = features
+        .filter(f => f.distance !== undefined)
+        .map(f => ({
+          objectId: f.objectId,
+          attributes: f.attributes,
+          distance: f.distance,
+          geometry: f.geometry,
+          lat: f.lat,
+          lon: f.lon,
+          layerName: f.layerName
+        }));
+    } catch (error) {
+      console.error('Error fetching Tornado Tracks 1950-2017:', error);
+    }
+
+    return result;
+  }
+
 
   private async getChicagoBuildingFootprints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
