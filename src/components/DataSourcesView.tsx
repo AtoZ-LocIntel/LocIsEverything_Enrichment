@@ -2795,8 +2795,8 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "Arkansas Sources",
       sources: [
         {
-          name: "Sources Coming Soon...",
-          description: "State-specific data sources for Arkansas will be added in future updates",
+          name: "Open Data Sources Coming Soon!",
+          description: "We're working on adding data layers for this state. Check back soon for updates!",
           coverage: "Arkansas",
           accuracy: "N/A",
           cost: "N/A"
@@ -2867,8 +2867,8 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "Indiana Sources",
       sources: [
         {
-          name: "Sources Coming Soon...",
-          description: "State-specific data sources for Indiana will be added in future updates",
+          name: "Open Data Sources Coming Soon!",
+          description: "We're working on adding data layers for this state. Check back soon for updates!",
           coverage: "Indiana",
           accuracy: "N/A",
           cost: "N/A"
@@ -2903,8 +2903,8 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "Kentucky Sources",
       sources: [
         {
-          name: "Sources Coming Soon...",
-          description: "State-specific data sources for Kentucky will be added in future updates",
+          name: "Open Data Sources Coming Soon!",
+          description: "We're working on adding data layers for this state. Check back soon for updates!",
           coverage: "Kentucky",
           accuracy: "N/A",
           cost: "N/A"
@@ -2915,8 +2915,8 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "Louisiana Sources",
       sources: [
         {
-          name: "Sources Coming Soon...",
-          description: "State-specific data sources for Louisiana will be added in future updates",
+          name: "Open Data Sources Coming Soon!",
+          description: "We're working on adding data layers for this state. Check back soon for updates!",
           coverage: "Louisiana",
           accuracy: "N/A",
           cost: "N/A"
@@ -2987,8 +2987,8 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "Missouri Sources",
       sources: [
         {
-          name: "Sources Coming Soon...",
-          description: "State-specific data sources for Missouri will be added in future updates",
+          name: "Open Data Sources Coming Soon!",
+          description: "We're working on adding data layers for this state. Check back soon for updates!",
           coverage: "Missouri",
           accuracy: "N/A",
           cost: "N/A"

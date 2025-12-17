@@ -300,7 +300,7 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
   {
     id: 'mt',
     title: 'Montana Open Data',
-    description: 'Montana state open data services and layers',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
     icon: 'MT.webp'
   },
   {
@@ -342,31 +342,31 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
   {
     id: 'ar',
     title: 'Arkansas Open Data',
-    description: 'Sources Coming Soon',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
     icon: 'AR.webp'
   },
   {
     id: 'mo',
     title: 'Missouri Open Data',
-    description: 'Sources Coming Soon',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
     icon: 'MO.webp'
   },
   {
     id: 'in',
     title: 'Indiana Open Data',
-    description: 'Sources Coming Soon',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
     icon: 'IN.webp'
   },
   {
     id: 'la',
     title: 'Louisiana Open Data',
-    description: 'Sources Coming Soon',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
     icon: 'LA.webp'
   },
   {
     id: 'ky',
     title: 'Kentucky Open Data',
-    description: 'Sources Coming Soon',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
     icon: 'KY.webp'
   }
 ];
