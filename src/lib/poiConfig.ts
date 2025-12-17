@@ -338,6 +338,36 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'Illinois Open Data',
     description: 'Illinois state open data services and layers',
     icon: 'IL.webp'
+  },
+  {
+    id: 'ar',
+    title: 'Arkansas Open Data',
+    description: 'Sources Coming Soon',
+    icon: 'AR.webp'
+  },
+  {
+    id: 'mo',
+    title: 'Missouri Open Data',
+    description: 'Sources Coming Soon',
+    icon: 'MO.webp'
+  },
+  {
+    id: 'in',
+    title: 'Indiana Open Data',
+    description: 'Sources Coming Soon',
+    icon: 'IN.webp'
+  },
+  {
+    id: 'la',
+    title: 'Louisiana Open Data',
+    description: 'Sources Coming Soon',
+    icon: 'LA.webp'
+  },
+  {
+    id: 'ky',
+    title: 'Kentucky Open Data',
+    description: 'Sources Coming Soon',
+    icon: 'KY.webp'
   }
 ];
 

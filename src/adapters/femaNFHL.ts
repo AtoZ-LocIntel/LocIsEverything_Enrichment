@@ -84,18 +84,22 @@ export async function getFemaNFHLData(
       let distance: number | undefined;
       let containing: boolean | undefined;
 
-      if (isPointLayer && geom && geom.x !== undefined && geom.y !== undefined) {
+      if (isPointLayer && geom && typeof geom.x === 'number' && typeof geom.y === 'number') {
         lonVal = geom.x;
         latVal = geom.y;
-        distance = haversineDistance(lat, lon, latVal, lonVal);
-        containing = distance < 0.01;
+        if (latVal !== undefined && lonVal !== undefined) {
+          distance = haversineDistance(lat, lon, latVal, lonVal);
+          containing = distance < 0.01;
+        }
       } else if (isLineProximity && geom && Array.isArray(geom.paths)) {
         const cent = centroidFromPaths(geom.paths);
         if (cent) {
           latVal = cent.lat;
           lonVal = cent.lon;
-          distance = haversineDistance(lat, lon, latVal, lonVal);
-          containing = false;
+          if (latVal !== undefined && lonVal !== undefined) {
+            distance = haversineDistance(lat, lon, latVal, lonVal);
+            containing = false;
+          }
         }
       }
 
