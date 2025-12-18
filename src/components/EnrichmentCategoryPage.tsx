@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Settings, Check, Search, X } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
@@ -41,8 +41,6 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   onBackToConfig
 }) => {
   const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
-  const headerRef = useRef<HTMLElement>(null);
-  const [headerHeight, setHeaderHeight] = useState<number>(0);
   
   // Filter enrichments based on search query
   const filteredEnrichments = useMemo(() => {
@@ -105,18 +103,6 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
     }, 100);
   }, []);
 
-  // Measure sticky header height so the first layer card isn't hidden under it on mobile.
-  useLayoutEffect(() => {
-    const measure = () => {
-      const h = headerRef.current?.getBoundingClientRect().height ?? 0;
-      setHeaderHeight(h);
-    };
-
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [category.id, filteredEnrichments.length, selectedCount, layerSearchQuery]);
-
   // Get category header color
   const getCategoryColor = () => {
     const colorMap: Record<string, string> = {
@@ -154,10 +140,11 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   };
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
+    // Single scroll container: makes the sticky header and the list share the same scroll context,
+    // preventing the first layer from sliding underneath the header.
+    <div className="h-screen bg-black text-white flex flex-col overflow-y-auto">
       {/* Header */}
       <header 
-        ref={headerRef}
         className="border-b border-gray-800 px-4 py-4 flex-shrink-0 sticky top-0 z-30"
         style={{ backgroundColor: getCategoryColor() }}
       >
@@ -206,15 +193,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
       {/* Content - Mobile Optimized Scrollable */}
       <main
-        className="flex-1 overflow-y-auto px-4 py-4 min-h-0"
-        style={{
-          WebkitOverflowScrolling: 'touch',
-          touchAction: 'pan-y',
-          // Ensure the very first item is fully visible below the sticky header.
-          // Padding pushes content down; scrollPaddingTop ensures scroll-to behavior doesn't land under header.
-          paddingTop: headerHeight ? headerHeight + 16 : undefined,
-          scrollPaddingTop: headerHeight ? headerHeight + 16 : undefined,
-        }}
+        className="flex-1 px-4 py-4 min-h-0"
       >
         <div className="max-w-xl mx-auto space-y-4">
           {/* Category Description (hide on mobile to avoid search overlap) */}

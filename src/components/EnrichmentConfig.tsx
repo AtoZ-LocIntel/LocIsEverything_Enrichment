@@ -1023,7 +1023,21 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             {
               id: 'ukstats',
               title: 'UK Office for National Statistics',
-              icon: <img src="/assets/UKstats.webp" alt="UK Office for National Statistics" className="w-full h-full object-cover rounded-full" />,
+              // NOTE: Vercel/Linux is case-sensitive. Some environments historically referenced `UKStats.webp`.
+              // We try `/assets/UKstats.webp` first, then fall back to `/assets/UKStats.webp` on error.
+              icon: (
+                <img
+                  src="/assets/UKstats.webp"
+                  alt="UK Office for National Statistics"
+                  className="w-full h-full object-cover rounded-full"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (img.src.includes('/assets/UKstats.webp')) {
+                      img.src = '/assets/UKStats.webp';
+                    }
+                  }}
+                />
+              ),
               description: 'UK Office for National Statistics data layers',
               enrichments: ukstatsEnrichments
             }
