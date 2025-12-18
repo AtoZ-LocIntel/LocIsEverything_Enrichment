@@ -1277,6 +1277,22 @@ const MapView: React.FC<MapViewProps> = ({
   const [selectedBasemap, setSelectedBasemap] = useState<string>('liberty');
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
 
+  // MapLibre (OpenFreeMap) basemap needs explicit resize calls on mobile after Leaflet container size changes.
+  const resizeMaplibreBasemap = () => {
+    try {
+      const layer: any = basemapLayerRef.current;
+      const ml =
+        (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
+        layer?._maplibreMap ||
+        layer?._map;
+      if (ml && typeof ml.resize === 'function') {
+        ml.resize();
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) {
       return;
@@ -1372,21 +1388,6 @@ const MapView: React.FC<MapViewProps> = ({
         interactive: false, // Leaflet handles interactions
       }).addTo(map);
       basemapLayerRef.current = basemapLayer;
-
-      const resizeMaplibreBasemap = () => {
-        try {
-          const layer: any = basemapLayerRef.current;
-          const ml =
-            (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
-            layer?._maplibreMap ||
-            layer?._map;
-          if (ml && typeof ml.resize === 'function') {
-            ml.resize();
-          }
-        } catch {
-          // ignore
-        }
-      };
       
       // Force immediate tile loading on mobile
       if (isMobile) {
@@ -1397,6 +1398,7 @@ const MapView: React.FC<MapViewProps> = ({
           // Critical for MapLibre basemaps on mobile: ensure WebGL canvas resizes after Leaflet invalidation.
           resizeMaplibreBasemap();
           setTimeout(resizeMaplibreBasemap, 50);
+          setTimeout(resizeMaplibreBasemap, 250);
         });
       }
 
@@ -1432,6 +1434,7 @@ const MapView: React.FC<MapViewProps> = ({
             mapRef.current.style.left = '0';
             mapRef.current.style.touchAction = 'pan-x pan-y pinch-zoom';
             mapInstanceRef.current.invalidateSize(true);
+            resizeMaplibreBasemap();
           }
         });
         
@@ -1446,6 +1449,7 @@ const MapView: React.FC<MapViewProps> = ({
             mapRef.current.style.position = 'relative';
             mapRef.current.style.touchAction = 'pan-x pan-y pinch-zoom';
             mapInstanceRef.current.invalidateSize(true);
+            resizeMaplibreBasemap();
             
             // Note: MapLibre GL basemap doesn't expose Leaflet TileLayer redraw()
             
@@ -1457,6 +1461,7 @@ const MapView: React.FC<MapViewProps> = ({
                 { animate: false }
               );
             }
+            resizeMaplibreBasemap();
             setIsMapReady(true);
           }
         }, 500);
@@ -1505,6 +1510,9 @@ const MapView: React.FC<MapViewProps> = ({
             }
             // Critical: invalidateSize again after delay to ensure proper rendering
             mapInstanceRef.current.invalidateSize(true);
+            resizeMaplibreBasemap();
+            setTimeout(resizeMaplibreBasemap, 50);
+            setTimeout(resizeMaplibreBasemap, 250);
             
             // Center map on geocoded location if we have results
             if (results && results.length > 0 && results[0]?.location) {
