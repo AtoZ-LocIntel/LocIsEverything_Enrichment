@@ -523,7 +523,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       
       let category = 'Other';
       
-      if (key.includes('elev') || key.includes('elevation')) {
+      // National Risk Index (NRI) annualized frequency layers should always be categorized as Natural Hazards
+      // (tract keys contain "census" which would otherwise match Demographics & Census)
+      if (key.includes('nri_') && key.includes('annualized_frequency')) {
+        category = 'Natural Hazards';
+      } else if (key.includes('elev') || key.includes('elevation')) {
         category = 'Elevation & Terrain';
       } else if (key.includes('airq') || key.includes('air_quality')) {
         category = 'Air Quality';

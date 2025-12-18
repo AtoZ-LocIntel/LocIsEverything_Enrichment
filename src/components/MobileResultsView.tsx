@@ -232,6 +232,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   };
 
   const getEnrichmentCategory = (key: string): string => {
+    // National Risk Index (NRI) annualized frequency layers - treat as Natural Hazards
+    if (key.includes('nri_') && key.includes('annualized_frequency')) {
+      return 'Natural Hazards';
+    }
+
     // Geographic Information
     if (key.includes('elevation') || key.includes('fips_') || key.includes('county_') || key.includes('state_') || key.includes('census_') || key.includes('city_') || key.includes('urban_area_') || key.includes('metro_area_') || key.includes('subdivision_')) {
       return 'Geographic Info';

@@ -794,6 +794,188 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
 
   // Add all POI data as individual rows
   Object.entries(enrichments).forEach(([key, value]) => {
+    // NRI Hurricane Annualized Frequency - County (polygons)
+    if (key === 'nri_hurricane_annualized_frequency_county_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_HURRICANE_ANNUALIZED_FREQUENCY_COUNTY',
+          `County (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing County' : `Nearby County (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Hurricane Annualized Frequency - Census Tract (polygons)
+    if (key === 'nri_hurricane_annualized_frequency_census_tract_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_HURRICANE_ANNUALIZED_FREQUENCY_CENSUS_TRACT',
+          `Census Tract (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing Tract' : `Nearby Tract (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Hail Annualized Frequency - County (polygons)
+    if (key === 'nri_hail_annualized_frequency_county_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_HAIL_ANNUALIZED_FREQUENCY_COUNTY',
+          `County (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing County' : `Nearby County (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Hail Annualized Frequency - Census Tract (polygons)
+    if (key === 'nri_hail_annualized_frequency_census_tract_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_HAIL_ANNUALIZED_FREQUENCY_CENSUS_TRACT',
+          `Census Tract (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing Tract' : `Nearby Tract (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Tornado Annualized Frequency - County (polygons)
+    if (key === 'nri_tornado_annualized_frequency_county_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_TORNADO_ANNUALIZED_FREQUENCY_COUNTY',
+          `County (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing County' : `Nearby County (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Tornado Annualized Frequency - Census Tract (polygons)
+    if (key === 'nri_tornado_annualized_frequency_census_tract_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_TORNADO_ANNUALIZED_FREQUENCY_CENSUS_TRACT',
+          `Census Tract (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing Tract' : `Nearby Tract (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
     // Tornado Tracks 1950-2017 (polyline dataset) - export each track as its own row with full attributes
     if (key === 'tornado_tracks_1950_2017_all' && Array.isArray(value)) {
       value.forEach((track: any) => {

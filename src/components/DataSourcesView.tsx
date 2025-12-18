@@ -510,6 +510,54 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Tornado_Tracks_1950_2017_1/FeatureServer/0"
         },
         {
+          name: "National Risk Index (NRI) Annualized Frequency Hurricane - County",
+          description: "FEMA National Risk Index - Annualized frequency of hurricane events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Hurricane/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Hurricane - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of hurricane events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Hurricane/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Hail - County",
+          description: "FEMA National Risk Index - Annualized frequency of hail events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Hail/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Hail - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of hail events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Hail/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Tornado - County",
+          description: "FEMA National Risk Index - Annualized frequency of tornado events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Tornado/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Tornado - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of tornado events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Tornado/FeatureServer/1"
+        },
+        {
           name: "USGS Earthquakes",
           description: "Historical earthquake events and seismic activity",
           coverage: "Global",

@@ -114,6 +114,14 @@ import { getLiveStreamGaugesData } from '../adapters/liveStreamGauges';
 import { getFemaNFHLData } from '../adapters/femaNFHL';
 import { getNationalSeismicHazardData } from '../adapters/nationalSeismicHazard';
 import { getTornadoTracksData } from '../adapters/tornadoTracks';
+import {
+  getNRICountyHurricaneAnnualizedFrequency,
+  getNRICensusTractHurricaneAnnualizedFrequency,
+  getNRICountyHailAnnualizedFrequency,
+  getNRICensusTractHailAnnualizedFrequency,
+  getNRICountyTornadoAnnualizedFrequency,
+  getNRICensusTractTornadoAnnualizedFrequency,
+} from '../adapters/nriAnnualizedFrequencyHurricane';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
@@ -2454,6 +2462,105 @@ export class EnrichmentService {
       // Tornado Tracks 1950-2017 (polyline, proximity up to 50 miles)
       case 'tornado_tracks_1950_2017':
         return await this.getTornadoTracks(lat, lon, enrichmentId, radius, 'Tornado Tracks 1950-2017');
+
+      // National Risk Index (NRI) - Annualized Frequency Hurricane (polygons)
+      case 'nri_hurricane_annualized_frequency_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyHurricaneAnnualizedFrequency(lat, lon, cappedRadius);
+        return {
+          nri_hurricane_annualized_frequency_county_count: all.length,
+          nri_hurricane_annualized_frequency_county_containing: containing,
+          nri_hurricane_annualized_frequency_county_nearby: nearby,
+          nri_hurricane_annualized_frequency_county_all: all,
+          nri_hurricane_annualized_frequency_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hurricane Annualized Frequency (County) area(s).`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hurricane Annualized Frequency (County) area(s) within ${cappedRadius} miles.`
+              : `No NRI Hurricane Annualized Frequency (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_hurricane_annualized_frequency_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractHurricaneAnnualizedFrequency(lat, lon, cappedRadius);
+        return {
+          nri_hurricane_annualized_frequency_census_tract_count: all.length,
+          nri_hurricane_annualized_frequency_census_tract_containing: containing,
+          nri_hurricane_annualized_frequency_census_tract_nearby: nearby,
+          nri_hurricane_annualized_frequency_census_tract_all: all,
+          nri_hurricane_annualized_frequency_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hurricane Annualized Frequency (Census Tract) area(s).`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hurricane Annualized Frequency (Census Tract) area(s) within ${cappedRadius} miles.`
+              : `No NRI Hurricane Annualized Frequency (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      // National Risk Index (NRI) - Annualized Frequency Hail (polygons)
+      case 'nri_hail_annualized_frequency_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyHailAnnualizedFrequency(lat, lon, cappedRadius);
+        return {
+          nri_hail_annualized_frequency_county_count: all.length,
+          nri_hail_annualized_frequency_county_containing: containing,
+          nri_hail_annualized_frequency_county_nearby: nearby,
+          nri_hail_annualized_frequency_county_all: all,
+          nri_hail_annualized_frequency_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hail Annualized Frequency (County) area(s).`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hail Annualized Frequency (County) area(s) within ${cappedRadius} miles.`
+              : `No NRI Hail Annualized Frequency (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_hail_annualized_frequency_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractHailAnnualizedFrequency(lat, lon, cappedRadius);
+        return {
+          nri_hail_annualized_frequency_census_tract_count: all.length,
+          nri_hail_annualized_frequency_census_tract_containing: containing,
+          nri_hail_annualized_frequency_census_tract_nearby: nearby,
+          nri_hail_annualized_frequency_census_tract_all: all,
+          nri_hail_annualized_frequency_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hail Annualized Frequency (Census Tract) area(s).`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hail Annualized Frequency (Census Tract) area(s) within ${cappedRadius} miles.`
+              : `No NRI Hail Annualized Frequency (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      // National Risk Index (NRI) - Annualized Frequency Tornado (polygons)
+      case 'nri_tornado_annualized_frequency_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyTornadoAnnualizedFrequency(lat, lon, cappedRadius);
+        return {
+          nri_tornado_annualized_frequency_county_count: all.length,
+          nri_tornado_annualized_frequency_county_containing: containing,
+          nri_tornado_annualized_frequency_county_nearby: nearby,
+          nri_tornado_annualized_frequency_county_all: all,
+          nri_tornado_annualized_frequency_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tornado Annualized Frequency (County) area(s).`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tornado Annualized Frequency (County) area(s) within ${cappedRadius} miles.`
+              : `No NRI Tornado Annualized Frequency (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_tornado_annualized_frequency_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractTornadoAnnualizedFrequency(lat, lon, cappedRadius);
+        return {
+          nri_tornado_annualized_frequency_census_tract_count: all.length,
+          nri_tornado_annualized_frequency_census_tract_containing: containing,
+          nri_tornado_annualized_frequency_census_tract_nearby: nearby,
+          nri_tornado_annualized_frequency_census_tract_all: all,
+          nri_tornado_annualized_frequency_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tornado Annualized Frequency (Census Tract) area(s).`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tornado Annualized Frequency (Census Tract) area(s) within ${cappedRadius} miles.`
+              : `No NRI Tornado Annualized Frequency (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
       
       // Quirky & Fun - Median Sea Ice Extent
       case 'median_sea_ice_extent_antarctic':

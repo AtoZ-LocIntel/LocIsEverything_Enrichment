@@ -26350,6 +26350,113 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing Tornado Tracks:', error);
       }
 
+      // Draw NRI Hurricane Annualized Frequency layers (County + Census Tract) as polygons
+      try {
+        const nriLayers = [
+          {
+            key: 'nri_hurricane_annualized_frequency_county_all',
+            title: 'NRI Hurricane Annualized Frequency (County)',
+            icon: '🌀',
+            color: '#2563eb',
+            legendKey: 'nri_hurricane_annualized_frequency_county',
+          },
+          {
+            key: 'nri_hurricane_annualized_frequency_census_tract_all',
+            title: 'NRI Hurricane Annualized Frequency (Census Tract)',
+            icon: '🌀',
+            color: '#1d4ed8',
+            legendKey: 'nri_hurricane_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_hail_annualized_frequency_county_all',
+            title: 'NRI Hail Annualized Frequency (County)',
+            icon: '🌨️',
+            color: '#0ea5e9',
+            legendKey: 'nri_hail_annualized_frequency_county',
+          },
+          {
+            key: 'nri_hail_annualized_frequency_census_tract_all',
+            title: 'NRI Hail Annualized Frequency (Census Tract)',
+            icon: '🌨️',
+            color: '#0284c7',
+            legendKey: 'nri_hail_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_tornado_annualized_frequency_county_all',
+            title: 'NRI Tornado Annualized Frequency (County)',
+            icon: '🌪️',
+            color: '#7c3aed',
+            legendKey: 'nri_tornado_annualized_frequency_county',
+          },
+          {
+            key: 'nri_tornado_annualized_frequency_census_tract_all',
+            title: 'NRI Tornado Annualized Frequency (Census Tract)',
+            icon: '🌪️',
+            color: '#6d28d9',
+            legendKey: 'nri_tornado_annualized_frequency_census_tract',
+          },
+        ];
+
+        nriLayers.forEach(({ key, title, icon, color, legendKey }) => {
+          if (!enrichments[key] || !Array.isArray(enrichments[key])) return;
+
+          let count = 0;
+          (enrichments[key] as any[]).forEach((feature: any) => {
+            const geometry = feature?.geometry || feature?.__geometry;
+            if (!geometry || !Array.isArray(geometry.rings)) return;
+
+            try {
+              geometry.rings.forEach((ring: number[][]) => {
+                if (!Array.isArray(ring) || ring.length < 3) return;
+                const latlngs = ring
+                  .filter((coord: any) => Array.isArray(coord) && coord.length >= 2)
+                  .map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                if (latlngs.length < 3) return;
+
+                count++;
+                const polygon = L.polygon(latlngs, {
+                  color,
+                  weight: 2,
+                  opacity: 0.9,
+                  fillColor: color,
+                  fillOpacity: 0.15,
+                });
+
+                const attrs = feature?.attributes || {};
+                const distance = feature?.distance_miles;
+                const popupContent = `
+                  <div style="max-width: 360px;">
+                    <div style="font-weight: 700; margin-bottom: 6px;">${icon} ${title}</div>
+                    ${distance !== undefined && distance !== null ? `<div><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    <div style="margin-top: 6px; font-size: 12px; color: #374151;">
+                      <strong>Attributes:</strong>
+                      <pre style="white-space: pre-wrap; word-break: break-word; margin: 6px 0 0 0;">${JSON.stringify(attrs, null, 2)}</pre>
+                    </div>
+                  </div>
+                `;
+                polygon.bindPopup(popupContent, { maxWidth: 420 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+              });
+            } catch (e) {
+              console.error('Error drawing NRI polygon:', e);
+            }
+          });
+
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon,
+              color,
+              title,
+              count: 0,
+            };
+          }
+          legendAccumulator[legendKey].count += count;
+        });
+      } catch (error) {
+        console.error('Error processing NRI Hurricane layers:', error);
+      }
+
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)
       Object.entries(enrichments).forEach(([key, value]) => {
@@ -26449,6 +26556,18 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Tornado tracks are polylines; never render them as generic point markers.
         if (baseKey === 'tornado_tracks_1950_2017') {
+          return;
+        }
+
+        // NRI hurricane layers are polygons; never render them as generic point markers.
+        if (
+          baseKey === 'nri_hurricane_annualized_frequency_county' ||
+          baseKey === 'nri_hurricane_annualized_frequency_census_tract' ||
+          baseKey === 'nri_hail_annualized_frequency_county' ||
+          baseKey === 'nri_hail_annualized_frequency_census_tract' ||
+          baseKey === 'nri_tornado_annualized_frequency_county' ||
+          baseKey === 'nri_tornado_annualized_frequency_census_tract'
+        ) {
           return;
         }
 
