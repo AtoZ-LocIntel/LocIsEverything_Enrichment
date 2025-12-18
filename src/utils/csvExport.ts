@@ -976,6 +976,254 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       return;
     }
 
+    // NRI Earthquake Annualized Frequency - County (polygons)
+    if (key === 'nri_earthquake_annualized_frequency_county_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_EARTHQUAKE_ANNUALIZED_FREQUENCY_COUNTY',
+          `County (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing County' : `Nearby County (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Earthquake Annualized Frequency - Census Tract (polygons)
+    if (key === 'nri_earthquake_annualized_frequency_census_tract_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_EARTHQUAKE_ANNUALIZED_FREQUENCY_CENSUS_TRACT',
+          `Census Tract (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing Tract' : `Nearby Tract (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Drought Annualized Frequency - County (polygons)
+    if (key === 'nri_drought_annualized_frequency_county_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_DROUGHT_ANNUALIZED_FREQUENCY_COUNTY',
+          `County (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing County' : `Nearby County (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Drought Annualized Frequency - Census Tract (polygons)
+    if (key === 'nri_drought_annualized_frequency_census_tract_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_DROUGHT_ANNUALIZED_FREQUENCY_CENSUS_TRACT',
+          `Census Tract (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing Tract' : `Nearby Tract (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Wildfire Annualized Frequency - County (polygons)
+    if (key === 'nri_wildfire_annualized_frequency_county_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_WILDFIRE_ANNUALIZED_FREQUENCY_COUNTY',
+          `County (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing County' : `Nearby County (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NRI Wildfire Annualized Frequency - Census Tract (polygons)
+    if (key === 'nri_wildfire_annualized_frequency_census_tract_all' && Array.isArray(value)) {
+      value.forEach((feat: any) => {
+        const attrs = feat?.attributes || feat || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+        const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+          ? Number(feat.distance_miles).toFixed(2)
+          : (feat.isContaining ? '0.00' : '');
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FEMA National Risk Index (ArcGIS)',
+          (location.confidence || 'N/A').toString(),
+          'NRI_WILDFIRE_ANNUALIZED_FREQUENCY_CENSUS_TRACT',
+          `Census Tract (ID ${objectId})`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          'Natural Hazards',
+          feat.isContaining ? 'Containing Tract' : `Nearby Tract (${distance} miles)`,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // Helper function to add NRI Annualized Frequency CSV rows
+    const addNriAfreqRows = (keyPrefix: string, hazardName: string, layerType: 'County' | 'Census Tract') => {
+      const countyKey = `${keyPrefix}_county_all`;
+      const tractKey = `${keyPrefix}_census_tract_all`;
+      const targetKey = layerType === 'County' ? countyKey : tractKey;
+      const codePrefix = keyPrefix.toUpperCase().replace(/_/g, '_');
+      const codeSuffix = layerType === 'County' ? 'COUNTY' : 'CENSUS_TRACT';
+      const entityName = layerType === 'County' ? 'County' : 'Census Tract';
+      const containingText = layerType === 'County' ? 'Containing County' : 'Containing Tract';
+      const nearbyText = layerType === 'County' ? 'Nearby County' : 'Nearby Tract';
+
+      if (key === targetKey && Array.isArray(value)) {
+        value.forEach((feat: any) => {
+          const attrs = feat?.attributes || feat || {};
+          const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || feat.objectId || 'Unknown';
+          const distance = feat.distance_miles !== null && feat.distance_miles !== undefined
+            ? Number(feat.distance_miles).toFixed(2)
+            : (feat.isContaining ? '0.00' : '');
+          const attributesJson = JSON.stringify(attrs);
+          rows.push([
+            location.name,
+            location.lat.toString(),
+            location.lon.toString(),
+            'FEMA National Risk Index (ArcGIS)',
+            (location.confidence || 'N/A').toString(),
+            `NRI_${codePrefix}_${codeSuffix}`,
+            `${entityName} (ID ${objectId})`,
+            location.lat.toString(),
+            location.lon.toString(),
+            distance,
+            'Natural Hazards',
+            feat.isContaining ? containingText : `${nearbyText} (${distance} miles)`,
+            '',
+            attributesJson,
+            'ArcGIS FeatureServer'
+          ]);
+        });
+        return true;
+      }
+      return false;
+    };
+
+    // Add all 24 new NRI Annualized Frequency layers
+    if (addNriAfreqRows('nri_lightning_annualized_frequency', 'Lightning', 'County')) return;
+    if (addNriAfreqRows('nri_lightning_annualized_frequency', 'Lightning', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_ice_storm_annualized_frequency', 'Ice Storm', 'County')) return;
+    if (addNriAfreqRows('nri_ice_storm_annualized_frequency', 'Ice Storm', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_coastal_flooding_annualized_frequency', 'Coastal Flooding', 'County')) return;
+    if (addNriAfreqRows('nri_coastal_flooding_annualized_frequency', 'Coastal Flooding', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_riverine_flooding_annualized_frequency', 'Riverine Flooding', 'County')) return;
+    if (addNriAfreqRows('nri_riverine_flooding_annualized_frequency', 'Riverine Flooding', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_landslide_annualized_frequency', 'Landslide', 'County')) return;
+    if (addNriAfreqRows('nri_landslide_annualized_frequency', 'Landslide', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_strong_wind_annualized_frequency', 'Strong Wind', 'County')) return;
+    if (addNriAfreqRows('nri_strong_wind_annualized_frequency', 'Strong Wind', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_winter_weather_annualized_frequency', 'Winter Weather', 'County')) return;
+    if (addNriAfreqRows('nri_winter_weather_annualized_frequency', 'Winter Weather', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_cold_wave_annualized_frequency', 'Cold Wave', 'County')) return;
+    if (addNriAfreqRows('nri_cold_wave_annualized_frequency', 'Cold Wave', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_heat_wave_annualized_frequency', 'Heat Wave', 'County')) return;
+    if (addNriAfreqRows('nri_heat_wave_annualized_frequency', 'Heat Wave', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_avalanche_annualized_frequency', 'Avalanche', 'County')) return;
+    if (addNriAfreqRows('nri_avalanche_annualized_frequency', 'Avalanche', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_tsunami_annualized_frequency', 'Tsunami', 'County')) return;
+    if (addNriAfreqRows('nri_tsunami_annualized_frequency', 'Tsunami', 'Census Tract')) return;
+    if (addNriAfreqRows('nri_volcanic_activity_annualized_frequency', 'Volcanic Activity', 'County')) return;
+    if (addNriAfreqRows('nri_volcanic_activity_annualized_frequency', 'Volcanic Activity', 'Census Tract')) return;
+
     // Tornado Tracks 1950-2017 (polyline dataset) - export each track as its own row with full attributes
     if (key === 'tornado_tracks_1950_2017_all' && Array.isArray(value)) {
       value.forEach((track: any) => {

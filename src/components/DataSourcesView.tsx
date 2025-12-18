@@ -558,6 +558,246 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Tornado/FeatureServer/1"
         },
         {
+          name: "National Risk Index (NRI) Annualized Frequency Earthquake - County",
+          description: "FEMA National Risk Index - Annualized frequency of earthquake events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Earthquake/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Earthquake - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of earthquake events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Earthquake/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Drought - County",
+          description: "FEMA National Risk Index - Annualized frequency of drought events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Drought/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Drought - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of drought events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Drought/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Wildfire - County",
+          description: "FEMA National Risk Index - Annualized frequency of wildfire events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Wildfire/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Wildfire - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of wildfire events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Wildfire/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Lightning - County",
+          description: "FEMA National Risk Index - Annualized frequency of lightning events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Lightning/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Lightning - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of lightning events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Lightning/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Ice Storm - County",
+          description: "FEMA National Risk Index - Annualized frequency of ice storm events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Ice_Storm/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Ice Storm - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of ice storm events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Ice_Storm/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Coastal Flooding - County",
+          description: "FEMA National Risk Index - Annualized frequency of coastal flooding events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Coastal_Flooding/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Coastal Flooding - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of coastal flooding events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Coastal_Flooding/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Riverine Flooding - County",
+          description: "FEMA National Risk Index - Annualized frequency of riverine flooding events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Riverine_Flooding/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Riverine Flooding - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of riverine flooding events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Riverine_Flooding/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Landslide - County",
+          description: "FEMA National Risk Index - Annualized frequency of landslide events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Landslide/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Landslide - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of landslide events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Landslide/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Strong Wind - County",
+          description: "FEMA National Risk Index - Annualized frequency of strong wind events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Strong_Wind/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Strong Wind - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of strong wind events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Strong_Wind/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Winter Weather - County",
+          description: "FEMA National Risk Index - Annualized frequency of winter weather events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Winter_Weather/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Winter Weather - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of winter weather events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Winter_Weather/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Cold Wave - County",
+          description: "FEMA National Risk Index - Annualized frequency of cold wave events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Cold_Wave/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Cold Wave - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of cold wave events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Cold_Wave/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Heat Wave - County",
+          description: "FEMA National Risk Index - Annualized frequency of heat wave events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Heat_Wave/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Heat Wave - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of heat wave events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Heat_Wave/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Avalanche - County",
+          description: "FEMA National Risk Index - Annualized frequency of avalanche events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Avalanche/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Avalanche - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of avalanche events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Avalanche/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Tsunami - County",
+          description: "FEMA National Risk Index - Annualized frequency of tsunami events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Tsunami/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Tsunami - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of tsunami events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Tsunami/FeatureServer/1"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Volcanic Activity - County",
+          description: "FEMA National Risk Index - Annualized frequency of volcanic activity events (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Volcanic_Activity/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Volcanic Activity - Census Tract",
+          description: "FEMA National Risk Index - Annualized frequency of volcanic activity events (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Volcanic_Activity/FeatureServer/1"
+        },
+        {
           name: "USGS Earthquakes",
           description: "Historical earthquake events and seismic activity",
           coverage: "Global",

@@ -18,6 +18,51 @@ const HAIL_SERVICE_BASE =
 const TORNADO_SERVICE_BASE =
   'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Tornado/FeatureServer';
 
+const EARTHQUAKE_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Earthquake/FeatureServer';
+
+const DROUGHT_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Drought/FeatureServer';
+
+const WILDFIRE_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Wildfire/FeatureServer';
+
+const LIGHTNING_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Lightning/FeatureServer';
+
+const ICE_STORM_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Ice_Storm/FeatureServer';
+
+const COASTAL_FLOODING_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Coastal_Flooding/FeatureServer';
+
+const RIVERINE_FLOODING_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Riverine_Flooding/FeatureServer';
+
+const LANDSLIDE_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Landslide/FeatureServer';
+
+const STRONG_WIND_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Strong_Wind/FeatureServer';
+
+const WINTER_WEATHER_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Winter_Weather/FeatureServer';
+
+const COLD_WAVE_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Cold_Wave/FeatureServer';
+
+const HEAT_WAVE_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Heat_Wave/FeatureServer';
+
+const AVALANCHE_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Avalanche/FeatureServer';
+
+const TSUNAMI_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Tsunami/FeatureServer';
+
+const VOLCANIC_ACTIVITY_SERVICE_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Volcanic_Activity/FeatureServer';
+
 function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3959;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -281,6 +326,351 @@ export async function getNRICensusTractTornadoAnnualizedFrequency(lat: number, l
     radiusMiles,
     10,
     'NRI Annualized Frequency Tornado (Census Tract)'
+  );
+}
+
+// Earthquake
+export async function getNRICountyEarthquakeAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    EARTHQUAKE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Earthquake (County)'
+  );
+}
+
+export async function getNRICensusTractEarthquakeAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    EARTHQUAKE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Earthquake (Census Tract)'
+  );
+}
+
+// Drought
+export async function getNRICountyDroughtAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    DROUGHT_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Drought (County)'
+  );
+}
+
+export async function getNRICensusTractDroughtAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    DROUGHT_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Drought (Census Tract)'
+  );
+}
+
+// Wildfire
+export async function getNRICountyWildfireAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    WILDFIRE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Wildfire (County)'
+  );
+}
+
+export async function getNRICensusTractWildfireAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    WILDFIRE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Wildfire (Census Tract)'
+  );
+}
+
+// Lightning
+export async function getNRICountyLightningAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    LIGHTNING_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Lightning (County)'
+  );
+}
+
+export async function getNRICensusTractLightningAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    LIGHTNING_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Lightning (Census Tract)'
+  );
+}
+
+// Ice Storm
+export async function getNRICountyIceStormAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    ICE_STORM_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Ice Storm (County)'
+  );
+}
+
+export async function getNRICensusTractIceStormAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    ICE_STORM_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Ice Storm (Census Tract)'
+  );
+}
+
+// Coastal Flooding
+export async function getNRICountyCoastalFloodingAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    COASTAL_FLOODING_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Coastal Flooding (County)'
+  );
+}
+
+export async function getNRICensusTractCoastalFloodingAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    COASTAL_FLOODING_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Coastal Flooding (Census Tract)'
+  );
+}
+
+// Riverine Flooding
+export async function getNRICountyRiverineFloodingAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    RIVERINE_FLOODING_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Riverine Flooding (County)'
+  );
+}
+
+export async function getNRICensusTractRiverineFloodingAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    RIVERINE_FLOODING_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Riverine Flooding (Census Tract)'
+  );
+}
+
+// Landslide
+export async function getNRICountyLandslideAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    LANDSLIDE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Landslide (County)'
+  );
+}
+
+export async function getNRICensusTractLandslideAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    LANDSLIDE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Landslide (Census Tract)'
+  );
+}
+
+// Strong Wind
+export async function getNRICountyStrongWindAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    STRONG_WIND_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Strong Wind (County)'
+  );
+}
+
+export async function getNRICensusTractStrongWindAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    STRONG_WIND_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Strong Wind (Census Tract)'
+  );
+}
+
+// Winter Weather
+export async function getNRICountyWinterWeatherAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    WINTER_WEATHER_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Winter Weather (County)'
+  );
+}
+
+export async function getNRICensusTractWinterWeatherAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    WINTER_WEATHER_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Winter Weather (Census Tract)'
+  );
+}
+
+// Cold Wave
+export async function getNRICountyColdWaveAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    COLD_WAVE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Cold Wave (County)'
+  );
+}
+
+export async function getNRICensusTractColdWaveAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    COLD_WAVE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Cold Wave (Census Tract)'
+  );
+}
+
+// Heat Wave
+export async function getNRICountyHeatWaveAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    HEAT_WAVE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Heat Wave (County)'
+  );
+}
+
+export async function getNRICensusTractHeatWaveAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    HEAT_WAVE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Heat Wave (Census Tract)'
+  );
+}
+
+// Avalanche
+export async function getNRICountyAvalancheAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    AVALANCHE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Avalanche (County)'
+  );
+}
+
+export async function getNRICensusTractAvalancheAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    AVALANCHE_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Avalanche (Census Tract)'
+  );
+}
+
+// Tsunami
+export async function getNRICountyTsunamiAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    TSUNAMI_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Tsunami (County)'
+  );
+}
+
+export async function getNRICensusTractTsunamiAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    TSUNAMI_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Tsunami (Census Tract)'
+  );
+}
+
+// Volcanic Activity
+export async function getNRICountyVolcanicActivityAnnualizedFrequency(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountyAnnualizedFrequency(
+    VOLCANIC_ACTIVITY_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    25,
+    'NRI Annualized Frequency Volcanic Activity (County)'
+  );
+}
+
+export async function getNRICensusTractVolcanicActivityAnnualizedFrequency(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractAnnualizedFrequency(
+    VOLCANIC_ACTIVITY_SERVICE_BASE,
+    lat,
+    lon,
+    radiusMiles,
+    10,
+    'NRI Annualized Frequency Volcanic Activity (Census Tract)'
   );
 }
 

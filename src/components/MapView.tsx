@@ -26352,6 +26352,104 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw NRI Hurricane Annualized Frequency layers (County + Census Tract) as polygons
       try {
+        const unwrapToLatLngRing = (latlngs: any): L.LatLng[] | null => {
+          // Leaflet polygons can return:
+          // - LatLng[]
+          // - LatLng[][]
+          // - LatLng[][][]
+          // We want the first actual LatLng[] ring.
+          let cur: any = latlngs;
+          let guard = 0;
+          while (Array.isArray(cur) && cur.length > 0 && guard < 5) {
+            // If first element looks like a LatLng (has lat/lng), we’re done.
+            const first = cur[0];
+            if (first && typeof first.lat === 'number' && typeof first.lng === 'number') {
+              return cur as L.LatLng[];
+            }
+            // Otherwise, drill down one level.
+            cur = first;
+            guard++;
+          }
+          return null;
+        };
+
+        const pointInPolygon = (point: L.LatLng, poly: L.LatLng[]): boolean => {
+          // Ray casting algorithm
+          let inside = false;
+          for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+            const xi = poly[i].lng, yi = poly[i].lat;
+            const xj = poly[j].lng, yj = poly[j].lat;
+            const intersect =
+              ((yi > point.lat) !== (yj > point.lat)) &&
+              (point.lng < (xj - xi) * (point.lat - yi) / (yj - yi + 0.0) + xi);
+            if (intersect) inside = !inside;
+          }
+          return inside;
+        };
+
+        // Compare two polygon rings to see if they have the same geometry (within tolerance)
+        // Handles cases where coordinates might be in different order or slightly offset
+        const polygonsHaveSameGeometry = (
+          ring1: Array<{ lat: number; lng: number }>, 
+          ring2: Array<{ lat: number; lng: number }>, 
+          tolerance = 0.0001
+        ): boolean => {
+          if (!ring1 || !ring2) return false;
+          if (ring1.length !== ring2.length) return false;
+          if (ring1.length < 3) return false;
+          
+          // Try matching from start of ring1
+          let matchForward = true;
+          for (let i = 0; i < ring1.length; i++) {
+            const latDiff = Math.abs(ring1[i].lat - ring2[i].lat);
+            const lngDiff = Math.abs(ring1[i].lng - ring2[i].lng);
+            if (latDiff > tolerance || lngDiff > tolerance) {
+              matchForward = false;
+              break;
+            }
+          }
+          if (matchForward) return true;
+          
+          // Try matching in reverse order (rings might be reversed)
+          let matchReverse = true;
+          for (let i = 0; i < ring1.length; i++) {
+            const j = ring2.length - 1 - i;
+            const latDiff = Math.abs(ring1[i].lat - ring2[j].lat);
+            const lngDiff = Math.abs(ring1[i].lng - ring2[j].lng);
+            if (latDiff > tolerance || lngDiff > tolerance) {
+              matchReverse = false;
+              break;
+            }
+          }
+          if (matchReverse) return true;
+          
+          // Try matching with offset (rings might start at different points)
+          for (let offset = 1; offset < ring1.length; offset++) {
+            let matchOffset = true;
+            for (let i = 0; i < ring1.length; i++) {
+              const j = (i + offset) % ring2.length;
+              const latDiff = Math.abs(ring1[i].lat - ring2[j].lat);
+              const lngDiff = Math.abs(ring1[i].lng - ring2[j].lng);
+              if (latDiff > tolerance || lngDiff > tolerance) {
+                matchOffset = false;
+                break;
+              }
+            }
+            if (matchOffset) return true;
+          }
+          
+          return false;
+        };
+
+        const nriPopupEntries: Array<{
+          polygon: L.Polygon;
+          title: string;
+          icon: string;
+          color: string;
+          feature: any;
+          originalRing: Array<{ lat: number; lng: number }>;
+        }> = [];
+
         const nriLayers = [
           {
             key: 'nri_hurricane_annualized_frequency_county_all',
@@ -26395,6 +26493,216 @@ const MapView: React.FC<MapViewProps> = ({
             color: '#6d28d9',
             legendKey: 'nri_tornado_annualized_frequency_census_tract',
           },
+          {
+            key: 'nri_earthquake_annualized_frequency_county_all',
+            title: 'NRI Earthquake Annualized Frequency (County)',
+            icon: '🌎',
+            color: '#b45309',
+            legendKey: 'nri_earthquake_annualized_frequency_county',
+          },
+          {
+            key: 'nri_earthquake_annualized_frequency_census_tract_all',
+            title: 'NRI Earthquake Annualized Frequency (Census Tract)',
+            icon: '🌎',
+            color: '#92400e',
+            legendKey: 'nri_earthquake_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_drought_annualized_frequency_county_all',
+            title: 'NRI Drought Annualized Frequency (County)',
+            icon: '☀️',
+            color: '#ca8a04',
+            legendKey: 'nri_drought_annualized_frequency_county',
+          },
+          {
+            key: 'nri_drought_annualized_frequency_census_tract_all',
+            title: 'NRI Drought Annualized Frequency (Census Tract)',
+            icon: '☀️',
+            color: '#a16207',
+            legendKey: 'nri_drought_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_wildfire_annualized_frequency_county_all',
+            title: 'NRI Wildfire Annualized Frequency (County)',
+            icon: '🔥',
+            color: '#dc2626',
+            legendKey: 'nri_wildfire_annualized_frequency_county',
+          },
+          {
+            key: 'nri_wildfire_annualized_frequency_census_tract_all',
+            title: 'NRI Wildfire Annualized Frequency (Census Tract)',
+            icon: '🔥',
+            color: '#b91c1c',
+            legendKey: 'nri_wildfire_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_lightning_annualized_frequency_county_all',
+            title: 'NRI Lightning Annualized Frequency (County)',
+            icon: '⚡',
+            color: '#fbbf24',
+            legendKey: 'nri_lightning_annualized_frequency_county',
+          },
+          {
+            key: 'nri_lightning_annualized_frequency_census_tract_all',
+            title: 'NRI Lightning Annualized Frequency (Census Tract)',
+            icon: '⚡',
+            color: '#f59e0b',
+            legendKey: 'nri_lightning_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_ice_storm_annualized_frequency_county_all',
+            title: 'NRI Ice Storm Annualized Frequency (County)',
+            icon: '🧊',
+            color: '#60a5fa',
+            legendKey: 'nri_ice_storm_annualized_frequency_county',
+          },
+          {
+            key: 'nri_ice_storm_annualized_frequency_census_tract_all',
+            title: 'NRI Ice Storm Annualized Frequency (Census Tract)',
+            icon: '🧊',
+            color: '#3b82f6',
+            legendKey: 'nri_ice_storm_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_coastal_flooding_annualized_frequency_county_all',
+            title: 'NRI Coastal Flooding Annualized Frequency (County)',
+            icon: '🌊',
+            color: '#06b6d4',
+            legendKey: 'nri_coastal_flooding_annualized_frequency_county',
+          },
+          {
+            key: 'nri_coastal_flooding_annualized_frequency_census_tract_all',
+            title: 'NRI Coastal Flooding Annualized Frequency (Census Tract)',
+            icon: '🌊',
+            color: '#0891b2',
+            legendKey: 'nri_coastal_flooding_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_riverine_flooding_annualized_frequency_county_all',
+            title: 'NRI Riverine Flooding Annualized Frequency (County)',
+            icon: '💧',
+            color: '#0ea5e9',
+            legendKey: 'nri_riverine_flooding_annualized_frequency_county',
+          },
+          {
+            key: 'nri_riverine_flooding_annualized_frequency_census_tract_all',
+            title: 'NRI Riverine Flooding Annualized Frequency (Census Tract)',
+            icon: '💧',
+            color: '#0284c7',
+            legendKey: 'nri_riverine_flooding_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_landslide_annualized_frequency_county_all',
+            title: 'NRI Landslide Annualized Frequency (County)',
+            icon: '⛰️',
+            color: '#78716c',
+            legendKey: 'nri_landslide_annualized_frequency_county',
+          },
+          {
+            key: 'nri_landslide_annualized_frequency_census_tract_all',
+            title: 'NRI Landslide Annualized Frequency (Census Tract)',
+            icon: '⛰️',
+            color: '#57534e',
+            legendKey: 'nri_landslide_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_strong_wind_annualized_frequency_county_all',
+            title: 'NRI Strong Wind Annualized Frequency (County)',
+            icon: '💨',
+            color: '#a3a3a3',
+            legendKey: 'nri_strong_wind_annualized_frequency_county',
+          },
+          {
+            key: 'nri_strong_wind_annualized_frequency_census_tract_all',
+            title: 'NRI Strong Wind Annualized Frequency (Census Tract)',
+            icon: '💨',
+            color: '#737373',
+            legendKey: 'nri_strong_wind_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_winter_weather_annualized_frequency_county_all',
+            title: 'NRI Winter Weather Annualized Frequency (County)',
+            icon: '❄️',
+            color: '#e0e7ff',
+            legendKey: 'nri_winter_weather_annualized_frequency_county',
+          },
+          {
+            key: 'nri_winter_weather_annualized_frequency_census_tract_all',
+            title: 'NRI Winter Weather Annualized Frequency (Census Tract)',
+            icon: '❄️',
+            color: '#c7d2fe',
+            legendKey: 'nri_winter_weather_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_cold_wave_annualized_frequency_county_all',
+            title: 'NRI Cold Wave Annualized Frequency (County)',
+            icon: '🧊',
+            color: '#bfdbfe',
+            legendKey: 'nri_cold_wave_annualized_frequency_county',
+          },
+          {
+            key: 'nri_cold_wave_annualized_frequency_census_tract_all',
+            title: 'NRI Cold Wave Annualized Frequency (Census Tract)',
+            icon: '🧊',
+            color: '#93c5fd',
+            legendKey: 'nri_cold_wave_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_heat_wave_annualized_frequency_county_all',
+            title: 'NRI Heat Wave Annualized Frequency (County)',
+            icon: '🌡️',
+            color: '#f87171',
+            legendKey: 'nri_heat_wave_annualized_frequency_county',
+          },
+          {
+            key: 'nri_heat_wave_annualized_frequency_census_tract_all',
+            title: 'NRI Heat Wave Annualized Frequency (Census Tract)',
+            icon: '🌡️',
+            color: '#ef4444',
+            legendKey: 'nri_heat_wave_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_avalanche_annualized_frequency_county_all',
+            title: 'NRI Avalanche Annualized Frequency (County)',
+            icon: '🏔️',
+            color: '#cbd5e1',
+            legendKey: 'nri_avalanche_annualized_frequency_county',
+          },
+          {
+            key: 'nri_avalanche_annualized_frequency_census_tract_all',
+            title: 'NRI Avalanche Annualized Frequency (Census Tract)',
+            icon: '🏔️',
+            color: '#94a3b8',
+            legendKey: 'nri_avalanche_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_tsunami_annualized_frequency_county_all',
+            title: 'NRI Tsunami Annualized Frequency (County)',
+            icon: '🌊',
+            color: '#0d9488',
+            legendKey: 'nri_tsunami_annualized_frequency_county',
+          },
+          {
+            key: 'nri_tsunami_annualized_frequency_census_tract_all',
+            title: 'NRI Tsunami Annualized Frequency (Census Tract)',
+            icon: '🌊',
+            color: '#0f766e',
+            legendKey: 'nri_tsunami_annualized_frequency_census_tract',
+          },
+          {
+            key: 'nri_volcanic_activity_annualized_frequency_county_all',
+            title: 'NRI Volcanic Activity Annualized Frequency (County)',
+            icon: '🌋',
+            color: '#7c2d12',
+            legendKey: 'nri_volcanic_activity_annualized_frequency_county',
+          },
+          {
+            key: 'nri_volcanic_activity_annualized_frequency_census_tract_all',
+            title: 'NRI Volcanic Activity Annualized Frequency (Census Tract)',
+            icon: '🌋',
+            color: '#9a3412',
+            legendKey: 'nri_volcanic_activity_annualized_frequency_census_tract',
+          },
         ];
 
         nriLayers.forEach(({ key, title, icon, color, legendKey }) => {
@@ -26424,17 +26732,165 @@ const MapView: React.FC<MapViewProps> = ({
 
                 const attrs = feature?.attributes || {};
                 const distance = feature?.distance_miles;
-                const popupContent = `
+                // Store the original latlngs array for reliable geometry comparison
+                const originalLatLngs = latlngs.map(ll => ({ lat: ll[0], lng: ll[1] }));
+                
+                // Store metadata for tabbed popup system (so it can distinguish between different NRI layers)
+                (polygon as any).__layerType = 'nri_annualized_frequency';
+                (polygon as any).__layerTitle = title;
+                
+                nriPopupEntries.push({ 
+                  polygon, 
+                  title, 
+                  icon, 
+                  color, 
+                  feature: { ...feature, attributes: attrs, distance_miles: distance },
+                  originalRing: originalLatLngs // Store original ring for comparison
+                });
+
+                // Fallback single-feature popup (so clicking still works even if overlap logic fails)
+                const singlePopupContent = `
                   <div style="max-width: 360px;">
                     <div style="font-weight: 700; margin-bottom: 6px;">${icon} ${title}</div>
                     ${distance !== undefined && distance !== null ? `<div><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
-                    <div style="margin-top: 6px; font-size: 12px; color: #374151;">
-                      <strong>Attributes:</strong>
-                      <pre style="white-space: pre-wrap; word-break: break-word; margin: 6px 0 0 0;">${JSON.stringify(attrs, null, 2)}</pre>
-                    </div>
+                    <details style="margin-top: 6px;">
+                      <summary style="cursor: pointer; color: #111827;">Attributes</summary>
+                      <pre style="white-space: pre-wrap; word-break: break-word; margin: 6px 0 0 0; font-size: 12px; color: #374151;">${JSON.stringify(attrs, null, 2)}</pre>
+                    </details>
                   </div>
                 `;
-                polygon.bindPopup(popupContent, { maxWidth: 420 });
+                polygon.bindPopup(singlePopupContent, { maxWidth: 420 });
+
+                polygon.on('click', (e: any) => {
+                  const clickPoint: L.LatLng = e.latlng;
+                  const leafletMap = mapInstanceRef.current;
+                  if (!leafletMap) {
+                    // If map isn't available for some reason, fall back to the bound popup
+                    polygon.openPopup();
+                    return;
+                  }
+
+                  const tabGroupId = `nri-tabs-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+                  // Step 1: Find all entries whose bounds contain the click point
+                  const candidatesWithClickPoint: typeof nriPopupEntries = [];
+                  nriPopupEntries.forEach((entry) => {
+                    if (entry.polygon.getBounds().contains(clickPoint)) {
+                      candidatesWithClickPoint.push(entry);
+                    }
+                  });
+
+                  // Step 2: For each candidate, find ALL entries that have the same geometry
+                  // This ensures we catch all layers (Hail, Wildfire, etc.) that share the same county geometry
+                  const allMatches = new Set<typeof nriPopupEntries[0]>();
+                  
+                  candidatesWithClickPoint.forEach((candidate) => {
+                    // Add the candidate itself
+                    allMatches.add(candidate);
+                    
+                    // Find all other entries with the same geometry
+                    const candidateRing = candidate.originalRing;
+                    nriPopupEntries.forEach((entry) => {
+                      if (allMatches.has(entry)) return; // Already included
+                      if (entry.originalRing.length !== candidateRing.length) return;
+                      
+                      // Compare geometries
+                      if (polygonsHaveSameGeometry(entry.originalRing, candidateRing)) {
+                        allMatches.add(entry);
+                      }
+                    });
+                  });
+
+                  // Step 3: If no matches found via geometry comparison, fall back to point-in-polygon
+                  if (allMatches.size === 0) {
+                    nriPopupEntries.forEach((entry) => {
+                      if (!entry.polygon.getBounds().contains(clickPoint)) return;
+                      const ringLatLngs = entry.originalRing.map(ll => new L.LatLng(ll.lat, ll.lng));
+                      if (!ringLatLngs || ringLatLngs.length < 3) return;
+                      if (pointInPolygon(clickPoint, ringLatLngs)) {
+                        allMatches.add(entry);
+                      }
+                    });
+                  }
+
+                  const matches = Array.from(allMatches)
+                    .map((entry, idx) => {
+                      const dist = entry.feature?.distance_miles;
+                      const attrs2 = entry.feature?.attributes || {};
+                      const tabId = `${tabGroupId}-tab-${idx}`;
+                      const radioId = `${tabGroupId}-radio-${idx}`;
+                      const checked = idx === 0 ? 'checked' : '';
+                      return {
+                        tabId,
+                        radioId,
+                        checked,
+                        title: `${entry.icon} ${entry.title}`,
+                        color: entry.color,
+                        dist,
+                        attrs: attrs2,
+                      };
+                    });
+
+                  const content = matches.length
+                    ? (() => {
+                        const tabsCss = `
+                          <style>
+                            .nri-tabs { max-width: 460px; }
+                            .nri-tab-labels { display:flex; flex-wrap:wrap; gap:6px; margin: 8px 0; }
+                            .nri-tab-label { padding:6px 8px; border-radius:8px; border:1px solid #e5e7eb; cursor:pointer; font-size:12px; background:#fff; }
+                            .nri-tab-label:hover { background:#f9fafb; }
+                            .nri-tab-panel { display:none; border-top:1px solid #e5e7eb; padding-top:8px; margin-top:8px; }
+                            .nri-tab-radio { display:none; }
+                            .nri-tab-radio:checked + label { border-color:#111827; box-shadow: 0 0 0 2px rgba(17,24,39,0.12); }
+                          </style>
+                        `;
+
+                        const labels = matches.map((m, idx) => `
+                          <input class="nri-tab-radio" type="radio" name="${tabGroupId}" id="${m.radioId}" ${m.checked}/>
+                          <label class="nri-tab-label" for="${m.radioId}" style="border-left:4px solid ${m.color};">
+                            ${m.title}
+                          </label>
+                        `).join('');
+
+                        const panels = matches.map((m, idx) => `
+                          <div class="nri-tab-panel" id="${m.tabId}">
+                            <div style="font-weight:700; margin-bottom:6px;">${m.title}</div>
+                            ${m.dist !== undefined && m.dist !== null ? `<div><strong>Distance:</strong> ${Number(m.dist).toFixed(2)} miles</div>` : ''}
+                            <details style="margin-top: 6px;">
+                              <summary style="cursor:pointer; color:#111827;">Attributes</summary>
+                              <pre style="white-space: pre-wrap; word-break: break-word; margin: 6px 0 0 0; font-size: 12px; color: #374151;">${JSON.stringify(m.attrs, null, 2)}</pre>
+                            </details>
+                          </div>
+                        `).join('');
+
+                        // Simple JS-less panel toggle using :checked isn't possible without heavier CSS selectors inside Leaflet popup.
+                        // Instead, we render all panels and hide/show via a tiny inline onChange handler.
+                        const script = `
+                          <script>
+                            (function() {
+                              const radios = document.querySelectorAll('input[name="${tabGroupId}"]');
+                              const panels = ${JSON.stringify(matches.map(m => m.tabId))}.map(id => document.getElementById(id));
+                              function sync() {
+                                radios.forEach((r, i) => {
+                                  if (panels[i]) panels[i].style.display = r.checked ? 'block' : 'none';
+                                });
+                              }
+                              radios.forEach(r => r.addEventListener('change', sync));
+                              sync();
+                            })();
+                          </script>
+                        `;
+
+                        return `<div class="nri-tabs"><div style="font-weight:700;">Overlapping NRI layers (${matches.length})</div>${tabsCss}<div class="nri-tab-labels">${labels}</div>${panels}${script}</div>`;
+                      })()
+                    : `<div style="max-width: 320px;">No NRI features at this point.</div>`;
+
+                  L.popup({ maxWidth: 450 })
+                    .setLatLng(clickPoint)
+                    .setContent(content)
+                    .openOn(leafletMap);
+                });
+
                 polygon.addTo(primary);
                 bounds.extend(polygon.getBounds());
               });
@@ -26559,14 +27015,44 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
-        // NRI hurricane layers are polygons; never render them as generic point markers.
+        // NRI annualized frequency layers are polygons; never render them as generic point markers.
         if (
           baseKey === 'nri_hurricane_annualized_frequency_county' ||
           baseKey === 'nri_hurricane_annualized_frequency_census_tract' ||
           baseKey === 'nri_hail_annualized_frequency_county' ||
           baseKey === 'nri_hail_annualized_frequency_census_tract' ||
           baseKey === 'nri_tornado_annualized_frequency_county' ||
-          baseKey === 'nri_tornado_annualized_frequency_census_tract'
+          baseKey === 'nri_tornado_annualized_frequency_census_tract' ||
+          baseKey === 'nri_earthquake_annualized_frequency_county' ||
+          baseKey === 'nri_earthquake_annualized_frequency_census_tract' ||
+          baseKey === 'nri_drought_annualized_frequency_county' ||
+          baseKey === 'nri_drought_annualized_frequency_census_tract' ||
+          baseKey === 'nri_wildfire_annualized_frequency_county' ||
+          baseKey === 'nri_wildfire_annualized_frequency_census_tract' ||
+          baseKey === 'nri_lightning_annualized_frequency_county' ||
+          baseKey === 'nri_lightning_annualized_frequency_census_tract' ||
+          baseKey === 'nri_ice_storm_annualized_frequency_county' ||
+          baseKey === 'nri_ice_storm_annualized_frequency_census_tract' ||
+          baseKey === 'nri_coastal_flooding_annualized_frequency_county' ||
+          baseKey === 'nri_coastal_flooding_annualized_frequency_census_tract' ||
+          baseKey === 'nri_riverine_flooding_annualized_frequency_county' ||
+          baseKey === 'nri_riverine_flooding_annualized_frequency_census_tract' ||
+          baseKey === 'nri_landslide_annualized_frequency_county' ||
+          baseKey === 'nri_landslide_annualized_frequency_census_tract' ||
+          baseKey === 'nri_strong_wind_annualized_frequency_county' ||
+          baseKey === 'nri_strong_wind_annualized_frequency_census_tract' ||
+          baseKey === 'nri_winter_weather_annualized_frequency_county' ||
+          baseKey === 'nri_winter_weather_annualized_frequency_census_tract' ||
+          baseKey === 'nri_cold_wave_annualized_frequency_county' ||
+          baseKey === 'nri_cold_wave_annualized_frequency_census_tract' ||
+          baseKey === 'nri_heat_wave_annualized_frequency_county' ||
+          baseKey === 'nri_heat_wave_annualized_frequency_census_tract' ||
+          baseKey === 'nri_avalanche_annualized_frequency_county' ||
+          baseKey === 'nri_avalanche_annualized_frequency_census_tract' ||
+          baseKey === 'nri_tsunami_annualized_frequency_county' ||
+          baseKey === 'nri_tsunami_annualized_frequency_census_tract' ||
+          baseKey === 'nri_volcanic_activity_annualized_frequency_county' ||
+          baseKey === 'nri_volcanic_activity_annualized_frequency_census_tract'
         ) {
           return;
         }
@@ -27144,12 +27630,16 @@ const MapView: React.FC<MapViewProps> = ({
           if (layer instanceof L.Polygon) {
             const bounds = (layer as L.Polygon).getBounds();
             const center = bounds.getCenter();
-            featureSignature = `${center.lat.toFixed(6)}_${center.lng.toFixed(6)}_${layerType}`;
+            // Include layer title in signature to allow multiple NRI layers with same geometry (Hail, Wildfire, etc.)
+            // This prevents deduplication of different layers that happen to share the same county/census tract geometry
+            const titlePart = layerTitle && layerTitle !== 'Polygon Feature' ? `_${layerTitle.replace(/\s+/g, '_')}` : '';
+            featureSignature = `${center.lat.toFixed(6)}_${center.lng.toFixed(6)}_${layerType}${titlePart}`;
           } else if (layer instanceof L.Polyline) {
             const latlngs = (layer as L.Polyline).getLatLngs() as L.LatLng[];
             if (latlngs.length > 0) {
               const firstPoint = Array.isArray(latlngs[0]) ? latlngs[0][0] : latlngs[0];
-              featureSignature = `${firstPoint.lat.toFixed(6)}_${firstPoint.lng.toFixed(6)}_${layerType}`;
+              const titlePart = layerTitle && layerTitle !== 'Line Feature' ? `_${layerTitle.replace(/\s+/g, '_')}` : '';
+              featureSignature = `${firstPoint.lat.toFixed(6)}_${firstPoint.lng.toFixed(6)}_${layerType}${titlePart}`;
             }
           }
           
