@@ -315,6 +315,11 @@ body.modal-open {
     width: 100% !important;
     height: 100% !important;
   }
+
+  /* Keep Leaflet controls accessible below the back-button overlay + safe area. */
+  .mobile-map-page .leaflet-top {
+    top: calc(env(safe-area-inset-top) + 64px) !important;
+  }
 }
 
 /* Map view layout fixes */

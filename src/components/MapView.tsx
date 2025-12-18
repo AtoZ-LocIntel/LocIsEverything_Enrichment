@@ -27437,7 +27437,19 @@ const MapView: React.FC<MapViewProps> = ({
           }}
         />
           
-          {/* Back Button Overlay - Hidden since MapPage has its own header */}
+          {/* Back Button Overlay - Mobile full-screen map UX */}
+          <button
+            onClick={onBackToConfig}
+            className="absolute top-2 left-2 z-[1200] bg-black/80 text-white rounded-full shadow-md px-3 py-2 border border-white/10"
+            style={{
+              paddingTop: 'calc(env(safe-area-inset-top) + 8px)',
+            }}
+            aria-label="Back"
+            title="Back"
+          >
+            ← Back
+          </button>
+
           {/* Download Button Overlay - Top Right (icon only, very compact for mobile) */}
           
           {/* Download Button Overlay - Top Right (icon only, very compact for mobile) */}
