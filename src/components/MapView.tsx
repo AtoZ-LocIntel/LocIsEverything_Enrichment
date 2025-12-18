@@ -1372,14 +1372,31 @@ const MapView: React.FC<MapViewProps> = ({
         interactive: false, // Leaflet handles interactions
       }).addTo(map);
       basemapLayerRef.current = basemapLayer;
+
+      const resizeMaplibreBasemap = () => {
+        try {
+          const layer: any = basemapLayerRef.current;
+          const ml =
+            (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
+            layer?._maplibreMap ||
+            layer?._map;
+          if (ml && typeof ml.resize === 'function') {
+            ml.resize();
+          }
+        } catch {
+          // ignore
+        }
+      };
       
       // Force immediate tile loading on mobile
       if (isMobile) {
         map.whenReady(() => {
-          basemapLayer.redraw();
           if (mapInstanceRef.current) {
             mapInstanceRef.current.invalidateSize(true);
           }
+          // Critical for MapLibre basemaps on mobile: ensure WebGL canvas resizes after Leaflet invalidation.
+          resizeMaplibreBasemap();
+          setTimeout(resizeMaplibreBasemap, 50);
         });
       }
 
@@ -1540,6 +1557,21 @@ const MapView: React.FC<MapViewProps> = ({
     }).addTo(mapInstanceRef.current);
     
     basemapLayerRef.current = newBasemapLayer;
+
+    // Ensure MapLibre canvas resizes after basemap swaps (especially on mobile)
+    try {
+      const layer: any = basemapLayerRef.current;
+      const ml =
+        (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
+        layer?._maplibreMap ||
+        layer?._map;
+      if (ml && typeof ml.resize === 'function') {
+        ml.resize();
+        setTimeout(() => ml.resize(), 50);
+      }
+    } catch {
+      // ignore
+    }
   }, [selectedBasemap, isInitialized]);
 
   useEffect(() => {
