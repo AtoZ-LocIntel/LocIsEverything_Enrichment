@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Settings, Check, Search, X } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
@@ -41,6 +41,10 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   onBackToConfig
 }) => {
   const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
+  const headerRef = useRef<HTMLElement>(null);
+  // Safe initial height so the list never renders at top:0 (behind the header) on first paint.
+  const [headerHeight, setHeaderHeight] = useState<number>(120);
+  const listRef = useRef<HTMLElement>(null);
   
   // Filter enrichments based on search query
   const filteredEnrichments = useMemo(() => {
@@ -90,17 +94,53 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
   const selectedCount = filteredEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
 
-  // Scroll to top when component mounts
+  // Measure header height so the scrollable list can start exactly below it.
+  // This prevents the top card from ever going under/over the header on mobile.
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const h = el.getBoundingClientRect().height;
+      setHeaderHeight(h);
+    };
+
+    measure();
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => measure());
+      ro.observe(el);
+    }
+
+    window.addEventListener('resize', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+      ro?.disconnect();
+    };
+  }, [category.id, layerSearchQuery, selectedCount, filteredEnrichments.length]);
+
+  // When entering this page (or changing the filter), scroll the LIST container to top.
+  // Scrolling the window fights our fixed header + fixed list layout on mobile.
   useEffect(() => {
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    }, 100);
+    const el = listRef.current;
+    if (!el) return;
+    el.scrollTop = 0;
+  }, [category.id, layerSearchQuery]);
+
+  // Prevent the document/body from scrolling behind this fixed-header + fixed-list page on mobile.
+  // This addresses the "pull down reveals black bar over header" regression (rubber-band overscroll).
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    const prevTouchAction = document.body.style.touchAction;
+
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.touchAction = prevTouchAction;
+    };
   }, []);
 
   // Get category header color
@@ -140,11 +180,12 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   };
 
   return (
-    // Two-row layout: header never overlaps the scrollable list.
-    <div className="h-screen bg-black text-white grid grid-rows-[auto,1fr] overflow-hidden">
+    // Fixed header + fixed scroll region below it (no overlap possible).
+    <div className="h-screen bg-black text-white overflow-hidden">
       {/* Header */}
       <header 
-        className="border-b border-gray-800 px-4 py-4"
+        ref={headerRef}
+        className="border-b border-gray-800 px-4 py-4 fixed top-0 left-0 right-0 z-[1000]"
         style={{ backgroundColor: getCategoryColor() }}
       >
         <div className="flex items-center justify-between gap-3 mb-3">
@@ -192,8 +233,18 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
       {/* Content - Mobile Optimized Scrollable */}
       <main
-        className="overflow-y-auto px-4 pt-4 pb-4 min-h-0 overscroll-contain"
-        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+        ref={listRef}
+        className="fixed left-0 right-0 bottom-0 overflow-y-auto px-4 pb-4 overscroll-contain"
+        style={{
+          top: headerHeight,
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-y',
+          overscrollBehavior: 'contain',
+          paddingTop: 16,
+          scrollPaddingTop: 16,
+          zIndex: 0,
+          backgroundColor: '#000',
+        }}
       >
         <div className="max-w-xl mx-auto space-y-4">
           {/* Category Description (hide on mobile to avoid search overlap) */}

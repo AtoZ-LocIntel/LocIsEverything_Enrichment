@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { EnrichmentResult } from '../App';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import '@maplibre/maplibre-gl-leaflet';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
 import { poiConfigManager } from '../lib/poiConfig';
 
@@ -20,58 +22,23 @@ interface LegendItem {
   ranges?: Array<{ label: string; color: string; count: number }>; // For color-coded layers like broadband
 }
 
-// MapTiler Basemap Configuration
-const MAPTILER_BASEMAPS: Record<string, { url: string; name: string; attribution: string }> = {
-  landscape: {
-    url: 'https://api.maptiler.com/maps/landscape/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Landscape',
-    attribution: '© MapTiler © OpenStreetMap contributors'
-  },
-  hybrid: {
-    url: 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Hybrid',
-    attribution: '© MapTiler © OpenStreetMap contributors'
-  },
-  streets: {
-    url: 'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Streets',
-    attribution: '© MapTiler © OpenStreetMap contributors'
-  },
-  topo: {
-    url: 'https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Topographic',
-    attribution: '© MapTiler © OpenStreetMap contributors'
-  },
-  satellite: {
-    url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Satellite',
-    attribution: '© MapTiler © OpenStreetMap contributors'
-  },
-  basic: {
-    url: 'https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Basic',
-    attribution: '© MapTiler © OpenStreetMap contributors'
+// OpenFreeMap (free/open) basemap styles (MapLibre style JSON URLs)
+const OPENFREEMAP_STYLES: Record<string, { styleUrl: string; name: string; attribution: string }> = {
+  liberty: {
+    styleUrl: 'https://tiles.openfreemap.org/styles/liberty',
+    name: 'Liberty (OpenFreeMap)',
+    attribution: 'OpenFreeMap © OpenMapTiles Data © OpenStreetMap contributors',
   },
   bright: {
-    url: 'https://api.maptiler.com/maps/bright/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Bright',
-    attribution: '© MapTiler © OpenStreetMap contributors'
+    styleUrl: 'https://tiles.openfreemap.org/styles/bright',
+    name: 'Bright (OpenFreeMap)',
+    attribution: 'OpenFreeMap © OpenMapTiles Data © OpenStreetMap contributors',
   },
-  pastel: {
-    url: 'https://api.maptiler.com/maps/pastel/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Pastel',
-    attribution: '© MapTiler © OpenStreetMap contributors'
+  positron: {
+    styleUrl: 'https://tiles.openfreemap.org/styles/positron',
+    name: 'Positron (OpenFreeMap)',
+    attribution: 'OpenFreeMap © OpenMapTiles Data © OpenStreetMap contributors',
   },
-  dataviz: {
-    url: 'https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Data Visualization',
-    attribution: '© MapTiler © OpenStreetMap contributors'
-  },
-  winter: {
-    url: 'https://api.maptiler.com/maps/winter-v2/{z}/{x}/{y}.png?key=Ts9pNkQtWsmoz4BHQIxF',
-    name: 'Winter',
-    attribution: '© MapTiler © OpenStreetMap contributors'
-  }
 };
 
 // Fix for Leaflet marker icons in React
@@ -1292,7 +1259,8 @@ const MapView: React.FC<MapViewProps> = ({
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
-  const basemapLayerRef = useRef<L.TileLayer | null>(null);
+  // MapLibre GL Leaflet layer instance (plugin adds `L.maplibreGL`, type not in Leaflet typings)
+  const basemapLayerRef = useRef<any>(null);
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
@@ -1305,8 +1273,8 @@ const MapView: React.FC<MapViewProps> = ({
     featureData: any;
     geometry: 'point' | 'polyline' | 'polygon';
   }>>([]);
-  // Basemap selection state (default to hybrid)
-  const [selectedBasemap, setSelectedBasemap] = useState<string>('hybrid');
+  // Basemap selection state (OpenFreeMap styles)
+  const [selectedBasemap, setSelectedBasemap] = useState<string>('liberty');
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
 
   useEffect(() => {
@@ -1396,14 +1364,12 @@ const MapView: React.FC<MapViewProps> = ({
         map.zoomControl.setPosition('topleft');
       }
 
-      // Initialize with hybrid basemap
-      const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.hybrid;
-      const basemapLayer = L.tileLayer(basemapConfig.url, {
+      // Initialize basemap using OpenFreeMap (MapLibre vector tiles)
+      const basemapConfig = OPENFREEMAP_STYLES[selectedBasemap] || OPENFREEMAP_STYLES.liberty;
+      const basemapLayer = (L as any).maplibreGL({
+        style: basemapConfig.styleUrl,
         attribution: basemapConfig.attribution,
-        maxZoom: 22,
-        // Force tile loading on mobile
-        updateWhenIdle: !isMobile, // Update immediately on mobile
-        keepBuffer: isMobile ? 1 : 2, // Reduce buffer on mobile for faster loading
+        interactive: false, // Leaflet handles interactions
       }).addTo(map);
       basemapLayerRef.current = basemapLayer;
       
@@ -1464,10 +1430,7 @@ const MapView: React.FC<MapViewProps> = ({
             mapRef.current.style.touchAction = 'pan-x pan-y pinch-zoom';
             mapInstanceRef.current.invalidateSize(true);
             
-            // Force tile layer to redraw
-            if (basemapLayerRef.current) {
-              basemapLayerRef.current.redraw();
-            }
+            // Note: MapLibre GL basemap doesn't expose Leaflet TileLayer redraw()
             
             // Center on location
             if (results && results.length > 0 && results[0]?.location) {
@@ -1562,7 +1525,7 @@ const MapView: React.FC<MapViewProps> = ({
       return;
     }
 
-    const basemapConfig = MAPTILER_BASEMAPS[selectedBasemap] || MAPTILER_BASEMAPS.hybrid;
+    const basemapConfig = OPENFREEMAP_STYLES[selectedBasemap] || OPENFREEMAP_STYLES.liberty;
     
     // Remove old basemap layer
     if (basemapLayerRef.current) {
@@ -1570,9 +1533,10 @@ const MapView: React.FC<MapViewProps> = ({
     }
 
     // Add new basemap layer
-    const newBasemapLayer = L.tileLayer(basemapConfig.url, {
+    const newBasemapLayer = (L as any).maplibreGL({
+      style: basemapConfig.styleUrl,
       attribution: basemapConfig.attribution,
-      maxZoom: 22,
+      interactive: false,
     }).addTo(mapInstanceRef.current);
     
     basemapLayerRef.current = newBasemapLayer;
@@ -27595,7 +27559,7 @@ const MapView: React.FC<MapViewProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-black bg-white"
               style={{ color: 'black' }}
             >
-              {Object.entries(MAPTILER_BASEMAPS).map(([key, config]) => (
+              {Object.entries(OPENFREEMAP_STYLES).map(([key, config]) => (
                 <option key={key} value={key} style={{ color: 'black' }}>
                   {config.name}
                 </option>

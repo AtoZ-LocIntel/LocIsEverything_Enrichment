@@ -4,6 +4,8 @@ import App from './App.tsx'
 import './index.css'
 // CRITICAL: mobile-fixes.css MUST load last to override everything
 import './mobile-fixes.css'
+// Required for MapLibre GL basemaps (OpenFreeMap)
+import 'maplibre-gl/dist/maplibre-gl.css'
 
 // Cache-busting mechanism for assets
 const addCacheBustingToAssets = () => {
