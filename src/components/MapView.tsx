@@ -1293,6 +1293,56 @@ const MapView: React.FC<MapViewProps> = ({
     }
   };
 
+  // On mobile, NEVER rely on hardcoded header heights. Always derive the map container size from the
+  // actual layout (parent/main container) to keep the map fitting the screen and allow MapLibre to render.
+  const sizeMapContainerToParent = (container: HTMLDivElement): boolean => {
+    // Prefer the nearest MAIN/flex-1 container (this is the real "available map area" in your layout)
+    let parent: HTMLElement | null = container.parentElement;
+    let mainContainer: HTMLElement | null = null;
+    while (parent) {
+      if (parent.tagName === 'MAIN' || parent.classList.contains('flex-1')) {
+        mainContainer = parent;
+        break;
+      }
+      parent = parent.parentElement;
+    }
+
+    const target = mainContainer || container.parentElement;
+    if (target) {
+      const rect = target.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        container.style.height = `${rect.height}px`;
+        container.style.width = `${rect.width}px`;
+        container.style.minHeight = '0';
+        container.style.flex = '1 1 auto';
+        container.style.position = 'relative';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.touchAction = 'pan-x pan-y pinch-zoom';
+        return true;
+      }
+    }
+
+    // Last resort: use visualViewport if available (still better than hardcoding a header height)
+    const vv = window.visualViewport;
+    const h = vv?.height || window.innerHeight || window.screen.height;
+    const w = vv?.width || window.innerWidth || window.screen.width;
+    if (h > 0 && w > 0) {
+      const fallbackHeight = Math.max(h, 400);
+      container.style.height = `${fallbackHeight}px`;
+      container.style.width = `${w}px`;
+      container.style.minHeight = '0';
+      container.style.flex = '1 1 auto';
+      container.style.position = 'relative';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.touchAction = 'pan-x pan-y pinch-zoom';
+      return true;
+    }
+
+    return false;
+  };
+
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) {
       return;
@@ -1308,41 +1358,11 @@ const MapView: React.FC<MapViewProps> = ({
       
       // For mobile, ensure container has explicit height from parent
       if (isMobile) {
-        // Walk up DOM to find the main flex container
-        let parent = container.parentElement;
-        let mainContainer = null;
-        while (parent) {
-          if (parent.tagName === 'MAIN' || parent.classList.contains('flex-1')) {
-            mainContainer = parent;
-            break;
-          }
-          parent = parent.parentElement;
-        }
-        
-        if (mainContainer) {
-          const parentRect = mainContainer.getBoundingClientRect();
-          if (parentRect.height > 0 && parentRect.width > 0) {
-            // Set explicit dimensions - critical for Leaflet
-            container.style.height = `${parentRect.height}px`;
-            container.style.width = `${parentRect.width}px`;
-            container.style.minHeight = '0';
-            container.style.flex = '1 1 auto';
-          } else {
-            // Parent not ready yet, retry
-            setTimeout(initializeMap, 100);
-            return;
-          }
-        } else {
-          // Fallback: use viewport height minus header
-          const viewportHeight = window.innerHeight || window.screen.height;
-          const headerHeight = 64; // Approximate header height
-          const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
-          container.style.height = `${calculatedHeight}px`;
-          container.style.width = '100%';
-          container.style.minHeight = '0';
-          container.style.flex = '1 1 auto';
-          container.style.position = 'relative';
-          container.style.touchAction = 'pan-x pan-y pinch-zoom';
+        // If layout isn't ready yet, retry; do not hardcode header math.
+        const ok = sizeMapContainerToParent(container);
+        if (!ok) {
+          setTimeout(initializeMap, 100);
+          return;
         }
       }
       
@@ -1423,16 +1443,7 @@ const MapView: React.FC<MapViewProps> = ({
         // First attempt - immediate
         requestAnimationFrame(() => {
           if (mapInstanceRef.current && mapRef.current) {
-            const viewportHeight = window.innerHeight || window.screen.height;
-            const headerHeight = 64;
-            // Use full available height, let Leaflet controls position themselves
-            const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
-            mapRef.current.style.height = `${calculatedHeight}px`;
-            mapRef.current.style.width = '100%';
-            mapRef.current.style.position = 'relative';
-            mapRef.current.style.top = '0';
-            mapRef.current.style.left = '0';
-            mapRef.current.style.touchAction = 'pan-x pan-y pinch-zoom';
+            sizeMapContainerToParent(mapRef.current);
             mapInstanceRef.current.invalidateSize(true);
             resizeMaplibreBasemap();
           }
@@ -1441,13 +1452,7 @@ const MapView: React.FC<MapViewProps> = ({
         // Second attempt - after delay
         setTimeout(() => {
           if (mapInstanceRef.current && mapRef.current) {
-            const viewportHeight = window.innerHeight || window.screen.height;
-            const headerHeight = 64;
-            const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
-            mapRef.current.style.height = `${calculatedHeight}px`;
-            mapRef.current.style.width = '100%';
-            mapRef.current.style.position = 'relative';
-            mapRef.current.style.touchAction = 'pan-x pan-y pinch-zoom';
+            sizeMapContainerToParent(mapRef.current);
             mapInstanceRef.current.invalidateSize(true);
             resizeMaplibreBasemap();
             
@@ -1481,33 +1486,7 @@ const MapView: React.FC<MapViewProps> = ({
       if (isMobile) {
         setTimeout(() => {
           if (mapInstanceRef.current && mapRef.current) {
-            // Find the main container
-            let parent = mapRef.current.parentElement;
-            let mainContainer = null;
-            while (parent) {
-              if (parent.tagName === 'MAIN' || parent.classList.contains('flex-1')) {
-                mainContainer = parent;
-                break;
-              }
-              parent = parent.parentElement;
-            }
-            
-            if (mainContainer) {
-              const parentRect = mainContainer.getBoundingClientRect();
-              if (parentRect.height > 0 && parentRect.width > 0) {
-                mapRef.current.style.height = `${parentRect.height}px`;
-                mapRef.current.style.width = `${parentRect.width}px`;
-                mapRef.current.style.minHeight = '0';
-              }
-            } else {
-              // Fallback: use viewport height minus header
-              const viewportHeight = window.innerHeight || window.screen.height;
-              const headerHeight = 64;
-              const calculatedHeight = Math.max(viewportHeight - headerHeight, 400);
-              mapRef.current.style.height = `${calculatedHeight}px`;
-              mapRef.current.style.width = '100%';
-              mapRef.current.style.minHeight = '0';
-            }
+            sizeMapContainerToParent(mapRef.current);
             // Critical: invalidateSize again after delay to ensure proper rendering
             mapInstanceRef.current.invalidateSize(true);
             resizeMaplibreBasemap();
@@ -27445,7 +27424,7 @@ const MapView: React.FC<MapViewProps> = ({
         {/* Map Container - Full Screen */}
         <div 
           ref={mapRef} 
-          className="w-full h-full min-h-0"
+          className="w-full h-full min-h-0 mobile-map-leaflet"
           style={{
             height: '100%',
             width: '100%',

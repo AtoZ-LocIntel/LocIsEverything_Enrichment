@@ -11,7 +11,10 @@ interface MapPageProps {
 
 const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode }) => {
   return (
-    <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
+    <div
+      className="mobile-map-page h-screen bg-black text-white flex flex-col overflow-hidden"
+      style={{ height: '100dvh' }}
+    >
       {/* Header */}
       <header className="bg-black border-b border-gray-800 px-4 py-4 flex items-center space-x-3 flex-shrink-0 z-50">
         <button

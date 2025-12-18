@@ -284,6 +284,37 @@ body.modal-open {
     min-width: 300px !important;
     max-width: 90vw !important;
   }
+
+  /* ==========================
+     Mobile MapPage (OpenFreeMap / MapLibre) sizing overrides
+     Avoid broad selectors like `.flex-1.relative` + hardcoded header math from affecting MapPage.
+     ========================== */
+  .mobile-map-page {
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  /* Let the MapPage main area define the available height; Leaflet container should just fill it. */
+  .mobile-map-page main.flex-1.relative {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .mobile-map-page .leaflet-container,
+  .mobile-map-page .mobile-map-leaflet {
+    height: 100% !important;
+    min-height: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Ensure MapLibre GL's WebGL canvas actually fills the Leaflet layer container on mobile. */
+  .mobile-map-page .maplibregl-map,
+  .mobile-map-page .maplibregl-canvas,
+  .mobile-map-page .maplibregl-canvas-container {
+    width: 100% !important;
+    height: 100% !important;
+  }
 }
 
 /* Map view layout fixes */
