@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Settings, Check, Search, X } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
@@ -41,8 +41,6 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   onBackToConfig
 }) => {
   const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
-  const headerRef = useRef<HTMLElement>(null);
-  const [headerHeight, setHeaderHeight] = useState<number>(0);
   
   // Filter enrichments based on search query
   const filteredEnrichments = useMemo(() => {
@@ -105,18 +103,6 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
     }, 100);
   }, []);
 
-  // Measure sticky header height so the first/only layer card can't end up hidden underneath it.
-  // This is especially noticeable on mobile after filtering down to a single item.
-  useLayoutEffect(() => {
-    const measure = () => {
-      const h = headerRef.current?.getBoundingClientRect().height ?? 0;
-      setHeaderHeight(h);
-    };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [category.id, layerSearchQuery, selectedCount, filteredEnrichments.length]);
-
   // Get category header color
   const getCategoryColor = () => {
     const colorMap: Record<string, string> = {
@@ -154,19 +140,11 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   };
 
   return (
-    // Single scroll container: header + list share the same scroll context.
-    // We also set scrollPaddingTop so "scroll to top" never lands content under the sticky header.
-    <div
-      className="h-screen bg-black text-white flex flex-col overflow-y-auto"
-      style={{
-        WebkitOverflowScrolling: 'touch',
-        scrollPaddingTop: headerHeight ? headerHeight + 12 : undefined,
-      }}
-    >
+    // Two-row layout: header never overlaps the scrollable list.
+    <div className="h-screen bg-black text-white grid grid-rows-[auto,1fr] overflow-hidden">
       {/* Header */}
       <header 
-        ref={headerRef}
-        className="border-b border-gray-800 px-4 py-4 flex-shrink-0 sticky top-0 z-30"
+        className="border-b border-gray-800 px-4 py-4"
         style={{ backgroundColor: getCategoryColor() }}
       >
         <div className="flex items-center justify-between gap-3 mb-3">
@@ -214,11 +192,10 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
       {/* Content - Mobile Optimized Scrollable */}
       <main
-        className="flex-1 px-4 py-4 min-h-0"
+        className="overflow-y-auto px-4 pt-4 pb-4 min-h-0 overscroll-contain"
+        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
       >
         <div className="max-w-xl mx-auto space-y-4">
-          {/* Spacer to ensure first/only item is fully visible below sticky header */}
-          {headerHeight > 0 && <div style={{ height: 0 }} />}
           {/* Category Description (hide on mobile to avoid search overlap) */}
           <div className="hidden sm:block bg-gray-900 border border-gray-800 rounded-lg p-4">
             <h2 className="text-base font-semibold text-white mb-2 break-words">About {category.title}</h2>
@@ -284,11 +261,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
                 Number.isInteger(value) ? value.toString() : value.toFixed(1);
 
               return (
-                <div
-                  key={enrichment.id}
-                  className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3"
-                  style={{ scrollMarginTop: headerHeight ? headerHeight + 12 : undefined }}
-                >
+                <div key={enrichment.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
                   {/* Layer Name and Description */}
                   <div>
                     <label 
