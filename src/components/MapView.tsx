@@ -27573,7 +27573,10 @@ const MapView: React.FC<MapViewProps> = ({
           style={{ 
             height: '100%', 
             width: '100%',
-            opacity: isMapReady ? 1 : 0,
+            // On mobile, never hide the map container behind an "isMapReady" fade gate.
+            // With MapLibre basemaps, readiness can lag while WebGL initializes, but the user still needs
+            // to pan/zoom and access controls immediately.
+            opacity: isMobile ? 1 : (isMapReady ? 1 : 0),
             transition: 'opacity 0.3s ease-in-out'
           }}
         />
