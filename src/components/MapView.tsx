@@ -26270,6 +26270,86 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing CA Marine Oil Terminals:', error);
       }
 
+      // Draw Tornado Tracks 1950-2017 as polylines (ESRI geometry.paths)
+      try {
+        const tornadoKey = 'tornado_tracks_1950_2017_all';
+        if (enrichments[tornadoKey] && Array.isArray(enrichments[tornadoKey])) {
+          // Ensure tornado tracks sit above the basemap and are easy to tap
+          try {
+            const map = mapInstanceRef.current;
+            if (map && !map.getPane('tornadoTracksPane')) {
+              const pane = map.createPane('tornadoTracksPane');
+              pane.style.zIndex = '680'; // above markerPane(600) and most overlays
+            }
+          } catch {
+            // ignore
+          }
+
+          let tornadoCount = 0;
+          (enrichments[tornadoKey] as any[]).forEach((track: any) => {
+            const geom = track?.geometry;
+            if (!geom || !Array.isArray(geom.paths)) return;
+
+            try {
+              const paths = geom.paths as number[][][];
+              paths.forEach((path: number[][]) => {
+                if (!Array.isArray(path) || path.length < 2) return;
+                const latlngs = path
+                  .filter((coord: any) => Array.isArray(coord) && coord.length >= 2)
+                  .map((coord: number[]) => [coord[1], coord[0]] as [number, number]); // [lat, lon]
+                if (latlngs.length < 2) return;
+
+                tornadoCount++;
+                const polyline = L.polyline(latlngs, {
+                  color: '#7c3aed', // purple
+                  weight: 6, // easier to tap on mobile
+                  opacity: 0.85,
+                  interactive: true,
+                  bubblingMouseEvents: true,
+                  pane: 'tornadoTracksPane',
+                });
+
+                const attrs = track?.attributes || {};
+                const yr = attrs.yr ?? attrs.YR ?? attrs.Year ?? null;
+                const mag = attrs.mag ?? attrs.MAG ?? attrs.Magnitude ?? null;
+                const len = attrs.len ?? attrs.LEN ?? attrs.Length ?? null;
+                const wid = attrs.wid ?? attrs.WID ?? attrs.Width ?? null;
+
+                const popupContent = `
+                  <div style="max-width: 320px;">
+                    <div style="font-weight: 700; margin-bottom: 6px;">🌪️ Tornado Track</div>
+                    ${yr !== null ? `<div><strong>Year:</strong> ${yr}</div>` : ''}
+                    ${mag !== null ? `<div><strong>Magnitude:</strong> ${mag}</div>` : ''}
+                    ${len !== null ? `<div><strong>Length (mi):</strong> ${len}</div>` : ''}
+                    ${wid !== null ? `<div><strong>Width (yd):</strong> ${wid}</div>` : ''}
+                  </div>
+                `;
+                polyline.bindPopup(popupContent, { maxWidth: 360 });
+                // On mobile, Leaflet sometimes doesn't open polyline popups reliably without an explicit handler.
+                polyline.on('click', () => polyline.openPopup());
+                polyline.on('touchstart', () => polyline.openPopup());
+                polyline.addTo(primary);
+                bounds.extend(polyline.getBounds());
+              });
+            } catch (e) {
+              console.error('Error drawing tornado track polyline:', e);
+            }
+          });
+
+          if (!legendAccumulator['tornado_tracks_1950_2017']) {
+            legendAccumulator['tornado_tracks_1950_2017'] = {
+              icon: '🌪️',
+              color: '#7c3aed',
+              title: 'Tornado Tracks 1950-2017',
+              count: 0,
+            };
+          }
+          legendAccumulator['tornado_tracks_1950_2017'].count += tornadoCount;
+        }
+      } catch (error) {
+        console.error('Error processing Tornado Tracks:', error);
+      }
+
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)
       Object.entries(enrichments).forEach(([key, value]) => {
@@ -26366,6 +26446,11 @@ const MapView: React.FC<MapViewProps> = ({
         }
 
         const baseKey = key.replace(/_(detailed|elements|features|facilities|all_pois|all)$/i, '');
+
+        // Tornado tracks are polylines; never render them as generic point markers.
+        if (baseKey === 'tornado_tracks_1950_2017') {
+          return;
+        }
 
         // Explicitly skip POI marker rendering for ice layers to avoid points while keeping proximity support
         if (baseKey.startsWith('nws_ndfd_ice_')) {
@@ -27440,9 +27525,10 @@ const MapView: React.FC<MapViewProps> = ({
           {/* Back Button Overlay - Mobile full-screen map UX */}
           <button
             onClick={onBackToConfig}
-            className="absolute top-2 left-2 z-[1200] bg-black/80 text-white rounded-full shadow-md px-3 py-2 border border-white/10"
+            className="absolute z-[1200] bg-black/80 text-white rounded-full shadow-md px-3 py-2 border border-white/10"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 8px)',
+              top: 'calc(env(safe-area-inset-top) + 8px)',
+              left: '8px',
             }}
             aria-label="Back"
             title="Back"
@@ -27466,35 +27552,39 @@ const MapView: React.FC<MapViewProps> = ({
           
           {/* Mobile Legend - Bottom Right (very compact for mobile) */}
           {legendItems.length > 0 && (
-            <div className="absolute bottom-2 right-2 bg-white rounded shadow-lg p-2 max-w-[180px] z-[1000] max-h-[40vh] overflow-y-auto" style={{ 
-              maxHeight: '40vh',
-              touchAction: 'pan-y',
-              pointerEvents: 'auto'
-            }}>
-              <h4 className="text-[9px] font-semibold text-gray-900 mb-1 sticky top-0 bg-white pb-1">Legend</h4>
-              <div className="space-y-0.5">
+            <div
+              className="absolute bottom-2 right-2 bg-white rounded shadow-lg p-2 z-[1000] overflow-y-auto"
+              style={{
+                width: 'min(44vw, 160px)',
+                maxHeight: '35dvh',
+                touchAction: 'pan-y',
+                pointerEvents: 'auto',
+              }}
+            >
+              <h4 className="text-[10px] font-semibold text-gray-900 mb-1 sticky top-0 bg-white pb-1">Legend</h4>
+              <div className="space-y-1">
                 {legendItems.map((item, index) => (
                   <div key={index}>
-                    <div className="flex items-center space-x-0.5 text-[9px]">
-                      <div 
-                        className="w-2 h-2 rounded-full flex items-center justify-center text-[8px] flex-shrink-0"
+                    <div className="flex items-center gap-1 text-[10px] min-w-0">
+                      <div
+                        className="w-3 h-3 rounded-full flex items-center justify-center text-[9px] flex-shrink-0"
                         style={{ backgroundColor: item.color }}
                       >
                         {item.icon}
                       </div>
-                      <span className="text-gray-700 truncate">{item.title}</span>
+                      <span className="text-gray-700 truncate min-w-0">{item.title}</span>
                       <span className="text-gray-500 flex-shrink-0">({item.count})</span>
                     </div>
                     {/* Show ranges for broadband layer */}
                     {item.ranges && item.ranges.length > 0 && (
-                      <div className="ml-3 mt-0.5 space-y-0.5">
+                      <div className="ml-4 mt-1 space-y-1">
                         {item.ranges.map((range, rangeIndex) => (
-                          <div key={rangeIndex} className="flex items-center space-x-1 text-[8px]">
+                          <div key={rangeIndex} className="flex items-center gap-1 text-[9px] min-w-0">
                             <div 
-                              className="w-1.5 h-1.5 rounded flex-shrink-0"
+                              className="w-2 h-2 rounded flex-shrink-0"
                               style={{ backgroundColor: range.color }}
                             />
-                            <span className="text-gray-600 truncate">{range.label}</span>
+                            <span className="text-gray-600 truncate min-w-0">{range.label}</span>
                             <span className="text-gray-400 flex-shrink-0">({range.count})</span>
                           </div>
                         ))}

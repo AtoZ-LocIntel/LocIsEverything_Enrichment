@@ -295,12 +295,6 @@ body.modal-open {
     overflow: hidden !important;
   }
 
-  /* Let the MapPage main area define the available height; Leaflet container should just fill it. */
-  .mobile-map-page main.flex-1.relative {
-    height: auto !important;
-    min-height: 0 !important;
-  }
-
   .mobile-map-page .leaflet-container,
   .mobile-map-page .mobile-map-leaflet {
     height: 100% !important;
@@ -314,6 +308,14 @@ body.modal-open {
   .mobile-map-page .maplibregl-canvas-container {
     width: 100% !important;
     height: 100% !important;
+  }
+
+  /* Undo broad mobile rules within MapPage: the map should fill the fixed viewport, not calc(100vh - 60px). */
+  .mobile-map-page .flex-1.relative,
+  .mobile-map-page .map-container,
+  .mobile-map-page .map-view-container {
+    height: 100% !important;
+    min-height: 0 !important;
   }
 
   /* Keep Leaflet controls accessible below the back-button overlay + safe area. */

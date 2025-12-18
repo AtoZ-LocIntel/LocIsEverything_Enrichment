@@ -12,35 +12,21 @@ interface MapPageProps {
 const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode }) => {
   return (
     <div
-      className="mobile-map-page h-screen bg-black text-white flex flex-col overflow-hidden"
-      style={{ height: '100dvh' }}
+      className="mobile-map-page bg-black text-white overflow-hidden"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        width: '100%',
+        height: '100dvh',
+      }}
     >
-      {/* Map Container - Full height, properly constrained like DataSourcesPage */}
-      <main 
-        className="flex-1 relative min-h-0 overflow-hidden"
-        style={{ 
-          WebkitOverflowScrolling: 'touch',
-          height: '100%',
-          width: '100%'
-        }}
-      >
-        <div 
-          className="w-full h-full min-h-0"
-          style={{
-            height: '100%',
-            width: '100%',
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
-          <MapView
-            results={results}
-            onBackToConfig={onBack}
-            isMobile={true}
-            previousViewMode={previousViewMode}
-          />
-        </div>
+      <main className="absolute inset-0 overflow-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <MapView
+          results={results}
+          onBackToConfig={onBack}
+          isMobile={true}
+          previousViewMode={previousViewMode}
+        />
       </main>
     </div>
   );

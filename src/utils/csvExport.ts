@@ -794,6 +794,61 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
 
   // Add all POI data as individual rows
   Object.entries(enrichments).forEach(([key, value]) => {
+    // Tornado Tracks 1950-2017 (polyline dataset) - export each track as its own row with full attributes
+    if (key === 'tornado_tracks_1950_2017_all' && Array.isArray(value)) {
+      value.forEach((track: any) => {
+        const attrs = track?.attributes || track || {};
+        const objectId = attrs.OBJECTID || attrs.objectId || attrs.objectid || track.objectId || track.objectid || 'Unknown';
+
+        const year = attrs.yr ?? attrs.YR ?? attrs.Year ?? '';
+        const mag = attrs.mag ?? attrs.MAG ?? attrs.Magnitude ?? '';
+        const lenMiles = attrs.len ?? attrs.LEN ?? attrs.Length ?? '';
+        const widthYds = attrs.wid ?? attrs.WID ?? attrs.Width ?? '';
+
+        const startLat = attrs.slat ?? attrs.SLAT ?? '';
+        const startLon = attrs.slon ?? attrs.SLON ?? '';
+        const endLat = attrs.elat ?? attrs.ELAT ?? '';
+        const endLon = attrs.elon ?? attrs.ELON ?? '';
+
+        const distance = track.distance !== null && track.distance !== undefined
+          ? Number(track.distance).toFixed(2)
+          : '';
+
+        const name = year
+          ? `Tornado Track ${year} (ID ${objectId})`
+          : `Tornado Track (ID ${objectId})`;
+
+        const details = [
+          mag !== '' ? `Mag: ${mag}` : null,
+          lenMiles !== '' ? `Len(mi): ${lenMiles}` : null,
+          widthYds !== '' ? `Wid(yd): ${widthYds}` : null,
+          (startLat !== '' && startLon !== '' && endLat !== '' && endLon !== '') ? `Start: ${startLat},${startLon} End: ${endLat},${endLon}` : null,
+        ].filter(Boolean).join(' | ');
+
+        // Full attributes for analytics/debugging
+        const attributesJson = JSON.stringify(attrs);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'ArcGIS (NOAA/SPC Tornado Tracks)',
+          (location.confidence || 'N/A').toString(),
+          'TORNADO_TRACKS_1950_2017',
+          name,
+          (startLat ?? '').toString(),
+          (startLon ?? '').toString(),
+          distance,
+          'Natural Hazards',
+          details,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
     // Handle PADUS nearby features arrays
     if ((key.includes('padus_public_access_nearby_features') || key.includes('padus_protection_status_nearby_features')) && Array.isArray(value)) {
       value.forEach((feature: any) => {

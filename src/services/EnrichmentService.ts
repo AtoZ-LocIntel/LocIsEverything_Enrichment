@@ -7556,8 +7556,39 @@ out center;`;
       
       const response = await fetchJSONSmart(url.toString());
       console.log(`📊 EPA FRS API response:`, response);
-    
-      if (!response || !response.Results || !response.Results.FRSFacility || !Array.isArray(response.Results.FRSFacility)) {
+
+      // The EPA FRS endpoint sometimes returns:
+      // - `Results.FRSFacility` as an array
+      // - `Results.FRSFacility` as a single object (when only one result)
+      // - different casing depending on proxy / upstream
+      const extractFacilities = (resp: any): any[] => {
+        const r =
+          resp?.Results ??
+          resp?.results ??
+          resp?.RESULTS ??
+          resp?.Result ??
+          resp?.result ??
+          null;
+
+        const candidate =
+          r?.FRSFacility ??
+          r?.frsFacility ??
+          r?.FRSFACILITY ??
+          r?.Facilities ??
+          r?.facilities ??
+          r?.FRSFacilities?.FRSFacility ??
+          r?.frsFacilities?.frsFacility ??
+          null;
+
+        if (!candidate) return [];
+        if (Array.isArray(candidate)) return candidate;
+        if (typeof candidate === 'object') return [candidate];
+        return [];
+      };
+
+      const facilities = extractFacilities(response);
+
+      if (!facilities.length) {
         console.log(`⚠️  No EPA FRS facilities found for ${programType}`);
         console.log(`🔄 Attempting fallback to OpenEI power plants...`);
         
@@ -7588,28 +7619,50 @@ out center;`;
         };
       }
       
-      const facilities = response.Results.FRSFacility;
       console.log(`🏭 Found ${facilities.length} EPA FRS ${programType} facilities`);
       
       // Process and categorize facilities
-      const processedFacilities = facilities.map((facility: any) => ({
-        id: facility.facility_id || facility.registry_id,
-        name: facility.facility_name || 'Unnamed Facility',
-        program: programType,
-        status: facility.facility_status || 'Unknown',
-        address: facility.street_address || 'N/A',
-        city: facility.city_name || 'N/A',
-        state: facility.state_code || 'N/A',
-        zip: facility.zip_code || 'N/A',
-        lat: facility.latitude83 || facility.latitude,
-        lon: facility.longitude83 || facility.longitude,
-        distance_miles: this.calculateDistance(lat, lon, facility.latitude83 || facility.latitude, facility.longitude83 || facility.longitude) * 0.621371,
-        raw_data: facility
-      }));
+      const getFirst = (obj: any, keys: string[]) => {
+        for (const k of keys) {
+          const v = obj?.[k];
+          if (v !== undefined && v !== null && v !== '') return v;
+        }
+        return undefined;
+      };
+
+      const toNum = (v: any): number | null => {
+        const n = typeof v === 'number' ? v : parseFloat(String(v));
+        return Number.isFinite(n) ? n : null;
+      };
+
+      const processedFacilities = facilities.map((facility: any) => {
+        const fLat = toNum(getFirst(facility, ['latitude83', 'Latitude83', 'latitude', 'Latitude']));
+        const fLon = toNum(getFirst(facility, ['longitude83', 'Longitude83', 'longitude', 'Longitude']));
+
+        const distanceMiles =
+          fLat !== null && fLon !== null
+            ? this.calculateDistance(lat, lon, fLat, fLon) * 0.621371
+            : Number.POSITIVE_INFINITY;
+
+        return {
+          id: getFirst(facility, ['facility_id', 'FacilityId', 'registry_id', 'RegistryId']),
+          name: getFirst(facility, ['facility_name', 'FacilityName', 'name', 'Name']) || 'Unnamed Facility',
+          program: programType,
+          status: getFirst(facility, ['facility_status', 'FacilityStatus', 'status', 'Status']) || 'Unknown',
+          address: getFirst(facility, ['street_address', 'StreetAddress', 'LocationAddress', 'location_address']) || 'N/A',
+          city: getFirst(facility, ['city_name', 'CityName', 'city', 'City']) || 'N/A',
+          state: getFirst(facility, ['state_code', 'StateAbbr', 'state', 'State']) || 'N/A',
+          zip: getFirst(facility, ['zip_code', 'ZipCode', 'zip', 'Zip']) || 'N/A',
+          lat: fLat,
+          lon: fLon,
+          distance_miles: distanceMiles,
+          raw_data: facility,
+        };
+      });
       
       // Filter by actual distance and sort by proximity
       const nearbyFacilities = processedFacilities
-        .filter((f: any) => f.distance_miles <= radiusMiles)
+        .filter((f: any) => Number.isFinite(f.distance_miles) && f.distance_miles <= radiusMiles)
         .sort((a: any, b: any) => a.distance_miles - b.distance_miles);
       
       console.log(`✅ EPA FRS ${programType}: ${nearbyFacilities.length} facilities within ${radiusMiles} miles`);
@@ -11441,8 +11494,6 @@ out center;`;
         distance: f.distance,
         containing: f.containing,
         geometry: f.geometry,
-        lat: f.lat,
-        lon: f.lon,
         layerName: f.layerName
       }));
 
@@ -11570,8 +11621,6 @@ out center;`;
           attributes: f.attributes,
           distance: f.distance,
           geometry: f.geometry,
-          lat: f.lat,
-          lon: f.lon,
           layerName: f.layerName
         }));
     } catch (error) {

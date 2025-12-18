@@ -368,12 +368,14 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Pacific Crest Trail';
     }
     
+    // Ensure EPA fields don't get captured by the generic POI count bucket
+    if (key.includes('poi_epa_') || key.startsWith('tri_')) {
+      return 'Human Caused Hazards';
+    }
+
     // Catch-all for POI counts that don't fit other categories
     if (key.includes('poi_') && key.includes('count')) {
       return 'Points of Interest Nearby';
-    }
-    if (key.includes('poi_epa_power') || key.includes('poi_epa_oil_spill')) {
-      return 'Hazards & Safety';
     }
     return 'Other';
   };

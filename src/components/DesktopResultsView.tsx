@@ -535,6 +535,9 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Demographics & Census';
       } else if (key.includes('fws_')) {
         category = 'FWS Species & Wildlife';
+      } else if (key.includes('poi_epa_') || key.startsWith('tri_')) {
+        // Ensure EPA/Toxic Release fields don't get captured by the generic POI count bucket
+        category = 'Human Caused Hazards';
       } else if (key.includes('poi_') && key.includes('count') && !key.includes('wildfire')) {
         category = 'Points of Interest Nearby';
       } else if (key.startsWith('nws_')) {
