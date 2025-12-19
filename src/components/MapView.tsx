@@ -26352,27 +26352,6 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw NRI Hurricane Annualized Frequency layers (County + Census Tract) as polygons
       try {
-        const unwrapToLatLngRing = (latlngs: any): L.LatLng[] | null => {
-          // Leaflet polygons can return:
-          // - LatLng[]
-          // - LatLng[][]
-          // - LatLng[][][]
-          // We want the first actual LatLng[] ring.
-          let cur: any = latlngs;
-          let guard = 0;
-          while (Array.isArray(cur) && cur.length > 0 && guard < 5) {
-            // If first element looks like a LatLng (has lat/lng), we’re done.
-            const first = cur[0];
-            if (first && typeof first.lat === 'number' && typeof first.lng === 'number') {
-              return cur as L.LatLng[];
-            }
-            // Otherwise, drill down one level.
-            cur = first;
-            guard++;
-          }
-          return null;
-        };
-
         const pointInPolygon = (point: L.LatLng, poly: L.LatLng[]): boolean => {
           // Ray casting algorithm
           let inside = false;
@@ -27349,14 +27328,14 @@ const MapView: React.FC<MapViewProps> = ({
                           </style>
                         `;
 
-                        const labels = matches.map((m, idx) => `
+                        const labels = matches.map((m) => `
                           <input class="nri-tab-radio" type="radio" name="${tabGroupId}" id="${m.radioId}" ${m.checked}/>
                           <label class="nri-tab-label" for="${m.radioId}" style="border-left:4px solid ${m.color};">
                             ${m.title}
                           </label>
                         `).join('');
 
-                        const panels = matches.map((m, idx) => `
+                        const panels = matches.map((m) => `
                           <div class="nri-tab-panel" id="${m.tabId}">
                             <div style="font-weight:700; margin-bottom:6px;">${m.title}</div>
                             ${m.dist !== undefined && m.dist !== null ? `<div><strong>Distance:</strong> ${Number(m.dist).toFixed(2)} miles</div>` : ''}
