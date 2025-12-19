@@ -1104,14 +1104,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
-        // Special handling for USVI - will have sub-categories (to be added later)
+        // Special handling for USVI - display enrichments directly
         if (section.id === 'usvi') {
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
+            enrichments: sectionEnrichments,
             subCategories: []
           };
         }
