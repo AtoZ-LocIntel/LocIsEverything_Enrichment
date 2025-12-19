@@ -276,6 +276,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'IL Open Data';
     }
     
+    // USVI Open Data
+    if (key.includes('usvi_')) {
+      return 'USVI Open Data';
+    }
+    
     // Connecticut Data
     if (key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
       return 'Connecticut Data';

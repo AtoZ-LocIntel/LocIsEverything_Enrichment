@@ -13,6 +13,7 @@ import { getNHKeyDestinationsData } from '../adapters/nhKeyDestinations';
 import { getNHNursingHomesData } from '../adapters/nhNursingHomes';
 import { getNHEMSData } from '../adapters/nhEMS';
 import { getNHFireStationsData } from '../adapters/nhFireStations';
+import { getUSVIFireStationsData } from '../adapters/usviFireStations';
 import { getNHPlacesOfWorshipData } from '../adapters/nhPlacesOfWorship';
 import { getNHHospitalsData } from '../adapters/nhHospitals';
 import { getNHPublicWatersAccessData } from '../adapters/nhPublicWatersAccess';
@@ -1963,6 +1964,10 @@ export class EnrichmentService {
       case 'nh_fire_stations':
         return await this.getNHFireStations(lat, lon, radius);
       
+      // USVI Fire Stations - Proximity query
+      case 'usvi_fire_stations':
+        return await this.getUSVIFireStations(lat, lon, radius);
+      
       // NH Places of Worship (NH GRANIT) - Proximity query
       case 'nh_places_of_worship':
         return await this.getNHPlacesOfWorship(lat, lon, radius);
@@ -2748,7 +2753,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Hurricane (polygons)
       case 'nri_hurricane_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyHurricaneAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2765,7 +2770,7 @@ export class EnrichmentService {
       }
 
       case 'nri_hurricane_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractHurricaneAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2783,7 +2788,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Hail (polygons)
       case 'nri_hail_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyHailAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2800,7 +2805,7 @@ export class EnrichmentService {
       }
 
       case 'nri_hail_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractHailAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2818,7 +2823,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Tornado (polygons)
       case 'nri_tornado_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyTornadoAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2835,7 +2840,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tornado_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractTornadoAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2853,7 +2858,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Earthquake (polygons)
       case 'nri_earthquake_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyEarthquakeAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2870,7 +2875,7 @@ export class EnrichmentService {
       }
 
       case 'nri_earthquake_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractEarthquakeAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2888,7 +2893,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Drought (polygons)
       case 'nri_drought_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyDroughtAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2905,7 +2910,7 @@ export class EnrichmentService {
       }
 
       case 'nri_drought_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractDroughtAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2923,7 +2928,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Wildfire (polygons)
       case 'nri_wildfire_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyWildfireAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2940,7 +2945,7 @@ export class EnrichmentService {
       }
 
       case 'nri_wildfire_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractWildfireAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2958,7 +2963,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Lightning (polygons)
       case 'nri_lightning_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyLightningAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2975,7 +2980,7 @@ export class EnrichmentService {
       }
 
       case 'nri_lightning_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractLightningAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -2993,7 +2998,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Ice Storm (polygons)
       case 'nri_ice_storm_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyIceStormAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3010,7 +3015,7 @@ export class EnrichmentService {
       }
 
       case 'nri_ice_storm_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractIceStormAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3028,7 +3033,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Coastal Flooding (polygons)
       case 'nri_coastal_flooding_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyCoastalFloodingAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3045,7 +3050,7 @@ export class EnrichmentService {
       }
 
       case 'nri_coastal_flooding_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractCoastalFloodingAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3063,7 +3068,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Riverine Flooding (polygons)
       case 'nri_riverine_flooding_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyRiverineFloodingAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3080,7 +3085,7 @@ export class EnrichmentService {
       }
 
       case 'nri_riverine_flooding_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractRiverineFloodingAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3098,7 +3103,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Landslide (polygons)
       case 'nri_landslide_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyLandslideAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3115,7 +3120,7 @@ export class EnrichmentService {
       }
 
       case 'nri_landslide_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractLandslideAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3133,7 +3138,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Strong Wind (polygons)
       case 'nri_strong_wind_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyStrongWindAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3150,7 +3155,7 @@ export class EnrichmentService {
       }
 
       case 'nri_strong_wind_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractStrongWindAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3168,7 +3173,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Winter Weather (polygons)
       case 'nri_winter_weather_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyWinterWeatherAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3185,7 +3190,7 @@ export class EnrichmentService {
       }
 
       case 'nri_winter_weather_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractWinterWeatherAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3203,7 +3208,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Cold Wave (polygons)
       case 'nri_cold_wave_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyColdWaveAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3220,7 +3225,7 @@ export class EnrichmentService {
       }
 
       case 'nri_cold_wave_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractColdWaveAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3238,7 +3243,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Heat Wave (polygons)
       case 'nri_heat_wave_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyHeatWaveAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3255,7 +3260,7 @@ export class EnrichmentService {
       }
 
       case 'nri_heat_wave_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractHeatWaveAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3273,7 +3278,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Avalanche (polygons)
       case 'nri_avalanche_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyAvalancheAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3290,7 +3295,7 @@ export class EnrichmentService {
       }
 
       case 'nri_avalanche_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractAvalancheAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3308,7 +3313,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Tsunami (polygons)
       case 'nri_tsunami_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyTsunamiAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3325,7 +3330,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tsunami_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractTsunamiAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3343,7 +3348,7 @@ export class EnrichmentService {
 
       // National Risk Index (NRI) - Annualized Frequency Volcanic Activity (polygons)
       case 'nri_volcanic_activity_annualized_frequency_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyVolcanicActivityAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3360,7 +3365,7 @@ export class EnrichmentService {
       }
 
       case 'nri_volcanic_activity_annualized_frequency_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractVolcanicActivityAnnualizedFrequency(lat, lon, cappedRadius);
         const afreqStats = this.formatNriAfreqStats(containing.length ? containing : all);
         return {
@@ -3378,7 +3383,7 @@ export class EnrichmentService {
 
       // NRI Census Tract Risk Index Rating and Expected Annual Loss Rating layers
       case 'nri_avalanche_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractAvalancheHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3395,7 +3400,7 @@ export class EnrichmentService {
       }
 
       case 'nri_coastal_flooding_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractCoastalFloodingExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3412,7 +3417,7 @@ export class EnrichmentService {
       }
 
       case 'nri_coastal_flooding_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractCoastalFloodingHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3429,7 +3434,7 @@ export class EnrichmentService {
       }
 
       case 'nri_cold_wave_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractColdWaveExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3446,7 +3451,7 @@ export class EnrichmentService {
       }
 
       case 'nri_cold_wave_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractColdWaveHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3463,7 +3468,7 @@ export class EnrichmentService {
       }
 
       case 'nri_drought_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractDroughtExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3480,7 +3485,7 @@ export class EnrichmentService {
       }
 
       case 'nri_drought_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractDroughtHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3497,7 +3502,7 @@ export class EnrichmentService {
       }
 
       case 'nri_earthquake_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractEarthquakeExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3514,7 +3519,7 @@ export class EnrichmentService {
       }
 
       case 'nri_earthquake_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractEarthquakeHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3531,7 +3536,7 @@ export class EnrichmentService {
       }
 
       case 'nri_expected_annual_loss_rating_composite_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractExpectedAnnualLossRatingComposite(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3548,7 +3553,7 @@ export class EnrichmentService {
       }
 
       case 'nri_hail_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractHailExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3565,7 +3570,7 @@ export class EnrichmentService {
       }
 
       case 'nri_hail_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractHailHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3582,7 +3587,7 @@ export class EnrichmentService {
       }
 
       case 'nri_heat_wave_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractHeatWaveExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3599,7 +3604,7 @@ export class EnrichmentService {
       }
 
       case 'nri_heat_wave_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractHeatWaveHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3616,7 +3621,7 @@ export class EnrichmentService {
       }
 
       case 'nri_ice_storm_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractIceStormExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3633,7 +3638,7 @@ export class EnrichmentService {
       }
 
       case 'nri_ice_storm_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractIceStormHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3650,7 +3655,7 @@ export class EnrichmentService {
       }
 
       case 'nri_inland_flooding_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractInlandFloodingExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3667,7 +3672,7 @@ export class EnrichmentService {
       }
 
       case 'nri_inland_flooding_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractInlandFloodingHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3684,7 +3689,7 @@ export class EnrichmentService {
       }
 
       case 'nri_landslide_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractLandslideExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3701,7 +3706,7 @@ export class EnrichmentService {
       }
 
       case 'nri_landslide_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractLandslideHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3718,7 +3723,7 @@ export class EnrichmentService {
       }
 
       case 'nri_lightning_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractLightningExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3735,7 +3740,7 @@ export class EnrichmentService {
       }
 
       case 'nri_lightning_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractLightningHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3752,7 +3757,7 @@ export class EnrichmentService {
       }
 
       case 'nri_social_vulnerability_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractSocialVulnerabilityRating(lat, lon, cappedRadius);
         // Social Vulnerability doesn't have specific field suffixes, so we'll just return basic stats
         return {
@@ -3769,7 +3774,7 @@ export class EnrichmentService {
       }
 
       case 'nri_strong_wind_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractStrongWindExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3786,7 +3791,7 @@ export class EnrichmentService {
       }
 
       case 'nri_strong_wind_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractStrongWindHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3803,7 +3808,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tornado_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractTornadoExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3820,7 +3825,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tornado_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractTornadoHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3837,7 +3842,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tsunami_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractTsunamiExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3854,7 +3859,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tsunami_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractTsunamiHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3871,7 +3876,7 @@ export class EnrichmentService {
       }
 
       case 'nri_volcanic_activity_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractVolcanicActivityExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3888,7 +3893,7 @@ export class EnrichmentService {
       }
 
       case 'nri_volcanic_activity_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractVolcanicActivityHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3905,7 +3910,7 @@ export class EnrichmentService {
       }
 
       case 'nri_wildfire_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractWildfireExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3922,7 +3927,7 @@ export class EnrichmentService {
       }
 
       case 'nri_wildfire_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractWildfireHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3939,7 +3944,7 @@ export class EnrichmentService {
       }
 
       case 'nri_winter_weather_expected_annual_loss_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractWinterWeatherExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3956,7 +3961,7 @@ export class EnrichmentService {
       }
 
       case 'nri_winter_weather_hazard_type_risk_index_rating_census_tract': {
-        const cappedRadius = Math.min(radius ?? 5, 10);
+        const cappedRadius = Math.min(radius ?? 5, 25);
         const { containing, nearby, all } = await getNRICensusTractWinterWeatherHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -3974,7 +3979,7 @@ export class EnrichmentService {
 
       // NRI County Risk Index Rating and Expected Annual Loss Rating layers
       case 'nri_avalanche_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyAvalancheExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -3991,7 +3996,7 @@ export class EnrichmentService {
       }
 
       case 'nri_avalanche_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyAvalancheHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4008,7 +4013,7 @@ export class EnrichmentService {
       }
 
       case 'nri_coastal_flooding_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyCoastalFloodingExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4025,7 +4030,7 @@ export class EnrichmentService {
       }
 
       case 'nri_coastal_flooding_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyCoastalFloodingHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4042,7 +4047,7 @@ export class EnrichmentService {
       }
 
       case 'nri_cold_wave_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyColdWaveExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4059,7 +4064,7 @@ export class EnrichmentService {
       }
 
       case 'nri_cold_wave_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyColdWaveHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4076,7 +4081,7 @@ export class EnrichmentService {
       }
 
       case 'nri_community_resilience_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyCommunityResilienceRating(lat, lon, cappedRadius);
         // Community Resilience doesn't have specific field suffixes, so we'll just return basic stats
         return {
@@ -4093,7 +4098,7 @@ export class EnrichmentService {
       }
 
       case 'nri_drought_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyDroughtExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4110,7 +4115,7 @@ export class EnrichmentService {
       }
 
       case 'nri_drought_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyDroughtHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4127,7 +4132,7 @@ export class EnrichmentService {
       }
 
       case 'nri_earthquake_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyEarthquakeExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4144,7 +4149,7 @@ export class EnrichmentService {
       }
 
       case 'nri_earthquake_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyEarthquakeHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4161,7 +4166,7 @@ export class EnrichmentService {
       }
 
       case 'nri_hail_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyHailExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4178,7 +4183,7 @@ export class EnrichmentService {
       }
 
       case 'nri_hail_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyHailHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4195,7 +4200,7 @@ export class EnrichmentService {
       }
 
       case 'nri_heat_wave_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyHeatWaveExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4212,7 +4217,7 @@ export class EnrichmentService {
       }
 
       case 'nri_heat_wave_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyHeatWaveHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4229,7 +4234,7 @@ export class EnrichmentService {
       }
 
       case 'nri_hurricane_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyHurricaneExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4246,7 +4251,7 @@ export class EnrichmentService {
       }
 
       case 'nri_hurricane_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyHurricaneHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4263,7 +4268,7 @@ export class EnrichmentService {
       }
 
       case 'nri_ice_storm_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyIceStormExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4280,7 +4285,7 @@ export class EnrichmentService {
       }
 
       case 'nri_ice_storm_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyIceStormHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4297,7 +4302,7 @@ export class EnrichmentService {
       }
 
       case 'nri_inland_flooding_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyInlandFloodingExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4314,7 +4319,7 @@ export class EnrichmentService {
       }
 
       case 'nri_inland_flooding_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyInlandFloodingHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4331,7 +4336,7 @@ export class EnrichmentService {
       }
 
       case 'nri_landslide_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyLandslideExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4348,7 +4353,7 @@ export class EnrichmentService {
       }
 
       case 'nri_landslide_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyLandslideHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4365,7 +4370,7 @@ export class EnrichmentService {
       }
 
       case 'nri_lightning_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyLightningExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4382,7 +4387,7 @@ export class EnrichmentService {
       }
 
       case 'nri_national_risk_index_rating_composite_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyNationalRiskIndexRatingComposite(lat, lon, cappedRadius);
         // National Risk Index Rating Composite doesn't have specific field suffixes, so we'll just return basic stats
         return {
@@ -4399,7 +4404,7 @@ export class EnrichmentService {
       }
 
       case 'nri_strong_wind_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyStrongWindExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4416,7 +4421,7 @@ export class EnrichmentService {
       }
 
       case 'nri_strong_wind_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyStrongWindHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4433,7 +4438,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tornado_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyTornadoExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4450,7 +4455,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tornado_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyTornadoHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4467,7 +4472,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tsunami_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyTsunamiExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4484,7 +4489,7 @@ export class EnrichmentService {
       }
 
       case 'nri_tsunami_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyTsunamiHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4501,7 +4506,7 @@ export class EnrichmentService {
       }
 
       case 'nri_volcanic_activity_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyVolcanicActivityExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4518,7 +4523,7 @@ export class EnrichmentService {
       }
 
       case 'nri_volcanic_activity_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyVolcanicActivityHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4535,7 +4540,7 @@ export class EnrichmentService {
       }
 
       case 'nri_wildfire_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyWildfireExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4552,7 +4557,7 @@ export class EnrichmentService {
       }
 
       case 'nri_wildfire_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyWildfireHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -4569,7 +4574,7 @@ export class EnrichmentService {
       }
 
       case 'nri_winter_weather_expected_annual_loss_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyWinterWeatherExpectedAnnualLossRating(lat, lon, cappedRadius);
         const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
         return {
@@ -4586,7 +4591,7 @@ export class EnrichmentService {
       }
 
       case 'nri_winter_weather_hazard_type_risk_index_rating_county': {
-        const cappedRadius = Math.min(radius ?? 25, 25);
+        const cappedRadius = Math.min(radius ?? 25, 50);
         const { containing, nearby, all } = await getNRICountyWinterWeatherHazardTypeRiskIndexRating(lat, lon, cappedRadius);
         const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
         return {
@@ -6617,6 +6622,60 @@ export class EnrichmentService {
         nh_fire_stations_count: 0,
         nh_fire_stations_all: [],
         nh_fire_stations_error: 'Error fetching NH Fire Stations data'
+      };
+    }
+  }
+
+  private async getUSVIFireStations(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚒 Fetching USVI Fire Stations data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const fireStations = await getUSVIFireStationsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (fireStations && fireStations.length > 0) {
+        result.usvi_fire_stations_count = fireStations.length;
+        result.usvi_fire_stations_all = fireStations.map(station => ({
+          ...station.attributes,
+          fac_name: station.fac_name,
+          fac_type: station.fac_type,
+          territory: station.territory,
+          county: station.county,
+          x: station.x,
+          y: station.y,
+          usng: station.usng,
+          flood_zone: station.flood_zone,
+          lat: station.lat,
+          lon: station.lon,
+          distance_miles: station.distance_miles
+        }));
+        
+        result.usvi_fire_stations_summary = `Found ${fireStations.length} USVI Fire Station(s) within ${radiusMiles} miles.`;
+      } else {
+        result.usvi_fire_stations_count = 0;
+        result.usvi_fire_stations_all = [];
+        result.usvi_fire_stations_summary = `No USVI Fire Stations found within ${radiusMiles} miles.`;
+      }
+      
+      result.usvi_fire_stations_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ USVI Fire Stations data processed:`, {
+        count: result.usvi_fire_stations_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching USVI Fire Stations:', error);
+      return {
+        usvi_fire_stations_count: 0,
+        usvi_fire_stations_all: [],
+        usvi_fire_stations_summary: 'Error fetching USVI Fire Stations data',
+        usvi_fire_stations_error: 'Error fetching USVI Fire Stations data'
       };
     }
   }

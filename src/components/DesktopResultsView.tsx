@@ -90,6 +90,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return `${value.length} fires found (see CSV for details)`;
       }
       
+      // Special handling for USVI Fire Stations - show count only
+      if (key.includes('usvi_fire_stations_all')) {
+        return `${value.length} fire stations found (see CSV for details)`;
+      }
+      
       // Regular array handling for non-POI data
       return value.map((item: any) => {
         if (typeof item === 'object' && item !== null) {
@@ -590,6 +595,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Houston Data';
       } else if (key.includes('chicago_') || key.includes('lake_county_')) {
         category = 'IL Open Data';
+      } else if (key.includes('usvi_')) {
+        category = 'USVI Open Data';
       } else if (key.includes('ct_parcel') || key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
         category = 'Connecticut Data';
       } else if (key.includes('de_state_forest') || key.includes('de_pine_plantations') || key.includes('de_urban_tree_canopy') || key.includes('de_forest_cover_2007') || key.includes('de_')) {

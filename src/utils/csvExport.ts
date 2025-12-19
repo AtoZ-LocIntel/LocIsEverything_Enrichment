@@ -268,6 +268,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_nursing_homes_all' ||
         key === 'nh_ems_all' ||
         key === 'nh_fire_stations_all' ||
+        key === 'usvi_fire_stations_all' ||
         key === 'nh_places_of_worship_all' ||
         key === 'nh_hospitals_all' ||
         key === 'nh_public_waters_access_all' ||
@@ -4747,6 +4748,51 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'NH GRANIT'
+        ]);
+      });
+    } else if (key === 'usvi_fire_stations_all' && Array.isArray(value)) {
+      // Handle USVI Fire Stations - each fire station gets its own row with all attributes
+      value.forEach((station: any) => {
+        const stationName = station.fac_name || station.FAC_NAME || station.Fac_Name || 'Unknown Fire Station';
+        const stationType = station.fac_type || station.FAC_TYPE || station.Fac_Type || 'Unknown Type';
+        const territory = station.territory || station.TERRITORY || station.Territory || '';
+        const county = station.county || station.COUNTY || station.County || '';
+        const usng = station.usng || station.USNG || station.Usng || '';
+        const floodZone = station.flood_zone || station.FLOOD_ZONE || station.Flood_Zone || '';
+        
+        const allAttributes = { ...station };
+        delete allAttributes.fac_name;
+        delete allAttributes.fac_type;
+        delete allAttributes.territory;
+        delete allAttributes.county;
+        delete allAttributes.x;
+        delete allAttributes.y;
+        delete allAttributes.usng;
+        delete allAttributes.flood_zone;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const locationInfo = [territory, county].filter(Boolean).join(', ');
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USVI Open Data',
+          (location.confidence || 'N/A').toString(),
+          'USVI_FIRE_STATION',
+          stationName,
+          (station.lat || location.lat).toString(),
+          (station.lon || location.lon).toString(),
+          station.distance_miles !== null && station.distance_miles !== undefined ? station.distance_miles.toFixed(2) : '',
+          stationType,
+          locationInfo || attributesJson,
+          '',
+          usng || floodZone || '',
+          attributesJson,
+          'USVI Open Data'
         ]);
       });
     } else if (key === 'nh_places_of_worship_all' && Array.isArray(value)) {

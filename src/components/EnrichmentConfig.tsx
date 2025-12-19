@@ -101,6 +101,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   ut: <img src="/assets/UT.webp" alt="Utah Open Data" className="w-5 h-5" />,
   co: <img src="/assets/CO.webp" alt="Colorado Open Data" className="w-5 h-5" />,
   il: <img src="/assets/IL.webp" alt="Illinois Open Data" className="w-5 h-5" />,
+  usvi: <img src="/assets/USVI.webp" alt="USVI Open Data" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -1103,6 +1104,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        // Special handling for USVI - will have sub-categories (to be added later)
+        if (section.id === 'usvi') {
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: [],
+            subCategories: []
+          };
+        }
+        
         return {
           id: section.id,
           title: section.title,
@@ -1233,6 +1246,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'in': 'IN',
       'la': 'LA',
       'ky': 'KY',
+      'usvi': 'USVI',
       'tiger': 'TIGERweb',
       'eu': 'EU',
       'canada': 'Canada',

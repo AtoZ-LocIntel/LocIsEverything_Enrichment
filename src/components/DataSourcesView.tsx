@@ -4048,6 +4048,19 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
+      category: "USVI Open Data",
+      sources: [
+        {
+          name: "USVI Fire Stations",
+          description: "Location of Fire Stations and associated facilities in the United States Virgin Islands and Puerto Rico - proximity queries up to 25 miles",
+          coverage: "U.S. Virgin Islands and Puerto Rico",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Fire_Stations_USVI/FeatureServer/2"
+        }
+      ]
+    },
+    {
       category: "Louisiana Sources",
       sources: [
         {
