@@ -684,6 +684,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'blm_national_lwcf_all' || // Skip BLM National LWCF Polygons array (handled separately for map drawing)
     key === 'usfs_forest_boundaries_all' || // Skip USFS Forest Boundaries array (handled separately for map drawing)
     key === 'usfs_wilderness_areas_all' || // Skip USFS Wilderness Areas array (handled separately for map drawing)
+    key === 'chinook_salmon_ranges_all' || // Skip Chinook Salmon Ranges array (handled separately for map drawing)
     key === 'nps_national_parks_all' || // Skip NPS National Parks array (handled separately for map drawing)
     key === 'usfs_national_grasslands_all' || // Skip USFS National Grasslands array (handled separately for map drawing)
     key === 'usfs_hazardous_sites_all' || // Skip USFS Hazardous Sites array (handled separately for map drawing)
@@ -20163,6 +20164,95 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing USFS Forest Boundaries:', error);
+      }
+
+      // Draw Chinook Salmon Ranges as polygons on the map
+      try {
+        if (enrichments.chinook_salmon_ranges_all && Array.isArray(enrichments.chinook_salmon_ranges_all)) {
+          let salmonCount = 0;
+          enrichments.chinook_salmon_ranges_all.forEach((range: any) => {
+            if (range.geometry && range.geometry.rings && Array.isArray(range.geometry.rings)) {
+              try {
+                const rings = range.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  // Validate outer ring
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('Chinook Salmon Range outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const color = '#0ea5e9'; // Blue color for salmon ranges
+                  const weight = 3;
+                  const opacity = 0.8;
+                  
+                  // L.polygon can handle multiple rings (outer + holes)
+                  const salmonPolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const esuDps = range.esu_dps || range.ESU_DPS || null;
+                  const status = range.status || range.Status || null;
+                  const classValue = range.class || range.Class || null;
+                  const isContaining = range.isContaining || false;
+                  const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🐟 Chinook Salmon Range
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${esuDps ? `<div><strong>ESU/DPS:</strong> ${esuDps}</div>` : ''}
+                        ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                        ${classValue ? `<div><strong>Class:</strong> ${classValue}</div>` : ''}
+                        ${isContaining ? '<div><strong>Location Status:</strong> Contains location</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  salmonPolygon.bindPopup(popupContent, { maxWidth: 400 });
+                  salmonPolygon.addTo(primary);
+                  
+                  // Extend map bounds
+                  const polygonBounds = salmonPolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                  
+                  salmonCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing Chinook Salmon Range polygon:', error);
+              }
+            }
+          });
+          
+          if (salmonCount > 0) {
+            if (!legendAccumulator['chinook_salmon_ranges']) {
+              legendAccumulator['chinook_salmon_ranges'] = {
+                icon: '🐟',
+                color: '#0ea5e9',
+                title: 'Chinook Salmon Ranges',
+                count: 0,
+              };
+            }
+            legendAccumulator['chinook_salmon_ranges'].count += salmonCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Chinook Salmon Ranges:', error);
       }
 
       // Draw NPS National Parks as polygons on the map

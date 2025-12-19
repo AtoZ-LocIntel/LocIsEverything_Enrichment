@@ -268,6 +268,7 @@ import { getBLMNationalFirePerimetersData } from '../adapters/blmNationalFirePer
 import { getBLMNationalLWCFData } from '../adapters/blmNationalLWCF';
 import { getUSFSForestBoundariesData } from '../adapters/usfsForestBoundaries';
 import { getUSFSWildernessAreasData } from '../adapters/usfsWildernessAreas';
+import { getChinookSalmonRangesData } from '../adapters/chinookSalmonRanges';
 import { getUSFSNationalGrasslandsData } from '../adapters/usfsNationalGrasslands';
 import { getUSFSOfficeLocationsData } from '../adapters/usfsOfficeLocations';
 import { getUSFSSpecialUsesCommunicationsSitesData } from '../adapters/usfsSpecialUsesCommunicationsSites';
@@ -5636,6 +5637,10 @@ export class EnrichmentService {
       // USFS Special Uses Communications Sites - Proximity query (max 50 miles)
       case 'usfs_special_uses_communications_sites':
         return await this.getUSFSSpecialUsesCommunicationsSites(lat, lon, radius);
+      
+      // Chinook Salmon Ranges - Point-in-polygon and proximity query (max 50 miles)
+      case 'chinook_salmon_ranges':
+        return await this.getChinookSalmonRanges(lat, lon, radius);
       
       // USFS Administrative Boundaries - Point-in-polygon and proximity query (max 50 miles)
       case 'usfs_administrative_boundaries':
@@ -16353,6 +16358,71 @@ out center;`;
         usfs_forest_boundaries_count: 0,
         usfs_forest_boundaries_all: [],
         usfs_forest_boundaries_summary: 'Error querying forest boundaries'
+      };
+    }
+  }
+
+  private async getChinookSalmonRanges(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐟 Fetching Chinook Salmon Ranges data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const ranges = await getChinookSalmonRangesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (ranges.length === 0) {
+        result.chinook_salmon_ranges_containing = null;
+        result.chinook_salmon_ranges_containing_message = 'No Chinook salmon range found containing this location';
+        result.chinook_salmon_ranges_count = 0;
+        result.chinook_salmon_ranges_all = [];
+        result.chinook_salmon_ranges_summary = 'No Chinook salmon ranges found.';
+      } else {
+        // Get the first containing range (should typically be only one for point-in-polygon)
+        const containingRange = ranges.find(r => r.isContaining) || ranges[0];
+        
+        if (containingRange && containingRange.isContaining) {
+          const rangeLabel = containingRange.esu_dps || `Range ${containingRange.fid}`;
+          result.chinook_salmon_ranges_containing = rangeLabel;
+          result.chinook_salmon_ranges_containing_message = `Location is within Chinook salmon range: ${rangeLabel}${containingRange.status ? ` (Status: ${containingRange.status})` : ''}`;
+        } else {
+          result.chinook_salmon_ranges_containing = null;
+          result.chinook_salmon_ranges_containing_message = 'No Chinook salmon range found containing this location';
+        }
+        
+        result.chinook_salmon_ranges_count = ranges.length;
+        result.chinook_salmon_ranges_all = ranges.map(range => ({
+          ...range.attributes,
+          fid: range.fid,
+          esu_dps: range.esu_dps,
+          status: range.status,
+          class: range.class,
+          shape_area: range.shape_area,
+          shape_length: range.shape_length,
+          geometry: range.geometry,
+          distance_miles: range.distance_miles,
+          isContaining: range.isContaining
+        }));
+        
+        result.chinook_salmon_ranges_summary = `Found ${ranges.length} Chinook salmon range(s)${containingRange && containingRange.isContaining ? ' (location is within a range)' : ''}.`;
+      }
+      
+      console.log(`✅ Chinook Salmon Ranges data processed:`, {
+        totalCount: result.chinook_salmon_ranges_count,
+        containing: result.chinook_salmon_ranges_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Chinook Salmon Ranges data:', error);
+      return {
+        chinook_salmon_ranges_containing: null,
+        chinook_salmon_ranges_containing_message: 'Error querying Chinook salmon ranges',
+        chinook_salmon_ranges_count: 0,
+        chinook_salmon_ranges_all: [],
+        chinook_salmon_ranges_summary: 'Error querying Chinook salmon ranges'
       };
     }
   }

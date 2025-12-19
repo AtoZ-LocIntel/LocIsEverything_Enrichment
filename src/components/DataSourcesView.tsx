@@ -1658,6 +1658,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://www.isric.org/explore/soilgrids"
+        },
+        {
+          name: "Chinook Salmon Ranges",
+          description: "Chinook salmon range polygons - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States (Pacific Northwest)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Chinook_Salmon_Ranges/FeatureServer/0"
         }
       ]
     },

@@ -584,6 +584,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'blm_national_lwcf_all' ||
         key === 'usfs_forest_boundaries_all' ||
         key === 'usfs_wilderness_areas_all' ||
+        key === 'chinook_salmon_ranges_all' ||
         key === 'usfs_national_grasslands_all' ||
         key === 'usfs_hazardous_sites_all' ||
         key === 'usfs_office_locations_all' ||
@@ -10027,6 +10028,66 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           forestId || 'N/A',
           attributesJson,
           'USFS'
+        ]);
+      });
+    } else if (key === 'chinook_salmon_ranges_all' && Array.isArray(value)) {
+      value.forEach((range: any) => {
+        const esuDps = range.esu_dps || range.ESU_DPS || range.Esu_Dps || '';
+        const status = range.status || range.Status || '';
+        const classValue = range.class || range.Class || '';
+        const fid = range.fid !== null && range.fid !== undefined ? range.fid.toString() : '';
+        const isContaining = range.isContaining ? 'Yes' : 'No';
+        const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles.toFixed(2) : (range.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (range.geometry && range.geometry.rings && range.geometry.rings.length > 0) {
+          const outerRing = range.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...range };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.fid;
+        delete allAttributes.FID;
+        delete allAttributes.esu_dps;
+        delete allAttributes.ESU_DPS;
+        delete allAttributes.Esu_Dps;
+        delete allAttributes.status;
+        delete allAttributes.Status;
+        delete allAttributes.class;
+        delete allAttributes.Class;
+        delete allAttributes.shape_area;
+        delete allAttributes.Shape__Area;
+        delete allAttributes.Shape_Area;
+        delete allAttributes.shape_length;
+        delete allAttributes.Shape__Length;
+        delete allAttributes.Shape_Length;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'ArcGIS FeatureServer',
+          (location.confidence || 'N/A').toString(),
+          'CHINOOK_SALMON_RANGES',
+          esuDps || `Range ${fid}`,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          status || 'N/A',
+          classValue || 'N/A',
+          fid || 'N/A',
+          attributesJson,
+          'ArcGIS FeatureServer'
         ]);
       });
     } else if (key === 'usfs_office_locations_all' && Array.isArray(value)) {
