@@ -26703,6 +26703,510 @@ const MapView: React.FC<MapViewProps> = ({
             color: '#9a3412',
             legendKey: 'nri_volcanic_activity_annualized_frequency_census_tract',
           },
+          {
+            key: 'nri_avalanche_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Avalanche Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🏔️',
+            color: '#64748b',
+            legendKey: 'nri_avalanche_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_coastal_flooding_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Coastal Flooding Expected Annual Loss Rating (Census Tract)',
+            icon: '🌊',
+            color: '#0891b2',
+            legendKey: 'nri_coastal_flooding_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_coastal_flooding_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Coastal Flooding Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🌊',
+            color: '#0e7490',
+            legendKey: 'nri_coastal_flooding_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_cold_wave_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Cold Wave Expected Annual Loss Rating (Census Tract)',
+            icon: '🧊',
+            color: '#93c5fd',
+            legendKey: 'nri_cold_wave_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_cold_wave_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Cold Wave Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🧊',
+            color: '#60a5fa',
+            legendKey: 'nri_cold_wave_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_drought_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Drought Expected Annual Loss Rating (Census Tract)',
+            icon: '☀️',
+            color: '#fbbf24',
+            legendKey: 'nri_drought_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_drought_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Drought Hazard Type Risk Index Rating (Census Tract)',
+            icon: '☀️',
+            color: '#f59e0b',
+            legendKey: 'nri_drought_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_earthquake_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Earthquake Expected Annual Loss Rating (Census Tract)',
+            icon: '🌍',
+            color: '#f97316',
+            legendKey: 'nri_earthquake_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_earthquake_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Earthquake Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🌍',
+            color: '#ea580c',
+            legendKey: 'nri_earthquake_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_expected_annual_loss_rating_composite_census_tract_all',
+            title: 'NRI Expected Annual Loss Rating Composite (Census Tract)',
+            icon: '📊',
+            color: '#6366f1',
+            legendKey: 'nri_expected_annual_loss_rating_composite_census_tract',
+          },
+          {
+            key: 'nri_hail_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Hail Expected Annual Loss Rating (Census Tract)',
+            icon: '🌨️',
+            color: '#0284c7',
+            legendKey: 'nri_hail_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_hail_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Hail Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🌨️',
+            color: '#0369a1',
+            legendKey: 'nri_hail_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_heat_wave_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Heat Wave Expected Annual Loss Rating (Census Tract)',
+            icon: '🌡️',
+            color: '#ef4444',
+            legendKey: 'nri_heat_wave_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_heat_wave_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Heat Wave Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🌡️',
+            color: '#dc2626',
+            legendKey: 'nri_heat_wave_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_ice_storm_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Ice Storm Expected Annual Loss Rating (Census Tract)',
+            icon: '🧊',
+            color: '#3b82f6',
+            legendKey: 'nri_ice_storm_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_ice_storm_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Ice Storm Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🧊',
+            color: '#2563eb',
+            legendKey: 'nri_ice_storm_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_inland_flooding_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Inland Flooding Expected Annual Loss Rating (Census Tract)',
+            icon: '💧',
+            color: '#0284c7',
+            legendKey: 'nri_inland_flooding_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_inland_flooding_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Inland Flooding Hazard Type Risk Index Rating (Census Tract)',
+            icon: '💧',
+            color: '#0369a1',
+            legendKey: 'nri_inland_flooding_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_landslide_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Landslide Expected Annual Loss Rating (Census Tract)',
+            icon: '⛰️',
+            color: '#57534e',
+            legendKey: 'nri_landslide_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_landslide_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Landslide Hazard Type Risk Index Rating (Census Tract)',
+            icon: '⛰️',
+            color: '#44403c',
+            legendKey: 'nri_landslide_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_lightning_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Lightning Expected Annual Loss Rating (Census Tract)',
+            icon: '⚡',
+            color: '#f59e0b',
+            legendKey: 'nri_lightning_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_lightning_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Lightning Hazard Type Risk Index Rating (Census Tract)',
+            icon: '⚡',
+            color: '#d97706',
+            legendKey: 'nri_lightning_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_social_vulnerability_rating_census_tract_all',
+            title: 'NRI Social Vulnerability Rating (Census Tract)',
+            icon: '👥',
+            color: '#8b5cf6',
+            legendKey: 'nri_social_vulnerability_rating_census_tract',
+          },
+          {
+            key: 'nri_strong_wind_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Strong Wind Expected Annual Loss Rating (Census Tract)',
+            icon: '💨',
+            color: '#737373',
+            legendKey: 'nri_strong_wind_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_strong_wind_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Strong Wind Hazard Type Risk Index Rating (Census Tract)',
+            icon: '💨',
+            color: '#525252',
+            legendKey: 'nri_strong_wind_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_tornado_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Tornado Expected Annual Loss Rating (Census Tract)',
+            icon: '🌪️',
+            color: '#7c3aed',
+            legendKey: 'nri_tornado_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_tornado_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Tornado Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🌪️',
+            color: '#6d28d9',
+            legendKey: 'nri_tornado_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_tsunami_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Tsunami Expected Annual Loss Rating (Census Tract)',
+            icon: '🌊',
+            color: '#0f766e',
+            legendKey: 'nri_tsunami_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_tsunami_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Tsunami Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🌊',
+            color: '#0d9488',
+            legendKey: 'nri_tsunami_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_volcanic_activity_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Volcanic Activity Expected Annual Loss Rating (Census Tract)',
+            icon: '🌋',
+            color: '#9a3412',
+            legendKey: 'nri_volcanic_activity_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_volcanic_activity_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Volcanic Activity Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🌋',
+            color: '#7c2d12',
+            legendKey: 'nri_volcanic_activity_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_wildfire_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Wildfire Expected Annual Loss Rating (Census Tract)',
+            icon: '🔥',
+            color: '#b91c1c',
+            legendKey: 'nri_wildfire_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_wildfire_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Wildfire Hazard Type Risk Index Rating (Census Tract)',
+            icon: '🔥',
+            color: '#991b1b',
+            legendKey: 'nri_wildfire_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_winter_weather_expected_annual_loss_rating_census_tract_all',
+            title: 'NRI Winter Weather Expected Annual Loss Rating (Census Tract)',
+            icon: '❄️',
+            color: '#c7d2fe',
+            legendKey: 'nri_winter_weather_expected_annual_loss_rating_census_tract',
+          },
+          {
+            key: 'nri_winter_weather_hazard_type_risk_index_rating_census_tract_all',
+            title: 'NRI Winter Weather Hazard Type Risk Index Rating (Census Tract)',
+            icon: '❄️',
+            color: '#a5b4fc',
+            legendKey: 'nri_winter_weather_hazard_type_risk_index_rating_census_tract',
+          },
+          {
+            key: 'nri_avalanche_expected_annual_loss_rating_county_all',
+            title: 'NRI Avalanche Expected Annual Loss Rating (County)',
+            icon: '🏔️',
+            color: '#475569',
+            legendKey: 'nri_avalanche_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_avalanche_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Avalanche Hazard Type Risk Index Rating (County)',
+            icon: '🏔️',
+            color: '#334155',
+            legendKey: 'nri_avalanche_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_coastal_flooding_expected_annual_loss_rating_county_all',
+            title: 'NRI Coastal Flooding Expected Annual Loss Rating (County)',
+            icon: '🌊',
+            color: '#0e7490',
+            legendKey: 'nri_coastal_flooding_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_coastal_flooding_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Coastal Flooding Hazard Type Risk Index Rating (County)',
+            icon: '🌊',
+            color: '#155e75',
+            legendKey: 'nri_coastal_flooding_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_cold_wave_expected_annual_loss_rating_county_all',
+            title: 'NRI Cold Wave Expected Annual Loss Rating (County)',
+            icon: '🧊',
+            color: '#60a5fa',
+            legendKey: 'nri_cold_wave_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_cold_wave_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Cold Wave Hazard Type Risk Index Rating (County)',
+            icon: '🧊',
+            color: '#3b82f6',
+            legendKey: 'nri_cold_wave_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_community_resilience_rating_county_all',
+            title: 'NRI Community Resilience Rating (County)',
+            icon: '🏘️',
+            color: '#10b981',
+            legendKey: 'nri_community_resilience_rating_county',
+          },
+          {
+            key: 'nri_drought_expected_annual_loss_rating_county_all',
+            title: 'NRI Drought Expected Annual Loss Rating (County)',
+            icon: '☀️',
+            color: '#f59e0b',
+            legendKey: 'nri_drought_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_drought_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Drought Hazard Type Risk Index Rating (County)',
+            icon: '☀️',
+            color: '#d97706',
+            legendKey: 'nri_drought_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_earthquake_expected_annual_loss_rating_county_all',
+            title: 'NRI Earthquake Expected Annual Loss Rating (County)',
+            icon: '🌍',
+            color: '#ea580c',
+            legendKey: 'nri_earthquake_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_earthquake_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Earthquake Hazard Type Risk Index Rating (County)',
+            icon: '🌍',
+            color: '#c2410c',
+            legendKey: 'nri_earthquake_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_hail_expected_annual_loss_rating_county_all',
+            title: 'NRI Hail Expected Annual Loss Rating (County)',
+            icon: '🌨️',
+            color: '#0369a1',
+            legendKey: 'nri_hail_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_hail_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Hail Hazard Type Risk Index Rating (County)',
+            icon: '🌨️',
+            color: '#075985',
+            legendKey: 'nri_hail_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_heat_wave_expected_annual_loss_rating_county_all',
+            title: 'NRI Heat Wave Expected Annual Loss Rating (County)',
+            icon: '🌡️',
+            color: '#dc2626',
+            legendKey: 'nri_heat_wave_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_heat_wave_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Heat Wave Hazard Type Risk Index Rating (County)',
+            icon: '🌡️',
+            color: '#b91c1c',
+            legendKey: 'nri_heat_wave_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_hurricane_expected_annual_loss_rating_county_all',
+            title: 'NRI Hurricane Expected Annual Loss Rating (County)',
+            icon: '🌀',
+            color: '#1d4ed8',
+            legendKey: 'nri_hurricane_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_hurricane_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Hurricane Hazard Type Risk Index Rating (County)',
+            icon: '🌀',
+            color: '#1e40af',
+            legendKey: 'nri_hurricane_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_ice_storm_expected_annual_loss_rating_county_all',
+            title: 'NRI Ice Storm Expected Annual Loss Rating (County)',
+            icon: '🧊',
+            color: '#2563eb',
+            legendKey: 'nri_ice_storm_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_ice_storm_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Ice Storm Hazard Type Risk Index Rating (County)',
+            icon: '🧊',
+            color: '#1e3a8a',
+            legendKey: 'nri_ice_storm_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_inland_flooding_expected_annual_loss_rating_county_all',
+            title: 'NRI Inland Flooding Expected Annual Loss Rating (County)',
+            icon: '💧',
+            color: '#0369a1',
+            legendKey: 'nri_inland_flooding_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_inland_flooding_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Inland Flooding Hazard Type Risk Index Rating (County)',
+            icon: '💧',
+            color: '#075985',
+            legendKey: 'nri_inland_flooding_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_landslide_expected_annual_loss_rating_county_all',
+            title: 'NRI Landslide Expected Annual Loss Rating (County)',
+            icon: '⛰️',
+            color: '#44403c',
+            legendKey: 'nri_landslide_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_landslide_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Landslide Hazard Type Risk Index Rating (County)',
+            icon: '⛰️',
+            color: '#292524',
+            legendKey: 'nri_landslide_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_lightning_expected_annual_loss_rating_county_all',
+            title: 'NRI Lightning Expected Annual Loss Rating (County)',
+            icon: '⚡',
+            color: '#d97706',
+            legendKey: 'nri_lightning_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_national_risk_index_rating_composite_county_all',
+            title: 'NRI National Risk Index Rating Composite (County)',
+            icon: '📊',
+            color: '#6366f1',
+            legendKey: 'nri_national_risk_index_rating_composite_county',
+          },
+          {
+            key: 'nri_strong_wind_expected_annual_loss_rating_county_all',
+            title: 'NRI Strong Wind Expected Annual Loss Rating (County)',
+            icon: '💨',
+            color: '#525252',
+            legendKey: 'nri_strong_wind_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_strong_wind_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Strong Wind Hazard Type Risk Index Rating (County)',
+            icon: '💨',
+            color: '#404040',
+            legendKey: 'nri_strong_wind_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_tornado_expected_annual_loss_rating_county_all',
+            title: 'NRI Tornado Expected Annual Loss Rating (County)',
+            icon: '🌪️',
+            color: '#6d28d9',
+            legendKey: 'nri_tornado_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_tornado_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Tornado Hazard Type Risk Index Rating (County)',
+            icon: '🌪️',
+            color: '#5b21b6',
+            legendKey: 'nri_tornado_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_tsunami_expected_annual_loss_rating_county_all',
+            title: 'NRI Tsunami Expected Annual Loss Rating (County)',
+            icon: '🌊',
+            color: '#0d9488',
+            legendKey: 'nri_tsunami_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_tsunami_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Tsunami Hazard Type Risk Index Rating (County)',
+            icon: '🌊',
+            color: '#0f766e',
+            legendKey: 'nri_tsunami_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_volcanic_activity_expected_annual_loss_rating_county_all',
+            title: 'NRI Volcanic Activity Expected Annual Loss Rating (County)',
+            icon: '🌋',
+            color: '#7c2d12',
+            legendKey: 'nri_volcanic_activity_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_volcanic_activity_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Volcanic Activity Hazard Type Risk Index Rating (County)',
+            icon: '🌋',
+            color: '#7c2d12',
+            legendKey: 'nri_volcanic_activity_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_wildfire_expected_annual_loss_rating_county_all',
+            title: 'NRI Wildfire Expected Annual Loss Rating (County)',
+            icon: '🔥',
+            color: '#991b1b',
+            legendKey: 'nri_wildfire_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_wildfire_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Wildfire Hazard Type Risk Index Rating (County)',
+            icon: '🔥',
+            color: '#7f1d1d',
+            legendKey: 'nri_wildfire_hazard_type_risk_index_rating_county',
+          },
+          {
+            key: 'nri_winter_weather_expected_annual_loss_rating_county_all',
+            title: 'NRI Winter Weather Expected Annual Loss Rating (County)',
+            icon: '❄️',
+            color: '#a5b4fc',
+            legendKey: 'nri_winter_weather_expected_annual_loss_rating_county',
+          },
+          {
+            key: 'nri_winter_weather_hazard_type_risk_index_rating_county_all',
+            title: 'NRI Winter Weather Hazard Type Risk Index Rating (County)',
+            icon: '❄️',
+            color: '#818cf8',
+            legendKey: 'nri_winter_weather_hazard_type_risk_index_rating_county',
+          },
         ];
 
         nriLayers.forEach(({ key, title, icon, color, legendKey }) => {
@@ -27052,7 +27556,79 @@ const MapView: React.FC<MapViewProps> = ({
           baseKey === 'nri_tsunami_annualized_frequency_county' ||
           baseKey === 'nri_tsunami_annualized_frequency_census_tract' ||
           baseKey === 'nri_volcanic_activity_annualized_frequency_county' ||
-          baseKey === 'nri_volcanic_activity_annualized_frequency_census_tract'
+          baseKey === 'nri_volcanic_activity_annualized_frequency_census_tract' ||
+          baseKey === 'nri_avalanche_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_coastal_flooding_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_coastal_flooding_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_cold_wave_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_cold_wave_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_drought_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_drought_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_earthquake_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_earthquake_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_expected_annual_loss_rating_composite_census_tract' ||
+          baseKey === 'nri_hail_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_hail_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_heat_wave_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_heat_wave_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_ice_storm_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_ice_storm_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_inland_flooding_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_inland_flooding_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_landslide_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_landslide_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_lightning_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_lightning_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_social_vulnerability_rating_census_tract' ||
+          baseKey === 'nri_strong_wind_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_strong_wind_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_tornado_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_tornado_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_tsunami_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_tsunami_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_volcanic_activity_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_volcanic_activity_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_wildfire_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_wildfire_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_winter_weather_expected_annual_loss_rating_census_tract' ||
+          baseKey === 'nri_winter_weather_hazard_type_risk_index_rating_census_tract' ||
+          baseKey === 'nri_avalanche_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_avalanche_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_coastal_flooding_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_coastal_flooding_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_cold_wave_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_cold_wave_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_community_resilience_rating_county' ||
+          baseKey === 'nri_drought_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_drought_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_earthquake_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_earthquake_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_hail_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_hail_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_heat_wave_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_heat_wave_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_hurricane_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_hurricane_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_ice_storm_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_ice_storm_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_inland_flooding_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_inland_flooding_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_landslide_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_landslide_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_lightning_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_national_risk_index_rating_composite_county' ||
+          baseKey === 'nri_strong_wind_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_strong_wind_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_tornado_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_tornado_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_tsunami_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_tsunami_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_volcanic_activity_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_volcanic_activity_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_wildfire_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_wildfire_hazard_type_risk_index_rating_county' ||
+          baseKey === 'nri_winter_weather_expected_annual_loss_rating_county' ||
+          baseKey === 'nri_winter_weather_hazard_type_risk_index_rating_county'
         ) {
           return;
         }

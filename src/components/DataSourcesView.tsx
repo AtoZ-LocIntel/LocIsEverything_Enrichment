@@ -798,6 +798,582 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Volcanic_Activity/FeatureServer/1"
         },
         {
+          name: "National Risk Index (NRI) Avalanche Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Avalanche hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Avalanche_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Coastal Flooding Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Coastal flooding expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Coastal_Flooding_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Coastal Flooding Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Coastal flooding hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Coastal_Flooding_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Cold Wave Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Cold wave expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Cold_Wave_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Cold Wave Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Cold wave hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Cold_Wave_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Drought Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Drought expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Drought_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Drought Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Drought hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Drought_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Earthquake Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Earthquake expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Earthquake_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Earthquake Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Earthquake hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Earthquake_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Expected Annual Loss Rating Composite - Census Tract",
+          description: "FEMA National Risk Index - Expected annual loss rating composite (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Expected_Annual_Loss_Rating_Composite/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Hail Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Hail expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Hail_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Hail Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Hail hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Hail_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Heat Wave Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Heat wave expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Heat_Wave_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Heat Wave Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Heat wave hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Heat_Wave_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Ice Storm Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Ice storm expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Ice_Storm_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Ice Storm Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Ice storm hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Ice_Storm_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Inland Flooding Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Inland flooding expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Inland_Flooding_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Inland Flooding Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Inland flooding hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Inland_Flooding_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Landslide Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Landslide expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Landslide_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Landslide Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Landslide hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Landslide_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Lightning Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Lightning expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Lightning_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Lightning Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Lightning hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Lightning_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Social Vulnerability Rating - Census Tract",
+          description: "FEMA National Risk Index - Social vulnerability rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Social_Vulnerability_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Strong Wind Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Strong wind expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Strong_Wind_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Strong Wind Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Strong wind hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Strong_Wind_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Tornado Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Tornado expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Tornado_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Tornado Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Tornado hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Tornado_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Tsunami Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Tsunami expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Tsunami_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Tsunami Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Tsunami hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Tsunami_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Volcanic Activity Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Volcanic activity expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Volcanic_Activity_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Volcanic Activity Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Volcanic activity hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Volcanic_Activity_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Wildfire Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Wildfire expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Wildfire_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Wildfire Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Wildfire hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Wildfire_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Winter Weather Expected Annual Loss Rating - Census Tract",
+          description: "FEMA National Risk Index - Winter weather expected annual loss rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Winter_Weather_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Winter Weather Hazard Type Risk Index Rating - Census Tract",
+          description: "FEMA National Risk Index - Winter weather hazard type risk index rating (Census Tract). Point-in-polygon + proximity up to 10 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Winter_Weather_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Avalanche Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Avalanche expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Avalanche_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Avalanche Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Avalanche hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Avalanche_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Coastal Flooding Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Coastal flooding expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Coastal_Flooding_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Coastal Flooding Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Coastal flooding hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Coastal_Flooding_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Cold Wave Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Cold wave expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Cold_Wave_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Cold Wave Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Cold wave hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Cold_Wave_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Community Resilience Rating - County",
+          description: "FEMA National Risk Index - Community resilience rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Community_Resilience_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Drought Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Drought expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Drought_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Drought Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Drought hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Drought_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Earthquake Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Earthquake expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Earthquake_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Earthquake Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Earthquake hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Earthquake_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Hail Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Hail expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Hail_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Hail Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Hail hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Hail_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Heat Wave Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Heat wave expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Heat_Wave_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Heat Wave Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Heat wave hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Heat_Wave_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Hurricane Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Hurricane expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Hurricane_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Hurricane Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Hurricane hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Hurricane_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Ice Storm Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Ice storm expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Ice_Storm_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Ice Storm Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Ice storm hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Ice_Storm_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Inland Flooding Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Inland flooding expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Inland_Flooding_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Inland Flooding Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Inland flooding hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Inland_Flooding_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Landslide Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Landslide expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Landslide_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Landslide Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Landslide hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Landslide_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Lightning Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Lightning expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Lightning_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) National Risk Index Rating Composite - County",
+          description: "FEMA National Risk Index - National risk index rating composite (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_National_Risk_Index_Rating_Composite/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Strong Wind Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Strong wind expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Strong_Wind_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Strong Wind Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Strong wind hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Strong_Wind_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Tornado Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Tornado expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Tornado_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Tornado Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Tornado hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Tornado_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Tsunami Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Tsunami expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Tsunami_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Tsunami Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Tsunami hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Tsunami_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Volcanic Activity Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Volcanic activity expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Volcanic_Activity_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Volcanic Activity Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Volcanic activity hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Volcanic_Activity_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Wildfire Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Wildfire expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Wildfire_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Wildfire Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Wildfire hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Wildfire_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Winter Weather Expected Annual Loss Rating - County",
+          description: "FEMA National Risk Index - Winter weather expected annual loss rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Winter_Weather_Expected_Annual_Loss_Rating/FeatureServer/0"
+        },
+        {
+          name: "National Risk Index (NRI) Winter Weather Hazard Type Risk Index Rating - County",
+          description: "FEMA National Risk Index - Winter weather hazard type risk index rating (County). Point-in-polygon + proximity up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Winter_Weather_Hazard_Type_Risk_Index_Rating/FeatureServer/0"
+        },
+        {
           name: "USGS Earthquakes",
           description: "Historical earthquake events and seismic activity",
           coverage: "Global",

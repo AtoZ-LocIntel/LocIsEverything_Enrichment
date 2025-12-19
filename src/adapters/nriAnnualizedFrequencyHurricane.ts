@@ -63,6 +63,82 @@ const TSUNAMI_SERVICE_BASE =
 const VOLCANIC_ACTIVITY_SERVICE_BASE =
   'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Annualized_Frequency_Volcanic_Activity/FeatureServer';
 
+// NRI Census Tract Risk Index Rating and Expected Annual Loss Rating services
+const NRI_AVALANCHE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Avalanche_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COASTAL_FLOODING_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Coastal_Flooding_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COASTAL_FLOODING_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Coastal_Flooding_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COLD_WAVE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Cold_Wave_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COLD_WAVE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Cold_Wave_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_DROUGHT_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Drought_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_DROUGHT_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Drought_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_EARTHQUAKE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Earthquake_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_EARTHQUAKE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Earthquake_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COMPOSITE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Expected_Annual_Loss_Rating_Composite/FeatureServer';
+const NRI_HAIL_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Hail_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_HAIL_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Hail_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_HEAT_WAVE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Heat_Wave_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_HEAT_WAVE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Heat_Wave_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_ICE_STORM_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Ice_Storm_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_ICE_STORM_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Ice_Storm_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_INLAND_FLOODING_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Inland_Flooding_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_INLAND_FLOODING_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Inland_Flooding_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_LANDSLIDE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Landslide_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_LANDSLIDE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Landslide_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_LIGHTNING_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Lightning_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_LIGHTNING_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Lightning_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_SOCIAL_VULNERABILITY_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Social_Vulnerability_Rating/FeatureServer';
+const NRI_STRONG_WIND_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Strong_Wind_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_STRONG_WIND_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Strong_Wind_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_TORNADO_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Tornado_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_TORNADO_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Tornado_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_TSUNAMI_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Tsunami_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_TSUNAMI_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Tsunami_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_VOLCANIC_ACTIVITY_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Volcanic_Activity_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_VOLCANIC_ACTIVITY_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Volcanic_Activity_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_WILDFIRE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Wildfire_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_WILDFIRE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Wildfire_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_WINTER_WEATHER_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Winter_Weather_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_WINTER_WEATHER_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_Census_Tract_Winter_Weather_Hazard_Type_Risk_Index_Rating/FeatureServer';
+
+// NRI County Risk Index Rating and Expected Annual Loss Rating services
+const NRI_COUNTY_AVALANCHE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Avalanche_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_AVALANCHE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Avalanche_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_COASTAL_FLOODING_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Coastal_Flooding_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_COASTAL_FLOODING_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Coastal_Flooding_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_COLD_WAVE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Cold_Wave_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_COLD_WAVE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Cold_Wave_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_COMMUNITY_RESILIENCE_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Community_Resilience_Rating/FeatureServer';
+const NRI_COUNTY_DROUGHT_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Drought_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_DROUGHT_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Drought_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_EARTHQUAKE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Earthquake_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_EARTHQUAKE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Earthquake_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_HAIL_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Hail_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_HAIL_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Hail_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_HEAT_WAVE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Heat_Wave_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_HEAT_WAVE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Heat_Wave_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_HURRICANE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Hurricane_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_HURRICANE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Hurricane_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_ICE_STORM_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Ice_Storm_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_ICE_STORM_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Ice_Storm_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_INLAND_FLOODING_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Inland_Flooding_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_INLAND_FLOODING_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Inland_Flooding_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_LANDSLIDE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Landslide_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_LANDSLIDE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Landslide_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_LIGHTNING_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Lightning_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_NATIONAL_RISK_INDEX_COMPOSITE_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_National_Risk_Index_Rating_Composite/FeatureServer';
+const NRI_COUNTY_STRONG_WIND_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Strong_Wind_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_STRONG_WIND_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Strong_Wind_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_TORNADO_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Tornado_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_TORNADO_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Tornado_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_TSUNAMI_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Tsunami_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_TSUNAMI_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Tsunami_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_VOLCANIC_ACTIVITY_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Volcanic_Activity_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_VOLCANIC_ACTIVITY_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Volcanic_Activity_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_WILDFIRE_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Wildfire_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_WILDFIRE_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Wildfire_Hazard_Type_Risk_Index_Rating/FeatureServer';
+const NRI_COUNTY_WINTER_WEATHER_EAL_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Winter_Weather_Expected_Annual_Loss_Rating/FeatureServer';
+const NRI_COUNTY_WINTER_WEATHER_HT_RISK_SERVICE = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/National_Risk_Index_County_Winter_Weather_Hazard_Type_Risk_Index_Rating/FeatureServer';
+
 function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3959;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -189,6 +265,168 @@ async function getNRICensusTractAnnualizedFrequency(
   layerName: string
 ): Promise<{ containing: NRIFeature[]; nearby: NRIFeature[]; all: NRIFeature[] }> {
   const layerId = 1;
+  const cappedRadius = Math.min(Math.max(radiusMiles, 0), maxMiles);
+  const meters = cappedRadius * 1609.34;
+  const point = { x: lon, y: lat, spatialReference: { wkid: 4326 } };
+
+  const proximity = await queryEsri(serviceBase, layerId, {
+    f: 'json',
+    where: '1=1',
+    outFields: '*',
+    geometry: JSON.stringify(point),
+    geometryType: 'esriGeometryPoint',
+    spatialRel: 'esriSpatialRelIntersects',
+    distance: meters.toString(),
+    units: 'esriSRUnit_Meter',
+    inSR: '4326',
+    outSR: '4326',
+    returnGeometry: 'true',
+    resultRecordCount: '1000',
+    resultOffset: '0',
+  });
+
+  const features: any[] = Array.isArray(proximity?.features) ? proximity.features : [];
+  const processed: NRIFeature[] = features.map((f, idx) => {
+    const attrs = f.attributes || {};
+    const geom = f.geometry;
+    const cent = geom?.rings ? centroidFromRings(geom.rings) : null;
+    const dist = cent ? haversineMiles(lat, lon, cent.lat, cent.lon) : undefined;
+    return {
+      objectId: attrs.OBJECTID ?? attrs.objectId ?? attrs.objectid ?? idx,
+      attributes: attrs,
+      geometry: geom,
+      distance_miles: dist,
+      isContaining: false,
+      layerName,
+    };
+  });
+
+  const pip = await queryEsri(serviceBase, layerId, {
+    f: 'json',
+    where: '1=1',
+    outFields: '*',
+    geometry: JSON.stringify(point),
+    geometryType: 'esriGeometryPoint',
+    spatialRel: 'esriSpatialRelIntersects',
+    inSR: '4326',
+    outSR: '4326',
+    returnGeometry: 'true',
+    resultRecordCount: '1000',
+    resultOffset: '0',
+  });
+
+  const pipFeatures: any[] = Array.isArray(pip?.features) ? pip.features : [];
+  const containing: NRIFeature[] = pipFeatures.map((f, idx) => {
+    const attrs = f.attributes || {};
+    return {
+      objectId: attrs.OBJECTID ?? attrs.objectId ?? attrs.objectid ?? idx,
+      attributes: attrs,
+      geometry: f.geometry,
+      distance_miles: 0,
+      isContaining: true,
+      layerName,
+    };
+  });
+
+  const containingIds = new Set(containing.map((c) => String(c.objectId)));
+  const nearby = processed
+    .filter((p) => !containingIds.has(String(p.objectId)))
+    .filter((p) => typeof p.distance_miles !== 'number' || p.distance_miles <= cappedRadius);
+
+  return { containing, nearby, all: [...containing, ...nearby] };
+}
+
+// Helper for single-layer Census Tract services (layer 0 only)
+async function getNRICensusTractSingleLayer(
+  serviceBase: string,
+  lat: number,
+  lon: number,
+  radiusMiles: number,
+  maxMiles: number,
+  layerName: string
+): Promise<{ containing: NRIFeature[]; nearby: NRIFeature[]; all: NRIFeature[] }> {
+  const layerId = 0;
+  const cappedRadius = Math.min(Math.max(radiusMiles, 0), maxMiles);
+  const meters = cappedRadius * 1609.34;
+  const point = { x: lon, y: lat, spatialReference: { wkid: 4326 } };
+
+  const proximity = await queryEsri(serviceBase, layerId, {
+    f: 'json',
+    where: '1=1',
+    outFields: '*',
+    geometry: JSON.stringify(point),
+    geometryType: 'esriGeometryPoint',
+    spatialRel: 'esriSpatialRelIntersects',
+    distance: meters.toString(),
+    units: 'esriSRUnit_Meter',
+    inSR: '4326',
+    outSR: '4326',
+    returnGeometry: 'true',
+    resultRecordCount: '1000',
+    resultOffset: '0',
+  });
+
+  const features: any[] = Array.isArray(proximity?.features) ? proximity.features : [];
+  const processed: NRIFeature[] = features.map((f, idx) => {
+    const attrs = f.attributes || {};
+    const geom = f.geometry;
+    const cent = geom?.rings ? centroidFromRings(geom.rings) : null;
+    const dist = cent ? haversineMiles(lat, lon, cent.lat, cent.lon) : undefined;
+    return {
+      objectId: attrs.OBJECTID ?? attrs.objectId ?? attrs.objectid ?? idx,
+      attributes: attrs,
+      geometry: geom,
+      distance_miles: dist,
+      isContaining: false,
+      layerName,
+    };
+  });
+
+  const pip = await queryEsri(serviceBase, layerId, {
+    f: 'json',
+    where: '1=1',
+    outFields: '*',
+    geometry: JSON.stringify(point),
+    geometryType: 'esriGeometryPoint',
+    spatialRel: 'esriSpatialRelIntersects',
+    inSR: '4326',
+    outSR: '4326',
+    returnGeometry: 'true',
+    resultRecordCount: '1000',
+    resultOffset: '0',
+  });
+
+  const pipFeatures: any[] = Array.isArray(pip?.features) ? pip.features : [];
+  const containing: NRIFeature[] = pipFeatures.map((f, idx) => {
+    const attrs = f.attributes || {};
+    return {
+      objectId: attrs.OBJECTID ?? attrs.objectId ?? attrs.objectid ?? idx,
+      attributes: attrs,
+      geometry: f.geometry,
+      distance_miles: 0,
+      isContaining: true,
+      layerName,
+    };
+  });
+
+  const containingIds = new Set(containing.map((c) => String(c.objectId)));
+  const nearby = processed
+    .filter((p) => !containingIds.has(String(p.objectId)))
+    .filter((p) => typeof p.distance_miles !== 'number' || p.distance_miles <= cappedRadius);
+
+  return { containing, nearby, all: [...containing, ...nearby] };
+}
+
+// Helper for single-layer County services (layer 0 only, 25 miles max)
+async function getNRICountySingleLayer(
+  serviceBase: string,
+  lat: number,
+  lon: number,
+  radiusMiles: number,
+  maxMiles: number,
+  layerName: string
+): Promise<{ containing: NRIFeature[]; nearby: NRIFeature[]; all: NRIFeature[] }> {
+  const layerId = 0;
   const cappedRadius = Math.min(Math.max(radiusMiles, 0), maxMiles);
   const meters = cappedRadius * 1609.34;
   const point = { x: lon, y: lat, spatialReference: { wkid: 4326 } };
@@ -672,6 +910,296 @@ export async function getNRICensusTractVolcanicActivityAnnualizedFrequency(lat: 
     10,
     'NRI Annualized Frequency Volcanic Activity (Census Tract)'
   );
+}
+
+// NRI Census Tract Risk Index Rating and Expected Annual Loss Rating layers
+export async function getNRICensusTractAvalancheHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_AVALANCHE_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Avalanche Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractCoastalFloodingExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_COASTAL_FLOODING_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Coastal Flooding Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractCoastalFloodingHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_COASTAL_FLOODING_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Coastal Flooding Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractColdWaveExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_COLD_WAVE_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Cold Wave Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractColdWaveHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_COLD_WAVE_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Cold Wave Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractDroughtExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_DROUGHT_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Drought Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractDroughtHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_DROUGHT_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Drought Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractEarthquakeExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_EARTHQUAKE_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Earthquake Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractEarthquakeHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_EARTHQUAKE_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Earthquake Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractExpectedAnnualLossRatingComposite(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_COMPOSITE_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Expected Annual Loss Rating Composite (Census Tract)');
+}
+
+export async function getNRICensusTractHailExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_HAIL_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Hail Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractHailHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_HAIL_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Hail Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractHeatWaveExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_HEAT_WAVE_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Heat Wave Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractHeatWaveHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_HEAT_WAVE_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Heat Wave Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractIceStormExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_ICE_STORM_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Ice Storm Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractIceStormHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_ICE_STORM_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Ice Storm Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractInlandFloodingExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_INLAND_FLOODING_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Inland Flooding Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractInlandFloodingHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_INLAND_FLOODING_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Inland Flooding Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractLandslideExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_LANDSLIDE_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Landslide Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractLandslideHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_LANDSLIDE_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Landslide Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractLightningExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_LIGHTNING_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Lightning Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractLightningHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_LIGHTNING_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Lightning Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractSocialVulnerabilityRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_SOCIAL_VULNERABILITY_SERVICE, lat, lon, radiusMiles, 10, 'NRI Social Vulnerability Rating (Census Tract)');
+}
+
+export async function getNRICensusTractStrongWindExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_STRONG_WIND_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Strong Wind Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractStrongWindHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_STRONG_WIND_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Strong Wind Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractTornadoExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_TORNADO_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Tornado Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractTornadoHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_TORNADO_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Tornado Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractTsunamiExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_TSUNAMI_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Tsunami Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractTsunamiHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_TSUNAMI_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Tsunami Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractVolcanicActivityExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_VOLCANIC_ACTIVITY_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Volcanic Activity Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractVolcanicActivityHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_VOLCANIC_ACTIVITY_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Volcanic Activity Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractWildfireExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_WILDFIRE_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Wildfire Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractWildfireHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_WILDFIRE_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Wildfire Hazard Type Risk Index Rating (Census Tract)');
+}
+
+export async function getNRICensusTractWinterWeatherExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_WINTER_WEATHER_EAL_SERVICE, lat, lon, radiusMiles, 10, 'NRI Winter Weather Expected Annual Loss Rating (Census Tract)');
+}
+
+export async function getNRICensusTractWinterWeatherHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 5) {
+  return await getNRICensusTractSingleLayer(NRI_WINTER_WEATHER_HT_RISK_SERVICE, lat, lon, radiusMiles, 10, 'NRI Winter Weather Hazard Type Risk Index Rating (Census Tract)');
+}
+
+// NRI County Risk Index Rating and Expected Annual Loss Rating layers
+export async function getNRICountyAvalancheExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_AVALANCHE_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Avalanche Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyAvalancheHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_AVALANCHE_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Avalanche Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyCoastalFloodingExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_COASTAL_FLOODING_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Coastal Flooding Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyCoastalFloodingHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_COASTAL_FLOODING_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Coastal Flooding Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyColdWaveExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_COLD_WAVE_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Cold Wave Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyColdWaveHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_COLD_WAVE_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Cold Wave Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyCommunityResilienceRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_COMMUNITY_RESILIENCE_SERVICE, lat, lon, radiusMiles, 25, 'NRI Community Resilience Rating (County)');
+}
+
+export async function getNRICountyDroughtExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_DROUGHT_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Drought Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyDroughtHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_DROUGHT_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Drought Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyEarthquakeExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_EARTHQUAKE_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Earthquake Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyEarthquakeHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_EARTHQUAKE_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Earthquake Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyHailExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_HAIL_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Hail Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyHailHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_HAIL_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Hail Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyHeatWaveExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_HEAT_WAVE_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Heat Wave Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyHeatWaveHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_HEAT_WAVE_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Heat Wave Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyHurricaneExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_HURRICANE_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Hurricane Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyHurricaneHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_HURRICANE_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Hurricane Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyIceStormExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_ICE_STORM_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Ice Storm Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyIceStormHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_ICE_STORM_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Ice Storm Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyInlandFloodingExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_INLAND_FLOODING_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Inland Flooding Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyInlandFloodingHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_INLAND_FLOODING_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Inland Flooding Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyLandslideExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_LANDSLIDE_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Landslide Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyLandslideHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_LANDSLIDE_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Landslide Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyLightningExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_LIGHTNING_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Lightning Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyNationalRiskIndexRatingComposite(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_NATIONAL_RISK_INDEX_COMPOSITE_SERVICE, lat, lon, radiusMiles, 25, 'NRI National Risk Index Rating Composite (County)');
+}
+
+export async function getNRICountyStrongWindExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_STRONG_WIND_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Strong Wind Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyStrongWindHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_STRONG_WIND_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Strong Wind Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyTornadoExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_TORNADO_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Tornado Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyTornadoHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_TORNADO_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Tornado Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyTsunamiExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_TSUNAMI_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Tsunami Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyTsunamiHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_TSUNAMI_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Tsunami Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyVolcanicActivityExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_VOLCANIC_ACTIVITY_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Volcanic Activity Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyVolcanicActivityHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_VOLCANIC_ACTIVITY_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Volcanic Activity Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyWildfireExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_WILDFIRE_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Wildfire Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyWildfireHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_WILDFIRE_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Wildfire Hazard Type Risk Index Rating (County)');
+}
+
+export async function getNRICountyWinterWeatherExpectedAnnualLossRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_WINTER_WEATHER_EAL_SERVICE, lat, lon, radiusMiles, 25, 'NRI Winter Weather Expected Annual Loss Rating (County)');
+}
+
+export async function getNRICountyWinterWeatherHazardTypeRiskIndexRating(lat: number, lon: number, radiusMiles = 25) {
+  return await getNRICountySingleLayer(NRI_COUNTY_WINTER_WEATHER_HT_RISK_SERVICE, lat, lon, radiusMiles, 25, 'NRI Winter Weather Hazard Type Risk Index Rating (County)');
 }
 
 

@@ -151,6 +151,78 @@ import {
   getNRICensusTractTsunamiAnnualizedFrequency,
   getNRICountyVolcanicActivityAnnualizedFrequency,
   getNRICensusTractVolcanicActivityAnnualizedFrequency,
+  getNRICensusTractAvalancheHazardTypeRiskIndexRating,
+  getNRICensusTractCoastalFloodingExpectedAnnualLossRating,
+  getNRICensusTractCoastalFloodingHazardTypeRiskIndexRating,
+  getNRICensusTractColdWaveExpectedAnnualLossRating,
+  getNRICensusTractColdWaveHazardTypeRiskIndexRating,
+  getNRICensusTractDroughtExpectedAnnualLossRating,
+  getNRICensusTractDroughtHazardTypeRiskIndexRating,
+  getNRICensusTractEarthquakeExpectedAnnualLossRating,
+  getNRICensusTractEarthquakeHazardTypeRiskIndexRating,
+  getNRICensusTractExpectedAnnualLossRatingComposite,
+  getNRICensusTractHailExpectedAnnualLossRating,
+  getNRICensusTractHailHazardTypeRiskIndexRating,
+  getNRICensusTractHeatWaveExpectedAnnualLossRating,
+  getNRICensusTractHeatWaveHazardTypeRiskIndexRating,
+  getNRICensusTractIceStormExpectedAnnualLossRating,
+  getNRICensusTractIceStormHazardTypeRiskIndexRating,
+  getNRICensusTractInlandFloodingExpectedAnnualLossRating,
+  getNRICensusTractInlandFloodingHazardTypeRiskIndexRating,
+  getNRICensusTractLandslideExpectedAnnualLossRating,
+  getNRICensusTractLandslideHazardTypeRiskIndexRating,
+  getNRICensusTractLightningExpectedAnnualLossRating,
+  getNRICensusTractLightningHazardTypeRiskIndexRating,
+  getNRICensusTractSocialVulnerabilityRating,
+  getNRICensusTractStrongWindExpectedAnnualLossRating,
+  getNRICensusTractStrongWindHazardTypeRiskIndexRating,
+  getNRICensusTractTornadoExpectedAnnualLossRating,
+  getNRICensusTractTornadoHazardTypeRiskIndexRating,
+  getNRICensusTractTsunamiExpectedAnnualLossRating,
+  getNRICensusTractTsunamiHazardTypeRiskIndexRating,
+  getNRICensusTractVolcanicActivityExpectedAnnualLossRating,
+  getNRICensusTractVolcanicActivityHazardTypeRiskIndexRating,
+  getNRICensusTractWildfireExpectedAnnualLossRating,
+  getNRICensusTractWildfireHazardTypeRiskIndexRating,
+  getNRICensusTractWinterWeatherExpectedAnnualLossRating,
+  getNRICensusTractWinterWeatherHazardTypeRiskIndexRating,
+  getNRICountyAvalancheExpectedAnnualLossRating,
+  getNRICountyAvalancheHazardTypeRiskIndexRating,
+  getNRICountyCoastalFloodingExpectedAnnualLossRating,
+  getNRICountyCoastalFloodingHazardTypeRiskIndexRating,
+  getNRICountyColdWaveExpectedAnnualLossRating,
+  getNRICountyColdWaveHazardTypeRiskIndexRating,
+  getNRICountyCommunityResilienceRating,
+  getNRICountyDroughtExpectedAnnualLossRating,
+  getNRICountyDroughtHazardTypeRiskIndexRating,
+  getNRICountyEarthquakeExpectedAnnualLossRating,
+  getNRICountyEarthquakeHazardTypeRiskIndexRating,
+  getNRICountyHailExpectedAnnualLossRating,
+  getNRICountyHailHazardTypeRiskIndexRating,
+  getNRICountyHeatWaveExpectedAnnualLossRating,
+  getNRICountyHeatWaveHazardTypeRiskIndexRating,
+  getNRICountyHurricaneExpectedAnnualLossRating,
+  getNRICountyHurricaneHazardTypeRiskIndexRating,
+  getNRICountyIceStormExpectedAnnualLossRating,
+  getNRICountyIceStormHazardTypeRiskIndexRating,
+  getNRICountyInlandFloodingExpectedAnnualLossRating,
+  getNRICountyInlandFloodingHazardTypeRiskIndexRating,
+  getNRICountyLandslideExpectedAnnualLossRating,
+  getNRICountyLandslideHazardTypeRiskIndexRating,
+  getNRICountyLightningExpectedAnnualLossRating,
+  getNRICountyNationalRiskIndexRatingComposite,
+  getNRICountyStrongWindExpectedAnnualLossRating,
+  getNRICountyStrongWindHazardTypeRiskIndexRating,
+  getNRICountyTornadoExpectedAnnualLossRating,
+  getNRICountyTornadoHazardTypeRiskIndexRating,
+  getNRICountyTsunamiExpectedAnnualLossRating,
+  getNRICountyTsunamiHazardTypeRiskIndexRating,
+  getNRICountyVolcanicActivityExpectedAnnualLossRating,
+  getNRICountyVolcanicActivityHazardTypeRiskIndexRating,
+  getNRICountyWildfireExpectedAnnualLossRating,
+  getNRICountyWildfireHazardTypeRiskIndexRating,
+  getNRICountyWinterWeatherExpectedAnnualLossRating,
+  getNRICountyWinterWeatherHazardTypeRiskIndexRating,
 } from '../adapters/nriAnnualizedFrequencyHurricane';
 import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes';
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
@@ -487,6 +559,153 @@ export class EnrichmentService {
       });
 
     return ` AFREQ: ${parts.join(', ')}`;
+  }
+
+  private formatNriRiskIndexStats(features: any[]): string {
+    if (!Array.isArray(features) || features.length === 0) return '';
+
+    const riskV: number[] = [];
+    const riskS: number[] = [];
+    const riskR: string[] = [];
+
+    features.forEach((f) => {
+      const attrs = f?.attributes || f || {};
+      Object.entries(attrs).forEach(([k, v]) => {
+        if (k.endsWith('_RISKV')) {
+          const num = typeof v === 'number' ? v : (v === null || v === undefined ? NaN : Number(v));
+          if (Number.isFinite(num)) riskV.push(num);
+        } else if (k.endsWith('_RISKS')) {
+          const num = typeof v === 'number' ? v : (v === null || v === undefined ? NaN : Number(v));
+          if (Number.isFinite(num)) riskS.push(num);
+        } else if (k.endsWith('_RISKR')) {
+          if (typeof v === 'string' && v) riskR.push(v);
+        }
+      });
+    });
+
+    const parts: string[] = [];
+    if (riskV.length > 0) {
+      const fmt = (n: number) => (Math.abs(n) >= 1 ? n.toFixed(3) : n.toPrecision(3));
+      const min = Math.min(...riskV);
+      const max = Math.max(...riskV);
+      const avg = riskV.reduce((s, n) => s + n, 0) / riskV.length;
+      parts.push(`RISKV=${riskV.length === 1 ? fmt(riskV[0]) : `${fmt(min)}–${fmt(max)} (avg ${fmt(avg)})`}`);
+    }
+    if (riskS.length > 0) {
+      const fmt = (n: number) => (Math.abs(n) >= 1 ? n.toFixed(3) : n.toPrecision(3));
+      const min = Math.min(...riskS);
+      const max = Math.max(...riskS);
+      const avg = riskS.reduce((s, n) => s + n, 0) / riskS.length;
+      parts.push(`RISKS=${riskS.length === 1 ? fmt(riskS[0]) : `${fmt(min)}–${fmt(max)} (avg ${fmt(avg)})`}`);
+    }
+    if (riskR.length > 0) {
+      const unique = [...new Set(riskR)];
+      parts.push(`RISKR=${unique.length === 1 ? unique[0] : unique.join(', ')}`);
+    }
+
+    return parts.length > 0 ? ` ${parts.join(', ')}` : '';
+  }
+
+  private formatNriExpectedAnnualLossStats(features: any[]): string {
+    if (!Array.isArray(features) || features.length === 0) return '';
+
+    const ealt: number[] = [];
+    const eals: number[] = [];
+    const ealr: string[] = [];
+    const alrb: number[] = [];
+    const alrp: number[] = [];
+    const alrNpctl: number[] = [];
+    const riskV: number[] = [];
+    const riskS: number[] = [];
+    const riskR: string[] = [];
+
+    features.forEach((f) => {
+      const attrs = f?.attributes || f || {};
+      Object.entries(attrs).forEach(([k, v]) => {
+        if (k.endsWith('_EALT')) {
+          const num = typeof v === 'number' ? v : (v === null || v === undefined ? NaN : Number(v));
+          if (Number.isFinite(num)) ealt.push(num);
+        } else if (k.endsWith('_EALS')) {
+          const num = typeof v === 'number' ? v : (v === null || v === undefined ? NaN : Number(v));
+          if (Number.isFinite(num)) eals.push(num);
+        } else if (k.endsWith('_EALR')) {
+          if (typeof v === 'string' && v) ealr.push(v);
+        } else if (k.endsWith('_ALRB')) {
+          const num = typeof v === 'number' ? v : (v === null || v === undefined ? NaN : Number(v));
+          if (Number.isFinite(num)) alrb.push(num);
+        } else if (k.endsWith('_ALRP')) {
+          const num = typeof v === 'number' ? v : (v === null || v === undefined ? NaN : Number(v));
+          if (Number.isFinite(num)) alrp.push(num);
+        } else if (k.endsWith('_ALR_NPCTL')) {
+          const num = typeof v === 'number' ? v : (v === null || v === undefined ? NaN : Number(v));
+          if (Number.isFinite(num)) alrNpctl.push(num);
+        } else if (k.endsWith('_RISKV')) {
+          const num = typeof v === 'number' ? v : (v === null || v === undefined ? NaN : Number(v));
+          if (Number.isFinite(num)) riskV.push(num);
+        } else if (k.endsWith('_RISKS')) {
+          const num = typeof v === 'number' ? v : (v === null || v === undefined ? NaN : Number(v));
+          if (Number.isFinite(num)) riskS.push(num);
+        } else if (k.endsWith('_RISKR')) {
+          if (typeof v === 'string' && v) riskR.push(v);
+        }
+      });
+    });
+
+    const parts: string[] = [];
+    const fmt = (n: number) => (Math.abs(n) >= 1 ? n.toFixed(3) : n.toPrecision(3));
+    
+    if (ealt.length > 0) {
+      const min = Math.min(...ealt);
+      const max = Math.max(...ealt);
+      const avg = ealt.reduce((s, n) => s + n, 0) / ealt.length;
+      parts.push(`EALT=${ealt.length === 1 ? fmt(ealt[0]) : `${fmt(min)}–${fmt(max)} (avg ${fmt(avg)})`}`);
+    }
+    if (eals.length > 0) {
+      const min = Math.min(...eals);
+      const max = Math.max(...eals);
+      const avg = eals.reduce((s, n) => s + n, 0) / eals.length;
+      parts.push(`EALS=${eals.length === 1 ? fmt(eals[0]) : `${fmt(min)}–${fmt(max)} (avg ${fmt(avg)})`}`);
+    }
+    if (ealr.length > 0) {
+      const unique = [...new Set(ealr)];
+      parts.push(`EALR=${unique.length === 1 ? unique[0] : unique.join(', ')}`);
+    }
+    if (alrb.length > 0) {
+      const min = Math.min(...alrb);
+      const max = Math.max(...alrb);
+      const avg = alrb.reduce((s, n) => s + n, 0) / alrb.length;
+      parts.push(`ALRB=${alrb.length === 1 ? fmt(alrb[0]) : `${fmt(min)}–${fmt(max)} (avg ${fmt(avg)})`}`);
+    }
+    if (alrp.length > 0) {
+      const min = Math.min(...alrp);
+      const max = Math.max(...alrp);
+      const avg = alrp.reduce((s, n) => s + n, 0) / alrp.length;
+      parts.push(`ALRP=${alrp.length === 1 ? fmt(alrp[0]) : `${fmt(min)}–${fmt(max)} (avg ${fmt(avg)})`}`);
+    }
+    if (alrNpctl.length > 0) {
+      const min = Math.min(...alrNpctl);
+      const max = Math.max(...alrNpctl);
+      const avg = alrNpctl.reduce((s, n) => s + n, 0) / alrNpctl.length;
+      parts.push(`ALR_NPCTL=${alrNpctl.length === 1 ? fmt(alrNpctl[0]) : `${fmt(min)}–${fmt(max)} (avg ${fmt(avg)})`}`);
+    }
+    if (riskV.length > 0) {
+      const min = Math.min(...riskV);
+      const max = Math.max(...riskV);
+      const avg = riskV.reduce((s, n) => s + n, 0) / riskV.length;
+      parts.push(`RISKV=${riskV.length === 1 ? fmt(riskV[0]) : `${fmt(min)}–${fmt(max)} (avg ${fmt(avg)})`}`);
+    }
+    if (riskS.length > 0) {
+      const min = Math.min(...riskS);
+      const max = Math.max(...riskS);
+      const avg = riskS.reduce((s, n) => s + n, 0) / riskS.length;
+      parts.push(`RISKS=${riskS.length === 1 ? fmt(riskS[0]) : `${fmt(min)}–${fmt(max)} (avg ${fmt(avg)})`}`);
+    }
+    if (riskR.length > 0) {
+      const unique = [...new Set(riskR)];
+      parts.push(`RISKR=${unique.length === 1 ? unique[0] : unique.join(', ')}`);
+    }
+
+    return parts.length > 0 ? ` ${parts.join(', ')}` : '';
   }
   
   private async getFEMAFloodZones(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
@@ -3154,6 +3373,1232 @@ export class EnrichmentService {
             : nearby.length
               ? `Found ${nearby.length} nearby NRI Volcanic Activity Annualized Frequency (Census Tract) area(s) within ${cappedRadius} miles.${afreqStats}`
               : `No NRI Volcanic Activity Annualized Frequency (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      // NRI Census Tract Risk Index Rating and Expected Annual Loss Rating layers
+      case 'nri_avalanche_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractAvalancheHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_avalanche_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_avalanche_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_avalanche_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_avalanche_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_avalanche_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Avalanche Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Avalanche Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Avalanche Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_coastal_flooding_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractCoastalFloodingExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_coastal_flooding_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_coastal_flooding_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_coastal_flooding_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_coastal_flooding_expected_annual_loss_rating_census_tract_all: all,
+          nri_coastal_flooding_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Coastal Flooding Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Coastal Flooding Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Coastal Flooding Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_coastal_flooding_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractCoastalFloodingHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_coastal_flooding_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_coastal_flooding_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_coastal_flooding_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_coastal_flooding_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_coastal_flooding_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Coastal Flooding Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Coastal Flooding Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Coastal Flooding Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_cold_wave_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractColdWaveExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_cold_wave_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_cold_wave_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_cold_wave_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_cold_wave_expected_annual_loss_rating_census_tract_all: all,
+          nri_cold_wave_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Cold Wave Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Cold Wave Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Cold Wave Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_cold_wave_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractColdWaveHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_cold_wave_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_cold_wave_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_cold_wave_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_cold_wave_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_cold_wave_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Cold Wave Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Cold Wave Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Cold Wave Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_drought_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractDroughtExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_drought_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_drought_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_drought_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_drought_expected_annual_loss_rating_census_tract_all: all,
+          nri_drought_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Drought Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Drought Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Drought Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_drought_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractDroughtHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_drought_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_drought_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_drought_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_drought_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_drought_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Drought Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Drought Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Drought Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_earthquake_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractEarthquakeExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_earthquake_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_earthquake_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_earthquake_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_earthquake_expected_annual_loss_rating_census_tract_all: all,
+          nri_earthquake_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Earthquake Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Earthquake Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Earthquake Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_earthquake_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractEarthquakeHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_earthquake_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_earthquake_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_earthquake_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_earthquake_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_earthquake_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Earthquake Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Earthquake Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Earthquake Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_expected_annual_loss_rating_composite_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractExpectedAnnualLossRatingComposite(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_expected_annual_loss_rating_composite_census_tract_count: all.length,
+          nri_expected_annual_loss_rating_composite_census_tract_containing: containing,
+          nri_expected_annual_loss_rating_composite_census_tract_nearby: nearby,
+          nri_expected_annual_loss_rating_composite_census_tract_all: all,
+          nri_expected_annual_loss_rating_composite_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Expected Annual Loss Rating Composite (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Expected Annual Loss Rating Composite (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Expected Annual Loss Rating Composite (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_hail_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractHailExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_hail_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_hail_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_hail_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_hail_expected_annual_loss_rating_census_tract_all: all,
+          nri_hail_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hail Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hail Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Hail Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_hail_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractHailHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_hail_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_hail_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_hail_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_hail_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_hail_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hail Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hail Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Hail Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_heat_wave_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractHeatWaveExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_heat_wave_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_heat_wave_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_heat_wave_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_heat_wave_expected_annual_loss_rating_census_tract_all: all,
+          nri_heat_wave_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Heat Wave Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Heat Wave Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Heat Wave Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_heat_wave_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractHeatWaveHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_heat_wave_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_heat_wave_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_heat_wave_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_heat_wave_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_heat_wave_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Heat Wave Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Heat Wave Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Heat Wave Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_ice_storm_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractIceStormExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_ice_storm_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_ice_storm_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_ice_storm_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_ice_storm_expected_annual_loss_rating_census_tract_all: all,
+          nri_ice_storm_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Ice Storm Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Ice Storm Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Ice Storm Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_ice_storm_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractIceStormHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_ice_storm_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_ice_storm_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_ice_storm_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_ice_storm_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_ice_storm_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Ice Storm Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Ice Storm Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Ice Storm Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_inland_flooding_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractInlandFloodingExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_inland_flooding_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_inland_flooding_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_inland_flooding_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_inland_flooding_expected_annual_loss_rating_census_tract_all: all,
+          nri_inland_flooding_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Inland Flooding Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Inland Flooding Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Inland Flooding Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_inland_flooding_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractInlandFloodingHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_inland_flooding_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_inland_flooding_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_inland_flooding_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_inland_flooding_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_inland_flooding_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Inland Flooding Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Inland Flooding Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Inland Flooding Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_landslide_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractLandslideExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_landslide_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_landslide_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_landslide_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_landslide_expected_annual_loss_rating_census_tract_all: all,
+          nri_landslide_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Landslide Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Landslide Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Landslide Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_landslide_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractLandslideHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_landslide_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_landslide_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_landslide_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_landslide_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_landslide_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Landslide Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Landslide Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Landslide Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_lightning_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractLightningExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_lightning_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_lightning_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_lightning_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_lightning_expected_annual_loss_rating_census_tract_all: all,
+          nri_lightning_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Lightning Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Lightning Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Lightning Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_lightning_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractLightningHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_lightning_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_lightning_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_lightning_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_lightning_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_lightning_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Lightning Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Lightning Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Lightning Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_social_vulnerability_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractSocialVulnerabilityRating(lat, lon, cappedRadius);
+        // Social Vulnerability doesn't have specific field suffixes, so we'll just return basic stats
+        return {
+          nri_social_vulnerability_rating_census_tract_count: all.length,
+          nri_social_vulnerability_rating_census_tract_containing: containing,
+          nri_social_vulnerability_rating_census_tract_nearby: nearby,
+          nri_social_vulnerability_rating_census_tract_all: all,
+          nri_social_vulnerability_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Social Vulnerability Rating (Census Tract) area(s).`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Social Vulnerability Rating (Census Tract) area(s) within ${cappedRadius} miles.`
+              : `No NRI Social Vulnerability Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_strong_wind_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractStrongWindExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_strong_wind_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_strong_wind_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_strong_wind_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_strong_wind_expected_annual_loss_rating_census_tract_all: all,
+          nri_strong_wind_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Strong Wind Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Strong Wind Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Strong Wind Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_strong_wind_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractStrongWindHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_strong_wind_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_strong_wind_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_strong_wind_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_strong_wind_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_strong_wind_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Strong Wind Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Strong Wind Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Strong Wind Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_tornado_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractTornadoExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_tornado_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_tornado_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_tornado_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_tornado_expected_annual_loss_rating_census_tract_all: all,
+          nri_tornado_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tornado Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tornado Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Tornado Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_tornado_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractTornadoHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_tornado_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_tornado_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_tornado_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_tornado_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_tornado_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tornado Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tornado Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Tornado Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_tsunami_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractTsunamiExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_tsunami_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_tsunami_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_tsunami_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_tsunami_expected_annual_loss_rating_census_tract_all: all,
+          nri_tsunami_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tsunami Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tsunami Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Tsunami Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_tsunami_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractTsunamiHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_tsunami_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_tsunami_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_tsunami_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_tsunami_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_tsunami_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tsunami Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tsunami Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Tsunami Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_volcanic_activity_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractVolcanicActivityExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_volcanic_activity_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_volcanic_activity_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_volcanic_activity_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_volcanic_activity_expected_annual_loss_rating_census_tract_all: all,
+          nri_volcanic_activity_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Volcanic Activity Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Volcanic Activity Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Volcanic Activity Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_volcanic_activity_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractVolcanicActivityHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_volcanic_activity_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_volcanic_activity_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_volcanic_activity_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_volcanic_activity_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_volcanic_activity_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Volcanic Activity Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Volcanic Activity Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Volcanic Activity Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_wildfire_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractWildfireExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_wildfire_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_wildfire_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_wildfire_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_wildfire_expected_annual_loss_rating_census_tract_all: all,
+          nri_wildfire_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Wildfire Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Wildfire Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Wildfire Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_wildfire_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractWildfireHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_wildfire_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_wildfire_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_wildfire_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_wildfire_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_wildfire_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Wildfire Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Wildfire Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Wildfire Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_winter_weather_expected_annual_loss_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractWinterWeatherExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_winter_weather_expected_annual_loss_rating_census_tract_count: all.length,
+          nri_winter_weather_expected_annual_loss_rating_census_tract_containing: containing,
+          nri_winter_weather_expected_annual_loss_rating_census_tract_nearby: nearby,
+          nri_winter_weather_expected_annual_loss_rating_census_tract_all: all,
+          nri_winter_weather_expected_annual_loss_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Winter Weather Expected Annual Loss Rating (Census Tract) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Winter Weather Expected Annual Loss Rating (Census Tract) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Winter Weather Expected Annual Loss Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_winter_weather_hazard_type_risk_index_rating_census_tract': {
+        const cappedRadius = Math.min(radius ?? 5, 10);
+        const { containing, nearby, all } = await getNRICensusTractWinterWeatherHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_winter_weather_hazard_type_risk_index_rating_census_tract_count: all.length,
+          nri_winter_weather_hazard_type_risk_index_rating_census_tract_containing: containing,
+          nri_winter_weather_hazard_type_risk_index_rating_census_tract_nearby: nearby,
+          nri_winter_weather_hazard_type_risk_index_rating_census_tract_all: all,
+          nri_winter_weather_hazard_type_risk_index_rating_census_tract_summary: containing.length
+            ? `Location is within ${containing.length} NRI Winter Weather Hazard Type Risk Index Rating (Census Tract) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Winter Weather Hazard Type Risk Index Rating (Census Tract) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Winter Weather Hazard Type Risk Index Rating (Census Tract) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      // NRI County Risk Index Rating and Expected Annual Loss Rating layers
+      case 'nri_avalanche_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyAvalancheExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_avalanche_expected_annual_loss_rating_county_count: all.length,
+          nri_avalanche_expected_annual_loss_rating_county_containing: containing,
+          nri_avalanche_expected_annual_loss_rating_county_nearby: nearby,
+          nri_avalanche_expected_annual_loss_rating_county_all: all,
+          nri_avalanche_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Avalanche Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Avalanche Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Avalanche Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_avalanche_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyAvalancheHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_avalanche_hazard_type_risk_index_rating_county_count: all.length,
+          nri_avalanche_hazard_type_risk_index_rating_county_containing: containing,
+          nri_avalanche_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_avalanche_hazard_type_risk_index_rating_county_all: all,
+          nri_avalanche_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Avalanche Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Avalanche Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Avalanche Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_coastal_flooding_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyCoastalFloodingExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_coastal_flooding_expected_annual_loss_rating_county_count: all.length,
+          nri_coastal_flooding_expected_annual_loss_rating_county_containing: containing,
+          nri_coastal_flooding_expected_annual_loss_rating_county_nearby: nearby,
+          nri_coastal_flooding_expected_annual_loss_rating_county_all: all,
+          nri_coastal_flooding_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Coastal Flooding Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Coastal Flooding Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Coastal Flooding Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_coastal_flooding_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyCoastalFloodingHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_coastal_flooding_hazard_type_risk_index_rating_county_count: all.length,
+          nri_coastal_flooding_hazard_type_risk_index_rating_county_containing: containing,
+          nri_coastal_flooding_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_coastal_flooding_hazard_type_risk_index_rating_county_all: all,
+          nri_coastal_flooding_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Coastal Flooding Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Coastal Flooding Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Coastal Flooding Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_cold_wave_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyColdWaveExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_cold_wave_expected_annual_loss_rating_county_count: all.length,
+          nri_cold_wave_expected_annual_loss_rating_county_containing: containing,
+          nri_cold_wave_expected_annual_loss_rating_county_nearby: nearby,
+          nri_cold_wave_expected_annual_loss_rating_county_all: all,
+          nri_cold_wave_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Cold Wave Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Cold Wave Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Cold Wave Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_cold_wave_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyColdWaveHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_cold_wave_hazard_type_risk_index_rating_county_count: all.length,
+          nri_cold_wave_hazard_type_risk_index_rating_county_containing: containing,
+          nri_cold_wave_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_cold_wave_hazard_type_risk_index_rating_county_all: all,
+          nri_cold_wave_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Cold Wave Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Cold Wave Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Cold Wave Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_community_resilience_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyCommunityResilienceRating(lat, lon, cappedRadius);
+        // Community Resilience doesn't have specific field suffixes, so we'll just return basic stats
+        return {
+          nri_community_resilience_rating_county_count: all.length,
+          nri_community_resilience_rating_county_containing: containing,
+          nri_community_resilience_rating_county_nearby: nearby,
+          nri_community_resilience_rating_county_all: all,
+          nri_community_resilience_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Community Resilience Rating (County) area(s).`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Community Resilience Rating (County) area(s) within ${cappedRadius} miles.`
+              : `No NRI Community Resilience Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_drought_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyDroughtExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_drought_expected_annual_loss_rating_county_count: all.length,
+          nri_drought_expected_annual_loss_rating_county_containing: containing,
+          nri_drought_expected_annual_loss_rating_county_nearby: nearby,
+          nri_drought_expected_annual_loss_rating_county_all: all,
+          nri_drought_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Drought Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Drought Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Drought Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_drought_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyDroughtHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_drought_hazard_type_risk_index_rating_county_count: all.length,
+          nri_drought_hazard_type_risk_index_rating_county_containing: containing,
+          nri_drought_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_drought_hazard_type_risk_index_rating_county_all: all,
+          nri_drought_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Drought Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Drought Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Drought Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_earthquake_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyEarthquakeExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_earthquake_expected_annual_loss_rating_county_count: all.length,
+          nri_earthquake_expected_annual_loss_rating_county_containing: containing,
+          nri_earthquake_expected_annual_loss_rating_county_nearby: nearby,
+          nri_earthquake_expected_annual_loss_rating_county_all: all,
+          nri_earthquake_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Earthquake Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Earthquake Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Earthquake Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_earthquake_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyEarthquakeHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_earthquake_hazard_type_risk_index_rating_county_count: all.length,
+          nri_earthquake_hazard_type_risk_index_rating_county_containing: containing,
+          nri_earthquake_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_earthquake_hazard_type_risk_index_rating_county_all: all,
+          nri_earthquake_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Earthquake Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Earthquake Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Earthquake Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_hail_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyHailExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_hail_expected_annual_loss_rating_county_count: all.length,
+          nri_hail_expected_annual_loss_rating_county_containing: containing,
+          nri_hail_expected_annual_loss_rating_county_nearby: nearby,
+          nri_hail_expected_annual_loss_rating_county_all: all,
+          nri_hail_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hail Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hail Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Hail Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_hail_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyHailHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_hail_hazard_type_risk_index_rating_county_count: all.length,
+          nri_hail_hazard_type_risk_index_rating_county_containing: containing,
+          nri_hail_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_hail_hazard_type_risk_index_rating_county_all: all,
+          nri_hail_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hail Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hail Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Hail Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_heat_wave_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyHeatWaveExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_heat_wave_expected_annual_loss_rating_county_count: all.length,
+          nri_heat_wave_expected_annual_loss_rating_county_containing: containing,
+          nri_heat_wave_expected_annual_loss_rating_county_nearby: nearby,
+          nri_heat_wave_expected_annual_loss_rating_county_all: all,
+          nri_heat_wave_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Heat Wave Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Heat Wave Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Heat Wave Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_heat_wave_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyHeatWaveHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_heat_wave_hazard_type_risk_index_rating_county_count: all.length,
+          nri_heat_wave_hazard_type_risk_index_rating_county_containing: containing,
+          nri_heat_wave_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_heat_wave_hazard_type_risk_index_rating_county_all: all,
+          nri_heat_wave_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Heat Wave Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Heat Wave Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Heat Wave Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_hurricane_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyHurricaneExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_hurricane_expected_annual_loss_rating_county_count: all.length,
+          nri_hurricane_expected_annual_loss_rating_county_containing: containing,
+          nri_hurricane_expected_annual_loss_rating_county_nearby: nearby,
+          nri_hurricane_expected_annual_loss_rating_county_all: all,
+          nri_hurricane_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hurricane Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hurricane Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Hurricane Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_hurricane_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyHurricaneHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_hurricane_hazard_type_risk_index_rating_county_count: all.length,
+          nri_hurricane_hazard_type_risk_index_rating_county_containing: containing,
+          nri_hurricane_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_hurricane_hazard_type_risk_index_rating_county_all: all,
+          nri_hurricane_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Hurricane Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Hurricane Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Hurricane Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_ice_storm_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyIceStormExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_ice_storm_expected_annual_loss_rating_county_count: all.length,
+          nri_ice_storm_expected_annual_loss_rating_county_containing: containing,
+          nri_ice_storm_expected_annual_loss_rating_county_nearby: nearby,
+          nri_ice_storm_expected_annual_loss_rating_county_all: all,
+          nri_ice_storm_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Ice Storm Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Ice Storm Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Ice Storm Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_ice_storm_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyIceStormHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_ice_storm_hazard_type_risk_index_rating_county_count: all.length,
+          nri_ice_storm_hazard_type_risk_index_rating_county_containing: containing,
+          nri_ice_storm_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_ice_storm_hazard_type_risk_index_rating_county_all: all,
+          nri_ice_storm_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Ice Storm Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Ice Storm Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Ice Storm Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_inland_flooding_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyInlandFloodingExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_inland_flooding_expected_annual_loss_rating_county_count: all.length,
+          nri_inland_flooding_expected_annual_loss_rating_county_containing: containing,
+          nri_inland_flooding_expected_annual_loss_rating_county_nearby: nearby,
+          nri_inland_flooding_expected_annual_loss_rating_county_all: all,
+          nri_inland_flooding_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Inland Flooding Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Inland Flooding Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Inland Flooding Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_inland_flooding_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyInlandFloodingHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_inland_flooding_hazard_type_risk_index_rating_county_count: all.length,
+          nri_inland_flooding_hazard_type_risk_index_rating_county_containing: containing,
+          nri_inland_flooding_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_inland_flooding_hazard_type_risk_index_rating_county_all: all,
+          nri_inland_flooding_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Inland Flooding Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Inland Flooding Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Inland Flooding Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_landslide_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyLandslideExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_landslide_expected_annual_loss_rating_county_count: all.length,
+          nri_landslide_expected_annual_loss_rating_county_containing: containing,
+          nri_landslide_expected_annual_loss_rating_county_nearby: nearby,
+          nri_landslide_expected_annual_loss_rating_county_all: all,
+          nri_landslide_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Landslide Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Landslide Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Landslide Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_landslide_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyLandslideHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_landslide_hazard_type_risk_index_rating_county_count: all.length,
+          nri_landslide_hazard_type_risk_index_rating_county_containing: containing,
+          nri_landslide_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_landslide_hazard_type_risk_index_rating_county_all: all,
+          nri_landslide_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Landslide Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Landslide Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Landslide Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_lightning_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyLightningExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_lightning_expected_annual_loss_rating_county_count: all.length,
+          nri_lightning_expected_annual_loss_rating_county_containing: containing,
+          nri_lightning_expected_annual_loss_rating_county_nearby: nearby,
+          nri_lightning_expected_annual_loss_rating_county_all: all,
+          nri_lightning_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Lightning Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Lightning Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Lightning Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_national_risk_index_rating_composite_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyNationalRiskIndexRatingComposite(lat, lon, cappedRadius);
+        // National Risk Index Rating Composite doesn't have specific field suffixes, so we'll just return basic stats
+        return {
+          nri_national_risk_index_rating_composite_county_count: all.length,
+          nri_national_risk_index_rating_composite_county_containing: containing,
+          nri_national_risk_index_rating_composite_county_nearby: nearby,
+          nri_national_risk_index_rating_composite_county_all: all,
+          nri_national_risk_index_rating_composite_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI National Risk Index Rating Composite (County) area(s).`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI National Risk Index Rating Composite (County) area(s) within ${cappedRadius} miles.`
+              : `No NRI National Risk Index Rating Composite (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_strong_wind_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyStrongWindExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_strong_wind_expected_annual_loss_rating_county_count: all.length,
+          nri_strong_wind_expected_annual_loss_rating_county_containing: containing,
+          nri_strong_wind_expected_annual_loss_rating_county_nearby: nearby,
+          nri_strong_wind_expected_annual_loss_rating_county_all: all,
+          nri_strong_wind_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Strong Wind Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Strong Wind Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Strong Wind Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_strong_wind_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyStrongWindHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_strong_wind_hazard_type_risk_index_rating_county_count: all.length,
+          nri_strong_wind_hazard_type_risk_index_rating_county_containing: containing,
+          nri_strong_wind_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_strong_wind_hazard_type_risk_index_rating_county_all: all,
+          nri_strong_wind_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Strong Wind Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Strong Wind Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Strong Wind Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_tornado_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyTornadoExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_tornado_expected_annual_loss_rating_county_count: all.length,
+          nri_tornado_expected_annual_loss_rating_county_containing: containing,
+          nri_tornado_expected_annual_loss_rating_county_nearby: nearby,
+          nri_tornado_expected_annual_loss_rating_county_all: all,
+          nri_tornado_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tornado Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tornado Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Tornado Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_tornado_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyTornadoHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_tornado_hazard_type_risk_index_rating_county_count: all.length,
+          nri_tornado_hazard_type_risk_index_rating_county_containing: containing,
+          nri_tornado_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_tornado_hazard_type_risk_index_rating_county_all: all,
+          nri_tornado_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tornado Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tornado Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Tornado Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_tsunami_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyTsunamiExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_tsunami_expected_annual_loss_rating_county_count: all.length,
+          nri_tsunami_expected_annual_loss_rating_county_containing: containing,
+          nri_tsunami_expected_annual_loss_rating_county_nearby: nearby,
+          nri_tsunami_expected_annual_loss_rating_county_all: all,
+          nri_tsunami_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tsunami Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tsunami Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Tsunami Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_tsunami_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyTsunamiHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_tsunami_hazard_type_risk_index_rating_county_count: all.length,
+          nri_tsunami_hazard_type_risk_index_rating_county_containing: containing,
+          nri_tsunami_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_tsunami_hazard_type_risk_index_rating_county_all: all,
+          nri_tsunami_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Tsunami Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Tsunami Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Tsunami Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_volcanic_activity_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyVolcanicActivityExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_volcanic_activity_expected_annual_loss_rating_county_count: all.length,
+          nri_volcanic_activity_expected_annual_loss_rating_county_containing: containing,
+          nri_volcanic_activity_expected_annual_loss_rating_county_nearby: nearby,
+          nri_volcanic_activity_expected_annual_loss_rating_county_all: all,
+          nri_volcanic_activity_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Volcanic Activity Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Volcanic Activity Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Volcanic Activity Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_volcanic_activity_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyVolcanicActivityHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_volcanic_activity_hazard_type_risk_index_rating_county_count: all.length,
+          nri_volcanic_activity_hazard_type_risk_index_rating_county_containing: containing,
+          nri_volcanic_activity_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_volcanic_activity_hazard_type_risk_index_rating_county_all: all,
+          nri_volcanic_activity_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Volcanic Activity Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Volcanic Activity Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Volcanic Activity Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_wildfire_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyWildfireExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_wildfire_expected_annual_loss_rating_county_count: all.length,
+          nri_wildfire_expected_annual_loss_rating_county_containing: containing,
+          nri_wildfire_expected_annual_loss_rating_county_nearby: nearby,
+          nri_wildfire_expected_annual_loss_rating_county_all: all,
+          nri_wildfire_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Wildfire Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Wildfire Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Wildfire Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_wildfire_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyWildfireHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_wildfire_hazard_type_risk_index_rating_county_count: all.length,
+          nri_wildfire_hazard_type_risk_index_rating_county_containing: containing,
+          nri_wildfire_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_wildfire_hazard_type_risk_index_rating_county_all: all,
+          nri_wildfire_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Wildfire Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Wildfire Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Wildfire Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_winter_weather_expected_annual_loss_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyWinterWeatherExpectedAnnualLossRating(lat, lon, cappedRadius);
+        const ealStats = this.formatNriExpectedAnnualLossStats(containing.length ? containing : all);
+        return {
+          nri_winter_weather_expected_annual_loss_rating_county_count: all.length,
+          nri_winter_weather_expected_annual_loss_rating_county_containing: containing,
+          nri_winter_weather_expected_annual_loss_rating_county_nearby: nearby,
+          nri_winter_weather_expected_annual_loss_rating_county_all: all,
+          nri_winter_weather_expected_annual_loss_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Winter Weather Expected Annual Loss Rating (County) area(s).${ealStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Winter Weather Expected Annual Loss Rating (County) area(s) within ${cappedRadius} miles.${ealStats}`
+              : `No NRI Winter Weather Expected Annual Loss Rating (County) areas found within ${cappedRadius} miles.`
+        };
+      }
+
+      case 'nri_winter_weather_hazard_type_risk_index_rating_county': {
+        const cappedRadius = Math.min(radius ?? 25, 25);
+        const { containing, nearby, all } = await getNRICountyWinterWeatherHazardTypeRiskIndexRating(lat, lon, cappedRadius);
+        const riskStats = this.formatNriRiskIndexStats(containing.length ? containing : all);
+        return {
+          nri_winter_weather_hazard_type_risk_index_rating_county_count: all.length,
+          nri_winter_weather_hazard_type_risk_index_rating_county_containing: containing,
+          nri_winter_weather_hazard_type_risk_index_rating_county_nearby: nearby,
+          nri_winter_weather_hazard_type_risk_index_rating_county_all: all,
+          nri_winter_weather_hazard_type_risk_index_rating_county_summary: containing.length
+            ? `Location is within ${containing.length} NRI Winter Weather Hazard Type Risk Index Rating (County) area(s).${riskStats}`
+            : nearby.length
+              ? `Found ${nearby.length} nearby NRI Winter Weather Hazard Type Risk Index Rating (County) area(s) within ${cappedRadius} miles.${riskStats}`
+              : `No NRI Winter Weather Hazard Type Risk Index Rating (County) areas found within ${cappedRadius} miles.`
         };
       }
       
