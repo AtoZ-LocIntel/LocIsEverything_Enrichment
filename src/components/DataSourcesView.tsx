@@ -4057,6 +4057,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Fire_Stations_USVI/FeatureServer/2"
+        },
+        {
+          name: "USVI Police Stations",
+          description: "Location of State Police facilities in Puerto Rico and the United States Virgin Islands - proximity queries up to 25 miles",
+          coverage: "U.S. Virgin Islands and Puerto Rico",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Police_Stations_USVI/FeatureServer/1"
         }
       ]
     },

@@ -9841,6 +9841,7 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw USVI Fire Stations as markers on the map
       if (enrichments.usvi_fire_stations_all && Array.isArray(enrichments.usvi_fire_stations_all)) {
+        let fireStationCount = 0;
         enrichments.usvi_fire_stations_all.forEach((station: any) => {
           if (station.lat && station.lon) {
             try {
@@ -9921,11 +9922,129 @@ const MapView: React.FC<MapViewProps> = ({
               
               // Extend bounds to include this fire station
               bounds.extend([stationLat, stationLon]);
+              fireStationCount++;
             } catch (error) {
               console.error('Error drawing USVI Fire Station marker:', error);
             }
           }
         });
+        
+        // Add to legend accumulator
+        if (fireStationCount > 0) {
+          if (!legendAccumulator['usvi_fire_stations']) {
+            legendAccumulator['usvi_fire_stations'] = {
+              icon: '🚒',
+              color: '#dc2626',
+              title: 'USVI Fire Stations',
+              count: 0,
+            };
+          }
+          legendAccumulator['usvi_fire_stations'].count += fireStationCount;
+        }
+      }
+
+      // Draw USVI Police Stations as markers on the map
+      if (enrichments.usvi_police_stations_all && Array.isArray(enrichments.usvi_police_stations_all)) {
+        let policeStationCount = 0;
+        enrichments.usvi_police_stations_all.forEach((station: any) => {
+          if (station.lat && station.lon) {
+            try {
+              const stationLat = station.lat;
+              const stationLon = station.lon;
+              const stationName = station.fac_name || station.FAC_NAME || station.Fac_Name || 'Unknown Police Station';
+              const stationType = station.fac_type || station.FAC_TYPE || station.Fac_Type || 'Unknown Type';
+              
+              // Create a custom icon for police stations
+              const icon = createPOIIcon('🚓', '#1e40af'); // Blue icon for police stations
+              
+              const marker = L.marker([stationLat, stationLon], { icon });
+              
+              // Build popup content with all police station attributes
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🚓 ${stationName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Type:</strong> ${stationType}</div>
+                    ${station.territory ? `<div><strong>Territory:</strong> ${station.territory}</div>` : ''}
+                    ${station.county ? `<div><strong>County:</strong> ${station.county}</div>` : ''}
+                    ${station.usng ? `<div><strong>USNG:</strong> ${station.usng}</div>` : ''}
+                    ${station.flood_zone ? `<div><strong>Flood Zone:</strong> ${station.flood_zone}</div>` : ''}
+                    ${station.distance_miles !== null && station.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${station.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    <div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">All Attributes:</div>
+              `;
+              
+              // Add all police station attributes (excluding internal fields)
+              const excludeFields = ['fac_name', 'fac_type', 'territory', 'county', 'usng', 'flood_zone', 'x', 'y', 'lat', 'lon', 'distance_miles', 'attributes'];
+              Object.entries(station).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+                  
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+              
+              // Also include any nested attributes object
+              if (station.attributes && typeof station.attributes === 'object') {
+                Object.entries(station.attributes).forEach(([key, value]) => {
+                  if (value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+              }
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this police station
+              bounds.extend([stationLat, stationLon]);
+              policeStationCount++;
+            } catch (error) {
+              console.error('Error drawing USVI Police Station marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend accumulator
+        if (policeStationCount > 0) {
+          if (!legendAccumulator['usvi_police_stations']) {
+            legendAccumulator['usvi_police_stations'] = {
+              icon: '🚓',
+              color: '#1e40af',
+              title: 'USVI Police Stations',
+              count: 0,
+            };
+          }
+          legendAccumulator['usvi_police_stations'].count += policeStationCount;
+        }
       }
 
       // Draw NH Nursing Homes as markers on the map
@@ -27586,7 +27705,8 @@ const MapView: React.FC<MapViewProps> = ({
         if (baseKey === 'nh_fire_stations' || 
             baseKey === 'nh_ems' || 
             baseKey === 'nh_nursing_homes' ||
-            baseKey === 'usvi_fire_stations') {
+            baseKey === 'usvi_fire_stations' ||
+            baseKey === 'usvi_police_stations') {
           return;
         }
 

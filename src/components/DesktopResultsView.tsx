@@ -95,6 +95,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return `${value.length} fire stations found (see CSV for details)`;
       }
       
+      // Special handling for USVI Police Stations - show count only
+      if (key.includes('usvi_police_stations_all')) {
+        return `${value.length} police stations found (see CSV for details)`;
+      }
+      
       // Regular array handling for non-POI data
       return value.map((item: any) => {
         if (typeof item === 'object' && item !== null) {

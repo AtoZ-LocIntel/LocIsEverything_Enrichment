@@ -14,6 +14,7 @@ import { getNHNursingHomesData } from '../adapters/nhNursingHomes';
 import { getNHEMSData } from '../adapters/nhEMS';
 import { getNHFireStationsData } from '../adapters/nhFireStations';
 import { getUSVIFireStationsData } from '../adapters/usviFireStations';
+import { getUSVIPoliceStationsData } from '../adapters/usviPoliceStations';
 import { getNHPlacesOfWorshipData } from '../adapters/nhPlacesOfWorship';
 import { getNHHospitalsData } from '../adapters/nhHospitals';
 import { getNHPublicWatersAccessData } from '../adapters/nhPublicWatersAccess';
@@ -1967,6 +1968,10 @@ export class EnrichmentService {
       // USVI Fire Stations - Proximity query
       case 'usvi_fire_stations':
         return await this.getUSVIFireStations(lat, lon, radius);
+      
+      // USVI Police Stations - Proximity query
+      case 'usvi_police_stations':
+        return await this.getUSVIPoliceStations(lat, lon, radius);
       
       // NH Places of Worship (NH GRANIT) - Proximity query
       case 'nh_places_of_worship':
@@ -6676,6 +6681,60 @@ export class EnrichmentService {
         usvi_fire_stations_all: [],
         usvi_fire_stations_summary: 'Error fetching USVI Fire Stations data',
         usvi_fire_stations_error: 'Error fetching USVI Fire Stations data'
+      };
+    }
+  }
+
+  private async getUSVIPoliceStations(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚓 Fetching USVI Police Stations data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const policeStations = await getUSVIPoliceStationsData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (policeStations && policeStations.length > 0) {
+        result.usvi_police_stations_count = policeStations.length;
+        result.usvi_police_stations_all = policeStations.map(station => ({
+          ...station.attributes,
+          fac_name: station.fac_name,
+          fac_type: station.fac_type,
+          territory: station.territory,
+          county: station.county,
+          x: station.x,
+          y: station.y,
+          usng: station.usng,
+          flood_zone: station.flood_zone,
+          lat: station.lat,
+          lon: station.lon,
+          distance_miles: station.distance_miles
+        }));
+        
+        result.usvi_police_stations_summary = `Found ${policeStations.length} USVI Police Station(s) within ${radiusMiles} miles.`;
+      } else {
+        result.usvi_police_stations_count = 0;
+        result.usvi_police_stations_all = [];
+        result.usvi_police_stations_summary = `No USVI Police Stations found within ${radiusMiles} miles.`;
+      }
+      
+      result.usvi_police_stations_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ USVI Police Stations data processed:`, {
+        count: result.usvi_police_stations_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching USVI Police Stations:', error);
+      return {
+        usvi_police_stations_count: 0,
+        usvi_police_stations_all: [],
+        usvi_police_stations_summary: 'Error fetching USVI Police Stations data',
+        usvi_police_stations_error: 'Error fetching USVI Police Stations data'
       };
     }
   }

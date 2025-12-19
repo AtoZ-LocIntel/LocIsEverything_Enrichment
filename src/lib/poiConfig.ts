@@ -953,6 +953,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   
   // USVI Open Data
   { id: 'usvi_fire_stations', label: 'USVI Fire Stations', description: 'Location of Fire Stations and associated facilities in the United States Virgin Islands and Puerto Rico (proximity up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'usvi', section: 'usvi' },
+  { id: 'usvi_police_stations', label: 'USVI Police Stations', description: 'Location of State Police facilities in Puerto Rico and the United States Virgin Islands (proximity up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'usvi', section: 'usvi' },
   
   { id: 'chicago_traffic_crashes', label: 'Chicago Traffic Crashes', description: 'Chicago - Traffic crashes from the City of Chicago Data Portal for proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
   { id: 'chicago_speed_cameras', label: 'Chicago Speed Camera Locations', description: 'Chicago - Speed camera locations from the City of Chicago Data Portal for proximity queries (up to 5 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
