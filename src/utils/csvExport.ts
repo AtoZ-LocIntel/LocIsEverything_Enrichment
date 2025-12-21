@@ -592,6 +592,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'wri_aqueduct_water_risk_future_annual_all' || // Skip WRI Aqueduct Water Risk Future Annual array (handled separately)
         key === 'wri_aqueduct_water_risk_baseline_annual_all' || // Skip WRI Aqueduct Water Risk Baseline Annual array (handled separately)
         key === 'wri_aqueduct_water_risk_baseline_monthly_all' || // Skip WRI Aqueduct Water Risk Baseline Monthly array (handled separately)
+        key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
         key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately)
         key === 'usfs_national_grasslands_all' ||
@@ -10377,6 +10378,50 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'World Resources Institute'
+        ]);
+      });
+    } else if (key === 'pr_hydrology_all' && Array.isArray(value)) {
+      // Handle Puerto Rico Hydrology - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.paths && feature.geometry.paths.length > 0) {
+          const firstPath = feature.geometry.paths[0];
+          if (firstPath && firstPath.length > 0) {
+            // ESRI paths are [lon, lat] format
+            lat = firstPath[0][1].toString();
+            lon = firstPath[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const fid = feature.fid || feature.FID || '';
+        const name = feature.name || feature.NAME || feature.Name || 'Unnamed';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Puerto Rico Open Data',
+          (location.confidence || 'N/A').toString(),
+          'PR_HYDROLOGY',
+          name,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          feature.tipo || feature.TIPO || feature.type || feature.Type || 'Unknown',
+          '',
+          '',
+          '',
+          attributesJson,
+          'Puerto Rico Open Data'
         ]);
       });
     } else if (key === 'wri_aqueduct_water_risk_baseline_monthly_all' && Array.isArray(value)) {

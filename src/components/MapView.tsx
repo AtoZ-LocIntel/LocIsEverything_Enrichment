@@ -705,6 +705,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'wri_aqueduct_water_risk_future_annual_all' || // Skip WRI Aqueduct Water Risk Future Annual array (handled separately for map drawing)
     key === 'wri_aqueduct_water_risk_baseline_annual_all' || // Skip WRI Aqueduct Water Risk Baseline Annual array (handled separately for map drawing)
     key === 'wri_aqueduct_water_risk_baseline_monthly_all' || // Skip WRI Aqueduct Water Risk Baseline Monthly array (handled separately for map drawing)
+    key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
     key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately for map drawing)
     key === 'nps_national_parks_all' || // Skip NPS National Parks array (handled separately for map drawing)
@@ -20771,6 +20772,110 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing WRI Aqueduct Water Risk Baseline Monthly:', error);
+      }
+
+      // Draw Puerto Rico Hydrology as polylines on the map
+      try {
+        if (enrichments.pr_hydrology_all && Array.isArray(enrichments.pr_hydrology_all)) {
+          let featureCount = 0;
+          enrichments.pr_hydrology_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.paths && Array.isArray(feature.geometry.paths)) {
+              try {
+                const paths = feature.geometry.paths;
+                if (paths && paths.length > 0) {
+                  // Convert all paths to Leaflet format
+                  paths.forEach((path: number[][]) => {
+                    if (path && path.length > 0) {
+                      // ESRI paths are [lon, lat] format, convert to [lat, lon] for Leaflet
+                      const latlngs: L.LatLngExpression[] = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as L.LatLngExpression;
+                      });
+                      
+                      // Determine color based on TIPO/Type
+                      let color = '#0ea5e9'; // Default blue
+                      let weight = 3;
+                      const tipo = feature.tipo || feature.TIPO || feature.type || feature.Type || '';
+                      
+                      if (tipo === 'RIO' || tipo === 'Rio' || tipo === 'rio') {
+                        color = '#0284c7'; // Darker blue for rivers
+                        weight = 4;
+                      } else if (tipo === 'QUEBRADA' || tipo === 'Quebrada' || tipo === 'quebrada') {
+                        color = '#06b6d4'; // Cyan for streams
+                        weight = 3;
+                      } else if (tipo === 'CANAL' || tipo === 'Canal' || tipo === 'canal') {
+                        color = '#0891b2'; // Teal for canals
+                        weight = 2;
+                      } else if (tipo === 'CANAL DE DRENAJE' || tipo === 'Canal de Drenaje') {
+                        color = '#0e7490'; // Darker teal for drainage canals
+                        weight = 2;
+                      } else if (tipo === 'SIFON' || tipo === 'Sifon' || tipo === 'sifon') {
+                        color = '#155e75'; // Dark teal for siphons
+                        weight = 2;
+                      } else if (tipo === 'TUNEL' || tipo === 'Tunel' || tipo === 'tunel') {
+                        color = '#164e63'; // Darkest teal for tunnels
+                        weight = 2;
+                      }
+                      
+                      const polyline = L.polyline(latlngs, {
+                        color: color,
+                        weight: weight,
+                        opacity: 0.8,
+                        smoothFactor: 1
+                      });
+                      
+                      const name = feature.name || feature.NAME || feature.Name || 'Unnamed';
+                      const tipoDisplay = tipo || 'Unknown Type';
+                      const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                      
+                      let popupContent = `
+                        <div style="min-width: 200px; max-width: 350px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            🌊 ${name}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            <div><strong>Type:</strong> ${tipoDisplay}</div>
+                            ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                            ${feature.shapeLength ? `<div><strong>Length:</strong> ${feature.shapeLength.toFixed(2)} m</div>` : ''}
+                          </div>
+                        </div>
+                      `;
+                      
+                      polyline.bindPopup(popupContent, { maxWidth: 350 });
+                      polyline.addTo(primary);
+                      
+                      (polyline as any).__layerType = 'pr_hydrology';
+                      (polyline as any).__layerTitle = 'PR Hydrology';
+                      
+                      try {
+                        bounds.extend(polyline.getBounds());
+                      } catch (boundsError) {
+                        console.warn('Error extending bounds for PR Hydrology:', boundsError);
+                      }
+                      
+                      featureCount++;
+                    }
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Puerto Rico Hydrology polyline:', error);
+              }
+            }
+          });
+          
+          if (featureCount > 0) {
+            if (!legendAccumulator['pr_hydrology']) {
+              legendAccumulator['pr_hydrology'] = {
+                icon: '🌊',
+                color: '#0ea5e9',
+                title: 'PR Hydrology',
+                count: 0,
+              };
+            }
+            legendAccumulator['pr_hydrology'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Puerto Rico Hydrology:', error);
       }
 
       // Draw Guam Villages as polygons on the map

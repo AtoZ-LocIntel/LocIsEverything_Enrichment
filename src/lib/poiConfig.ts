@@ -979,6 +979,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'guam_villages', label: 'Guam Villages', description: 'Guam village boundaries - point-in-polygon and proximity queries up to 10 miles', isPOI: true, defaultRadius: 5, maxRadius: 10, category: 'guam', section: 'guam' },
   { id: 'guam_state_boundary', label: 'Guam State Boundary', description: 'Guam state boundary - point-in-polygon and proximity queries up to 10 miles', isPOI: true, defaultRadius: 5, maxRadius: 10, category: 'guam', section: 'guam' },
   
+  // Puerto Rico
+  { id: 'pr_hydrology', label: 'PR Hydrology', description: 'Puerto Rico Hydrology - Rivers, streams, canals, and drainage features (proximity up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'pr', section: 'pr' },
+  
   { id: 'chicago_traffic_crashes', label: 'Chicago Traffic Crashes', description: 'Chicago - Traffic crashes from the City of Chicago Data Portal for proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
   { id: 'chicago_speed_cameras', label: 'Chicago Speed Camera Locations', description: 'Chicago - Speed camera locations from the City of Chicago Data Portal for proximity queries (up to 5 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
   { id: 'chicago_red_light_cameras', label: 'Chicago Red Light Camera Locations', description: 'Chicago - Red light camera locations from the City of Chicago Data Portal for proximity queries (up to 5 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },

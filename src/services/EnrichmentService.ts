@@ -272,6 +272,7 @@ import { getUSFSForestBoundariesData } from '../adapters/usfsForestBoundaries';
 import { getUSFSWildernessAreasData } from '../adapters/usfsWildernessAreas';
 import { getChinookSalmonRangesData } from '../adapters/chinookSalmonRanges';
 import { getTXSchoolDistricts2024Data } from '../adapters/txSchoolDistricts2024';
+import { getPRHydrologyData } from '../adapters/prHydrology';
 import { getWRIAqueductWaterRiskFutureAnnualData, getWRIAqueductWaterRiskBaselineAnnualData, getWRIAqueductWaterRiskBaselineMonthlyData } from '../adapters/wriAqueductWaterRisk';
 import { getUSFSNationalGrasslandsData } from '../adapters/usfsNationalGrasslands';
 import { getUSFSOfficeLocationsData } from '../adapters/usfsOfficeLocations';
@@ -1989,6 +1990,10 @@ export class EnrichmentService {
       // Guam State Boundary - Point-in-polygon and proximity query (max 10 miles)
       case 'guam_state_boundary':
         return await this.getGuamStateBoundary(lat, lon, radius);
+      
+      // Puerto Rico Hydrology - Proximity query only (max 25 miles)
+      case 'pr_hydrology':
+        return await this.getPRHydrology(lat, lon, radius);
       
       // NH Places of Worship (NH GRANIT) - Proximity query
       case 'nh_places_of_worship':
@@ -6952,6 +6957,53 @@ export class EnrichmentService {
         guam_state_boundary_all: [],
         guam_state_boundary_summary: 'Error fetching Guam State Boundary data',
         guam_state_boundary_error: 'Error fetching Guam State Boundary data'
+      };
+    }
+  }
+
+  private async getPRHydrology(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching Puerto Rico Hydrology data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+      
+      const features = await getPRHydrologyData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.pr_hydrology_count = 0;
+        result.pr_hydrology_all = [];
+        result.pr_hydrology_summary = 'No Puerto Rico Hydrology features found within the specified radius.';
+      } else {
+        result.pr_hydrology_count = features.length;
+        result.pr_hydrology_all = features.map(feature => ({
+          ...feature.attributes,
+          fid: feature.fid,
+          name: feature.name,
+          tipo: feature.tipo,
+          type: feature.type,
+          shapeLength: feature.shapeLength,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles
+        }));
+        
+        const nearestDistance = features[0]?.distance_miles || 0;
+        result.pr_hydrology_summary = `Found ${features.length} Puerto Rico Hydrology feature(s) within ${cappedRadius} miles${nearestDistance > 0 ? ` (nearest: ${nearestDistance.toFixed(2)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ Puerto Rico Hydrology data processed:`, {
+        totalCount: result.pr_hydrology_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Puerto Rico Hydrology data:', error);
+      return {
+        pr_hydrology_count: 0,
+        pr_hydrology_all: [],
+        pr_hydrology_summary: 'Error querying Puerto Rico Hydrology'
       };
     }
   }

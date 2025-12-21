@@ -3117,6 +3117,19 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
+      category: "Puerto Rico Open Data",
+      sources: [
+        {
+          name: "PR Hydrology",
+          description: "Puerto Rico Hydrology - Rivers, streams, canals, and drainage features (proximity queries up to 25 miles)",
+          coverage: "Puerto Rico",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/PR_Hydrology/FeatureServer/0"
+        }
+      ]
+    },
+    {
       category: "World Resources Institute",
       sources: [
         {
