@@ -272,6 +272,7 @@ import { getUSFSForestBoundariesData } from '../adapters/usfsForestBoundaries';
 import { getUSFSWildernessAreasData } from '../adapters/usfsWildernessAreas';
 import { getChinookSalmonRangesData } from '../adapters/chinookSalmonRanges';
 import { getTXSchoolDistricts2024Data } from '../adapters/txSchoolDistricts2024';
+import { getWRIAqueductWaterRiskFutureAnnualData, getWRIAqueductWaterRiskBaselineAnnualData, getWRIAqueductWaterRiskBaselineMonthlyData } from '../adapters/wriAqueductWaterRisk';
 import { getUSFSNationalGrasslandsData } from '../adapters/usfsNationalGrasslands';
 import { getUSFSOfficeLocationsData } from '../adapters/usfsOfficeLocations';
 import { getUSFSSpecialUsesCommunicationsSitesData } from '../adapters/usfsSpecialUsesCommunicationsSites';
@@ -5661,6 +5662,18 @@ export class EnrichmentService {
       case 'tx_school_districts_2024':
         return await this.getTXSchoolDistricts2024(lat, lon, radius);
       
+      // WRI Aqueduct Water Risk - Future Annual - Point-in-polygon and proximity query (max 100 miles)
+      case 'wri_aqueduct_water_risk_future_annual':
+        return await this.getWRIAqueductWaterRiskFutureAnnual(lat, lon, radius);
+      
+      // WRI Aqueduct Water Risk - Baseline Annual - Point-in-polygon and proximity query (max 100 miles)
+      case 'wri_aqueduct_water_risk_baseline_annual':
+        return await this.getWRIAqueductWaterRiskBaselineAnnual(lat, lon, radius);
+      
+      // WRI Aqueduct Water Risk - Baseline Monthly - Point-in-polygon and proximity query (max 100 miles)
+      case 'wri_aqueduct_water_risk_baseline_monthly':
+        return await this.getWRIAqueductWaterRiskBaselineMonthly(lat, lon, radius);
+      
       // USFS Administrative Boundaries - Point-in-polygon and proximity query (max 50 miles)
       case 'usfs_administrative_boundaries':
         return await this.getUSFSAdministrativeBoundaries(lat, lon, radius);
@@ -7011,6 +7024,180 @@ export class EnrichmentService {
         tx_school_districts_2024_count: 0,
         tx_school_districts_2024_all: [],
         tx_school_districts_2024_summary: 'Error querying Texas school districts'
+      };
+    }
+  }
+
+  private async getWRIAqueductWaterRiskFutureAnnual(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching WRI Aqueduct Water Risk Future Annual data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 100 miles
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      
+      const features = await getWRIAqueductWaterRiskFutureAnnualData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.wri_aqueduct_water_risk_future_annual_containing = null;
+        result.wri_aqueduct_water_risk_future_annual_containing_message = 'No WRI Aqueduct Water Risk Future Annual feature found containing this location';
+        result.wri_aqueduct_water_risk_future_annual_count = 0;
+        result.wri_aqueduct_water_risk_future_annual_all = [];
+        result.wri_aqueduct_water_risk_future_annual_summary = 'No WRI Aqueduct Water Risk Future Annual features found.';
+      } else {
+        // Get the first containing feature (should typically be only one for point-in-polygon)
+        const containingFeature = features.find(f => f.isContaining) || features[0];
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result.wri_aqueduct_water_risk_future_annual_containing = 'Location is within a WRI Aqueduct Water Risk Future Annual feature';
+          result.wri_aqueduct_water_risk_future_annual_containing_message = 'Location is within a WRI Aqueduct Water Risk Future Annual feature';
+        } else {
+          result.wri_aqueduct_water_risk_future_annual_containing = null;
+          result.wri_aqueduct_water_risk_future_annual_containing_message = 'No WRI Aqueduct Water Risk Future Annual feature found containing this location';
+        }
+        
+        result.wri_aqueduct_water_risk_future_annual_count = features.length;
+        result.wri_aqueduct_water_risk_future_annual_all = features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+        
+        result.wri_aqueduct_water_risk_future_annual_summary = `Found ${features.length} WRI Aqueduct Water Risk Future Annual feature(s)${containingFeature && containingFeature.isContaining ? ' (location is within a feature)' : ''}.`;
+      }
+      
+      console.log(`✅ WRI Aqueduct Water Risk Future Annual data processed:`, {
+        totalCount: result.wri_aqueduct_water_risk_future_annual_count,
+        containing: result.wri_aqueduct_water_risk_future_annual_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching WRI Aqueduct Water Risk Future Annual data:', error);
+      return {
+        wri_aqueduct_water_risk_future_annual_containing: null,
+        wri_aqueduct_water_risk_future_annual_containing_message: 'Error querying WRI Aqueduct Water Risk Future Annual',
+        wri_aqueduct_water_risk_future_annual_count: 0,
+        wri_aqueduct_water_risk_future_annual_all: [],
+        wri_aqueduct_water_risk_future_annual_summary: 'Error querying WRI Aqueduct Water Risk Future Annual'
+      };
+    }
+  }
+
+  private async getWRIAqueductWaterRiskBaselineAnnual(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching WRI Aqueduct Water Risk Baseline Annual data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 100 miles
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      
+      const features = await getWRIAqueductWaterRiskBaselineAnnualData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.wri_aqueduct_water_risk_baseline_annual_containing = null;
+        result.wri_aqueduct_water_risk_baseline_annual_containing_message = 'No WRI Aqueduct Water Risk Baseline Annual feature found containing this location';
+        result.wri_aqueduct_water_risk_baseline_annual_count = 0;
+        result.wri_aqueduct_water_risk_baseline_annual_all = [];
+        result.wri_aqueduct_water_risk_baseline_annual_summary = 'No WRI Aqueduct Water Risk Baseline Annual features found.';
+      } else {
+        // Get the first containing feature (should typically be only one for point-in-polygon)
+        const containingFeature = features.find(f => f.isContaining) || features[0];
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result.wri_aqueduct_water_risk_baseline_annual_containing = 'Location is within a WRI Aqueduct Water Risk Baseline Annual feature';
+          result.wri_aqueduct_water_risk_baseline_annual_containing_message = 'Location is within a WRI Aqueduct Water Risk Baseline Annual feature';
+        } else {
+          result.wri_aqueduct_water_risk_baseline_annual_containing = null;
+          result.wri_aqueduct_water_risk_baseline_annual_containing_message = 'No WRI Aqueduct Water Risk Baseline Annual feature found containing this location';
+        }
+        
+        result.wri_aqueduct_water_risk_baseline_annual_count = features.length;
+        result.wri_aqueduct_water_risk_baseline_annual_all = features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+        
+        result.wri_aqueduct_water_risk_baseline_annual_summary = `Found ${features.length} WRI Aqueduct Water Risk Baseline Annual feature(s)${containingFeature && containingFeature.isContaining ? ' (location is within a feature)' : ''}.`;
+      }
+      
+      console.log(`✅ WRI Aqueduct Water Risk Baseline Annual data processed:`, {
+        totalCount: result.wri_aqueduct_water_risk_baseline_annual_count,
+        containing: result.wri_aqueduct_water_risk_baseline_annual_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching WRI Aqueduct Water Risk Baseline Annual data:', error);
+      return {
+        wri_aqueduct_water_risk_baseline_annual_containing: null,
+        wri_aqueduct_water_risk_baseline_annual_containing_message: 'Error querying WRI Aqueduct Water Risk Baseline Annual',
+        wri_aqueduct_water_risk_baseline_annual_count: 0,
+        wri_aqueduct_water_risk_baseline_annual_all: [],
+        wri_aqueduct_water_risk_baseline_annual_summary: 'Error querying WRI Aqueduct Water Risk Baseline Annual'
+      };
+    }
+  }
+
+  private async getWRIAqueductWaterRiskBaselineMonthly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching WRI Aqueduct Water Risk Baseline Monthly data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 100 miles
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      
+      const features = await getWRIAqueductWaterRiskBaselineMonthlyData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.wri_aqueduct_water_risk_baseline_monthly_containing = null;
+        result.wri_aqueduct_water_risk_baseline_monthly_containing_message = 'No WRI Aqueduct Water Risk Baseline Monthly feature found containing this location';
+        result.wri_aqueduct_water_risk_baseline_monthly_count = 0;
+        result.wri_aqueduct_water_risk_baseline_monthly_all = [];
+        result.wri_aqueduct_water_risk_baseline_monthly_summary = 'No WRI Aqueduct Water Risk Baseline Monthly features found.';
+      } else {
+        // Get the first containing feature (should typically be only one for point-in-polygon)
+        const containingFeature = features.find(f => f.isContaining) || features[0];
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result.wri_aqueduct_water_risk_baseline_monthly_containing = 'Location is within a WRI Aqueduct Water Risk Baseline Monthly feature';
+          result.wri_aqueduct_water_risk_baseline_monthly_containing_message = 'Location is within a WRI Aqueduct Water Risk Baseline Monthly feature';
+        } else {
+          result.wri_aqueduct_water_risk_baseline_monthly_containing = null;
+          result.wri_aqueduct_water_risk_baseline_monthly_containing_message = 'No WRI Aqueduct Water Risk Baseline Monthly feature found containing this location';
+        }
+        
+        result.wri_aqueduct_water_risk_baseline_monthly_count = features.length;
+        result.wri_aqueduct_water_risk_baseline_monthly_all = features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+        
+        result.wri_aqueduct_water_risk_baseline_monthly_summary = `Found ${features.length} WRI Aqueduct Water Risk Baseline Monthly feature(s)${containingFeature && containingFeature.isContaining ? ' (location is within a feature)' : ''}.`;
+      }
+      
+      console.log(`✅ WRI Aqueduct Water Risk Baseline Monthly data processed:`, {
+        totalCount: result.wri_aqueduct_water_risk_baseline_monthly_count,
+        containing: result.wri_aqueduct_water_risk_baseline_monthly_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching WRI Aqueduct Water Risk Baseline Monthly data:', error);
+      return {
+        wri_aqueduct_water_risk_baseline_monthly_containing: null,
+        wri_aqueduct_water_risk_baseline_monthly_containing_message: 'Error querying WRI Aqueduct Water Risk Baseline Monthly',
+        wri_aqueduct_water_risk_baseline_monthly_count: 0,
+        wri_aqueduct_water_risk_baseline_monthly_all: [],
+        wri_aqueduct_water_risk_baseline_monthly_summary: 'Error querying WRI Aqueduct Water Risk Baseline Monthly'
       };
     }
   }

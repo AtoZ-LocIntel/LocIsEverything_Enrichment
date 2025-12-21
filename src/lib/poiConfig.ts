@@ -1000,6 +1000,11 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   // Texas Education Agency
   { id: 'tx_school_districts_2024', label: 'TX School Districts 2024', description: 'Texas Education Agency - School Districts 2024 for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'tx', section: 'tx', subCategory: 'TX Education Agency Open Data' },
   
+  // World Resources Institute
+  { id: 'wri_aqueduct_water_risk_future_annual', label: 'WRI Aqueduct Water Risk - Future Annual', description: 'World Resources Institute - Aqueduct Water Risk Future Annual for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 5, maxRadius: 100, category: 'wri', section: 'wri' },
+  { id: 'wri_aqueduct_water_risk_baseline_annual', label: 'WRI Aqueduct Water Risk - Baseline Annual', description: 'World Resources Institute - Aqueduct Water Risk Baseline Annual for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 5, maxRadius: 100, category: 'wri', section: 'wri' },
+  { id: 'wri_aqueduct_water_risk_baseline_monthly', label: 'WRI Aqueduct Water Risk - Baseline Monthly', description: 'World Resources Institute - Aqueduct Water Risk Baseline Monthly for point-in-polygon and proximity queries (up to 100 miles)', isPOI: true, defaultRadius: 5, maxRadius: 100, category: 'wri', section: 'wri' },
+  
   { id: 'houston_metro_bus_routes', label: 'Houston Metro Bus Routes', description: 'Houston - Metro Bus Routes for proximity queries (0.25, 0.50, 0.75, 1.0, 5.0 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },
   { id: 'houston_metro_park_and_ride', label: 'Houston METRO Park and Ride Locations', description: 'Houston - METRO Park and Ride Locations for proximity queries (up to 25 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },
   { id: 'houston_metro_transit_centers', label: 'Houston METRO Transit Centers', description: 'Houston - METRO Transit Centers for proximity queries (up to 25 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },

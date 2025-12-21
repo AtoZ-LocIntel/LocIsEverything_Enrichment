@@ -120,6 +120,13 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return null; // Skip the _all array (handled separately)
       }
       
+      // Special handling for WRI Aqueduct Water Risk layers - show count only
+      if (key.includes('wri_aqueduct_water_risk_future_annual_all') || 
+          key.includes('wri_aqueduct_water_risk_baseline_annual_all') || 
+          key.includes('wri_aqueduct_water_risk_baseline_monthly_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
       // Regular array handling for non-POI data
       return value.map((item: any) => {
         if (typeof item === 'object' && item !== null) {
@@ -618,6 +625,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NYC Data';
       } else if (key.includes('tx_school_districts_2024')) {
         category = 'Texas Education Agency';
+      } else if (key.includes('wri_')) {
+        category = 'World Resources Institute';
       } else if (key.includes('houston_')) {
         category = 'Houston Data';
       } else if (key.includes('tx_')) {

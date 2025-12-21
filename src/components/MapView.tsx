@@ -702,6 +702,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'usfs_wilderness_areas_all' || // Skip USFS Wilderness Areas array (handled separately for map drawing)
     key === 'chinook_salmon_ranges_all' || // Skip Chinook Salmon Ranges array (handled separately for map drawing)
     key === 'tx_school_districts_2024_all' || // Skip TX School Districts 2024 array (handled separately for map drawing)
+    key === 'wri_aqueduct_water_risk_future_annual_all' || // Skip WRI Aqueduct Water Risk Future Annual array (handled separately for map drawing)
+    key === 'wri_aqueduct_water_risk_baseline_annual_all' || // Skip WRI Aqueduct Water Risk Baseline Annual array (handled separately for map drawing)
+    key === 'wri_aqueduct_water_risk_baseline_monthly_all' || // Skip WRI Aqueduct Water Risk Baseline Monthly array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
     key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately for map drawing)
     key === 'nps_national_parks_all' || // Skip NPS National Parks array (handled separately for map drawing)
@@ -20468,6 +20471,306 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing TX School Districts 2024:', error);
+      }
+
+      // Draw WRI Aqueduct Water Risk - Future Annual as polygons on the map
+      try {
+        if (enrichments.wri_aqueduct_water_risk_future_annual_all && Array.isArray(enrichments.wri_aqueduct_water_risk_future_annual_all)) {
+          let featureCount = 0;
+          enrichments.wri_aqueduct_water_risk_future_annual_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  // Validate outer ring
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('WRI Aqueduct Water Risk Future Annual outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const color = '#06b6d4'; // Cyan color for water risk
+                  const weight = 2;
+                  const opacity = 0.8;
+                  
+                  // L.polygon can handle multiple rings (outer + holes)
+                  const featurePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const isContaining = feature.isContaining || false;
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                  
+                  // Get first 25 attributes for popup (exclude metadata fields)
+                  const allAttributes = { ...feature };
+                  delete allAttributes.geometry;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.isContaining;
+                  
+                  const attributeKeys = Object.keys(allAttributes).slice(0, 25);
+                  const attributeRows = attributeKeys.map(key => {
+                    const value = allAttributes[key];
+                    const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                    return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                  }).join('');
+                  
+                  const totalAttributeCount = Object.keys(allAttributes).length;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌊 WRI Aqueduct Water Risk - Future Annual
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div style="color: #06b6d4; font-weight: 600;">✓ Location is within this feature</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
+                        ${totalAttributeCount > 25 ? `<div style="margin-top: 4px; font-size: 11px; color: #9ca3af;">... and ${totalAttributeCount - 25} more attributes (see CSV for all)</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  featurePolygon.bindPopup(popupContent, { maxWidth: 400 });
+                  featurePolygon.addTo(primary);
+                  
+                  // Extend map bounds
+                  const polygonBounds = featurePolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                  
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing WRI Aqueduct Water Risk Future Annual polygon:', error);
+              }
+            }
+          });
+          
+          if (featureCount > 0) {
+            if (!legendAccumulator['wri_aqueduct_water_risk_future_annual']) {
+              legendAccumulator['wri_aqueduct_water_risk_future_annual'] = {
+                icon: '🌊',
+                color: '#06b6d4',
+                title: 'WRI Aqueduct Water Risk - Future Annual',
+                count: 0,
+              };
+            }
+            legendAccumulator['wri_aqueduct_water_risk_future_annual'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing WRI Aqueduct Water Risk Future Annual:', error);
+      }
+
+      // Draw WRI Aqueduct Water Risk - Baseline Annual as polygons on the map
+      try {
+        if (enrichments.wri_aqueduct_water_risk_baseline_annual_all && Array.isArray(enrichments.wri_aqueduct_water_risk_baseline_annual_all)) {
+          let featureCount = 0;
+          enrichments.wri_aqueduct_water_risk_baseline_annual_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  // Validate outer ring
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('WRI Aqueduct Water Risk Baseline Annual outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const color = '#0891b2'; // Darker cyan for baseline annual
+                  const weight = 2;
+                  const opacity = 0.8;
+                  
+                  // L.polygon can handle multiple rings (outer + holes)
+                  const featurePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const isContaining = feature.isContaining || false;
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                  
+                  // Get first 25 attributes for popup (exclude metadata fields)
+                  const allAttributes = { ...feature };
+                  delete allAttributes.geometry;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.isContaining;
+                  
+                  const attributeKeys = Object.keys(allAttributes).slice(0, 25);
+                  const attributeRows = attributeKeys.map(key => {
+                    const value = allAttributes[key];
+                    const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                    return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                  }).join('');
+                  
+                  const totalAttributeCount = Object.keys(allAttributes).length;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌊 WRI Aqueduct Water Risk - Baseline Annual
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div style="color: #0891b2; font-weight: 600;">✓ Location is within this feature</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
+                        ${totalAttributeCount > 25 ? `<div style="margin-top: 4px; font-size: 11px; color: #9ca3af;">... and ${totalAttributeCount - 25} more attributes (see CSV for all)</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  featurePolygon.bindPopup(popupContent, { maxWidth: 400 });
+                  featurePolygon.addTo(primary);
+                  
+                  // Extend map bounds
+                  const polygonBounds = featurePolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                  
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing WRI Aqueduct Water Risk Baseline Annual polygon:', error);
+              }
+            }
+          });
+          
+          if (featureCount > 0) {
+            if (!legendAccumulator['wri_aqueduct_water_risk_baseline_annual']) {
+              legendAccumulator['wri_aqueduct_water_risk_baseline_annual'] = {
+                icon: '🌊',
+                color: '#0891b2',
+                title: 'WRI Aqueduct Water Risk - Baseline Annual',
+                count: 0,
+              };
+            }
+            legendAccumulator['wri_aqueduct_water_risk_baseline_annual'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing WRI Aqueduct Water Risk Baseline Annual:', error);
+      }
+
+      // Draw WRI Aqueduct Water Risk - Baseline Monthly as polygons on the map
+      try {
+        if (enrichments.wri_aqueduct_water_risk_baseline_monthly_all && Array.isArray(enrichments.wri_aqueduct_water_risk_baseline_monthly_all)) {
+          let featureCount = 0;
+          enrichments.wri_aqueduct_water_risk_baseline_monthly_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  // Validate outer ring
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('WRI Aqueduct Water Risk Baseline Monthly outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const color = '#0e7490'; // Darkest cyan for baseline monthly
+                  const weight = 2;
+                  const opacity = 0.8;
+                  
+                  // L.polygon can handle multiple rings (outer + holes)
+                  const featurePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const isContaining = feature.isContaining || false;
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                  
+                  // Get first 25 attributes for popup (exclude metadata fields)
+                  const allAttributes = { ...feature };
+                  delete allAttributes.geometry;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.isContaining;
+                  
+                  const attributeKeys = Object.keys(allAttributes).slice(0, 25);
+                  const attributeRows = attributeKeys.map(key => {
+                    const value = allAttributes[key];
+                    const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                    return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                  }).join('');
+                  
+                  const totalAttributeCount = Object.keys(allAttributes).length;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌊 WRI Aqueduct Water Risk - Baseline Monthly
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div style="color: #0e7490; font-weight: 600;">✓ Location is within this feature</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
+                        ${totalAttributeCount > 25 ? `<div style="margin-top: 4px; font-size: 11px; color: #9ca3af;">... and ${totalAttributeCount - 25} more attributes (see CSV for all)</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  featurePolygon.bindPopup(popupContent, { maxWidth: 400 });
+                  featurePolygon.addTo(primary);
+                  
+                  // Extend map bounds
+                  const polygonBounds = featurePolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                  
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing WRI Aqueduct Water Risk Baseline Monthly polygon:', error);
+              }
+            }
+          });
+          
+          if (featureCount > 0) {
+            if (!legendAccumulator['wri_aqueduct_water_risk_baseline_monthly']) {
+              legendAccumulator['wri_aqueduct_water_risk_baseline_monthly'] = {
+                icon: '🌊',
+                color: '#0e7490',
+                title: 'WRI Aqueduct Water Risk - Baseline Monthly',
+                count: 0,
+              };
+            }
+            legendAccumulator['wri_aqueduct_water_risk_baseline_monthly'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing WRI Aqueduct Water Risk Baseline Monthly:', error);
       }
 
       // Draw Guam Villages as polygons on the map

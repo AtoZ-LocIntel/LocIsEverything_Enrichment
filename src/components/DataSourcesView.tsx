@@ -3117,6 +3117,35 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
+      category: "World Resources Institute",
+      sources: [
+        {
+          name: "Aqueduct Water Risk - Future Annual",
+          description: "World Resources Institute - Aqueduct Water Risk Future Annual for point-in-polygon and proximity queries up to 100 miles",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/aqueduct_water_risk/FeatureServer/0"
+        },
+        {
+          name: "Aqueduct Water Risk - Baseline Annual",
+          description: "World Resources Institute - Aqueduct Water Risk Baseline Annual for point-in-polygon and proximity queries up to 100 miles",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/aqueduct_water_risk/FeatureServer/1"
+        },
+        {
+          name: "Aqueduct Water Risk - Baseline Monthly",
+          description: "World Resources Institute - Aqueduct Water Risk Baseline Monthly for point-in-polygon and proximity queries up to 100 miles",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/aqueduct_water_risk/FeatureServer/2"
+        }
+      ]
+    },
+    {
       category: "Texas Sources",
       sources: [
         {

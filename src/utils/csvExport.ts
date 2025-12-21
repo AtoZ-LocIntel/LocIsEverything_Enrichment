@@ -589,6 +589,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'usfs_wilderness_areas_all' ||
         key === 'chinook_salmon_ranges_all' ||
         key === 'tx_school_districts_2024_all' || // Skip TX School Districts 2024 array (handled separately)
+        key === 'wri_aqueduct_water_risk_future_annual_all' || // Skip WRI Aqueduct Water Risk Future Annual array (handled separately)
+        key === 'wri_aqueduct_water_risk_baseline_annual_all' || // Skip WRI Aqueduct Water Risk Baseline Annual array (handled separately)
+        key === 'wri_aqueduct_water_risk_baseline_monthly_all' || // Skip WRI Aqueduct Water Risk Baseline Monthly array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
         key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately)
         key === 'usfs_national_grasslands_all' ||
@@ -10286,6 +10289,138 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           district.nces_distr || '',
           attributesJson,
           'Texas Education Agency'
+        ]);
+      });
+    } else if (key === 'wri_aqueduct_water_risk_future_annual_all' && Array.isArray(value)) {
+      // Handle WRI Aqueduct Water Risk Future Annual - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.OBJECTID || feature.FID || feature.fid || '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'World Resources Institute',
+          (location.confidence || 'N/A').toString(),
+          'WRI_AQUEDUCT_WATER_RISK_FUTURE_ANNUAL',
+          `Feature ${objectId || 'Unknown'}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Water Risk Feature',
+          isContaining,
+          '',
+          '',
+          attributesJson,
+          'World Resources Institute'
+        ]);
+      });
+    } else if (key === 'wri_aqueduct_water_risk_baseline_annual_all' && Array.isArray(value)) {
+      // Handle WRI Aqueduct Water Risk Baseline Annual - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.OBJECTID || feature.FID || feature.fid || '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'World Resources Institute',
+          (location.confidence || 'N/A').toString(),
+          'WRI_AQUEDUCT_WATER_RISK_BASELINE_ANNUAL',
+          `Feature ${objectId || 'Unknown'}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Water Risk Feature',
+          isContaining,
+          '',
+          '',
+          attributesJson,
+          'World Resources Institute'
+        ]);
+      });
+    } else if (key === 'wri_aqueduct_water_risk_baseline_monthly_all' && Array.isArray(value)) {
+      // Handle WRI Aqueduct Water Risk Baseline Monthly - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.OBJECTID || feature.FID || feature.fid || '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'World Resources Institute',
+          (location.confidence || 'N/A').toString(),
+          'WRI_AQUEDUCT_WATER_RISK_BASELINE_MONTHLY',
+          `Feature ${objectId || 'Unknown'}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Water Risk Feature',
+          isContaining,
+          '',
+          '',
+          attributesJson,
+          'World Resources Institute'
         ]);
       });
     } else if (key === 'usfs_office_locations_all' && Array.isArray(value)) {
