@@ -97,7 +97,27 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       
       // Special handling for USVI Police Stations - show count only
       if (key.includes('usvi_police_stations_all')) {
-        return `${value.length} police stations found (see CSV for details)`;
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for USVI Health Care Facilities - show count only
+      if (key.includes('usvi_health_care_facilities_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for Guam Villages - show count only
+      if (key.includes('guam_villages_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for Guam State Boundary - show count only
+      if (key.includes('guam_state_boundary_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for TX School Districts 2024 - show count only
+      if (key.includes('tx_school_districts_2024_all')) {
+        return null; // Skip the _all array (handled separately)
       }
       
       // Regular array handling for non-POI data
@@ -596,12 +616,18 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'California Data';
       } else if (key.includes('nyc_') || key.includes('ny_')) {
         category = 'NYC Data';
+      } else if (key.includes('tx_school_districts_2024')) {
+        category = 'Texas Education Agency';
       } else if (key.includes('houston_')) {
         category = 'Houston Data';
+      } else if (key.includes('tx_')) {
+        category = 'Texas Open Data';
       } else if (key.includes('chicago_') || key.includes('lake_county_')) {
         category = 'IL Open Data';
       } else if (key.includes('usvi_')) {
         category = 'USVI Open Data';
+      } else if (key.includes('guam_')) {
+        category = 'Guam Open Data';
       } else if (key.includes('ct_parcel') || key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
         category = 'Connecticut Data';
       } else if (key.includes('de_state_forest') || key.includes('de_pine_plantations') || key.includes('de_urban_tree_canopy') || key.includes('de_forest_cover_2007') || key.includes('de_')) {

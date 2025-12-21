@@ -102,6 +102,8 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   co: <img src="/assets/CO.webp" alt="Colorado Open Data" className="w-5 h-5" />,
   il: <img src="/assets/IL.webp" alt="Illinois Open Data" className="w-5 h-5" />,
   usvi: <img src="/assets/USVI.webp" alt="USVI Open Data" className="w-5 h-5" />,
+  pr: <img src="/assets/PR.webp" alt="Puerto Rico Open Data" className="w-5 h-5" />,
+  guam: <img src="/assets/Guam.webp" alt="Guam Open Data" className="w-5 h-5" />,
   custom: <span className="text-xl">🔧</span>
 };
 
@@ -1116,6 +1118,30 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        // Special handling for Puerto Rico - display enrichments directly
+        if (section.id === 'pr') {
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: sectionEnrichments,
+            subCategories: []
+          };
+        }
+        
+        // Special handling for Guam - display enrichments directly
+        if (section.id === 'guam') {
+          return {
+            id: section.id,
+            title: section.title,
+            icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
+            description: section.description,
+            enrichments: sectionEnrichments,
+            subCategories: []
+          };
+        }
+        
         return {
           id: section.id,
           title: section.title,
@@ -1247,6 +1273,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'la': 'LA',
       'ky': 'KY',
       'usvi': 'USVI',
+      'pr': 'PR',
+      'guam': 'Guam',
       'tiger': 'TIGERweb',
       'eu': 'EU',
       'canada': 'Canada',

@@ -629,7 +629,23 @@ const formatPopupValue = (value: any, key: string): string => {
       return entries.join(', ');
     }
 
-    return JSON.stringify(value);
+    // Exclude geometry and other large/unusable fields when stringifying objects
+    const sanitized = { ...value };
+    delete sanitized.geometry;
+    delete sanitized.__geometry;
+    delete sanitized.rings;
+    delete sanitized.paths;
+    delete sanitized.coordinates;
+    delete sanitized.attributes; // Skip raw attributes object
+    
+    // If object is now empty or only has metadata, return a simple message
+    const remainingKeys = Object.keys(sanitized);
+    if (remainingKeys.length === 0) {
+      return 'Feature data (see map/CSV for details)';
+    }
+    
+    // Only stringify if there are meaningful fields left
+    return JSON.stringify(sanitized);
   }
   return String(value);
 };
@@ -685,6 +701,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'usfs_forest_boundaries_all' || // Skip USFS Forest Boundaries array (handled separately for map drawing)
     key === 'usfs_wilderness_areas_all' || // Skip USFS Wilderness Areas array (handled separately for map drawing)
     key === 'chinook_salmon_ranges_all' || // Skip Chinook Salmon Ranges array (handled separately for map drawing)
+    key === 'tx_school_districts_2024_all' || // Skip TX School Districts 2024 array (handled separately for map drawing)
+    key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
+    key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately for map drawing)
     key === 'nps_national_parks_all' || // Skip NPS National Parks array (handled separately for map drawing)
     key === 'usfs_national_grasslands_all' || // Skip USFS National Grasslands array (handled separately for map drawing)
     key === 'usfs_hazardous_sites_all' || // Skip USFS Hazardous Sites array (handled separately for map drawing)
@@ -10046,6 +10065,116 @@ const MapView: React.FC<MapViewProps> = ({
           }
           legendAccumulator['usvi_police_stations'].count += policeStationCount;
         }
+      }
+
+      // Draw USVI Health Care Facilities as markers on the map
+      try {
+        if (enrichments.usvi_health_care_facilities_all && Array.isArray(enrichments.usvi_health_care_facilities_all)) {
+          let healthCareCount = 0;
+          enrichments.usvi_health_care_facilities_all.forEach((facility: any) => {
+            if (facility.lat && facility.lon) {
+              try {
+                const facilityLat = facility.lat;
+                const facilityLon = facility.lon;
+                const facilityName = facility.facilityName || facility.FacilityName || facility.facility_name || 'Unknown Health Care Facility';
+                const facilityType = facility.fac_type || facility.FAC_TYPE || facility.Fac_Type || 'Unknown Type';
+                
+                // Create a custom icon for health care facilities
+                const icon = createPOIIcon('🏥', '#10b981'); // Green icon for health care facilities
+                
+                const marker = L.marker([facilityLat, facilityLon], { icon });
+                
+                // Build popup content with all health care facility attributes
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏥 ${facilityName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> ${facilityType}</div>
+                      ${facility.territory ? `<div><strong>Territory:</strong> ${facility.territory}</div>` : ''}
+                      ${facility.county ? `<div><strong>County:</strong> ${facility.county}</div>` : ''}
+                      ${facility.address ? `<div><strong>Address:</strong> ${facility.address}</div>` : ''}
+                      ${facility.usng ? `<div><strong>USNG:</strong> ${facility.usng}</div>` : ''}
+                      ${facility.gen_capaci ? `<div><strong>Generator Capacity:</strong> ${facility.gen_capaci}</div>` : ''}
+                      ${facility.diesel_gal ? `<div><strong>Diesel (Gallons):</strong> ${facility.diesel_gal}</div>` : ''}
+                      ${facility.distance_miles !== null && facility.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${facility.distance_miles.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      <div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">All Attributes:</div>
+                `;
+                
+                // Add all health care facility attributes (excluding internal fields)
+                const excludeFields = ['facilityName', 'fac_type', 'territory', 'county', 'address', 'usng', 'gen_capaci', 'diesel_gal', 'latitude', 'longitude', 'lat', 'lon', 'distance_miles', 'attributes'];
+                Object.entries(facility).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                // Also include any nested attributes object
+                if (facility.attributes && typeof facility.attributes === 'object') {
+                  Object.entries(facility.attributes).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                }
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                
+                // Extend bounds to include this health care facility
+                bounds.extend([facilityLat, facilityLon]);
+                healthCareCount++;
+              } catch (err) {
+                console.error('Error drawing USVI Health Care Facility marker:', err);
+              }
+            }
+          });
+          
+          // Add to legend
+          if (healthCareCount > 0) {
+            if (!legendAccumulator['usvi_health_care_facilities']) {
+              legendAccumulator['usvi_health_care_facilities'] = {
+                icon: '🏥',
+                color: '#10b981',
+                title: 'USVI Health Care Facilities',
+                count: 0,
+              };
+            }
+            legendAccumulator['usvi_health_care_facilities'].count += healthCareCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USVI Health Care Facilities:', error);
       }
 
       // Draw NH Nursing Homes as markers on the map
@@ -20255,6 +20384,239 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing Chinook Salmon Ranges:', error);
       }
 
+      // Draw TX School Districts 2024 as polygons on the map
+      try {
+        if (enrichments.tx_school_districts_2024_all && Array.isArray(enrichments.tx_school_districts_2024_all)) {
+          let districtCount = 0;
+          enrichments.tx_school_districts_2024_all.forEach((district: any) => {
+            if (district.geometry && district.geometry.rings && Array.isArray(district.geometry.rings)) {
+              try {
+                const rings = district.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+                  
+                  // Validate outer ring
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('TX School District outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const color = '#8b5cf6'; // Purple color for school districts
+                  const weight = 2;
+                  const opacity = 0.8;
+                  
+                  // L.polygon can handle multiple rings (outer + holes)
+                  const districtPolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const districtName = district.name20 || district.name || district.name2 || `District ${district.district || district.fid}`;
+                  const isContaining = district.isContaining || false;
+                  const distance = district.distance_miles !== null && district.distance_miles !== undefined ? district.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏫 ${districtName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${district.district ? `<div><strong>District:</strong> ${district.district}</div>` : ''}
+                        ${district.nces_distr ? `<div><strong>NCES ID:</strong> ${district.nces_distr}</div>` : ''}
+                        ${isContaining ? '<div style="color: #8b5cf6; font-weight: 600;">✓ Location is within this district</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  districtPolygon.bindPopup(popupContent, { maxWidth: 400 });
+                  districtPolygon.addTo(primary);
+                  
+                  // Extend map bounds
+                  const polygonBounds = districtPolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+                  
+                  districtCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing TX School District polygon:', error);
+              }
+            }
+          });
+          
+          if (districtCount > 0) {
+            if (!legendAccumulator['tx_school_districts_2024']) {
+              legendAccumulator['tx_school_districts_2024'] = {
+                icon: '🏫',
+                color: '#8b5cf6',
+                title: 'TX School Districts 2024',
+                count: 0,
+              };
+            }
+            legendAccumulator['tx_school_districts_2024'].count += districtCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing TX School Districts 2024:', error);
+      }
+
+      // Draw Guam Villages as polygons on the map
+      try {
+        if (enrichments.guam_villages_all && Array.isArray(enrichments.guam_villages_all)) {
+          let villageCount = 0;
+          enrichments.guam_villages_all.forEach((village: any) => {
+            if (village.geometry && village.geometry.rings && Array.isArray(village.geometry.rings)) {
+              try {
+                const rings = village.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  const latlngs: L.LatLngExpression[][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => [coord[1], coord[0]] as L.LatLngExpression);
+                  });
+                  
+                  // Create polygon with first ring as outer boundary and rest as holes
+                  const polygon = L.polygon(latlngs, {
+                    color: '#10b981',
+                    weight: 2,
+                    opacity: 0.8,
+                    fillColor: '#10b981',
+                    fillOpacity: 0.2
+                  });
+                  
+                  // Build popup content
+                  const villageName = village.NAME || village.name || village.Name || 'Unknown Village';
+                  const isContaining = village.isContaining || false;
+                  const distance = village.distance_miles !== null && village.distance_miles !== undefined ? village.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏝️ ${villageName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div style="color: #10b981; font-weight: 600;">✓ Location is within this village</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  // Store metadata for tabbed popup
+                  (polygon as any).__layerType = 'guam_villages';
+                  (polygon as any).__layerTitle = 'Guam Villages';
+                  
+                  // Extend bounds
+                  bounds.extend(polygon.getBounds());
+                  villageCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing Guam Village polygon:', error);
+              }
+            }
+          });
+          
+          // Add to legend
+          if (villageCount > 0) {
+            if (!legendAccumulator['guam_villages']) {
+              legendAccumulator['guam_villages'] = {
+                icon: '🏝️',
+                color: '#10b981',
+                title: 'Guam Villages',
+                count: 0,
+              };
+            }
+            legendAccumulator['guam_villages'].count += villageCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Guam Villages:', error);
+      }
+
+      // Draw Guam State Boundary as polygons on the map
+      try {
+        if (enrichments.guam_state_boundary_all && Array.isArray(enrichments.guam_state_boundary_all)) {
+          let boundaryCount = 0;
+          enrichments.guam_state_boundary_all.forEach((boundary: any) => {
+            if (boundary.geometry && boundary.geometry.rings && Array.isArray(boundary.geometry.rings)) {
+              try {
+                const rings = boundary.geometry.rings;
+                if (rings && rings.length > 0) {
+                  // Convert all rings to Leaflet format (outer ring + holes)
+                  const latlngs: L.LatLngExpression[][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => [coord[1], coord[0]] as L.LatLngExpression);
+                  });
+                  
+                  // Create polygon with first ring as outer boundary and rest as holes
+                  const polygon = L.polygon(latlngs, {
+                    color: '#3b82f6',
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: '#3b82f6',
+                    fillOpacity: 0.15
+                  });
+                  
+                  // Build popup content
+                  const isContaining = boundary.isContaining || false;
+                  const distance = boundary.distance_miles !== null && boundary.distance_miles !== undefined ? boundary.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏝️ Guam State Boundary
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${isContaining ? '<div style="color: #3b82f6; font-weight: 600;">✓ Location is within Guam</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  
+                  // Store metadata for tabbed popup
+                  (polygon as any).__layerType = 'guam_state_boundary';
+                  (polygon as any).__layerTitle = 'Guam State Boundary';
+                  
+                  // Extend bounds
+                  bounds.extend(polygon.getBounds());
+                  boundaryCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing Guam State Boundary polygon:', error);
+              }
+            }
+          });
+          
+          // Add to legend
+          if (boundaryCount > 0) {
+            if (!legendAccumulator['guam_state_boundary']) {
+              legendAccumulator['guam_state_boundary'] = {
+                icon: '🏝️',
+                color: '#3b82f6',
+                title: 'Guam State Boundary',
+                count: 0,
+              };
+            }
+            legendAccumulator['guam_state_boundary'].count += boundaryCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Guam State Boundary:', error);
+      }
+
       // Draw NPS National Parks as polygons on the map
       try {
         if (enrichments.nps_national_parks_all && Array.isArray(enrichments.nps_national_parks_all)) {
@@ -28094,11 +28456,11 @@ const MapView: React.FC<MapViewProps> = ({
         // Bring location marker to front to ensure it's always visible on top of all features
         if (results[0]?.location && mapInstanceRef.current) {
           try {
-          primary.eachLayer((layer: any) => {
+            primary.eachLayer((layer: any) => {
               if (layer.__isLocationMarker && typeof layer.bringToFront === 'function') {
-              layer.bringToFront();
-            }
-          });
+                layer.bringToFront();
+              }
+            });
           } catch (error) {
             console.warn('Error bringing location marker to front:', error);
           }

@@ -15,6 +15,8 @@ import { getNHEMSData } from '../adapters/nhEMS';
 import { getNHFireStationsData } from '../adapters/nhFireStations';
 import { getUSVIFireStationsData } from '../adapters/usviFireStations';
 import { getUSVIPoliceStationsData } from '../adapters/usviPoliceStations';
+import { getUSVIHealthCareFacilitiesData } from '../adapters/usviHealthCareFacilities';
+import { getGuamVillagesData, getGuamStateBoundaryData } from '../adapters/guamVillages';
 import { getNHPlacesOfWorshipData } from '../adapters/nhPlacesOfWorship';
 import { getNHHospitalsData } from '../adapters/nhHospitals';
 import { getNHPublicWatersAccessData } from '../adapters/nhPublicWatersAccess';
@@ -269,6 +271,7 @@ import { getBLMNationalLWCFData } from '../adapters/blmNationalLWCF';
 import { getUSFSForestBoundariesData } from '../adapters/usfsForestBoundaries';
 import { getUSFSWildernessAreasData } from '../adapters/usfsWildernessAreas';
 import { getChinookSalmonRangesData } from '../adapters/chinookSalmonRanges';
+import { getTXSchoolDistricts2024Data } from '../adapters/txSchoolDistricts2024';
 import { getUSFSNationalGrasslandsData } from '../adapters/usfsNationalGrasslands';
 import { getUSFSOfficeLocationsData } from '../adapters/usfsOfficeLocations';
 import { getUSFSSpecialUsesCommunicationsSitesData } from '../adapters/usfsSpecialUsesCommunicationsSites';
@@ -1973,6 +1976,18 @@ export class EnrichmentService {
       // USVI Police Stations - Proximity query
       case 'usvi_police_stations':
         return await this.getUSVIPoliceStations(lat, lon, radius);
+      
+      // USVI Health Care Facilities - Proximity query
+      case 'usvi_health_care_facilities':
+        return await this.getUSVIHealthCareFacilities(lat, lon, radius);
+      
+      // Guam Villages - Point-in-polygon and proximity query (max 10 miles)
+      case 'guam_villages':
+        return await this.getGuamVillages(lat, lon, radius);
+      
+      // Guam State Boundary - Point-in-polygon and proximity query (max 10 miles)
+      case 'guam_state_boundary':
+        return await this.getGuamStateBoundary(lat, lon, radius);
       
       // NH Places of Worship (NH GRANIT) - Proximity query
       case 'nh_places_of_worship':
@@ -5642,6 +5657,10 @@ export class EnrichmentService {
       case 'chinook_salmon_ranges':
         return await this.getChinookSalmonRanges(lat, lon, radius);
       
+      // TX School Districts 2024 - Point-in-polygon and proximity query (max 50 miles)
+      case 'tx_school_districts_2024':
+        return await this.getTXSchoolDistricts2024(lat, lon, radius);
+      
       // USFS Administrative Boundaries - Point-in-polygon and proximity query (max 50 miles)
       case 'usfs_administrative_boundaries':
         return await this.getUSFSAdministrativeBoundaries(lat, lon, radius);
@@ -6740,6 +6759,258 @@ export class EnrichmentService {
         usvi_police_stations_all: [],
         usvi_police_stations_summary: 'Error fetching USVI Police Stations data',
         usvi_police_stations_error: 'Error fetching USVI Police Stations data'
+      };
+    }
+  }
+
+  private async getUSVIHealthCareFacilities(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏥 Fetching USVI Health Care Facilities data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const healthCareFacilities = await getUSVIHealthCareFacilitiesData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (healthCareFacilities && healthCareFacilities.length > 0) {
+        result.usvi_health_care_facilities_count = healthCareFacilities.length;
+        result.usvi_health_care_facilities_all = healthCareFacilities.map(facility => ({
+          ...facility.attributes,
+          fac_type: facility.fac_type,
+          territory: facility.territory,
+          county: facility.county,
+          gen_capaci: facility.gen_capaci,
+          diesel_gal: facility.diesel_gal,
+          facilityName: facility.facilityName,
+          address: facility.address,
+          latitude: facility.latitude,
+          longitude: facility.longitude,
+          usng: facility.usng,
+          watch_warning: facility.watch_warning,
+          hurricane_force_wind_prob: facility.hurricane_force_wind_prob,
+          cone_intersection: facility.cone_intersection,
+          upload_time: facility.upload_time,
+          lat: facility.lat,
+          lon: facility.lon,
+          distance_miles: facility.distance_miles
+        }));
+        
+        result.usvi_health_care_facilities_summary = `Found ${healthCareFacilities.length} USVI Health Care Facility/Facilities within ${radiusMiles} miles.`;
+      } else {
+        result.usvi_health_care_facilities_count = 0;
+        result.usvi_health_care_facilities_all = [];
+        result.usvi_health_care_facilities_summary = `No USVI Health Care Facilities found within ${radiusMiles} miles.`;
+      }
+      
+      result.usvi_health_care_facilities_search_radius_miles = radiusMiles;
+      
+      console.log(`✅ USVI Health Care Facilities data processed:`, {
+        count: result.usvi_health_care_facilities_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching USVI Health Care Facilities:', error);
+      return {
+        usvi_health_care_facilities_count: 0,
+        usvi_health_care_facilities_all: [],
+        usvi_health_care_facilities_summary: 'Error fetching USVI Health Care Facilities data',
+        usvi_health_care_facilities_error: 'Error fetching USVI Health Care Facilities data'
+      };
+    }
+  }
+
+  private async getGuamVillages(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏝️ Fetching Guam Villages data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 10 miles
+      const cappedRadius = radius ? Math.min(radius, 10.0) : 10.0;
+      
+      const villages = await getGuamVillagesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+      
+      // Find if location is within any village
+      const containingVillage = villages.find(v => v.isContaining);
+      
+      if (containingVillage) {
+        result.guam_villages_containing = {
+          ...containingVillage.attributes,
+          geometry: containingVillage.geometry,
+          isContaining: true
+        };
+      } else {
+        result.guam_villages_containing = null;
+      }
+      
+      if (villages && villages.length > 0) {
+        result.guam_villages_count = villages.length;
+        result.guam_villages_all = villages.map(village => ({
+          ...village.attributes,
+          geometry: village.geometry,
+          isContaining: village.isContaining || false,
+          distance_miles: village.distance_miles
+        }));
+        
+        result.guam_villages_summary = `Found ${villages.length} Guam village(s)${containingVillage && containingVillage.isContaining ? ' (location is within a village)' : ''}.`;
+      } else {
+        result.guam_villages_count = 0;
+        result.guam_villages_all = [];
+        result.guam_villages_summary = `No Guam villages found${cappedRadius > 0 ? ` within ${cappedRadius} miles` : ''}.`;
+      }
+      
+      result.guam_villages_search_radius_miles = cappedRadius;
+      
+      console.log(`✅ Guam Villages data processed:`, {
+        totalCount: result.guam_villages_count,
+        containing: result.guam_villages_containing ? 'Yes' : 'No'
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Guam Villages data:', error);
+      return {
+        guam_villages_containing: null,
+        guam_villages_count: 0,
+        guam_villages_all: [],
+        guam_villages_summary: 'Error fetching Guam Villages data',
+        guam_villages_error: 'Error fetching Guam Villages data'
+      };
+    }
+  }
+
+  private async getGuamStateBoundary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏝️ Fetching Guam State Boundary data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 10 miles
+      const cappedRadius = radius ? Math.min(radius, 10.0) : 10.0;
+      
+      const boundaries = await getGuamStateBoundaryData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+      
+      // Find if location is within the boundary
+      const containingBoundary = boundaries.find(b => b.isContaining);
+      
+      if (containingBoundary) {
+        result.guam_state_boundary_containing = {
+          ...containingBoundary.attributes,
+          geometry: containingBoundary.geometry,
+          isContaining: true
+        };
+      } else {
+        result.guam_state_boundary_containing = null;
+      }
+      
+      if (boundaries && boundaries.length > 0) {
+        result.guam_state_boundary_count = boundaries.length;
+        result.guam_state_boundary_all = boundaries.map(boundary => ({
+          ...boundary.attributes,
+          geometry: boundary.geometry,
+          isContaining: boundary.isContaining || false,
+          distance_miles: boundary.distance_miles
+        }));
+        
+        result.guam_state_boundary_summary = `Found ${boundaries.length} Guam state boundary feature(s)${containingBoundary && containingBoundary.isContaining ? ' (location is within the boundary)' : ''}.`;
+      } else {
+        result.guam_state_boundary_count = 0;
+        result.guam_state_boundary_all = [];
+        result.guam_state_boundary_summary = `No Guam state boundary found${cappedRadius > 0 ? ` within ${cappedRadius} miles` : ''}.`;
+      }
+      
+      result.guam_state_boundary_search_radius_miles = cappedRadius;
+      
+      console.log(`✅ Guam State Boundary data processed:`, {
+        totalCount: result.guam_state_boundary_count,
+        containing: result.guam_state_boundary_containing ? 'Yes' : 'No'
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Guam State Boundary data:', error);
+      return {
+        guam_state_boundary_containing: null,
+        guam_state_boundary_count: 0,
+        guam_state_boundary_all: [],
+        guam_state_boundary_summary: 'Error fetching Guam State Boundary data',
+        guam_state_boundary_error: 'Error fetching Guam State Boundary data'
+      };
+    }
+  }
+
+  private async getTXSchoolDistricts2024(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏫 Fetching TX School Districts 2024 data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const districts = await getTXSchoolDistricts2024Data(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (districts.length === 0) {
+        result.tx_school_districts_2024_containing = null;
+        result.tx_school_districts_2024_containing_message = 'No Texas school district found containing this location';
+        result.tx_school_districts_2024_count = 0;
+        result.tx_school_districts_2024_all = [];
+        result.tx_school_districts_2024_summary = 'No Texas school districts found.';
+      } else {
+        // Get the first containing district (should typically be only one for point-in-polygon)
+        const containingDistrict = districts.find(d => d.isContaining) || districts[0];
+        
+        if (containingDistrict && containingDistrict.isContaining) {
+          const districtLabel = containingDistrict.name20 || containingDistrict.name || `District ${containingDistrict.district || containingDistrict.fid}`;
+          result.tx_school_districts_2024_containing = districtLabel;
+          result.tx_school_districts_2024_containing_message = `Location is within Texas school district: ${districtLabel}`;
+        } else {
+          result.tx_school_districts_2024_containing = null;
+          result.tx_school_districts_2024_containing_message = 'No Texas school district found containing this location';
+        }
+        
+        result.tx_school_districts_2024_count = districts.length;
+        result.tx_school_districts_2024_all = districts.map(district => ({
+          ...district.attributes,
+          fid: district.fid,
+          geoid20: district.geoid20,
+          name20: district.name20,
+          sdlea: district.sdlea,
+          name: district.name,
+          name2: district.name2,
+          district_n: district.district_n,
+          district: district.district,
+          district_c: district.district_c,
+          nces_distr: district.nces_distr,
+          color: district.color,
+          shape_area: district.shape_area,
+          shape_length: district.shape_length,
+          geometry: district.geometry,
+          distance_miles: district.distance_miles,
+          isContaining: district.isContaining
+        }));
+        
+        result.tx_school_districts_2024_summary = `Found ${districts.length} Texas school district(s)${containingDistrict && containingDistrict.isContaining ? ' (location is within a district)' : ''}.`;
+      }
+      
+      console.log(`✅ TX School Districts 2024 data processed:`, {
+        totalCount: result.tx_school_districts_2024_count,
+        containing: result.tx_school_districts_2024_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching TX School Districts 2024 data:', error);
+      return {
+        tx_school_districts_2024_containing: null,
+        tx_school_districts_2024_containing_message: 'Error querying Texas school districts',
+        tx_school_districts_2024_count: 0,
+        tx_school_districts_2024_all: [],
+        tx_school_districts_2024_summary: 'Error querying Texas school districts'
       };
     }
   }

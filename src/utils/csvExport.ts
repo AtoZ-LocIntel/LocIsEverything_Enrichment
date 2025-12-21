@@ -270,6 +270,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_fire_stations_all' ||
         key === 'usvi_fire_stations_all' ||
         key === 'usvi_police_stations_all' ||
+        key === 'usvi_health_care_facilities_all' ||
+        key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
+        key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately)
         key === 'nh_places_of_worship_all' ||
         key === 'nh_hospitals_all' ||
         key === 'nh_public_waters_access_all' ||
@@ -585,6 +588,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'usfs_forest_boundaries_all' ||
         key === 'usfs_wilderness_areas_all' ||
         key === 'chinook_salmon_ranges_all' ||
+        key === 'tx_school_districts_2024_all' || // Skip TX School Districts 2024 array (handled separately)
+        key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
+        key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately)
         key === 'usfs_national_grasslands_all' ||
         key === 'usfs_hazardous_sites_all' ||
         key === 'usfs_office_locations_all' ||
@@ -4840,6 +4846,147 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           usng || floodZone || '',
           attributesJson,
           'USVI Open Data'
+        ]);
+      });
+    } else if (key === 'usvi_health_care_facilities_all' && Array.isArray(value)) {
+      // Handle USVI Health Care Facilities - each facility gets its own row with all attributes
+      value.forEach((facility: any) => {
+        const facilityName = facility.facilityName || facility.FacilityName || facility.facility_name || 'Unknown Health Care Facility';
+        const facilityType = facility.fac_type || facility.FAC_TYPE || facility.Fac_Type || 'Unknown Type';
+        const territory = facility.territory || facility.TERRITORY || facility.Territory || '';
+        const county = facility.county || facility.COUNTY || facility.County || '';
+        const address = facility.address || facility.Address || facility.ADDRESS || '';
+        const usng = facility.usng || facility.USNG || facility.Usng || '';
+        const genCapaci = facility.gen_capaci || facility.GEN_CAPACI || facility.Gen_Capaci || '';
+        const dieselGal = facility.diesel_gal || facility.DIESEL_GAL || facility.Diesel_Gal || '';
+        
+        const allAttributes = { ...facility };
+        delete allAttributes.facilityName;
+        delete allAttributes.fac_type;
+        delete allAttributes.territory;
+        delete allAttributes.county;
+        delete allAttributes.address;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.usng;
+        delete allAttributes.gen_capaci;
+        delete allAttributes.diesel_gal;
+        delete allAttributes.watch_warning;
+        delete allAttributes.hurricane_force_wind_prob;
+        delete allAttributes.cone_intersection;
+        delete allAttributes.upload_time;
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const locationInfo = [territory, county, address].filter(Boolean).join(', ');
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USVI Open Data',
+          (location.confidence || 'N/A').toString(),
+          'USVI_HEALTH_CARE_FACILITY',
+          facilityName,
+          (facility.lat || location.lat).toString(),
+          (facility.lon || location.lon).toString(),
+          facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '',
+          facilityType,
+          locationInfo || attributesJson,
+          '',
+          usng || genCapaci || dieselGal || '',
+          attributesJson,
+          'USVI Open Data'
+        ]);
+      });
+    } else if (key === 'guam_villages_all' && Array.isArray(value)) {
+      // Handle Guam Villages - each village gets its own row with all attributes
+      value.forEach((village: any) => {
+        const villageName = village.NAME || village.name || village.Name || 'Unknown Village';
+        const isContaining = village.isContaining ? 'Yes' : 'No';
+        const distance = village.distance_miles !== null && village.distance_miles !== undefined ? village.distance_miles.toFixed(2) : (village.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (village.geometry && village.geometry.rings && village.geometry.rings.length > 0) {
+          const outerRing = village.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...village };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.NAME;
+        delete allAttributes.name;
+        delete allAttributes.Name;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Guam Open Data',
+          (location.confidence || 'N/A').toString(),
+          'GUAM_VILLAGE',
+          villageName,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Village',
+          isContaining,
+          '',
+          '',
+          attributesJson,
+          'Guam Open Data'
+        ]);
+      });
+    } else if (key === 'guam_state_boundary_all' && Array.isArray(value)) {
+      // Handle Guam State Boundary - each boundary gets its own row with all attributes
+      value.forEach((boundary: any) => {
+        const isContaining = boundary.isContaining ? 'Yes' : 'No';
+        const distance = boundary.distance_miles !== null && boundary.distance_miles !== undefined ? boundary.distance_miles.toFixed(2) : (boundary.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (boundary.geometry && boundary.geometry.rings && boundary.geometry.rings.length > 0) {
+          const outerRing = boundary.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...boundary };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Guam Open Data',
+          (location.confidence || 'N/A').toString(),
+          'GUAM_STATE_BOUNDARY',
+          'Guam State Boundary',
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'State Boundary',
+          isContaining,
+          '',
+          '',
+          attributesJson,
+          'Guam Open Data'
         ]);
       });
     } else if (key === 'nh_places_of_worship_all' && Array.isArray(value)) {
@@ -10088,6 +10235,57 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           fid || 'N/A',
           attributesJson,
           'ArcGIS FeatureServer'
+        ]);
+      });
+    } else if (key === 'tx_school_districts_2024_all' && Array.isArray(value)) {
+      // Handle TX School Districts 2024 - each district gets its own row with all attributes
+      value.forEach((district: any) => {
+        const districtName = district.name20 || district.name || district.name2 || `District ${district.district || district.fid}`;
+        const isContaining = district.isContaining ? 'Yes' : 'No';
+        const distance = district.distance_miles !== null && district.distance_miles !== undefined ? district.distance_miles.toFixed(2) : (district.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (district.geometry && district.geometry.rings && district.geometry.rings.length > 0) {
+          const outerRing = district.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...district };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.fid;
+        delete allAttributes.FID;
+        delete allAttributes.name20;
+        delete allAttributes.NAME20;
+        delete allAttributes.name;
+        delete allAttributes.NAME;
+        delete allAttributes.name2;
+        delete allAttributes.NAME2;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Texas Education Agency',
+          (location.confidence || 'N/A').toString(),
+          'TX_SCHOOL_DISTRICT_2024',
+          districtName,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'School District',
+          isContaining,
+          district.district || '',
+          district.nces_distr || '',
+          attributesJson,
+          'Texas Education Agency'
         ]);
       });
     } else if (key === 'usfs_office_locations_all' && Array.isArray(value)) {

@@ -374,6 +374,18 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'USVI Open Data',
     description: 'U.S. Virgin Islands open data services and layers',
     icon: 'USVI.webp'
+  },
+  {
+    id: 'pr',
+    title: 'Puerto Rico Open Data',
+    description: 'Puerto Rico open data services and layers',
+    icon: 'PR.webp'
+  },
+  {
+    id: 'guam',
+    title: 'Guam Open Data',
+    description: 'Guam open data services and layers',
+    icon: 'Guam.webp'
   }
 ];
 
@@ -955,6 +967,11 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   // USVI Open Data
   { id: 'usvi_fire_stations', label: 'USVI Fire Stations', description: 'Location of Fire Stations and associated facilities in the United States Virgin Islands and Puerto Rico (proximity up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'usvi', section: 'usvi' },
   { id: 'usvi_police_stations', label: 'USVI Police Stations', description: 'Location of State Police facilities in Puerto Rico and the United States Virgin Islands (proximity up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'usvi', section: 'usvi' },
+  { id: 'usvi_health_care_facilities', label: 'USVI Health Care Facilities', description: 'Health care facilities in the US Virgin Islands including hospitals, clinics, pharmacies, and other medical facilities (proximity up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'usvi', section: 'usvi' },
+  
+  // Guam Open Data
+  { id: 'guam_villages', label: 'Guam Villages', description: 'Guam village boundaries - point-in-polygon and proximity queries up to 10 miles', isPOI: true, defaultRadius: 5, maxRadius: 10, category: 'guam', section: 'guam' },
+  { id: 'guam_state_boundary', label: 'Guam State Boundary', description: 'Guam state boundary - point-in-polygon and proximity queries up to 10 miles', isPOI: true, defaultRadius: 5, maxRadius: 10, category: 'guam', section: 'guam' },
   
   { id: 'chicago_traffic_crashes', label: 'Chicago Traffic Crashes', description: 'Chicago - Traffic crashes from the City of Chicago Data Portal for proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
   { id: 'chicago_speed_cameras', label: 'Chicago Speed Camera Locations', description: 'Chicago - Speed camera locations from the City of Chicago Data Portal for proximity queries (up to 5 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'il', section: 'il', subCategory: 'Chicago Data Portal' },
@@ -973,6 +990,10 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'houston_fire_hydrants', label: 'Houston Fire Hydrants', description: 'Houston - Fire Hydrants for proximity queries (up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },
   { id: 'houston_tirz', label: 'Houston Tax Incentive Reinvestment Zones', description: 'Houston - Tax Incentive Reinvestment Zones (TIRZ) for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.25, maxRadius: 25, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },
   { id: 'houston_affordability', label: 'Houston Affordability (by Census Tract)', description: 'Houston - Affordability by Census Tract (HTA Index) for point-in-polygon and proximity queries (up to 5 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },
+  
+  // Texas Education Agency
+  { id: 'tx_school_districts_2024', label: 'TX School Districts 2024', description: 'Texas Education Agency - School Districts 2024 for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'tx', section: 'tx', subCategory: 'TX Education Agency Open Data' },
+  
   { id: 'houston_metro_bus_routes', label: 'Houston Metro Bus Routes', description: 'Houston - Metro Bus Routes for proximity queries (0.25, 0.50, 0.75, 1.0, 5.0 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },
   { id: 'houston_metro_park_and_ride', label: 'Houston METRO Park and Ride Locations', description: 'Houston - METRO Park and Ride Locations for proximity queries (up to 25 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },
   { id: 'houston_metro_transit_centers', label: 'Houston METRO Transit Centers', description: 'Houston - METRO Transit Centers for proximity queries (up to 25 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },

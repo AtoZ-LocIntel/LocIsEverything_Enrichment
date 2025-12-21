@@ -3104,6 +3104,19 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
+      category: "Texas Education Agency",
+      sources: [
+        {
+          name: "School Districts 2024",
+          description: "Texas Education Agency - School Districts 2024 for point-in-polygon and proximity queries up to 50 miles",
+          coverage: "Texas",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/5MVN2jsqIrNZD4tP/arcgis/rest/services/School_Districts_2024/FeatureServer/0"
+        }
+      ]
+    },
+    {
       category: "Texas Sources",
       sources: [
         {
@@ -4073,6 +4086,40 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Police_Stations_USVI/FeatureServer/1"
+        },
+        {
+          name: "USVI Health Care Facilities",
+          description: "Health care facilities in the US Virgin Islands including hospitals, clinics, pharmacies, dialysis centers, and other medical facilities - proximity queries up to 25 miles",
+          coverage: "U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Health_Care_Facilities_USVI_20230824/FeatureServer/0"
+        }
+      ]
+    },
+    {
+      category: "Puerto Rico Open Data",
+      sources: [
+        {
+          name: "Open Data Sources Coming Soon!",
+          description: "We're working on adding data layers for Puerto Rico. Check back soon for updates!",
+          coverage: "Puerto Rico",
+          accuracy: "N/A",
+          cost: "Free",
+          url: ""
+        }
+      ]
+    },
+    {
+      category: "Guam Open Data",
+      sources: [
+        {
+          name: "Guam Villages",
+          description: "Guam village boundaries and state boundary - point-in-polygon and proximity queries up to 10 miles",
+          coverage: "Guam",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Guam_Villages/FeatureServer"
         }
       ]
     },
