@@ -94,6 +94,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'TIGERweb.webp'
   },
   {
+    id: 'wri',
+    title: 'World Resources Institute',
+    description: 'World Resources Institute data and layers',
+    icon: 'WRI.webp'
+  },
+  {
     id: 'eu',
     title: 'European Union Data',
     description: 'European Union geographic and statistical data',

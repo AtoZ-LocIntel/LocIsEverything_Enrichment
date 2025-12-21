@@ -7,8 +7,6 @@
  * - Layer 58: StateBoundary__ExportFeature (state boundary)
  */
 
-import { fetchJSONSmart } from '../services/EnrichmentService';
-
 const BASE_SERVICE_URL = 'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Guam_Villages/FeatureServer';
 const VILLAGES_LAYER_ID = 57;
 const STATE_BOUNDARY_LAYER_ID = 58;
@@ -63,7 +61,6 @@ function distanceToPolygon(
   
   // Convert degrees to miles (approximate: 1 degree ≈ 69 miles at equator)
   // More accurate: use Haversine for each segment, but this approximation is sufficient
-  const R = 3959; // Earth's radius in miles
   const latRad = py * Math.PI / 180;
   const milesPerDegreeLat = 69;
   const milesPerDegreeLon = 69 * Math.cos(latRad);

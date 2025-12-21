@@ -37,7 +37,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       .replace(/\bCa\b/g, 'CA');
   };
 
-  const formatValue = (value: any, key: string): string => {
+  const formatValue = (value: any, key: string): string | null => {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (typeof value === 'number') {

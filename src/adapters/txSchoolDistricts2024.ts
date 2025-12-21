@@ -5,8 +5,6 @@
  * Layer: SchoolDistricts_SY2324 (Layer 0)
  */
 
-import { fetchJSONSmart } from '../services/EnrichmentService';
-
 const BASE_SERVICE_URL = 'https://services2.arcgis.com/5MVN2jsqIrNZD4tP/arcgis/rest/services/School_Districts_2024/FeatureServer';
 const LAYER_ID = 0;
 
