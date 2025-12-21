@@ -10402,7 +10402,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         delete allAttributes.distance_miles;
         const attributesJson = JSON.stringify(allAttributes);
         
-        const fid = feature.fid || feature.FID || '';
         const name = feature.name || feature.NAME || feature.Name || 'Unnamed';
         
         rows.push([
