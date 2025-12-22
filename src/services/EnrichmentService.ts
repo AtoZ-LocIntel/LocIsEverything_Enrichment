@@ -277,6 +277,8 @@ import { getSCTroutStreamsData } from '../adapters/scTroutStreams';
 import { getSCGameZonesData } from '../adapters/scGameZones';
 import { getSCCoastalPondsData } from '../adapters/scCoastalPonds';
 import { getSCLakesReservoirsData } from '../adapters/scLakesReservoirs';
+import { getSCCoastalWellInventoryData } from '../adapters/scCoastalWellInventory';
+import { getOrlandoChristmasLightsData } from '../adapters/orlandoChristmasLights';
 import { getWRIAqueductWaterRiskFutureAnnualData, getWRIAqueductWaterRiskBaselineAnnualData, getWRIAqueductWaterRiskBaselineMonthlyData } from '../adapters/wriAqueductWaterRisk';
 import {
   getACSChildrenInGrandparentHouseholdsStateData, getACSChildrenInGrandparentHouseholdsCountyData, getACSChildrenInGrandparentHouseholdsTractData,
@@ -352,7 +354,32 @@ import {
   getACSSpecificLanguageSpokenByEnglishAbilityStateData, getACSSpecificLanguageSpokenByEnglishAbilityCountyData, getACSSpecificLanguageSpokenByEnglishAbilityTractData,
   getACSTravelTimeToWorkV2StateData, getACSTravelTimeToWorkV2CountyData, getACSTravelTimeToWorkV2TractData,
   getACSVehicleAvailabilityV2StateData, getACSVehicleAvailabilityV2CountyData, getACSVehicleAvailabilityV2TractData,
-  getACSYouthActivityV2StateData, getACSYouthActivityV2CountyData, getACSYouthActivityV2TractData
+  getACSYouthActivityV2StateData, getACSYouthActivityV2CountyData, getACSYouthActivityV2TractData,
+  // Census 2020 DHC Age and Sex
+  getACSCensus2020DHCAgeAndSexNationData, getACSCensus2020DHCAgeAndSexStateData, getACSCensus2020DHCAgeAndSexCountyData, getACSCensus2020DHCAgeAndSexCensusTractData, getACSCensus2020DHCAgeAndSexBlockGroupData,
+  getACSCensus2020DHCAgeAndSexLegislativeNationData, getACSCensus2020DHCAgeAndSexLegislativeCongressionalDistrictData, getACSCensus2020DHCAgeAndSexLegislativeStateLegislativeDistrictsUpperData, getACSCensus2020DHCAgeAndSexLegislativeStateLegislativeDistrictsLowerData,
+  getACSCensus2020DHCAgeAndSexMetroNationData, getACSCensus2020DHCAgeAndSexMetroCombinedStatisticalAreaData, getACSCensus2020DHCAgeAndSexMetroCoreBasedStatisticalAreaData, getACSCensus2020DHCAgeAndSexMetroMetropolitanDivisionData,
+  getACSCensus2020DHCAgeAndSexPlaceNationData, getACSCensus2020DHCAgeAndSexPlaceConsolidatedCityData, getACSCensus2020DHCAgeAndSexPlaceCensusDesignatedPlaceData, getACSCensus2020DHCAgeAndSexPlaceIncorporatedPlaceData,
+  getACSCensus2020DHCAgeAndSexSchoolNationData, getACSCensus2020DHCAgeAndSexSchoolDistrictUnifiedData, getACSCensus2020DHCAgeAndSexSchoolDistrictElementaryData, getACSCensus2020DHCAgeAndSexSchoolDistrictSecondaryData,
+  getACSCensus2020DHCAgeAndSexTribalNationData, getACSCensus2020DHCAgeAndSexTribalSubdivisionData, getACSCensus2020DHCAgeAndSexTribalCensusTractData, getACSCensus2020DHCAgeAndSexTribalBlockGroupData, getACSCensus2020DHCAgeAndSexTribalAlaskaNativeRegionalCorporationData, getACSCensus2020DHCAgeAndSexTribalAmericanIndianAlaskaNativeNativeHawaiianAreaData,
+  // Census 2020 DHC Blocks
+  getACSCensus2020DHCBlocksNationData, getACSCensus2020DHCBlocksBlockData,
+  // Census 2020 DHC Group Quarters
+  getACSCensus2020DHCGroupQuartersNationData, getACSCensus2020DHCGroupQuartersStateData, getACSCensus2020DHCGroupQuartersCountyData, getACSCensus2020DHCGroupQuartersCensusTractData, getACSCensus2020DHCGroupQuartersBlockGroupData,
+  getACSCensus2020DHCGroupQuartersLegislativeNationData, getACSCensus2020DHCGroupQuartersLegislativeCongressionalDistrictData, getACSCensus2020DHCGroupQuartersLegislativeStateLegislativeDistrictsUpperData, getACSCensus2020DHCGroupQuartersLegislativeStateLegislativeDistrictsLowerData,
+  getACSCensus2020DHCGroupQuartersMetroNationData, getACSCensus2020DHCGroupQuartersMetroCombinedStatisticalAreaData, getACSCensus2020DHCGroupQuartersMetroCoreBasedStatisticalAreaData, getACSCensus2020DHCGroupQuartersMetroMetropolitanDivisionData,
+  getACSCensus2020DHCGroupQuartersPlaceNationData, getACSCensus2020DHCGroupQuartersPlaceConsolidatedCityData, getACSCensus2020DHCGroupQuartersPlaceCensusDesignatedPlaceData, getACSCensus2020DHCGroupQuartersPlaceIncorporatedPlaceData,
+  getACSCensus2020DHCGroupQuartersSchoolNationData, getACSCensus2020DHCGroupQuartersSchoolDistrictUnifiedData, getACSCensus2020DHCGroupQuartersSchoolDistrictElementaryData, getACSCensus2020DHCGroupQuartersSchoolDistrictSecondaryData,
+  getACSCensus2020DHCGroupQuartersTribalNationData, getACSCensus2020DHCGroupQuartersTribalSubdivisionData, getACSCensus2020DHCGroupQuartersTribalCensusTractData, getACSCensus2020DHCGroupQuartersTribalBlockGroupData, getACSCensus2020DHCGroupQuartersTribalAlaskaNativeRegionalCorporationData, getACSCensus2020DHCGroupQuartersTribalAmericanIndianAlaskaNativeNativeHawaiianAreaData,
+  // Census 2020 DHC Households
+  getACSCensus2020DHCHouseholdsNationData, getACSCensus2020DHCHouseholdsStateData, getACSCensus2020DHCHouseholdsCountyData, getACSCensus2020DHCHouseholdsCensusTractData, getACSCensus2020DHCHouseholdsBlockGroupData,
+  getACSCensus2020DHCHouseholdsLegislativeNationData, getACSCensus2020DHCHouseholdsLegislativeCongressionalDistrictData, getACSCensus2020DHCHouseholdsLegislativeStateLegislativeDistrictsUpperData, getACSCensus2020DHCHouseholdsLegislativeStateLegislativeDistrictsLowerData,
+  getACSCensus2020DHCHouseholdsMetroNationData, getACSCensus2020DHCHouseholdsMetroCombinedStatisticalAreaData, getACSCensus2020DHCHouseholdsMetroCoreBasedStatisticalAreaData, getACSCensus2020DHCHouseholdsMetroMetropolitanDivisionData,
+  getACSCensus2020DHCHouseholdsPlaceNationData, getACSCensus2020DHCHouseholdsPlaceConsolidatedCityData, getACSCensus2020DHCHouseholdsPlaceCensusDesignatedPlaceData, getACSCensus2020DHCHouseholdsPlaceIncorporatedPlaceData,
+  getACSCensus2020DHCHouseholdsSchoolNationData, getACSCensus2020DHCHouseholdsSchoolDistrictUnifiedData, getACSCensus2020DHCHouseholdsSchoolDistrictElementaryData, getACSCensus2020DHCHouseholdsSchoolDistrictSecondaryData,
+  getACSCensus2020DHCHouseholdsTribalNationData, getACSCensus2020DHCHouseholdsTribalSubdivisionData, getACSCensus2020DHCHouseholdsTribalCensusTractData, getACSCensus2020DHCHouseholdsTribalBlockGroupData, getACSCensus2020DHCHouseholdsTribalAlaskaNativeRegionalCorporationData, getACSCensus2020DHCHouseholdsTribalAmericanIndianAlaskaNativeNativeHawaiianAreaData,
+  // Census 2020 DHC Housing Units
+  getACSCensus2020DHCHousingUnitsNationData, getACSCensus2020DHCHousingUnitsStateData, getACSCensus2020DHCHousingUnitsCountyData, getACSCensus2020DHCHousingUnitsCensusTractData, getACSCensus2020DHCHousingUnitsBlockGroupData
 } from '../adapters/acsBoundaries';
 import { getUSFSNationalGrasslandsData } from '../adapters/usfsNationalGrasslands';
 import { getUSFSOfficeLocationsData } from '../adapters/usfsOfficeLocations';
@@ -1847,6 +1874,8 @@ export class EnrichmentService {
       
       case 'poi_wikipedia':
         return await this.getWikipediaPOIs(lat, lon, radius);
+      case 'orlando_christmas_lights':
+        return await this.getOrlandoChristmasLights(lat, lon, radius);
       case 'poi_aurora_viewing_sites':
         return await this.getAuroraViewingSites(lat, lon, radius);
       case 'poi_ebird_hotspots': {
@@ -2086,6 +2115,9 @@ export class EnrichmentService {
       
       case 'sc_lakes_reservoirs':
         return await this.getSCLakesReservoirs(lat, lon, radius);
+      
+      case 'sc_coastal_well_inventory':
+        return await this.getSCCoastalWellInventory(lat, lon, radius);
       
       // NH Places of Worship (NH GRANIT) - Proximity query
       case 'nh_places_of_worship':
@@ -6222,6 +6254,222 @@ export class EnrichmentService {
       case 'acs_youth_activity_v2_tract':
         return await this.getACSYouthActivityV2Tract(lat, lon, radius);
       
+      // Census 2020 DHC Age and Sex - Standard Boundaries
+      case 'acs_census_2020_dhc_age_and_sex_nation':
+        return await this.getACSCensus2020DHCAgeAndSexNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_state':
+        return await this.getACSCensus2020DHCAgeAndSexState(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_county':
+        return await this.getACSCensus2020DHCAgeAndSexCounty(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_census_tract':
+        return await this.getACSCensus2020DHCAgeAndSexCensusTract(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_block_group':
+        return await this.getACSCensus2020DHCAgeAndSexBlockGroup(lat, lon, radius);
+      
+      // Census 2020 DHC Age and Sex - Legislative Boundaries
+      case 'acs_census_2020_dhc_age_and_sex_legislative_nation':
+        return await this.getACSCensus2020DHCAgeAndSexLegislativeNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_legislative_congressional_district':
+        return await this.getACSCensus2020DHCAgeAndSexLegislativeCongressionalDistrict(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_legislative_state_legislative_districts_upper':
+        return await this.getACSCensus2020DHCAgeAndSexLegislativeStateLegislativeDistrictsUpper(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_legislative_state_legislative_districts_lower':
+        return await this.getACSCensus2020DHCAgeAndSexLegislativeStateLegislativeDistrictsLower(lat, lon, radius);
+      
+      // Census 2020 DHC Age and Sex - Metro Boundaries
+      case 'acs_census_2020_dhc_age_and_sex_metro_nation':
+        return await this.getACSCensus2020DHCAgeAndSexMetroNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_metro_combined_statistical_area':
+        return await this.getACSCensus2020DHCAgeAndSexMetroCombinedStatisticalArea(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_metro_core_based_statistical_area':
+        return await this.getACSCensus2020DHCAgeAndSexMetroCoreBasedStatisticalArea(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_metro_metropolitan_division':
+        return await this.getACSCensus2020DHCAgeAndSexMetroMetropolitanDivision(lat, lon, radius);
+      
+      // Census 2020 DHC Age and Sex - Place Boundaries
+      case 'acs_census_2020_dhc_age_and_sex_place_nation':
+        return await this.getACSCensus2020DHCAgeAndSexPlaceNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_place_consolidated_city':
+        return await this.getACSCensus2020DHCAgeAndSexPlaceConsolidatedCity(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_place_census_designated_place':
+        return await this.getACSCensus2020DHCAgeAndSexPlaceCensusDesignatedPlace(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_place_incorporated_place':
+        return await this.getACSCensus2020DHCAgeAndSexPlaceIncorporatedPlace(lat, lon, radius);
+      
+      // Census 2020 DHC Age and Sex - School Boundaries
+      case 'acs_census_2020_dhc_age_and_sex_school_nation':
+        return await this.getACSCensus2020DHCAgeAndSexSchoolNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_school_district_unified':
+        return await this.getACSCensus2020DHCAgeAndSexSchoolDistrictUnified(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_school_district_elementary':
+        return await this.getACSCensus2020DHCAgeAndSexSchoolDistrictElementary(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_school_district_secondary':
+        return await this.getACSCensus2020DHCAgeAndSexSchoolDistrictSecondary(lat, lon, radius);
+      
+      // Census 2020 DHC Age and Sex - Tribal Boundaries
+      case 'acs_census_2020_dhc_age_and_sex_tribal_nation':
+        return await this.getACSCensus2020DHCAgeAndSexTribalNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_tribal_subdivision':
+        return await this.getACSCensus2020DHCAgeAndSexTribalSubdivision(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_tribal_census_tract':
+        return await this.getACSCensus2020DHCAgeAndSexTribalCensusTract(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_tribal_block_group':
+        return await this.getACSCensus2020DHCAgeAndSexTribalBlockGroup(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_tribal_alaska_native_regional_corporation':
+        return await this.getACSCensus2020DHCAgeAndSexTribalAlaskaNativeRegionalCorporation(lat, lon, radius);
+      case 'acs_census_2020_dhc_age_and_sex_tribal_american_indian_alaska_native_native_hawaiian_area':
+        return await this.getACSCensus2020DHCAgeAndSexTribalAmericanIndianAlaskaNativeNativeHawaiianArea(lat, lon, radius);
+      
+      // Census 2020 DHC Blocks
+      case 'acs_census_2020_dhc_blocks_nation':
+        return await this.getACSCensus2020DHCBlocksNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_blocks_block':
+        return await this.getACSCensus2020DHCBlocksBlock(lat, lon, radius);
+      
+      // Census 2020 DHC Group Quarters - Standard Boundaries
+      case 'acs_census_2020_dhc_group_quarters_nation':
+        return await this.getACSCensus2020DHCGroupQuartersNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_state':
+        return await this.getACSCensus2020DHCGroupQuartersState(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_county':
+        return await this.getACSCensus2020DHCGroupQuartersCounty(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_census_tract':
+        return await this.getACSCensus2020DHCGroupQuartersCensusTract(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_block_group':
+        return await this.getACSCensus2020DHCGroupQuartersBlockGroup(lat, lon, radius);
+      
+      // Census 2020 DHC Group Quarters - Legislative Boundaries
+      case 'acs_census_2020_dhc_group_quarters_legislative_nation':
+        return await this.getACSCensus2020DHCGroupQuartersLegislativeNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_legislative_congressional_district':
+        return await this.getACSCensus2020DHCGroupQuartersLegislativeCongressionalDistrict(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_legislative_state_legislative_districts_upper':
+        return await this.getACSCensus2020DHCGroupQuartersLegislativeStateLegislativeDistrictsUpper(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_legislative_state_legislative_districts_lower':
+        return await this.getACSCensus2020DHCGroupQuartersLegislativeStateLegislativeDistrictsLower(lat, lon, radius);
+      
+      // Census 2020 DHC Group Quarters - Metro Boundaries
+      case 'acs_census_2020_dhc_group_quarters_metro_nation':
+        return await this.getACSCensus2020DHCGroupQuartersMetroNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_metro_combined_statistical_area':
+        return await this.getACSCensus2020DHCGroupQuartersMetroCombinedStatisticalArea(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_metro_core_based_statistical_area':
+        return await this.getACSCensus2020DHCGroupQuartersMetroCoreBasedStatisticalArea(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_metro_metropolitan_division':
+        return await this.getACSCensus2020DHCGroupQuartersMetroMetropolitanDivision(lat, lon, radius);
+      
+      // Census 2020 DHC Group Quarters - Place Boundaries
+      case 'acs_census_2020_dhc_group_quarters_place_nation':
+        return await this.getACSCensus2020DHCGroupQuartersPlaceNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_place_consolidated_city':
+        return await this.getACSCensus2020DHCGroupQuartersPlaceConsolidatedCity(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_place_census_designated_place':
+        return await this.getACSCensus2020DHCGroupQuartersPlaceCensusDesignatedPlace(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_place_incorporated_place':
+        return await this.getACSCensus2020DHCGroupQuartersPlaceIncorporatedPlace(lat, lon, radius);
+      
+      // Census 2020 DHC Group Quarters - School Boundaries
+      case 'acs_census_2020_dhc_group_quarters_school_nation':
+        return await this.getACSCensus2020DHCGroupQuartersSchoolNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_school_district_unified':
+        return await this.getACSCensus2020DHCGroupQuartersSchoolDistrictUnified(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_school_district_elementary':
+        return await this.getACSCensus2020DHCGroupQuartersSchoolDistrictElementary(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_school_district_secondary':
+        return await this.getACSCensus2020DHCGroupQuartersSchoolDistrictSecondary(lat, lon, radius);
+      
+      // Census 2020 DHC Group Quarters - Tribal Boundaries
+      case 'acs_census_2020_dhc_group_quarters_tribal_nation':
+        return await this.getACSCensus2020DHCGroupQuartersTribalNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_tribal_subdivision':
+        return await this.getACSCensus2020DHCGroupQuartersTribalSubdivision(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_tribal_census_tract':
+        return await this.getACSCensus2020DHCGroupQuartersTribalCensusTract(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_tribal_block_group':
+        return await this.getACSCensus2020DHCGroupQuartersTribalBlockGroup(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_tribal_alaska_native_regional_corporation':
+        return await this.getACSCensus2020DHCGroupQuartersTribalAlaskaNativeRegionalCorporation(lat, lon, radius);
+      case 'acs_census_2020_dhc_group_quarters_tribal_american_indian_alaska_native_native_hawaiian_area':
+        return await this.getACSCensus2020DHCGroupQuartersTribalAmericanIndianAlaskaNativeNativeHawaiianArea(lat, lon, radius);
+      
+      // Census 2020 DHC Households - Standard Boundaries
+      case 'acs_census_2020_dhc_households_nation':
+        return await this.getACSCensus2020DHCHouseholdsNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_state':
+        return await this.getACSCensus2020DHCHouseholdsState(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_county':
+        return await this.getACSCensus2020DHCHouseholdsCounty(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_census_tract':
+        return await this.getACSCensus2020DHCHouseholdsCensusTract(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_block_group':
+        return await this.getACSCensus2020DHCHouseholdsBlockGroup(lat, lon, radius);
+      
+      // Census 2020 DHC Households - Legislative Boundaries
+      case 'acs_census_2020_dhc_households_legislative_nation':
+        return await this.getACSCensus2020DHCHouseholdsLegislativeNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_legislative_congressional_district':
+        return await this.getACSCensus2020DHCHouseholdsLegislativeCongressionalDistrict(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_legislative_state_legislative_districts_upper':
+        return await this.getACSCensus2020DHCHouseholdsLegislativeStateLegislativeDistrictsUpper(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_legislative_state_legislative_districts_lower':
+        return await this.getACSCensus2020DHCHouseholdsLegislativeStateLegislativeDistrictsLower(lat, lon, radius);
+      
+      // Census 2020 DHC Households - Metro Boundaries
+      case 'acs_census_2020_dhc_households_metro_nation':
+        return await this.getACSCensus2020DHCHouseholdsMetroNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_metro_combined_statistical_area':
+        return await this.getACSCensus2020DHCHouseholdsMetroCombinedStatisticalArea(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_metro_core_based_statistical_area':
+        return await this.getACSCensus2020DHCHouseholdsMetroCoreBasedStatisticalArea(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_metro_metropolitan_division':
+        return await this.getACSCensus2020DHCHouseholdsMetroMetropolitanDivision(lat, lon, radius);
+      
+      // Census 2020 DHC Households - Place Boundaries
+      case 'acs_census_2020_dhc_households_place_nation':
+        return await this.getACSCensus2020DHCHouseholdsPlaceNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_place_consolidated_city':
+        return await this.getACSCensus2020DHCHouseholdsPlaceConsolidatedCity(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_place_census_designated_place':
+        return await this.getACSCensus2020DHCHouseholdsPlaceCensusDesignatedPlace(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_place_incorporated_place':
+        return await this.getACSCensus2020DHCHouseholdsPlaceIncorporatedPlace(lat, lon, radius);
+      
+      // Census 2020 DHC Households - School Boundaries
+      case 'acs_census_2020_dhc_households_school_nation':
+        return await this.getACSCensus2020DHCHouseholdsSchoolNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_school_district_unified':
+        return await this.getACSCensus2020DHCHouseholdsSchoolDistrictUnified(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_school_district_elementary':
+        return await this.getACSCensus2020DHCHouseholdsSchoolDistrictElementary(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_school_district_secondary':
+        return await this.getACSCensus2020DHCHouseholdsSchoolDistrictSecondary(lat, lon, radius);
+      
+      // Census 2020 DHC Households - Tribal Boundaries
+      case 'acs_census_2020_dhc_households_tribal_nation':
+        return await this.getACSCensus2020DHCHouseholdsTribalNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_tribal_subdivision':
+        return await this.getACSCensus2020DHCHouseholdsTribalSubdivision(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_tribal_census_tract':
+        return await this.getACSCensus2020DHCHouseholdsTribalCensusTract(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_tribal_block_group':
+        return await this.getACSCensus2020DHCHouseholdsTribalBlockGroup(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_tribal_alaska_native_regional_corporation':
+        return await this.getACSCensus2020DHCHouseholdsTribalAlaskaNativeRegionalCorporation(lat, lon, radius);
+      case 'acs_census_2020_dhc_households_tribal_american_indian_alaska_native_native_hawaiian_area':
+        return await this.getACSCensus2020DHCHouseholdsTribalAmericanIndianAlaskaNativeNativeHawaiianArea(lat, lon, radius);
+      
+      // Census 2020 DHC Housing Units - Standard Boundaries
+      case 'acs_census_2020_dhc_housing_units_nation':
+        return await this.getACSCensus2020DHCHousingUnitsNation(lat, lon, radius);
+      case 'acs_census_2020_dhc_housing_units_state':
+        return await this.getACSCensus2020DHCHousingUnitsState(lat, lon, radius);
+      case 'acs_census_2020_dhc_housing_units_county':
+        return await this.getACSCensus2020DHCHousingUnitsCounty(lat, lon, radius);
+      case 'acs_census_2020_dhc_housing_units_census_tract':
+        return await this.getACSCensus2020DHCHousingUnitsCensusTract(lat, lon, radius);
+      case 'acs_census_2020_dhc_housing_units_block_group':
+        return await this.getACSCensus2020DHCHousingUnitsBlockGroup(lat, lon, radius);
+      
       // USFS Administrative Boundaries - Point-in-polygon and proximity query (max 50 miles)
       case 'usfs_administrative_boundaries':
         return await this.getUSFSAdministrativeBoundaries(lat, lon, radius);
@@ -7762,6 +8010,84 @@ export class EnrichmentService {
     }
   }
 
+  private async getSCCoastalWellInventory(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching SC Coastal Well Inventory data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 10 miles
+      const cappedRadius = radius ? Math.min(radius, 10.0) : 10.0;
+      
+      const features = await getSCCoastalWellInventoryData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.sc_coastal_well_inventory_count = 0;
+        result.sc_coastal_well_inventory_all = [];
+        result.sc_coastal_well_inventory_summary = 'No SC Coastal Wells found within the specified radius.';
+      } else {
+        result.sc_coastal_well_inventory_count = features.length;
+        result.sc_coastal_well_inventory_all = features.map(feature => ({
+          ...feature.attributes,
+          objectid1: feature.objectid1,
+          objectid: feature.objectid,
+          wellId: feature.wellId,
+          scGrid: feature.scGrid,
+          latDDNAD83: feature.latDDNAD83,
+          lonDDNAD83: feature.lonDDNAD83,
+          topo: feature.topo,
+          elev: feature.elev,
+          owner: feature.owner,
+          wellUse: feature.wellUse,
+          depthD: feature.depthD,
+          depthC: feature.depthC,
+          diam1: feature.diam1,
+          diam2: feature.diam2,
+          ohCas: feature.ohCas,
+          screenT: feature.screenT,
+          screenB: feature.screenB,
+          drillYr: feature.drillYr,
+          drillMo: feature.drillMo,
+          yield: feature.yield,
+          yieldYr: feature.yieldYr,
+          gLogs: feature.gLogs,
+          dLogs: feature.dLogs,
+          pTest: feature.pTest,
+          chem: feature.chem,
+          scgsSamples: feature.scgsSamples,
+          wlQ: feature.wlQ,
+          wlFt: feature.wlFt,
+          wlYr: feature.wlYr,
+          driller: feature.driller,
+          remarks: feature.remarks,
+          county: feature.county,
+          globalId: feature.globalId,
+          dLogsText: feature.dLogsText,
+          pTestText: feature.pTestText,
+          lat: feature.lat,
+          lon: feature.lon,
+          distance_miles: feature.distance_miles
+        }));
+        
+        const nearestDistance = features[0]?.distance_miles || 0;
+        result.sc_coastal_well_inventory_summary = `Found ${features.length} SC Coastal Well(s) within ${cappedRadius} miles${nearestDistance > 0 ? ` (nearest: ${nearestDistance.toFixed(2)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ SC Coastal Well Inventory data processed:`, {
+        totalCount: result.sc_coastal_well_inventory_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching SC Coastal Well Inventory data:', error);
+      return {
+        sc_coastal_well_inventory_count: 0,
+        sc_coastal_well_inventory_all: [],
+        sc_coastal_well_inventory_summary: 'Error querying SC Coastal Well Inventory'
+      };
+    }
+  }
+
   private async getTXSchoolDistricts2024(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`🏫 Fetching TX School Districts 2024 data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
@@ -8834,6 +9160,310 @@ export class EnrichmentService {
   }
   private async getACSYouthActivityV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_youth_activity_v2_tract', 'Youth Activity - Tract', getACSYouthActivityV2TractData);
+  }
+
+  // Census 2020 DHC Age and Sex - Standard Boundaries
+  private async getACSCensus2020DHCAgeAndSexNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_nation', 'Census 2020 DHC Age and Sex - Nation', getACSCensus2020DHCAgeAndSexNationData);
+  }
+  private async getACSCensus2020DHCAgeAndSexState(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_state', 'Census 2020 DHC Age and Sex - State', getACSCensus2020DHCAgeAndSexStateData);
+  }
+  private async getACSCensus2020DHCAgeAndSexCounty(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_county', 'Census 2020 DHC Age and Sex - County', getACSCensus2020DHCAgeAndSexCountyData);
+  }
+  private async getACSCensus2020DHCAgeAndSexCensusTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_census_tract', 'Census 2020 DHC Age and Sex - Census Tract', getACSCensus2020DHCAgeAndSexCensusTractData);
+  }
+  private async getACSCensus2020DHCAgeAndSexBlockGroup(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_block_group', 'Census 2020 DHC Age and Sex - Block Group', getACSCensus2020DHCAgeAndSexBlockGroupData);
+  }
+
+  // Census 2020 DHC Age and Sex - Legislative Boundaries
+  private async getACSCensus2020DHCAgeAndSexLegislativeNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_legislative_nation', 'Census 2020 DHC Age and Sex Legislative - Nation', getACSCensus2020DHCAgeAndSexLegislativeNationData);
+  }
+  private async getACSCensus2020DHCAgeAndSexLegislativeCongressionalDistrict(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_legislative_congressional_district', 'Census 2020 DHC Age and Sex Legislative - Congressional District', getACSCensus2020DHCAgeAndSexLegislativeCongressionalDistrictData);
+  }
+  private async getACSCensus2020DHCAgeAndSexLegislativeStateLegislativeDistrictsUpper(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_legislative_state_legislative_districts_upper', 'Census 2020 DHC Age and Sex Legislative - State Legislative Districts Upper', getACSCensus2020DHCAgeAndSexLegislativeStateLegislativeDistrictsUpperData);
+  }
+  private async getACSCensus2020DHCAgeAndSexLegislativeStateLegislativeDistrictsLower(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_legislative_state_legislative_districts_lower', 'Census 2020 DHC Age and Sex Legislative - State Legislative Districts Lower', getACSCensus2020DHCAgeAndSexLegislativeStateLegislativeDistrictsLowerData);
+  }
+
+  // Census 2020 DHC Age and Sex - Metro Boundaries
+  private async getACSCensus2020DHCAgeAndSexMetroNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_metro_nation', 'Census 2020 DHC Age and Sex Metro - Nation', getACSCensus2020DHCAgeAndSexMetroNationData);
+  }
+  private async getACSCensus2020DHCAgeAndSexMetroCombinedStatisticalArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_metro_combined_statistical_area', 'Census 2020 DHC Age and Sex Metro - Combined Statistical Area', getACSCensus2020DHCAgeAndSexMetroCombinedStatisticalAreaData);
+  }
+  private async getACSCensus2020DHCAgeAndSexMetroCoreBasedStatisticalArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_metro_core_based_statistical_area', 'Census 2020 DHC Age and Sex Metro - Core Based Statistical Area', getACSCensus2020DHCAgeAndSexMetroCoreBasedStatisticalAreaData);
+  }
+  private async getACSCensus2020DHCAgeAndSexMetroMetropolitanDivision(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_metro_metropolitan_division', 'Census 2020 DHC Age and Sex Metro - Metropolitan Division', getACSCensus2020DHCAgeAndSexMetroMetropolitanDivisionData);
+  }
+
+  // Census 2020 DHC Age and Sex - Place Boundaries
+  private async getACSCensus2020DHCAgeAndSexPlaceNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_place_nation', 'Census 2020 DHC Age and Sex Place - Nation', getACSCensus2020DHCAgeAndSexPlaceNationData);
+  }
+  private async getACSCensus2020DHCAgeAndSexPlaceConsolidatedCity(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_place_consolidated_city', 'Census 2020 DHC Age and Sex Place - Consolidated City', getACSCensus2020DHCAgeAndSexPlaceConsolidatedCityData);
+  }
+  private async getACSCensus2020DHCAgeAndSexPlaceCensusDesignatedPlace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_place_census_designated_place', 'Census 2020 DHC Age and Sex Place - Census Designated Place', getACSCensus2020DHCAgeAndSexPlaceCensusDesignatedPlaceData);
+  }
+  private async getACSCensus2020DHCAgeAndSexPlaceIncorporatedPlace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_place_incorporated_place', 'Census 2020 DHC Age and Sex Place - Incorporated Place', getACSCensus2020DHCAgeAndSexPlaceIncorporatedPlaceData);
+  }
+
+  // Census 2020 DHC Age and Sex - School Boundaries
+  private async getACSCensus2020DHCAgeAndSexSchoolNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_school_nation', 'Census 2020 DHC Age and Sex School - Nation', getACSCensus2020DHCAgeAndSexSchoolNationData);
+  }
+  private async getACSCensus2020DHCAgeAndSexSchoolDistrictUnified(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_school_district_unified', 'Census 2020 DHC Age and Sex School - School District Unified', getACSCensus2020DHCAgeAndSexSchoolDistrictUnifiedData);
+  }
+  private async getACSCensus2020DHCAgeAndSexSchoolDistrictElementary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_school_district_elementary', 'Census 2020 DHC Age and Sex School - School District Elementary', getACSCensus2020DHCAgeAndSexSchoolDistrictElementaryData);
+  }
+  private async getACSCensus2020DHCAgeAndSexSchoolDistrictSecondary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_school_district_secondary', 'Census 2020 DHC Age and Sex School - School District Secondary', getACSCensus2020DHCAgeAndSexSchoolDistrictSecondaryData);
+  }
+
+  // Census 2020 DHC Age and Sex - Tribal Boundaries
+  private async getACSCensus2020DHCAgeAndSexTribalNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_tribal_nation', 'Census 2020 DHC Age and Sex Tribal - Nation', getACSCensus2020DHCAgeAndSexTribalNationData);
+  }
+  private async getACSCensus2020DHCAgeAndSexTribalSubdivision(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_tribal_subdivision', 'Census 2020 DHC Age and Sex Tribal - Tribal Subdivision', getACSCensus2020DHCAgeAndSexTribalSubdivisionData);
+  }
+  private async getACSCensus2020DHCAgeAndSexTribalCensusTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_tribal_census_tract', 'Census 2020 DHC Age and Sex Tribal - Tribal Census Tract', getACSCensus2020DHCAgeAndSexTribalCensusTractData);
+  }
+  private async getACSCensus2020DHCAgeAndSexTribalBlockGroup(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_tribal_block_group', 'Census 2020 DHC Age and Sex Tribal - Tribal Block Group', getACSCensus2020DHCAgeAndSexTribalBlockGroupData);
+  }
+  private async getACSCensus2020DHCAgeAndSexTribalAlaskaNativeRegionalCorporation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_tribal_alaska_native_regional_corporation', 'Census 2020 DHC Age and Sex Tribal - Alaska Native Regional Corporation', getACSCensus2020DHCAgeAndSexTribalAlaskaNativeRegionalCorporationData);
+  }
+  private async getACSCensus2020DHCAgeAndSexTribalAmericanIndianAlaskaNativeNativeHawaiianArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_age_and_sex_tribal_american_indian_alaska_native_native_hawaiian_area', 'Census 2020 DHC Age and Sex Tribal - American Indian Alaska Native Native Hawaiian Area', getACSCensus2020DHCAgeAndSexTribalAmericanIndianAlaskaNativeNativeHawaiianAreaData);
+  }
+
+  // Census 2020 DHC Blocks
+  private async getACSCensus2020DHCBlocksNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_blocks_nation', 'Census 2020 DHC Blocks - Nation', getACSCensus2020DHCBlocksNationData);
+  }
+  private async getACSCensus2020DHCBlocksBlock(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_blocks_block', 'Census 2020 DHC Blocks - Block', getACSCensus2020DHCBlocksBlockData);
+  }
+
+  // Census 2020 DHC Group Quarters - Standard Boundaries
+  private async getACSCensus2020DHCGroupQuartersNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_nation', 'Census 2020 DHC Group Quarters - Nation', getACSCensus2020DHCGroupQuartersNationData);
+  }
+  private async getACSCensus2020DHCGroupQuartersState(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_state', 'Census 2020 DHC Group Quarters - State', getACSCensus2020DHCGroupQuartersStateData);
+  }
+  private async getACSCensus2020DHCGroupQuartersCounty(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_county', 'Census 2020 DHC Group Quarters - County', getACSCensus2020DHCGroupQuartersCountyData);
+  }
+  private async getACSCensus2020DHCGroupQuartersCensusTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_census_tract', 'Census 2020 DHC Group Quarters - Census Tract', getACSCensus2020DHCGroupQuartersCensusTractData);
+  }
+  private async getACSCensus2020DHCGroupQuartersBlockGroup(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_block_group', 'Census 2020 DHC Group Quarters - Block Group', getACSCensus2020DHCGroupQuartersBlockGroupData);
+  }
+
+  // Census 2020 DHC Group Quarters - Legislative Boundaries
+  private async getACSCensus2020DHCGroupQuartersLegislativeNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_legislative_nation', 'Census 2020 DHC Group Quarters Legislative - Nation', getACSCensus2020DHCGroupQuartersLegislativeNationData);
+  }
+  private async getACSCensus2020DHCGroupQuartersLegislativeCongressionalDistrict(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_legislative_congressional_district', 'Census 2020 DHC Group Quarters Legislative - Congressional District', getACSCensus2020DHCGroupQuartersLegislativeCongressionalDistrictData);
+  }
+  private async getACSCensus2020DHCGroupQuartersLegislativeStateLegislativeDistrictsUpper(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_legislative_state_legislative_districts_upper', 'Census 2020 DHC Group Quarters Legislative - State Legislative Districts Upper', getACSCensus2020DHCGroupQuartersLegislativeStateLegislativeDistrictsUpperData);
+  }
+  private async getACSCensus2020DHCGroupQuartersLegislativeStateLegislativeDistrictsLower(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_legislative_state_legislative_districts_lower', 'Census 2020 DHC Group Quarters Legislative - State Legislative Districts Lower', getACSCensus2020DHCGroupQuartersLegislativeStateLegislativeDistrictsLowerData);
+  }
+
+  // Census 2020 DHC Group Quarters - Metro Boundaries
+  private async getACSCensus2020DHCGroupQuartersMetroNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_metro_nation', 'Census 2020 DHC Group Quarters Metro - Nation', getACSCensus2020DHCGroupQuartersMetroNationData);
+  }
+  private async getACSCensus2020DHCGroupQuartersMetroCombinedStatisticalArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_metro_combined_statistical_area', 'Census 2020 DHC Group Quarters Metro - Combined Statistical Area', getACSCensus2020DHCGroupQuartersMetroCombinedStatisticalAreaData);
+  }
+  private async getACSCensus2020DHCGroupQuartersMetroCoreBasedStatisticalArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_metro_core_based_statistical_area', 'Census 2020 DHC Group Quarters Metro - Core Based Statistical Area', getACSCensus2020DHCGroupQuartersMetroCoreBasedStatisticalAreaData);
+  }
+  private async getACSCensus2020DHCGroupQuartersMetroMetropolitanDivision(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_metro_metropolitan_division', 'Census 2020 DHC Group Quarters Metro - Metropolitan Division', getACSCensus2020DHCGroupQuartersMetroMetropolitanDivisionData);
+  }
+
+  // Census 2020 DHC Group Quarters - Place Boundaries
+  private async getACSCensus2020DHCGroupQuartersPlaceNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_place_nation', 'Census 2020 DHC Group Quarters Place - Nation', getACSCensus2020DHCGroupQuartersPlaceNationData);
+  }
+  private async getACSCensus2020DHCGroupQuartersPlaceConsolidatedCity(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_place_consolidated_city', 'Census 2020 DHC Group Quarters Place - Consolidated City', getACSCensus2020DHCGroupQuartersPlaceConsolidatedCityData);
+  }
+  private async getACSCensus2020DHCGroupQuartersPlaceCensusDesignatedPlace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_place_census_designated_place', 'Census 2020 DHC Group Quarters Place - Census Designated Place', getACSCensus2020DHCGroupQuartersPlaceCensusDesignatedPlaceData);
+  }
+  private async getACSCensus2020DHCGroupQuartersPlaceIncorporatedPlace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_place_incorporated_place', 'Census 2020 DHC Group Quarters Place - Incorporated Place', getACSCensus2020DHCGroupQuartersPlaceIncorporatedPlaceData);
+  }
+
+  // Census 2020 DHC Group Quarters - School Boundaries
+  private async getACSCensus2020DHCGroupQuartersSchoolNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_school_nation', 'Census 2020 DHC Group Quarters School - Nation', getACSCensus2020DHCGroupQuartersSchoolNationData);
+  }
+  private async getACSCensus2020DHCGroupQuartersSchoolDistrictUnified(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_school_district_unified', 'Census 2020 DHC Group Quarters School - School District Unified', getACSCensus2020DHCGroupQuartersSchoolDistrictUnifiedData);
+  }
+  private async getACSCensus2020DHCGroupQuartersSchoolDistrictElementary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_school_district_elementary', 'Census 2020 DHC Group Quarters School - School District Elementary', getACSCensus2020DHCGroupQuartersSchoolDistrictElementaryData);
+  }
+  private async getACSCensus2020DHCGroupQuartersSchoolDistrictSecondary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_school_district_secondary', 'Census 2020 DHC Group Quarters School - School District Secondary', getACSCensus2020DHCGroupQuartersSchoolDistrictSecondaryData);
+  }
+
+  // Census 2020 DHC Group Quarters - Tribal Boundaries
+  private async getACSCensus2020DHCGroupQuartersTribalNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_tribal_nation', 'Census 2020 DHC Group Quarters Tribal - Nation', getACSCensus2020DHCGroupQuartersTribalNationData);
+  }
+  private async getACSCensus2020DHCGroupQuartersTribalSubdivision(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_tribal_subdivision', 'Census 2020 DHC Group Quarters Tribal - Tribal Subdivision', getACSCensus2020DHCGroupQuartersTribalSubdivisionData);
+  }
+  private async getACSCensus2020DHCGroupQuartersTribalCensusTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_tribal_census_tract', 'Census 2020 DHC Group Quarters Tribal - Tribal Census Tract', getACSCensus2020DHCGroupQuartersTribalCensusTractData);
+  }
+  private async getACSCensus2020DHCGroupQuartersTribalBlockGroup(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_tribal_block_group', 'Census 2020 DHC Group Quarters Tribal - Tribal Block Group', getACSCensus2020DHCGroupQuartersTribalBlockGroupData);
+  }
+  private async getACSCensus2020DHCGroupQuartersTribalAlaskaNativeRegionalCorporation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_tribal_alaska_native_regional_corporation', 'Census 2020 DHC Group Quarters Tribal - Alaska Native Regional Corporation', getACSCensus2020DHCGroupQuartersTribalAlaskaNativeRegionalCorporationData);
+  }
+  private async getACSCensus2020DHCGroupQuartersTribalAmericanIndianAlaskaNativeNativeHawaiianArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_group_quarters_tribal_american_indian_alaska_native_native_hawaiian_area', 'Census 2020 DHC Group Quarters Tribal - American Indian Alaska Native Native Hawaiian Area', getACSCensus2020DHCGroupQuartersTribalAmericanIndianAlaskaNativeNativeHawaiianAreaData);
+  }
+
+  // Census 2020 DHC Households - Standard Boundaries
+  private async getACSCensus2020DHCHouseholdsNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_nation', 'Census 2020 DHC Households - Nation', getACSCensus2020DHCHouseholdsNationData);
+  }
+  private async getACSCensus2020DHCHouseholdsState(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_state', 'Census 2020 DHC Households - State', getACSCensus2020DHCHouseholdsStateData);
+  }
+  private async getACSCensus2020DHCHouseholdsCounty(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_county', 'Census 2020 DHC Households - County', getACSCensus2020DHCHouseholdsCountyData);
+  }
+  private async getACSCensus2020DHCHouseholdsCensusTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_census_tract', 'Census 2020 DHC Households - Census Tract', getACSCensus2020DHCHouseholdsCensusTractData);
+  }
+  private async getACSCensus2020DHCHouseholdsBlockGroup(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_block_group', 'Census 2020 DHC Households - Block Group', getACSCensus2020DHCHouseholdsBlockGroupData);
+  }
+
+  // Census 2020 DHC Households - Legislative Boundaries
+  private async getACSCensus2020DHCHouseholdsLegislativeNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_legislative_nation', 'Census 2020 DHC Households Legislative - Nation', getACSCensus2020DHCHouseholdsLegislativeNationData);
+  }
+  private async getACSCensus2020DHCHouseholdsLegislativeCongressionalDistrict(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_legislative_congressional_district', 'Census 2020 DHC Households Legislative - Congressional District', getACSCensus2020DHCHouseholdsLegislativeCongressionalDistrictData);
+  }
+  private async getACSCensus2020DHCHouseholdsLegislativeStateLegislativeDistrictsUpper(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_legislative_state_legislative_districts_upper', 'Census 2020 DHC Households Legislative - State Legislative Districts Upper', getACSCensus2020DHCHouseholdsLegislativeStateLegislativeDistrictsUpperData);
+  }
+  private async getACSCensus2020DHCHouseholdsLegislativeStateLegislativeDistrictsLower(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_legislative_state_legislative_districts_lower', 'Census 2020 DHC Households Legislative - State Legislative Districts Lower', getACSCensus2020DHCHouseholdsLegislativeStateLegislativeDistrictsLowerData);
+  }
+
+  // Census 2020 DHC Households - Metro Boundaries
+  private async getACSCensus2020DHCHouseholdsMetroNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_metro_nation', 'Census 2020 DHC Households Metro - Nation', getACSCensus2020DHCHouseholdsMetroNationData);
+  }
+  private async getACSCensus2020DHCHouseholdsMetroCombinedStatisticalArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_metro_combined_statistical_area', 'Census 2020 DHC Households Metro - Combined Statistical Area', getACSCensus2020DHCHouseholdsMetroCombinedStatisticalAreaData);
+  }
+  private async getACSCensus2020DHCHouseholdsMetroCoreBasedStatisticalArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_metro_core_based_statistical_area', 'Census 2020 DHC Households Metro - Core Based Statistical Area', getACSCensus2020DHCHouseholdsMetroCoreBasedStatisticalAreaData);
+  }
+  private async getACSCensus2020DHCHouseholdsMetroMetropolitanDivision(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_metro_metropolitan_division', 'Census 2020 DHC Households Metro - Metropolitan Division', getACSCensus2020DHCHouseholdsMetroMetropolitanDivisionData);
+  }
+
+  // Census 2020 DHC Households - Place Boundaries
+  private async getACSCensus2020DHCHouseholdsPlaceNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_place_nation', 'Census 2020 DHC Households Place - Nation', getACSCensus2020DHCHouseholdsPlaceNationData);
+  }
+  private async getACSCensus2020DHCHouseholdsPlaceConsolidatedCity(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_place_consolidated_city', 'Census 2020 DHC Households Place - Consolidated City', getACSCensus2020DHCHouseholdsPlaceConsolidatedCityData);
+  }
+  private async getACSCensus2020DHCHouseholdsPlaceCensusDesignatedPlace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_place_census_designated_place', 'Census 2020 DHC Households Place - Census Designated Place', getACSCensus2020DHCHouseholdsPlaceCensusDesignatedPlaceData);
+  }
+  private async getACSCensus2020DHCHouseholdsPlaceIncorporatedPlace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_place_incorporated_place', 'Census 2020 DHC Households Place - Incorporated Place', getACSCensus2020DHCHouseholdsPlaceIncorporatedPlaceData);
+  }
+
+  // Census 2020 DHC Households - School Boundaries
+  private async getACSCensus2020DHCHouseholdsSchoolNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_school_nation', 'Census 2020 DHC Households School - Nation', getACSCensus2020DHCHouseholdsSchoolNationData);
+  }
+  private async getACSCensus2020DHCHouseholdsSchoolDistrictUnified(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_school_district_unified', 'Census 2020 DHC Households School - School District Unified', getACSCensus2020DHCHouseholdsSchoolDistrictUnifiedData);
+  }
+  private async getACSCensus2020DHCHouseholdsSchoolDistrictElementary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_school_district_elementary', 'Census 2020 DHC Households School - School District Elementary', getACSCensus2020DHCHouseholdsSchoolDistrictElementaryData);
+  }
+  private async getACSCensus2020DHCHouseholdsSchoolDistrictSecondary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_school_district_secondary', 'Census 2020 DHC Households School - School District Secondary', getACSCensus2020DHCHouseholdsSchoolDistrictSecondaryData);
+  }
+
+  // Census 2020 DHC Households - Tribal Boundaries
+  private async getACSCensus2020DHCHouseholdsTribalNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_tribal_nation', 'Census 2020 DHC Households Tribal - Nation', getACSCensus2020DHCHouseholdsTribalNationData);
+  }
+  private async getACSCensus2020DHCHouseholdsTribalSubdivision(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_tribal_subdivision', 'Census 2020 DHC Households Tribal - Tribal Subdivision', getACSCensus2020DHCHouseholdsTribalSubdivisionData);
+  }
+  private async getACSCensus2020DHCHouseholdsTribalCensusTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_tribal_census_tract', 'Census 2020 DHC Households Tribal - Tribal Census Tract', getACSCensus2020DHCHouseholdsTribalCensusTractData);
+  }
+  private async getACSCensus2020DHCHouseholdsTribalBlockGroup(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_tribal_block_group', 'Census 2020 DHC Households Tribal - Tribal Block Group', getACSCensus2020DHCHouseholdsTribalBlockGroupData);
+  }
+  private async getACSCensus2020DHCHouseholdsTribalAlaskaNativeRegionalCorporation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_tribal_alaska_native_regional_corporation', 'Census 2020 DHC Households Tribal - Alaska Native Regional Corporation', getACSCensus2020DHCHouseholdsTribalAlaskaNativeRegionalCorporationData);
+  }
+  private async getACSCensus2020DHCHouseholdsTribalAmericanIndianAlaskaNativeNativeHawaiianArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_households_tribal_american_indian_alaska_native_native_hawaiian_area', 'Census 2020 DHC Households Tribal - American Indian Alaska Native Native Hawaiian Area', getACSCensus2020DHCHouseholdsTribalAmericanIndianAlaskaNativeNativeHawaiianAreaData);
+  }
+
+  // Census 2020 DHC Housing Units - Standard Boundaries
+  private async getACSCensus2020DHCHousingUnitsNation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_housing_units_nation', 'Census 2020 DHC Housing Units - Nation', getACSCensus2020DHCHousingUnitsNationData);
+  }
+  private async getACSCensus2020DHCHousingUnitsState(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_housing_units_state', 'Census 2020 DHC Housing Units - State', getACSCensus2020DHCHousingUnitsStateData);
+  }
+  private async getACSCensus2020DHCHousingUnitsCounty(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_housing_units_county', 'Census 2020 DHC Housing Units - County', getACSCensus2020DHCHousingUnitsCountyData);
+  }
+  private async getACSCensus2020DHCHousingUnitsCensusTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_housing_units_census_tract', 'Census 2020 DHC Housing Units - Census Tract', getACSCensus2020DHCHousingUnitsCensusTractData);
+  }
+  private async getACSCensus2020DHCHousingUnitsBlockGroup(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_census_2020_dhc_housing_units_block_group', 'Census 2020 DHC Housing Units - Block Group', getACSCensus2020DHCHousingUnitsBlockGroupData);
   }
 
   private async getNHPlacesOfWorship(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
@@ -11694,6 +12324,56 @@ out center;`;
     } catch (error) {
       console.error('Wikipedia POI enrichment failed:', error);
       return { poi_wikipedia_count: 0, poi_wikipedia_error: 'Failed to fetch Wikipedia data' };
+    }
+  }
+
+  private async getOrlandoChristmasLights(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🎄 Fetching Orlando Christmas Light Displays data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const displays = await getOrlandoChristmasLightsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (displays.length === 0) {
+        result.orlando_christmas_lights_count = 0;
+        result.orlando_christmas_lights_all = [];
+        result.orlando_christmas_lights_summary = 'No Orlando Christmas Light Displays found within the specified radius.';
+      } else {
+        result.orlando_christmas_lights_count = displays.length;
+        result.orlando_christmas_lights_all = displays.map(display => ({
+          ...display.attributes,
+          objectid: display.objectid,
+          address: display.address,
+          description: display.description,
+          dates: display.dates,
+          times: display.times,
+          name: display.name,
+          website: display.website,
+          lat: display.lat,
+          lon: display.lon,
+          distance_miles: display.distance_miles
+        }));
+        
+        const nearestDistance = displays[0]?.distance_miles || 0;
+        result.orlando_christmas_lights_summary = `Found ${displays.length} Orlando Christmas Light Display(s) within ${cappedRadius} miles${nearestDistance > 0 ? ` (nearest: ${nearestDistance.toFixed(2)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ Orlando Christmas Light Displays data processed:`, {
+        totalCount: result.orlando_christmas_lights_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Orlando Christmas Light Displays data:', error);
+      return {
+        orlando_christmas_lights_count: 0,
+        orlando_christmas_lights_all: [],
+        orlando_christmas_lights_summary: 'Error querying Orlando Christmas Light Displays'
+      };
     }
   }
 

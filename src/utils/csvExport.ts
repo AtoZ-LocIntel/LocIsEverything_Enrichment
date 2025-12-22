@@ -1,6 +1,34 @@
 // Shared CSV export utility for consistent CSV generation across all views
 import { EnrichmentResult } from '../App';
 
+/**
+ * Filter out personal names from display text
+ * Removes patterns like "Home of [Name]" or similar personal information
+ */
+function filterPersonalNames(text: string | null | undefined): string | null {
+  if (!text || typeof text !== 'string') {
+    return text || null;
+  }
+  
+  // Remove patterns like "Home of [Name]" or "Home of [Name] & [Name]"
+  const personalNamePatterns = [
+    /^Home\s+of\s+[^,]+(?:,\s*[^,]+)*/i, // "Home of Name" or "Home of Name & Name"
+    /^Home\s+of\s+[^&]+(?:\s*&\s*[^&]+)*/i, // "Home of Name & Name"
+  ];
+  
+  let filtered = text;
+  for (const pattern of personalNamePatterns) {
+    filtered = filtered.replace(pattern, '').trim();
+  }
+  
+  // If the entire text was just a personal name pattern, return null
+  if (!filtered || filtered.length === 0) {
+    return null;
+  }
+  
+  return filtered;
+}
+
 export const exportEnrichmentResultsToCSV = (results: EnrichmentResult[]): void => {
   if (!results.length) return;
 
@@ -598,6 +626,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'sc_game_zones_all' || // Skip SC Game Zones array (handled separately)
         key === 'sc_coastal_ponds_all' || // Skip SC Coastal Ponds array (handled separately)
         key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately)
+        key === 'sc_coastal_well_inventory_all' || // Skip SC Coastal Well Inventory array (handled separately)
+        key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
         key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately)
         key === 'usfs_national_grasslands_all' ||
@@ -10612,6 +10642,104 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'South Carolina Department of Natural Resources'
+        ]);
+      });
+    } else if (key === 'sc_coastal_well_inventory_all' && Array.isArray(value)) {
+      // Handle SC Coastal Well Inventory - each well gets its own row with all attributes
+      value.forEach((well: any) => {
+        const distance = well.distance_miles !== null && well.distance_miles !== undefined ? well.distance_miles.toFixed(2) : '';
+        
+        const wellLat = well.lat || well.latDDNAD83 || location.lat.toString();
+        const wellLon = well.lon || well.lonDDNAD83 || location.lon.toString();
+        
+        const allAttributes = { ...well };
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const wellId = well.wellId || well.WELL_ID || 'Unknown';
+        const owner = well.owner || well.OWNER || '';
+        const wellUse = well.wellUse || well.WELL_USE || '';
+        const county = well.county || well.COUNTY || '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'South Carolina Department of Natural Resources',
+          (location.confidence || 'N/A').toString(),
+          'SC_COASTAL_WELL_INVENTORY',
+          `${wellId}${owner ? ` - ${owner}` : ''}${wellUse ? ` (${wellUse})` : ''}${county ? ` - ${county}` : ''}`,
+          wellLat,
+          wellLon,
+          distance,
+          'Well Point',
+          '',
+          '',
+          '',
+          attributesJson,
+          'South Carolina Department of Natural Resources'
+        ]);
+      });
+    } else if (key === 'orlando_christmas_lights_all' && Array.isArray(value)) {
+      // Handle Orlando Christmas Light Displays - each display gets its own row with all attributes
+      value.forEach((display: any) => {
+        const distance = display.distance_miles !== null && display.distance_miles !== undefined ? display.distance_miles.toFixed(2) : '';
+        
+        const displayLat = display.lat || location.lat.toString();
+        const displayLon = display.lon || location.lon.toString();
+        
+        // Filter out personal names from name and description
+        const nameRaw = display.name || display.Name || display.NAME || null;
+        const name = filterPersonalNames(nameRaw) || 'Christmas Light Display';
+        const address = display.address || display.Address || display.ADDRESS || '';
+        
+        // Also filter personal names from the attributes JSON
+        const allAttributes = { ...display };
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        
+        // Filter personal names from name and description in attributes
+        if (allAttributes.name) {
+          allAttributes.name = filterPersonalNames(allAttributes.name) || allAttributes.name;
+        }
+        if (allAttributes.Name) {
+          allAttributes.Name = filterPersonalNames(allAttributes.Name) || allAttributes.Name;
+        }
+        if (allAttributes.NAME) {
+          allAttributes.NAME = filterPersonalNames(allAttributes.NAME) || allAttributes.NAME;
+        }
+        if (allAttributes.description) {
+          allAttributes.description = filterPersonalNames(allAttributes.description) || allAttributes.description;
+        }
+        if (allAttributes.Description) {
+          allAttributes.Description = filterPersonalNames(allAttributes.Description) || allAttributes.Description;
+        }
+        if (allAttributes.DESCRIPTION) {
+          allAttributes.DESCRIPTION = filterPersonalNames(allAttributes.DESCRIPTION) || allAttributes.DESCRIPTION;
+        }
+        
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Quirky & Fun',
+          (location.confidence || 'N/A').toString(),
+          'ORLANDO_CHRISTMAS_LIGHTS',
+          `${name}${address ? ` - ${address}` : ''}`,
+          displayLat,
+          displayLon,
+          distance,
+          'Christmas Light Display Point',
+          '',
+          '',
+          '',
+          attributesJson,
+          'Quirky & Fun'
         ]);
       });
     } else if (key === 'wri_aqueduct_water_risk_baseline_monthly_all' && Array.isArray(value)) {

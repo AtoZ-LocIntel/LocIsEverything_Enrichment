@@ -155,9 +155,9 @@ function App() {
 
   const handleBackToSearch = () => {
     setViewMode('config');
-    // Restore scroll position after a brief delay to ensure the view has rendered
+    // Scroll to top of homepage after a brief delay to ensure the view has rendered
     setTimeout(() => {
-      window.scrollTo(0, savedScrollPosition);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
   };
 

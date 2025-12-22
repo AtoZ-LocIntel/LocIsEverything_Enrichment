@@ -440,6 +440,34 @@ function getUniqueColorForPointFeature(poiKey: string, defaultColor: string): st
   return randomColor;
 }
 
+/**
+ * Filter out personal names from display text
+ * Removes patterns like "Home of [Name]" or similar personal information
+ */
+function filterPersonalNames(text: string | null | undefined): string | null {
+  if (!text || typeof text !== 'string') {
+    return text || null;
+  }
+  
+  // Remove patterns like "Home of [Name]" or "Home of [Name] & [Name]"
+  const personalNamePatterns = [
+    /^Home\s+of\s+[^,]+(?:,\s*[^,]+)*/i, // "Home of Name" or "Home of Name & Name"
+    /^Home\s+of\s+[^&]+(?:\s*&\s*[^&]+)*/i, // "Home of Name & Name"
+  ];
+  
+  let filtered = text;
+  for (const pattern of personalNamePatterns) {
+    filtered = filtered.replace(pattern, '').trim();
+  }
+  
+  // If the entire text was just a personal name pattern, return null
+  if (!filtered || filtered.length === 0) {
+    return null;
+  }
+  
+  return filtered;
+}
+
 // Create custom POI marker icons
 const createPOIIcon = (emoji: string, color: string) => {
   return L.divIcon({
@@ -711,6 +739,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'sc_game_zones_all' || // Skip SC Game Zones array (handled separately for map drawing)
     key === 'sc_coastal_ponds_all' || // Skip SC Coastal Ponds array (handled separately for map drawing)
     key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately for map drawing)
+    key === 'sc_coastal_well_inventory_all' || // Skip SC Coastal Well Inventory array (handled separately for map drawing)
+    key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
     key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately for map drawing)
     key === 'nps_national_parks_all' || // Skip NPS National Parks array (handled separately for map drawing)
@@ -21027,7 +21057,47 @@ const MapView: React.FC<MapViewProps> = ({
           'acs_specific_language_spoken_by_english_ability_state_all', 'acs_specific_language_spoken_by_english_ability_county_all', 'acs_specific_language_spoken_by_english_ability_tract_all',
           'acs_travel_time_to_work_v2_state_all', 'acs_travel_time_to_work_v2_county_all', 'acs_travel_time_to_work_v2_tract_all',
           'acs_vehicle_availability_v2_state_all', 'acs_vehicle_availability_v2_county_all', 'acs_vehicle_availability_v2_tract_all',
-          'acs_youth_activity_v2_state_all', 'acs_youth_activity_v2_county_all', 'acs_youth_activity_v2_tract_all'
+          'acs_youth_activity_v2_state_all', 'acs_youth_activity_v2_county_all', 'acs_youth_activity_v2_tract_all',
+          // Census 2020 DHC Age and Sex - Standard Boundaries
+          'acs_census_2020_dhc_age_and_sex_nation_all', 'acs_census_2020_dhc_age_and_sex_state_all', 'acs_census_2020_dhc_age_and_sex_county_all', 'acs_census_2020_dhc_age_and_sex_census_tract_all', 'acs_census_2020_dhc_age_and_sex_block_group_all',
+          // Census 2020 DHC Age and Sex - Legislative Boundaries
+          'acs_census_2020_dhc_age_and_sex_legislative_nation_all', 'acs_census_2020_dhc_age_and_sex_legislative_congressional_district_all', 'acs_census_2020_dhc_age_and_sex_legislative_state_legislative_districts_upper_all', 'acs_census_2020_dhc_age_and_sex_legislative_state_legislative_districts_lower_all',
+          // Census 2020 DHC Age and Sex - Metro Boundaries
+          'acs_census_2020_dhc_age_and_sex_metro_nation_all', 'acs_census_2020_dhc_age_and_sex_metro_combined_statistical_area_all', 'acs_census_2020_dhc_age_and_sex_metro_core_based_statistical_area_all', 'acs_census_2020_dhc_age_and_sex_metro_metropolitan_division_all',
+          // Census 2020 DHC Age and Sex - Place Boundaries
+          'acs_census_2020_dhc_age_and_sex_place_nation_all', 'acs_census_2020_dhc_age_and_sex_place_consolidated_city_all', 'acs_census_2020_dhc_age_and_sex_place_census_designated_place_all', 'acs_census_2020_dhc_age_and_sex_place_incorporated_place_all',
+          // Census 2020 DHC Age and Sex - School Boundaries
+          'acs_census_2020_dhc_age_and_sex_school_nation_all', 'acs_census_2020_dhc_age_and_sex_school_district_unified_all', 'acs_census_2020_dhc_age_and_sex_school_district_elementary_all', 'acs_census_2020_dhc_age_and_sex_school_district_secondary_all',
+          // Census 2020 DHC Age and Sex - Tribal Boundaries
+          'acs_census_2020_dhc_age_and_sex_tribal_nation_all', 'acs_census_2020_dhc_age_and_sex_tribal_subdivision_all', 'acs_census_2020_dhc_age_and_sex_tribal_census_tract_all', 'acs_census_2020_dhc_age_and_sex_tribal_block_group_all', 'acs_census_2020_dhc_age_and_sex_tribal_alaska_native_regional_corporation_all', 'acs_census_2020_dhc_age_and_sex_tribal_american_indian_alaska_native_native_hawaiian_area_all',
+          // Census 2020 DHC Blocks
+          'acs_census_2020_dhc_blocks_nation_all', 'acs_census_2020_dhc_blocks_block_all',
+          // Census 2020 DHC Group Quarters - Standard Boundaries
+          'acs_census_2020_dhc_group_quarters_nation_all', 'acs_census_2020_dhc_group_quarters_state_all', 'acs_census_2020_dhc_group_quarters_county_all', 'acs_census_2020_dhc_group_quarters_census_tract_all', 'acs_census_2020_dhc_group_quarters_block_group_all',
+          // Census 2020 DHC Group Quarters - Legislative Boundaries
+          'acs_census_2020_dhc_group_quarters_legislative_nation_all', 'acs_census_2020_dhc_group_quarters_legislative_congressional_district_all', 'acs_census_2020_dhc_group_quarters_legislative_state_legislative_districts_upper_all', 'acs_census_2020_dhc_group_quarters_legislative_state_legislative_districts_lower_all',
+          // Census 2020 DHC Group Quarters - Metro Boundaries
+          'acs_census_2020_dhc_group_quarters_metro_nation_all', 'acs_census_2020_dhc_group_quarters_metro_combined_statistical_area_all', 'acs_census_2020_dhc_group_quarters_metro_core_based_statistical_area_all', 'acs_census_2020_dhc_group_quarters_metro_metropolitan_division_all',
+          // Census 2020 DHC Group Quarters - Place Boundaries
+          'acs_census_2020_dhc_group_quarters_place_nation_all', 'acs_census_2020_dhc_group_quarters_place_consolidated_city_all', 'acs_census_2020_dhc_group_quarters_place_census_designated_place_all', 'acs_census_2020_dhc_group_quarters_place_incorporated_place_all',
+          // Census 2020 DHC Group Quarters - School Boundaries
+          'acs_census_2020_dhc_group_quarters_school_nation_all', 'acs_census_2020_dhc_group_quarters_school_district_unified_all', 'acs_census_2020_dhc_group_quarters_school_district_elementary_all', 'acs_census_2020_dhc_group_quarters_school_district_secondary_all',
+          // Census 2020 DHC Group Quarters - Tribal Boundaries
+          'acs_census_2020_dhc_group_quarters_tribal_nation_all', 'acs_census_2020_dhc_group_quarters_tribal_subdivision_all', 'acs_census_2020_dhc_group_quarters_tribal_census_tract_all', 'acs_census_2020_dhc_group_quarters_tribal_block_group_all', 'acs_census_2020_dhc_group_quarters_tribal_alaska_native_regional_corporation_all', 'acs_census_2020_dhc_group_quarters_tribal_american_indian_alaska_native_native_hawaiian_area_all',
+          // Census 2020 DHC Households - Standard Boundaries
+          'acs_census_2020_dhc_households_nation_all', 'acs_census_2020_dhc_households_state_all', 'acs_census_2020_dhc_households_county_all', 'acs_census_2020_dhc_households_census_tract_all', 'acs_census_2020_dhc_households_block_group_all',
+          // Census 2020 DHC Households - Legislative Boundaries
+          'acs_census_2020_dhc_households_legislative_nation_all', 'acs_census_2020_dhc_households_legislative_congressional_district_all', 'acs_census_2020_dhc_households_legislative_state_legislative_districts_upper_all', 'acs_census_2020_dhc_households_legislative_state_legislative_districts_lower_all',
+          // Census 2020 DHC Households - Metro Boundaries
+          'acs_census_2020_dhc_households_metro_nation_all', 'acs_census_2020_dhc_households_metro_combined_statistical_area_all', 'acs_census_2020_dhc_households_metro_core_based_statistical_area_all', 'acs_census_2020_dhc_households_metro_metropolitan_division_all',
+          // Census 2020 DHC Households - Place Boundaries
+          'acs_census_2020_dhc_households_place_nation_all', 'acs_census_2020_dhc_households_place_consolidated_city_all', 'acs_census_2020_dhc_households_place_census_designated_place_all', 'acs_census_2020_dhc_households_place_incorporated_place_all',
+          // Census 2020 DHC Households - School Boundaries
+          'acs_census_2020_dhc_households_school_nation_all', 'acs_census_2020_dhc_households_school_district_unified_all', 'acs_census_2020_dhc_households_school_district_elementary_all', 'acs_census_2020_dhc_households_school_district_secondary_all',
+          // Census 2020 DHC Households - Tribal Boundaries
+          'acs_census_2020_dhc_households_tribal_nation_all', 'acs_census_2020_dhc_households_tribal_subdivision_all', 'acs_census_2020_dhc_households_tribal_census_tract_all', 'acs_census_2020_dhc_households_tribal_block_group_all', 'acs_census_2020_dhc_households_tribal_alaska_native_regional_corporation_all', 'acs_census_2020_dhc_households_tribal_american_indian_alaska_native_native_hawaiian_area_all',
+          // Census 2020 DHC Housing Units - Standard Boundaries
+          'acs_census_2020_dhc_housing_units_nation_all', 'acs_census_2020_dhc_housing_units_state_all', 'acs_census_2020_dhc_housing_units_county_all', 'acs_census_2020_dhc_housing_units_census_tract_all', 'acs_census_2020_dhc_housing_units_block_group_all'
         ];
 
         acsLayerKeys.forEach((layerKey) => {
@@ -21036,6 +21106,17 @@ const MapView: React.FC<MapViewProps> = ({
             let featureCount = 0;
 
             enrichments[layerKey].forEach((feature: any) => {
+              // Check if this is a Nation or State layer (no geometry or empty geometry is OK for these)
+              const isNationOrStateLayer = layerKey.includes('_nation_all') || layerKey.includes('_state_all');
+              
+              // For Nation/State layers, if geometry is missing or empty, still count it but don't draw
+              // For other layers, require geometry with rings
+              if (isNationOrStateLayer && (!feature.geometry || !feature.geometry.rings || feature.geometry.rings.length === 0)) {
+                // Nation/State layer without geometry - still count it for legend but don't draw
+                featureCount++;
+                return;
+              }
+              
               if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
                 try {
                   const rings = feature.geometry.rings;
@@ -21048,6 +21129,10 @@ const MapView: React.FC<MapViewProps> = ({
 
                     if (latlngsArray[0].length < 3) {
                       console.warn(`ACS ${layerName} outer ring has less than 3 coordinates, skipping`);
+                      // Still count for Nation/State layers even if geometry is invalid
+                      if (isNationOrStateLayer) {
+                        featureCount++;
+                      }
                       return;
                     }
 
@@ -21106,6 +21191,10 @@ const MapView: React.FC<MapViewProps> = ({
                   }
                 } catch (error) {
                   console.error(`Error drawing ACS ${layerName} polygon:`, error);
+                  // Still count for Nation/State layers even if drawing fails
+                  if (isNationOrStateLayer) {
+                    featureCount++;
+                  }
                 }
               }
             });
@@ -21626,6 +21715,237 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing SC Lakes and Reservoirs:', error);
+      }
+
+      // Draw SC Coastal Well Inventory as point markers on the map
+      try {
+        if (enrichments.sc_coastal_well_inventory_all && Array.isArray(enrichments.sc_coastal_well_inventory_all)) {
+          let wellCount = 0;
+          enrichments.sc_coastal_well_inventory_all.forEach((well: any) => {
+            if (well.lat && well.lon) {
+              try {
+                const wellLat = well.lat;
+                const wellLon = well.lon;
+                const wellId = well.wellId || well.WELL_ID || well.Well_Id || 'Unknown';
+                const owner = well.owner || well.OWNER || well.Owner || '';
+                const wellUse = well.wellUse || well.WELL_USE || well.Well_Use || '';
+                const county = well.county || well.COUNTY || well.County || '';
+                const depthD = well.depthD !== null && well.depthD !== undefined ? well.depthD : null;
+                const yieldVal = well.yield !== null && well.yield !== undefined ? well.yield : null;
+                
+                // Create a custom icon for wells
+                const icon = createPOIIcon('💧', '#3b82f6'); // Blue icon for wells
+                
+                const marker = L.marker([wellLat, wellLon], { icon });
+                
+                // Build popup content with well attributes
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      💧 SC Coastal Well
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Well ID:</strong> ${wellId}</div>
+                      ${owner ? `<div><strong>Owner:</strong> ${owner}</div>` : ''}
+                      ${wellUse ? `<div><strong>Well Use:</strong> ${wellUse}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${depthD !== null ? `<div><strong>Depth (ft):</strong> ${depthD.toLocaleString()}</div>` : ''}
+                      ${yieldVal !== null ? `<div><strong>Yield (gpm):</strong> ${yieldVal.toLocaleString()}</div>` : ''}
+                      ${well.drillYr ? `<div><strong>Drill Year:</strong> ${well.drillYr}</div>` : ''}
+                      ${well.distance_miles !== null && well.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${well.distance_miles.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      <div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">All Attributes:</div>
+                `;
+                
+                // Add all well attributes (excluding internal fields)
+                const excludeFields = ['wellId', 'owner', 'wellUse', 'county', 'depthD', 'yield', 'drillYr', 'lat', 'lon', 'distance_miles', 'attributes', 'objectid1', 'objectid', 'scGrid', 'latDDNAD83', 'lonDDNAD83', 'topo', 'elev', 'depthC', 'diam1', 'diam2', 'ohCas', 'screenT', 'screenB', 'drillMo', 'yieldYr', 'gLogs', 'dLogs', 'pTest', 'chem', 'scgsSamples', 'wlQ', 'wlFt', 'wlYr', 'driller', 'remarks', 'globalId', 'dLogsText', 'pTestText'];
+                Object.entries(well).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                // Also include any nested attributes object
+                if (well.attributes && typeof well.attributes === 'object') {
+                  Object.entries(well.attributes).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                }
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                
+                // Extend bounds to include this well
+                bounds.extend([wellLat, wellLon]);
+                wellCount++;
+              } catch (error) {
+                console.error('Error drawing SC Coastal Well marker:', error);
+              }
+            }
+          });
+          
+          // Add to legend
+          if (wellCount > 0) {
+            if (!legendAccumulator['sc_coastal_well_inventory']) {
+              legendAccumulator['sc_coastal_well_inventory'] = {
+                icon: '💧',
+                color: '#3b82f6',
+                title: 'SC Coastal Well Inventory',
+                count: 0,
+              };
+            }
+            legendAccumulator['sc_coastal_well_inventory'].count += wellCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing SC Coastal Well Inventory:', error);
+      }
+
+      // Draw Orlando Christmas Light Displays as point markers on the map
+      try {
+        if (enrichments.orlando_christmas_lights_all && Array.isArray(enrichments.orlando_christmas_lights_all)) {
+          let displayCount = 0;
+          enrichments.orlando_christmas_lights_all.forEach((display: any) => {
+            if (display.lat && display.lon) {
+              try {
+                const displayLat = display.lat;
+                const displayLon = display.lon;
+                
+                // Filter out personal names from name and description
+                const nameRaw = display.name || display.Name || display.NAME || null;
+                const descriptionRaw = display.description || display.Description || display.DESCRIPTION || null;
+                const name = filterPersonalNames(nameRaw) || 'Christmas Light Display';
+                const description = filterPersonalNames(descriptionRaw) || '';
+                
+                const address = display.address || display.Address || display.ADDRESS || '';
+                const dates = display.dates || display.Dates || display.DATES || '';
+                const times = display.times || display.Times || display.TIMES || '';
+                const website = display.website || display.Website || display.WEBSITE || '';
+                
+                // Create a custom icon for Christmas lights
+                const icon = createPOIIcon('✨', '#ef4444'); // Red color with sparkles emoji for Christmas lights
+                
+                const marker = L.marker([displayLat, displayLon], { icon });
+                
+                // Build popup content with display information
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🎄 ${name}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${description ? `<div style="margin-top: 6px;"><strong>Description:</strong> ${description}</div>` : ''}
+                      ${dates ? `<div><strong>Dates:</strong> ${dates}</div>` : ''}
+                      ${times ? `<div><strong>Times:</strong> ${times}</div>` : ''}
+                      ${website ? `<div style="margin-top: 6px;"><a href="${website}" target="_blank" style="color: #3b82f6; text-decoration: underline;">Visit Website</a></div>` : ''}
+                      ${display.distance_miles !== null && display.distance_miles !== undefined ? `<div style="margin-top: 6px;"><strong>Distance:</strong> ${display.distance_miles.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      <div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">All Attributes:</div>
+                `;
+                
+                // Add all display attributes (excluding internal fields)
+                const excludeFields = ['name', 'address', 'description', 'dates', 'times', 'website', 'lat', 'lon', 'distance_miles', 'attributes', 'objectid'];
+                Object.entries(display).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                // Also include any nested attributes object
+                if (display.attributes && typeof display.attributes === 'object') {
+                  Object.entries(display.attributes).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                }
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                
+                // Extend bounds to include this display
+                bounds.extend([displayLat, displayLon]);
+                displayCount++;
+              } catch (error) {
+                console.error('Error drawing Orlando Christmas Light Display marker:', error);
+              }
+            }
+          });
+          
+          // Add to legend
+          if (displayCount > 0) {
+            if (!legendAccumulator['orlando_christmas_lights']) {
+              legendAccumulator['orlando_christmas_lights'] = {
+                icon: '✨',
+                color: '#ef4444',
+                title: 'Orlando Christmas Light Displays',
+                count: 0,
+              };
+            }
+            legendAccumulator['orlando_christmas_lights'].count += displayCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Orlando Christmas Light Displays:', error);
       }
 
       // Draw Guam Villages as polygons on the map
@@ -29250,6 +29570,11 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
         if (key.includes('tiger_census2020_cbsa_') && key.includes('_nearby_features')) {
+          return;
+        }
+
+        // Skip Orlando Christmas Lights - handled separately with custom icons
+        if (key === 'orlando_christmas_lights_all') {
           return;
         }
 

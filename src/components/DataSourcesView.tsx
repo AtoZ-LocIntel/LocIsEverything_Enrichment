@@ -1852,6 +1852,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://www.openbrewerydb.org/"
+        },
+        {
+          name: "Orlando Christmas Light Displays",
+          description: "Orlando area Christmas Light Displays (proximity queries up to 50 miles)",
+          coverage: "Orlando, Florida Area",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services5.arcgis.com/hbtBppF7t3PpouVf/arcgis/rest/services/Holiday_Lights_WFL1/FeatureServer/2"
         }
       ]
     },
@@ -3163,6 +3171,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/acgZYxoN5Oj8pDLa/ArcGIS/rest/services/Lakes_and_Reservoirs/FeatureServer/0"
+        },
+        {
+          name: "SC Coastal Well Inventory",
+          description: "South Carolina Department of Natural Resources - Coastal Plain Well Inventory (proximity queries up to 10 miles)",
+          coverage: "South Carolina Coastal Plain",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/acgZYxoN5Oj8pDLa/ArcGIS/rest/services/SCDNR_Coastal_Plain_Well_Inventory/FeatureServer/0"
         }
       ]
     },
@@ -3789,6 +3805,166 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Youth_Activity_Boundaries/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Age and Sex",
+          description: "Census 2020 DHC Age and Sex boundaries (Nation, State, County, Census Tract, Block Group) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Age_and_Sex/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Age and Sex Legislative",
+          description: "Census 2020 DHC Age and Sex Legislative boundaries (Nation, Congressional District, State Legislative Districts Upper, State Legislative Districts Lower) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Age_and_Sex_Legislative/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Age and Sex Metro",
+          description: "Census 2020 DHC Age and Sex Metro boundaries (Nation, Combined Statistical Area, Core Based Statistical Area, Metropolitan Division) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Age_and_Sex_Metro/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Age and Sex Place",
+          description: "Census 2020 DHC Age and Sex Place boundaries (Nation, Consolidated City, Census Designated Place, Incorporated Place) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Age_and_Sex_Place/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Age and Sex School",
+          description: "Census 2020 DHC Age and Sex School boundaries (Nation, School District Unified, School District Elementary, School District Secondary) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Age_and_Sex_School/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Age and Sex Tribal",
+          description: "Census 2020 DHC Age and Sex Tribal boundaries (Nation, Tribal Subdivision, Tribal Census Tract, Tribal Block Group, Alaska Native Regional Corporation, American Indian Alaska Native Native Hawaiian Area) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Age_and_Sex_Tribal/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Blocks",
+          description: "Census 2020 DHC Blocks boundaries (Nation, Block) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Blocks/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Group Quarters",
+          description: "Census 2020 DHC Group Quarters boundaries (Nation, State, County, Census Tract, Block Group) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Group_Quarters/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Group Quarters Legislative",
+          description: "Census 2020 DHC Group Quarters Legislative boundaries (Nation, Congressional District, State Legislative Districts Upper, State Legislative Districts Lower) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Group_Quarters_Legislative/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Group Quarters Metro",
+          description: "Census 2020 DHC Group Quarters Metro boundaries (Nation, Combined Statistical Area, Core Based Statistical Area, Metropolitan Division) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Group_Quarters_Metro/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Group Quarters Place",
+          description: "Census 2020 DHC Group Quarters Place boundaries (Nation, Consolidated City, Census Designated Place, Incorporated Place) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Group_Quarters_Place/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Group Quarters School",
+          description: "Census 2020 DHC Group Quarters School boundaries (Nation, School District Unified, School District Elementary, School District Secondary) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Group_Quarters_School/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Group Quarters Tribal",
+          description: "Census 2020 DHC Group Quarters Tribal boundaries (Nation, Tribal Subdivision, Tribal Census Tract, Tribal Block Group, Alaska Native Regional Corporation, American Indian Alaska Native Native Hawaiian Area) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Group_Quarters_Tribal/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Households",
+          description: "Census 2020 DHC Households boundaries (Nation, State, County, Census Tract, Block Group) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Households/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Households Legislative",
+          description: "Census 2020 DHC Households Legislative boundaries (Nation, Congressional District, State Legislative Districts Upper, State Legislative Districts Lower) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Households_Legislative/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Households Metro",
+          description: "Census 2020 DHC Households Metro boundaries (Nation, Combined Statistical Area, Core Based Statistical Area, Metropolitan Division) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Households_Metro/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Households Place",
+          description: "Census 2020 DHC Households Place boundaries (Nation, Consolidated City, Census Designated Place, Incorporated Place) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Households_Place/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Households School",
+          description: "Census 2020 DHC Households School boundaries (Nation, School District Unified, School District Elementary, School District Secondary) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Households_School/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Households Tribal",
+          description: "Census 2020 DHC Households Tribal boundaries (Nation, Tribal Subdivision, Tribal Census Tract, Tribal Block Group, Alaska Native Regional Corporation, American Indian Alaska Native Native Hawaiian Area) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Households_Tribal/FeatureServer"
+        },
+        {
+          name: "Census 2020 DHC Housing Units",
+          description: "Census 2020 DHC Housing Units boundaries (Nation, State, County, Census Tract, Block Group) for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Census_2020_DHC_Housing_Units/FeatureServer"
         }
       ]
     },
