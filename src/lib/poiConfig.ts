@@ -100,6 +100,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'WRI.webp'
   },
   {
+    id: 'acs',
+    title: 'American Community Survey',
+    description: 'U.S. Census Bureau American Community Survey demographic and economic data',
+    icon: 'ACS.webp'
+  },
+  {
     id: 'eu',
     title: 'European Union Data',
     description: 'European Union geographic and statistical data',

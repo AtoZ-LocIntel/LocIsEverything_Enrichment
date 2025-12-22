@@ -20578,6 +20578,9 @@ const MapView: React.FC<MapViewProps> = ({
       try {
         if (enrichments.wri_aqueduct_water_risk_baseline_annual_all && Array.isArray(enrichments.wri_aqueduct_water_risk_baseline_annual_all)) {
           let featureCount = 0;
+          // Track bws_label values for legend ranges
+          const bwsLabelCounts: Record<string, { count: number; color: string }> = {};
+          
           enrichments.wri_aqueduct_water_risk_baseline_annual_all.forEach((feature: any) => {
             if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
               try {
@@ -20596,7 +20599,55 @@ const MapView: React.FC<MapViewProps> = ({
                     return;
                   }
                   
-                  const color = '#0891b2'; // Darker cyan for baseline annual
+                  // Color code by bws_label (Baseline Water Stress Label) - light to dark based on risk level
+                  const bwsLabel = feature.bws_label || feature.BWS_LABEL || feature.bwsLabel || '';
+                  const bwsLabelLower = String(bwsLabel).toLowerCase().trim();
+                  
+                  // Default color (if bws_label is not available)
+                  let color = '#0891b2'; // Default darker cyan
+                  let fillColor = '#0891b2';
+                  let bwsLabelDisplay = 'Unknown';
+                  
+                  // Color mapping: light (low risk) to dark (high risk)
+                  if (bwsLabelLower.includes('extremely high') || bwsLabelLower.includes('extreme')) {
+                    color = '#164e63'; // Darkest teal/cyan for extremely high
+                    fillColor = '#164e63';
+                    bwsLabelDisplay = 'Extremely High';
+                  } else if (bwsLabelLower.includes('high') && !bwsLabelLower.includes('medium')) {
+                    color = '#0e7490'; // Dark teal for high
+                    fillColor = '#0e7490';
+                    bwsLabelDisplay = 'High';
+                  } else if (bwsLabelLower.includes('medium-high') || bwsLabelLower.includes('medium high')) {
+                    color = '#0891b2'; // Medium-dark teal for medium-high
+                    fillColor = '#0891b2';
+                    bwsLabelDisplay = 'Medium-High';
+                  } else if (bwsLabelLower.includes('medium') && !bwsLabelLower.includes('low') && !bwsLabelLower.includes('high')) {
+                    color = '#06b6d4'; // Medium cyan for medium
+                    fillColor = '#06b6d4';
+                    bwsLabelDisplay = 'Medium';
+                  } else if (bwsLabelLower.includes('low-medium') || bwsLabelLower.includes('low medium')) {
+                    color = '#22d3ee'; // Light cyan for low-medium
+                    fillColor = '#22d3ee';
+                    bwsLabelDisplay = 'Low-Medium';
+                  } else if (bwsLabelLower.includes('low') && !bwsLabelLower.includes('medium') && !bwsLabelLower.includes('lowest') && !bwsLabelLower.includes('very low')) {
+                    color = '#67e8f9'; // Light cyan for low
+                    fillColor = '#67e8f9';
+                    bwsLabelDisplay = 'Low';
+                  } else if (bwsLabelLower.includes('lowest') || bwsLabelLower.includes('very low')) {
+                    color = '#cffafe'; // Very light cyan for lowest
+                    fillColor = '#cffafe';
+                    bwsLabelDisplay = bwsLabelLower.includes('very low') ? 'Very Low' : 'Lowest';
+                  } else if (bwsLabel) {
+                    // Use original label if it doesn't match any pattern
+                    bwsLabelDisplay = bwsLabel;
+                  }
+                  
+                  // Track bws_label for legend
+                  if (!bwsLabelCounts[bwsLabelDisplay]) {
+                    bwsLabelCounts[bwsLabelDisplay] = { count: 0, color: fillColor };
+                  }
+                  bwsLabelCounts[bwsLabelDisplay].count++;
+                  
                   const weight = 2;
                   const opacity = 0.8;
                   
@@ -20605,8 +20656,8 @@ const MapView: React.FC<MapViewProps> = ({
                     color: color,
                     weight: weight,
                     opacity: opacity,
-                    fillColor: color,
-                    fillOpacity: 0.2
+                    fillColor: fillColor,
+                    fillOpacity: 0.3
                   });
                   
                   const isContaining = feature.isContaining || false;
@@ -20633,6 +20684,7 @@ const MapView: React.FC<MapViewProps> = ({
                         🌊 WRI Aqueduct Water Risk - Baseline Annual
                       </h3>
                       <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${bwsLabelDisplay !== 'Unknown' ? `<div style="margin-bottom: 4px;"><strong>Water Stress Level:</strong> <span style="color: ${fillColor}; font-weight: 600;">${bwsLabelDisplay}</span></div>` : ''}
                         ${isContaining ? '<div style="color: #0891b2; font-weight: 600;">✓ Location is within this feature</div>' : ''}
                         ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
                         ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
@@ -20659,13 +20711,40 @@ const MapView: React.FC<MapViewProps> = ({
           });
           
           if (featureCount > 0) {
+            // Create ranges array from bws_label counts, ordered from low to high risk
+            const riskOrder = ['Lowest', 'Very Low', 'Low', 'Low-Medium', 'Low Medium', 'Medium', 'Medium-High', 'Medium High', 'High', 'Extremely High', 'Extreme', 'Unknown'];
+            const ranges = riskOrder
+              .filter(label => bwsLabelCounts[label])
+              .map(label => ({
+                label: label,
+                color: bwsLabelCounts[label].color,
+                count: bwsLabelCounts[label].count
+              }));
+            
+            // If no ranges found, add all unique labels
+            if (ranges.length === 0) {
+              Object.keys(bwsLabelCounts).forEach(label => {
+                ranges.push({
+                  label: label,
+                  color: bwsLabelCounts[label].color,
+                  count: bwsLabelCounts[label].count
+                });
+              });
+            }
+            
             if (!legendAccumulator['wri_aqueduct_water_risk_baseline_annual']) {
               legendAccumulator['wri_aqueduct_water_risk_baseline_annual'] = {
                 icon: '🌊',
                 color: '#0891b2',
                 title: 'WRI Aqueduct Water Risk - Baseline Annual',
                 count: 0,
+                ranges: ranges.length > 0 ? ranges : undefined
               };
+            } else {
+              // Update ranges if they exist
+              if (ranges.length > 0) {
+                legendAccumulator['wri_aqueduct_water_risk_baseline_annual'].ranges = ranges;
+              }
             }
             legendAccumulator['wri_aqueduct_water_risk_baseline_annual'].count += featureCount;
           }
@@ -20678,6 +20757,8 @@ const MapView: React.FC<MapViewProps> = ({
       try {
         if (enrichments.wri_aqueduct_water_risk_baseline_monthly_all && Array.isArray(enrichments.wri_aqueduct_water_risk_baseline_monthly_all)) {
           let featureCount = 0;
+          const bws01LabelCounts: Record<string, { color: string; count: number }> = {};
+          
           enrichments.wri_aqueduct_water_risk_baseline_monthly_all.forEach((feature: any) => {
             if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
               try {
@@ -20696,7 +20777,55 @@ const MapView: React.FC<MapViewProps> = ({
                     return;
                   }
                   
-                  const color = '#0e7490'; // Darkest cyan for baseline monthly
+                  // Color code by bws_01_label (Baseline Water Stress Label for January) - light to dark based on risk level
+                  const bws01Label = feature.bws_01_label || feature.BWS_01_LABEL || feature.bws01Label || '';
+                  const bws01LabelLower = String(bws01Label).toLowerCase().trim();
+                  
+                  // Default color (if bws_01_label is not available)
+                  let color = '#0e7490'; // Default darkest cyan
+                  let fillColor = '#0e7490';
+                  let bws01LabelDisplay = 'Unknown';
+                  
+                  // Color mapping: light (low risk) to dark (high risk) - same as Annual
+                  if (bws01LabelLower.includes('extremely high') || bws01LabelLower.includes('extreme')) {
+                    color = '#164e63'; // Darkest teal/cyan for extremely high
+                    fillColor = '#164e63';
+                    bws01LabelDisplay = 'Extremely High';
+                  } else if (bws01LabelLower.includes('high') && !bws01LabelLower.includes('medium')) {
+                    color = '#0e7490'; // Dark teal for high
+                    fillColor = '#0e7490';
+                    bws01LabelDisplay = 'High';
+                  } else if (bws01LabelLower.includes('medium-high') || bws01LabelLower.includes('medium high')) {
+                    color = '#0891b2'; // Medium-dark teal for medium-high
+                    fillColor = '#0891b2';
+                    bws01LabelDisplay = 'Medium-High';
+                  } else if (bws01LabelLower.includes('medium') && !bws01LabelLower.includes('low') && !bws01LabelLower.includes('high')) {
+                    color = '#06b6d4'; // Medium cyan for medium
+                    fillColor = '#06b6d4';
+                    bws01LabelDisplay = 'Medium';
+                  } else if (bws01LabelLower.includes('low-medium') || bws01LabelLower.includes('low medium')) {
+                    color = '#22d3ee'; // Light cyan for low-medium
+                    fillColor = '#22d3ee';
+                    bws01LabelDisplay = 'Low-Medium';
+                  } else if (bws01LabelLower.includes('low') && !bws01LabelLower.includes('medium') && !bws01LabelLower.includes('lowest') && !bws01LabelLower.includes('very low')) {
+                    color = '#67e8f9'; // Light cyan for low
+                    fillColor = '#67e8f9';
+                    bws01LabelDisplay = 'Low';
+                  } else if (bws01LabelLower.includes('lowest') || bws01LabelLower.includes('very low')) {
+                    color = '#cffafe'; // Very light cyan for lowest
+                    fillColor = '#cffafe';
+                    bws01LabelDisplay = bws01LabelLower.includes('very low') ? 'Very Low' : 'Lowest';
+                  } else if (bws01Label) {
+                    // Use original label if it doesn't match any pattern
+                    bws01LabelDisplay = bws01Label;
+                  }
+                  
+                  // Track bws_01_label for legend
+                  if (!bws01LabelCounts[bws01LabelDisplay]) {
+                    bws01LabelCounts[bws01LabelDisplay] = { count: 0, color: fillColor };
+                  }
+                  bws01LabelCounts[bws01LabelDisplay].count++;
+                  
                   const weight = 2;
                   const opacity = 0.8;
                   
@@ -20705,8 +20834,8 @@ const MapView: React.FC<MapViewProps> = ({
                     color: color,
                     weight: weight,
                     opacity: opacity,
-                    fillColor: color,
-                    fillOpacity: 0.2
+                    fillColor: fillColor,
+                    fillOpacity: 0.3
                   });
                   
                   const isContaining = feature.isContaining || false;
@@ -20733,6 +20862,7 @@ const MapView: React.FC<MapViewProps> = ({
                         🌊 WRI Aqueduct Water Risk - Baseline Monthly
                       </h3>
                       <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${bws01LabelDisplay !== 'Unknown' ? `<div style="margin-bottom: 4px;"><strong>Water Stress Level (January):</strong> <span style="color: ${fillColor}; font-weight: 600;">${bws01LabelDisplay}</span></div>` : ''}
                         ${isContaining ? '<div style="color: #0e7490; font-weight: 600;">✓ Location is within this feature</div>' : ''}
                         ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
                         ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
@@ -20759,13 +20889,52 @@ const MapView: React.FC<MapViewProps> = ({
           });
           
           if (featureCount > 0) {
+            // Create ranges array from bws_01_label counts, ordered from low to high risk
+            const riskOrder = ['Lowest', 'Very Low', 'Low', 'Low-Medium', 'Low Medium', 'Medium', 'Medium-High', 'Medium High', 'High', 'Extremely High', 'Extreme', 'Unknown'];
+            const ranges = riskOrder
+              .filter(label => bws01LabelCounts[label])
+              .map(label => ({
+                label: label,
+                color: bws01LabelCounts[label].color,
+                count: bws01LabelCounts[label].count
+              }));
+            
+            // If no ranges found in standard order, add all unique labels
+            if (ranges.length === 0) {
+              Object.keys(bws01LabelCounts).forEach(label => {
+                ranges.push({
+                  label: label,
+                  color: bws01LabelCounts[label].color,
+                  count: bws01LabelCounts[label].count
+                });
+              });
+            }
+            
             if (!legendAccumulator['wri_aqueduct_water_risk_baseline_monthly']) {
               legendAccumulator['wri_aqueduct_water_risk_baseline_monthly'] = {
                 icon: '🌊',
                 color: '#0e7490',
                 title: 'WRI Aqueduct Water Risk - Baseline Monthly',
                 count: 0,
+                ranges: ranges.length > 0 ? ranges : undefined
               };
+            } else {
+              // Merge ranges if they exist
+              if (ranges.length > 0) {
+                if (legendAccumulator['wri_aqueduct_water_risk_baseline_monthly'].ranges) {
+                  // Merge counts for existing ranges
+                  ranges.forEach(newRange => {
+                    const existingRange = legendAccumulator['wri_aqueduct_water_risk_baseline_monthly'].ranges!.find(r => r.label === newRange.label);
+                    if (existingRange) {
+                      existingRange.count += newRange.count;
+                    } else {
+                      legendAccumulator['wri_aqueduct_water_risk_baseline_monthly'].ranges!.push(newRange);
+                    }
+                  });
+                } else {
+                  legendAccumulator['wri_aqueduct_water_risk_baseline_monthly'].ranges = ranges;
+                }
+              }
             }
             legendAccumulator['wri_aqueduct_water_risk_baseline_monthly'].count += featureCount;
           }
