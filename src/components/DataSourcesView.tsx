@@ -3536,6 +3536,110 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Educational_Attainment_by_Race_by_Sex_Boundaries/FeatureServer"
+        },
+        {
+          name: "Fertility by Age",
+          description: "American Community Survey - Fertility by Age boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Fertility_by_Age_Boundaries/FeatureServer"
+        },
+        {
+          name: "Geographical Mobility",
+          description: "American Community Survey - Geographical Mobility boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Geographical_Mobility_Boundaries/FeatureServer"
+        },
+        {
+          name: "Health Insurance",
+          description: "American Community Survey - Health Insurance boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Health_Insurance_Boundaries/FeatureServer"
+        },
+        {
+          name: "Health Insurance by Age by Race",
+          description: "American Community Survey - Health Insurance by Age by Race boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Health_Insurance_by_Age_by_Race_Boundaries/FeatureServer"
+        },
+        {
+          name: "Highlights Child Well Being",
+          description: "American Community Survey - Highlights Child Well Being boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Highlights_Child_Well_Being_Boundaries/FeatureServer"
+        },
+        {
+          name: "Highlights Emergency Response",
+          description: "American Community Survey - Highlights Emergency Response boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Highlights_Emergency_Response_Boundaries/FeatureServer"
+        },
+        {
+          name: "Highlights Population Housing Basics",
+          description: "American Community Survey - Highlights Population Housing Basics boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Highlights_Population_Housing_Basics_Boundaries/FeatureServer"
+        },
+        {
+          name: "Highlights Senior Well Being",
+          description: "American Community Survey - Highlights Senior Well Being boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Highlights_Senior_Well_Being_Boundaries/FeatureServer"
+        },
+        {
+          name: "Household Income Distribution",
+          description: "American Community Survey - Household Income Distribution boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Household_Income_Distribution_Boundaries/FeatureServer"
+        },
+        {
+          name: "Household Size",
+          description: "American Community Survey - Household Size boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Household_Size_Boundaries/FeatureServer"
+        },
+        {
+          name: "Housing Costs",
+          description: "American Community Survey - Housing Costs boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Housing_Costs_Boundaries/FeatureServer"
+        },
+        {
+          name: "Housing Costs by Age",
+          description: "American Community Survey - Housing Costs by Age boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Housing_Costs_by_Age_Boundaries/FeatureServer"
+        },
+        {
+          name: "Housing Occupancy and Tenure Unit Value",
+          description: "American Community Survey - Housing Occupancy and Tenure Unit Value boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Housing_Occupancy_and_Tenure_Unit_Value_Boundaries/FeatureServer"
         }
       ]
     },

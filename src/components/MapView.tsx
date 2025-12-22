@@ -20994,7 +20994,21 @@ const MapView: React.FC<MapViewProps> = ({
           'acs_vehicle_availability_state_all', 'acs_vehicle_availability_county_all', 'acs_vehicle_availability_tract_all',
           'acs_veteran_status_by_sex_and_age_state_all', 'acs_veteran_status_by_sex_and_age_county_all', 'acs_veteran_status_by_sex_and_age_tract_all',
           'acs_youth_activity_state_all', 'acs_youth_activity_county_all', 'acs_youth_activity_tract_all',
-          'acs_educational_attainment_by_race_by_sex_state_all', 'acs_educational_attainment_by_race_by_sex_county_all', 'acs_educational_attainment_by_race_by_sex_tract_all'
+          'acs_educational_attainment_by_race_by_sex_state_all', 'acs_educational_attainment_by_race_by_sex_county_all', 'acs_educational_attainment_by_race_by_sex_tract_all',
+          // New ACS V2 Services
+          'acs_fertility_by_age_v2_state_all', 'acs_fertility_by_age_v2_county_all', 'acs_fertility_by_age_v2_tract_all',
+          'acs_geographical_mobility_v2_state_all', 'acs_geographical_mobility_v2_county_all', 'acs_geographical_mobility_v2_tract_all',
+          'acs_health_insurance_v2_state_all', 'acs_health_insurance_v2_county_all', 'acs_health_insurance_v2_tract_all',
+          'acs_health_insurance_by_age_by_race_v2_state_all', 'acs_health_insurance_by_age_by_race_v2_county_all', 'acs_health_insurance_by_age_by_race_v2_tract_all',
+          'acs_highlights_child_well_being_v2_state_all', 'acs_highlights_child_well_being_v2_county_all', 'acs_highlights_child_well_being_v2_tract_all',
+          'acs_highlights_emergency_response_v2_state_all', 'acs_highlights_emergency_response_v2_county_all', 'acs_highlights_emergency_response_v2_tract_all',
+          'acs_highlights_population_housing_basics_v2_state_all', 'acs_highlights_population_housing_basics_v2_county_all', 'acs_highlights_population_housing_basics_v2_tract_all',
+          'acs_highlights_senior_well_being_v2_state_all', 'acs_highlights_senior_well_being_v2_county_all', 'acs_highlights_senior_well_being_v2_tract_all',
+          'acs_household_income_distribution_v2_state_all', 'acs_household_income_distribution_v2_county_all', 'acs_household_income_distribution_v2_tract_all',
+          'acs_household_size_v2_state_all', 'acs_household_size_v2_county_all', 'acs_household_size_v2_tract_all',
+          'acs_housing_costs_v2_state_all', 'acs_housing_costs_v2_county_all', 'acs_housing_costs_v2_tract_all',
+          'acs_housing_costs_by_age_v2_state_all', 'acs_housing_costs_by_age_v2_county_all', 'acs_housing_costs_by_age_v2_tract_all',
+          'acs_housing_occupancy_and_tenure_unit_value_v2_state_all', 'acs_housing_occupancy_and_tenure_unit_value_v2_county_all', 'acs_housing_occupancy_and_tenure_unit_value_v2_tract_all'
         ];
 
         acsLayerKeys.forEach((layerKey) => {

@@ -435,6 +435,58 @@ const ACS_SERVICES = {
   educational_attainment_by_race_by_sex: {
     url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Educational_Attainment_by_Race_by_Sex_Boundaries/FeatureServer',
     name: 'Educational Attainment by Race by Sex'
+  },
+  fertility_by_age_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Fertility_by_Age_Boundaries/FeatureServer',
+    name: 'Fertility by Age'
+  },
+  geographical_mobility_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Geographical_Mobility_Boundaries/FeatureServer',
+    name: 'Geographical Mobility'
+  },
+  health_insurance_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Health_Insurance_Boundaries/FeatureServer',
+    name: 'Health Insurance'
+  },
+  health_insurance_by_age_by_race_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Health_Insurance_by_Age_by_Race_Boundaries/FeatureServer',
+    name: 'Health Insurance by Age by Race'
+  },
+  highlights_child_well_being_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Highlights_Child_Well_Being_Boundaries/FeatureServer',
+    name: 'Highlights Child Well Being'
+  },
+  highlights_emergency_response_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Highlights_Emergency_Response_Boundaries/FeatureServer',
+    name: 'Highlights Emergency Response'
+  },
+  highlights_population_housing_basics_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Highlights_Population_Housing_Basics_Boundaries/FeatureServer',
+    name: 'Highlights Population Housing Basics'
+  },
+  highlights_senior_well_being_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Highlights_Senior_Well_Being_Boundaries/FeatureServer',
+    name: 'Highlights Senior Well Being'
+  },
+  household_income_distribution_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Household_Income_Distribution_Boundaries/FeatureServer',
+    name: 'Household Income Distribution'
+  },
+  household_size_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Household_Size_Boundaries/FeatureServer',
+    name: 'Household Size'
+  },
+  housing_costs_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Housing_Costs_Boundaries/FeatureServer',
+    name: 'Housing Costs'
+  },
+  housing_costs_by_age_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Housing_Costs_by_Age_Boundaries/FeatureServer',
+    name: 'Housing Costs by Age'
+  },
+  housing_occupancy_and_tenure_unit_value_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Housing_Occupancy_and_Tenure_Unit_Value_Boundaries/FeatureServer',
+    name: 'Housing Occupancy and Tenure Unit Value'
   }
 };
 
@@ -986,5 +1038,148 @@ export async function getACSEducationalAttainmentByRaceBySexCountyData(lat: numb
 }
 export async function getACSEducationalAttainmentByRaceBySexTractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
   return getACSBoundaryLayerData(ACS_SERVICES.educational_attainment_by_race_by_sex.url, TRACT_LAYER_ID, 'Educational Attainment by Race by Sex - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Fertility by Age V2
+export async function getACSFertilityByAgeV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.fertility_by_age_v2.url, STATE_LAYER_ID, 'Fertility by Age - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSFertilityByAgeV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.fertility_by_age_v2.url, COUNTY_LAYER_ID, 'Fertility by Age - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSFertilityByAgeV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.fertility_by_age_v2.url, TRACT_LAYER_ID, 'Fertility by Age - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Geographical Mobility V2
+export async function getACSGeographicalMobilityV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.geographical_mobility_v2.url, STATE_LAYER_ID, 'Geographical Mobility - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSGeographicalMobilityV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.geographical_mobility_v2.url, COUNTY_LAYER_ID, 'Geographical Mobility - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSGeographicalMobilityV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.geographical_mobility_v2.url, TRACT_LAYER_ID, 'Geographical Mobility - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Health Insurance V2
+export async function getACSHealthInsuranceV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.health_insurance_v2.url, STATE_LAYER_ID, 'Health Insurance - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHealthInsuranceV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.health_insurance_v2.url, COUNTY_LAYER_ID, 'Health Insurance - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHealthInsuranceV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.health_insurance_v2.url, TRACT_LAYER_ID, 'Health Insurance - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Health Insurance by Age by Race V2
+export async function getACSHealthInsuranceByAgeByRaceV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.health_insurance_by_age_by_race_v2.url, STATE_LAYER_ID, 'Health Insurance by Age by Race - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHealthInsuranceByAgeByRaceV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.health_insurance_by_age_by_race_v2.url, COUNTY_LAYER_ID, 'Health Insurance by Age by Race - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHealthInsuranceByAgeByRaceV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.health_insurance_by_age_by_race_v2.url, TRACT_LAYER_ID, 'Health Insurance by Age by Race - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Highlights Child Well Being V2
+export async function getACSHighlightsChildWellBeingV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_child_well_being_v2.url, STATE_LAYER_ID, 'Highlights Child Well Being - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHighlightsChildWellBeingV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_child_well_being_v2.url, COUNTY_LAYER_ID, 'Highlights Child Well Being - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHighlightsChildWellBeingV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_child_well_being_v2.url, TRACT_LAYER_ID, 'Highlights Child Well Being - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Highlights Emergency Response V2
+export async function getACSHighlightsEmergencyResponseV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_emergency_response_v2.url, STATE_LAYER_ID, 'Highlights Emergency Response - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHighlightsEmergencyResponseV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_emergency_response_v2.url, COUNTY_LAYER_ID, 'Highlights Emergency Response - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHighlightsEmergencyResponseV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_emergency_response_v2.url, TRACT_LAYER_ID, 'Highlights Emergency Response - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Highlights Population Housing Basics V2
+export async function getACSHighlightsPopulationHousingBasicsV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_population_housing_basics_v2.url, STATE_LAYER_ID, 'Highlights Population Housing Basics - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHighlightsPopulationHousingBasicsV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_population_housing_basics_v2.url, COUNTY_LAYER_ID, 'Highlights Population Housing Basics - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHighlightsPopulationHousingBasicsV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_population_housing_basics_v2.url, TRACT_LAYER_ID, 'Highlights Population Housing Basics - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Highlights Senior Well Being V2
+export async function getACSHighlightsSeniorWellBeingV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_senior_well_being_v2.url, STATE_LAYER_ID, 'Highlights Senior Well Being - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHighlightsSeniorWellBeingV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_senior_well_being_v2.url, COUNTY_LAYER_ID, 'Highlights Senior Well Being - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHighlightsSeniorWellBeingV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.highlights_senior_well_being_v2.url, TRACT_LAYER_ID, 'Highlights Senior Well Being - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Household Income Distribution V2
+export async function getACSHouseholdIncomeDistributionV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.household_income_distribution_v2.url, STATE_LAYER_ID, 'Household Income Distribution - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHouseholdIncomeDistributionV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.household_income_distribution_v2.url, COUNTY_LAYER_ID, 'Household Income Distribution - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHouseholdIncomeDistributionV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.household_income_distribution_v2.url, TRACT_LAYER_ID, 'Household Income Distribution - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Household Size V2
+export async function getACSHouseholdSizeV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.household_size_v2.url, STATE_LAYER_ID, 'Household Size - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHouseholdSizeV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.household_size_v2.url, COUNTY_LAYER_ID, 'Household Size - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHouseholdSizeV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.household_size_v2.url, TRACT_LAYER_ID, 'Household Size - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Housing Costs V2
+export async function getACSHousingCostsV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.housing_costs_v2.url, STATE_LAYER_ID, 'Housing Costs - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHousingCostsV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.housing_costs_v2.url, COUNTY_LAYER_ID, 'Housing Costs - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHousingCostsV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.housing_costs_v2.url, TRACT_LAYER_ID, 'Housing Costs - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Housing Costs by Age V2
+export async function getACSHousingCostsByAgeV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.housing_costs_by_age_v2.url, STATE_LAYER_ID, 'Housing Costs by Age - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHousingCostsByAgeV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.housing_costs_by_age_v2.url, COUNTY_LAYER_ID, 'Housing Costs by Age - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHousingCostsByAgeV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.housing_costs_by_age_v2.url, TRACT_LAYER_ID, 'Housing Costs by Age - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Housing Occupancy and Tenure Unit Value V2
+export async function getACSHousingOccupancyAndTenureUnitValueV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.housing_occupancy_and_tenure_unit_value_v2.url, STATE_LAYER_ID, 'Housing Occupancy and Tenure Unit Value - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSHousingOccupancyAndTenureUnitValueV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.housing_occupancy_and_tenure_unit_value_v2.url, COUNTY_LAYER_ID, 'Housing Occupancy and Tenure Unit Value - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSHousingOccupancyAndTenureUnitValueV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.housing_occupancy_and_tenure_unit_value_v2.url, TRACT_LAYER_ID, 'Housing Occupancy and Tenure Unit Value - Tract', lat, lon, 50, radiusMiles);
 }
 
