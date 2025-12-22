@@ -128,7 +128,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       // Special handling for WRI Aqueduct Water Risk layers - show count only
       if (key.includes('wri_aqueduct_water_risk_future_annual_all') || 
           key.includes('wri_aqueduct_water_risk_baseline_annual_all') || 
-          key.includes('wri_aqueduct_water_risk_baseline_monthly_all')) {
+          key.includes('wri_aqueduct_water_risk_baseline_monthly_all') ||
+          (key.startsWith('acs_') && key.endsWith('_all'))) {
         return null; // Skip the _all array (handled separately)
       }
       
@@ -565,9 +566,13 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       
       let category = 'Other';
       
-      // National Risk Index (NRI) annualized frequency layers should always be categorized as Natural Hazards
-      // (tract keys contain "census" which would otherwise match Demographics & Census)
-      if (key.includes('nri_') && key.includes('annualized_frequency')) {
+      // American Community Survey (ACS) layers should always be categorized as American Community Survey
+      // (must check before other checks to prevent matching "census" or "ct_" patterns)
+      if (key.startsWith('acs_') || key.includes('_acs_')) {
+        category = 'American Community Survey';
+      } else if (key.includes('nri_') && key.includes('annualized_frequency')) {
+        // National Risk Index (NRI) annualized frequency layers should always be categorized as Natural Hazards
+        // (tract keys contain "census" which would otherwise match Demographics & Census)
         category = 'Natural Hazards';
       } else if (key.includes('elev') || key.includes('elevation')) {
         category = 'Elevation & Terrain';

@@ -592,6 +592,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'wri_aqueduct_water_risk_future_annual_all' || // Skip WRI Aqueduct Water Risk Future Annual array (handled separately)
         key === 'wri_aqueduct_water_risk_baseline_annual_all' || // Skip WRI Aqueduct Water Risk Baseline Annual array (handled separately)
         key === 'wri_aqueduct_water_risk_baseline_monthly_all' || // Skip WRI Aqueduct Water Risk Baseline Monthly array (handled separately)
+        (key.startsWith('acs_') && key.endsWith('_all')) || // Skip all ACS boundary arrays (handled separately)
         key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
         key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately)
@@ -10465,6 +10466,51 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'World Resources Institute'
+        ]);
+      });
+    } else if (key.startsWith('acs_') && key.endsWith('_all') && Array.isArray(value)) {
+      // Generic handler for all ACS boundary layers - each feature gets its own row with all attributes
+      const layerName = key.replace('_all', '').replace(/^acs_/, '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.OBJECTID || feature.FID || feature.fid || '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'American Community Survey',
+          (location.confidence || 'N/A').toString(),
+          `ACS_${key.replace('_all', '').toUpperCase()}`,
+          `ACS ${layerName} - Feature ${objectId || 'Unknown'}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'ACS Boundary',
+          isContaining,
+          '',
+          '',
+          attributesJson,
+          'American Community Survey'
         ]);
       });
     } else if (key === 'usfs_office_locations_all' && Array.isArray(value)) {

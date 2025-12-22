@@ -637,14 +637,35 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         
         if (section.id === 'sc') {
-          // SC will have sub-categories (to be added later)
+          // Get SCDNR enrichments (filter POIs where section is 'sc' and subCategory is 'SCDNR')
+          const scdnrPOIs = poiTypes.filter(poi => poi.section === 'sc' && poi.subCategory === 'SCDNR');
+          const scdnrEnrichments = scdnrPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          })).sort((a, b) => a.label.localeCompare(b.label));
+          
+          // Define SC sub-categories (organized by data source)
+          const scSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'scdnr',
+              title: 'South Carolina Department of Natural Resources',
+              icon: <img src="/assets/SCDNR.webp" alt="South Carolina Department of Natural Resources" className="w-full h-full object-cover rounded-full" />,
+              description: 'South Carolina Department of Natural Resources data layers',
+              enrichments: scdnrEnrichments
+            }
+          ];
+          
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
-            subCategories: []
+            enrichments: [], // SC parent category has no direct enrichments
+            subCategories: scSubCategories
           };
         }
         

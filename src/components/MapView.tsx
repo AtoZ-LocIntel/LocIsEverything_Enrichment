@@ -705,6 +705,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'wri_aqueduct_water_risk_future_annual_all' || // Skip WRI Aqueduct Water Risk Future Annual array (handled separately for map drawing)
     key === 'wri_aqueduct_water_risk_baseline_annual_all' || // Skip WRI Aqueduct Water Risk Baseline Annual array (handled separately for map drawing)
     key === 'wri_aqueduct_water_risk_baseline_monthly_all' || // Skip WRI Aqueduct Water Risk Baseline Monthly array (handled separately for map drawing)
+    key.startsWith('acs_') && key.endsWith('_all') || // Skip all ACS boundary arrays (handled separately for map drawing)
     key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
     key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately for map drawing)
@@ -20941,6 +20942,157 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing WRI Aqueduct Water Risk Baseline Monthly:', error);
+      }
+
+      // Draw all ACS boundary layers as polygons on the map (generic handler for all 78 layers)
+      try {
+        // List of all ACS layer keys
+        const acsLayerKeys = [
+          'acs_children_in_grandparent_households_state_all', 'acs_children_in_grandparent_households_county_all', 'acs_children_in_grandparent_households_tract_all',
+          'acs_children_in_immigrant_families_state_all', 'acs_children_in_immigrant_families_county_all', 'acs_children_in_immigrant_families_tract_all',
+          'acs_disability_by_age_and_sex_state_all', 'acs_disability_by_age_and_sex_county_all', 'acs_disability_by_age_and_sex_tract_all',
+          'acs_disability_by_type_state_all', 'acs_disability_by_type_county_all', 'acs_disability_by_type_tract_all',
+          'acs_education_by_veteran_status_state_all', 'acs_education_by_veteran_status_county_all', 'acs_education_by_veteran_status_tract_all',
+          'acs_educational_attainment_state_all', 'acs_educational_attainment_county_all', 'acs_educational_attainment_tract_all',
+          'acs_employment_status_state_all', 'acs_employment_status_county_all', 'acs_employment_status_tract_all',
+          'acs_english_ability_and_linguistic_isolation_households_state_all', 'acs_english_ability_and_linguistic_isolation_households_county_all', 'acs_english_ability_and_linguistic_isolation_households_tract_all',
+          'acs_fertility_by_age_state_all', 'acs_fertility_by_age_county_all', 'acs_fertility_by_age_tract_all',
+          'acs_geographical_mobility_state_all', 'acs_geographical_mobility_county_all', 'acs_geographical_mobility_tract_all',
+          'acs_health_insurance_state_all', 'acs_health_insurance_county_all', 'acs_health_insurance_tract_all',
+          'acs_health_insurance_by_age_by_race_state_all', 'acs_health_insurance_by_age_by_race_county_all', 'acs_health_insurance_by_age_by_race_tract_all',
+          'acs_highlights_child_well_being_state_all', 'acs_highlights_child_well_being_county_all', 'acs_highlights_child_well_being_tract_all',
+          'acs_highlights_emergency_response_state_all', 'acs_highlights_emergency_response_county_all', 'acs_highlights_emergency_response_tract_all',
+          'acs_highlights_population_housing_basics_state_all', 'acs_highlights_population_housing_basics_county_all', 'acs_highlights_population_housing_basics_tract_all',
+          'acs_highlights_senior_well_being_state_all', 'acs_highlights_senior_well_being_county_all', 'acs_highlights_senior_well_being_tract_all',
+          'acs_household_income_distribution_state_all', 'acs_household_income_distribution_county_all', 'acs_household_income_distribution_tract_all',
+          'acs_household_size_state_all', 'acs_household_size_county_all', 'acs_household_size_tract_all',
+          'acs_housing_costs_state_all', 'acs_housing_costs_county_all', 'acs_housing_costs_tract_all',
+          'acs_housing_costs_by_age_state_all', 'acs_housing_costs_by_age_county_all', 'acs_housing_costs_by_age_tract_all',
+          'acs_housing_occupancy_and_tenure_unit_value_state_all', 'acs_housing_occupancy_and_tenure_unit_value_county_all', 'acs_housing_occupancy_and_tenure_unit_value_tract_all',
+          'acs_housing_tenure_by_education_level_state_all', 'acs_housing_tenure_by_education_level_county_all', 'acs_housing_tenure_by_education_level_tract_all',
+          'acs_housing_tenure_by_heating_fuel_state_all', 'acs_housing_tenure_by_heating_fuel_county_all', 'acs_housing_tenure_by_heating_fuel_tract_all',
+          'acs_housing_tenure_by_race_state_all', 'acs_housing_tenure_by_race_county_all', 'acs_housing_tenure_by_race_tract_all',
+          'acs_housing_units_by_year_built_state_all', 'acs_housing_units_by_year_built_county_all', 'acs_housing_units_by_year_built_tract_all',
+          'acs_housing_units_in_structure_state_all', 'acs_housing_units_in_structure_county_all', 'acs_housing_units_in_structure_tract_all',
+          'acs_housing_units_vacancy_status_state_all', 'acs_housing_units_vacancy_status_county_all', 'acs_housing_units_vacancy_status_tract_all',
+          'acs_labor_force_participation_by_age_state_all', 'acs_labor_force_participation_by_age_county_all', 'acs_labor_force_participation_by_age_tract_all',
+          'acs_language_by_age_state_all', 'acs_language_by_age_county_all', 'acs_language_by_age_tract_all',
+          'acs_marital_status_state_all', 'acs_marital_status_county_all', 'acs_marital_status_tract_all',
+          'acs_means_of_transportation_to_work_state_all', 'acs_means_of_transportation_to_work_county_all', 'acs_means_of_transportation_to_work_tract_all',
+          'acs_median_age_state_all', 'acs_median_age_county_all', 'acs_median_age_tract_all',
+          'acs_median_earnings_by_occupation_state_all', 'acs_median_earnings_by_occupation_county_all', 'acs_median_earnings_by_occupation_tract_all',
+          'acs_median_earnings_by_occupation_by_sex_state_all', 'acs_median_earnings_by_occupation_by_sex_county_all', 'acs_median_earnings_by_occupation_by_sex_tract_all',
+          'acs_median_income_by_race_and_age_selp_emp_state_all', 'acs_median_income_by_race_and_age_selp_emp_county_all', 'acs_median_income_by_race_and_age_selp_emp_tract_all',
+          'acs_nativity_citizenship_state_all', 'acs_nativity_citizenship_county_all', 'acs_nativity_citizenship_tract_all',
+          'acs_parental_labor_force_participation_state_all', 'acs_parental_labor_force_participation_county_all', 'acs_parental_labor_force_participation_tract_all',
+          'acs_population_by_race_and_hispanic_origin_state_all', 'acs_population_by_race_and_hispanic_origin_county_all', 'acs_population_by_race_and_hispanic_origin_tract_all',
+          'acs_poverty_by_age_state_all', 'acs_poverty_by_age_county_all', 'acs_poverty_by_age_tract_all',
+          'acs_school_enrollment_state_all', 'acs_school_enrollment_county_all', 'acs_school_enrollment_tract_all',
+          'acs_specific_hispanic_or_latino_origin_state_all', 'acs_specific_hispanic_or_latino_origin_county_all', 'acs_specific_hispanic_or_latino_origin_tract_all',
+          'acs_total_population_state_all', 'acs_total_population_county_all', 'acs_total_population_tract_all',
+          'acs_travel_time_to_work_state_all', 'acs_travel_time_to_work_county_all', 'acs_travel_time_to_work_tract_all',
+          'acs_vehicle_availability_state_all', 'acs_vehicle_availability_county_all', 'acs_vehicle_availability_tract_all',
+          'acs_veteran_status_by_sex_and_age_state_all', 'acs_veteran_status_by_sex_and_age_county_all', 'acs_veteran_status_by_sex_and_age_tract_all',
+          'acs_youth_activity_state_all', 'acs_youth_activity_county_all', 'acs_youth_activity_tract_all',
+          'acs_educational_attainment_by_race_by_sex_state_all', 'acs_educational_attainment_by_race_by_sex_county_all', 'acs_educational_attainment_by_race_by_sex_tract_all'
+        ];
+
+        acsLayerKeys.forEach((layerKey) => {
+          if (enrichments[layerKey] && Array.isArray(enrichments[layerKey])) {
+            const layerName = layerKey.replace('_all', '').replace(/^acs_/, '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+            let featureCount = 0;
+
+            enrichments[layerKey].forEach((feature: any) => {
+              if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+                try {
+                  const rings = feature.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                      return ring.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+                    });
+
+                    if (latlngsArray[0].length < 3) {
+                      console.warn(`ACS ${layerName} outer ring has less than 3 coordinates, skipping`);
+                      return;
+                    }
+
+                    const color = '#3b82f6'; // Blue color for ACS boundaries
+                    const weight = 2;
+                    const opacity = 0.8;
+
+                    const featurePolygon = L.polygon(latlngsArray, {
+                      color: color,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.2
+                    });
+
+                    const isContaining = feature.isContaining || false;
+                    const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+
+                    const allAttributes = { ...feature };
+                    delete allAttributes.geometry;
+                    delete allAttributes.distance_miles;
+                    delete allAttributes.isContaining;
+
+                    const attributeKeys = Object.keys(allAttributes).slice(0, 25);
+                    const attributeRows = attributeKeys.map(key => {
+                      const value = allAttributes[key];
+                      const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                      return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                    }).join('');
+
+                    const totalAttributeCount = Object.keys(allAttributes).length;
+
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          📊 ACS ${layerName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${isContaining ? '<div style="color: #3b82f6; font-weight: 600;">✓ Location is within this feature</div>' : ''}
+                          ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                          ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
+                          ${totalAttributeCount > 25 ? `<div style="margin-top: 4px; font-size: 11px; color: #9ca3af;">... and ${totalAttributeCount - 25} more attributes (see CSV for all)</div>` : ''}
+                        </div>
+                      </div>
+                    `;
+
+                    featurePolygon.bindPopup(popupContent, { maxWidth: 400 });
+                    featurePolygon.addTo(primary);
+
+                    const polygonBounds = featurePolygon.getBounds();
+                    if (polygonBounds.isValid()) {
+                      bounds.extend(polygonBounds);
+                    }
+
+                    featureCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error drawing ACS ${layerName} polygon:`, error);
+                }
+              }
+            });
+
+            if (featureCount > 0) {
+              const legendKey = layerKey.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: '📊',
+                  color: '#3b82f6',
+                  title: `ACS ${layerName}`,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error processing ACS boundary layers:', error);
       }
 
       // Draw Puerto Rico Hydrology as polylines on the map
