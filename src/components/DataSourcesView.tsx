@@ -3653,6 +3653,118 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Housing_Occupancy_and_Tenure_Unit_Value_Boundaries/FeatureServer"
+        },
+        {
+          name: "Language by Age",
+          description: "American Community Survey - Language by Age boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Language_by_Age_Boundaries/FeatureServer"
+        },
+        {
+          name: "Living Arrangements",
+          description: "American Community Survey - Living Arrangements boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Living_Arrangements_Boundaries/FeatureServer"
+        },
+        {
+          name: "Marital Status",
+          description: "American Community Survey - Marital Status boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Marital_Status_Boundaries/FeatureServer"
+        },
+        {
+          name: "Means of Transportation to Work",
+          description: "American Community Survey - Means of Transportation to Work boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Means_of_Transportation_to_Work_Boundaries/FeatureServer"
+        },
+        {
+          name: "Median Age",
+          description: "American Community Survey - Median Age boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Median_Age_Boundaries/FeatureServer"
+        },
+        {
+          name: "Median Earnings by Occupation",
+          description: "American Community Survey - Median Earnings by Occupation boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Median_Earnings_by_Occupation_Boundaries/FeatureServer"
+        },
+        {
+          name: "Median Earnings by Occupation by Sex",
+          description: "American Community Survey - Median Earnings by Occupation by Sex boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Median_Earnings_by_Occupation_by_Sex_Boundaries/FeatureServer"
+        },
+        {
+          name: "Median Income by Race and Age (Self-Employed)",
+          description: "American Community Survey - Median Income by Race and Age (Self-Employed) boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Median_Income_by_Race_and_Age_Selp_Emp_Boundaries/FeatureServer"
+        },
+        {
+          name: "Place of Birth",
+          description: "American Community Survey - Place of Birth boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Place_of_Birth_Boundaries/FeatureServer"
+        },
+        {
+          name: "Specific Asian Groups",
+          description: "American Community Survey - Specific Asian Groups boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Specific_Asian_Groups_Boundaries/FeatureServer"
+        },
+        {
+          name: "Specific Language Spoken by English Ability",
+          description: "American Community Survey - Specific Language Spoken by English Ability boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Specific_Language_Spoken_by_English_Ability_Boundaries/FeatureServer"
+        },
+        {
+          name: "Travel Time to Work",
+          description: "American Community Survey - Travel Time to Work boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Travel_Time_to_Work_Boundaries/FeatureServer"
+        },
+        {
+          name: "Vehicle Availability",
+          description: "American Community Survey - Vehicle Availability boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Vehicle_Availability_Boundaries/FeatureServer"
+        },
+        {
+          name: "Youth Activity",
+          description: "American Community Survey - Youth Activity boundaries (State, County, Tract) for point-in-polygon and proximity queries",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Youth_Activity_Boundaries/FeatureServer"
         }
       ]
     },

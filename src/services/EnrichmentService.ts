@@ -335,7 +335,21 @@ import {
   getACSHouseholdSizeV2StateData, getACSHouseholdSizeV2CountyData, getACSHouseholdSizeV2TractData,
   getACSHousingCostsV2StateData, getACSHousingCostsV2CountyData, getACSHousingCostsV2TractData,
   getACSHousingCostsByAgeV2StateData, getACSHousingCostsByAgeV2CountyData, getACSHousingCostsByAgeV2TractData,
-  getACSHousingOccupancyAndTenureUnitValueV2StateData, getACSHousingOccupancyAndTenureUnitValueV2CountyData, getACSHousingOccupancyAndTenureUnitValueV2TractData
+  getACSHousingOccupancyAndTenureUnitValueV2StateData, getACSHousingOccupancyAndTenureUnitValueV2CountyData, getACSHousingOccupancyAndTenureUnitValueV2TractData,
+  getACSLanguageByAgeV2StateData, getACSLanguageByAgeV2CountyData, getACSLanguageByAgeV2TractData,
+  getACSLivingArrangementsStateData, getACSLivingArrangementsCountyData, getACSLivingArrangementsTractData,
+  getACSMaritalStatusV2StateData, getACSMaritalStatusV2CountyData, getACSMaritalStatusV2TractData,
+  getACSMeansOfTransportationToWorkV2StateData, getACSMeansOfTransportationToWorkV2CountyData, getACSMeansOfTransportationToWorkV2TractData,
+  getACSMedianAgeV2StateData, getACSMedianAgeV2CountyData, getACSMedianAgeV2TractData,
+  getACSMedianEarningsByOccupationV2StateData, getACSMedianEarningsByOccupationV2CountyData, getACSMedianEarningsByOccupationV2TractData,
+  getACSMedianEarningsByOccupationBySexV2StateData, getACSMedianEarningsByOccupationBySexV2CountyData, getACSMedianEarningsByOccupationBySexV2TractData,
+  getACSMedianIncomeByRaceAndAgeSelpEmpV2StateData, getACSMedianIncomeByRaceAndAgeSelpEmpV2CountyData, getACSMedianIncomeByRaceAndAgeSelpEmpV2TractData,
+  getACSPlaceOfBirthStateData, getACSPlaceOfBirthCountyData, getACSPlaceOfBirthTractData,
+  getACSSpecificAsianGroupsStateData, getACSSpecificAsianGroupsCountyData, getACSSpecificAsianGroupsTractData,
+  getACSSpecificLanguageSpokenByEnglishAbilityStateData, getACSSpecificLanguageSpokenByEnglishAbilityCountyData, getACSSpecificLanguageSpokenByEnglishAbilityTractData,
+  getACSTravelTimeToWorkV2StateData, getACSTravelTimeToWorkV2CountyData, getACSTravelTimeToWorkV2TractData,
+  getACSVehicleAvailabilityV2StateData, getACSVehicleAvailabilityV2CountyData, getACSVehicleAvailabilityV2TractData,
+  getACSYouthActivityV2StateData, getACSYouthActivityV2CountyData, getACSYouthActivityV2TractData
 } from '../adapters/acsBoundaries';
 import { getUSFSNationalGrasslandsData } from '../adapters/usfsNationalGrasslands';
 import { getUSFSOfficeLocationsData } from '../adapters/usfsOfficeLocations';
@@ -6110,6 +6124,92 @@ export class EnrichmentService {
       case 'acs_housing_occupancy_and_tenure_unit_value_v2_tract':
         return await this.getACSHousingOccupancyAndTenureUnitValueV2Tract(lat, lon, radius);
       
+      // New ACS V3 Services
+      case 'acs_language_by_age_v2_state':
+        return await this.getACSLanguageByAgeV2State(lat, lon, radius);
+      case 'acs_language_by_age_v2_county':
+        return await this.getACSLanguageByAgeV2County(lat, lon, radius);
+      case 'acs_language_by_age_v2_tract':
+        return await this.getACSLanguageByAgeV2Tract(lat, lon, radius);
+      case 'acs_living_arrangements_state':
+        return await this.getACSLivingArrangementsState(lat, lon, radius);
+      case 'acs_living_arrangements_county':
+        return await this.getACSLivingArrangementsCounty(lat, lon, radius);
+      case 'acs_living_arrangements_tract':
+        return await this.getACSLivingArrangementsTract(lat, lon, radius);
+      case 'acs_marital_status_v2_state':
+        return await this.getACSMaritalStatusV2State(lat, lon, radius);
+      case 'acs_marital_status_v2_county':
+        return await this.getACSMaritalStatusV2County(lat, lon, radius);
+      case 'acs_marital_status_v2_tract':
+        return await this.getACSMaritalStatusV2Tract(lat, lon, radius);
+      case 'acs_means_of_transportation_to_work_v2_state':
+        return await this.getACSMeansOfTransportationToWorkV2State(lat, lon, radius);
+      case 'acs_means_of_transportation_to_work_v2_county':
+        return await this.getACSMeansOfTransportationToWorkV2County(lat, lon, radius);
+      case 'acs_means_of_transportation_to_work_v2_tract':
+        return await this.getACSMeansOfTransportationToWorkV2Tract(lat, lon, radius);
+      case 'acs_median_age_v2_state':
+        return await this.getACSMedianAgeV2State(lat, lon, radius);
+      case 'acs_median_age_v2_county':
+        return await this.getACSMedianAgeV2County(lat, lon, radius);
+      case 'acs_median_age_v2_tract':
+        return await this.getACSMedianAgeV2Tract(lat, lon, radius);
+      case 'acs_median_earnings_by_occupation_v2_state':
+        return await this.getACSMedianEarningsByOccupationV2State(lat, lon, radius);
+      case 'acs_median_earnings_by_occupation_v2_county':
+        return await this.getACSMedianEarningsByOccupationV2County(lat, lon, radius);
+      case 'acs_median_earnings_by_occupation_v2_tract':
+        return await this.getACSMedianEarningsByOccupationV2Tract(lat, lon, radius);
+      case 'acs_median_earnings_by_occupation_by_sex_v2_state':
+        return await this.getACSMedianEarningsByOccupationBySexV2State(lat, lon, radius);
+      case 'acs_median_earnings_by_occupation_by_sex_v2_county':
+        return await this.getACSMedianEarningsByOccupationBySexV2County(lat, lon, radius);
+      case 'acs_median_earnings_by_occupation_by_sex_v2_tract':
+        return await this.getACSMedianEarningsByOccupationBySexV2Tract(lat, lon, radius);
+      case 'acs_median_income_by_race_and_age_selp_emp_v2_state':
+        return await this.getACSMedianIncomeByRaceAndAgeSelpEmpV2State(lat, lon, radius);
+      case 'acs_median_income_by_race_and_age_selp_emp_v2_county':
+        return await this.getACSMedianIncomeByRaceAndAgeSelpEmpV2County(lat, lon, radius);
+      case 'acs_median_income_by_race_and_age_selp_emp_v2_tract':
+        return await this.getACSMedianIncomeByRaceAndAgeSelpEmpV2Tract(lat, lon, radius);
+      case 'acs_place_of_birth_state':
+        return await this.getACSPlaceOfBirthState(lat, lon, radius);
+      case 'acs_place_of_birth_county':
+        return await this.getACSPlaceOfBirthCounty(lat, lon, radius);
+      case 'acs_place_of_birth_tract':
+        return await this.getACSPlaceOfBirthTract(lat, lon, radius);
+      case 'acs_specific_asian_groups_state':
+        return await this.getACSSpecificAsianGroupsState(lat, lon, radius);
+      case 'acs_specific_asian_groups_county':
+        return await this.getACSSpecificAsianGroupsCounty(lat, lon, radius);
+      case 'acs_specific_asian_groups_tract':
+        return await this.getACSSpecificAsianGroupsTract(lat, lon, radius);
+      case 'acs_specific_language_spoken_by_english_ability_state':
+        return await this.getACSSpecificLanguageSpokenByEnglishAbilityState(lat, lon, radius);
+      case 'acs_specific_language_spoken_by_english_ability_county':
+        return await this.getACSSpecificLanguageSpokenByEnglishAbilityCounty(lat, lon, radius);
+      case 'acs_specific_language_spoken_by_english_ability_tract':
+        return await this.getACSSpecificLanguageSpokenByEnglishAbilityTract(lat, lon, radius);
+      case 'acs_travel_time_to_work_v2_state':
+        return await this.getACSTravelTimeToWorkV2State(lat, lon, radius);
+      case 'acs_travel_time_to_work_v2_county':
+        return await this.getACSTravelTimeToWorkV2County(lat, lon, radius);
+      case 'acs_travel_time_to_work_v2_tract':
+        return await this.getACSTravelTimeToWorkV2Tract(lat, lon, radius);
+      case 'acs_vehicle_availability_v2_state':
+        return await this.getACSVehicleAvailabilityV2State(lat, lon, radius);
+      case 'acs_vehicle_availability_v2_county':
+        return await this.getACSVehicleAvailabilityV2County(lat, lon, radius);
+      case 'acs_vehicle_availability_v2_tract':
+        return await this.getACSVehicleAvailabilityV2Tract(lat, lon, radius);
+      case 'acs_youth_activity_v2_state':
+        return await this.getACSYouthActivityV2State(lat, lon, radius);
+      case 'acs_youth_activity_v2_county':
+        return await this.getACSYouthActivityV2County(lat, lon, radius);
+      case 'acs_youth_activity_v2_tract':
+        return await this.getACSYouthActivityV2Tract(lat, lon, radius);
+      
       // USFS Administrative Boundaries - Point-in-polygon and proximity query (max 50 miles)
       case 'usfs_administrative_boundaries':
         return await this.getUSFSAdministrativeBoundaries(lat, lon, radius);
@@ -8427,6 +8527,134 @@ export class EnrichmentService {
   }
   private async getACSHousingOccupancyAndTenureUnitValueV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_housing_occupancy_and_tenure_unit_value_v2_tract', 'Housing Occupancy and Tenure Unit Value - Tract', getACSHousingOccupancyAndTenureUnitValueV2TractData);
+  }
+
+  // New ACS V3 Services
+  private async getACSLanguageByAgeV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_language_by_age_v2_state', 'Language by Age - State', getACSLanguageByAgeV2StateData);
+  }
+  private async getACSLanguageByAgeV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_language_by_age_v2_county', 'Language by Age - County', getACSLanguageByAgeV2CountyData);
+  }
+  private async getACSLanguageByAgeV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_language_by_age_v2_tract', 'Language by Age - Tract', getACSLanguageByAgeV2TractData);
+  }
+  private async getACSLivingArrangementsState(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_living_arrangements_state', 'Living Arrangements - State', getACSLivingArrangementsStateData);
+  }
+  private async getACSLivingArrangementsCounty(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_living_arrangements_county', 'Living Arrangements - County', getACSLivingArrangementsCountyData);
+  }
+  private async getACSLivingArrangementsTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_living_arrangements_tract', 'Living Arrangements - Tract', getACSLivingArrangementsTractData);
+  }
+  private async getACSMaritalStatusV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_marital_status_v2_state', 'Marital Status - State', getACSMaritalStatusV2StateData);
+  }
+  private async getACSMaritalStatusV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_marital_status_v2_county', 'Marital Status - County', getACSMaritalStatusV2CountyData);
+  }
+  private async getACSMaritalStatusV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_marital_status_v2_tract', 'Marital Status - Tract', getACSMaritalStatusV2TractData);
+  }
+  private async getACSMeansOfTransportationToWorkV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_means_of_transportation_to_work_v2_state', 'Means of Transportation to Work - State', getACSMeansOfTransportationToWorkV2StateData);
+  }
+  private async getACSMeansOfTransportationToWorkV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_means_of_transportation_to_work_v2_county', 'Means of Transportation to Work - County', getACSMeansOfTransportationToWorkV2CountyData);
+  }
+  private async getACSMeansOfTransportationToWorkV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_means_of_transportation_to_work_v2_tract', 'Means of Transportation to Work - Tract', getACSMeansOfTransportationToWorkV2TractData);
+  }
+  private async getACSMedianAgeV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_median_age_v2_state', 'Median Age - State', getACSMedianAgeV2StateData);
+  }
+  private async getACSMedianAgeV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_median_age_v2_county', 'Median Age - County', getACSMedianAgeV2CountyData);
+  }
+  private async getACSMedianAgeV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_median_age_v2_tract', 'Median Age - Tract', getACSMedianAgeV2TractData);
+  }
+  private async getACSMedianEarningsByOccupationV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_median_earnings_by_occupation_v2_state', 'Median Earnings by Occupation - State', getACSMedianEarningsByOccupationV2StateData);
+  }
+  private async getACSMedianEarningsByOccupationV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_median_earnings_by_occupation_v2_county', 'Median Earnings by Occupation - County', getACSMedianEarningsByOccupationV2CountyData);
+  }
+  private async getACSMedianEarningsByOccupationV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_median_earnings_by_occupation_v2_tract', 'Median Earnings by Occupation - Tract', getACSMedianEarningsByOccupationV2TractData);
+  }
+  private async getACSMedianEarningsByOccupationBySexV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_median_earnings_by_occupation_by_sex_v2_state', 'Median Earnings by Occupation by Sex - State', getACSMedianEarningsByOccupationBySexV2StateData);
+  }
+  private async getACSMedianEarningsByOccupationBySexV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_median_earnings_by_occupation_by_sex_v2_county', 'Median Earnings by Occupation by Sex - County', getACSMedianEarningsByOccupationBySexV2CountyData);
+  }
+  private async getACSMedianEarningsByOccupationBySexV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_median_earnings_by_occupation_by_sex_v2_tract', 'Median Earnings by Occupation by Sex - Tract', getACSMedianEarningsByOccupationBySexV2TractData);
+  }
+  private async getACSMedianIncomeByRaceAndAgeSelpEmpV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_median_income_by_race_and_age_selp_emp_v2_state', 'Median Income by Race and Age (Self-Employed) - State', getACSMedianIncomeByRaceAndAgeSelpEmpV2StateData);
+  }
+  private async getACSMedianIncomeByRaceAndAgeSelpEmpV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_median_income_by_race_and_age_selp_emp_v2_county', 'Median Income by Race and Age (Self-Employed) - County', getACSMedianIncomeByRaceAndAgeSelpEmpV2CountyData);
+  }
+  private async getACSMedianIncomeByRaceAndAgeSelpEmpV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_median_income_by_race_and_age_selp_emp_v2_tract', 'Median Income by Race and Age (Self-Employed) - Tract', getACSMedianIncomeByRaceAndAgeSelpEmpV2TractData);
+  }
+  private async getACSPlaceOfBirthState(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_place_of_birth_state', 'Place of Birth - State', getACSPlaceOfBirthStateData);
+  }
+  private async getACSPlaceOfBirthCounty(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_place_of_birth_county', 'Place of Birth - County', getACSPlaceOfBirthCountyData);
+  }
+  private async getACSPlaceOfBirthTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_place_of_birth_tract', 'Place of Birth - Tract', getACSPlaceOfBirthTractData);
+  }
+  private async getACSSpecificAsianGroupsState(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_specific_asian_groups_state', 'Specific Asian Groups - State', getACSSpecificAsianGroupsStateData);
+  }
+  private async getACSSpecificAsianGroupsCounty(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_specific_asian_groups_county', 'Specific Asian Groups - County', getACSSpecificAsianGroupsCountyData);
+  }
+  private async getACSSpecificAsianGroupsTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_specific_asian_groups_tract', 'Specific Asian Groups - Tract', getACSSpecificAsianGroupsTractData);
+  }
+  private async getACSSpecificLanguageSpokenByEnglishAbilityState(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_specific_language_spoken_by_english_ability_state', 'Specific Language Spoken by English Ability - State', getACSSpecificLanguageSpokenByEnglishAbilityStateData);
+  }
+  private async getACSSpecificLanguageSpokenByEnglishAbilityCounty(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_specific_language_spoken_by_english_ability_county', 'Specific Language Spoken by English Ability - County', getACSSpecificLanguageSpokenByEnglishAbilityCountyData);
+  }
+  private async getACSSpecificLanguageSpokenByEnglishAbilityTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_specific_language_spoken_by_english_ability_tract', 'Specific Language Spoken by English Ability - Tract', getACSSpecificLanguageSpokenByEnglishAbilityTractData);
+  }
+  private async getACSTravelTimeToWorkV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_travel_time_to_work_v2_state', 'Travel Time to Work - State', getACSTravelTimeToWorkV2StateData);
+  }
+  private async getACSTravelTimeToWorkV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_travel_time_to_work_v2_county', 'Travel Time to Work - County', getACSTravelTimeToWorkV2CountyData);
+  }
+  private async getACSTravelTimeToWorkV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_travel_time_to_work_v2_tract', 'Travel Time to Work - Tract', getACSTravelTimeToWorkV2TractData);
+  }
+  private async getACSVehicleAvailabilityV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_vehicle_availability_v2_state', 'Vehicle Availability - State', getACSVehicleAvailabilityV2StateData);
+  }
+  private async getACSVehicleAvailabilityV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_vehicle_availability_v2_county', 'Vehicle Availability - County', getACSVehicleAvailabilityV2CountyData);
+  }
+  private async getACSVehicleAvailabilityV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_vehicle_availability_v2_tract', 'Vehicle Availability - Tract', getACSVehicleAvailabilityV2TractData);
+  }
+  private async getACSYouthActivityV2State(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_youth_activity_v2_state', 'Youth Activity - State', getACSYouthActivityV2StateData);
+  }
+  private async getACSYouthActivityV2County(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 100, 'acs_youth_activity_v2_county', 'Youth Activity - County', getACSYouthActivityV2CountyData);
+  }
+  private async getACSYouthActivityV2Tract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    return this.getACSBoundaryLayer(lat, lon, radius, 50, 'acs_youth_activity_v2_tract', 'Youth Activity - Tract', getACSYouthActivityV2TractData);
   }
 
   private async getNHPlacesOfWorship(lat: number, lon: number, radius: number): Promise<Record<string, any>> {

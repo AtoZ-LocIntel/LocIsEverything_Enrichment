@@ -21009,7 +21009,22 @@ const MapView: React.FC<MapViewProps> = ({
           'acs_household_size_v2_state_all', 'acs_household_size_v2_county_all', 'acs_household_size_v2_tract_all',
           'acs_housing_costs_v2_state_all', 'acs_housing_costs_v2_county_all', 'acs_housing_costs_v2_tract_all',
           'acs_housing_costs_by_age_v2_state_all', 'acs_housing_costs_by_age_v2_county_all', 'acs_housing_costs_by_age_v2_tract_all',
-          'acs_housing_occupancy_and_tenure_unit_value_v2_state_all', 'acs_housing_occupancy_and_tenure_unit_value_v2_county_all', 'acs_housing_occupancy_and_tenure_unit_value_v2_tract_all'
+          'acs_housing_occupancy_and_tenure_unit_value_v2_state_all', 'acs_housing_occupancy_and_tenure_unit_value_v2_county_all', 'acs_housing_occupancy_and_tenure_unit_value_v2_tract_all',
+          // New ACS V3 Services
+          'acs_language_by_age_v2_state_all', 'acs_language_by_age_v2_county_all', 'acs_language_by_age_v2_tract_all',
+          'acs_living_arrangements_state_all', 'acs_living_arrangements_county_all', 'acs_living_arrangements_tract_all',
+          'acs_marital_status_v2_state_all', 'acs_marital_status_v2_county_all', 'acs_marital_status_v2_tract_all',
+          'acs_means_of_transportation_to_work_v2_state_all', 'acs_means_of_transportation_to_work_v2_county_all', 'acs_means_of_transportation_to_work_v2_tract_all',
+          'acs_median_age_v2_state_all', 'acs_median_age_v2_county_all', 'acs_median_age_v2_tract_all',
+          'acs_median_earnings_by_occupation_v2_state_all', 'acs_median_earnings_by_occupation_v2_county_all', 'acs_median_earnings_by_occupation_v2_tract_all',
+          'acs_median_earnings_by_occupation_by_sex_v2_state_all', 'acs_median_earnings_by_occupation_by_sex_v2_county_all', 'acs_median_earnings_by_occupation_by_sex_v2_tract_all',
+          'acs_median_income_by_race_and_age_selp_emp_v2_state_all', 'acs_median_income_by_race_and_age_selp_emp_v2_county_all', 'acs_median_income_by_race_and_age_selp_emp_v2_tract_all',
+          'acs_place_of_birth_state_all', 'acs_place_of_birth_county_all', 'acs_place_of_birth_tract_all',
+          'acs_specific_asian_groups_state_all', 'acs_specific_asian_groups_county_all', 'acs_specific_asian_groups_tract_all',
+          'acs_specific_language_spoken_by_english_ability_state_all', 'acs_specific_language_spoken_by_english_ability_county_all', 'acs_specific_language_spoken_by_english_ability_tract_all',
+          'acs_travel_time_to_work_v2_state_all', 'acs_travel_time_to_work_v2_county_all', 'acs_travel_time_to_work_v2_tract_all',
+          'acs_vehicle_availability_v2_state_all', 'acs_vehicle_availability_v2_county_all', 'acs_vehicle_availability_v2_tract_all',
+          'acs_youth_activity_v2_state_all', 'acs_youth_activity_v2_county_all', 'acs_youth_activity_v2_tract_all'
         ];
 
         acsLayerKeys.forEach((layerKey) => {

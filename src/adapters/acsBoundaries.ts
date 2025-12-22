@@ -413,7 +413,7 @@ const ACS_SERVICES = {
     name: 'Specific Hispanic or Latino Origin'
   },
   total_population: {
-    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_10_14_Total_Population_Boundaries/FeatureServer',
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Total_Population_Boundaries/FeatureServer',
     name: 'Total Population'
   },
   travel_time_to_work: {
@@ -487,6 +487,62 @@ const ACS_SERVICES = {
   housing_occupancy_and_tenure_unit_value_v2: {
     url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Housing_Occupancy_and_Tenure_Unit_Value_Boundaries/FeatureServer',
     name: 'Housing Occupancy and Tenure Unit Value'
+  },
+  language_by_age_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Language_by_Age_Boundaries/FeatureServer',
+    name: 'Language by Age'
+  },
+  living_arrangements: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Living_Arrangements_Boundaries/FeatureServer',
+    name: 'Living Arrangements'
+  },
+  marital_status_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Marital_Status_Boundaries/FeatureServer',
+    name: 'Marital Status'
+  },
+  means_of_transportation_to_work_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Means_of_Transportation_to_Work_Boundaries/FeatureServer',
+    name: 'Means of Transportation to Work'
+  },
+  median_age_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Median_Age_Boundaries/FeatureServer',
+    name: 'Median Age'
+  },
+  median_earnings_by_occupation_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Median_Earnings_by_Occupation_Boundaries/FeatureServer',
+    name: 'Median Earnings by Occupation'
+  },
+  median_earnings_by_occupation_by_sex_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Median_Earnings_by_Occupation_by_Sex_Boundaries/FeatureServer',
+    name: 'Median Earnings by Occupation by Sex'
+  },
+  median_income_by_race_and_age_selp_emp_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Median_Income_by_Race_and_Age_Selp_Emp_Boundaries/FeatureServer',
+    name: 'Median Income by Race and Age (Self-Employed)'
+  },
+  place_of_birth: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Place_of_Birth_Boundaries/FeatureServer',
+    name: 'Place of Birth'
+  },
+  specific_asian_groups: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Specific_Asian_Groups_Boundaries/FeatureServer',
+    name: 'Specific Asian Groups'
+  },
+  specific_language_spoken_by_english_ability: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Specific_Language_Spoken_by_English_Ability_Boundaries/FeatureServer',
+    name: 'Specific Language Spoken by English Ability'
+  },
+  travel_time_to_work_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Travel_Time_to_Work_Boundaries/FeatureServer',
+    name: 'Travel Time to Work'
+  },
+  vehicle_availability_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Vehicle_Availability_Boundaries/FeatureServer',
+    name: 'Vehicle Availability'
+  },
+  youth_activity_v2: {
+    url: 'https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/ACS_Youth_Activity_Boundaries/FeatureServer',
+    name: 'Youth Activity'
   }
 };
 
@@ -1181,5 +1237,160 @@ export async function getACSHousingOccupancyAndTenureUnitValueV2CountyData(lat: 
 }
 export async function getACSHousingOccupancyAndTenureUnitValueV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
   return getACSBoundaryLayerData(ACS_SERVICES.housing_occupancy_and_tenure_unit_value_v2.url, TRACT_LAYER_ID, 'Housing Occupancy and Tenure Unit Value - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Language by Age V2
+export async function getACSLanguageByAgeV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.language_by_age_v2.url, STATE_LAYER_ID, 'Language by Age - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSLanguageByAgeV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.language_by_age_v2.url, COUNTY_LAYER_ID, 'Language by Age - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSLanguageByAgeV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.language_by_age_v2.url, TRACT_LAYER_ID, 'Language by Age - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Living Arrangements
+export async function getACSLivingArrangementsStateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.living_arrangements.url, STATE_LAYER_ID, 'Living Arrangements - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSLivingArrangementsCountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.living_arrangements.url, COUNTY_LAYER_ID, 'Living Arrangements - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSLivingArrangementsTractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.living_arrangements.url, TRACT_LAYER_ID, 'Living Arrangements - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Marital Status V2
+export async function getACSMaritalStatusV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.marital_status_v2.url, STATE_LAYER_ID, 'Marital Status - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSMaritalStatusV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.marital_status_v2.url, COUNTY_LAYER_ID, 'Marital Status - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSMaritalStatusV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.marital_status_v2.url, TRACT_LAYER_ID, 'Marital Status - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Means of Transportation to Work V2
+export async function getACSMeansOfTransportationToWorkV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.means_of_transportation_to_work_v2.url, STATE_LAYER_ID, 'Means of Transportation to Work - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSMeansOfTransportationToWorkV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.means_of_transportation_to_work_v2.url, COUNTY_LAYER_ID, 'Means of Transportation to Work - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSMeansOfTransportationToWorkV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.means_of_transportation_to_work_v2.url, TRACT_LAYER_ID, 'Means of Transportation to Work - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Median Age V2
+export async function getACSMedianAgeV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_age_v2.url, STATE_LAYER_ID, 'Median Age - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSMedianAgeV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_age_v2.url, COUNTY_LAYER_ID, 'Median Age - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSMedianAgeV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_age_v2.url, TRACT_LAYER_ID, 'Median Age - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Median Earnings by Occupation V2
+export async function getACSMedianEarningsByOccupationV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_earnings_by_occupation_v2.url, STATE_LAYER_ID, 'Median Earnings by Occupation - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSMedianEarningsByOccupationV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_earnings_by_occupation_v2.url, COUNTY_LAYER_ID, 'Median Earnings by Occupation - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSMedianEarningsByOccupationV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_earnings_by_occupation_v2.url, TRACT_LAYER_ID, 'Median Earnings by Occupation - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Median Earnings by Occupation by Sex V2
+export async function getACSMedianEarningsByOccupationBySexV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_earnings_by_occupation_by_sex_v2.url, STATE_LAYER_ID, 'Median Earnings by Occupation by Sex - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSMedianEarningsByOccupationBySexV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_earnings_by_occupation_by_sex_v2.url, COUNTY_LAYER_ID, 'Median Earnings by Occupation by Sex - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSMedianEarningsByOccupationBySexV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_earnings_by_occupation_by_sex_v2.url, TRACT_LAYER_ID, 'Median Earnings by Occupation by Sex - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Median Income by Race and Age (Self-Employed) V2
+export async function getACSMedianIncomeByRaceAndAgeSelpEmpV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_income_by_race_and_age_selp_emp_v2.url, STATE_LAYER_ID, 'Median Income by Race and Age (Self-Employed) - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSMedianIncomeByRaceAndAgeSelpEmpV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_income_by_race_and_age_selp_emp_v2.url, COUNTY_LAYER_ID, 'Median Income by Race and Age (Self-Employed) - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSMedianIncomeByRaceAndAgeSelpEmpV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.median_income_by_race_and_age_selp_emp_v2.url, TRACT_LAYER_ID, 'Median Income by Race and Age (Self-Employed) - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Place of Birth
+export async function getACSPlaceOfBirthStateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.place_of_birth.url, STATE_LAYER_ID, 'Place of Birth - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSPlaceOfBirthCountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.place_of_birth.url, COUNTY_LAYER_ID, 'Place of Birth - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSPlaceOfBirthTractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.place_of_birth.url, TRACT_LAYER_ID, 'Place of Birth - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Specific Asian Groups
+export async function getACSSpecificAsianGroupsStateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.specific_asian_groups.url, STATE_LAYER_ID, 'Specific Asian Groups - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSSpecificAsianGroupsCountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.specific_asian_groups.url, COUNTY_LAYER_ID, 'Specific Asian Groups - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSSpecificAsianGroupsTractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.specific_asian_groups.url, TRACT_LAYER_ID, 'Specific Asian Groups - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Specific Language Spoken by English Ability
+export async function getACSSpecificLanguageSpokenByEnglishAbilityStateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.specific_language_spoken_by_english_ability.url, STATE_LAYER_ID, 'Specific Language Spoken by English Ability - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSSpecificLanguageSpokenByEnglishAbilityCountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.specific_language_spoken_by_english_ability.url, COUNTY_LAYER_ID, 'Specific Language Spoken by English Ability - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSSpecificLanguageSpokenByEnglishAbilityTractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.specific_language_spoken_by_english_ability.url, TRACT_LAYER_ID, 'Specific Language Spoken by English Ability - Tract', lat, lon, 50, radiusMiles);
+}
+
+
+// Travel Time to Work V2
+export async function getACSTravelTimeToWorkV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.travel_time_to_work_v2.url, STATE_LAYER_ID, 'Travel Time to Work - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSTravelTimeToWorkV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.travel_time_to_work_v2.url, COUNTY_LAYER_ID, 'Travel Time to Work - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSTravelTimeToWorkV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.travel_time_to_work_v2.url, TRACT_LAYER_ID, 'Travel Time to Work - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Vehicle Availability V2
+export async function getACSVehicleAvailabilityV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.vehicle_availability_v2.url, STATE_LAYER_ID, 'Vehicle Availability - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSVehicleAvailabilityV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.vehicle_availability_v2.url, COUNTY_LAYER_ID, 'Vehicle Availability - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSVehicleAvailabilityV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.vehicle_availability_v2.url, TRACT_LAYER_ID, 'Vehicle Availability - Tract', lat, lon, 50, radiusMiles);
+}
+
+// Youth Activity V2
+export async function getACSYouthActivityV2StateData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.youth_activity_v2.url, STATE_LAYER_ID, 'Youth Activity - State', lat, lon, 100, radiusMiles);
+}
+export async function getACSYouthActivityV2CountyData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.youth_activity_v2.url, COUNTY_LAYER_ID, 'Youth Activity - County', lat, lon, 100, radiusMiles);
+}
+export async function getACSYouthActivityV2TractData(lat: number, lon: number, radiusMiles?: number): Promise<ACSBoundaryInfo[]> {
+  return getACSBoundaryLayerData(ACS_SERVICES.youth_activity_v2.url, TRACT_LAYER_ID, 'Youth Activity - Tract', lat, lon, 50, radiusMiles);
 }
 
