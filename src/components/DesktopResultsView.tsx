@@ -125,6 +125,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return null; // Skip the _all array (handled separately)
       }
       
+      if (key.includes('sc_trout_streams_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
       // Special handling for WRI Aqueduct Water Risk layers - show count only
       if (key.includes('wri_aqueduct_water_risk_future_annual_all') || 
           key.includes('wri_aqueduct_water_risk_baseline_annual_all') || 
@@ -649,6 +653,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Guam Open Data';
       } else if (key.includes('pr_')) {
         category = 'Puerto Rico Open Data';
+      } else if (key.includes('sc_')) {
+        category = 'South Carolina Department of Natural Resources';
       } else if (key.includes('ct_parcel') || key.includes('ct_building_footprints') || key.includes('ct_road') || key.includes('ct_')) {
         category = 'Connecticut Data';
       } else if (key.includes('de_state_forest') || key.includes('de_pine_plantations') || key.includes('de_urban_tree_canopy') || key.includes('de_forest_cover_2007') || key.includes('de_')) {

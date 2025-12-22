@@ -707,6 +707,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'wri_aqueduct_water_risk_baseline_monthly_all' || // Skip WRI Aqueduct Water Risk Baseline Monthly array (handled separately for map drawing)
     key.startsWith('acs_') && key.endsWith('_all') || // Skip all ACS boundary arrays (handled separately for map drawing)
     key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately for map drawing)
+    key === 'sc_trout_streams_all' || // Skip SC Trout Streams array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
     key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately for map drawing)
     key === 'nps_national_parks_all' || // Skip NPS National Parks array (handled separately for map drawing)
@@ -21211,6 +21212,103 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Puerto Rico Hydrology:', error);
+      }
+
+      // Draw SC Trout Streams as polylines on the map
+      try {
+        if (enrichments.sc_trout_streams_all && Array.isArray(enrichments.sc_trout_streams_all)) {
+          let featureCount = 0;
+          enrichments.sc_trout_streams_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.paths && Array.isArray(feature.geometry.paths)) {
+              try {
+                const paths = feature.geometry.paths;
+                if (paths && paths.length > 0) {
+                  // Convert all paths to Leaflet format
+                  paths.forEach((path: number[][]) => {
+                    if (path && path.length > 0) {
+                      // ESRI paths are [lon, lat] format, convert to [lat, lon] for Leaflet
+                      const latlngs: L.LatLngExpression[] = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as L.LatLngExpression;
+                      });
+                      
+                      // Use a teal/green color for trout streams
+                      const color = '#10b981'; // Green/teal for trout streams
+                      const weight = 3;
+                      
+                      const polyline = L.polyline(latlngs, {
+                        color: color,
+                        weight: weight,
+                        opacity: 0.8,
+                        smoothFactor: 1
+                      });
+                      
+                      const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                      
+                      // Build popup with all attributes
+                      const allAttributes = { ...feature };
+                      delete allAttributes.geometry;
+                      delete allAttributes.distance_miles;
+                      delete allAttributes.fid;
+                      delete allAttributes.objectid;
+                      
+                      const attributeKeys = Object.keys(allAttributes).slice(0, 20);
+                      const attributeRows = attributeKeys.map(key => {
+                        const value = allAttributes[key];
+                        const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                        return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                      }).join('');
+                      
+                      const totalAttributeCount = Object.keys(allAttributes).length;
+                      
+                      let popupContent = `
+                        <div style="min-width: 200px; max-width: 350px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            🐟 SC Trout Stream
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                            ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
+                            ${totalAttributeCount > 20 ? `<div style="margin-top: 4px; font-size: 11px; color: #9ca3af;">... and ${totalAttributeCount - 20} more attributes (see CSV for all)</div>` : ''}
+                          </div>
+                        </div>
+                      `;
+                      
+                      polyline.bindPopup(popupContent, { maxWidth: 350 });
+                      polyline.addTo(primary);
+                      
+                      (polyline as any).__layerType = 'sc_trout_streams';
+                      (polyline as any).__layerTitle = 'SC Trout Streams';
+                      
+                      try {
+                        bounds.extend(polyline.getBounds());
+                      } catch (boundsError) {
+                        console.warn('Error extending bounds for SC Trout Streams:', boundsError);
+                      }
+                      
+                      featureCount++;
+                    }
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing SC Trout Streams polyline:', error);
+              }
+            }
+          });
+          
+          if (featureCount > 0) {
+            if (!legendAccumulator['sc_trout_streams']) {
+              legendAccumulator['sc_trout_streams'] = {
+                icon: '🐟',
+                color: '#10b981',
+                title: 'SC Trout Streams',
+                count: 0,
+              };
+            }
+            legendAccumulator['sc_trout_streams'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing SC Trout Streams:', error);
       }
 
       // Draw Guam Villages as polygons on the map

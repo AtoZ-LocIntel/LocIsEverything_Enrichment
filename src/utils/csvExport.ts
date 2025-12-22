@@ -594,6 +594,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'wri_aqueduct_water_risk_baseline_monthly_all' || // Skip WRI Aqueduct Water Risk Baseline Monthly array (handled separately)
         (key.startsWith('acs_') && key.endsWith('_all')) || // Skip all ACS boundary arrays (handled separately)
         key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately)
+        key === 'sc_trout_streams_all' || // Skip SC Trout Streams array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
         key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately)
         key === 'usfs_national_grasslands_all' ||
@@ -10422,6 +10423,51 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'Puerto Rico Open Data'
+        ]);
+      });
+    } else if (key === 'sc_trout_streams_all' && Array.isArray(value)) {
+      // Handle SC Trout Streams - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.paths && feature.geometry.paths.length > 0) {
+          const firstPath = feature.geometry.paths[0];
+          if (firstPath && firstPath.length > 0) {
+            // ESRI paths are [lon, lat] format
+            lat = firstPath[0][1].toString();
+            lon = firstPath[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.fid;
+        delete allAttributes.objectid;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.objectid || feature.OBJECTID || feature.fid || feature.FID || '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'South Carolina Department of Natural Resources',
+          (location.confidence || 'N/A').toString(),
+          'SC_TROUT_STREAMS',
+          `Feature ${objectId || 'Unknown'}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Trout Stream',
+          '',
+          '',
+          '',
+          attributesJson,
+          'South Carolina Department of Natural Resources'
         ]);
       });
     } else if (key === 'wri_aqueduct_water_risk_baseline_monthly_all' && Array.isArray(value)) {

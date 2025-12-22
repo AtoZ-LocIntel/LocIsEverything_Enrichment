@@ -273,6 +273,7 @@ import { getUSFSWildernessAreasData } from '../adapters/usfsWildernessAreas';
 import { getChinookSalmonRangesData } from '../adapters/chinookSalmonRanges';
 import { getTXSchoolDistricts2024Data } from '../adapters/txSchoolDistricts2024';
 import { getPRHydrologyData } from '../adapters/prHydrology';
+import { getSCTroutStreamsData } from '../adapters/scTroutStreams';
 import { getWRIAqueductWaterRiskFutureAnnualData, getWRIAqueductWaterRiskBaselineAnnualData, getWRIAqueductWaterRiskBaselineMonthlyData } from '../adapters/wriAqueductWaterRisk';
 import {
   getACSChildrenInGrandparentHouseholdsStateData, getACSChildrenInGrandparentHouseholdsCountyData, getACSChildrenInGrandparentHouseholdsTractData,
@@ -2056,6 +2057,9 @@ export class EnrichmentService {
       // Puerto Rico Hydrology - Proximity query only (max 25 miles)
       case 'pr_hydrology':
         return await this.getPRHydrology(lat, lon, radius);
+      
+      case 'sc_trout_streams':
+        return await this.getSCTroutStreams(lat, lon, radius);
       
       // NH Places of Worship (NH GRANIT) - Proximity query
       case 'nh_places_of_worship':
@@ -7431,6 +7435,50 @@ export class EnrichmentService {
         pr_hydrology_count: 0,
         pr_hydrology_all: [],
         pr_hydrology_summary: 'Error querying Puerto Rico Hydrology'
+      };
+    }
+  }
+
+  private async getSCTroutStreams(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐟 Fetching SC Trout Streams data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const features = await getSCTroutStreamsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.sc_trout_streams_count = 0;
+        result.sc_trout_streams_all = [];
+        result.sc_trout_streams_summary = 'No SC Trout Streams found within the specified radius.';
+      } else {
+        result.sc_trout_streams_count = features.length;
+        result.sc_trout_streams_all = features.map(feature => ({
+          ...feature.attributes,
+          fid: feature.fid,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles
+        }));
+        
+        const nearestDistance = features[0]?.distance_miles || 0;
+        result.sc_trout_streams_summary = `Found ${features.length} SC Trout Streams feature(s) within ${cappedRadius} miles${nearestDistance > 0 ? ` (nearest: ${nearestDistance.toFixed(2)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ SC Trout Streams data processed:`, {
+        totalCount: result.sc_trout_streams_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching SC Trout Streams data:', error);
+      return {
+        sc_trout_streams_count: 0,
+        sc_trout_streams_all: [],
+        sc_trout_streams_summary: 'Error querying SC Trout Streams'
       };
     }
   }

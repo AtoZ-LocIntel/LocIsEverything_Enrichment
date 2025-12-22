@@ -3130,6 +3130,19 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
+      category: "South Carolina Department of Natural Resources",
+      sources: [
+        {
+          name: "SC Trout Streams",
+          description: "South Carolina Department of Natural Resources - Trout Streams (proximity queries up to 50 miles)",
+          coverage: "South Carolina",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/acgZYxoN5Oj8pDLa/ArcGIS/rest/services/Trout_Streams/FeatureServer/4"
+        }
+      ]
+    },
+    {
       category: "World Resources Institute",
       sources: [
         {
