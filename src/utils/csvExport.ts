@@ -628,6 +628,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately)
         key === 'sc_coastal_well_inventory_all' || // Skip SC Coastal Well Inventory array (handled separately)
         key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately)
+        key === 'us_drilling_platforms_all' || // Skip US Drilling Platforms array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
         key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately)
         key === 'usfs_national_grasslands_all' ||
@@ -10740,6 +10741,44 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'Quirky & Fun'
+        ]);
+      });
+    } else if (key === 'us_drilling_platforms_all' && Array.isArray(value)) {
+      // Handle US Drilling Platforms - each platform gets its own row with all attributes
+      value.forEach((platform: any) => {
+        const distance = platform.distance_miles !== null && platform.distance_miles !== undefined ? platform.distance_miles.toFixed(2) : '';
+        
+        const platformLat = platform.lat || location.lat.toString();
+        const platformLon = platform.lon || location.lon.toString();
+        
+        const allAttributes = { ...platform };
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const structureName = platform.structureName || platform.STRUCTURE_NAME || platform.Structure_Name || 'Drilling Platform';
+        const structureNumber = platform.structureNumber || platform.STRUCTURE_NUMBER || platform.Structure_Number || '';
+        const areaCode = platform.areaCode || platform.AREA_CODE || platform.Area_Code || '';
+        const blockNumber = platform.blockNumber || platform.BLOCK_NUMBER || platform.Block_Number || '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Power & Infrastructure',
+          (location.confidence || 'N/A').toString(),
+          'US_DRILLING_PLATFORMS',
+          `${structureName}${structureNumber ? ` - ${structureNumber}` : ''}${areaCode && blockNumber ? ` (${areaCode} ${blockNumber})` : ''}`,
+          platformLat,
+          platformLon,
+          distance,
+          'Drilling Platform Point',
+          '',
+          '',
+          '',
+          attributesJson,
+          'Power & Infrastructure'
         ]);
       });
     } else if (key === 'wri_aqueduct_water_risk_baseline_monthly_all' && Array.isArray(value)) {

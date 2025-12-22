@@ -741,6 +741,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately for map drawing)
     key === 'sc_coastal_well_inventory_all' || // Skip SC Coastal Well Inventory array (handled separately for map drawing)
     key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately for map drawing)
+    key === 'us_drilling_platforms_all' || // Skip US Drilling Platforms array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
     key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately for map drawing)
     key === 'nps_national_parks_all' || // Skip NPS National Parks array (handled separately for map drawing)
@@ -21948,6 +21949,120 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing Orlando Christmas Light Displays:', error);
       }
 
+      // Draw US Drilling Platforms as point markers on the map
+      try {
+        if (enrichments.us_drilling_platforms_all && Array.isArray(enrichments.us_drilling_platforms_all)) {
+          let platformCount = 0;
+          enrichments.us_drilling_platforms_all.forEach((platform: any) => {
+            if (platform.lat && platform.lon) {
+              try {
+                const platformLat = platform.lat;
+                const platformLon = platform.lon;
+                const structureName = platform.structureName || platform.STRUCTURE_NAME || platform.Structure_Name || 'Drilling Platform';
+                const structureNumber = platform.structureNumber || platform.STRUCTURE_NUMBER || platform.Structure_Number || '';
+                const complexIdNumber = platform.complexIdNumber !== null && platform.complexIdNumber !== undefined ? platform.complexIdNumber : (platform.COMPLEX_ID_NUMBER !== null && platform.COMPLEX_ID_NUMBER !== undefined ? platform.COMPLEX_ID_NUMBER : null);
+                const areaCode = platform.areaCode || platform.AREA_CODE || platform.Area_Code || '';
+                const blockNumber = platform.blockNumber || platform.BLOCK_NUMBER || platform.Block_Number || '';
+                const districtCode = platform.districtCode !== null && platform.districtCode !== undefined ? platform.districtCode : (platform.DISTRICT_CODE !== null && platform.DISTRICT_CODE !== undefined ? platform.DISTRICT_CODE : null);
+                const majorStructureFlag = platform.majorStructureFlag || platform.Major_Structure_Flag || platform.major_structure_flag || '';
+                
+                // Create a custom icon for drilling platforms
+                const icon = createPOIIcon('🛢️', '#f59e0b'); // Amber/orange color for drilling platforms
+                
+                const marker = L.marker([platformLat, platformLon], { icon });
+                
+                // Build popup content with platform information
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🛢️ ${structureName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${structureNumber ? `<div><strong>Structure Number:</strong> ${structureNumber}</div>` : ''}
+                      ${complexIdNumber !== null ? `<div><strong>Complex ID:</strong> ${complexIdNumber}</div>` : ''}
+                      ${areaCode ? `<div><strong>Area Code:</strong> ${areaCode}</div>` : ''}
+                      ${blockNumber ? `<div><strong>Block Number:</strong> ${blockNumber}</div>` : ''}
+                      ${districtCode !== null ? `<div><strong>District Code:</strong> ${districtCode}</div>` : ''}
+                      ${majorStructureFlag ? `<div><strong>Major Structure:</strong> ${majorStructureFlag}</div>` : ''}
+                      ${platform.distance_miles !== null && platform.distance_miles !== undefined ? `<div style="margin-top: 6px;"><strong>Distance:</strong> ${platform.distance_miles.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      <div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">All Attributes:</div>
+                `;
+                
+                // Add all platform attributes (excluding internal fields)
+                const excludeFields = ['structureName', 'structureNumber', 'complexIdNumber', 'areaCode', 'blockNumber', 'districtCode', 'majorStructureFlag', 'lat', 'lon', 'distance_miles', 'attributes', 'objectid', 'STRUCTURE_NAME', 'STRUCTURE_NUMBER', 'COMPLEX_ID_NUMBER', 'AREA_CODE', 'BLOCK_NUMBER', 'DISTRICT_CODE', 'Major_Structure_Flag', 'LATITUDE', 'LONGITUDE'];
+                Object.entries(platform).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                // Also include any nested attributes object
+                if (platform.attributes && typeof platform.attributes === 'object') {
+                  Object.entries(platform.attributes).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                }
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(poi);
+                
+                // Extend bounds to include this platform
+                bounds.extend([platformLat, platformLon]);
+                platformCount++;
+              } catch (error) {
+                console.error('Error drawing US Drilling Platform marker:', error);
+              }
+            }
+          });
+          
+          // Add to legend
+          if (platformCount > 0) {
+            if (!legendAccumulator['us_drilling_platforms']) {
+              legendAccumulator['us_drilling_platforms'] = {
+                icon: '🛢️',
+                color: '#f59e0b',
+                title: 'US Drilling Platforms',
+                count: 0,
+              };
+            }
+            legendAccumulator['us_drilling_platforms'].count += platformCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing US Drilling Platforms:', error);
+      }
+
       // Draw Guam Villages as polygons on the map
       try {
         if (enrichments.guam_villages_all && Array.isArray(enrichments.guam_villages_all)) {
@@ -29575,6 +29690,11 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Skip Orlando Christmas Lights - handled separately with custom icons
         if (key === 'orlando_christmas_lights_all') {
+          return;
+        }
+
+        // Skip US Drilling Platforms - handled separately with custom icons
+        if (key === 'us_drilling_platforms_all') {
           return;
         }
 

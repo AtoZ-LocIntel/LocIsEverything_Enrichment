@@ -1517,6 +1517,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://data.openei.org/api/views/f9yf-3pn4/rows.geojson"
         },
         {
+          name: "US Drilling Platforms",
+          description: "US Drilling Platforms (proximity queries up to 100 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/USA_Drilling_Platforms_(HFS)/FeatureServer/0"
+        },
+        {
           name: "OSM Health & Wellness - Medical Care",
           description: "OpenStreetMap - Hospitals, clinics, doctors, specialists via Overpass API (proximity queries up to 25 miles)",
           coverage: "Global",

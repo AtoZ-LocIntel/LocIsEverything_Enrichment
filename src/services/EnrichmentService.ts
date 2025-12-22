@@ -279,6 +279,7 @@ import { getSCCoastalPondsData } from '../adapters/scCoastalPonds';
 import { getSCLakesReservoirsData } from '../adapters/scLakesReservoirs';
 import { getSCCoastalWellInventoryData } from '../adapters/scCoastalWellInventory';
 import { getOrlandoChristmasLightsData } from '../adapters/orlandoChristmasLights';
+import { getUSDrillingPlatformsData } from '../adapters/usDrillingPlatforms';
 import { getWRIAqueductWaterRiskFutureAnnualData, getWRIAqueductWaterRiskBaselineAnnualData, getWRIAqueductWaterRiskBaselineMonthlyData } from '../adapters/wriAqueductWaterRisk';
 import {
   getACSChildrenInGrandparentHouseholdsStateData, getACSChildrenInGrandparentHouseholdsCountyData, getACSChildrenInGrandparentHouseholdsTractData,
@@ -1876,6 +1877,8 @@ export class EnrichmentService {
         return await this.getWikipediaPOIs(lat, lon, radius);
       case 'orlando_christmas_lights':
         return await this.getOrlandoChristmasLights(lat, lon, radius);
+      case 'us_drilling_platforms':
+        return await this.getUSDrillingPlatforms(lat, lon, radius);
       case 'poi_aurora_viewing_sites':
         return await this.getAuroraViewingSites(lat, lon, radius);
       case 'poi_ebird_hotspots': {
@@ -12324,6 +12327,57 @@ out center;`;
     } catch (error) {
       console.error('Wikipedia POI enrichment failed:', error);
       return { poi_wikipedia_count: 0, poi_wikipedia_error: 'Failed to fetch Wikipedia data' };
+    }
+  }
+
+  private async getUSDrillingPlatforms(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛢️ Fetching US Drilling Platforms data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 100 miles
+      const cappedRadius = radius ? Math.min(radius, 100.0) : 100.0;
+      
+      const platforms = await getUSDrillingPlatformsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (platforms.length === 0) {
+        result.us_drilling_platforms_count = 0;
+        result.us_drilling_platforms_all = [];
+        result.us_drilling_platforms_summary = 'No US Drilling Platforms found within the specified radius.';
+      } else {
+        result.us_drilling_platforms_count = platforms.length;
+        result.us_drilling_platforms_all = platforms.map(platform => ({
+          ...platform.attributes,
+          objectid: platform.objectid,
+          structureName: platform.structureName,
+          structureNumber: platform.structureNumber,
+          complexIdNumber: platform.complexIdNumber,
+          areaCode: platform.areaCode,
+          blockNumber: platform.blockNumber,
+          districtCode: platform.districtCode,
+          majorStructureFlag: platform.majorStructureFlag,
+          lat: platform.lat,
+          lon: platform.lon,
+          distance_miles: platform.distance_miles
+        }));
+        
+        const nearestDistance = platforms[0]?.distance_miles || 0;
+        result.us_drilling_platforms_summary = `Found ${platforms.length} US Drilling Platform(s) within ${cappedRadius} miles${nearestDistance > 0 ? ` (nearest: ${nearestDistance.toFixed(2)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ US Drilling Platforms data processed:`, {
+        totalCount: result.us_drilling_platforms_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching US Drilling Platforms data:', error);
+      return {
+        us_drilling_platforms_count: 0,
+        us_drilling_platforms_all: [],
+        us_drilling_platforms_summary: 'Error querying US Drilling Platforms'
+      };
     }
   }
 

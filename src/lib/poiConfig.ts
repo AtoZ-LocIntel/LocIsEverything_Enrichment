@@ -463,6 +463,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_power_plants_openei', label: 'Power Plants', description: 'Electric power generation facilities', isPOI: true, defaultRadius: 25, category: 'infrastructure', section: 'infrastructure' },
   { id: 'poi_substations', label: 'Substations', description: 'Electrical substations', isPOI: true, defaultRadius: 6, category: 'infrastructure', section: 'infrastructure' },
   { id: 'poi_powerlines', label: 'Powerlines', description: 'Electrical power transmission and distribution lines', isPOI: true, defaultRadius: 5, category: 'infrastructure', section: 'infrastructure' },
+  { id: 'us_drilling_platforms', label: 'US Drilling Platforms', description: 'US Drilling Platforms (proximity up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'infrastructure', section: 'infrastructure' },
   { id: 'poi_cell_towers', label: 'Cell Towers', description: 'Cellular communication towers and masts', isPOI: true, defaultRadius: 5, category: 'infrastructure', section: 'infrastructure' },
   
   // Recreation
