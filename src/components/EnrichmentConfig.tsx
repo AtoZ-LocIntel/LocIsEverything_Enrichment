@@ -86,7 +86,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   sc: <img src="/assets/SC.webp" alt="South Carolina Open Data" className="w-5 h-5" />,
   nc: <img src="/assets/NC.webp" alt="North Carolina Open Data" className="w-5 h-5" />,
   md: <img src="/assets/MD.webp" alt="Maryland Open Data" className="w-5 h-5" />,
-  dc: <img src="/assets/DC.webp" alt="District of Columbia Open Data" className="w-5 h-5" />,
+  dc: <img src="/assets/DofC.webp" alt="District of Columbia Open Data" className="w-5 h-5" />,
   va: <img src="/assets/VA.webp" alt="Virginia Open Data" className="w-5 h-5" />,
   fl: <img src="/assets/FL.webp" alt="Florida Open Data" className="w-5 h-5" />,
   tx: <img src="/assets/TX.webp" alt="Texas Open Data" className="w-5 h-5" />,

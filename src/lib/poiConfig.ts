@@ -154,202 +154,10 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'pct.webp'
   },
   {
-    id: 'nh',
-    title: 'New Hampshire Open Data',
-    description: 'New Hampshire state open data services and layers',
-    icon: 'newhampshire.webp'
-  },
-  {
-    id: 'ma',
-    title: 'Massachusetts Open Data',
-    description: 'Massachusetts state open data services and layers',
-    icon: 'MA.webp'
-  },
-  {
-    id: 'ri',
-    title: 'Rhode Island Open Data',
-    description: 'Rhode Island state open data services and layers',
-    icon: 'RI.webp'
-  },
-  {
-    id: 'ct',
-    title: 'Connecticut Open Data',
-    description: 'Connecticut state open data services and layers',
-    icon: 'CT.webp'
-  },
-  {
-    id: 'ny',
-    title: 'New York Open Data',
-    description: 'New York state open data services and layers',
-    icon: 'NY.webp'
-  },
-  {
-    id: 'vt',
-    title: 'Vermont Open Data',
-    description: 'Vermont state open data services and layers',
-    icon: 'VT.webp'
-  },
-  {
-    id: 'me',
-    title: 'Maine Open Data',
-    description: 'Maine state open data services and layers',
-    icon: 'ME.webp'
-  },
-  {
-    id: 'nj',
-    title: 'New Jersey Open Data',
-    description: 'New Jersey state open data services and layers',
-    icon: 'NJ.webp'
-  },
-  {
-    id: 'pa',
-    title: 'Pennsylvania Open Data',
-    description: 'Pennsylvania state open data services and layers',
-    icon: 'PA.webp'
-  },
-  {
-    id: 'de',
-    title: 'Delaware Open Data',
-    description: 'Delaware state open data services and layers',
-    icon: 'DE.webp'
-  },
-  {
-    id: 'wv',
-    title: 'West Virginia Open Data',
-    description: 'West Virginia state open data services and layers',
-    icon: 'WV.webp'
-  },
-  {
-    id: 'ca',
-    title: 'California Open Data',
-    description: 'California state open data services and layers',
-    icon: 'CA.webp'
-  },
-  {
-    id: 'ga',
-    title: 'Georgia Open Data',
-    description: 'Georgia state open data services and layers',
-    icon: 'GA.webp'
-  },
-  {
-    id: 'sc',
-    title: 'South Carolina Open Data',
-    description: 'South Carolina state open data services and layers',
-    icon: 'SC.webp'
-  },
-  {
-    id: 'nc',
-    title: 'North Carolina Open Data',
-    description: 'North Carolina state open data services and layers',
-    icon: 'NC.webp'
-  },
-  {
-    id: 'md',
-    title: 'Maryland Open Data',
-    description: 'Maryland state open data services and layers',
-    icon: 'MD.webp'
-  },
-  {
-    id: 'dc',
-    title: 'District of Columbia Open Data',
-    description: 'District of Columbia open data services and layers',
-    icon: 'DC.webp'
-  },
-  {
-    id: 'va',
-    title: 'Virginia Open Data',
-    description: 'Virginia state open data services and layers',
-    icon: 'VA.webp'
-  },
-  {
-    id: 'fl',
-    title: 'Florida Open Data',
-    description: 'Florida state open data services and layers',
-    icon: 'FL.webp'
-  },
-  {
-    id: 'tx',
-    title: 'Texas Open Data',
-    description: 'Texas state open data services and layers',
-    icon: 'TX.webp'
-  },
-  {
-    id: 'nm',
-    title: 'New Mexico Open Data',
-    description: 'New Mexico state open data services and layers',
-    icon: 'NM.webp'
-  },
-  {
-    id: 'az',
-    title: 'Arizona Open Data',
-    description: 'Arizona state open data services and layers',
-    icon: 'AZ.webp'
-  },
-  {
     id: 'ak',
     title: 'Alaska Open Data',
     description: 'Alaska state open data services and layers',
     icon: 'AK.webp'
-  },
-  {
-    id: 'hi',
-    title: 'Hawaii Open Data',
-    description: 'Hawaii state open data services and layers',
-    icon: 'HI.webp'
-  },
-  {
-    id: 'wa',
-    title: 'Washington Open Data',
-    description: 'Washington state open data services and layers',
-    icon: 'WA.webp'
-  },
-  {
-    id: 'or',
-    title: 'Oregon Open Data',
-    description: 'Oregon state open data services and layers',
-    icon: 'OR.webp'
-  },
-  {
-    id: 'mt',
-    title: 'Montana Open Data',
-    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
-    icon: 'MT.webp'
-  },
-  {
-    id: 'wy',
-    title: 'Wyoming Open Data',
-    description: 'Wyoming state open data services and layers',
-    icon: 'WY.webp'
-  },
-  {
-    id: 'nv',
-    title: 'Nevada Open Data',
-    description: 'Nevada state open data services and layers',
-    icon: 'NV.webp'
-  },
-  {
-    id: 'id',
-    title: 'Idaho Open Data',
-    description: 'Idaho state open data services and layers',
-    icon: 'ID.webp'
-  },
-  {
-    id: 'ut',
-    title: 'Utah Open Data',
-    description: 'Utah state open data services and layers',
-    icon: 'UT.webp'
-  },
-  {
-    id: 'co',
-    title: 'Colorado Open Data',
-    description: 'Colorado state open data services and layers',
-    icon: 'CO.webp'
-  },
-  {
-    id: 'il',
-    title: 'Illinois Open Data',
-    description: 'Illinois state open data services and layers',
-    icon: 'IL.webp'
   },
   {
     id: 'ar',
@@ -358,10 +166,70 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'AR.webp'
   },
   {
-    id: 'mo',
-    title: 'Missouri Open Data',
-    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
-    icon: 'MO.webp'
+    id: 'az',
+    title: 'Arizona Open Data',
+    description: 'Arizona state open data services and layers',
+    icon: 'AZ.webp'
+  },
+  {
+    id: 'ca',
+    title: 'California Open Data',
+    description: 'California state open data services and layers',
+    icon: 'CA.webp'
+  },
+  {
+    id: 'co',
+    title: 'Colorado Open Data',
+    description: 'Colorado state open data services and layers',
+    icon: 'CO.webp'
+  },
+  {
+    id: 'ct',
+    title: 'Connecticut Open Data',
+    description: 'Connecticut state open data services and layers',
+    icon: 'CT.webp'
+  },
+  {
+    id: 'dc',
+    title: 'District of Columbia Open Data',
+    description: 'District of Columbia open data services and layers',
+    icon: 'DofC.webp'
+  },
+  {
+    id: 'de',
+    title: 'Delaware Open Data',
+    description: 'Delaware state open data services and layers',
+    icon: 'DE.webp'
+  },
+  {
+    id: 'fl',
+    title: 'Florida Open Data',
+    description: 'Florida state open data services and layers',
+    icon: 'FL.webp'
+  },
+  {
+    id: 'ga',
+    title: 'Georgia Open Data',
+    description: 'Georgia state open data services and layers',
+    icon: 'GA.webp'
+  },
+  {
+    id: 'hi',
+    title: 'Hawaii Open Data',
+    description: 'Hawaii state open data services and layers',
+    icon: 'HI.webp'
+  },
+  {
+    id: 'id',
+    title: 'Idaho Open Data',
+    description: 'Idaho state open data services and layers',
+    icon: 'ID.webp'
+  },
+  {
+    id: 'il',
+    title: 'Illinois Open Data',
+    description: 'Illinois state open data services and layers',
+    icon: 'IL.webp'
   },
   {
     id: 'in',
@@ -370,16 +238,148 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'IN.webp'
   },
   {
+    id: 'ky',
+    title: 'Kentucky Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'KY.webp'
+  },
+  {
     id: 'la',
     title: 'Louisiana Open Data',
     description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
     icon: 'LA.webp'
   },
   {
-    id: 'ky',
-    title: 'Kentucky Open Data',
+    id: 'ma',
+    title: 'Massachusetts Open Data',
+    description: 'Massachusetts state open data services and layers',
+    icon: 'MA.webp'
+  },
+  {
+    id: 'md',
+    title: 'Maryland Open Data',
+    description: 'Maryland state open data services and layers',
+    icon: 'MD.webp'
+  },
+  {
+    id: 'me',
+    title: 'Maine Open Data',
+    description: 'Maine state open data services and layers',
+    icon: 'ME.webp'
+  },
+  {
+    id: 'mo',
+    title: 'Missouri Open Data',
     description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
-    icon: 'KY.webp'
+    icon: 'MO.webp'
+  },
+  {
+    id: 'mt',
+    title: 'Montana Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'MT.webp'
+  },
+  {
+    id: 'nc',
+    title: 'North Carolina Open Data',
+    description: 'North Carolina state open data services and layers',
+    icon: 'NC.webp'
+  },
+  {
+    id: 'nh',
+    title: 'New Hampshire Open Data',
+    description: 'New Hampshire state open data services and layers',
+    icon: 'newhampshire.webp'
+  },
+  {
+    id: 'nj',
+    title: 'New Jersey Open Data',
+    description: 'New Jersey state open data services and layers',
+    icon: 'NJ.webp'
+  },
+  {
+    id: 'nm',
+    title: 'New Mexico Open Data',
+    description: 'New Mexico state open data services and layers',
+    icon: 'NM.webp'
+  },
+  {
+    id: 'nv',
+    title: 'Nevada Open Data',
+    description: 'Nevada state open data services and layers',
+    icon: 'NV.webp'
+  },
+  {
+    id: 'ny',
+    title: 'New York Open Data',
+    description: 'New York state open data services and layers',
+    icon: 'NY.webp'
+  },
+  {
+    id: 'or',
+    title: 'Oregon Open Data',
+    description: 'Oregon state open data services and layers',
+    icon: 'OR.webp'
+  },
+  {
+    id: 'pa',
+    title: 'Pennsylvania Open Data',
+    description: 'Pennsylvania state open data services and layers',
+    icon: 'PA.webp'
+  },
+  {
+    id: 'ri',
+    title: 'Rhode Island Open Data',
+    description: 'Rhode Island state open data services and layers',
+    icon: 'RI.webp'
+  },
+  {
+    id: 'sc',
+    title: 'South Carolina Open Data',
+    description: 'South Carolina state open data services and layers',
+    icon: 'SC.webp'
+  },
+  {
+    id: 'tx',
+    title: 'Texas Open Data',
+    description: 'Texas state open data services and layers',
+    icon: 'TX.webp'
+  },
+  {
+    id: 'ut',
+    title: 'Utah Open Data',
+    description: 'Utah state open data services and layers',
+    icon: 'UT.webp'
+  },
+  {
+    id: 'va',
+    title: 'Virginia Open Data',
+    description: 'Virginia state open data services and layers',
+    icon: 'VA.webp'
+  },
+  {
+    id: 'vt',
+    title: 'Vermont Open Data',
+    description: 'Vermont state open data services and layers',
+    icon: 'VT.webp'
+  },
+  {
+    id: 'wa',
+    title: 'Washington Open Data',
+    description: 'Washington state open data services and layers',
+    icon: 'WA.webp'
+  },
+  {
+    id: 'wv',
+    title: 'West Virginia Open Data',
+    description: 'West Virginia state open data services and layers',
+    icon: 'WV.webp'
+  },
+  {
+    id: 'wy',
+    title: 'Wyoming Open Data',
+    description: 'Wyoming state open data services and layers',
+    icon: 'WY.webp'
   },
   {
     id: 'usvi',
