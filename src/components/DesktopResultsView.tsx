@@ -129,6 +129,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return null; // Skip the _all array (handled separately)
       }
       
+      if (key.includes('sc_scenic_rivers_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
       if (key.includes('sc_game_zones_all')) {
         return null; // Skip the _all array (handled separately)
       }

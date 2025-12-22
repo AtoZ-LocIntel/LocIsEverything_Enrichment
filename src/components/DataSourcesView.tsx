@@ -3157,6 +3157,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services.arcgis.com/acgZYxoN5Oj8pDLa/ArcGIS/rest/services/Trout_Streams/FeatureServer/4"
         },
         {
+          name: "SC Scenic Rivers",
+          description: "South Carolina Department of Natural Resources - Scenic Rivers (proximity queries up to 50 miles)",
+          coverage: "South Carolina",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/acgZYxoN5Oj8pDLa/ArcGIS/rest/services/SC_Scenic_Rivers_WRR/FeatureServer/0"
+        },
+        {
           name: "SC Game Zones",
           description: "South Carolina Department of Natural Resources - Game Zones for point-in-polygon and proximity queries (up to 50 miles)",
           coverage: "South Carolina",

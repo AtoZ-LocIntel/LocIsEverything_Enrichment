@@ -736,6 +736,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key.startsWith('acs_') && key.endsWith('_all') || // Skip all ACS boundary arrays (handled separately for map drawing)
     key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately for map drawing)
     key === 'sc_trout_streams_all' || // Skip SC Trout Streams array (handled separately for map drawing)
+    key === 'sc_scenic_rivers_all' || // Skip SC Scenic Rivers array (handled separately for map drawing)
     key === 'sc_game_zones_all' || // Skip SC Game Zones array (handled separately for map drawing)
     key === 'sc_coastal_ponds_all' || // Skip SC Coastal Ponds array (handled separately for map drawing)
     key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately for map drawing)
@@ -21419,6 +21420,127 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing SC Trout Streams:', error);
       }
 
+      // Draw SC Scenic Rivers as polylines on the map
+      try {
+        if (enrichments.sc_scenic_rivers_all && Array.isArray(enrichments.sc_scenic_rivers_all)) {
+          let riverCount = 0;
+          enrichments.sc_scenic_rivers_all.forEach((river: any) => {
+            if (river.geometry && river.geometry.paths) {
+              try {
+                const paths = river.geometry.paths;
+                const name = river.name || river.NAME || river.Name || 'Scenic River';
+                const dnrMiles = river.dnrMiles !== null && river.dnrMiles !== undefined ? river.dnrMiles : (river.DNR_miles !== null && river.DNR_miles !== undefined ? river.DNR_miles : null);
+                const dateEst = river.dateEst || river.date_est || river.Date_Est || '';
+                const riverCons = river.riverCons || river.river_cons || river.River_Cons || '';
+                const description = river.description || river.Description || river.DESCRIPTION || '';
+                
+                // Draw each path as a polyline
+                paths.forEach((path: number[][]) => {
+                  const latLngs = path.map((coord: number[]) => {
+                    // ESRI paths are [lon, lat] format
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  const polyline = L.polyline(latLngs, {
+                    color: '#06b6d4', // Cyan color for scenic rivers
+                    weight: 3,
+                    opacity: 0.8
+                  });
+                  
+                  // Build popup content
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌊 ${name}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${dnrMiles !== null ? `<div><strong>Miles:</strong> ${dnrMiles}</div>` : ''}
+                        ${dateEst ? `<div><strong>Date Established:</strong> ${dateEst}</div>` : ''}
+                        ${riverCons ? `<div><strong>River Conservation:</strong> ${riverCons}</div>` : ''}
+                        ${description ? `<div style="margin-top: 6px;"><strong>Description:</strong> ${description}</div>` : ''}
+                        ${river.distance_miles !== null && river.distance_miles !== undefined ? `<div style="margin-top: 6px;"><strong>Distance:</strong> ${river.distance_miles.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                        <div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">All Attributes:</div>
+                  `;
+                  
+                  // Add all river attributes (excluding internal fields)
+                  const excludeFields = ['name', 'dnrMiles', 'dateEst', 'riverCons', 'description', 'geometry', 'distance_miles', 'attributes', 'objectid', 'NAME', 'DNR_miles', 'date_est', 'river_cons', 'Description'];
+                  Object.entries(river).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  // Also include any nested attributes object
+                  if (river.attributes && typeof river.attributes === 'object') {
+                    Object.entries(river.attributes).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let displayValue = '';
+                        
+                        if (typeof value === 'object') {
+                          displayValue = JSON.stringify(value);
+                        } else if (typeof value === 'number') {
+                          displayValue = value.toLocaleString();
+                        } else {
+                          displayValue = String(value);
+                        }
+                        
+                        popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      }
+                    });
+                  }
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  polyline.addTo(poi);
+                  
+                  // Extend bounds to include this river
+                  latLngs.forEach((latLng: [number, number]) => {
+                    bounds.extend(latLng);
+                  });
+                });
+                
+                riverCount++;
+              } catch (error) {
+                console.error('Error drawing SC Scenic River polyline:', error);
+              }
+            }
+          });
+          
+          // Add to legend
+          if (riverCount > 0) {
+            if (!legendAccumulator['sc_scenic_rivers']) {
+              legendAccumulator['sc_scenic_rivers'] = {
+                icon: '🌊',
+                color: '#06b6d4',
+                title: 'SC Scenic Rivers',
+                count: 0,
+              };
+            }
+            legendAccumulator['sc_scenic_rivers'].count += riverCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing SC Scenic Rivers:', error);
+      }
+
       // Draw SC Game Zones as polygons on the map
       try {
         if (enrichments.sc_game_zones_all && Array.isArray(enrichments.sc_game_zones_all)) {
@@ -29695,6 +29817,11 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Skip US Drilling Platforms - handled separately with custom icons
         if (key === 'us_drilling_platforms_all') {
+          return;
+        }
+
+        // Skip SC Scenic Rivers - handled separately with custom polylines
+        if (key === 'sc_scenic_rivers_all') {
           return;
         }
 

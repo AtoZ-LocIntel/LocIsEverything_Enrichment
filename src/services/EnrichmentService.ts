@@ -278,6 +278,7 @@ import { getSCGameZonesData } from '../adapters/scGameZones';
 import { getSCCoastalPondsData } from '../adapters/scCoastalPonds';
 import { getSCLakesReservoirsData } from '../adapters/scLakesReservoirs';
 import { getSCCoastalWellInventoryData } from '../adapters/scCoastalWellInventory';
+import { getSCScenicRiversData } from '../adapters/scScenicRivers';
 import { getOrlandoChristmasLightsData } from '../adapters/orlandoChristmasLights';
 import { getUSDrillingPlatformsData } from '../adapters/usDrillingPlatforms';
 import { getWRIAqueductWaterRiskFutureAnnualData, getWRIAqueductWaterRiskBaselineAnnualData, getWRIAqueductWaterRiskBaselineMonthlyData } from '../adapters/wriAqueductWaterRisk';
@@ -2109,7 +2110,8 @@ export class EnrichmentService {
       
       case 'sc_trout_streams':
         return await this.getSCTroutStreams(lat, lon, radius);
-      
+      case 'sc_scenic_rivers':
+        return await this.getSCScenicRivers(lat, lon, radius);
       case 'sc_game_zones':
         return await this.getSCGameZones(lat, lon, radius);
       
@@ -7842,6 +7844,54 @@ export class EnrichmentService {
         sc_trout_streams_count: 0,
         sc_trout_streams_all: [],
         sc_trout_streams_summary: 'Error querying SC Trout Streams'
+      };
+    }
+  }
+
+  private async getSCScenicRivers(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching SC Scenic Rivers data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const features = await getSCScenicRiversData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.sc_scenic_rivers_count = 0;
+        result.sc_scenic_rivers_all = [];
+        result.sc_scenic_rivers_summary = 'No SC Scenic Rivers found within the specified radius.';
+      } else {
+        result.sc_scenic_rivers_count = features.length;
+        result.sc_scenic_rivers_all = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          name: feature.name,
+          dnrMiles: feature.dnrMiles,
+          dateEst: feature.dateEst,
+          riverCons: feature.riverCons,
+          description: feature.description,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles
+        }));
+        
+        const nearestDistance = features[0]?.distance_miles || 0;
+        result.sc_scenic_rivers_summary = `Found ${features.length} SC Scenic River(s) within ${cappedRadius} miles${nearestDistance > 0 ? ` (nearest: ${nearestDistance.toFixed(2)} miles)` : ''}.`;
+      }
+      
+      console.log(`✅ SC Scenic Rivers data processed:`, {
+        totalCount: result.sc_scenic_rivers_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching SC Scenic Rivers data:', error);
+      return {
+        sc_scenic_rivers_count: 0,
+        sc_scenic_rivers_all: [],
+        sc_scenic_rivers_summary: 'Error querying SC Scenic Rivers'
       };
     }
   }

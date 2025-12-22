@@ -623,6 +623,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('acs_') && key.endsWith('_all')) || // Skip all ACS boundary arrays (handled separately)
         key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately)
         key === 'sc_trout_streams_all' || // Skip SC Trout Streams array (handled separately)
+        key === 'sc_scenic_rivers_all' || // Skip SC Scenic Rivers array (handled separately)
         key === 'sc_game_zones_all' || // Skip SC Game Zones array (handled separately)
         key === 'sc_coastal_ponds_all' || // Skip SC Coastal Ponds array (handled separately)
         key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately)
@@ -10497,6 +10498,52 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           lon || location.lon.toString(),
           distance,
           'Trout Stream',
+          '',
+          '',
+          '',
+          attributesJson,
+          'South Carolina Department of Natural Resources'
+        ]);
+      });
+    } else if (key === 'sc_scenic_rivers_all' && Array.isArray(value)) {
+      // Handle SC Scenic Rivers - each feature gets its own row with all attributes
+      value.forEach((river: any) => {
+        const distance = river.distance_miles !== null && river.distance_miles !== undefined ? river.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline - use first coordinate)
+        let lat = '';
+        let lon = '';
+        if (river.geometry && river.geometry.paths && river.geometry.paths.length > 0) {
+          const firstPath = river.geometry.paths[0];
+          if (firstPath && firstPath.length > 0) {
+            // ESRI paths are [lon, lat] format
+            lat = firstPath[0][1].toString();
+            lon = firstPath[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...river };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.objectid;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const name = river.name || river.NAME || river.Name || 'Scenic River';
+        const dnrMiles = river.dnrMiles !== null && river.dnrMiles !== undefined ? river.dnrMiles : (river.DNR_miles !== null && river.DNR_miles !== undefined ? river.DNR_miles : null);
+        const dateEst = river.dateEst || river.date_est || river.Date_Est || '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'South Carolina Department of Natural Resources',
+          (location.confidence || 'N/A').toString(),
+          'SC_SCENIC_RIVERS',
+          `${name}${dnrMiles !== null ? ` (${dnrMiles} miles)` : ''}${dateEst ? ` - ${dateEst}` : ''}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Scenic River Polyline',
           '',
           '',
           '',
