@@ -708,6 +708,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key.startsWith('acs_') && key.endsWith('_all') || // Skip all ACS boundary arrays (handled separately for map drawing)
     key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately for map drawing)
     key === 'sc_trout_streams_all' || // Skip SC Trout Streams array (handled separately for map drawing)
+    key === 'sc_game_zones_all' || // Skip SC Game Zones array (handled separately for map drawing)
+    key === 'sc_coastal_ponds_all' || // Skip SC Coastal Ponds array (handled separately for map drawing)
+    key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
     key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately for map drawing)
     key === 'nps_national_parks_all' || // Skip NPS National Parks array (handled separately for map drawing)
@@ -21324,6 +21327,305 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing SC Trout Streams:', error);
+      }
+
+      // Draw SC Game Zones as polygons on the map
+      try {
+        if (enrichments.sc_game_zones_all && Array.isArray(enrichments.sc_game_zones_all)) {
+          let featureCount = 0;
+          enrichments.sc_game_zones_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('SC Game Zones outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#10b981'; // Green color for game zones
+                  const weight = 2;
+                  const opacity = 0.8;
+
+                  const featurePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const isContaining = feature.isContaining || false;
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                  const gameZone = feature.gameZone || feature.GameZone || feature.GAMEZONE || 'Unknown';
+
+                  const allAttributes = { ...feature };
+                  delete allAttributes.geometry;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.isContaining;
+                  
+                  const attributeKeys = Object.keys(allAttributes).slice(0, 20);
+                  const attributeRows = attributeKeys.map(key => {
+                    const value = allAttributes[key];
+                    const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                    return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                  }).join('');
+
+                  const totalAttributeCount = Object.keys(allAttributes).length;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🎯 SC Game Zone
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Game Zone:</strong> ${gameZone}</div>
+                        ${isContaining ? '<div style="color: #10b981; font-weight: 600;">✓ Location is within this game zone</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
+                        ${totalAttributeCount > 20 ? `<div style="margin-top: 4px; font-size: 11px; color: #9ca3af;">... and ${totalAttributeCount - 20} more attributes (see CSV for all)</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+
+                  featurePolygon.bindPopup(popupContent, { maxWidth: 400 });
+                  featurePolygon.addTo(primary);
+
+                  const polygonBounds = featurePolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing SC Game Zones polygon:', error);
+              }
+            }
+          });
+
+          if (featureCount > 0) {
+            if (!legendAccumulator['sc_game_zones']) {
+              legendAccumulator['sc_game_zones'] = {
+                icon: '🎯',
+                color: '#10b981',
+                title: 'SC Game Zones',
+                count: 0,
+              };
+            }
+            legendAccumulator['sc_game_zones'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing SC Game Zones:', error);
+      }
+
+      // Draw SC Coastal Ponds as polygons on the map
+      try {
+        if (enrichments.sc_coastal_ponds_all && Array.isArray(enrichments.sc_coastal_ponds_all)) {
+          let featureCount = 0;
+          enrichments.sc_coastal_ponds_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('SC Coastal Ponds outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#06b6d4'; // Cyan color for coastal ponds
+                  const weight = 2;
+                  const opacity = 0.8;
+
+                  const featurePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const isContaining = feature.isContaining || false;
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                  const pondId = feature.pondId || feature.Pond_ID || feature.POND_ID || 'Unknown';
+                  const countyName = feature.countyName || feature.County_Nam || feature.County_Name || '';
+                  const hucName = feature.hucName || feature.HUC_Name || feature.HUC_NAME || '';
+                  const className = feature.className || feature.Class || '';
+
+                  const allAttributes = { ...feature };
+                  delete allAttributes.geometry;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.isContaining;
+                  
+                  const attributeKeys = Object.keys(allAttributes).slice(0, 20);
+                  const attributeRows = attributeKeys.map(key => {
+                    const value = allAttributes[key];
+                    const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                    return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                  }).join('');
+
+                  const totalAttributeCount = Object.keys(allAttributes).length;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌊 SC Coastal Pond
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${pondId ? `<div><strong>Pond ID:</strong> ${pondId}</div>` : ''}
+                        ${countyName ? `<div><strong>County:</strong> ${countyName}</div>` : ''}
+                        ${hucName ? `<div><strong>HUC Name:</strong> ${hucName}</div>` : ''}
+                        ${className ? `<div><strong>Class:</strong> ${className}</div>` : ''}
+                        ${isContaining ? '<div style="color: #06b6d4; font-weight: 600;">✓ Location is within this pond</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
+                        ${totalAttributeCount > 20 ? `<div style="margin-top: 4px; font-size: 11px; color: #9ca3af;">... and ${totalAttributeCount - 20} more attributes (see CSV for all)</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+
+                  featurePolygon.bindPopup(popupContent, { maxWidth: 400 });
+                  featurePolygon.addTo(primary);
+
+                  const polygonBounds = featurePolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing SC Coastal Ponds polygon:', error);
+              }
+            }
+          });
+
+          if (featureCount > 0) {
+            if (!legendAccumulator['sc_coastal_ponds']) {
+              legendAccumulator['sc_coastal_ponds'] = {
+                icon: '🌊',
+                color: '#06b6d4',
+                title: 'SC Coastal Ponds',
+                count: 0,
+              };
+            }
+            legendAccumulator['sc_coastal_ponds'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing SC Coastal Ponds:', error);
+      }
+
+      // Draw SC Lakes and Reservoirs as polygons on the map
+      try {
+        if (enrichments.sc_lakes_reservoirs_all && Array.isArray(enrichments.sc_lakes_reservoirs_all)) {
+          let featureCount = 0;
+          enrichments.sc_lakes_reservoirs_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('SC Lakes and Reservoirs outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#0ea5e9'; // Blue color for lakes and reservoirs
+                  const weight = 2;
+                  const opacity = 0.8;
+
+                  const featurePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const isContaining = feature.isContaining || false;
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                  const name = feature.name || feature.NAME || feature.Name || 'Unnamed';
+                  const acres = feature.acres !== null && feature.acres !== undefined ? feature.acres : null;
+
+                  const allAttributes = { ...feature };
+                  delete allAttributes.geometry;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.isContaining;
+                  
+                  const attributeKeys = Object.keys(allAttributes).slice(0, 20);
+                  const attributeRows = attributeKeys.map(key => {
+                    const value = allAttributes[key];
+                    const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                    return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                  }).join('');
+
+                  const totalAttributeCount = Object.keys(allAttributes).length;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🏞️ SC Lake/Reservoir
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Name:</strong> ${name}</div>
+                        ${acres !== null ? `<div><strong>Acres:</strong> ${acres.toLocaleString()}</div>` : ''}
+                        ${isContaining ? '<div style="color: #0ea5e9; font-weight: 600;">✓ Location is within this lake/reservoir</div>' : ''}
+                        ${distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        ${attributeRows ? `<div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">${attributeRows}</div>` : ''}
+                        ${totalAttributeCount > 20 ? `<div style="margin-top: 4px; font-size: 11px; color: #9ca3af;">... and ${totalAttributeCount - 20} more attributes (see CSV for all)</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+
+                  featurePolygon.bindPopup(popupContent, { maxWidth: 400 });
+                  featurePolygon.addTo(primary);
+
+                  const polygonBounds = featurePolygon.getBounds();
+                  if (polygonBounds.isValid()) {
+                    bounds.extend(polygonBounds);
+                  }
+
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing SC Lakes and Reservoirs polygon:', error);
+              }
+            }
+          });
+
+          if (featureCount > 0) {
+            if (!legendAccumulator['sc_lakes_reservoirs']) {
+              legendAccumulator['sc_lakes_reservoirs'] = {
+                icon: '🏞️',
+                color: '#0ea5e9',
+                title: 'SC Lakes and Reservoirs',
+                count: 0,
+              };
+            }
+            legendAccumulator['sc_lakes_reservoirs'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing SC Lakes and Reservoirs:', error);
       }
 
       // Draw Guam Villages as polygons on the map

@@ -274,6 +274,9 @@ import { getChinookSalmonRangesData } from '../adapters/chinookSalmonRanges';
 import { getTXSchoolDistricts2024Data } from '../adapters/txSchoolDistricts2024';
 import { getPRHydrologyData } from '../adapters/prHydrology';
 import { getSCTroutStreamsData } from '../adapters/scTroutStreams';
+import { getSCGameZonesData } from '../adapters/scGameZones';
+import { getSCCoastalPondsData } from '../adapters/scCoastalPonds';
+import { getSCLakesReservoirsData } from '../adapters/scLakesReservoirs';
 import { getWRIAqueductWaterRiskFutureAnnualData, getWRIAqueductWaterRiskBaselineAnnualData, getWRIAqueductWaterRiskBaselineMonthlyData } from '../adapters/wriAqueductWaterRisk';
 import {
   getACSChildrenInGrandparentHouseholdsStateData, getACSChildrenInGrandparentHouseholdsCountyData, getACSChildrenInGrandparentHouseholdsTractData,
@@ -2074,6 +2077,15 @@ export class EnrichmentService {
       
       case 'sc_trout_streams':
         return await this.getSCTroutStreams(lat, lon, radius);
+      
+      case 'sc_game_zones':
+        return await this.getSCGameZones(lat, lon, radius);
+      
+      case 'sc_coastal_ponds':
+        return await this.getSCCoastalPonds(lat, lon, radius);
+      
+      case 'sc_lakes_reservoirs':
+        return await this.getSCLakesReservoirs(lat, lon, radius);
       
       // NH Places of Worship (NH GRANIT) - Proximity query
       case 'nh_places_of_worship':
@@ -7579,6 +7591,173 @@ export class EnrichmentService {
         sc_trout_streams_count: 0,
         sc_trout_streams_all: [],
         sc_trout_streams_summary: 'Error querying SC Trout Streams'
+      };
+    }
+  }
+
+  private async getSCGameZones(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🎯 Fetching SC Game Zones data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const features = await getSCGameZonesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.sc_game_zones_count = 0;
+        result.sc_game_zones_all = [];
+        result.sc_game_zones_summary = 'No SC Game Zones found within the specified radius.';
+      } else {
+        result.sc_game_zones_count = features.length;
+        result.sc_game_zones_all = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          gameZone: feature.gameZone,
+          shapeArea: feature.shapeArea,
+          shapeLength: feature.shapeLength,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+        
+        const containingCount = features.filter(f => f.isContaining).length;
+        const nearestDistance = features[0]?.distance_miles || 0;
+        
+        if (containingCount > 0) {
+          result.sc_game_zones_summary = `Found ${features.length} SC Game Zone(s)${containingCount > 0 ? ` (${containingCount} containing the point)` : ''}${nearestDistance > 0 ? `, nearest: ${nearestDistance.toFixed(2)} miles` : ''}.`;
+        } else {
+          result.sc_game_zones_summary = `Found ${features.length} SC Game Zone(s) within ${cappedRadius} miles${nearestDistance > 0 ? ` (nearest: ${nearestDistance.toFixed(2)} miles)` : ''}.`;
+        }
+      }
+      
+      console.log(`✅ SC Game Zones data processed:`, {
+        totalCount: result.sc_game_zones_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching SC Game Zones data:', error);
+      return {
+        sc_game_zones_count: 0,
+        sc_game_zones_all: [],
+        sc_game_zones_summary: 'Error querying SC Game Zones'
+      };
+    }
+  }
+
+  private async getSCCoastalPonds(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching SC Coastal Ponds data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const features = await getSCCoastalPondsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.sc_coastal_ponds_count = 0;
+        result.sc_coastal_ponds_all = [];
+        result.sc_coastal_ponds_summary = 'No SC Coastal Ponds found within the specified radius.';
+      } else {
+        result.sc_coastal_ponds_count = features.length;
+        result.sc_coastal_ponds_all = features.map(feature => ({
+          ...feature.attributes,
+          fid: feature.fid,
+          objectid: feature.objectid,
+          pondId: feature.pondId,
+          className: feature.className,
+          countyName: feature.countyName,
+          huc12: feature.huc12,
+          hucName: feature.hucName,
+          criticalArea: feature.criticalArea,
+          class13: feature.class13,
+          shapeArea: feature.shapeArea,
+          shapeLength: feature.shapeLength,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+        
+        const containingCount = features.filter(f => f.isContaining).length;
+        const nearestDistance = features[0]?.distance_miles || 0;
+        
+        if (containingCount > 0) {
+          result.sc_coastal_ponds_summary = `Found ${features.length} SC Coastal Pond(s)${containingCount > 0 ? ` (${containingCount} containing the point)` : ''}${nearestDistance > 0 ? `, nearest: ${nearestDistance.toFixed(2)} miles` : ''}.`;
+        } else {
+          result.sc_coastal_ponds_summary = `Found ${features.length} SC Coastal Pond(s) within ${cappedRadius} miles${nearestDistance > 0 ? ` (nearest: ${nearestDistance.toFixed(2)} miles)` : ''}.`;
+        }
+      }
+      
+      console.log(`✅ SC Coastal Ponds data processed:`, {
+        totalCount: result.sc_coastal_ponds_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching SC Coastal Ponds data:', error);
+      return {
+        sc_coastal_ponds_count: 0,
+        sc_coastal_ponds_all: [],
+        sc_coastal_ponds_summary: 'Error querying SC Coastal Ponds'
+      };
+    }
+  }
+
+  private async getSCLakesReservoirs(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏞️ Fetching SC Lakes and Reservoirs data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+      
+      const features = await getSCLakesReservoirsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.sc_lakes_reservoirs_count = 0;
+        result.sc_lakes_reservoirs_all = [];
+        result.sc_lakes_reservoirs_summary = 'No SC Lakes and Reservoirs found within the specified radius.';
+      } else {
+        result.sc_lakes_reservoirs_count = features.length;
+        result.sc_lakes_reservoirs_all = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          name: feature.name,
+          acres: feature.acres,
+          shapeArea: feature.shapeArea,
+          shapeLength: feature.shapeLength,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+        
+        const containingCount = features.filter(f => f.isContaining).length;
+        const nearestDistance = features[0]?.distance_miles || 0;
+        
+        if (containingCount > 0) {
+          result.sc_lakes_reservoirs_summary = `Found ${features.length} SC Lake/Reservoir(s)${containingCount > 0 ? ` (${containingCount} containing the point)` : ''}${nearestDistance > 0 ? `, nearest: ${nearestDistance.toFixed(2)} miles` : ''}.`;
+        } else {
+          result.sc_lakes_reservoirs_summary = `Found ${features.length} SC Lake/Reservoir(s) within ${cappedRadius} miles${nearestDistance > 0 ? ` (nearest: ${nearestDistance.toFixed(2)} miles)` : ''}.`;
+        }
+      }
+      
+      console.log(`✅ SC Lakes and Reservoirs data processed:`, {
+        totalCount: result.sc_lakes_reservoirs_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching SC Lakes and Reservoirs data:', error);
+      return {
+        sc_lakes_reservoirs_count: 0,
+        sc_lakes_reservoirs_all: [],
+        sc_lakes_reservoirs_summary: 'Error querying SC Lakes and Reservoirs'
       };
     }
   }

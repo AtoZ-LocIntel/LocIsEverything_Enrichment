@@ -3139,6 +3139,30 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://services.arcgis.com/acgZYxoN5Oj8pDLa/ArcGIS/rest/services/Trout_Streams/FeatureServer/4"
+        },
+        {
+          name: "SC Game Zones",
+          description: "South Carolina Department of Natural Resources - Game Zones for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "South Carolina",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/acgZYxoN5Oj8pDLa/ArcGIS/rest/services/South_Carolina_Game_Zones/FeatureServer/0"
+        },
+        {
+          name: "SC Coastal Ponds",
+          description: "South Carolina Department of Natural Resources - Coastal Ponds for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "South Carolina",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/acgZYxoN5Oj8pDLa/arcgis/rest/services/SC_Coastal_Ponds_2013/FeatureServer/0"
+        },
+        {
+          name: "SC Lakes and Reservoirs",
+          description: "South Carolina Department of Natural Resources - Lakes and Reservoirs for point-in-polygon and proximity queries (up to 50 miles)",
+          coverage: "South Carolina",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/acgZYxoN5Oj8pDLa/ArcGIS/rest/services/Lakes_and_Reservoirs/FeatureServer/0"
         }
       ]
     },

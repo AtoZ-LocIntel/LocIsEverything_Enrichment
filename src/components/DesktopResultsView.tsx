@@ -129,6 +129,18 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return null; // Skip the _all array (handled separately)
       }
       
+      if (key.includes('sc_game_zones_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      if (key.includes('sc_coastal_ponds_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      if (key.includes('sc_lakes_reservoirs_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
       // Special handling for WRI Aqueduct Water Risk layers - show count only
       if (key.includes('wri_aqueduct_water_risk_future_annual_all') || 
           key.includes('wri_aqueduct_water_risk_baseline_annual_all') || 

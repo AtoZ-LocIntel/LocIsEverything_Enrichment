@@ -1242,6 +1242,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   
   // South Carolina Department of Natural Resources (SCDNR)
   { id: 'sc_trout_streams', label: 'SC Trout Streams', description: 'South Carolina Department of Natural Resources - Trout Streams (proximity up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'sc', section: 'sc', subCategory: 'SCDNR' },
+  { id: 'sc_game_zones', label: 'SC Game Zones', description: 'South Carolina Department of Natural Resources - Game Zones for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'sc', section: 'sc', subCategory: 'SCDNR' },
+  { id: 'sc_coastal_ponds', label: 'SC Coastal Ponds', description: 'South Carolina Department of Natural Resources - Coastal Ponds for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'sc', section: 'sc', subCategory: 'SCDNR' },
+  { id: 'sc_lakes_reservoirs', label: 'SC Lakes and Reservoirs', description: 'South Carolina Department of Natural Resources - Lakes and Reservoirs for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'sc', section: 'sc', subCategory: 'SCDNR' },
   
   { id: 'houston_metro_bus_routes', label: 'Houston Metro Bus Routes', description: 'Houston - Metro Bus Routes for proximity queries (0.25, 0.50, 0.75, 1.0, 5.0 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 5, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },
   { id: 'houston_metro_park_and_ride', label: 'Houston METRO Park and Ride Locations', description: 'Houston - METRO Park and Ride Locations for proximity queries (up to 25 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'tx', section: 'tx', subCategory: 'Houston Data Portal' },

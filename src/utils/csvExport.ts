@@ -595,6 +595,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('acs_') && key.endsWith('_all')) || // Skip all ACS boundary arrays (handled separately)
         key === 'pr_hydrology_all' || // Skip Puerto Rico Hydrology array (handled separately)
         key === 'sc_trout_streams_all' || // Skip SC Trout Streams array (handled separately)
+        key === 'sc_game_zones_all' || // Skip SC Game Zones array (handled separately)
+        key === 'sc_coastal_ponds_all' || // Skip SC Coastal Ponds array (handled separately)
+        key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
         key === 'guam_state_boundary_all' || // Skip Guam State Boundary array (handled separately)
         key === 'usfs_national_grasslands_all' ||
@@ -10464,6 +10467,147 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           distance,
           'Trout Stream',
           '',
+          '',
+          '',
+          attributesJson,
+          'South Carolina Department of Natural Resources'
+        ]);
+      });
+    } else if (key === 'sc_game_zones_all' && Array.isArray(value)) {
+      // Handle SC Game Zones - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate of outer ring)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            // ESRI rings are [lon, lat] format
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.objectid || feature.OBJECTID || '';
+        const gameZone = feature.gameZone || feature.GameZone || feature.GAMEZONE || 'Unknown';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'South Carolina Department of Natural Resources',
+          (location.confidence || 'N/A').toString(),
+          'SC_GAME_ZONES',
+          `Game Zone ${gameZone}${objectId ? ` (${objectId})` : ''}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Game Zone',
+          isContaining,
+          '',
+          '',
+          attributesJson,
+          'South Carolina Department of Natural Resources'
+        ]);
+      });
+    } else if (key === 'sc_coastal_ponds_all' && Array.isArray(value)) {
+      // Handle SC Coastal Ponds - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate of outer ring)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            // ESRI rings are [lon, lat] format
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const fid = feature.fid || feature.FID || '';
+        const objectId = feature.objectid || feature.OBJECTID || '';
+        const pondId = feature.pondId || feature.Pond_ID || feature.POND_ID || 'Unknown';
+        const countyName = feature.countyName || feature.County_Nam || feature.County_Name || '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'South Carolina Department of Natural Resources',
+          (location.confidence || 'N/A').toString(),
+          'SC_COASTAL_PONDS',
+          `Pond ${pondId}${countyName ? ` - ${countyName}` : ''}${objectId ? ` (${objectId})` : fid ? ` (FID: ${fid})` : ''}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Coastal Pond',
+          isContaining,
+          '',
+          '',
+          attributesJson,
+          'South Carolina Department of Natural Resources'
+        ]);
+      });
+    } else if (key === 'sc_lakes_reservoirs_all' && Array.isArray(value)) {
+      // Handle SC Lakes and Reservoirs - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate of outer ring)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            // ESRI rings are [lon, lat] format
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.objectid || feature.OBJECTID || '';
+        const name = feature.name || feature.NAME || feature.Name || 'Unnamed';
+        const acres = feature.acres !== null && feature.acres !== undefined ? feature.acres : null;
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'South Carolina Department of Natural Resources',
+          (location.confidence || 'N/A').toString(),
+          'SC_LAKES_RESERVOIRS',
+          `${name}${acres !== null ? ` (${acres.toLocaleString()} acres)` : ''}${objectId ? ` (${objectId})` : ''}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Lake/Reservoir',
+          isContaining,
           '',
           '',
           attributesJson,
