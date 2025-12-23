@@ -114,8 +114,9 @@ export async function getUSNationalGridData(
     }
     
     // Always do proximity query (to supplement point-in-polygon with nearby features)
-    // Use provided radius or default to 25 miles
-    const cappedRadius = Math.min(radius || 25.0, 25.0);
+    // Use provided radius or default to 25 miles (except for 100m layer which is capped at 1 mile)
+    const maxRadiusForLayer = layerId === 4 ? 1.0 : 25.0; // Layer 4 is 100m grid
+    const cappedRadius = Math.min(radius || maxRadiusForLayer, maxRadiusForLayer);
     
     console.log(`⚠️ Querying US National Grid Layer ${layerId} within ${cappedRadius} miles of [${lat}, ${lon}]`);
     

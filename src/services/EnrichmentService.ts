@@ -92,6 +92,12 @@ import { getLACountyStreetInventoryData } from '../adapters/laCountyStreetInvent
 import { getLACountyHazardsData } from '../adapters/laCountyHazards';
 import { getLACountyBasemapsGridsData } from '../adapters/laCountyBasemapsGrids';
 import { getUSNationalGridData } from '../adapters/usNationalGrid';
+import { getUSGSGovernmentUnitsData } from '../adapters/usgsGovernmentUnits';
+import { getTNMStructuresData } from '../adapters/tnmStructures';
+import { getUSHistoricalCulturalPoliticalPointsData } from '../adapters/usHistoricalCulturalPoliticalPoints';
+import { getUSHistoricalHydrographicPointsData } from '../adapters/usHistoricalHydrographicPoints';
+import { getUSHistoricalPhysicalPointsData } from '../adapters/usHistoricalPhysicalPoints';
+import { getHurricaneEvacuationRoutesData } from '../adapters/hurricaneEvacuationRoutes';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
 import { getLACountyAdministrativeBoundariesData } from '../adapters/laCountyAdministrativeBoundaries';
@@ -2427,6 +2433,110 @@ export class EnrichmentService {
         return await this.getUSNationalGrid(3, lat, lon, radius);
       case 'us_national_grid_100m':
         return await this.getUSNationalGrid(4, lat, lon, radius);
+      
+      // US Historical Cultural Political Points - Proximity queries up to 50 miles
+      case 'us_historical_cultural_political_points':
+        return await this.getUSHistoricalCulturalPoliticalPoints(lat, lon, radius);
+      
+      // US Historical Hydrographic Points - Proximity queries up to 50 miles
+      case 'us_historical_hydrographic_points':
+        return await this.getUSHistoricalHydrographicPoints(lat, lon, radius);
+      
+      // US Historical Physical Points - Proximity queries up to 50 miles
+      case 'us_historical_physical_points':
+        return await this.getUSHistoricalPhysicalPoints(lat, lon, radius);
+      
+      // Hurricane Evacuation Routes - Proximity queries up to 100 miles
+      case 'hurricane_evacuation_routes':
+        return await this.getHurricaneEvacuationRoutes(lat, lon, radius);
+      
+      // Hurricane Evacuation Routes (Natural Hazards) - Proximity queries up to 100 miles
+      case 'hurricane_evacuation_routes_hazards':
+        return await this.getHurricaneEvacuationRoutesHazards(lat, lon, radius);
+      
+      // USGS Government Units - All 20 layers
+      case 'usgs_gov_incorporated_place':
+        return await this.getUSGSGovernmentUnits(19, lat, lon, radius);
+      case 'usgs_gov_unincorporated_place':
+        return await this.getUSGSGovernmentUnits(20, lat, lon, radius);
+      case 'usgs_gov_minor_civil_division':
+        return await this.getUSGSGovernmentUnits(21, lat, lon, radius);
+      case 'usgs_gov_native_american_area':
+        return await this.getUSGSGovernmentUnits(22, lat, lon, radius);
+      case 'usgs_gov_national_park':
+        return await this.getUSGSGovernmentUnits(23, lat, lon, radius);
+      case 'usgs_gov_national_forest':
+        return await this.getUSGSGovernmentUnits(24, lat, lon, radius);
+      case 'usgs_gov_national_wilderness':
+        return await this.getUSGSGovernmentUnits(25, lat, lon, radius);
+      case 'usgs_gov_fish_wildlife_service':
+        return await this.getUSGSGovernmentUnits(26, lat, lon, radius);
+      case 'usgs_gov_national_grassland':
+        return await this.getUSGSGovernmentUnits(27, lat, lon, radius);
+      case 'usgs_gov_national_cemetery':
+        return await this.getUSGSGovernmentUnits(28, lat, lon, radius);
+      case 'usgs_gov_military_reserve':
+        return await this.getUSGSGovernmentUnits(29, lat, lon, radius);
+      case 'usgs_gov_nasa_facility':
+        return await this.getUSGSGovernmentUnits(30, lat, lon, radius);
+      case 'usgs_gov_met_washington_airport':
+        return await this.getUSGSGovernmentUnits(31, lat, lon, radius);
+      case 'usgs_gov_tennessee_valley_authority':
+        return await this.getUSGSGovernmentUnits(32, lat, lon, radius);
+      case 'usgs_gov_bureau_land_management':
+        return await this.getUSGSGovernmentUnits(33, lat, lon, radius);
+      case 'usgs_gov_congressional_district':
+        return await this.getUSGSGovernmentUnits(34, lat, lon, radius);
+      case 'usgs_gov_county_equivalent':
+        return await this.getUSGSGovernmentUnits(35, lat, lon, radius);
+      case 'usgs_gov_state_territory_small_scale':
+        return await this.getUSGSGovernmentUnits(36, lat, lon, radius);
+      case 'usgs_gov_state_territory_large_scale':
+        return await this.getUSGSGovernmentUnits(37, lat, lon, radius);
+      
+      // USGS Government Units - All 20 layers
+      case 'usgs_gov_incorporated_place':
+        return await this.getUSGSGovernmentUnits(19, lat, lon, radius);
+      case 'usgs_gov_unincorporated_place':
+        return await this.getUSGSGovernmentUnits(20, lat, lon, radius);
+      case 'usgs_gov_minor_civil_division':
+        return await this.getUSGSGovernmentUnits(21, lat, lon, radius);
+      case 'usgs_gov_native_american_area':
+        return await this.getUSGSGovernmentUnits(22, lat, lon, radius);
+      case 'usgs_gov_national_park':
+        return await this.getUSGSGovernmentUnits(23, lat, lon, radius);
+      case 'usgs_gov_national_forest':
+        return await this.getUSGSGovernmentUnits(24, lat, lon, radius);
+      case 'usgs_gov_national_wilderness':
+        return await this.getUSGSGovernmentUnits(25, lat, lon, radius);
+      case 'usgs_gov_fish_wildlife_service':
+        return await this.getUSGSGovernmentUnits(26, lat, lon, radius);
+      case 'usgs_gov_national_grassland':
+        return await this.getUSGSGovernmentUnits(27, lat, lon, radius);
+      case 'usgs_gov_national_cemetery':
+        return await this.getUSGSGovernmentUnits(28, lat, lon, radius);
+      case 'usgs_gov_military_reserve':
+        return await this.getUSGSGovernmentUnits(29, lat, lon, radius);
+      case 'usgs_gov_nasa_facility':
+        return await this.getUSGSGovernmentUnits(30, lat, lon, radius);
+      case 'usgs_gov_met_washington_airport':
+        return await this.getUSGSGovernmentUnits(31, lat, lon, radius);
+      case 'usgs_gov_tennessee_valley_authority':
+        return await this.getUSGSGovernmentUnits(32, lat, lon, radius);
+      case 'usgs_gov_bureau_land_management':
+        return await this.getUSGSGovernmentUnits(33, lat, lon, radius);
+      case 'usgs_gov_congressional_district':
+        return await this.getUSGSGovernmentUnits(34, lat, lon, radius);
+      case 'usgs_gov_county_equivalent':
+        return await this.getUSGSGovernmentUnits(35, lat, lon, radius);
+      case 'usgs_gov_state_territory_small_scale':
+        return await this.getUSGSGovernmentUnits(36, lat, lon, radius);
+      case 'usgs_gov_state_territory_large_scale':
+        return await this.getUSGSGovernmentUnits(37, lat, lon, radius);
+      
+      // TNM Structures - Proximity queries up to 50 miles
+      case 'tnm_structures':
+        return await this.getTNMStructures(lat, lon, radius);
       
       // LA County Hydrology - All 72 layers
       case 'la_county_hydrology_complete':
@@ -24271,6 +24381,371 @@ out center;`;
         [`us_national_grid_${key}_containing_message`]: `Error fetching ${layerKeyMap[layerId] || 'US National Grid'} data`,
         [`us_national_grid_${key}_count`]: 0,
         [`us_national_grid_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getUSGSGovernmentUnits(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        19: 'incorporated_place',
+        20: 'unincorporated_place',
+        21: 'minor_civil_division',
+        22: 'native_american_area',
+        23: 'national_park',
+        24: 'national_forest',
+        25: 'national_wilderness',
+        26: 'fish_wildlife_service',
+        27: 'national_grassland',
+        28: 'national_cemetery',
+        29: 'military_reserve',
+        30: 'nasa_facility',
+        31: 'met_washington_airport',
+        32: 'tennessee_valley_authority',
+        33: 'bureau_land_management',
+        34: 'congressional_district',
+        35: 'county_equivalent',
+        36: 'state_territory_small_scale',
+        37: 'state_territory_large_scale'
+      };
+      
+      const layerNames: Record<number, string> = {
+        19: 'Incorporated Place',
+        20: 'Unincorporated Place',
+        21: 'Minor Civil Division',
+        22: 'Native American Area',
+        23: 'National Park',
+        24: 'National Forest',
+        25: 'National Wilderness',
+        26: 'US Fish & Wildlife Service',
+        27: 'National Grassland',
+        28: 'National Cemetery',
+        29: 'Military Reserve',
+        30: 'NASA Facility',
+        31: 'Met. Washington Airport',
+        32: 'Tennessee Valley Authority',
+        33: 'Bureau of Land Management',
+        34: 'Congressional District',
+        35: 'County or Equivalent',
+        36: 'State or Territory (Small-Scale)',
+        37: 'State or Territory (Large-Scale)'
+      };
+      
+      const key = layerKeyMap[layerId] || `gov_unit_${layerId}`;
+      const layerName = layerNames[layerId] || `Government Unit Layer ${layerId}`;
+      
+      console.log(`🏛️ Fetching USGS Government Units ${layerName} data for [${lat}, ${lon}]`);
+      
+      const units = await getUSGSGovernmentUnitsData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (units.length === 0) {
+        result[`usgs_gov_${key}_containing`] = null;
+        result[`usgs_gov_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        result[`usgs_gov_${key}_count`] = 0;
+        result[`usgs_gov_${key}_all`] = [];
+      } else {
+        // Get the first containing feature (should typically be only one for point-in-polygon)
+        const containingFeature = units.find(u => u.isContaining) || units[0];
+        
+        if (containingFeature && containingFeature.isContaining) {
+          const unitName = containingFeature.attributes.NAME || 
+                          containingFeature.attributes.name || 
+                          containingFeature.attributes.FULL_NAME ||
+                          containingFeature.attributes.full_name ||
+                          containingFeature.unitId || 
+                          'Unknown';
+          result[`usgs_gov_${key}_containing`] = unitName;
+          result[`usgs_gov_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${unitName}`;
+        } else {
+          result[`usgs_gov_${key}_containing`] = null;
+          result[`usgs_gov_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`usgs_gov_${key}_count`] = units.length;
+        result[`usgs_gov_${key}_all`] = units.map(unit => ({
+          ...unit.attributes,
+          unitId: unit.unitId,
+          geometry: unit.geometry,
+          isContaining: unit.isContaining,
+          distance_miles: unit.distance_miles
+        }));
+        
+        const containingCount = units.filter(u => u.isContaining).length;
+        const nearbyCount = units.length - containingCount;
+        if (containingCount > 0 && nearbyCount > 0) {
+          result[`usgs_gov_${key}_summary`] = `Found ${containingCount} ${layerName.toLowerCase()} feature(s) containing the point and ${nearbyCount} nearby feature(s).`;
+        } else if (containingCount > 0) {
+          result[`usgs_gov_${key}_summary`] = `Found ${containingCount} ${layerName.toLowerCase()} feature(s) containing the point.`;
+        } else {
+          result[`usgs_gov_${key}_summary`] = `Found ${nearbyCount} nearby ${layerName.toLowerCase()} feature(s).`;
+        }
+      }
+      
+      console.log(`✅ USGS Government Units ${layerName} data processed:`, {
+        totalCount: result[`usgs_gov_${key}_count`],
+        containing: result[`usgs_gov_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Government Units Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        19: 'incorporated_place',
+        20: 'unincorporated_place',
+        21: 'minor_civil_division',
+        22: 'native_american_area',
+        23: 'national_park',
+        24: 'national_forest',
+        25: 'national_wilderness',
+        26: 'fish_wildlife_service',
+        27: 'national_grassland',
+        28: 'national_cemetery',
+        29: 'military_reserve',
+        30: 'nasa_facility',
+        31: 'met_washington_airport',
+        32: 'tennessee_valley_authority',
+        33: 'bureau_land_management',
+        34: 'congressional_district',
+        35: 'county_equivalent',
+        36: 'state_territory_small_scale',
+        37: 'state_territory_large_scale'
+      };
+      const key = layerKeyMap[layerId] || `gov_unit_${layerId}`;
+      return {
+        [`usgs_gov_${key}_containing`]: null,
+        [`usgs_gov_${key}_containing_message`]: `Error fetching ${layerKeyMap[layerId] || 'USGS Government Units'} data`,
+        [`usgs_gov_${key}_count`]: 0,
+        [`usgs_gov_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getTNMStructures(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏢 Fetching TNM Structures data for [${lat}, ${lon}]`);
+      
+      const structures = await getTNMStructuresData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (structures.length === 0) {
+        result['tnm_structures_count'] = 0;
+        result['tnm_structures_summary'] = 'No structures found within the specified radius';
+        result['tnm_structures_all'] = [];
+      } else {
+        result['tnm_structures_count'] = structures.length;
+        result['tnm_structures_summary'] = `Found ${structures.length} structure(s) within ${radius || 5} miles`;
+        result['tnm_structures_all'] = structures.map(structure => ({
+          ...structure.attributes,
+          structureId: structure.structureId,
+          geometry: structure.geometry,
+          distance_miles: structure.distance_miles
+        }));
+      }
+      
+      console.log(`✅ TNM Structures data processed:`, {
+        totalCount: result['tnm_structures_count']
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching TNM Structures data:`, error);
+      return {
+        'tnm_structures_count': 0,
+        'tnm_structures_summary': 'Error fetching TNM structures data',
+        'tnm_structures_all': []
+      };
+    }
+  }
+
+  private async getUSHistoricalCulturalPoliticalPoints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching US Historical Cultural Political Points data for [${lat}, ${lon}]`);
+      
+      const points = await getUSHistoricalCulturalPoliticalPointsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (points.length === 0) {
+        result['us_historical_cultural_political_points_count'] = 0;
+        result['us_historical_cultural_political_points_summary'] = 'No historical cultural political points found within the specified radius';
+        result['us_historical_cultural_political_points_all'] = [];
+      } else {
+        result['us_historical_cultural_political_points_count'] = points.length;
+        result['us_historical_cultural_political_points_summary'] = `Found ${points.length} historical cultural political point(s) within ${radius || 5} miles`;
+        result['us_historical_cultural_political_points_all'] = points.map(point => ({
+          ...point.attributes,
+          pointId: point.pointId,
+          geometry: point.geometry,
+          distance_miles: point.distance_miles
+        }));
+      }
+      
+      console.log(`✅ US Historical Cultural Political Points data processed:`, {
+        totalCount: result['us_historical_cultural_political_points_count']
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching US Historical Cultural Political Points data:`, error);
+      return {
+        'us_historical_cultural_political_points_count': 0,
+        'us_historical_cultural_political_points_summary': 'Error fetching historical cultural political points data',
+        'us_historical_cultural_political_points_all': []
+      };
+    }
+  }
+
+  private async getUSHistoricalHydrographicPoints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching US Historical Hydrographic Points data for [${lat}, ${lon}]`);
+      
+      const points = await getUSHistoricalHydrographicPointsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (points.length === 0) {
+        result['us_historical_hydrographic_points_count'] = 0;
+        result['us_historical_hydrographic_points_summary'] = 'No historical hydrographic points found within the specified radius';
+        result['us_historical_hydrographic_points_all'] = [];
+      } else {
+        result['us_historical_hydrographic_points_count'] = points.length;
+        result['us_historical_hydrographic_points_summary'] = `Found ${points.length} historical hydrographic point(s) within ${radius || 5} miles`;
+        result['us_historical_hydrographic_points_all'] = points.map(point => ({
+          ...point.attributes,
+          pointId: point.pointId,
+          geometry: point.geometry,
+          distance_miles: point.distance_miles
+        }));
+      }
+      
+      console.log(`✅ US Historical Hydrographic Points data processed:`, {
+        totalCount: result['us_historical_hydrographic_points_count']
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching US Historical Hydrographic Points data:`, error);
+      return {
+        'us_historical_hydrographic_points_count': 0,
+        'us_historical_hydrographic_points_summary': 'Error fetching historical hydrographic points data',
+        'us_historical_hydrographic_points_all': []
+      };
+    }
+  }
+
+  private async getUSHistoricalPhysicalPoints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏔️ Fetching US Historical Physical Points data for [${lat}, ${lon}]`);
+      
+      const points = await getUSHistoricalPhysicalPointsData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (points.length === 0) {
+        result['us_historical_physical_points_count'] = 0;
+        result['us_historical_physical_points_summary'] = 'No historical physical points found within the specified radius';
+        result['us_historical_physical_points_all'] = [];
+      } else {
+        result['us_historical_physical_points_count'] = points.length;
+        result['us_historical_physical_points_summary'] = `Found ${points.length} historical physical point(s) within ${radius || 5} miles`;
+        result['us_historical_physical_points_all'] = points.map(point => ({
+          ...point.attributes,
+          pointId: point.pointId,
+          geometry: point.geometry,
+          distance_miles: point.distance_miles
+        }));
+      }
+      
+      console.log(`✅ US Historical Physical Points data processed:`, {
+        totalCount: result['us_historical_physical_points_count']
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching US Historical Physical Points data:`, error);
+      return {
+        'us_historical_physical_points_count': 0,
+        'us_historical_physical_points_summary': 'Error fetching historical physical points data',
+        'us_historical_physical_points_all': []
+      };
+    }
+  }
+
+  private async getHurricaneEvacuationRoutes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌀 Fetching Hurricane Evacuation Routes data for [${lat}, ${lon}]`);
+      
+      const routes = await getHurricaneEvacuationRoutesData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (routes.length === 0) {
+        result['hurricane_evacuation_routes_count'] = 0;
+        result['hurricane_evacuation_routes_summary'] = 'No hurricane evacuation routes found within the specified radius';
+        result['hurricane_evacuation_routes_all'] = [];
+      } else {
+        result['hurricane_evacuation_routes_count'] = routes.length;
+        result['hurricane_evacuation_routes_summary'] = `Found ${routes.length} hurricane evacuation route(s) within ${radius || 10} miles`;
+        result['hurricane_evacuation_routes_all'] = routes.map(route => ({
+          ...route.attributes,
+          routeId: route.routeId,
+          geometry: route.geometry,
+          distance_miles: route.distance_miles
+        }));
+      }
+      
+      console.log(`✅ Hurricane Evacuation Routes data processed:`, {
+        totalCount: result['hurricane_evacuation_routes_count']
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Hurricane Evacuation Routes data:`, error);
+      return {
+        'hurricane_evacuation_routes_count': 0,
+        'hurricane_evacuation_routes_summary': 'Error fetching hurricane evacuation routes data',
+        'hurricane_evacuation_routes_all': []
+      };
+    }
+  }
+
+  private async getHurricaneEvacuationRoutesHazards(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌀 Fetching Hurricane Evacuation Routes (Natural Hazards) data for [${lat}, ${lon}]`);
+      
+      const routes = await getHurricaneEvacuationRoutesData(lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (routes.length === 0) {
+        result['hurricane_evacuation_routes_hazards_count'] = 0;
+        result['hurricane_evacuation_routes_hazards_summary'] = 'No hurricane evacuation routes found within the specified radius';
+        result['hurricane_evacuation_routes_hazards_all'] = [];
+      } else {
+        result['hurricane_evacuation_routes_hazards_count'] = routes.length;
+        result['hurricane_evacuation_routes_hazards_summary'] = `Found ${routes.length} hurricane evacuation route(s) within ${radius || 10} miles`;
+        result['hurricane_evacuation_routes_hazards_all'] = routes.map(route => ({
+          ...route.attributes,
+          routeId: route.routeId,
+          geometry: route.geometry,
+          distance_miles: route.distance_miles
+        }));
+      }
+      
+      console.log(`✅ Hurricane Evacuation Routes (Natural Hazards) data processed:`, {
+        totalCount: result['hurricane_evacuation_routes_hazards_count']
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Hurricane Evacuation Routes (Natural Hazards) data:`, error);
+      return {
+        'hurricane_evacuation_routes_hazards_count': 0,
+        'hurricane_evacuation_routes_hazards_summary': 'Error fetching hurricane evacuation routes data',
+        'hurricane_evacuation_routes_hazards_all': []
       };
     }
   }

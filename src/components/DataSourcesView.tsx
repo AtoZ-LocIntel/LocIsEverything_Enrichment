@@ -518,6 +518,54 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/US_National_Grid_HFL_V/FeatureServer"
         },
         {
+          name: "US Historical Cultural Political Points",
+          description: "USGS GNIS Historical Cultural Political Points of Interest - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/GNIS_Historical_Cultural_Political_Points_v/FeatureServer/0"
+        },
+        {
+          name: "US Historical Hydrographic Points",
+          description: "USGS GNIS Historical Hydrographic Points of Interest - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/GNIS_Historical_Hydrographic_Points_v/FeatureServer/0"
+        },
+        {
+          name: "US Historical Physical Points",
+          description: "USGS GNIS Historical Physical Points of Interest - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/GNIS_Historical_Physical_Points_v/FeatureServer/0"
+        },
+        {
+          name: "Hurricane Evacuation Routes",
+          description: "USGS Hurricane Evacuation Routes - proximity queries up to 100 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/Hurricane_Evacuation_Routes_1/FeatureServer/0"
+        },
+        {
+          name: "USGS Governmental Unit Boundaries",
+          description: "USGS Governmental Unit Boundaries - 20 layers including Incorporated/Unincorporated Places, Minor Civil Divisions, Native American Areas, National Parks/Forests/Wilderness, US Fish & Wildlife Service, National Grasslands/Cemeteries, Military Reserves, NASA Facilities, Metropolitan Washington Airport, Tennessee Valley Authority, Bureau of Land Management, Congressional Districts, Counties, and States/Territories. Point-in-polygon and proximity queries up to 50 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/govunits/MapServer"
+        },
+        {
+          name: "TNM Structures",
+          description: "USGS The National Map Structures - Schools, Technical/Trade Schools, Colleges/Universities, Fire Stations/EMS Stations, Law Enforcement/Police Stations, Prisons/Correctional Facilities, State Capitols, Hospitals/Medical Centers, Ambulance Services, Cemeteries, Post Offices, Campgrounds, Trailheads, and Visitor/Information Centers. Proximity queries up to 50 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/structures/MapServer"
+        },
+        {
           name: "National Risk Index (NRI) Annualized Frequency Hurricane - County",
           description: "FEMA National Risk Index - Annualized frequency of hurricane events (County). Point-in-polygon + proximity up to 25 miles.",
           coverage: "United States",

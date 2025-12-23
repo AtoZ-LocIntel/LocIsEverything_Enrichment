@@ -697,7 +697,14 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'us_national_grid_usng_100000m_all' ||
         key === 'us_national_grid_usng_10000m_all' ||
         key === 'us_national_grid_usng_1000m_all' ||
-        key === 'us_national_grid_usng_100m_all' || // Skip LA County Hydrology arrays (handled separately)
+        key === 'us_national_grid_usng_100m_all' ||
+        key === 'us_historical_cultural_political_points_all' || // Skip US Historical Cultural Political Points array (handled separately)
+        key === 'us_historical_hydrographic_points_all' || // Skip US Historical Hydrographic Points array (handled separately)
+        key === 'us_historical_physical_points_all' || // Skip US Historical Physical Points array (handled separately)
+        key === 'hurricane_evacuation_routes_all' || // Skip Hurricane Evacuation Routes array (handled separately)
+        key === 'hurricane_evacuation_routes_hazards_all' || // Skip Hurricane Evacuation Routes (Natural Hazards) array (handled separately)
+        (key.startsWith('usgs_gov_') && key.endsWith('_all')) || // Skip USGS Government Units arrays (handled separately)
+        key === 'tnm_structures_all' || // Skip TNM Structures array (handled separately)
         (key.startsWith('la_county_hydrology_') && key.endsWith('_all')) || // Skip LA County Infrastructure arrays (handled separately)
         (key.startsWith('la_county_infrastructure_') && key.endsWith('_all')) || // Skip LA County Administrative Boundaries arrays (handled separately)
         (key.startsWith('la_county_admin_boundaries_') && key.endsWith('_all')) || // Skip LA County Elevation arrays (handled separately)
@@ -12365,6 +12372,365 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           dataSource
+        ]);
+      });
+    }
+    
+    // Add US Historical Cultural Political Points data rows
+    if (key === 'us_historical_cultural_political_points_all' && Array.isArray(value)) {
+      value.forEach((point: any) => {
+        const pointId = point.pointId || point.gaz_id || point.GAZ_ID || point.OBJECTID || point.objectid || 'Unknown';
+        const pointName = point.gaz_name || point.GAZ_NAME || point.name || 'Unknown';
+        const distance = point.distance_miles !== null && point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry
+        let pointLat = '';
+        let pointLon = '';
+        if (point.geometry) {
+          if (point.geometry.points && point.geometry.points.length > 0) {
+            pointLon = point.geometry.points[0][0].toString();
+            pointLat = point.geometry.points[0][1].toString();
+          } else if (point.geometry.x !== undefined && point.geometry.y !== undefined) {
+            pointLon = point.geometry.x.toString();
+            pointLat = point.geometry.y.toString();
+          }
+        }
+        
+        const allAttributes = { ...point };
+        delete allAttributes.pointId;
+        delete allAttributes.gaz_id;
+        delete allAttributes.GAZ_ID;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          'US_HISTORICAL_CULTURAL_POLITICAL_POINTS',
+          `🏛️ ${pointName}`,
+          pointLat || location.lat.toString(),
+          pointLon || location.lon.toString(),
+          distance,
+          'Nearby Point',
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add US Historical Hydrographic Points data rows
+    if (key === 'us_historical_hydrographic_points_all' && Array.isArray(value)) {
+      value.forEach((point: any) => {
+        const pointId = point.pointId || point.gaz_id || point.GAZ_ID || point.OBJECTID || point.objectid || 'Unknown';
+        const pointName = point.gaz_name || point.GAZ_NAME || point.name || 'Unknown';
+        const distance = point.distance_miles !== null && point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry
+        let pointLat = '';
+        let pointLon = '';
+        if (point.geometry) {
+          if (point.geometry.points && point.geometry.points.length > 0) {
+            pointLon = point.geometry.points[0][0].toString();
+            pointLat = point.geometry.points[0][1].toString();
+          } else if (point.geometry.x !== undefined && point.geometry.y !== undefined) {
+            pointLon = point.geometry.x.toString();
+            pointLat = point.geometry.y.toString();
+          }
+        }
+        
+        const allAttributes = { ...point };
+        delete allAttributes.pointId;
+        delete allAttributes.gaz_id;
+        delete allAttributes.GAZ_ID;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          'US_HISTORICAL_HYDROGRAPHIC_POINTS',
+          `💧 ${pointName}`,
+          pointLat || location.lat.toString(),
+          pointLon || location.lon.toString(),
+          distance,
+          'Nearby Point',
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add US Historical Physical Points data rows
+    if (key === 'us_historical_physical_points_all' && Array.isArray(value)) {
+      value.forEach((point: any) => {
+        const pointId = point.pointId || point.gaz_id || point.GAZ_ID || point.OBJECTID || point.objectid || 'Unknown';
+        const pointName = point.gaz_name || point.GAZ_NAME || point.name || 'Unknown';
+        const distance = point.distance_miles !== null && point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry
+        let pointLat = '';
+        let pointLon = '';
+        if (point.geometry) {
+          if (point.geometry.points && point.geometry.points.length > 0) {
+            pointLon = point.geometry.points[0][0].toString();
+            pointLat = point.geometry.points[0][1].toString();
+          } else if (point.geometry.x !== undefined && point.geometry.y !== undefined) {
+            pointLon = point.geometry.x.toString();
+            pointLat = point.geometry.y.toString();
+          }
+        }
+        
+        const allAttributes = { ...point };
+        delete allAttributes.pointId;
+        delete allAttributes.gaz_id;
+        delete allAttributes.GAZ_ID;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          'US_HISTORICAL_PHYSICAL_POINTS',
+          `🏔️ ${pointName}`,
+          pointLat || location.lat.toString(),
+          pointLon || location.lon.toString(),
+          distance,
+          'Nearby Point',
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add Hurricane Evacuation Routes data rows
+    if (key === 'hurricane_evacuation_routes_all' && Array.isArray(value)) {
+      value.forEach((route: any) => {
+        const routeId = route.routeId || route.OBJECTID || route.objectid || route.NAME || route.name || 'Unknown';
+        const routeName = route.NAME || route.name || route.ROUTE_NAME || route.route_name || 'Unknown Route';
+        const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline paths)
+        let routeCoords = '';
+        if (route.geometry && route.geometry.paths && route.geometry.paths.length > 0) {
+          // Get first point of first path for CSV coordinate representation
+          const firstPath = route.geometry.paths[0];
+          if (firstPath && firstPath.length > 0) {
+            const firstPoint = firstPath[0];
+            routeCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+          }
+        }
+        
+        const allAttributes = { ...route };
+        delete allAttributes.routeId;
+        delete allAttributes.ROUTE_ID;
+        delete allAttributes.route_id;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          'HURRICANE_EVACUATION_ROUTES',
+          `🌀 ${routeName}`,
+          routeCoords ? routeCoords.split(',')[0] : location.lat.toString(),
+          routeCoords ? routeCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          'Nearby Route',
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add Hurricane Evacuation Routes (Natural Hazards) data rows
+    if (key === 'hurricane_evacuation_routes_hazards_all' && Array.isArray(value)) {
+      value.forEach((route: any) => {
+        const routeId = route.routeId || route.OBJECTID || route.objectid || route.NAME || route.name || 'Unknown';
+        const routeName = route.NAME || route.name || route.ROUTE_NAME || route.route_name || 'Unknown Route';
+        const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline paths)
+        let routeCoords = '';
+        if (route.geometry && route.geometry.paths && route.geometry.paths.length > 0) {
+          // Get first point of first path for CSV coordinate representation
+          const firstPath = route.geometry.paths[0];
+          if (firstPath && firstPath.length > 0) {
+            const firstPoint = firstPath[0];
+            routeCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+          }
+        }
+        
+        const allAttributes = { ...route };
+        delete allAttributes.routeId;
+        delete allAttributes.ROUTE_ID;
+        delete allAttributes.route_id;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          'HURRICANE_EVACUATION_ROUTES',
+          `🌀 ${routeName}`,
+          routeCoords ? routeCoords.split(',')[0] : location.lat.toString(),
+          routeCoords ? routeCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          'Nearby Route',
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add USGS Government Units data rows
+    if (key.startsWith('usgs_gov_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerName = key.replace('usgs_gov_', '').replace('_all', '').toUpperCase().replace(/_/g, '_');
+      const layerDisplayNames: Record<string, string> = {
+        'INCORPORATED_PLACE': 'USGS_INCORPORATED_PLACE',
+        'UNINCORPORATED_PLACE': 'USGS_UNINCORPORATED_PLACE',
+        'MINOR_CIVIL_DIVISION': 'USGS_MINOR_CIVIL_DIVISION',
+        'NATIVE_AMERICAN_AREA': 'USGS_NATIVE_AMERICAN_AREA',
+        'NATIONAL_PARK': 'USGS_NATIONAL_PARK',
+        'NATIONAL_FOREST': 'USGS_NATIONAL_FOREST',
+        'NATIONAL_WILDERNESS': 'USGS_NATIONAL_WILDERNESS',
+        'FISH_WILDLIFE_SERVICE': 'USGS_FISH_WILDLIFE_SERVICE',
+        'NATIONAL_GRASSLAND': 'USGS_NATIONAL_GRASSLAND',
+        'NATIONAL_CEMETERY': 'USGS_NATIONAL_CEMETERY',
+        'MILITARY_RESERVE': 'USGS_MILITARY_RESERVE',
+        'NASA_FACILITY': 'USGS_NASA_FACILITY',
+        'MET_WASHINGTON_AIRPORT': 'USGS_MET_WASHINGTON_AIRPORT',
+        'TENNESSEE_VALLEY_AUTHORITY': 'USGS_TENNESSEE_VALLEY_AUTHORITY',
+        'BUREAU_LAND_MANAGEMENT': 'USGS_BUREAU_LAND_MANAGEMENT',
+        'CONGRESSIONAL_DISTRICT': 'USGS_CONGRESSIONAL_DISTRICT',
+        'COUNTY_EQUIVALENT': 'USGS_COUNTY_EQUIVALENT',
+        'STATE_TERRITORY_SMALL_SCALE': 'USGS_STATE_TERRITORY_SMALL_SCALE',
+        'STATE_TERRITORY_LARGE_SCALE': 'USGS_STATE_TERRITORY_LARGE_SCALE'
+      };
+      const displayName = layerDisplayNames[layerName] || `USGS_${layerName}`;
+      
+      value.forEach((unit: any) => {
+        const unitId = unit.unitId || unit.OBJECTID || unit.objectid || 'Unknown';
+        const unitName = unit.NAME || unit.name || unit.FULL_NAME || unit.full_name || unitId;
+        const distance = unit.distance_miles !== null && unit.distance_miles !== undefined 
+          ? unit.distance_miles.toFixed(2) 
+          : (unit.isContaining ? '0.00' : '');
+        
+        const allAttributes = { ...unit };
+        delete allAttributes.unitId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          displayName,
+          `🏛️ ${unitName}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          distance,
+          unit.isContaining ? 'Within Boundary' : 'Nearby Boundary',
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add TNM Structures data rows
+    if (key === 'tnm_structures_all' && Array.isArray(value)) {
+      value.forEach((structure: any) => {
+        const structureId = structure.structureId || structure.OBJECTID || structure.objectid || structure.NAME || structure.name || 'Unknown';
+        const structureName = structure.NAME || structure.name || structure.STRUCTURE_NAME || structure.structure_name || 'Unknown Structure';
+        const structureType = structure.TYPE || structure.type || structure.STRUCTURE_TYPE || structure.structure_type || structure.FUNCTION || structure.function || 'Unknown';
+        const distance = structure.distance_miles !== null && structure.distance_miles !== undefined ? structure.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry
+        let structureLat = '';
+        let structureLon = '';
+        if (structure.geometry) {
+          if (structure.geometry.points && structure.geometry.points.length > 0) {
+            structureLon = structure.geometry.points[0][0].toString();
+            structureLat = structure.geometry.points[0][1].toString();
+          } else if (structure.geometry.x !== undefined && structure.geometry.y !== undefined) {
+            structureLon = structure.geometry.x.toString();
+            structureLat = structure.geometry.y.toString();
+          }
+        }
+        
+        const allAttributes = { ...structure };
+        delete allAttributes.structureId;
+        delete allAttributes.STRUCTURE_ID;
+        delete allAttributes.structure_id;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          'TNM_STRUCTURES',
+          `🏢 ${structureName} (${structureType})`,
+          structureLat || location.lat.toString(),
+          structureLon || location.lon.toString(),
+          distance,
+          'Nearby Structure',
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
         ]);
       });
     }

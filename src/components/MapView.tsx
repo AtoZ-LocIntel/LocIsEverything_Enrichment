@@ -98,6 +98,60 @@ const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsLayers: '0',
     wmsFormat: 'image/png',
   },
+  // NLCD Canopy Cover WMS
+  nlcd_canopy: {
+    type: 'wms',
+    name: 'NLCD Canopy Cover',
+    attribution: 'USGS MRLC',
+    wmsUrl: 'https://www.mrlc.gov/geoserver/NLCD_Canopy/wms',
+    wmsLayers: 'NLCD_Canopy',
+    wmsFormat: 'image/png',
+  },
+  // NLCD Impervious Descriptor WMS
+  nlcd_impervious_descriptor: {
+    type: 'wms',
+    name: 'NLCD Impervious Descriptor',
+    attribution: 'USGS MRLC',
+    wmsUrl: 'https://www.mrlc.gov/geoserver/NLCD_Impervious_Descriptor/wms',
+    wmsLayers: 'NLCD_Impervious_Descriptor',
+    wmsFormat: 'image/png',
+  },
+  // NLCD Imperviousness WMS
+  nlcd_impervious: {
+    type: 'wms',
+    name: 'NLCD Imperviousness',
+    attribution: 'USGS MRLC',
+    wmsUrl: 'https://www.mrlc.gov/geoserver/NLCD_Impervious/wms',
+    wmsLayers: 'NLCD_Impervious',
+    wmsFormat: 'image/png',
+  },
+  // NLCD Land Cover WMS
+  nlcd_land_cover: {
+    type: 'wms',
+    name: 'NLCD Land Cover',
+    attribution: 'USGS MRLC',
+    wmsUrl: 'https://www.mrlc.gov/geoserver/NLCD_Land_Cover/wms',
+    wmsLayers: 'NLCD_Land_Cover',
+    wmsFormat: 'image/png',
+  },
+  // NLCD Shrublands WMS
+  nlcd_shrubland: {
+    type: 'wms',
+    name: 'NLCD Shrublands',
+    attribution: 'USGS MRLC',
+    wmsUrl: 'https://www.mrlc.gov/geoserver/NLCD_Shrubland/wms',
+    wmsLayers: 'NLCD_Shrubland',
+    wmsFormat: 'image/png',
+  },
+  // USGS NAIP Plus Imagery WMS
+  usgs_naip_plus: {
+    type: 'wms',
+    name: 'USGS NAIP Plus Imagery',
+    attribution: 'USGS The National Map',
+    wmsUrl: 'https://imagery.nationalmap.gov/arcgis/services/USGSNAIPPlus/ImageServer/WMSServer',
+    wmsLayers: 'USGSNAIPPlus', // Use service name as layer for ImageServer WMS
+    wmsFormat: 'image/png',
+  },
 };
 
 
@@ -314,6 +368,32 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'us_national_grid_usng_10000m': { icon: '🗺️', color: '#1d4ed8', title: 'USNG 10000m' },
   'us_national_grid_usng_1000m': { icon: '🗺️', color: '#1e40af', title: 'USNG 1000m' },
   'us_national_grid_usng_100m': { icon: '🗺️', color: '#1e3a8a', title: 'USNG 100m' },
+  'us_historical_cultural_political_points': { icon: '🏛️', color: '#8b5cf6', title: 'US Historical Cultural Political Points' },
+  'us_historical_hydrographic_points': { icon: '💧', color: '#06b6d4', title: 'US Historical Hydrographic Points' },
+  'us_historical_physical_points': { icon: '🏔️', color: '#10b981', title: 'US Historical Physical Points' },
+  'hurricane_evacuation_routes': { icon: '🌀', color: '#f97316', title: 'Hurricane Evacuation Routes' },
+  'hurricane_evacuation_routes_hazards': { icon: '🌀', color: '#f97316', title: 'Hurricane Evacuation Routes' },
+  // USGS Government Units
+  'usgs_gov_incorporated_place': { icon: '🏛️', color: '#3b82f6', title: 'USGS Incorporated Place' },
+  'usgs_gov_unincorporated_place': { icon: '🏘️', color: '#2563eb', title: 'USGS Unincorporated Place' },
+  'usgs_gov_minor_civil_division': { icon: '🏘️', color: '#1d4ed8', title: 'USGS Minor Civil Division' },
+  'usgs_gov_native_american_area': { icon: '🏕️', color: '#1e40af', title: 'USGS Native American Area' },
+  'usgs_gov_national_park': { icon: '🏞️', color: '#059669', title: 'USGS National Park' },
+  'usgs_gov_national_forest': { icon: '🌲', color: '#047857', title: 'USGS National Forest' },
+  'usgs_gov_national_wilderness': { icon: '⛰️', color: '#065f46', title: 'USGS National Wilderness' },
+  'usgs_gov_fish_wildlife_service': { icon: '🦅', color: '#0d9488', title: 'USGS US Fish & Wildlife Service' },
+  'usgs_gov_national_grassland': { icon: '🌾', color: '#84cc16', title: 'USGS National Grassland' },
+  'usgs_gov_national_cemetery': { icon: '🪦', color: '#64748b', title: 'USGS National Cemetery' },
+  'usgs_gov_military_reserve': { icon: '🎖️', color: '#dc2626', title: 'USGS Military Reserve' },
+  'usgs_gov_nasa_facility': { icon: '🚀', color: '#7c3aed', title: 'USGS NASA Facility' },
+  'usgs_gov_met_washington_airport': { icon: '✈️', color: '#6366f1', title: 'USGS Met. Washington Airport' },
+  'usgs_gov_tennessee_valley_authority': { icon: '⚡', color: '#f59e0b', title: 'USGS Tennessee Valley Authority' },
+  'usgs_gov_bureau_land_management': { icon: '🌵', color: '#d97706', title: 'USGS Bureau of Land Management' },
+  'usgs_gov_congressional_district': { icon: '🗳️', color: '#8b5cf6', title: 'USGS Congressional District' },
+  'usgs_gov_county_equivalent': { icon: '🗺️', color: '#3b82f6', title: 'USGS County or Equivalent' },
+  'usgs_gov_state_territory_small_scale': { icon: '🗺️', color: '#2563eb', title: 'USGS State or Territory (Small-Scale)' },
+  'usgs_gov_state_territory_large_scale': { icon: '🗺️', color: '#1d4ed8', title: 'USGS State or Territory (Large-Scale)' },
+  'tnm_structures': { icon: '🏢', color: '#3b82f6', title: 'TNM Structures' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -969,6 +1049,13 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'us_national_grid_usng_10000m_all' ||
     key === 'us_national_grid_usng_1000m_all' ||
     key === 'us_national_grid_usng_100m_all' ||
+    key === 'us_historical_cultural_political_points_all' || // Skip US Historical Cultural Political Points array (handled separately for map drawing)
+    key === 'us_historical_hydrographic_points_all' || // Skip US Historical Hydrographic Points array (handled separately for map drawing)
+    key === 'us_historical_physical_points_all' || // Skip US Historical Physical Points array (handled separately for map drawing)
+    key === 'hurricane_evacuation_routes_all' || // Skip Hurricane Evacuation Routes array (handled separately for map drawing)
+    key === 'hurricane_evacuation_routes_hazards_all' || // Skip Hurricane Evacuation Routes (Natural Hazards) array (handled separately for map drawing)
+    key.startsWith('usgs_gov_') && key.endsWith('_all') || // Skip USGS Government Units arrays (handled separately for map drawing)
+    key === 'tnm_structures_all' || // Skip TNM Structures array (handled separately for map drawing)
     key === 'la_county_township_range_section_rancho_boundaries_all' ||
     key.startsWith('la_county_hydrology_') && key.endsWith('_all') || // Skip LA County Hydrology arrays (handled separately for map drawing)
     key.startsWith('la_county_infrastructure_') && key.endsWith('_all') || // Skip LA County Infrastructure arrays (handled separately for map drawing)
@@ -1678,13 +1765,31 @@ const MapView: React.FC<MapViewProps> = ({
         }).addTo(map);
       } else if (basemapConfig.type === 'wms') {
         // WMS raster tiles (USGS National Map)
-        basemapLayer = L.tileLayer.wms(basemapConfig.wmsUrl!, {
-          layers: basemapConfig.wmsLayers,
+        const wmsOptions: any = {
           format: basemapConfig.wmsFormat || 'image/png',
           transparent: true,
           attribution: basemapConfig.attribution,
           crs: L.CRS.EPSG3857, // Web Mercator
-        }).addTo(map);
+          version: '1.3.0', // Explicitly set WMS version
+        };
+        
+        // Only add layers parameter if it's not empty (ImageServer WMS may need service name)
+        if (basemapConfig.wmsLayers && basemapConfig.wmsLayers.trim() !== '') {
+          wmsOptions.layers = basemapConfig.wmsLayers;
+        }
+        
+        basemapLayer = L.tileLayer.wms(basemapConfig.wmsUrl!, wmsOptions);
+        
+        // Add error handling for WMS layers
+        basemapLayer.on('tileerror', (error: any, tile: any) => {
+          console.warn('WMS tile error:', error, 'for basemap:', selectedBasemap, 'tile:', tile);
+        });
+        
+        basemapLayer.on('load', () => {
+          console.log('WMS tile loaded successfully for basemap:', selectedBasemap);
+        });
+        
+        basemapLayer.addTo(map);
       }
       
       basemapLayerRef.current = basemapLayer;
@@ -1881,13 +1986,31 @@ const MapView: React.FC<MapViewProps> = ({
       }
     } else if (basemapConfig.type === 'wms') {
       // WMS raster tiles (USGS National Map)
-      newBasemapLayer = L.tileLayer.wms(basemapConfig.wmsUrl!, {
-        layers: basemapConfig.wmsLayers,
+      const wmsOptions: any = {
         format: basemapConfig.wmsFormat || 'image/png',
         transparent: true,
         attribution: basemapConfig.attribution,
         crs: L.CRS.EPSG3857, // Web Mercator
-      }).addTo(mapInstanceRef.current);
+        version: '1.3.0', // Explicitly set WMS version
+      };
+      
+      // Only add layers parameter if it's not empty (ImageServer WMS may need service name)
+      if (basemapConfig.wmsLayers && basemapConfig.wmsLayers.trim() !== '') {
+        wmsOptions.layers = basemapConfig.wmsLayers;
+      }
+      
+      newBasemapLayer = L.tileLayer.wms(basemapConfig.wmsUrl!, wmsOptions);
+      
+      // Add error handling for WMS layers
+      newBasemapLayer.on('tileerror', (error: any, tile: any) => {
+        console.warn('WMS tile error:', error, 'for basemap:', selectedBasemap, 'tile:', tile);
+      });
+      
+      newBasemapLayer.on('load', () => {
+        console.log('WMS tile loaded successfully for basemap:', selectedBasemap);
+      });
+      
+      newBasemapLayer.addTo(mapInstanceRef.current);
     }
     
     basemapLayerRef.current = newBasemapLayer;
@@ -26219,6 +26342,726 @@ const MapView: React.FC<MapViewProps> = ({
         }
       });
 
+      // Draw US Historical Cultural Political Points
+      if (enrichments.us_historical_cultural_political_points_all && Array.isArray(enrichments.us_historical_cultural_political_points_all)) {
+        try {
+          let pointCount = 0;
+          enrichments.us_historical_cultural_political_points_all.forEach((point: any) => {
+            try {
+              let pointLat: number | null = null;
+              let pointLon: number | null = null;
+              
+              // Extract coordinates from geometry (multipoint or single point)
+              if (point.geometry) {
+                if (point.geometry.points && point.geometry.points.length > 0) {
+                  // Multipoint geometry - use first point
+                  const firstPoint = point.geometry.points[0];
+                  pointLon = firstPoint[0];
+                  pointLat = firstPoint[1];
+                } else if (point.geometry.x !== undefined && point.geometry.y !== undefined) {
+                  // Single point geometry
+                  pointLon = point.geometry.x;
+                  pointLat = point.geometry.y;
+                }
+              }
+              
+              // Fallback to attributes if geometry not available
+              if (pointLat === null || pointLon === null) {
+                // Try to get from attributes (though geometry should always be present)
+                return;
+              }
+              
+              const pointName = point.gaz_name || point.GAZ_NAME || point.name || 'Unknown Point';
+              const featureClass = point.gaz_featureclass || point.GAZ_FEATURECLASS || point.feature_class || 'Unknown';
+              const stateAlpha = point.state_alpha || point.STATE_ALPHA || '';
+              const countyName = point.county_name || point.COUNTY_NAME || '';
+              const distanceMiles = point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
+              
+              // Create a custom icon for historical points
+              const icon = createPOIIcon('🏛️', '#8b5cf6'); // Purple icon for historical/cultural points
+              
+              const marker = L.marker([pointLat, pointLon], { icon });
+              
+              // Build popup content
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🏛️ ${pointName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${featureClass ? `<div><strong>Feature Class:</strong> ${featureClass}</div>` : ''}
+                    ${stateAlpha ? `<div><strong>State:</strong> ${stateAlpha}</div>` : ''}
+                    ${countyName ? `<div><strong>County:</strong> ${countyName}</div>` : ''}
+                    ${distanceMiles ? `<div style="color: #d97706; font-weight: 600; margin-top: 8px;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all attributes (excluding internal fields)
+              const excludeFields = ['gaz_name', 'GAZ_NAME', 'name', 'gaz_featureclass', 'GAZ_FEATURECLASS', 'feature_class', 'state_alpha', 'STATE_ALPHA', 'county_name', 'COUNTY_NAME', 'geometry', 'pointId', 'distance_miles', 'OBJECTID', 'objectid'];
+              Object.entries(point).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  if (typeof value === 'object' && !Array.isArray(value)) {
+                    return;
+                  }
+                  const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                  popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent);
+              marker.addTo(primary);
+              const pointBounds = L.latLngBounds([[pointLat, pointLon]]);
+              bounds.extend(pointBounds);
+              pointCount++;
+            } catch (error) {
+              console.error('Error drawing historical cultural political point:', error);
+            }
+          });
+          
+          if (pointCount > 0) {
+            if (!legendAccumulator['us_historical_cultural_political_points']) {
+              legendAccumulator['us_historical_cultural_political_points'] = {
+                icon: '🏛️',
+                color: '#8b5cf6',
+                title: 'US Historical Cultural Political Points',
+                count: 0,
+              };
+            }
+            legendAccumulator['us_historical_cultural_political_points'].count += pointCount;
+          }
+        } catch (error) {
+          console.error('Error processing US Historical Cultural Political Points:', error);
+        }
+      }
+
+      // Draw US Historical Hydrographic Points
+      if (enrichments.us_historical_hydrographic_points_all && Array.isArray(enrichments.us_historical_hydrographic_points_all)) {
+        try {
+          let pointCount = 0;
+          enrichments.us_historical_hydrographic_points_all.forEach((point: any) => {
+            try {
+              let pointLat: number | null = null;
+              let pointLon: number | null = null;
+              
+              // Extract coordinates from geometry (multipoint or single point)
+              if (point.geometry) {
+                if (point.geometry.points && point.geometry.points.length > 0) {
+                  // Multipoint geometry - use first point
+                  const firstPoint = point.geometry.points[0];
+                  pointLon = firstPoint[0];
+                  pointLat = firstPoint[1];
+                } else if (point.geometry.x !== undefined && point.geometry.y !== undefined) {
+                  // Single point geometry
+                  pointLon = point.geometry.x;
+                  pointLat = point.geometry.y;
+                }
+              }
+              
+              // Fallback to attributes if geometry not available
+              if (pointLat === null || pointLon === null) {
+                // Try to get from attributes (though geometry should always be present)
+                return;
+              }
+              
+              const pointName = point.gaz_name || point.GAZ_NAME || point.name || 'Unknown Point';
+              const featureClass = point.gaz_featureclass || point.GAZ_FEATURECLASS || point.feature_class || 'Unknown';
+              const stateAlpha = point.state_alpha || point.STATE_ALPHA || '';
+              const countyName = point.county_name || point.COUNTY_NAME || '';
+              const distanceMiles = point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
+              
+              // Create a custom icon for hydrographic points
+              const icon = createPOIIcon('💧', '#06b6d4'); // Cyan/blue icon for hydrographic points
+              
+              const marker = L.marker([pointLat, pointLon], { icon });
+              
+              // Build popup content
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    💧 ${pointName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${featureClass ? `<div><strong>Feature Class:</strong> ${featureClass}</div>` : ''}
+                    ${stateAlpha ? `<div><strong>State:</strong> ${stateAlpha}</div>` : ''}
+                    ${countyName ? `<div><strong>County:</strong> ${countyName}</div>` : ''}
+                    ${distanceMiles ? `<div style="color: #d97706; font-weight: 600; margin-top: 8px;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all attributes (excluding internal fields)
+              const excludeFields = ['gaz_name', 'GAZ_NAME', 'name', 'gaz_featureclass', 'GAZ_FEATURECLASS', 'feature_class', 'state_alpha', 'STATE_ALPHA', 'county_name', 'COUNTY_NAME', 'geometry', 'pointId', 'distance_miles', 'OBJECTID', 'objectid'];
+              Object.entries(point).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  if (typeof value === 'object' && !Array.isArray(value)) {
+                    return;
+                  }
+                  const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                  popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent);
+              marker.addTo(primary);
+              const pointBounds = L.latLngBounds([[pointLat, pointLon]]);
+              bounds.extend(pointBounds);
+              pointCount++;
+            } catch (error) {
+              console.error('Error drawing historical hydrographic point:', error);
+            }
+          });
+          
+          if (pointCount > 0) {
+            if (!legendAccumulator['us_historical_hydrographic_points']) {
+              legendAccumulator['us_historical_hydrographic_points'] = {
+                icon: '💧',
+                color: '#06b6d4',
+                title: 'US Historical Hydrographic Points',
+                count: 0,
+              };
+            }
+            legendAccumulator['us_historical_hydrographic_points'].count += pointCount;
+          }
+        } catch (error) {
+          console.error('Error processing US Historical Hydrographic Points:', error);
+        }
+      }
+
+      // Draw US Historical Physical Points
+      if (enrichments.us_historical_physical_points_all && Array.isArray(enrichments.us_historical_physical_points_all)) {
+        try {
+          let pointCount = 0;
+          enrichments.us_historical_physical_points_all.forEach((point: any) => {
+            try {
+              let pointLat: number | null = null;
+              let pointLon: number | null = null;
+              
+              // Extract coordinates from geometry (multipoint or single point)
+              if (point.geometry) {
+                if (point.geometry.points && point.geometry.points.length > 0) {
+                  // Multipoint geometry - use first point
+                  const firstPoint = point.geometry.points[0];
+                  pointLon = firstPoint[0];
+                  pointLat = firstPoint[1];
+                } else if (point.geometry.x !== undefined && point.geometry.y !== undefined) {
+                  // Single point geometry
+                  pointLon = point.geometry.x;
+                  pointLat = point.geometry.y;
+                }
+              }
+              
+              // Fallback to attributes if geometry not available
+              if (pointLat === null || pointLon === null) {
+                // Try to get from attributes (though geometry should always be present)
+                return;
+              }
+              
+              const pointName = point.gaz_name || point.GAZ_NAME || point.name || 'Unknown Point';
+              const featureClass = point.gaz_featureclass || point.GAZ_FEATURECLASS || point.feature_class || 'Unknown';
+              const stateAlpha = point.state_alpha || point.STATE_ALPHA || '';
+              const countyName = point.county_name || point.COUNTY_NAME || '';
+              const distanceMiles = point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
+              
+              // Create a custom icon for physical points
+              const icon = createPOIIcon('🏔️', '#10b981'); // Green icon for physical/geographic points
+              
+              const marker = L.marker([pointLat, pointLon], { icon });
+              
+              // Build popup content
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🏔️ ${pointName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${featureClass ? `<div><strong>Feature Class:</strong> ${featureClass}</div>` : ''}
+                    ${stateAlpha ? `<div><strong>State:</strong> ${stateAlpha}</div>` : ''}
+                    ${countyName ? `<div><strong>County:</strong> ${countyName}</div>` : ''}
+                    ${distanceMiles ? `<div style="color: #d97706; font-weight: 600; margin-top: 8px;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all attributes (excluding internal fields)
+              const excludeFields = ['gaz_name', 'GAZ_NAME', 'name', 'gaz_featureclass', 'GAZ_FEATURECLASS', 'feature_class', 'state_alpha', 'STATE_ALPHA', 'county_name', 'COUNTY_NAME', 'geometry', 'pointId', 'distance_miles', 'OBJECTID', 'objectid'];
+              Object.entries(point).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  if (typeof value === 'object' && !Array.isArray(value)) {
+                    return;
+                  }
+                  const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                  popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent);
+              marker.addTo(primary);
+              const pointBounds = L.latLngBounds([[pointLat, pointLon]]);
+              bounds.extend(pointBounds);
+              pointCount++;
+            } catch (error) {
+              console.error('Error drawing historical physical point:', error);
+            }
+          });
+          
+          if (pointCount > 0) {
+            if (!legendAccumulator['us_historical_physical_points']) {
+              legendAccumulator['us_historical_physical_points'] = {
+                icon: '🏔️',
+                color: '#10b981',
+                title: 'US Historical Physical Points',
+                count: 0,
+              };
+            }
+            legendAccumulator['us_historical_physical_points'].count += pointCount;
+          }
+        } catch (error) {
+          console.error('Error processing US Historical Physical Points:', error);
+        }
+      }
+
+      // Draw Hurricane Evacuation Routes as polylines on the map
+      if (enrichments.hurricane_evacuation_routes_all && Array.isArray(enrichments.hurricane_evacuation_routes_all)) {
+        try {
+          let routeCount = 0;
+          enrichments.hurricane_evacuation_routes_all.forEach((route: any) => {
+            if (route.geometry && route.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                // ESRI polylines have paths (array of coordinate arrays)
+                const paths = route.geometry.paths;
+                if (paths && paths.length > 0) {
+                  routeCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const routeName = route.NAME || route.name || route.ROUTE_NAME || route.route_name || 'Unknown Route';
+                    const routeType = route.TYPE || route.type || route.ROUTE_TYPE || route.route_type || 'Evacuation Route';
+                    const distanceMiles = route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
+
+                    // Create polyline with orange/red color for evacuation routes
+                    const polyline = L.polyline(latlngs, {
+                      color: '#f97316', // Orange color for evacuation routes
+                      weight: 5,
+                      opacity: 0.9,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all route attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🌀 ${routeName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${routeType ? `<div><strong>Type:</strong> ${routeType}</div>` : ''}
+                          ${distanceMiles ? `<div style="color: #d97706; font-weight: 600; margin-top: 8px;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all route attributes (excluding internal fields)
+                    const excludeFields = ['NAME', 'name', 'ROUTE_NAME', 'route_name', 'TYPE', 'type', 'ROUTE_TYPE', 'route_type', 'geometry', 'routeId', 'distance_miles', 'OBJECTID', 'objectid'];
+                    Object.entries(route).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(primary);
+                    bounds.extend(polyline.getBounds());
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Hurricane Evacuation Route polyline:', error);
+              }
+            }
+          });
+          
+          if (routeCount > 0) {
+            if (!legendAccumulator['hurricane_evacuation_routes']) {
+              legendAccumulator['hurricane_evacuation_routes'] = {
+                icon: '🌀',
+                color: '#f97316',
+                title: 'Hurricane Evacuation Routes',
+                count: 0,
+              };
+            }
+            legendAccumulator['hurricane_evacuation_routes'].count += routeCount;
+          }
+        } catch (error) {
+          console.error('Error processing Hurricane Evacuation Routes:', error);
+        }
+      }
+
+      // Draw Hurricane Evacuation Routes (Natural Hazards) as polylines on the map
+      if (enrichments.hurricane_evacuation_routes_hazards_all && Array.isArray(enrichments.hurricane_evacuation_routes_hazards_all)) {
+        try {
+          let routeCount = 0;
+          enrichments.hurricane_evacuation_routes_hazards_all.forEach((route: any) => {
+            if (route.geometry && route.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                // ESRI polylines have paths (array of coordinate arrays)
+                const paths = route.geometry.paths;
+                if (paths && paths.length > 0) {
+                  routeCount++;
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Since we requested outSR=4326, coordinates should already be in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const routeName = route.NAME || route.name || route.ROUTE_NAME || route.route_name || 'Unknown Route';
+                    const routeType = route.TYPE || route.type || route.ROUTE_TYPE || route.route_type || 'Evacuation Route';
+                    const distanceMiles = route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
+
+                    // Create polyline with orange/red color for evacuation routes
+                    const polyline = L.polyline(latlngs, {
+                      color: '#f97316', // Orange color for evacuation routes
+                      weight: 5,
+                      opacity: 0.9,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content with all route attributes
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🌀 ${routeName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${routeType ? `<div><strong>Type:</strong> ${routeType}</div>` : ''}
+                          ${distanceMiles ? `<div style="color: #d97706; font-weight: 600; margin-top: 8px;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add all route attributes (excluding internal fields)
+                    const excludeFields = ['NAME', 'name', 'ROUTE_NAME', 'route_name', 'TYPE', 'type', 'ROUTE_TYPE', 'route_type', 'geometry', 'routeId', 'distance_miles', 'OBJECTID', 'objectid'];
+                    Object.entries(route).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(primary);
+                    bounds.extend(polyline.getBounds());
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing Hurricane Evacuation Route (Natural Hazards) polyline:', error);
+              }
+            }
+          });
+          
+          if (routeCount > 0) {
+            if (!legendAccumulator['hurricane_evacuation_routes_hazards']) {
+              legendAccumulator['hurricane_evacuation_routes_hazards'] = {
+                icon: '🌀',
+                color: '#f97316',
+                title: 'Hurricane Evacuation Routes',
+                count: 0,
+              };
+            }
+            legendAccumulator['hurricane_evacuation_routes_hazards'].count += routeCount;
+          }
+        } catch (error) {
+          console.error('Error processing Hurricane Evacuation Routes (Natural Hazards):', error);
+        }
+      }
+
+      // Draw TNM Structures
+      if (enrichments.tnm_structures_all && Array.isArray(enrichments.tnm_structures_all)) {
+        try {
+          let structureCount = 0;
+          enrichments.tnm_structures_all.forEach((structure: any) => {
+            try {
+              let structureLat: number | null = null;
+              let structureLon: number | null = null;
+              
+              // Extract coordinates from geometry (multipoint or single point)
+              if (structure.geometry) {
+                if (structure.geometry.points && structure.geometry.points.length > 0) {
+                  // Multipoint geometry - use first point
+                  const firstPoint = structure.geometry.points[0];
+                  structureLon = firstPoint[0];
+                  structureLat = firstPoint[1];
+                } else if (structure.geometry.x !== undefined && structure.geometry.y !== undefined) {
+                  // Single point geometry
+                  structureLon = structure.geometry.x;
+                  structureLat = structure.geometry.y;
+                }
+              }
+              
+              // Fallback to attributes if geometry not available
+              if (structureLat === null || structureLon === null) {
+                return;
+              }
+              
+              const structureName = structure.NAME || structure.name || structure.STRUCTURE_NAME || structure.structure_name || 'Unknown Structure';
+              const structureType = structure.TYPE || structure.type || structure.STRUCTURE_TYPE || structure.structure_type || structure.FUNCTION || structure.function || 'Unknown';
+              const distanceMiles = structure.distance_miles !== undefined ? structure.distance_miles.toFixed(2) : '';
+              
+              // Choose icon based on structure type
+              let icon = '🏢'; // Default icon
+              let iconColor = '#3b82f6'; // Default color
+              
+              const typeLower = structureType.toLowerCase();
+              if (typeLower.includes('school') || typeLower.includes('college') || typeLower.includes('university')) {
+                icon = '🏫';
+                iconColor = '#10b981';
+              } else if (typeLower.includes('fire') || typeLower.includes('ems')) {
+                icon = '🚒';
+                iconColor = '#dc2626';
+              } else if (typeLower.includes('police') || typeLower.includes('law enforcement')) {
+                icon = '🚔';
+                iconColor = '#1f2937';
+              } else if (typeLower.includes('hospital') || typeLower.includes('medical')) {
+                icon = '🏥';
+                iconColor = '#f97316';
+              } else if (typeLower.includes('cemetery')) {
+                icon = '🪦';
+                iconColor = '#64748b';
+              } else if (typeLower.includes('post office')) {
+                icon = '📮';
+                iconColor = '#3b82f6';
+              } else if (typeLower.includes('campground')) {
+                icon = '🏕️';
+                iconColor = '#059669';
+              } else if (typeLower.includes('trailhead')) {
+                icon = '🥾';
+                iconColor = '#059669';
+              } else if (typeLower.includes('visitor') || typeLower.includes('information')) {
+                icon = 'ℹ️';
+                iconColor = '#06b6d4';
+              } else if (typeLower.includes('capitol')) {
+                icon = '🏛️';
+                iconColor = '#8b5cf6';
+              } else if (typeLower.includes('prison') || typeLower.includes('correctional')) {
+                icon = '🏛️';
+                iconColor = '#64748b';
+              } else if (typeLower.includes('ambulance')) {
+                icon = '🚑';
+                iconColor = '#ef4444';
+              }
+              
+              // Create a custom icon for structures
+              const customIcon = createPOIIcon(icon, iconColor);
+              
+              const marker = L.marker([structureLat, structureLon], { icon: customIcon });
+              
+              // Build popup content
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${icon} ${structureName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${structureType ? `<div><strong>Type:</strong> ${structureType}</div>` : ''}
+                    ${distanceMiles ? `<div style="color: #d97706; font-weight: 600; margin-top: 8px;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+              
+              // Add all attributes (excluding internal fields)
+              const excludeFields = ['NAME', 'name', 'STRUCTURE_NAME', 'structure_name', 'TYPE', 'type', 'STRUCTURE_TYPE', 'structure_type', 'FUNCTION', 'function', 'geometry', 'structureId', 'distance_miles', 'OBJECTID', 'objectid'];
+              Object.entries(structure).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  if (typeof value === 'object' && !Array.isArray(value)) {
+                    return;
+                  }
+                  const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                  popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                }
+              });
+              
+              popupContent += `
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent);
+              marker.addTo(primary);
+              const structureBounds = L.latLngBounds([[structureLat, structureLon]]);
+              bounds.extend(structureBounds);
+              structureCount++;
+            } catch (error) {
+              console.error('Error drawing TNM Structure:', error);
+            }
+          });
+          
+          if (structureCount > 0) {
+            if (!legendAccumulator['tnm_structures']) {
+              legendAccumulator['tnm_structures'] = {
+                icon: '🏢',
+                color: '#3b82f6',
+                title: 'TNM Structures',
+                count: 0,
+              };
+            }
+            legendAccumulator['tnm_structures'].count += structureCount;
+          }
+        } catch (error) {
+          console.error('Error processing TNM Structures:', error);
+        }
+      }
+
+      // Draw USGS Government Units layers
+      const usgsGovUnitsLayers = [
+        { key: 'usgs_gov_incorporated_place_all', layerId: 19, icon: '🏛️', color: '#3b82f6', title: 'USGS Incorporated Place' },
+        { key: 'usgs_gov_unincorporated_place_all', layerId: 20, icon: '🏘️', color: '#2563eb', title: 'USGS Unincorporated Place' },
+        { key: 'usgs_gov_minor_civil_division_all', layerId: 21, icon: '🏘️', color: '#1d4ed8', title: 'USGS Minor Civil Division' },
+        { key: 'usgs_gov_native_american_area_all', layerId: 22, icon: '🏕️', color: '#1e40af', title: 'USGS Native American Area' },
+        { key: 'usgs_gov_national_park_all', layerId: 23, icon: '🏞️', color: '#059669', title: 'USGS National Park' },
+        { key: 'usgs_gov_national_forest_all', layerId: 24, icon: '🌲', color: '#047857', title: 'USGS National Forest' },
+        { key: 'usgs_gov_national_wilderness_all', layerId: 25, icon: '⛰️', color: '#065f46', title: 'USGS National Wilderness' },
+        { key: 'usgs_gov_fish_wildlife_service_all', layerId: 26, icon: '🦅', color: '#0d9488', title: 'USGS US Fish & Wildlife Service' },
+        { key: 'usgs_gov_national_grassland_all', layerId: 27, icon: '🌾', color: '#84cc16', title: 'USGS National Grassland' },
+        { key: 'usgs_gov_national_cemetery_all', layerId: 28, icon: '🪦', color: '#64748b', title: 'USGS National Cemetery' },
+        { key: 'usgs_gov_military_reserve_all', layerId: 29, icon: '🎖️', color: '#dc2626', title: 'USGS Military Reserve' },
+        { key: 'usgs_gov_nasa_facility_all', layerId: 30, icon: '🚀', color: '#7c3aed', title: 'USGS NASA Facility' },
+        { key: 'usgs_gov_met_washington_airport_all', layerId: 31, icon: '✈️', color: '#6366f1', title: 'USGS Met. Washington Airport' },
+        { key: 'usgs_gov_tennessee_valley_authority_all', layerId: 32, icon: '⚡', color: '#f59e0b', title: 'USGS Tennessee Valley Authority' },
+        { key: 'usgs_gov_bureau_land_management_all', layerId: 33, icon: '🌵', color: '#d97706', title: 'USGS Bureau of Land Management' },
+        { key: 'usgs_gov_congressional_district_all', layerId: 34, icon: '🗳️', color: '#8b5cf6', title: 'USGS Congressional District' },
+        { key: 'usgs_gov_county_equivalent_all', layerId: 35, icon: '🗺️', color: '#3b82f6', title: 'USGS County or Equivalent' },
+        { key: 'usgs_gov_state_territory_small_scale_all', layerId: 36, icon: '🗺️', color: '#2563eb', title: 'USGS State or Territory (Small-Scale)' },
+        { key: 'usgs_gov_state_territory_large_scale_all', layerId: 37, icon: '🗺️', color: '#1d4ed8', title: 'USGS State or Territory (Large-Scale)' }
+      ];
+      
+      usgsGovUnitsLayers.forEach(({ key, icon, color, title }) => {
+        if (enrichments[key] && Array.isArray(enrichments[key])) {
+          try {
+            let featureCount = 0;
+            enrichments[key].forEach((unit: any) => {
+              if (unit.geometry && unit.geometry.rings) {
+                try {
+                  const rings = unit.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    const isContaining = unit.isContaining;
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    const unitName = unit.NAME || unit.name || unit.FULL_NAME || unit.full_name || unit.unitId || 'Unknown';
+                    const distanceMiles = unit.distance_miles !== undefined ? unit.distance_miles.toFixed(2) : null;
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${unitName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this ${title.toLowerCase()}</div>` : distanceMiles ? `<div style="color: #d97706; font-weight: 600; margin-top: 8px;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['unitId', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'isContaining', 'distance_miles', 'NAME', 'name', 'FULL_NAME', 'full_name'];
+                    Object.entries(unit).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error drawing ${title} polygon:`, error);
+                }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          } catch (error) {
+            console.error(`Error processing ${title}:`, error);
+          }
+        }
+      });
+
       // Draw LA County Hydrology layers
       const laCountyHydrologyLayers = [
         { key: 'la_county_hydrology_complete_all', layerId: 0, icon: '💧', color: '#0ea5e9', title: 'LA County Hydrology (Complete)', isPoint: false },
@@ -31630,8 +32473,8 @@ const MapView: React.FC<MapViewProps> = ({
                       </option>
                     ))}
                 </optgroup>
-                {/* USGS National Map basemaps */}
-                <optgroup label="USGS National Map">
+                {/* USGS National Map & MRLC basemaps */}
+                <optgroup label="USGS National Map & MRLC">
                   {Object.entries(BASEMAP_CONFIGS)
                     .filter(([_, config]) => config.type === 'wms')
                     .map(([key, config]) => (

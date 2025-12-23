@@ -306,6 +306,41 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'The National Map';
     }
     
+    // US Historical Cultural Political Points - The National Map
+    if (key.includes('us_historical_cultural_political_points')) {
+      return 'The National Map';
+    }
+    
+    // US Historical Hydrographic Points - The National Map
+    if (key.includes('us_historical_hydrographic_points')) {
+      return 'The National Map';
+    }
+    
+    // US Historical Physical Points - The National Map
+    if (key.includes('us_historical_physical_points')) {
+      return 'The National Map';
+    }
+    
+    // Hurricane Evacuation Routes - The National Map (but not the Natural Hazards version)
+    if (key.includes('hurricane_evacuation_routes') && !key.includes('hurricane_evacuation_routes_hazards')) {
+      return 'The National Map';
+    }
+    
+    // Hurricane Evacuation Routes (Natural Hazards) - Natural Hazards
+    if (key.includes('hurricane_evacuation_routes_hazards')) {
+      return 'Natural Hazards';
+    }
+    
+    // USGS Government Units - The National Map
+    if (key.includes('usgs_gov_')) {
+      return 'The National Map';
+    }
+    
+    // TNM Structures - The National Map
+    if (key.includes('tnm_structures')) {
+      return 'The National Map';
+    }
+    
     // Ireland Data
     if (key.includes('ireland_provinces') || key.includes('ireland_built_up_areas') || key.includes('ireland_small_areas') || key.includes('ireland_electoral_divisions') || key.includes('ireland_centres_of_population')) {
       return 'Ireland Data';

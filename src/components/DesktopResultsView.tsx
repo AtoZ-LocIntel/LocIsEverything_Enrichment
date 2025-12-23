@@ -324,6 +324,24 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           });
         }
         
+        // USGS Government Units fields - handle usgs_gov_ prefix in field keys
+        if (key.includes('usgs_gov_')) {
+          return selectedEnrichments.some(selected => {
+            if (selected.includes('usgs_gov_')) {
+              // Extract the unit type from selected (e.g., 'usgs_gov_incorporated_place' -> 'incorporated_place')
+              const unitType = selected.replace('usgs_gov_', '');
+              // Field keys have the same prefix, so check if key includes the unit type
+              return key.includes(`usgs_gov_${unitType}`);
+            }
+            return false;
+          });
+        }
+        
+        // TNM Structures fields
+        if (key.includes('tnm_structures')) {
+          return selectedEnrichments.includes('tnm_structures');
+        }
+        
         // NH House District fields - only show if NH House District enrichment is selected
         if (key.includes('nh_house_district')) {
           return selectedEnrichments.includes('nh_house_districts_2022');
@@ -625,8 +643,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Air Quality';
       } else if (key.includes('tiger_')) {
         category = 'TIGER Data';
-      } else if (key.includes('us_national_grid_')) {
+      } else if (key.includes('us_national_grid_') || key.includes('us_historical_cultural_political_points') || key.includes('us_historical_hydrographic_points') || key.includes('us_historical_physical_points') || (key.includes('hurricane_evacuation_routes') && !key.includes('hurricane_evacuation_routes_hazards')) || key.includes('usgs_gov_') || key.includes('tnm_structures')) {
         category = 'The National Map';
+      } else if (key.includes('hurricane_evacuation_routes_hazards')) {
+        category = 'Natural Hazards';
       } else if (key.includes('ireland_provinces') || key.includes('ireland_built_up_areas') || key.includes('ireland_small_areas') || key.includes('ireland_electoral_divisions') || key.includes('ireland_centres_of_population')) {
         category = 'Ireland Data';
       } else if (key.includes('fips') || key.includes('census') || key.includes('demographic')) {
