@@ -301,6 +301,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'TIGER Data';
     }
     
+    // US National Grid - The National Map
+    if (key.includes('us_national_grid_')) {
+      return 'The National Map';
+    }
+    
     // Ireland Data
     if (key.includes('ireland_provinces') || key.includes('ireland_built_up_areas') || key.includes('ireland_small_areas') || key.includes('ireland_electoral_divisions') || key.includes('ireland_centres_of_population')) {
       return 'Ireland Data';
@@ -477,6 +482,19 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // Soil carbon density fields - only show if soil carbon density enrichment is selected
       if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
         return selectedEnrichments.includes('soil_organic_carbon_density');
+      }
+      
+      // US National Grid fields - handle usng_ prefix in field keys
+      if (key.includes('us_national_grid_')) {
+        return selectedEnrichments.some(selected => {
+          if (selected.includes('us_national_grid_')) {
+            // Extract the grid type from selected (e.g., 'us_national_grid_6x8_zones' -> '6x8_zones')
+            const gridType = selected.replace('us_national_grid_', '');
+            // Field keys have 'usng_' prefix, so check if key includes the grid type
+            return key.includes(gridType);
+          }
+          return false;
+        });
       }
       
       // NH House District fields - only show if NH House District enrichment is selected

@@ -308,6 +308,12 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'la_county_usng_1000m': { icon: '🗺️', color: '#c084fc', title: 'LA County USNG 1000M' },
   'la_county_usng_100m': { icon: '🗺️', color: '#d8b4fe', title: 'LA County USNG 100M' },
   'la_county_township_range_section_rancho_boundaries': { icon: '📐', color: '#4b5563', title: 'LA County Township Range Section Rancho Boundaries' },
+  // US National Grid
+  'us_national_grid_usng_6x8_zones': { icon: '🗺️', color: '#3b82f6', title: 'USNG 6x8 Zones' },
+  'us_national_grid_usng_100000m': { icon: '🗺️', color: '#2563eb', title: 'USNG 100000m' },
+  'us_national_grid_usng_10000m': { icon: '🗺️', color: '#1d4ed8', title: 'USNG 10000m' },
+  'us_national_grid_usng_1000m': { icon: '🗺️', color: '#1e40af', title: 'USNG 1000m' },
+  'us_national_grid_usng_100m': { icon: '🗺️', color: '#1e3a8a', title: 'USNG 100m' },
   'ca_state_parks_entry_points': { icon: '🏞️', color: '#059669', title: 'CA State Parks Entry Points' },
   'ca_state_parks_parking_lots': { icon: '🅿️', color: '#0891b2', title: 'CA State Parks Parking Lots' },
   'ca_state_parks_boundaries': { icon: '🏞️', color: '#10b981', title: 'CA State Parks Boundaries' },
@@ -958,6 +964,11 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'la_county_usng_10000m_all' ||
     key === 'la_county_usng_1000m_all' ||
     key === 'la_county_usng_100m_all' ||
+    key === 'us_national_grid_usng_6x8_zones_all' || // Skip US National Grid arrays (handled separately for map drawing)
+    key === 'us_national_grid_usng_100000m_all' ||
+    key === 'us_national_grid_usng_10000m_all' ||
+    key === 'us_national_grid_usng_1000m_all' ||
+    key === 'us_national_grid_usng_100m_all' ||
     key === 'la_county_township_range_section_rancho_boundaries_all' ||
     key.startsWith('la_county_hydrology_') && key.endsWith('_all') || // Skip LA County Hydrology arrays (handled separately for map drawing)
     key.startsWith('la_county_infrastructure_') && key.endsWith('_all') || // Skip LA County Infrastructure arrays (handled separately for map drawing)
@@ -26061,6 +26072,108 @@ const MapView: React.FC<MapViewProps> = ({
                     `;
                     
                     const excludeFields = ['gridId', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining'];
+                    Object.entries(grid).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    featureCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error drawing ${title} polygon:`, error);
+                }
+              }
+            });
+            
+            if (featureCount > 0) {
+              const legendKey = key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      });
+
+      // Draw US National Grid layers
+      const usNationalGridLayers = [
+        { key: 'us_national_grid_usng_6x8_zones_all', layerId: 0, icon: '🗺️', color: '#3b82f6', title: 'USNG 6x8 Zones' },
+        { key: 'us_national_grid_usng_100000m_all', layerId: 1, icon: '🗺️', color: '#2563eb', title: 'USNG 100000m' },
+        { key: 'us_national_grid_usng_10000m_all', layerId: 2, icon: '🗺️', color: '#1d4ed8', title: 'USNG 10000m' },
+        { key: 'us_national_grid_usng_1000m_all', layerId: 3, icon: '🗺️', color: '#1e40af', title: 'USNG 1000m' },
+        { key: 'us_national_grid_usng_100m_all', layerId: 4, icon: '🗺️', color: '#1e3a8a', title: 'USNG 100m' }
+      ];
+
+      usNationalGridLayers.forEach(({ key, icon, color, title }) => {
+        try {
+          if (enrichments[key] && Array.isArray(enrichments[key])) {
+            let featureCount = 0;
+            enrichments[key].forEach((grid: any) => {
+              if (grid.geometry && grid.geometry.rings) {
+                try {
+                  const rings = grid.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const isContaining = grid.isContaining;
+                    const polygonColor = isContaining ? color : color.replace('ff', 'cc');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: polygonColor,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.15
+                    });
+                    
+                    const gridId = grid.gridId || grid.OBJECTID || grid.objectid || 'Unknown';
+                    const distanceMiles = grid.distance_miles !== undefined ? grid.distance_miles.toFixed(2) : null;
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${icon} ${title}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${gridId ? `<div><strong>Grid ID:</strong> ${gridId}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this grid</div>` : distanceMiles ? `<div style="color: #d97706; font-weight: 600; margin-top: 8px;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    const excludeFields = ['gridId', 'OBJECTID', 'objectid', 'geometry', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'isContaining', 'distance_miles'];
                     Object.entries(grid).forEach(([key, value]) => {
                       if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                         if (typeof value === 'object' && !Array.isArray(value)) {

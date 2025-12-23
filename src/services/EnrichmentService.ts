@@ -91,6 +91,7 @@ import { getLACountySchoolDistrictBoundariesData } from '../adapters/laCountySch
 import { getLACountyStreetInventoryData } from '../adapters/laCountyStreetInventory';
 import { getLACountyHazardsData } from '../adapters/laCountyHazards';
 import { getLACountyBasemapsGridsData } from '../adapters/laCountyBasemapsGrids';
+import { getUSNationalGridData } from '../adapters/usNationalGrid';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
 import { getLACountyAdministrativeBoundariesData } from '../adapters/laCountyAdministrativeBoundaries';
@@ -2414,6 +2415,18 @@ export class EnrichmentService {
         return await this.getLACountyBasemapsGrids(4, lat, lon);
       case 'la_county_township_range_section_rancho_boundaries':
         return await this.getLACountyBasemapsGrids(8, lat, lon);
+      
+      // US National Grid - Point-in-polygon and proximity queries (up to 25 miles)
+      case 'us_national_grid_6x8_zones':
+        return await this.getUSNationalGrid(0, lat, lon, radius);
+      case 'us_national_grid_100000m':
+        return await this.getUSNationalGrid(1, lat, lon, radius);
+      case 'us_national_grid_10000m':
+        return await this.getUSNationalGrid(2, lat, lon, radius);
+      case 'us_national_grid_1000m':
+        return await this.getUSNationalGrid(3, lat, lon, radius);
+      case 'us_national_grid_100m':
+        return await this.getUSNationalGrid(4, lat, lon, radius);
       
       // LA County Hydrology - All 72 layers
       case 'la_county_hydrology_complete':
@@ -24169,6 +24182,95 @@ out center;`;
         [`la_county_${key}_containing_message`]: 'Error querying basemaps and grids',
         [`la_county_${key}_count`]: 0,
         [`la_county_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getUSNationalGrid(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        0: 'usng_6x8_zones',
+        1: 'usng_100000m',
+        2: 'usng_10000m',
+        3: 'usng_1000m',
+        4: 'usng_100m'
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'USNG 6x8 Zones',
+        1: 'USNG 100000m',
+        2: 'USNG 10000m',
+        3: 'USNG 1000m',
+        4: 'USNG 100m'
+      };
+      
+      const key = layerKeyMap[layerId] || `usng_${layerId}`;
+      const layerName = layerNames[layerId] || `US National Grid Layer ${layerId}`;
+      
+      console.log(`🗺️ Fetching US National Grid ${layerName} data for [${lat}, ${lon}]`);
+      
+      const grids = await getUSNationalGridData(layerId, lat, lon, radius);
+      
+      const result: Record<string, any> = {};
+      
+      if (grids.length === 0) {
+        result[`us_national_grid_${key}_containing`] = null;
+        result[`us_national_grid_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        result[`us_national_grid_${key}_count`] = 0;
+        result[`us_national_grid_${key}_all`] = [];
+      } else {
+        // Get the first containing feature (should typically be only one for point-in-polygon)
+        const containingFeature = grids.find(g => g.isContaining) || grids[0];
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result[`us_national_grid_${key}_containing`] = containingFeature.gridId || 'Unknown';
+          result[`us_national_grid_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.gridId || 'Unknown'}`;
+        } else {
+          result[`us_national_grid_${key}_containing`] = null;
+          result[`us_national_grid_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        
+        result[`us_national_grid_${key}_count`] = grids.length;
+        result[`us_national_grid_${key}_all`] = grids.map(grid => ({
+          ...grid.attributes,
+          gridId: grid.gridId,
+          geometry: grid.geometry,
+          isContaining: grid.isContaining,
+          distance_miles: grid.distance_miles
+        }));
+        
+        const containingCount = grids.filter(g => g.isContaining).length;
+        const nearbyCount = grids.length - containingCount;
+        if (containingCount > 0 && nearbyCount > 0) {
+          result[`us_national_grid_${key}_summary`] = `Found ${containingCount} ${layerName.toLowerCase()} feature(s) containing the point and ${nearbyCount} nearby feature(s).`;
+        } else if (containingCount > 0) {
+          result[`us_national_grid_${key}_summary`] = `Found ${containingCount} ${layerName.toLowerCase()} feature(s) containing the point.`;
+        } else {
+          result[`us_national_grid_${key}_summary`] = `Found ${nearbyCount} nearby ${layerName.toLowerCase()} feature(s).`;
+        }
+      }
+      
+      console.log(`✅ US National Grid ${layerName} data processed:`, {
+        totalCount: result[`us_national_grid_${key}_count`],
+        containing: result[`us_national_grid_${key}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching US National Grid Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'usng_6x8_zones',
+        1: 'usng_100000m',
+        2: 'usng_10000m',
+        3: 'usng_1000m',
+        4: 'usng_100m'
+      };
+      const key = layerKeyMap[layerId] || `usng_${layerId}`;
+      return {
+        [`us_national_grid_${key}_containing`]: null,
+        [`us_national_grid_${key}_containing_message`]: `Error fetching ${layerKeyMap[layerId] || 'US National Grid'} data`,
+        [`us_national_grid_${key}_count`]: 0,
+        [`us_national_grid_${key}_all`]: []
       };
     }
   }

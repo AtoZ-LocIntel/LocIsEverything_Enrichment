@@ -311,6 +311,19 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           return selectedEnrichments.includes('soil_organic_carbon_density');
         }
         
+        // US National Grid fields - handle usng_ prefix in field keys
+        if (key.includes('us_national_grid_')) {
+          return selectedEnrichments.some(selected => {
+            if (selected.includes('us_national_grid_')) {
+              // Extract the grid type from selected (e.g., 'us_national_grid_6x8_zones' -> '6x8_zones')
+              const gridType = selected.replace('us_national_grid_', '');
+              // Field keys have 'usng_' prefix, so check if key includes the grid type
+              return key.includes(gridType);
+            }
+            return false;
+          });
+        }
+        
         // NH House District fields - only show if NH House District enrichment is selected
         if (key.includes('nh_house_district')) {
           return selectedEnrichments.includes('nh_house_districts_2022');
@@ -612,6 +625,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Air Quality';
       } else if (key.includes('tiger_')) {
         category = 'TIGER Data';
+      } else if (key.includes('us_national_grid_')) {
+        category = 'The National Map';
       } else if (key.includes('ireland_provinces') || key.includes('ireland_built_up_areas') || key.includes('ireland_small_areas') || key.includes('ireland_electoral_divisions') || key.includes('ireland_centres_of_population')) {
         category = 'Ireland Data';
       } else if (key.includes('fips') || key.includes('census') || key.includes('demographic')) {

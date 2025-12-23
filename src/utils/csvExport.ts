@@ -692,7 +692,12 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'la_county_usng_10000m_all' ||
         key === 'la_county_usng_1000m_all' ||
         key === 'la_county_usng_100m_all' ||
-        key === 'la_county_township_range_section_rancho_boundaries_all' || // Skip LA County Hydrology arrays (handled separately)
+        key === 'la_county_township_range_section_rancho_boundaries_all' ||
+        key === 'us_national_grid_usng_6x8_zones_all' || // Skip US National Grid arrays (handled separately)
+        key === 'us_national_grid_usng_100000m_all' ||
+        key === 'us_national_grid_usng_10000m_all' ||
+        key === 'us_national_grid_usng_1000m_all' ||
+        key === 'us_national_grid_usng_100m_all' || // Skip LA County Hydrology arrays (handled separately)
         (key.startsWith('la_county_hydrology_') && key.endsWith('_all')) || // Skip LA County Infrastructure arrays (handled separately)
         (key.startsWith('la_county_infrastructure_') && key.endsWith('_all')) || // Skip LA County Administrative Boundaries arrays (handled separately)
         (key.startsWith('la_county_admin_boundaries_') && key.endsWith('_all')) || // Skip LA County Elevation arrays (handled separately)
@@ -12133,7 +12138,12 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'la_county_usng_10000m_all': { name: 'LA_COUNTY_USNG_10000M', icon: '🗺️' },
       'la_county_usng_1000m_all': { name: 'LA_COUNTY_USNG_1000M', icon: '🗺️' },
       'la_county_usng_100m_all': { name: 'LA_COUNTY_USNG_100M', icon: '🗺️' },
-      'la_county_township_range_section_rancho_boundaries_all': { name: 'LA_COUNTY_TOWNSHIP_RANGE_SECTION_RANCHO_BOUNDARIES', icon: '📐' }
+      'la_county_township_range_section_rancho_boundaries_all': { name: 'LA_COUNTY_TOWNSHIP_RANGE_SECTION_RANCHO_BOUNDARIES', icon: '📐' },
+      'us_national_grid_usng_6x8_zones_all': { name: 'US_NATIONAL_GRID_USNG_6X8_ZONES', icon: '🗺️' },
+      'us_national_grid_usng_100000m_all': { name: 'US_NATIONAL_GRID_USNG_100000M', icon: '🗺️' },
+      'us_national_grid_usng_10000m_all': { name: 'US_NATIONAL_GRID_USNG_10000M', icon: '🗺️' },
+      'us_national_grid_usng_1000m_all': { name: 'US_NATIONAL_GRID_USNG_1000M', icon: '🗺️' },
+      'us_national_grid_usng_100m_all': { name: 'US_NATIONAL_GRID_USNG_100M', icon: '🗺️' }
     };
     
     // LA County Demographics - Generic handler for all 17 layers
@@ -12322,9 +12332,13 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       });
     } else if (basemapsGridsLayerMap[key] && Array.isArray(value)) {
       const layerInfo = basemapsGridsLayerMap[key];
+      const isUSNationalGrid = key.startsWith('us_national_grid_');
+      const dataSource = isUSNationalGrid ? 'USGS The National Map' : 'LA County Public GIS';
       value.forEach((grid: any) => {
         const gridId = grid.gridId || grid.OBJECTID || grid.objectid || 'Unknown';
-        const distance = grid.isContaining ? '0.00' : '';
+        const distance = grid.distance_miles !== null && grid.distance_miles !== undefined 
+          ? grid.distance_miles.toFixed(2) 
+          : (grid.isContaining ? '0.00' : '');
         
         const allAttributes = { ...grid };
         delete allAttributes.gridId;
@@ -12332,13 +12346,14 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         delete allAttributes.objectid;
         delete allAttributes.geometry;
         delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
         const attributesJson = JSON.stringify(allAttributes);
         
         rows.push([
           location.name,
           location.lat.toString(),
           location.lon.toString(),
-          'LA County Public GIS',
+          dataSource,
           (location.confidence || 'N/A').toString(),
           layerInfo.name,
           `${layerInfo.icon} Grid ${gridId}`,
@@ -12349,7 +12364,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           attributesJson,
           '',
           '',
-          'LA County Public GIS'
+          dataSource
         ]);
       });
     }

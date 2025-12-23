@@ -510,6 +510,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Tornado_Tracks_1950_2017_1/FeatureServer/0"
         },
         {
+          name: "US National Grid (USNG)",
+          description: "US National Grid layers including USNG 6x8 Zones, 100000m, 10000m, 1000m, and 100m grids. Point-in-polygon and proximity queries up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/US_National_Grid_HFL_V/FeatureServer"
+        },
+        {
           name: "National Risk Index (NRI) Annualized Frequency Hurricane - County",
           description: "FEMA National Risk Index - Annualized frequency of hurricane events (County). Point-in-polygon + proximity up to 25 miles.",
           coverage: "United States",

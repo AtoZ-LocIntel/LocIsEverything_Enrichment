@@ -190,12 +190,18 @@ function App() {
     // If we have a previous view mode (came from results), go back to it
     // Otherwise, go to config (home)
     const targetViewMode = previousViewMode || 'config';
+    const isComingFromCategory = viewMode === 'enrichment-category';
     setViewMode(targetViewMode);
     setPreviousViewMode(null); // Clear the previous view mode
     setError(null);
-    // Restore scroll position after a brief delay to ensure the view has rendered
+    // If coming from category page, scroll to top for better UX (user typically wants to search next)
+    // Otherwise, restore scroll position after a brief delay to ensure the view has rendered
     setTimeout(() => {
-      window.scrollTo(0, savedScrollPosition);
+      if (isComingFromCategory) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo(0, savedScrollPosition);
+      }
     }, 100);
   };
 
