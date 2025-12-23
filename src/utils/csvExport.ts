@@ -12379,7 +12379,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     // Add US Historical Cultural Political Points data rows
     if (key === 'us_historical_cultural_political_points_all' && Array.isArray(value)) {
       value.forEach((point: any) => {
-        const pointId = point.pointId || point.gaz_id || point.GAZ_ID || point.OBJECTID || point.objectid || 'Unknown';
         const pointName = point.gaz_name || point.GAZ_NAME || point.name || 'Unknown';
         const distance = point.distance_miles !== null && point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
         
@@ -12429,7 +12428,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     // Add US Historical Hydrographic Points data rows
     if (key === 'us_historical_hydrographic_points_all' && Array.isArray(value)) {
       value.forEach((point: any) => {
-        const pointId = point.pointId || point.gaz_id || point.GAZ_ID || point.OBJECTID || point.objectid || 'Unknown';
         const pointName = point.gaz_name || point.GAZ_NAME || point.name || 'Unknown';
         const distance = point.distance_miles !== null && point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
         
@@ -12479,7 +12477,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     // Add US Historical Physical Points data rows
     if (key === 'us_historical_physical_points_all' && Array.isArray(value)) {
       value.forEach((point: any) => {
-        const pointId = point.pointId || point.gaz_id || point.GAZ_ID || point.OBJECTID || point.objectid || 'Unknown';
         const pointName = point.gaz_name || point.GAZ_NAME || point.name || 'Unknown';
         const distance = point.distance_miles !== null && point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
         
@@ -12529,7 +12526,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     // Add Hurricane Evacuation Routes data rows
     if (key === 'hurricane_evacuation_routes_all' && Array.isArray(value)) {
       value.forEach((route: any) => {
-        const routeId = route.routeId || route.OBJECTID || route.objectid || route.NAME || route.name || 'Unknown';
         const routeName = route.NAME || route.name || route.ROUTE_NAME || route.route_name || 'Unknown Route';
         const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
         
@@ -12577,7 +12573,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     // Add Hurricane Evacuation Routes (Natural Hazards) data rows
     if (key === 'hurricane_evacuation_routes_hazards_all' && Array.isArray(value)) {
       value.forEach((route: any) => {
-        const routeId = route.routeId || route.OBJECTID || route.objectid || route.NAME || route.name || 'Unknown';
         const routeName = route.NAME || route.name || route.ROUTE_NAME || route.route_name || 'Unknown Route';
         const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
         
@@ -12687,7 +12682,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     // Add TNM Structures data rows
     if (key === 'tnm_structures_all' && Array.isArray(value)) {
       value.forEach((structure: any) => {
-        const structureId = structure.structureId || structure.OBJECTID || structure.objectid || structure.NAME || structure.name || 'Unknown';
         const structureName = structure.NAME || structure.name || structure.STRUCTURE_NAME || structure.structure_name || 'Unknown Structure';
         const structureType = structure.TYPE || structure.type || structure.STRUCTURE_TYPE || structure.structure_type || structure.FUNCTION || structure.function || 'Unknown';
         const distance = structure.distance_miles !== null && structure.distance_miles !== undefined ? structure.distance_miles.toFixed(2) : '';
