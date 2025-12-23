@@ -13629,19 +13629,41 @@ out center;`;
       
       // Now query for nearby public lands within radius
       const radiusKm = cappedRadius * 1.60934;
-      const nearbyQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=true&outSR=4326&maxRecordCount=1000`;
+      // Query without maxRecordCount to get all features (will paginate if needed)
+      let allNearbyLands: any[] = [];
+      let resultOffset = 0;
+      const resultRecordCount = 2000; // Batch size for pagination
+      let hasMore = true;
       
-      console.log(`🔗 PAD-US Nearby Query URL: ${nearbyQueryUrl}`);
-      const nearbyResponse = await fetch(nearbyQueryUrl);
-      
-      if (!nearbyResponse.ok) {
-        throw new Error(`PAD-US Nearby API failed: ${nearbyResponse.status} ${nearbyResponse.statusText}`);
+      while (hasMore) {
+        const nearbyQueryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,Category,FeatClass,Unit_Nm,Pub_Access,GAP_Sts,IUCN_Cat,MngTp_Desc,MngNm_Desc,DesTp_Desc,BndryName,ST_Name,GIS_AcrsDb&f=json&returnGeometry=true&outSR=4326&resultRecordCount=${resultRecordCount}&resultOffset=${resultOffset}`;
+        
+        console.log(`🔗 PAD-US Nearby Query URL (offset ${resultOffset}): ${nearbyQueryUrl}`);
+        const nearbyResponse = await fetch(nearbyQueryUrl);
+        
+        if (!nearbyResponse.ok) {
+          throw new Error(`PAD-US Nearby API failed: ${nearbyResponse.status} ${nearbyResponse.statusText}`);
+        }
+        
+        const nearbyData = await nearbyResponse.json();
+        console.log(`📊 PAD-US Nearby Query response (offset ${resultOffset}):`, nearbyData);
+        
+        const batchFeatures = nearbyData.features || [];
+        allNearbyLands = allNearbyLands.concat(batchFeatures);
+        
+        // Check if there are more results
+        hasMore = batchFeatures.length === resultRecordCount && nearbyData.exceededTransferLimit !== true;
+        resultOffset += batchFeatures.length;
+        
+        // Safety check to prevent infinite loops
+        if (resultOffset > 100000) {
+          console.warn('⚠️ PAD-US: Stopping pagination at 100k records for safety');
+          hasMore = false;
+        }
       }
       
-      const nearbyData = await nearbyResponse.json();
-      console.log(`📊 PAD-US Nearby Query response:`, nearbyData);
+      const nearbyLands = allNearbyLands;
       
-      const nearbyLands = nearbyData.features || [];
       
       // Count by access type
       const accessCounts = {
@@ -13771,18 +13793,40 @@ out center;`;
       console.log(`🛡️ PAD-US Protection Status query for coordinates [${lat}, ${lon}] within ${cappedRadius} miles`);
       
       const radiusKm = cappedRadius * 1.60934;
-      const queryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,GAP_Sts,IUCN_Cat,Category,Unit_Nm,Pub_Access&f=json&returnGeometry=true&outSR=4326&maxRecordCount=1000`;
+      // Query without maxRecordCount to get all features (will paginate if needed)
+      let allFeatures: any[] = [];
+      let resultOffset = 0;
+      const resultRecordCount = 2000; // Batch size for pagination
+      let hasMore = true;
       
-      console.log(`🔗 PAD-US Protection Status Query URL: ${queryUrl}`);
-      const response = await fetch(queryUrl);
-      
-      if (!response.ok) {
-        throw new Error(`PAD-US Protection Status API failed: ${response.status} ${response.statusText}`);
+      while (hasMore) {
+        const queryUrl = `https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer/0/query?where=1=1&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=${radiusKm}&units=esriSRUnit_Kilometer&outFields=OBJECTID,GAP_Sts,IUCN_Cat,Category,Unit_Nm,Pub_Access&f=json&returnGeometry=true&outSR=4326&resultRecordCount=${resultRecordCount}&resultOffset=${resultOffset}`;
+        
+        console.log(`🔗 PAD-US Protection Status Query URL (offset ${resultOffset}): ${queryUrl}`);
+        const response = await fetch(queryUrl);
+        
+        if (!response.ok) {
+          throw new Error(`PAD-US Protection Status API failed: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log(`📊 PAD-US Protection Status response (offset ${resultOffset}):`, data);
+        
+        const batchFeatures = data.features || [];
+        allFeatures = allFeatures.concat(batchFeatures);
+        
+        // Check if there are more results
+        hasMore = batchFeatures.length === resultRecordCount && data.exceededTransferLimit !== true;
+        resultOffset += batchFeatures.length;
+        
+        // Safety check to prevent infinite loops
+        if (resultOffset > 100000) {
+          console.warn('⚠️ PAD-US Protection Status: Stopping pagination at 100k records for safety');
+          hasMore = false;
+        }
       }
       
-      const data = await response.json();
-      console.log(`📊 PAD-US Protection Status response:`, data);
-      
+      const data = { features: allFeatures };
       const features = data.features || [];
       
       // Count by GAP status

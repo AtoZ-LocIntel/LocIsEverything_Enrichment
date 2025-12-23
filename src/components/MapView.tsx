@@ -6197,7 +6197,7 @@ const MapView: React.FC<MapViewProps> = ({
                 }
                 
                 // Check spatial reference - PAD-US might return Web Mercator (3857) or other projection
-                const spatialRef = land.geometry.spatialReference || land.geometry.spatialref;
+                const spatialRef = geometry.spatialReference || geometry.spatialref;
                 const wkid = spatialRef?.wkid || spatialRef?.latestWkid;
                 
                 let latlngs: [number, number][];
