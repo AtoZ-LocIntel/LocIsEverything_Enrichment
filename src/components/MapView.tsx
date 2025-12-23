@@ -1336,7 +1336,136 @@ const MapView: React.FC<MapViewProps> = ({
   }>>([]);
   // Basemap selection state (OpenFreeMap styles)
   const [selectedBasemap, setSelectedBasemap] = useState<string>('liberty');
+  const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
+  const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
+
+  /**
+   * Determine which regional NEXRAD WMS layer to use based on location
+   */
+  const getRegionalWMSLayer = (lat: number, lon: number): string => {
+    // Alaska: lat 49-72, lon -175 to -125
+    if (lat >= 49 && lat <= 72 && lon >= -175 && lon <= -125) {
+      return 'alaska_base_reflectivity_mosaic';
+    }
+    // Hawaii: lat 15-26, lon -164 to -151
+    if (lat >= 15 && lat <= 26 && lon >= -164 && lon <= -151) {
+      return 'hawaii_base_reflectivity_mosaic';
+    }
+    // Caribbean: lat 10-25, lon -90 to -60 (includes Puerto Rico, USVI)
+    if (lat >= 10 && lat <= 25 && lon >= -90 && lon <= -60) {
+      return 'caribbean_base_reflectivity_mosaic';
+    }
+    // Guam: lat 9-18, lon 140-150
+    if (lat >= 9 && lat <= 18 && lon >= 140 && lon <= 150) {
+      return 'guam_base_reflectivity_mosaic';
+    }
+    // CONUS (Continental US): default for all other locations
+    return 'conus_base_reflectivity_mosaic';
+  };
+
+  /**
+   * Get WMS GetMap URL for weather radar overlay
+   */
+  const getWeatherRadarWMSUrl = (bounds: L.LatLngBounds, layerName: string): string => {
+    const baseUrl = 'https://nowcoast.noaa.gov/geoserver/observations/weather_radar/ows';
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+    
+    // WMS 1.3.0 with CRS:84 uses BBOX as: minx,miny,maxx,maxy (lon,lat,lon,lat)
+    // CRS:84 is equivalent to EPSG:4326 but uses lon,lat axis order
+    const bbox = `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`;
+    
+    // Get current time in ISO8601 format (nearest 4-minute interval)
+    const now = new Date();
+    const minutes = now.getMinutes();
+    const roundedMinutes = Math.floor(minutes / 4) * 4;
+    const time = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), roundedMinutes, 0);
+    const timeStr = time.toISOString();
+    
+    // Get map size based on bounds (calculate appropriate size for good quality)
+    const latDiff = ne.lat - sw.lat;
+    const lonDiff = ne.lng - sw.lng;
+    // Use larger size for better quality, but cap at reasonable limit
+    const size = Math.min(1024, Math.max(256, Math.floor(Math.max(latDiff, lonDiff) * 1000)));
+    
+    const params = new URLSearchParams({
+      SERVICE: 'WMS',
+      VERSION: '1.3.0',
+      REQUEST: 'GetMap',
+      LAYERS: layerName,
+      STYLES: 'weather_radar_base_reflectivity',
+      CRS: 'CRS:84', // Use CRS:84 for lon,lat axis order
+      BBOX: bbox,
+      WIDTH: size.toString(),
+      HEIGHT: size.toString(),
+      FORMAT: 'image/png',
+      TRANSPARENT: 'true',
+      TIME: timeStr
+    });
+    
+    return `${baseUrl}?${params.toString()}`;
+  };
+
+  /**
+   * Update weather radar overlay based on current map bounds
+   */
+  const updateWeatherRadarOverlay = () => {
+    if (!mapInstanceRef.current || !showWeatherRadar || !results || results.length === 0) {
+      return;
+    }
+    
+    const map = mapInstanceRef.current;
+    const location = results[0]?.location;
+    
+    if (!location) {
+      return;
+    }
+    
+    // Determine which regional layer to use
+    const layerName = getRegionalWMSLayer(location.lat, location.lon);
+    
+    // Get current map bounds (with some padding for better coverage)
+    const bounds = map.getBounds();
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+    
+    // Add padding to bounds (10% on each side)
+    const latPadding = (ne.lat - sw.lat) * 0.1;
+    const lonPadding = (ne.lng - sw.lng) * 0.1;
+    const paddedBounds = L.latLngBounds(
+      [sw.lat - latPadding, sw.lng - lonPadding],
+      [ne.lat + latPadding, ne.lng + lonPadding]
+    );
+    
+    // Remove existing overlay if present
+    if (weatherRadarOverlayRef.current) {
+      map.removeLayer(weatherRadarOverlayRef.current);
+      weatherRadarOverlayRef.current = null;
+    }
+    
+    // Create WMS GetMap URL
+    const wmsUrl = getWeatherRadarWMSUrl(paddedBounds, layerName);
+    
+    // Create image overlay
+    const overlay = L.imageOverlay(wmsUrl, paddedBounds, {
+      opacity: 0.7,
+      interactive: false,
+      zIndex: 300 // Below markers but above basemap
+    });
+    
+    overlay.addTo(map);
+    weatherRadarOverlayRef.current = overlay;
+    
+    // Handle errors (e.g., if WMS service is unavailable)
+    overlay.on('error', () => {
+      console.warn('Weather radar overlay failed to load');
+      if (map.hasLayer(overlay)) {
+        map.removeLayer(overlay);
+      }
+      weatherRadarOverlayRef.current = null;
+    });
+  };
 
   // MapLibre (OpenFreeMap) basemap needs explicit resize calls on mobile after Leaflet container size changes.
   const resizeMaplibreBasemap = () => {
@@ -1572,6 +1701,11 @@ const MapView: React.FC<MapViewProps> = ({
 
     return () => {
       if (mapInstanceRef.current) {
+        // Remove weather radar overlay if present
+        if (weatherRadarOverlayRef.current) {
+          mapInstanceRef.current.removeLayer(weatherRadarOverlayRef.current);
+          weatherRadarOverlayRef.current = null;
+        }
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
         layerGroupsRef.current = null;
@@ -1581,6 +1715,39 @@ const MapView: React.FC<MapViewProps> = ({
       setIsInitialized(false);
     };
   }, [isMobile, results.length]);
+
+  // Handle weather radar overlay toggle
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isInitialized) {
+      return;
+    }
+    
+    if (showWeatherRadar) {
+      updateWeatherRadarOverlay();
+      
+      // Update overlay when map moves or zooms
+      const map = mapInstanceRef.current;
+      const updateOverlay = () => {
+        if (showWeatherRadar) {
+          updateWeatherRadarOverlay();
+        }
+      };
+      
+      map.on('moveend', updateOverlay);
+      map.on('zoomend', updateOverlay);
+      
+      return () => {
+        map.off('moveend', updateOverlay);
+        map.off('zoomend', updateOverlay);
+      };
+    } else {
+      // Remove overlay when toggled off
+      if (weatherRadarOverlayRef.current && mapInstanceRef.current) {
+        mapInstanceRef.current.removeLayer(weatherRadarOverlayRef.current);
+        weatherRadarOverlayRef.current = null;
+      }
+    }
+  }, [showWeatherRadar, isInitialized, results]);
 
   // Handle basemap changes without re-initializing the map
   useEffect(() => {
@@ -31233,25 +31400,62 @@ const MapView: React.FC<MapViewProps> = ({
           }}
         />
         
-        {/* Basemap Dropdown - Desktop only */}
+        {/* Basemap Dropdown and Weather Radar Toggle - Desktop only */}
         {!isMobile && (
-          <div className="absolute top-4 left-20 bg-white rounded-lg shadow-lg p-3 z-10">
-            <label htmlFor="basemap-select" className="block text-sm font-semibold text-black mb-2">
-              Basemap
+          <div className="absolute top-4 left-20 bg-white rounded-lg shadow-lg p-3 z-10 space-y-3">
+            <div>
+              <label htmlFor="basemap-select" className="block text-sm font-semibold text-black mb-2">
+                Basemap
+              </label>
+              <select
+                id="basemap-select"
+                value={selectedBasemap}
+                onChange={(e) => setSelectedBasemap(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-black bg-white"
+                style={{ color: 'black' }}
+              >
+                {Object.entries(OPENFREEMAP_STYLES).map(([key, config]) => (
+                  <option key={key} value={key} style={{ color: 'black' }}>
+                    {config.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Weather Radar Toggle */}
+            <div className="border-t border-gray-200 pt-3">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showWeatherRadar}
+                  onChange={(e) => setShowWeatherRadar(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-semibold text-black">
+                  🌦️ Weather Radar (NEXRAD)
+                </span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1">
+                Shows current weather radar overlay
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {/* Weather Radar Toggle - Mobile */}
+        {isMobile && (
+          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showWeatherRadar}
+                onChange={(e) => setShowWeatherRadar(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-semibold text-black">
+                🌦️ Radar
+              </span>
             </label>
-            <select
-              id="basemap-select"
-              value={selectedBasemap}
-              onChange={(e) => setSelectedBasemap(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-black bg-white"
-              style={{ color: 'black' }}
-            >
-              {Object.entries(OPENFREEMAP_STYLES).map(([key, config]) => (
-                <option key={key} value={key} style={{ color: 'black' }}>
-                  {config.name}
-                </option>
-              ))}
-            </select>
           </div>
         )}
 
