@@ -22,24 +22,84 @@ interface LegendItem {
   ranges?: Array<{ label: string; color: string; count: number }>; // For color-coded layers like broadband
 }
 
-// OpenFreeMap (free/open) basemap styles (MapLibre style JSON URLs)
-const OPENFREEMAP_STYLES: Record<string, { styleUrl: string; name: string; attribution: string }> = {
+// Basemap configuration supporting both MapLibre (vector) and WMS (raster) basemaps
+type BasemapType = 'maplibre' | 'wms';
+
+interface BasemapConfig {
+  type: BasemapType;
+  name: string;
+  attribution: string;
+  // For MapLibre basemaps
+  styleUrl?: string;
+  // For WMS basemaps
+  wmsUrl?: string;
+  wmsLayers?: string;
+  wmsFormat?: string;
+}
+
+const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
+  // OpenFreeMap (MapLibre vector tiles)
   liberty: {
+    type: 'maplibre',
     styleUrl: 'https://tiles.openfreemap.org/styles/liberty',
     name: 'Liberty (OpenFreeMap)',
     attribution: 'OpenFreeMap © OpenMapTiles Data © OpenStreetMap contributors',
   },
   bright: {
+    type: 'maplibre',
     styleUrl: 'https://tiles.openfreemap.org/styles/bright',
     name: 'Bright (OpenFreeMap)',
     attribution: 'OpenFreeMap © OpenMapTiles Data © OpenStreetMap contributors',
   },
   positron: {
+    type: 'maplibre',
     styleUrl: 'https://tiles.openfreemap.org/styles/positron',
     name: 'Positron (OpenFreeMap)',
     attribution: 'OpenFreeMap © OpenMapTiles Data © OpenStreetMap contributors',
   },
+  // USGS National Map WMS basemaps
+  usgs_hydrography: {
+    type: 'wms',
+    name: 'Hydrography - Tile Cache',
+    attribution: 'USGS The National Map',
+    wmsUrl: 'https://basemap.nationalmap.gov/arcgis/services/USGSHydroCached/MapServer/WMSServer',
+    wmsLayers: '0',
+    wmsFormat: 'image/png',
+  },
+  usgs_imagery_topo: {
+    type: 'wms',
+    name: 'USGS Imagery Topo Base Map - Primary Tile Cache',
+    attribution: 'USGS The National Map',
+    wmsUrl: 'https://basemap.nationalmap.gov/arcgis/services/USGSImageryTopo/MapServer/WMSServer',
+    wmsLayers: '0',
+    wmsFormat: 'image/png',
+  },
+  usgs_imagery_only: {
+    type: 'wms',
+    name: 'USGS ImageryOnly Base Map - Primary Tile Cache',
+    attribution: 'USGS The National Map',
+    wmsUrl: 'https://basemap.nationalmap.gov/arcgis/services/USGSImageryOnly/MapServer/WMSServer',
+    wmsLayers: '0',
+    wmsFormat: 'image/png',
+  },
+  usgs_shaded_relief: {
+    type: 'wms',
+    name: 'USGS Shaded Relief - Primary Tile Cache',
+    attribution: 'USGS The National Map',
+    wmsUrl: 'https://basemap.nationalmap.gov/arcgis/services/USGSShadedReliefOnly/MapServer/WMSServer',
+    wmsLayers: '0',
+    wmsFormat: 'image/png',
+  },
+  usgs_topo: {
+    type: 'wms',
+    name: 'USGS Topo Base Map - Primary Tile Cache',
+    attribution: 'USGS The National Map',
+    wmsUrl: 'https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WMSServer',
+    wmsLayers: '0',
+    wmsFormat: 'image/png',
+  },
 };
+
 
 // Fix for Leaflet marker icons in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -1468,15 +1528,19 @@ const MapView: React.FC<MapViewProps> = ({
   };
 
   // MapLibre (OpenFreeMap) basemap needs explicit resize calls on mobile after Leaflet container size changes.
+  // WMS basemaps don't need this, so we check if it's a MapLibre layer first.
   const resizeMaplibreBasemap = () => {
     try {
       const layer: any = basemapLayerRef.current;
-      const ml =
-        (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
-        layer?._maplibreMap ||
-        layer?._map;
-      if (ml && typeof ml.resize === 'function') {
-        ml.resize();
+      // Only resize MapLibre layers, not WMS layers
+      if (layer && typeof layer.getMaplibreMap === 'function') {
+        const ml =
+          (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
+          layer?._maplibreMap ||
+          layer?._map;
+        if (ml && typeof ml.resize === 'function') {
+          ml.resize();
+        }
       }
     } catch {
       // ignore
@@ -1571,7 +1635,7 @@ const MapView: React.FC<MapViewProps> = ({
       const initialCenter: [number, number] = results && results.length > 0 && results[0]?.location
         ? [results[0].location.lat, results[0].location.lon] as [number, number]
         : [37.0902, -95.7129] as [number, number];
-      const initialZoom = results && results.length > 0 && results[0]?.location ? 15 : 4;
+      const initialZoom = results && results.length > 0 && results[0]?.location ? 13 : 4;
       
       // For mobile, disable fade animation which can cause rendering issues
       const map = L.map(mapRef.current, {
@@ -1590,13 +1654,28 @@ const MapView: React.FC<MapViewProps> = ({
         map.zoomControl.setPosition('topleft');
       }
 
-      // Initialize basemap using OpenFreeMap (MapLibre vector tiles)
-      const basemapConfig = OPENFREEMAP_STYLES[selectedBasemap] || OPENFREEMAP_STYLES.liberty;
-      const basemapLayer = (L as any).maplibreGL({
-        style: basemapConfig.styleUrl,
-        attribution: basemapConfig.attribution,
-        interactive: false, // Leaflet handles interactions
-      }).addTo(map);
+      // Initialize basemap (supports both MapLibre vector and WMS raster)
+      const basemapConfig = BASEMAP_CONFIGS[selectedBasemap] || BASEMAP_CONFIGS.liberty;
+      let basemapLayer: any;
+      
+      if (basemapConfig.type === 'maplibre') {
+        // MapLibre vector tiles (OpenFreeMap)
+        basemapLayer = (L as any).maplibreGL({
+          style: basemapConfig.styleUrl,
+          attribution: basemapConfig.attribution,
+          interactive: false, // Leaflet handles interactions
+        }).addTo(map);
+      } else if (basemapConfig.type === 'wms') {
+        // WMS raster tiles (USGS National Map)
+        basemapLayer = L.tileLayer.wms(basemapConfig.wmsUrl!, {
+          layers: basemapConfig.wmsLayers,
+          format: basemapConfig.wmsFormat || 'image/png',
+          transparent: true,
+          attribution: basemapConfig.attribution,
+          crs: L.CRS.EPSG3857, // Web Mercator
+        }).addTo(map);
+      }
+      
       basemapLayerRef.current = basemapLayer;
       
       // Force immediate tile loading on mobile
@@ -1652,7 +1731,7 @@ const MapView: React.FC<MapViewProps> = ({
             if (results && results.length > 0 && results[0]?.location) {
               mapInstanceRef.current.setView(
                 [results[0].location.lat, results[0].location.lon],
-                15,
+                13,
                 { animate: false }
               );
             }
@@ -1687,7 +1766,7 @@ const MapView: React.FC<MapViewProps> = ({
             if (results && results.length > 0 && results[0]?.location) {
               mapInstanceRef.current.setView(
                 [results[0].location.lat, results[0].location.lon],
-                15,
+                13,
                 { animate: false }
               );
             }
@@ -1757,36 +1836,50 @@ const MapView: React.FC<MapViewProps> = ({
       return;
     }
 
-    const basemapConfig = OPENFREEMAP_STYLES[selectedBasemap] || OPENFREEMAP_STYLES.liberty;
+    const basemapConfig = BASEMAP_CONFIGS[selectedBasemap] || BASEMAP_CONFIGS.liberty;
     
     // Remove old basemap layer
     if (basemapLayerRef.current) {
       mapInstanceRef.current.removeLayer(basemapLayerRef.current);
     }
 
-    // Add new basemap layer
-    const newBasemapLayer = (L as any).maplibreGL({
-      style: basemapConfig.styleUrl,
-      attribution: basemapConfig.attribution,
-      interactive: false,
-    }).addTo(mapInstanceRef.current);
+    // Add new basemap layer based on type
+    let newBasemapLayer: any;
+    
+    if (basemapConfig.type === 'maplibre') {
+      // MapLibre vector tiles (OpenFreeMap)
+      newBasemapLayer = (L as any).maplibreGL({
+        style: basemapConfig.styleUrl,
+        attribution: basemapConfig.attribution,
+        interactive: false,
+      }).addTo(mapInstanceRef.current);
+      
+      // Ensure MapLibre canvas resizes after basemap swaps (especially on mobile)
+      try {
+        const layer: any = newBasemapLayer;
+        const ml =
+          (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
+          layer?._maplibreMap ||
+          layer?._map;
+        if (ml && typeof ml.resize === 'function') {
+          ml.resize();
+          setTimeout(() => ml.resize(), 50);
+        }
+      } catch {
+        // ignore
+      }
+    } else if (basemapConfig.type === 'wms') {
+      // WMS raster tiles (USGS National Map)
+      newBasemapLayer = L.tileLayer.wms(basemapConfig.wmsUrl!, {
+        layers: basemapConfig.wmsLayers,
+        format: basemapConfig.wmsFormat || 'image/png',
+        transparent: true,
+        attribution: basemapConfig.attribution,
+        crs: L.CRS.EPSG3857, // Web Mercator
+      }).addTo(mapInstanceRef.current);
+    }
     
     basemapLayerRef.current = newBasemapLayer;
-
-    // Ensure MapLibre canvas resizes after basemap swaps (especially on mobile)
-    try {
-      const layer: any = basemapLayerRef.current;
-      const ml =
-        (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
-        layer?._maplibreMap ||
-        layer?._map;
-      if (ml && typeof ml.resize === 'function') {
-        ml.resize();
-        setTimeout(() => ml.resize(), 50);
-      }
-    } catch {
-      // ignore
-    }
   }, [selectedBasemap, isInitialized]);
 
   useEffect(() => {
@@ -31414,11 +31507,26 @@ const MapView: React.FC<MapViewProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-black bg-white"
                 style={{ color: 'black' }}
               >
-                {Object.entries(OPENFREEMAP_STYLES).map(([key, config]) => (
-                  <option key={key} value={key} style={{ color: 'black' }}>
-                    {config.name}
-                  </option>
-                ))}
+                {/* OpenFreeMap basemaps */}
+                <optgroup label="OpenFreeMap">
+                  {Object.entries(BASEMAP_CONFIGS)
+                    .filter(([_, config]) => config.type === 'maplibre')
+                    .map(([key, config]) => (
+                      <option key={key} value={key} style={{ color: 'black' }}>
+                        {config.name}
+                      </option>
+                    ))}
+                </optgroup>
+                {/* USGS National Map basemaps */}
+                <optgroup label="USGS National Map">
+                  {Object.entries(BASEMAP_CONFIGS)
+                    .filter(([_, config]) => config.type === 'wms')
+                    .map(([key, config]) => (
+                      <option key={key} value={key} style={{ color: 'black' }}>
+                        {config.name}
+                      </option>
+                    ))}
+                </optgroup>
               </select>
             </div>
             

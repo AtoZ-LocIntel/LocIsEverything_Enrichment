@@ -94,6 +94,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'TIGERweb.webp'
   },
   {
+    id: 'nationalmap',
+    title: 'The National Map',
+    description: 'USGS The National Map data and layers',
+    icon: 'nationalmap.webp'
+  },
+  {
     id: 'wri',
     title: 'World Resources Institute',
     description: 'World Resources Institute data and layers',
