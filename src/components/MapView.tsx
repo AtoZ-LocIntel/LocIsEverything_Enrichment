@@ -26988,7 +26988,7 @@ const MapView: React.FC<MapViewProps> = ({
                   popupContent += `</div></div>`;
                   marker.bindPopup(popupContent, { maxWidth: 400 });
                   marker.addTo(primary);
-                  bounds.extend(marker.getBounds());
+                  bounds.extend(marker.getLatLng());
                   featureCount++;
                 } else if (geometry.points && geometry.points.length > 0) {
                   // Draw multipoint (use first point)
@@ -27026,7 +27026,7 @@ const MapView: React.FC<MapViewProps> = ({
                   popupContent += `</div></div>`;
                   marker.bindPopup(popupContent, { maxWidth: 400 });
                   marker.addTo(primary);
-                  bounds.extend(marker.getBounds());
+                  bounds.extend(marker.getLatLng());
                   featureCount++;
                 }
               } catch (error) {
