@@ -705,6 +705,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'hurricane_evacuation_routes_hazards_all' || // Skip Hurricane Evacuation Routes (Natural Hazards) array (handled separately)
         (key.startsWith('usgs_gov_') && key.endsWith('_all')) || // Skip USGS Government Units arrays (handled separately)
         key === 'tnm_structures_all' || // Skip TNM Structures array (handled separately)
+        key === 'usgs_trails_all' || // Skip USGS Trails array (handled separately)
+        (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately)
+        (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately)
         (key.startsWith('la_county_hydrology_') && key.endsWith('_all')) || // Skip LA County Infrastructure arrays (handled separately)
         (key.startsWith('la_county_infrastructure_') && key.endsWith('_all')) || // Skip LA County Administrative Boundaries arrays (handled separately)
         (key.startsWith('la_county_admin_boundaries_') && key.endsWith('_all')) || // Skip LA County Elevation arrays (handled separately)
@@ -12679,6 +12682,125 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       });
     }
     
+    // Add DC Urban Tree Canopy data rows
+    if (key.startsWith('dc_utc_') && key.endsWith('_all') && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureName = feature.NAME || feature.name || feature.OBJECTID || feature.objectid || 'Unknown Feature';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry
+        let featureLat = '';
+        let featureLon = '';
+        if (feature.geometry) {
+          if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Polygon - use centroid of first ring
+            const ring = feature.geometry.rings[0];
+            if (ring && ring.length > 0) {
+              let sumLat = 0;
+              let sumLon = 0;
+              ring.forEach((coord: number[]) => {
+                sumLon += coord[0];
+                sumLat += coord[1];
+              });
+              featureLat = (sumLat / ring.length).toString();
+              featureLon = (sumLon / ring.length).toString();
+            }
+          } else if (feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
+            featureLon = feature.geometry.x.toString();
+            featureLat = feature.geometry.y.toString();
+          } else if (feature.geometry.points && feature.geometry.points.length > 0) {
+            const firstPoint = feature.geometry.points[0];
+            featureLon = firstPoint[0].toString();
+            featureLat = firstPoint[1].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const layerName = key.replace('dc_utc_', '').replace('_all', '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DC Urban Tree Canopy',
+          (location.confidence || 'N/A').toString(),
+          `DC_URBAN_TREE_CANOPY_${layerName.toUpperCase().replace(/\s+/g, '_')}`,
+          `🌳 ${featureName}`,
+          featureLat || location.lat.toString(),
+          featureLon || location.lon.toString(),
+          distance,
+          feature.isContaining ? 'Containing Feature' : 'Nearby Feature',
+          attributesJson,
+          '',
+          '',
+          'DC Urban Tree Canopy'
+        ]);
+      });
+    }
+    
+    // Add DC Bike Trails data rows
+    if (key.startsWith('dc_bike_') && key.endsWith('_all') && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureName = feature.NAME || feature.name || feature.LOCATION || feature.location || feature.ROUTE_NAME || feature.route_name || feature.OBJECTID || feature.objectid || 'Unknown Feature';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline or point)
+        let featureLat = '';
+        let featureLon = '';
+        if (feature.geometry) {
+          if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline - use first point of first path
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              featureLon = firstPath[0][0].toString();
+              featureLat = firstPath[0][1].toString();
+            }
+          } else if (feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
+            featureLon = feature.geometry.x.toString();
+            featureLat = feature.geometry.y.toString();
+          } else if (feature.geometry.points && feature.geometry.points.length > 0) {
+            const firstPoint = feature.geometry.points[0];
+            featureLon = firstPoint[0].toString();
+            featureLat = firstPoint[1].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const layerName = key.replace('dc_bike_', '').replace('_all', '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'District of Columbia Open Data',
+          (location.confidence || 'N/A').toString(),
+          `DC_BIKE_TRAILS_${layerName.toUpperCase().replace(/\s+/g, '_')}`,
+          `🚴 ${featureName}`,
+          featureLat || location.lat.toString(),
+          featureLon || location.lon.toString(),
+          distance,
+          'Nearby Feature',
+          attributesJson,
+          '',
+          '',
+          'DCGIS FeatureServer'
+        ]);
+      });
+    }
+    
     // Add TNM Structures data rows
     if (key === 'tnm_structures_all' && Array.isArray(value)) {
       value.forEach((structure: any) => {
@@ -12721,6 +12843,51 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           structureLon || location.lon.toString(),
           distance,
           'Nearby Structure',
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add USGS Trails data rows
+    if (key === 'usgs_trails_all' && Array.isArray(value)) {
+      value.forEach((trail: any) => {
+        const trailName = trail.name || trail.namealternate || 'Unknown Trail';
+        const trailType = trail.trailtype || 'Unknown Type';
+        const distance = trail.distance_miles !== null && trail.distance_miles !== undefined ? trail.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polyline paths)
+        let trailCoords = '';
+        if (trail.geometry && trail.geometry.paths && trail.geometry.paths.length > 0) {
+          // Get first point of first path for CSV coordinate representation
+          const firstPath = trail.geometry.paths[0];
+          if (firstPath && firstPath.length > 0) {
+            const firstPoint = firstPath[0];
+            trailCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+          }
+        }
+        
+        const allAttributes = { ...trail };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          'USGS_TRAILS',
+          `🥾 ${trailName} (${trailType})`,
+          trailCoords ? trailCoords.split(',')[0] : location.lat.toString(),
+          trailCoords ? trailCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          'Nearby Trail',
           attributesJson,
           '',
           '',

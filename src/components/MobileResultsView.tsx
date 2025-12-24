@@ -337,8 +337,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // TNM Structures - The National Map
-    if (key.includes('tnm_structures')) {
+    if (key.includes('tnm_structures') || key.includes('usgs_trails')) {
       return 'The National Map';
+    }
+    if (key.startsWith('dc_utc_') || key.startsWith('dc_urban_tree_canopy_') || key === 'dc_trees' || key === 'dc_ufa_street_trees' || key === 'dc_arborists_zone' || key.startsWith('dc_bike_')) {
+      return 'District of Columbia';
     }
     
     // Ireland Data
@@ -485,6 +488,54 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       }
       if (selected === 'poi_padus_protection_status' && key.includes('padus_protection_status')) {
         return true;
+      }
+      if (selected === 'usgs_trails' && key.includes('usgs_trails')) {
+        return true;
+      }
+      // DC Urban Tree Canopy layers
+      if (key.startsWith('dc_utc_')) {
+        const dcEnrichmentIds = [
+          'dc_urban_tree_canopy_anc_2020', 'dc_urban_tree_canopy_census_block_2020', 'dc_urban_tree_canopy_census_block_group_2020',
+          'dc_urban_tree_canopy_2010_census_block_group_2020', 'dc_urban_tree_canopy_dc_boundary_2020', 'dc_urban_tree_canopy_dc_owned_property_2020',
+          'dc_urban_tree_canopy_generalized_ownership_parcel_2020', 'dc_urban_tree_canopy_ownership_lot_2020', 'dc_urban_tree_canopy_2019_right_of_way_2020',
+          'dc_urban_tree_canopy_single_member_district_2020', 'dc_urban_tree_canopy_ward_2020', 'dc_trees',
+          'dc_urban_tree_canopy_ownership_lot_2015', 'dc_urban_tree_canopy_ward_2015', 'dc_ufa_street_trees',
+          'dc_arborists_zone', 'dc_urban_tree_canopy_anc_2015', 'dc_urban_tree_canopy_census_block_group_2015',
+          'dc_urban_tree_canopy_census_block_2015', 'dc_urban_tree_canopy_single_member_district_2015', 'dc_urban_tree_canopy_2006_landuse_2015',
+          'dc_urban_tree_canopy_2011_landuse_2015', 'dc_urban_tree_canopy_2015_landuse_2015'
+        ];
+        return dcEnrichmentIds.some(id => {
+          if (selected === id) {
+            const layerKey = id.replace('dc_urban_tree_canopy_', 'dc_utc_').replace('dc_trees', 'dc_utc_trees').replace('dc_ufa_street_trees', 'dc_utc_ufa_street_trees').replace('dc_arborists_zone', 'dc_utc_arborists_zone');
+            return key.includes(layerKey);
+          }
+          return false;
+        });
+      }
+      // DC Bike Trails layers
+      if (key.startsWith('dc_bike_')) {
+        const dcBikeEnrichmentIds = [
+          'dc_trail_mile_marker', 'dc_planned_multi_use_trails', 'dc_bicycle_lanes',
+          'dc_bike_trails', 'dc_capital_bike_share_locations', 'dc_signed_bike_routes',
+          'dc_nps_trails', 'dc_public_bike_racks'
+        ];
+        return dcBikeEnrichmentIds.some(id => {
+          if (selected === id) {
+            const layerKeyMap: Record<string, string> = {
+              'dc_trail_mile_marker': 'dc_bike_trail_mile_marker',
+              'dc_planned_multi_use_trails': 'dc_bike_planned_multi_use_trails',
+              'dc_bicycle_lanes': 'dc_bike_bicycle_lanes',
+              'dc_bike_trails': 'dc_bike_bike_trails',
+              'dc_capital_bike_share_locations': 'dc_bike_capital_bike_share_locations',
+              'dc_signed_bike_routes': 'dc_bike_signed_bike_routes',
+              'dc_nps_trails': 'dc_bike_nps_trails',
+              'dc_public_bike_racks': 'dc_bike_public_bike_racks',
+            };
+            const layerKey = layerKeyMap[id] || id.replace('dc_', 'dc_bike_');
+            return key.includes(layerKey);
+          }
+          return false;
+        });
       }
       
       // POI fields - only show if the specific POI type is selected

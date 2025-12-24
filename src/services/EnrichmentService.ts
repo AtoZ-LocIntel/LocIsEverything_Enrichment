@@ -94,6 +94,9 @@ import { getLACountyBasemapsGridsData } from '../adapters/laCountyBasemapsGrids'
 import { getUSNationalGridData } from '../adapters/usNationalGrid';
 import { getUSGSGovernmentUnitsData } from '../adapters/usgsGovernmentUnits';
 import { getTNMStructuresData } from '../adapters/tnmStructures';
+import { getUSGSTrailsData } from '../adapters/usgsTrails';
+import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
+import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getUSHistoricalCulturalPoliticalPointsData } from '../adapters/usHistoricalCulturalPoliticalPoints';
 import { getUSHistoricalHydrographicPointsData } from '../adapters/usHistoricalHydrographicPoints';
 import { getUSHistoricalPhysicalPointsData } from '../adapters/usHistoricalPhysicalPoints';
@@ -2537,6 +2540,74 @@ export class EnrichmentService {
       // TNM Structures - Proximity queries up to 50 miles
       case 'tnm_structures':
         return await this.getTNMStructures(lat, lon, radius);
+      case 'usgs_trails':
+        return await this.getUSGSTrails(lat, lon, radius);
+      
+      // DC Urban Tree Canopy Layers
+      case 'dc_urban_tree_canopy_anc_2020':
+        return await this.getDCUrbanTreeCanopy(0, lat, lon, radius);
+      case 'dc_urban_tree_canopy_census_block_2020':
+        return await this.getDCUrbanTreeCanopy(1, lat, lon, radius);
+      case 'dc_urban_tree_canopy_census_block_group_2020':
+        return await this.getDCUrbanTreeCanopy(2, lat, lon, radius);
+      case 'dc_urban_tree_canopy_2010_census_block_group_2020':
+        return await this.getDCUrbanTreeCanopy(3, lat, lon, radius);
+      case 'dc_urban_tree_canopy_dc_boundary_2020':
+        return await this.getDCUrbanTreeCanopy(4, lat, lon, radius);
+      case 'dc_urban_tree_canopy_dc_owned_property_2020':
+        return await this.getDCUrbanTreeCanopy(5, lat, lon, radius);
+      case 'dc_urban_tree_canopy_generalized_ownership_parcel_2020':
+        return await this.getDCUrbanTreeCanopy(6, lat, lon, radius);
+      case 'dc_urban_tree_canopy_ownership_lot_2020':
+        return await this.getDCUrbanTreeCanopy(7, lat, lon, radius);
+      case 'dc_urban_tree_canopy_2019_right_of_way_2020':
+        return await this.getDCUrbanTreeCanopy(8, lat, lon, radius);
+      case 'dc_urban_tree_canopy_single_member_district_2020':
+        return await this.getDCUrbanTreeCanopy(9, lat, lon, radius);
+      case 'dc_urban_tree_canopy_ward_2020':
+        return await this.getDCUrbanTreeCanopy(10, lat, lon, radius);
+      case 'dc_trees':
+        return await this.getDCUrbanTreeCanopy(11, lat, lon, radius);
+      case 'dc_urban_tree_canopy_ownership_lot_2015':
+        return await this.getDCUrbanTreeCanopy(21, lat, lon, radius);
+      case 'dc_urban_tree_canopy_ward_2015':
+        return await this.getDCUrbanTreeCanopy(22, lat, lon, radius);
+      case 'dc_ufa_street_trees':
+        return await this.getDCUrbanTreeCanopy(23, lat, lon, radius);
+      case 'dc_arborists_zone':
+        return await this.getDCUrbanTreeCanopy(43, lat, lon, radius);
+      case 'dc_urban_tree_canopy_anc_2015':
+        return await this.getDCUrbanTreeCanopy(56, lat, lon, radius);
+      case 'dc_urban_tree_canopy_census_block_group_2015':
+        return await this.getDCUrbanTreeCanopy(57, lat, lon, radius);
+      case 'dc_urban_tree_canopy_census_block_2015':
+        return await this.getDCUrbanTreeCanopy(58, lat, lon, radius);
+      case 'dc_urban_tree_canopy_single_member_district_2015':
+        return await this.getDCUrbanTreeCanopy(60, lat, lon, radius);
+      case 'dc_urban_tree_canopy_2006_landuse_2015':
+        return await this.getDCUrbanTreeCanopy(69, lat, lon, radius);
+      case 'dc_urban_tree_canopy_2011_landuse_2015':
+        return await this.getDCUrbanTreeCanopy(70, lat, lon, radius);
+      case 'dc_urban_tree_canopy_2015_landuse_2015':
+        return await this.getDCUrbanTreeCanopy(71, lat, lon, radius);
+      
+      // DC Bike Trails
+      case 'dc_trail_mile_marker':
+        return await this.getDCBikeTrails(0, lat, lon, radius);
+      case 'dc_planned_multi_use_trails':
+        return await this.getDCBikeTrails(1, lat, lon, radius);
+      case 'dc_bicycle_lanes':
+        return await this.getDCBikeTrails(2, lat, lon, radius);
+      case 'dc_bike_trails':
+        return await this.getDCBikeTrails(4, lat, lon, radius);
+      case 'dc_capital_bike_share_locations':
+        return await this.getDCBikeTrails(5, lat, lon, radius);
+      case 'dc_signed_bike_routes':
+        return await this.getDCBikeTrails(6, lat, lon, radius);
+      case 'dc_nps_trails':
+        return await this.getDCBikeTrails(75, lat, lon, radius);
+      case 'dc_public_bike_racks':
+        return await this.getDCBikeTrails(168, lat, lon, radius);
       
       // LA County Hydrology - All 72 layers
       case 'la_county_hydrology_complete':
@@ -24600,6 +24671,267 @@ out center;`;
         'tnm_structures_count': 0,
         'tnm_structures_summary': 'Error fetching TNM structures data',
         'tnm_structures_all': []
+      };
+    }
+  }
+
+  private async getUSGSTrails(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🥾 Fetching USGS Trails data for [${lat}, ${lon}]`);
+      
+      const trails = await getUSGSTrailsData(lat, lon, radius || 5);
+      
+      const result: Record<string, any> = {};
+      
+      if (trails.length === 0) {
+        result['usgs_trails_count'] = 0;
+        result['usgs_trails_summary'] = 'No trails found within the specified radius';
+        result['usgs_trails_all'] = [];
+      } else {
+        result['usgs_trails_count'] = trails.length;
+        result['usgs_trails_summary'] = `Found ${trails.length} trail(s) within ${radius || 5} miles`;
+        result['usgs_trails_all'] = trails.map(trail => ({
+          objectid: trail.objectid,
+          name: trail.name,
+          namealternate: trail.namealternate,
+          trailnumber: trail.trailnumber,
+          trailtype: trail.trailtype,
+          nationaltraildesignation: trail.nationaltraildesignation,
+          lengthmiles: trail.lengthmiles,
+          hikerpedestrian: trail.hikerpedestrian,
+          bicycle: trail.bicycle,
+          packsaddle: trail.packsaddle,
+          atv: trail.atv,
+          motorcycle: trail.motorcycle,
+          primarytrailmaintainer: trail.primarytrailmaintainer,
+          geometry: trail.geometry,
+          distance_miles: trail.distance_miles
+        }));
+      }
+      
+      console.log(`✅ USGS Trails data processed:`, {
+        totalCount: result['usgs_trails_count']
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Trails data:`, error);
+      return {
+        'usgs_trails_count': 0,
+        'usgs_trails_summary': 'Error fetching USGS trails data',
+        'usgs_trails_all': []
+      };
+    }
+  }
+
+  private async getDCUrbanTreeCanopy(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        0: 'anc_2020',
+        1: 'census_block_2020',
+        2: 'census_block_group_2020',
+        3: '2010_census_block_group_2020',
+        4: 'dc_boundary_2020',
+        5: 'dc_owned_property_2020',
+        6: 'generalized_ownership_parcel_2020',
+        7: 'ownership_lot_2020',
+        8: '2019_right_of_way_2020',
+        9: 'single_member_district_2020',
+        10: 'ward_2020',
+        11: 'trees',
+        21: 'ownership_lot_2015',
+        22: 'ward_2015',
+        23: 'ufa_street_trees',
+        43: 'arborists_zone',
+        56: 'anc_2015',
+        57: 'census_block_group_2015',
+        58: 'census_block_2015',
+        60: 'single_member_district_2015',
+        69: '2006_landuse_2015',
+        70: '2011_landuse_2015',
+        71: '2015_landuse_2015',
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'Urban Tree Canopy by Advisory Neighborhood Commission 2020',
+        1: 'Urban Tree Canopy by Census Block 2020',
+        2: 'Urban Tree Canopy by Census Block Group 2020',
+        3: 'Urban Tree Canopy by 2010 Census Block Group 2020',
+        4: 'Urban Tree Canopy by DC Boundary 2020',
+        5: 'Urban Tree Canopy by DC Owned Property 2020',
+        6: 'Urban Tree Canopy at Generalized Ownership Parcel Level 2020',
+        7: 'Urban Tree Canopy at Ownership Lot Level 2020',
+        8: 'Urban Tree Canopy by 2019 Right of Way 2020',
+        9: 'Urban Tree Canopy by Single Member District 2020',
+        10: 'Urban Tree Canopy by Ward 2020',
+        11: 'DC Trees',
+        21: 'Urban Tree Canopy at Ownership Lot Level 2015',
+        22: 'Urban Tree Canopy by Ward 2015',
+        23: 'UFA Street Trees',
+        43: 'Arborists Zone',
+        56: 'Urban Tree Canopy by Advisory Neighborhood Commission 2015',
+        57: 'Urban Tree Canopy by Census Block Group 2015',
+        58: 'Urban Tree Canopy by Census Block 2015',
+        60: 'Urban Tree Canopy by Single Member District 2015',
+        69: 'Urban Tree Canopy by 2006 Landuse 2015',
+        70: 'Urban Tree Canopy by 2011 Landuse 2015',
+        71: 'Urban Tree Canopy by 2015 Landuse 2015',
+      };
+
+      const key = layerKeyMap[layerId] || `layer_${layerId}`;
+      const layerName = layerNames[layerId] || `DC Urban Tree Canopy Layer ${layerId}`;
+
+      console.log(`🌳 Fetching ${layerName} data for [${lat}, ${lon}]`);
+
+      const features = await getDCUrbanTreeCanopyData(layerId, lat, lon, radius);
+
+      const result: Record<string, any> = {};
+
+      // For DC Trees (layerId 11), skip containing logic as it's proximity-only
+      const isDCTrees = layerId === 11;
+
+      if (features.length === 0) {
+        if (!isDCTrees) {
+          result[`dc_utc_${key}_containing`] = null;
+          result[`dc_utc_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        result[`dc_utc_${key}_count`] = 0;
+        result[`dc_utc_${key}_all`] = [];
+        result[`dc_utc_${key}_summary`] = `No ${layerName.toLowerCase()} found within the specified radius.`;
+      } else {
+        if (!isDCTrees) {
+          const containingFeature = features.find(f => f.isContaining) || features[0];
+
+          if (containingFeature && containingFeature.isContaining) {
+            result[`dc_utc_${key}_containing`] = containingFeature.objectid || 'Unknown';
+            result[`dc_utc_${key}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${containingFeature.objectid || 'Unknown'}`;
+          } else {
+            result[`dc_utc_${key}_containing`] = null;
+            result[`dc_utc_${key}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+          }
+        }
+
+        result[`dc_utc_${key}_count`] = features.length;
+        result[`dc_utc_${key}_all`] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          isContaining: feature.isContaining,
+          distance_miles: feature.distance_miles
+        }));
+
+        if (isDCTrees) {
+          // DC Trees is proximity-only, so just show nearby count
+          result[`dc_utc_${key}_summary`] = `Found ${features.length} ${layerName.toLowerCase()} within ${radius || 10} miles.`;
+        } else {
+          const containingCount = features.filter(f => f.isContaining).length;
+          const nearbyCount = features.length - containingCount;
+          if (containingCount > 0 && nearbyCount > 0) {
+            result[`dc_utc_${key}_summary`] = `Found ${containingCount} ${layerName.toLowerCase()} feature(s) containing the point and ${nearbyCount} nearby feature(s).`;
+          } else if (containingCount > 0) {
+            result[`dc_utc_${key}_summary`] = `Found ${containingCount} ${layerName.toLowerCase()} feature(s) containing the point.`;
+          } else {
+            result[`dc_utc_${key}_summary`] = `Found ${nearbyCount} nearby ${layerName.toLowerCase()} feature(s).`;
+          }
+        }
+      }
+
+      console.log(`✅ ${layerName} data processed:`, {
+        totalCount: result[`dc_utc_${key}_count`],
+        containing: result[`dc_utc_${key}_containing`]
+      });
+
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching DC Urban Tree Canopy Layer ${layerId} data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'anc_2020', 1: 'census_block_2020', 2: 'census_block_group_2020', 3: '2010_census_block_group_2020',
+        4: 'dc_boundary_2020', 5: 'dc_owned_property_2020', 6: 'generalized_ownership_parcel_2020', 7: 'ownership_lot_2020',
+        8: '2019_right_of_way_2020', 9: 'single_member_district_2020', 10: 'ward_2020', 11: 'trees',
+        21: 'ownership_lot_2015', 22: 'ward_2015', 23: 'ufa_street_trees', 43: 'arborists_zone',
+        56: 'anc_2015', 57: 'census_block_group_2015', 58: 'census_block_2015', 60: 'single_member_district_2015',
+        69: '2006_landuse_2015', 70: '2011_landuse_2015', 71: '2015_landuse_2015',
+      };
+      const key = layerKeyMap[layerId] || `layer_${layerId}`;
+      return {
+        [`dc_utc_${key}_containing`]: null,
+        [`dc_utc_${key}_containing_message`]: `Error fetching DC Urban Tree Canopy Layer ${layerId} data`,
+        [`dc_utc_${key}_count`]: 0,
+        [`dc_utc_${key}_all`]: []
+      };
+    }
+  }
+
+  private async getDCBikeTrails(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerKeyMap: Record<number, string> = {
+        0: 'trail_mile_marker',
+        1: 'planned_multi_use_trails',
+        2: 'bicycle_lanes',
+        4: 'bike_trails',
+        5: 'capital_bike_share_locations',
+        6: 'signed_bike_routes',
+        75: 'nps_trails',
+        168: 'public_bike_racks',
+      };
+      
+      const layerNames: Record<number, string> = {
+        0: 'Trail Mile Marker',
+        1: 'Planned Multi Use Trails',
+        2: 'Bicycle Lanes',
+        4: 'Bike Trails',
+        5: 'Capital Bike Share Locations',
+        6: 'Signed Bike Routes',
+        75: 'NPS Trails',
+        168: 'Public Bike Racks',
+      };
+
+      const key = layerKeyMap[layerId] || `layer_${layerId}`;
+      const layerName = layerNames[layerId] || `DC Bike Trails Layer ${layerId}`;
+
+      console.log(`🚴 Fetching ${layerName} data for [${lat}, ${lon}]`);
+
+      const features = await getDCBikeTrailsData(layerId, lat, lon, radius);
+
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result[`dc_bike_${key}_count`] = 0;
+        result[`dc_bike_${key}_all`] = [];
+        result[`dc_bike_${key}_summary`] = `No ${layerName.toLowerCase()} found within the specified radius.`;
+      } else {
+        result[`dc_bike_${key}_count`] = features.length;
+        result[`dc_bike_${key}_all`] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles
+        }));
+        result[`dc_bike_${key}_summary`] = `Found ${features.length} ${layerName.toLowerCase()} within ${radius || 5} miles.`;
+      }
+
+      console.log(`✅ ${layerName} data processed:`, {
+        totalCount: result[`dc_bike_${key}_count`]
+      });
+
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching DC Bike Trails data:`, error);
+      const layerKeyMap: Record<number, string> = {
+        0: 'dc_trail_mile_marker',
+        1: 'dc_planned_multi_use_trails',
+        2: 'dc_bicycle_lanes',
+        4: 'dc_bike_trails',
+        5: 'dc_capital_bike_share_locations',
+        6: 'dc_signed_bike_routes',
+        75: 'dc_nps_trails',
+        168: 'dc_public_bike_racks',
+      };
+      const layerKey = layerKeyMap[layerId] || `dc_bike_trails_${layerId}`;
+      return {
+        [`${layerKey}_count`]: 0,
+        [`${layerKey}_summary`]: `Error fetching DC Bike Trails data`,
+        [`${layerKey}_all`]: []
       };
     }
   }

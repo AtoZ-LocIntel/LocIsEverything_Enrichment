@@ -695,13 +695,21 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         
         if (section.id === 'dc') {
-          // DC will have sub-categories (to be added later)
+          // DC Urban Tree Canopy layers
+          console.log('🔍 [DC DEBUG] Processing DC section:', {
+            sectionId: section.id,
+            sectionTitle: section.title,
+            sectionPOIsCount: sectionPOIs.length,
+            sectionPOIIds: sectionPOIs.map(p => p.id),
+            sectionEnrichmentsCount: sectionEnrichments.length,
+            sectionEnrichmentIds: sectionEnrichments.map(e => e.id)
+          });
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
+            enrichments: sectionEnrichments,
             subCategories: []
           };
         }
@@ -1542,6 +1550,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             hasSubCategories: !!category.subCategories,
                             subCategoriesLength: category.subCategories?.length || 0
                           });
+                        } else if (category.id === 'dc' && category.subCategories && category.subCategories.length > 0) {
+                          console.log('✅ Setting viewingDCSubCategories to true', {
+                            categoryId: category.id,
+                            hasSubCategories: !!category.subCategories,
+                            subCategoriesLength: category.subCategories.length,
+                            subCategoryIds: category.subCategories.map(sc => sc.id)
+                          });
+                          setViewingDCSubCategories(true);
                         } else if (onViewCategory) {
                           onViewCategory(category);
                         } else {
@@ -3863,7 +3879,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         setViewingNCSubCategories(true);
                       } else if (category.id === 'md') {
                         setViewingMDSubCategories(true);
-                      } else if (category.id === 'dc') {
+                      } else if (category.id === 'dc' && category.subCategories && category.subCategories.length > 0) {
                         setViewingDCSubCategories(true);
                       } else if (category.id === 'va') {
                         setViewingVASubCategories(true);

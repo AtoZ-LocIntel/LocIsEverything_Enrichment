@@ -455,6 +455,38 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   // Public Lands & Protected Areas
   'poi_padus_public_access': { icon: '🏞️', color: '#22c55e', title: 'Public Lands' },
   'poi_padus_protection_status': { icon: '🛡️', color: '#059669', title: 'Protected Areas' },
+  // District of Columbia Urban Tree Canopy
+  'dc_urban_tree_canopy_anc_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Advisory Neighborhood Commission 2020' },
+  'dc_urban_tree_canopy_census_block_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Census Block 2020' },
+  'dc_urban_tree_canopy_census_block_group_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Census Block Group 2020' },
+  'dc_urban_tree_canopy_2010_census_block_group_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by 2010 Census Block Group 2020' },
+  'dc_urban_tree_canopy_dc_boundary_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by DC Boundary 2020' },
+  'dc_urban_tree_canopy_dc_owned_property_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by DC Owned Property 2020' },
+  'dc_urban_tree_canopy_generalized_ownership_parcel_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy at Generalized Ownership Parcel Level 2020' },
+  'dc_urban_tree_canopy_ownership_lot_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy at Ownership Lot Level 2020' },
+  'dc_urban_tree_canopy_2019_right_of_way_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by 2019 Right of Way 2020' },
+  'dc_urban_tree_canopy_single_member_district_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Single Member District 2020' },
+  'dc_urban_tree_canopy_ward_2020': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Ward 2020' },
+  'dc_trees': { icon: '🌳', color: '#22c55e', title: 'DC Trees' },
+  'dc_urban_tree_canopy_ownership_lot_2015': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy at Ownership Lot Level 2015' },
+  'dc_urban_tree_canopy_ward_2015': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Ward 2015' },
+  'dc_ufa_street_trees': { icon: '🌳', color: '#22c55e', title: 'DC UFA Street Trees' },
+  'dc_arborists_zone': { icon: '🌳', color: '#22c55e', title: 'DC Arborists Zone' },
+  'dc_urban_tree_canopy_anc_2015': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Advisory Neighborhood Commission 2015' },
+  'dc_urban_tree_canopy_census_block_group_2015': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Census Block Group 2015' },
+  'dc_urban_tree_canopy_census_block_2015': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Census Block 2015' },
+  'dc_urban_tree_canopy_single_member_district_2015': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by Single Member District 2015' },
+  'dc_urban_tree_canopy_2006_landuse_2015': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by 2006 Landuse 2015' },
+  'dc_urban_tree_canopy_2011_landuse_2015': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by 2011 Landuse 2015' },
+  'dc_urban_tree_canopy_2015_landuse_2015': { icon: '🌳', color: '#22c55e', title: 'DC Urban Tree Canopy by 2015 Landuse 2015' },
+  'dc_trail_mile_marker': { icon: '📍', color: '#3b82f6', title: 'DC Trail Mile Marker' },
+  'dc_planned_multi_use_trails': { icon: '🚴', color: '#3b82f6', title: 'DC Planned Multi Use Trails' },
+  'dc_bicycle_lanes': { icon: '🚴', color: '#3b82f6', title: 'DC Bicycle Lanes' },
+  'dc_bike_trails': { icon: '🚴', color: '#10b981', title: 'DC Bike Trails' },
+  'dc_capital_bike_share_locations': { icon: '🚲', color: '#ef4444', title: 'DC Capital Bike Share Locations' },
+  'dc_signed_bike_routes': { icon: '🚴', color: '#3b82f6', title: 'DC Signed Bike Routes' },
+  'dc_nps_trails': { icon: '🥾', color: '#10b981', title: 'DC NPS Trails' },
+  'dc_public_bike_racks': { icon: '🚲', color: '#6366f1', title: 'DC Public Bike Racks' },
   'blm_national_trails': { icon: '🥾', color: '#059669', title: 'BLM National GTLF Public Managed Trails' },
   'blm_national_motorized_trails': { icon: '🏍️', color: '#dc2626', title: 'BLM National GTLF Public Motorized Trails' },
   'blm_national_nonmotorized_trails': { icon: '🚶', color: '#10b981', title: 'BLM National GTLF Public Nonmotorized Trails' },
@@ -858,6 +890,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nh_geographic_names_all' || // Skip Geographic Names array (handled separately for map drawing)
     key === 'padus_public_access_all' || // Skip PAD-US public access array (handled separately for map drawing)
     key === 'padus_protection_status_all' || // Skip PAD-US protection status array (handled separately for map drawing)
+    key === 'usgs_trails_all' || // Skip USGS Trails array (handled separately for map drawing)
+    (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately for map drawing)
+    (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately for map drawing)
     key === 'blm_national_trails_all' || // Skip BLM National Trails array (handled separately for map drawing)
     key === 'blm_national_motorized_trails_all' || // Skip BLM National Motorized Trails array (handled separately for map drawing)
     key === 'blm_national_nonmotorized_trails_all' || // Skip BLM National Nonmotorized Trails array (handled separately for map drawing)
@@ -26726,6 +26761,530 @@ const MapView: React.FC<MapViewProps> = ({
         }
       }
 
+      // Draw USGS Trails as polylines on the map
+      if (enrichments.usgs_trails_all && Array.isArray(enrichments.usgs_trails_all)) {
+        try {
+          console.log(`🥾 Drawing ${enrichments.usgs_trails_all.length} USGS Trails features`);
+          let trailCount = 0;
+          enrichments.usgs_trails_all.forEach((trail: any, index: number) => {
+            console.log(`🥾 USGS Trail ${index}:`, {
+              hasGeometry: !!trail.geometry,
+              hasPaths: !!trail.geometry?.paths,
+              pathsLength: trail.geometry?.paths?.length,
+              trailName: trail.name || trail.namealternate
+            });
+            if (trail.geometry && trail.geometry.paths) {
+              try {
+                // Convert ESRI polyline paths to Leaflet LatLng arrays
+                const paths = trail.geometry.paths;
+                if (paths && paths.length > 0) {
+                  trailCount++; // Count each trail feature once, not each path
+                  // For each path in the polyline, create a separate polyline
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                      // Convert [lon, lat] to [lat, lon] for Leaflet
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const trailName = trail.name || trail.namealternate || 'Unknown Trail';
+                    const trailType = trail.trailtype || 'Unknown Type';
+                    const nationalDesignation = trail.nationaltraildesignation || '';
+                    const lengthMiles = trail.lengthmiles !== undefined ? trail.lengthmiles.toFixed(2) : '';
+                    const distanceMiles = trail.distance_miles !== undefined ? trail.distance_miles.toFixed(2) : '';
+
+                    // Determine color based on trail type
+                    let trailColor = '#10b981'; // Default green for terra trails
+                    if (trailType === 'Snow Trail') {
+                      trailColor = '#7c51ad'; // Purple for snow trails
+                    } else if (trailType === 'Water Trail') {
+                      trailColor = '#2d89dd'; // Blue for water trails
+                    }
+
+                    // Create polyline with trail-specific color
+                    const polyline = L.polyline(latlngs, {
+                      color: trailColor,
+                      weight: 4,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    // Build popup content
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🥾 ${trailName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${trailType ? `<div><strong>Trail Type:</strong> ${trailType}</div>` : ''}
+                          ${nationalDesignation ? `<div><strong>National Designation:</strong> ${nationalDesignation}</div>` : ''}
+                          ${lengthMiles ? `<div><strong>Length:</strong> ${lengthMiles} miles</div>` : ''}
+                          ${trail.trailnumber ? `<div><strong>Trail Number:</strong> ${trail.trailnumber}</div>` : ''}
+                          ${trail.primarytrailmaintainer ? `<div><strong>Maintainer:</strong> ${trail.primarytrailmaintainer}</div>` : ''}
+                          ${distanceMiles ? `<div style="color: #d97706; font-weight: 600; margin-top: 8px;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+                    
+                    // Add trail use information
+                    if (trail.hikerpedestrian === 'Y') popupContent += `<div><strong>Hiker/Pedestrian:</strong> Yes</div>`;
+                    if (trail.bicycle === 'Y') popupContent += `<div><strong>Bicycle:</strong> Yes</div>`;
+                    if (trail.packsaddle === 'Y') popupContent += `<div><strong>Pack and Saddle:</strong> Yes</div>`;
+                    if (trail.atv === 'Y') popupContent += `<div><strong>ATV:</strong> Yes</div>`;
+                    if (trail.motorcycle === 'Y') popupContent += `<div><strong>Motorcycle:</strong> Yes</div>`;
+                    
+                    // Add all other trail attributes
+                    const excludeFields = ['name', 'namealternate', 'trailtype', 'nationaltraildesignation', 'lengthmiles', 'trailnumber', 'primarytrailmaintainer', 'hikerpedestrian', 'bicycle', 'packsaddle', 'atv', 'motorcycle', 'geometry', 'distance_miles', 'objectid', 'OBJECTID'];
+                    Object.entries(trail).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                          return;
+                        }
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+                    
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(primary);
+                    bounds.extend(polyline.getBounds());
+                  });
+                }
+              } catch (error) {
+                console.error('Error drawing USGS Trail polyline:', error);
+              }
+            }
+          });
+          
+          if (trailCount > 0) {
+            if (!legendAccumulator['usgs_trails']) {
+              legendAccumulator['usgs_trails'] = {
+                icon: '🥾',
+                color: '#10b981',
+                title: 'USGS Trails',
+                count: 0,
+              };
+            }
+            legendAccumulator['usgs_trails'].count += trailCount;
+          }
+        } catch (error) {
+          console.error('Error processing USGS Trails:', error);
+        }
+      }
+
+      // Draw DC Urban Tree Canopy layers (polygons and points)
+      const dcUtcLayerKeys = [
+        'dc_utc_anc_2020_all', 'dc_utc_census_block_2020_all', 'dc_utc_census_block_group_2020_all',
+        'dc_utc_2010_census_block_group_2020_all', 'dc_utc_dc_boundary_2020_all', 'dc_utc_dc_owned_property_2020_all',
+        'dc_utc_generalized_ownership_parcel_2020_all', 'dc_utc_ownership_lot_2020_all', 'dc_utc_2019_right_of_way_2020_all',
+        'dc_utc_single_member_district_2020_all', 'dc_utc_ward_2020_all', 'dc_utc_trees_all',
+        'dc_utc_ownership_lot_2015_all', 'dc_utc_ward_2015_all', 'dc_utc_ufa_street_trees_all',
+        'dc_utc_arborists_zone_all', 'dc_utc_anc_2015_all', 'dc_utc_census_block_group_2015_all',
+        'dc_utc_census_block_2015_all', 'dc_utc_single_member_district_2015_all', 'dc_utc_2006_landuse_2015_all',
+        'dc_utc_2011_landuse_2015_all', 'dc_utc_2015_landuse_2015_all'
+      ];
+
+      dcUtcLayerKeys.forEach((layerKey) => {
+        const enrichmentKey = layerKey.replace('_all', '_all');
+        if (enrichments[enrichmentKey] && Array.isArray(enrichments[enrichmentKey])) {
+          try {
+            // DC Trees (dc_utc_trees_all) is point-only, skip polygon drawing
+            const isDCTrees = layerKey === 'dc_utc_trees_all';
+            let featureCount = 0;
+            enrichments[enrichmentKey].forEach((feature: any, index: number) => {
+              const geometry = feature.geometry;
+              if (!geometry) return;
+
+              try {
+                // Check if it's a polygon (has rings) or point (has x/y or points)
+                // Skip polygon drawing for DC Trees as it's point-only
+                if (geometry.rings && geometry.rings.length > 0 && !isDCTrees) {
+                  // Draw polygon
+                  const rings = geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    if (!outerRing || outerRing.length < 3) return;
+
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const isContaining = feature.isContaining || feature.distance_miles === 0;
+                    const polygon = L.polygon(latlngs, {
+                      color: isContaining ? '#16a34a' : '#22c55e',
+                      weight: 2,
+                      opacity: 0.7,
+                      fillColor: isContaining ? '#16a34a' : '#22c55e',
+                      fillOpacity: 0.3
+                    });
+
+                    // Build popup
+                    const featureName = feature.NAME || feature.name || feature.OBJECTID || `Feature ${feature.objectid}`;
+                    const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🌳 ${featureName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+
+                    const excludeFields = ['NAME', 'name', 'geometry', 'objectid', 'OBJECTID', 'distance_miles', 'isContaining'];
+                    Object.entries(feature).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) return;
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+
+                    popupContent += `</div></div>`;
+                    polygon.bindPopup(popupContent, { maxWidth: 400 });
+                    polygon.addTo(primary);
+                    bounds.extend(polygon.getBounds());
+                    featureCount++;
+                  }
+                } else if (geometry.x !== undefined && geometry.y !== undefined) {
+                  // Draw point
+                  const pointLat = geometry.y;
+                  const pointLon = geometry.x;
+                  const isContaining = feature.isContaining || feature.distance_miles === 0;
+
+                  const icon = createPOIIcon('🌳', isContaining ? '#16a34a' : '#22c55e');
+                  const marker = L.marker([pointLat, pointLon], { icon });
+
+                  const featureName = feature.NAME || feature.name || feature.OBJECTID || `Tree ${feature.objectid}`;
+                  const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌳 ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+
+                  const excludeFields = ['NAME', 'name', 'geometry', 'objectid', 'OBJECTID', 'distance_miles', 'isContaining'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) return;
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+
+                  popupContent += `</div></div>`;
+                  marker.bindPopup(popupContent, { maxWidth: 400 });
+                  marker.addTo(primary);
+                  bounds.extend(marker.getBounds());
+                  featureCount++;
+                } else if (geometry.points && geometry.points.length > 0) {
+                  // Draw multipoint (use first point)
+                  const firstPoint = geometry.points[0];
+                  const pointLat = firstPoint[1];
+                  const pointLon = firstPoint[0];
+                  const isContaining = feature.isContaining || feature.distance_miles === 0;
+
+                  const icon = createPOIIcon('🌳', isContaining ? '#16a34a' : '#22c55e');
+                  const marker = L.marker([pointLat, pointLon], { icon });
+
+                  const featureName = feature.NAME || feature.name || feature.OBJECTID || `Tree ${feature.objectid}`;
+                  const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌳 ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+
+                  const excludeFields = ['NAME', 'name', 'geometry', 'objectid', 'OBJECTID', 'distance_miles', 'isContaining'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) return;
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+
+                  popupContent += `</div></div>`;
+                  marker.bindPopup(popupContent, { maxWidth: 400 });
+                  marker.addTo(primary);
+                  bounds.extend(marker.getBounds());
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error(`❌ Error drawing DC Urban Tree Canopy feature ${index}:`, error);
+              }
+            });
+
+            if (featureCount > 0) {
+              // Use unique legend key for each DC layer based on the enrichment key
+              // Map enrichment key (dc_utc_*) to POI config ID (dc_urban_tree_canopy_*)
+              const layerKeyMap: Record<string, string> = {
+                'dc_utc_anc_2020_all': 'dc_urban_tree_canopy_anc_2020',
+                'dc_utc_census_block_2020_all': 'dc_urban_tree_canopy_census_block_2020',
+                'dc_utc_census_block_group_2020_all': 'dc_urban_tree_canopy_census_block_group_2020',
+                'dc_utc_2010_census_block_group_2020_all': 'dc_urban_tree_canopy_2010_census_block_group_2020',
+                'dc_utc_dc_boundary_2020_all': 'dc_urban_tree_canopy_dc_boundary_2020',
+                'dc_utc_dc_owned_property_2020_all': 'dc_urban_tree_canopy_dc_owned_property_2020',
+                'dc_utc_generalized_ownership_parcel_2020_all': 'dc_urban_tree_canopy_generalized_ownership_parcel_2020',
+                'dc_utc_ownership_lot_2020_all': 'dc_urban_tree_canopy_ownership_lot_2020',
+                'dc_utc_2019_right_of_way_2020_all': 'dc_urban_tree_canopy_2019_right_of_way_2020',
+                'dc_utc_single_member_district_2020_all': 'dc_urban_tree_canopy_single_member_district_2020',
+                'dc_utc_ward_2020_all': 'dc_urban_tree_canopy_ward_2020',
+                'dc_utc_trees_all': 'dc_trees',
+                'dc_utc_ownership_lot_2015_all': 'dc_urban_tree_canopy_ownership_lot_2015',
+                'dc_utc_ward_2015_all': 'dc_urban_tree_canopy_ward_2015',
+                'dc_utc_ufa_street_trees_all': 'dc_ufa_street_trees',
+                'dc_utc_arborists_zone_all': 'dc_arborists_zone',
+                'dc_utc_anc_2015_all': 'dc_urban_tree_canopy_anc_2015',
+                'dc_utc_census_block_group_2015_all': 'dc_urban_tree_canopy_census_block_group_2015',
+                'dc_utc_census_block_2015_all': 'dc_urban_tree_canopy_census_block_2015',
+                'dc_utc_single_member_district_2015_all': 'dc_urban_tree_canopy_single_member_district_2015',
+                'dc_utc_2006_landuse_2015_all': 'dc_urban_tree_canopy_2006_landuse_2015',
+                'dc_utc_2011_landuse_2015_all': 'dc_urban_tree_canopy_2011_landuse_2015',
+                'dc_utc_2015_landuse_2015_all': 'dc_urban_tree_canopy_2015_landuse_2015',
+              };
+              
+              const legendKey = layerKeyMap[layerKey] || layerKey.replace('_all', '');
+              const poiInfo = POI_ICONS[legendKey];
+              const layerTitle = poiInfo?.title || poiConfigManager.getPOIType(legendKey)?.label || legendKey.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+              
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: poiInfo?.icon || '🌳',
+                  color: poiInfo?.color || '#22c55e',
+                  title: layerTitle,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          } catch (error) {
+            console.error(`❌ Error processing DC Urban Tree Canopy ${layerKey}:`, error);
+          }
+        }
+      });
+
+      // Draw DC Bike Trails layers (polylines and points)
+      const dcBikeLayerKeys = [
+        'dc_bike_trail_mile_marker_all',
+        'dc_bike_planned_multi_use_trails_all',
+        'dc_bike_bicycle_lanes_all',
+        'dc_bike_bike_trails_all',
+        'dc_bike_capital_bike_share_locations_all',
+        'dc_bike_signed_bike_routes_all',
+        'dc_bike_nps_trails_all',
+        'dc_bike_public_bike_racks_all'
+      ];
+
+      dcBikeLayerKeys.forEach((layerKey) => {
+        if (enrichments[layerKey] && Array.isArray(enrichments[layerKey])) {
+          try {
+            const layerIdMap: Record<string, string> = {
+              'dc_bike_trail_mile_marker_all': 'dc_trail_mile_marker',
+              'dc_bike_planned_multi_use_trails_all': 'dc_planned_multi_use_trails',
+              'dc_bike_bicycle_lanes_all': 'dc_bicycle_lanes',
+              'dc_bike_bike_trails_all': 'dc_bike_trails',
+              'dc_bike_capital_bike_share_locations_all': 'dc_capital_bike_share_locations',
+              'dc_bike_signed_bike_routes_all': 'dc_signed_bike_routes',
+              'dc_bike_nps_trails_all': 'dc_nps_trails',
+              'dc_bike_public_bike_racks_all': 'dc_public_bike_racks',
+            };
+            const legendKey = layerIdMap[layerKey];
+            const poiInfo = POI_ICONS[legendKey];
+            const iconEmoji = poiInfo?.icon || '🚴';
+            const defaultColor = poiInfo?.color || '#3b82f6';
+            let featureCount = 0;
+
+            enrichments[layerKey].forEach((feature: any, index: number) => {
+              const geometry = feature.geometry;
+              if (!geometry) {
+                console.warn(`⚠️ DC Bike Trails ${layerKey}: Feature ${index} has no geometry`);
+                return;
+              }
+
+              try {
+                // Check if it's a polyline (has paths) or point (has x/y or points)
+                if (geometry.paths && geometry.paths.length > 0) {
+                  // Draw polyline
+                  const paths = geometry.paths;
+                  if (paths && paths.length > 0) {
+                    featureCount++; // Count each feature once
+                    paths.forEach((path: number[][]) => {
+                      const latlngs = path.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+
+                      const featureName = feature.NAME || feature.name || feature.ROUTE_NAME || feature.route_name || `Feature ${feature.objectid}`;
+                      const distanceMiles = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                      const polyline = L.polyline(latlngs, {
+                        color: defaultColor,
+                        weight: 4,
+                        opacity: 0.8,
+                        smoothFactor: 1
+                      });
+
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            ${iconEmoji} ${featureName}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${distanceMiles ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                          </div>
+                          <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      `;
+
+                      const excludeFields = ['NAME', 'name', 'ROUTE_NAME', 'route_name', 'geometry', 'objectid', 'OBJECTID', 'distance_miles'];
+                      Object.entries(feature).forEach(([key, value]) => {
+                        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                          if (typeof value === 'object' && !Array.isArray(value)) return;
+                          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                          popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                        }
+                      });
+                      popupContent += `</div></div>`;
+
+                      polyline.bindPopup(popupContent, { maxWidth: 400 });
+                      polyline.addTo(primary);
+                      bounds.extend(polyline.getBounds());
+                    });
+                  }
+                } else if (geometry.x !== undefined && geometry.y !== undefined) {
+                  // Draw point
+                  const pointLat = geometry.y;
+                  const pointLon = geometry.x;
+                  if (isNaN(pointLat) || isNaN(pointLon)) {
+                    console.warn(`⚠️ DC Bike Trails ${layerKey}: Feature ${index} has invalid point coordinates`);
+                    return;
+                  }
+                  const marker = L.marker([pointLat, pointLon], { icon: createPOIIcon(iconEmoji, defaultColor) });
+
+                  const featureName = feature.NAME || feature.name || feature.LOCATION || feature.location || `Feature ${feature.objectid}`;
+                  const distanceMiles = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${iconEmoji} ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distanceMiles ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+
+                  const excludeFields = ['NAME', 'name', 'LOCATION', 'location', 'geometry', 'objectid', 'OBJECTID', 'distance_miles'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) return;
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  popupContent += `</div></div>`;
+
+                  marker.bindPopup(popupContent, { maxWidth: 400 });
+                  marker.addTo(primary);
+                  bounds.extend(marker.getLatLng());
+                  featureCount++;
+                } else if (geometry.points && geometry.points.length > 0) {
+                  // Draw multipoint (use first point)
+                  const firstPoint = geometry.points[0];
+                  if (!firstPoint || firstPoint.length < 2) {
+                    console.warn(`⚠️ DC Bike Trails ${layerKey}: Feature ${index} has invalid multipoint coordinates`);
+                    return;
+                  }
+                  const pointLat = firstPoint[1];
+                  const pointLon = firstPoint[0];
+                  if (isNaN(pointLat) || isNaN(pointLon)) {
+                    console.warn(`⚠️ DC Bike Trails ${layerKey}: Feature ${index} has invalid multipoint coordinates`);
+                    return;
+                  }
+                  const marker = L.marker([pointLat, pointLon], { icon: createPOIIcon(iconEmoji, defaultColor) });
+
+                  const featureName = feature.NAME || feature.name || feature.LOCATION || feature.location || `Feature ${feature.objectid}`;
+                  const distanceMiles = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${iconEmoji} ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distanceMiles ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distanceMiles} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+
+                  const excludeFields = ['NAME', 'name', 'LOCATION', 'location', 'geometry', 'objectid', 'OBJECTID', 'distance_miles'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) return;
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  popupContent += `</div></div>`;
+
+                  marker.bindPopup(popupContent, { maxWidth: 400 });
+                  marker.addTo(primary);
+                  bounds.extend(marker.getLatLng());
+                  featureCount++;
+                } else {
+                  console.warn(`⚠️ DC Bike Trails ${layerKey}: Feature ${index} has unrecognized geometry type:`, {
+                    hasPaths: !!geometry.paths,
+                    hasX: geometry.x !== undefined,
+                    hasY: geometry.y !== undefined,
+                    hasPoints: !!geometry.points,
+                    geometryType: geometry.type || 'unknown'
+                  });
+                }
+              } catch (error) {
+                console.error(`❌ Error drawing DC Bike Trails feature ${index}:`, error);
+              }
+            });
+
+            if (featureCount > 0) {
+              console.log(`✅ DC Bike Trails ${layerKey}: Drawing ${featureCount} features, legendKey: ${legendKey}`);
+              if (!legendAccumulator[legendKey]) {
+                const layerTitle = poiInfo?.title || poiConfigManager.getPOIType(legendKey)?.label || legendKey.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                console.log(`📝 Creating legend entry for ${legendKey}: ${layerTitle}`);
+                legendAccumulator[legendKey] = {
+                  icon: iconEmoji,
+                  color: defaultColor,
+                  title: layerTitle,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+              console.log(`📊 Updated legend count for ${legendKey}: ${legendAccumulator[legendKey].count}`);
+            } else {
+              console.warn(`⚠️ DC Bike Trails ${layerKey}: No features drawn (featureCount: ${featureCount}), legendKey: ${legendKey}`);
+            }
+          } catch (error) {
+            console.error(`❌ Error processing DC Bike Trails ${layerKey}:`, error);
+          }
+        }
+      });
+
       // Draw Hurricane Evacuation Routes (Natural Hazards) as polylines on the map
       if (enrichments.hurricane_evacuation_routes_hazards_all && Array.isArray(enrichments.hurricane_evacuation_routes_hazards_all)) {
         try {
@@ -31038,6 +31597,16 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Skip SC Scenic Rivers - handled separately with custom polylines
         if (key === 'sc_scenic_rivers_all') {
+          return;
+        }
+
+        // Skip DC Urban Tree Canopy layers - handled separately with geometry drawing
+        if (key.startsWith('dc_utc_') && key.endsWith('_all')) {
+          return;
+        }
+
+        // Skip DC Bike Trails layers - handled separately with geometry drawing
+        if (key.startsWith('dc_bike_') && key.endsWith('_all')) {
           return;
         }
 

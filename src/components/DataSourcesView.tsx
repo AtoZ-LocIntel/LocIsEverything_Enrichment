@@ -566,6 +566,43 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/structures/MapServer"
         },
         {
+          name: "USGS Trails",
+          description: "USGS National Trails - Terra trails, snow trails, and water trails with national designations (proximity queries up to 50 miles)",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://partnerships.nationalmap.gov/arcgis/rest/services/USGSTrails/MapServer/0"
+        }
+      ]
+    },
+    {
+      category: "District of Columbia Open Data",
+      sources: [
+        {
+          name: "DC Urban Tree Canopy",
+          description: "DC Urban Tree Canopy layers - 22 layers including Urban Tree Canopy by Advisory Neighborhood Commission, Census Block, Census Block Group, DC Boundary, DC Owned Property, Generalized Ownership Parcel, Ownership Lot, Right of Way, Single Member District, Ward (2020 and 2015), DC Trees, UFA Street Trees, and Arborists Zone. Point-in-polygon and proximity queries up to 10 miles.",
+          coverage: "District of Columbia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Urban_Tree_Canopy/FeatureServer"
+        },
+        {
+          name: "DC Bike Trails",
+          description: "DC Bike Trails layers - 8 layers including Trail Mile Marker, Planned Multi Use Trails, Bicycle Lanes, Bike Trails, Capital Bike Share Locations, Signed Bike Routes, NPS Trails, and Public Bike Racks. Proximity queries up to 5 miles. Mix of point and polyline features.",
+          coverage: "District of Columbia",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Transportation_Bikes_Trails_WebMercator/MapServer"
+        },
+        {
+          name: "National Risk Index (NRI) Annualized Frequency Hurricane - County",
+          description: "USGS National Trails - Terra trails, snow trails, and water trails with national designations (proximity queries up to 50 miles)",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://partnerships.nationalmap.gov/arcgis/rest/services/USGSTrails/MapServer/0"
+        },
+        {
           name: "National Risk Index (NRI) Annualized Frequency Hurricane - County",
           description: "FEMA National Risk Index - Annualized frequency of hurricane events (County). Point-in-polygon + proximity up to 25 miles.",
           coverage: "United States",
