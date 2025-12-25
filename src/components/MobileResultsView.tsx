@@ -340,7 +340,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('tnm_structures') || key.includes('usgs_trails')) {
       return 'The National Map';
     }
-    if (key.startsWith('dc_utc_') || key.startsWith('dc_urban_tree_canopy_') || key === 'dc_trees' || key === 'dc_ufa_street_trees' || key === 'dc_arborists_zone' || key.startsWith('dc_bike_')) {
+    if (key.startsWith('dc_utc_') || key.startsWith('dc_urban_tree_canopy_') || key === 'dc_trees' || key === 'dc_ufa_street_trees' || key === 'dc_arborists_zone' || key.startsWith('dc_bike_') || key.startsWith('dc_property_')) {
       return 'District of Columbia';
     }
     
@@ -533,6 +533,32 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
             };
             const layerKey = layerKeyMap[id] || id.replace('dc_', 'dc_bike_');
             return key.includes(layerKey);
+          }
+          return false;
+        });
+      }
+      // DC Property and Land layers
+      if (key.startsWith('dc_property_')) {
+        const dcPropertyEnrichmentIds = [
+          'dc_property_air_rights_lot_points', 'dc_property_alley_frontage_lines', 'dc_property_air_rights_lots_historical',
+          'dc_property_air_rights_lots', 'dc_property_appropriation_points', 'dc_property_appropriations',
+          'dc_property_assessment_neighborhoods', 'dc_property_assessment_sub_neighborhoods', 'dc_property_district_land_points',
+          'dc_property_building_restriction_lines', 'dc_property_certificate_of_occupancy_points', 'dc_property_military_bases',
+          'dc_property_parcel_lot_points', 'dc_property_record_lot_points', 'dc_property_reservations_points',
+          'dc_property_square_points', 'dc_property_tax_lot_points', 'dc_property_highway_plan_lines',
+          'dc_property_parcel_lots_historical', 'dc_property_parcel_lots', 'dc_property_record_lots_historical',
+          'dc_property_record_lots', 'dc_property_reservations_historical', 'dc_property_reservations',
+          'dc_property_tax_lots_historical', 'dc_property_tax_lots', 'dc_property_owner_polygons',
+          'dc_property_square_boundaries', 'dc_property_boundary_stones_location', 'dc_property_condo_approval_lots',
+          'dc_property_public_easement_lines', 'dc_property_district_land_rpta_ownership', 'dc_property_federal_land_rpta_ownership',
+          'dc_property_owner_lines_dimensions', 'dc_property_district_land', 'dc_property_affordable_housing',
+          'dc_property_real_estate_portfolio', 'dc_property_district_land_lines_dimensions', 'dc_property_wdcep_development_point',
+          'dc_property_alley_and_street_changes', 'dc_property_district_structures', 'dc_property_land_boundary_changes',
+          'dc_property_alley_street_changes_dimensions', 'dc_property_vacant_and_blighted_building_footprints', 'dc_property_vacant_and_blighted_building_addresses'
+        ];
+        return dcPropertyEnrichmentIds.some(id => {
+          if (selected === id) {
+            return key.includes(id);
           }
           return false;
         });

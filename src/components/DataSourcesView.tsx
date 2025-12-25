@@ -595,6 +595,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Transportation_Bikes_Trails_WebMercator/MapServer"
         },
         {
+          name: "DC Property and Land",
+          description: "DC Property and Land layers - 43 layers including Air Rights Lots, Appropriations, Assessment Neighborhoods, Military Bases, Parcel Lots, Record Lots, Tax Lots, Reservations, Square Boundaries, Owner Polygons, District Land, Affordable Housing, Real Estate Portfolio, District Structures, Vacant and Blighted Buildings, and many more. Point layers and line layers support proximity queries up to 5 miles. Polygon layers support point-in-polygon and proximity queries up to 1 mile.",
+          coverage: "District of Columbia",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Property_and_Land_WebMercator/FeatureServer"
+        },
+        {
           name: "National Risk Index (NRI) Annualized Frequency Hurricane - County",
           description: "USGS National Trails - Terra trails, snow trails, and water trails with national designations (proximity queries up to 50 miles)",
           coverage: "United States",

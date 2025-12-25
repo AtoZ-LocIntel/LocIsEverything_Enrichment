@@ -152,6 +152,15 @@ const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsLayers: 'USGSNAIPPlus', // Use service name as layer for ImageServer WMS
     wmsFormat: 'image/png',
   },
+  // USGS National Map Contours WMS
+  usgs_contours: {
+    type: 'wms',
+    name: 'USGS National Map Contours',
+    attribution: 'USGS The National Map',
+    wmsUrl: 'https://carto.nationalmap.gov/arcgis/services/contours/MapServer/WMSServer',
+    wmsLayers: '0', // Contours - Large-Scale
+    wmsFormat: 'image/png',
+  },
 };
 
 
@@ -487,6 +496,51 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'dc_signed_bike_routes': { icon: '🚴', color: '#3b82f6', title: 'DC Signed Bike Routes' },
   'dc_nps_trails': { icon: '🥾', color: '#10b981', title: 'DC NPS Trails' },
   'dc_public_bike_racks': { icon: '🚲', color: '#6366f1', title: 'DC Public Bike Racks' },
+  'dc_property_air_rights_lot_points': { icon: '📍', color: '#3b82f6', title: 'DC Air Rights Lot Points' },
+  'dc_property_alley_frontage_lines': { icon: '🛣️', color: '#3b82f6', title: 'DC Alley Frontage Lines' },
+  'dc_property_air_rights_lots_historical': { icon: '🏢', color: '#8b5cf6', title: 'DC Air Rights Lots (Historical)' },
+  'dc_property_air_rights_lots': { icon: '🏢', color: '#8b5cf6', title: 'DC Air Rights Lots' },
+  'dc_property_appropriation_points': { icon: '📍', color: '#3b82f6', title: 'DC Appropriation Points' },
+  'dc_property_appropriations': { icon: '🏛️', color: '#8b5cf6', title: 'DC Appropriations' },
+  'dc_property_assessment_neighborhoods': { icon: '🏘️', color: '#8b5cf6', title: 'DC Assessment Neighborhoods' },
+  'dc_property_assessment_sub_neighborhoods': { icon: '🏘️', color: '#8b5cf6', title: 'DC Assessment Sub-Neighborhoods' },
+  'dc_property_district_land_points': { icon: '📍', color: '#3b82f6', title: 'DC District Land Points' },
+  'dc_property_building_restriction_lines': { icon: '🛣️', color: '#3b82f6', title: 'DC Building Restriction Lines' },
+  'dc_property_certificate_of_occupancy_points': { icon: '📍', color: '#3b82f6', title: 'DC Certificate Of Occupancy Points' },
+  'dc_property_military_bases': { icon: '🏛️', color: '#8b5cf6', title: 'DC Military Bases' },
+  'dc_property_parcel_lot_points': { icon: '📍', color: '#3b82f6', title: 'DC Parcel Lot Points' },
+  'dc_property_record_lot_points': { icon: '📍', color: '#3b82f6', title: 'DC Record Lot Points' },
+  'dc_property_reservations_points': { icon: '📍', color: '#3b82f6', title: 'DC Reservations Points' },
+  'dc_property_square_points': { icon: '📍', color: '#3b82f6', title: 'DC Square Points' },
+  'dc_property_tax_lot_points': { icon: '📍', color: '#3b82f6', title: 'DC Tax Lot Points' },
+  'dc_property_highway_plan_lines': { icon: '🛣️', color: '#3b82f6', title: 'DC Highway Plan Lines' },
+  'dc_property_parcel_lots_historical': { icon: '🏘️', color: '#8b5cf6', title: 'DC Parcel Lots (Historical)' },
+  'dc_property_parcel_lots': { icon: '🏘️', color: '#8b5cf6', title: 'DC Parcel Lots' },
+  'dc_property_record_lots_historical': { icon: '🏘️', color: '#8b5cf6', title: 'DC Record Lots (Historical)' },
+  'dc_property_record_lots': { icon: '🏘️', color: '#8b5cf6', title: 'DC Record Lots' },
+  'dc_property_reservations_historical': { icon: '🏛️', color: '#8b5cf6', title: 'DC Reservations (Historical)' },
+  'dc_property_reservations': { icon: '🏛️', color: '#8b5cf6', title: 'DC Reservations' },
+  'dc_property_tax_lots_historical': { icon: '🏘️', color: '#8b5cf6', title: 'DC Tax Lots (Historical)' },
+  'dc_property_tax_lots': { icon: '🏘️', color: '#8b5cf6', title: 'DC Tax Lots' },
+  'dc_property_owner_polygons': { icon: '🏢', color: '#8b5cf6', title: 'DC Owner Polygons (Common Ownership Layer)' },
+  'dc_property_square_boundaries': { icon: '🏛️', color: '#8b5cf6', title: 'DC Square Boundaries' },
+  'dc_property_boundary_stones_location': { icon: '📍', color: '#3b82f6', title: 'DC Boundary Stones Location' },
+  'dc_property_condo_approval_lots': { icon: '🏘️', color: '#8b5cf6', title: 'DC Condo Approval Lots' },
+  'dc_property_public_easement_lines': { icon: '🛣️', color: '#3b82f6', title: 'DC Public Easement Lines' },
+  'dc_property_district_land_rpta_ownership': { icon: '🏛️', color: '#8b5cf6', title: 'DC District Land (RPTA Ownership)' },
+  'dc_property_federal_land_rpta_ownership': { icon: '🏛️', color: '#8b5cf6', title: 'DC Federal Land (RPTA Ownership)' },
+  'dc_property_owner_lines_dimensions': { icon: '🛣️', color: '#3b82f6', title: 'DC Owner Lines (Dimensions)' },
+  'dc_property_district_land': { icon: '🏛️', color: '#8b5cf6', title: 'DC District Land' },
+  'dc_property_affordable_housing': { icon: '🏠', color: '#8b5cf6', title: 'DC Affordable Housing' },
+  'dc_property_real_estate_portfolio': { icon: '🏢', color: '#8b5cf6', title: 'DC Real Estate Portfolio' },
+  'dc_property_district_land_lines_dimensions': { icon: '🛣️', color: '#3b82f6', title: 'DC District Land Lines (Dimensions)' },
+  'dc_property_wdcep_development_point': { icon: '📍', color: '#3b82f6', title: 'DC WDCEP Development Point' },
+  'dc_property_alley_and_street_changes': { icon: '🏘️', color: '#8b5cf6', title: 'DC Alley and Street Changes' },
+  'dc_property_district_structures': { icon: '🏢', color: '#8b5cf6', title: 'DC District Structures' },
+  'dc_property_land_boundary_changes': { icon: '🏘️', color: '#8b5cf6', title: 'DC Land Boundary Changes' },
+  'dc_property_alley_street_changes_dimensions': { icon: '🛣️', color: '#3b82f6', title: 'DC Alley Street Changes (Dimensions)' },
+  'dc_property_vacant_and_blighted_building_footprints': { icon: '🏚️', color: '#8b5cf6', title: 'DC Vacant and Blighted Building Footprints' },
+  'dc_property_vacant_and_blighted_building_addresses': { icon: '📍', color: '#3b82f6', title: 'DC Vacant and Blighted Building Addresses' },
   'blm_national_trails': { icon: '🥾', color: '#059669', title: 'BLM National GTLF Public Managed Trails' },
   'blm_national_motorized_trails': { icon: '🏍️', color: '#dc2626', title: 'BLM National GTLF Public Motorized Trails' },
   'blm_national_nonmotorized_trails': { icon: '🚶', color: '#10b981', title: 'BLM National GTLF Public Nonmotorized Trails' },
@@ -893,6 +947,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'usgs_trails_all' || // Skip USGS Trails array (handled separately for map drawing)
     (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately for map drawing)
     (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately for map drawing)
+    (key.startsWith('dc_property_') && key.endsWith('_all')) || // Skip DC Property and Land arrays (handled separately for map drawing)
     key === 'blm_national_trails_all' || // Skip BLM National Trails array (handled separately for map drawing)
     key === 'blm_national_motorized_trails_all' || // Skip BLM National Motorized Trails array (handled separately for map drawing)
     key === 'blm_national_nonmotorized_trails_all' || // Skip BLM National Nonmotorized Trails array (handled separately for map drawing)
@@ -27281,6 +27336,237 @@ const MapView: React.FC<MapViewProps> = ({
             }
           } catch (error) {
             console.error(`❌ Error processing DC Bike Trails ${layerKey}:`, error);
+          }
+        }
+      });
+
+      // Draw DC Property and Land layers (polygons, polylines, and points)
+      // Create a mapping of all DC Property and Land enrichment keys to their layer info
+      const dcPropertyLayerMap: Record<string, { layerId: number; layerName: string; legendKey: string }> = {
+        'dc_property_air_rights_lot_points_all': { layerId: 0, layerName: 'Air Rights Lot Points', legendKey: 'dc_property_air_rights_lot_points' },
+        'dc_property_alley_frontage_lines_all': { layerId: 1, layerName: 'Alley Frontage Lines', legendKey: 'dc_property_alley_frontage_lines' },
+        'dc_property_air_rights_lots_historical_all': { layerId: 2, layerName: 'Air Rights Lots (Historical)', legendKey: 'dc_property_air_rights_lots_historical' },
+        'dc_property_air_rights_lots_all': { layerId: 3, layerName: 'Air Rights Lots', legendKey: 'dc_property_air_rights_lots' },
+        'dc_property_appropriation_points_all': { layerId: 4, layerName: 'Appropriation Points', legendKey: 'dc_property_appropriation_points' },
+        'dc_property_appropriations_all': { layerId: 5, layerName: 'Appropriations', legendKey: 'dc_property_appropriations' },
+        'dc_property_assessment_neighborhoods_all': { layerId: 6, layerName: 'Assessment Neighborhoods', legendKey: 'dc_property_assessment_neighborhoods' },
+        'dc_property_assessment_sub_neighborhoods_all': { layerId: 7, layerName: 'Assessment Sub-Neighborhoods', legendKey: 'dc_property_assessment_sub_neighborhoods' },
+        'dc_property_district_land_points_all': { layerId: 8, layerName: 'District Land Points', legendKey: 'dc_property_district_land_points' },
+        'dc_property_building_restriction_lines_all': { layerId: 9, layerName: 'Building Restriction Lines', legendKey: 'dc_property_building_restriction_lines' },
+        'dc_property_certificate_of_occupancy_points_all': { layerId: 10, layerName: 'Certificate Of Occupancy Points', legendKey: 'dc_property_certificate_of_occupancy_points' },
+        'dc_property_military_bases_all': { layerId: 11, layerName: 'Military Bases', legendKey: 'dc_property_military_bases' },
+        'dc_property_parcel_lot_points_all': { layerId: 18, layerName: 'Parcel Lot Points', legendKey: 'dc_property_parcel_lot_points' },
+        'dc_property_record_lot_points_all': { layerId: 19, layerName: 'Record Lot Points', legendKey: 'dc_property_record_lot_points' },
+        'dc_property_reservations_points_all': { layerId: 20, layerName: 'Reservations Points', legendKey: 'dc_property_reservations_points' },
+        'dc_property_square_points_all': { layerId: 21, layerName: 'Square Points', legendKey: 'dc_property_square_points' },
+        'dc_property_tax_lot_points_all': { layerId: 22, layerName: 'Tax Lot Points', legendKey: 'dc_property_tax_lot_points' },
+        'dc_property_highway_plan_lines_all': { layerId: 29, layerName: 'Highway Plan Lines', legendKey: 'dc_property_highway_plan_lines' },
+        'dc_property_parcel_lots_historical_all': { layerId: 32, layerName: 'Parcel Lots (Historical)', legendKey: 'dc_property_parcel_lots_historical' },
+        'dc_property_parcel_lots_all': { layerId: 33, layerName: 'Parcel Lots', legendKey: 'dc_property_parcel_lots' },
+        'dc_property_record_lots_historical_all': { layerId: 34, layerName: 'Record Lots (Historical)', legendKey: 'dc_property_record_lots_historical' },
+        'dc_property_record_lots_all': { layerId: 35, layerName: 'Record Lots', legendKey: 'dc_property_record_lots' },
+        'dc_property_reservations_historical_all': { layerId: 36, layerName: 'Reservations (Historical)', legendKey: 'dc_property_reservations_historical' },
+        'dc_property_reservations_all': { layerId: 37, layerName: 'Reservations', legendKey: 'dc_property_reservations' },
+        'dc_property_tax_lots_historical_all': { layerId: 38, layerName: 'Tax Lots (Historical)', legendKey: 'dc_property_tax_lots_historical' },
+        'dc_property_tax_lots_all': { layerId: 39, layerName: 'Tax Lots', legendKey: 'dc_property_tax_lots' },
+        'dc_property_owner_polygons_all': { layerId: 40, layerName: 'Owner Polygons (Common Ownership Layer)', legendKey: 'dc_property_owner_polygons' },
+        'dc_property_square_boundaries_all': { layerId: 41, layerName: 'Square Boundaries', legendKey: 'dc_property_square_boundaries' },
+        'dc_property_boundary_stones_location_all': { layerId: 42, layerName: 'Boundary Stones Location', legendKey: 'dc_property_boundary_stones_location' },
+        'dc_property_condo_approval_lots_all': { layerId: 44, layerName: 'Condo Approval Lots', legendKey: 'dc_property_condo_approval_lots' },
+        'dc_property_public_easement_lines_all': { layerId: 48, layerName: 'Public Easement Lines', legendKey: 'dc_property_public_easement_lines' },
+        'dc_property_district_land_rpta_ownership_all': { layerId: 49, layerName: 'District Land (RPTA Ownership)', legendKey: 'dc_property_district_land_rpta_ownership' },
+        'dc_property_federal_land_rpta_ownership_all': { layerId: 50, layerName: 'Federal Land (RPTA Ownership)', legendKey: 'dc_property_federal_land_rpta_ownership' },
+        'dc_property_owner_lines_dimensions_all': { layerId: 51, layerName: 'Owner Lines (Dimensions)', legendKey: 'dc_property_owner_lines_dimensions' },
+        'dc_property_district_land_all': { layerId: 61, layerName: 'District Land', legendKey: 'dc_property_district_land' },
+        'dc_property_affordable_housing_all': { layerId: 62, layerName: 'Affordable Housing', legendKey: 'dc_property_affordable_housing' },
+        'dc_property_real_estate_portfolio_all': { layerId: 63, layerName: 'Real Estate Portfolio', legendKey: 'dc_property_real_estate_portfolio' },
+        'dc_property_district_land_lines_dimensions_all': { layerId: 73, layerName: 'District Land Lines (Dimensions)', legendKey: 'dc_property_district_land_lines_dimensions' },
+        'dc_property_wdcep_development_point_all': { layerId: 74, layerName: 'WDCEP Development Point', legendKey: 'dc_property_wdcep_development_point' },
+        'dc_property_alley_and_street_changes_all': { layerId: 75, layerName: 'Alley and Street Changes', legendKey: 'dc_property_alley_and_street_changes' },
+        'dc_property_district_structures_all': { layerId: 77, layerName: 'District Structures', legendKey: 'dc_property_district_structures' },
+        'dc_property_land_boundary_changes_all': { layerId: 78, layerName: 'Land Boundary Changes', legendKey: 'dc_property_land_boundary_changes' },
+        'dc_property_alley_street_changes_dimensions_all': { layerId: 79, layerName: 'Alley Street Changes (Dimensions)', legendKey: 'dc_property_alley_street_changes_dimensions' },
+        'dc_property_vacant_and_blighted_building_footprints_all': { layerId: 81, layerName: 'Vacant and Blighted Building Footprints', legendKey: 'dc_property_vacant_and_blighted_building_footprints' },
+        'dc_property_vacant_and_blighted_building_addresses_all': { layerId: 82, layerName: 'Vacant and Blighted Building Addresses', legendKey: 'dc_property_vacant_and_blighted_building_addresses' },
+      };
+
+      Object.keys(dcPropertyLayerMap).forEach((enrichmentKey) => {
+        if (enrichments[enrichmentKey] && Array.isArray(enrichments[enrichmentKey])) {
+          try {
+            const layerInfo = dcPropertyLayerMap[enrichmentKey];
+            const legendKey = layerInfo.legendKey;
+            const poiInfo = POI_ICONS[legendKey];
+            const iconEmoji = poiInfo?.icon || '🏢';
+            const defaultColor = poiInfo?.color || '#3b82f6';
+            let featureCount = 0;
+
+            enrichments[enrichmentKey].forEach((feature: any, index: number) => {
+              const geometry = feature.geometry;
+              if (!geometry) return;
+
+              try {
+                // Determine geometry type from layer name
+                const isPointLayer = layerInfo.layerName.toLowerCase().endsWith('points');
+                const isLineLayer = layerInfo.layerName.toLowerCase().endsWith('lines');
+                const isPolygonLayer = !isPointLayer && !isLineLayer;
+
+                if (isPolygonLayer && geometry.rings && geometry.rings.length > 0) {
+                  // Draw polygon
+                  const rings = geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    if (!outerRing || outerRing.length < 3) return;
+
+                    const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+
+                    const isContaining = feature.isContaining || feature.distance_miles === 0;
+                    const polygon = L.polygon(latlngs, {
+                      color: isContaining ? '#16a34a' : defaultColor,
+                      weight: 2,
+                      opacity: 0.7,
+                      fillColor: isContaining ? '#16a34a' : defaultColor,
+                      fillOpacity: 0.3
+                    });
+
+                    const featureName = feature.NAME || feature.name || feature.OBJECTID || `Feature ${feature.objectid}`;
+                    const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${iconEmoji} ${featureName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+
+                    const excludeFields = ['NAME', 'name', 'geometry', 'objectid', 'OBJECTID', 'distance_miles', 'isContaining'];
+                    Object.entries(feature).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) return;
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+
+                    popupContent += `</div></div>`;
+                    polygon.bindPopup(popupContent, { maxWidth: 400 });
+                    polygon.addTo(primary);
+                    bounds.extend(polygon.getBounds());
+                    featureCount++;
+                  }
+                } else if (isLineLayer && geometry.paths && geometry.paths.length > 0) {
+                  // Draw polyline
+                  const paths = geometry.paths;
+                  if (paths && paths.length > 0) {
+                    featureCount++;
+                    paths.forEach((path: number[][]) => {
+                      const latlngs = path.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+
+                      const featureName = feature.NAME || feature.name || feature.ROUTE_NAME || feature.route_name || `Feature ${feature.objectid}`;
+                      const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                      const polyline = L.polyline(latlngs, {
+                        color: defaultColor,
+                        weight: 4,
+                        opacity: 0.8,
+                        smoothFactor: 1
+                      });
+
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            ${iconEmoji} ${featureName}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                          </div>
+                          <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      `;
+
+                      const excludeFields = ['NAME', 'name', 'ROUTE_NAME', 'route_name', 'geometry', 'objectid', 'OBJECTID', 'distance_miles'];
+                      Object.entries(feature).forEach(([key, value]) => {
+                        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                          if (typeof value === 'object' && !Array.isArray(value)) return;
+                          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                          popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                        }
+                      });
+                      popupContent += `</div></div>`;
+
+                      polyline.bindPopup(popupContent, { maxWidth: 400 });
+                      polyline.addTo(primary);
+                      bounds.extend(polyline.getBounds());
+                    });
+                  }
+                } else if (isPointLayer && (geometry.x !== undefined && geometry.y !== undefined || geometry.points && geometry.points.length > 0)) {
+                  // Draw point
+                  let pointLat: number;
+                  let pointLon: number;
+
+                  if (geometry.x !== undefined && geometry.y !== undefined) {
+                    pointLat = geometry.y;
+                    pointLon = geometry.x;
+                  } else if (geometry.points && geometry.points.length > 0) {
+                    const firstPoint = geometry.points[0];
+                    pointLat = firstPoint[1];
+                    pointLon = firstPoint[0];
+                  } else {
+                    return;
+                  }
+
+                  const marker = L.marker([pointLat, pointLon], { icon: createPOIIcon(iconEmoji, defaultColor) });
+
+                  const featureName = feature.NAME || feature.name || feature.LOCATION || feature.location || `Feature ${feature.objectid}`;
+                  const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${iconEmoji} ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+
+                  const excludeFields = ['NAME', 'name', 'LOCATION', 'location', 'geometry', 'objectid', 'OBJECTID', 'distance_miles'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) return;
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  popupContent += `</div></div>`;
+
+                  marker.bindPopup(popupContent, { maxWidth: 400 });
+                  marker.addTo(primary);
+                  bounds.extend(marker.getLatLng());
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error(`❌ Error drawing DC Property and Land feature ${index}:`, error);
+              }
+            });
+
+            if (featureCount > 0) {
+              if (!legendAccumulator[legendKey]) {
+                const layerTitle = poiInfo?.title || poiConfigManager.getPOIType(legendKey)?.label || layerInfo.layerName;
+                legendAccumulator[legendKey] = {
+                  icon: iconEmoji,
+                  color: defaultColor,
+                  title: layerTitle,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          } catch (error) {
+            console.error(`❌ Error processing DC Property and Land ${enrichmentKey}:`, error);
           }
         }
       });

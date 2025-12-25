@@ -97,6 +97,7 @@ import { getTNMStructuresData } from '../adapters/tnmStructures';
 import { getUSGSTrailsData } from '../adapters/usgsTrails';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
+import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
 import { getUSHistoricalCulturalPoliticalPointsData } from '../adapters/usHistoricalCulturalPoliticalPoints';
 import { getUSHistoricalHydrographicPointsData } from '../adapters/usHistoricalHydrographicPoints';
 import { getUSHistoricalPhysicalPointsData } from '../adapters/usHistoricalPhysicalPoints';
@@ -2608,6 +2609,98 @@ export class EnrichmentService {
         return await this.getDCBikeTrails(75, lat, lon, radius);
       case 'dc_public_bike_racks':
         return await this.getDCBikeTrails(168, lat, lon, radius);
+      
+      // DC Property and Land
+      case 'dc_property_air_rights_lot_points':
+        return await this.getDCPropertyAndLand(0, 'Air Rights Lot Points', lat, lon, radius);
+      case 'dc_property_alley_frontage_lines':
+        return await this.getDCPropertyAndLand(1, 'Alley Frontage Lines', lat, lon, radius);
+      case 'dc_property_air_rights_lots_historical':
+        return await this.getDCPropertyAndLand(2, 'Air Rights Lots (Historical)', lat, lon, radius);
+      case 'dc_property_air_rights_lots':
+        return await this.getDCPropertyAndLand(3, 'Air Rights Lots', lat, lon, radius);
+      case 'dc_property_appropriation_points':
+        return await this.getDCPropertyAndLand(4, 'Appropriation Points', lat, lon, radius);
+      case 'dc_property_appropriations':
+        return await this.getDCPropertyAndLand(5, 'Appropriations', lat, lon, radius);
+      case 'dc_property_assessment_neighborhoods':
+        return await this.getDCPropertyAndLand(6, 'Assessment Neighborhoods', lat, lon, radius);
+      case 'dc_property_assessment_sub_neighborhoods':
+        return await this.getDCPropertyAndLand(7, 'Assessment Sub-Neighborhoods', lat, lon, radius);
+      case 'dc_property_district_land_points':
+        return await this.getDCPropertyAndLand(8, 'District Land Points', lat, lon, radius);
+      case 'dc_property_building_restriction_lines':
+        return await this.getDCPropertyAndLand(9, 'Building Restriction Lines', lat, lon, radius);
+      case 'dc_property_certificate_of_occupancy_points':
+        return await this.getDCPropertyAndLand(10, 'Certificate Of Occupancy Points', lat, lon, radius);
+      case 'dc_property_military_bases':
+        return await this.getDCPropertyAndLand(11, 'Military Bases', lat, lon, radius);
+      case 'dc_property_parcel_lot_points':
+        return await this.getDCPropertyAndLand(18, 'Parcel Lot Points', lat, lon, radius);
+      case 'dc_property_record_lot_points':
+        return await this.getDCPropertyAndLand(19, 'Record Lot Points', lat, lon, radius);
+      case 'dc_property_reservations_points':
+        return await this.getDCPropertyAndLand(20, 'Reservations Points', lat, lon, radius);
+      case 'dc_property_square_points':
+        return await this.getDCPropertyAndLand(21, 'Square Points', lat, lon, radius);
+      case 'dc_property_tax_lot_points':
+        return await this.getDCPropertyAndLand(22, 'Tax Lot Points', lat, lon, radius);
+      case 'dc_property_highway_plan_lines':
+        return await this.getDCPropertyAndLand(29, 'Highway Plan Lines', lat, lon, radius);
+      case 'dc_property_parcel_lots_historical':
+        return await this.getDCPropertyAndLand(32, 'Parcel Lots (Historical)', lat, lon, radius);
+      case 'dc_property_parcel_lots':
+        return await this.getDCPropertyAndLand(33, 'Parcel Lots', lat, lon, radius);
+      case 'dc_property_record_lots_historical':
+        return await this.getDCPropertyAndLand(34, 'Record Lots (Historical)', lat, lon, radius);
+      case 'dc_property_record_lots':
+        return await this.getDCPropertyAndLand(35, 'Record Lots', lat, lon, radius);
+      case 'dc_property_reservations_historical':
+        return await this.getDCPropertyAndLand(36, 'Reservations (Historical)', lat, lon, radius);
+      case 'dc_property_reservations':
+        return await this.getDCPropertyAndLand(37, 'Reservations', lat, lon, radius);
+      case 'dc_property_tax_lots_historical':
+        return await this.getDCPropertyAndLand(38, 'Tax Lots (Historical)', lat, lon, radius);
+      case 'dc_property_tax_lots':
+        return await this.getDCPropertyAndLand(39, 'Tax Lots', lat, lon, radius);
+      case 'dc_property_owner_polygons':
+        return await this.getDCPropertyAndLand(40, 'Owner Polygons (Common Ownership Layer)', lat, lon, radius);
+      case 'dc_property_square_boundaries':
+        return await this.getDCPropertyAndLand(41, 'Square Boundaries', lat, lon, radius);
+      case 'dc_property_boundary_stones_location':
+        return await this.getDCPropertyAndLand(42, 'Boundary Stones Location', lat, lon, radius);
+      case 'dc_property_condo_approval_lots':
+        return await this.getDCPropertyAndLand(44, 'Condo Approval Lots', lat, lon, radius);
+      case 'dc_property_public_easement_lines':
+        return await this.getDCPropertyAndLand(48, 'Public Easement Lines', lat, lon, radius);
+      case 'dc_property_district_land_rpta_ownership':
+        return await this.getDCPropertyAndLand(49, 'District Land (RPTA Ownership)', lat, lon, radius);
+      case 'dc_property_federal_land_rpta_ownership':
+        return await this.getDCPropertyAndLand(50, 'Federal Land (RPTA Ownership)', lat, lon, radius);
+      case 'dc_property_owner_lines_dimensions':
+        return await this.getDCPropertyAndLand(51, 'Owner Lines (Dimensions)', lat, lon, radius);
+      case 'dc_property_district_land':
+        return await this.getDCPropertyAndLand(61, 'District Land', lat, lon, radius);
+      case 'dc_property_affordable_housing':
+        return await this.getDCPropertyAndLand(62, 'Affordable Housing', lat, lon, radius);
+      case 'dc_property_real_estate_portfolio':
+        return await this.getDCPropertyAndLand(63, 'Real Estate Portfolio', lat, lon, radius);
+      case 'dc_property_district_land_lines_dimensions':
+        return await this.getDCPropertyAndLand(73, 'District Land Lines (Dimensions)', lat, lon, radius);
+      case 'dc_property_wdcep_development_point':
+        return await this.getDCPropertyAndLand(74, 'WDCEP Development Point', lat, lon, radius);
+      case 'dc_property_alley_and_street_changes':
+        return await this.getDCPropertyAndLand(75, 'Alley and Street Changes', lat, lon, radius);
+      case 'dc_property_district_structures':
+        return await this.getDCPropertyAndLand(77, 'District Structures', lat, lon, radius);
+      case 'dc_property_land_boundary_changes':
+        return await this.getDCPropertyAndLand(78, 'Land Boundary Changes', lat, lon, radius);
+      case 'dc_property_alley_street_changes_dimensions':
+        return await this.getDCPropertyAndLand(79, 'Alley Street Changes (Dimensions)', lat, lon, radius);
+      case 'dc_property_vacant_and_blighted_building_footprints':
+        return await this.getDCPropertyAndLand(81, 'Vacant and Blighted Building Footprints', lat, lon, radius);
+      case 'dc_property_vacant_and_blighted_building_addresses':
+        return await this.getDCPropertyAndLand(82, 'Vacant and Blighted Building Addresses', lat, lon, radius);
       
       // LA County Hydrology - All 72 layers
       case 'la_county_hydrology_complete':
@@ -24932,6 +25025,90 @@ out center;`;
         [`${layerKey}_count`]: 0,
         [`${layerKey}_summary`]: `Error fetching DC Bike Trails data`,
         [`${layerKey}_all`]: []
+      };
+    }
+  }
+
+  private async getDCPropertyAndLand(layerId: number, layerName: string, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      // Create a key from the layer name
+      const layerKey = layerName.toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[()]/g, '')
+        .replace(/_+/g, '_')
+        .replace(/^dc_/, '')
+        .replace(/_$/, '');
+      const enrichmentKey = `dc_property_${layerKey}`;
+
+      console.log(`🏢 Fetching ${layerName} data for [${lat}, ${lon}]`);
+
+      const features = await getDCPropertyAndLandData(layerId, layerName, lat, lon, radius);
+
+      const result: Record<string, any> = {};
+
+      // Determine if it's a polygon layer (for containing logic)
+      const isPolygonLayer = !layerName.toLowerCase().endsWith('points') && !layerName.toLowerCase().endsWith('lines');
+
+      if (features.length === 0) {
+        if (isPolygonLayer) {
+          result[`${enrichmentKey}_containing`] = null;
+          result[`${enrichmentKey}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+        }
+        result[`${enrichmentKey}_count`] = 0;
+        result[`${enrichmentKey}_all`] = [];
+        result[`${enrichmentKey}_summary`] = `No ${layerName.toLowerCase()} found within the specified radius.`;
+      } else {
+        const containingFeatures = features.filter(f => f.isContaining);
+        const nearbyFeatures = features.filter(f => !f.isContaining);
+
+        result[`${enrichmentKey}_count`] = features.length;
+        result[`${enrichmentKey}_all`] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          isContaining: feature.isContaining,
+          distance_miles: feature.distance_miles
+        }));
+
+        if (isPolygonLayer) {
+          if (containingFeatures.length > 0) {
+            const firstContaining = containingFeatures[0];
+            result[`${enrichmentKey}_containing`] = firstContaining.attributes.NAME || firstContaining.attributes.name || firstContaining.objectid || 'Unknown';
+            result[`${enrichmentKey}_containing_message`] = `Location is within ${layerName.toLowerCase()}: ${result[`${enrichmentKey}_containing`]}`;
+          } else {
+            result[`${enrichmentKey}_containing`] = null;
+            result[`${enrichmentKey}_containing_message`] = `No ${layerName.toLowerCase()} found containing this location`;
+          }
+        }
+
+        if (containingFeatures.length > 0 && nearbyFeatures.length > 0) {
+          result[`${enrichmentKey}_summary`] = `Found ${containingFeatures.length} feature(s) containing the point and ${nearbyFeatures.length} nearby feature(s).`;
+        } else if (containingFeatures.length > 0) {
+          result[`${enrichmentKey}_summary`] = `Found ${containingFeatures.length} feature(s) containing the point.`;
+        } else {
+          result[`${enrichmentKey}_summary`] = `Found ${nearbyFeatures.length} nearby feature(s).`;
+        }
+      }
+
+      console.log(`✅ ${layerName} data processed:`, {
+        totalCount: result[`${enrichmentKey}_count`],
+        containing: result[`${enrichmentKey}_containing`]
+      });
+
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching DC Property and Land data:`, error);
+      const layerKey = layerName.toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[()]/g, '')
+        .replace(/_+/g, '_')
+        .replace(/^dc_/, '')
+        .replace(/_$/, '');
+      const enrichmentKey = `dc_property_${layerKey}`;
+      return {
+        [`${enrichmentKey}_count`]: 0,
+        [`${enrichmentKey}_summary`]: `Error fetching ${layerName} data`,
+        [`${enrichmentKey}_all`]: []
       };
     }
   }
