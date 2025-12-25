@@ -98,6 +98,7 @@ import { getUSGSTrailsData } from '../adapters/usgsTrails';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
+import { getFIAForestAtlasData } from '../adapters/fiaForestAtlas';
 import { getUSHistoricalCulturalPoliticalPointsData } from '../adapters/usHistoricalCulturalPoliticalPoints';
 import { getUSHistoricalHydrographicPointsData } from '../adapters/usHistoricalHydrographicPoints';
 import { getUSHistoricalPhysicalPointsData } from '../adapters/usHistoricalPhysicalPoints';
@@ -6078,6 +6079,14 @@ export class EnrichmentService {
       // Chinook Salmon Ranges - Point-in-polygon and proximity query (max 50 miles)
       case 'chinook_salmon_ranges':
         return await this.getChinookSalmonRanges(lat, lon, radius);
+      
+      // FIA Forest Atlas - American Elm Historical Range Boundary - Point-in-polygon and proximity query (max 50 miles)
+      case 'fia_american_elm_historical_range':
+        return await this.getFIAAmericanElmHistoricalRange(lat, lon, radius);
+      
+      // FIA Forest Atlas - American Elm Modeled Abundance - Point-in-polygon and proximity query (max 50 miles)
+      case 'fia_american_elm_modeled_abundance':
+        return await this.getFIAAmericanElmModeledAbundance(lat, lon, radius);
       
       // TX School Districts 2024 - Point-in-polygon and proximity query (max 50 miles)
       case 'tx_school_districts_2024':
@@ -17069,8 +17078,7 @@ out center;`;
     layerName = 'Tornado Tracks 1950-2017'
   ): Promise<Record<string, any>> {
     const result: Record<string, any> = {
-      [`${enrichmentId}_containing`]: [],
-      [`${enrichmentId}_nearby`]: [],
+      [`${enrichmentId}_intersects`]: [],
       [`${enrichmentId}_all`]: [],
       [`${enrichmentId}_count`]: 0,
     };
@@ -17083,15 +17091,15 @@ out center;`;
         objectId: f.objectId,
         attributes: f.attributes,
         distance: f.distance,
-        containing: f.containing,
+        intersects: f.intersects,
         geometry: f.geometry,
         lat: f.lat,
         lon: f.lon,
         layerName: f.layerName
       }));
 
-      // Treat polyline proximity as nearby
-      result[`${enrichmentId}_nearby`] = features
+      // Polylines intersect points (never contain them)
+      result[`${enrichmentId}_intersects`] = features
         .filter(f => f.distance !== undefined)
         .map(f => ({
           objectId: f.objectId,
@@ -17100,6 +17108,9 @@ out center;`;
           geometry: f.geometry,
           layerName: f.layerName
         }));
+      
+      // Add summary message
+      result[`${enrichmentId}_summary`] = `Found ${features.length} tornado track(s) intersecting within ${cappedRadius} miles.`;
     } catch (error) {
       console.error('Error fetching Tornado Tracks 1950-2017:', error);
     }
@@ -19630,6 +19641,134 @@ out center;`;
         chinook_salmon_ranges_count: 0,
         chinook_salmon_ranges_all: [],
         chinook_salmon_ranges_summary: 'Error querying Chinook salmon ranges'
+      };
+    }
+  }
+
+  private async getFIAAmericanElmHistoricalRange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌳 Fetching FIA American Elm Historical Range data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius && radius > 0 ? Math.min(radius, 50.0) : 0;
+      
+      // Layer 2: Historical Range Boundary American Elm
+      const features = await getFIAForestAtlasData('107_American_elm_spp', 2, lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.fia_american_elm_historical_range_containing = null;
+        result.fia_american_elm_historical_range_containing_message = 'No American Elm historical range found containing this location';
+        result.fia_american_elm_historical_range_count = 0;
+        result.fia_american_elm_historical_range_all = [];
+        result.fia_american_elm_historical_range_summary = 'No American Elm historical ranges found.';
+      } else {
+        // Get the first containing range (should typically be only one for point-in-polygon)
+        const containingRange = features.find(f => f.isContaining) || features[0];
+        
+        if (containingRange && containingRange.isContaining) {
+          result.fia_american_elm_historical_range_containing = 'American Elm Historical Range';
+          result.fia_american_elm_historical_range_containing_message = 'Location is within American Elm (Ulmus americana) historical range boundary';
+        } else {
+          result.fia_american_elm_historical_range_containing = null;
+          result.fia_american_elm_historical_range_containing_message = 'No American Elm historical range found containing this location';
+        }
+        
+        result.fia_american_elm_historical_range_count = features.length;
+        result.fia_american_elm_historical_range_all = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+        
+        result.fia_american_elm_historical_range_summary = `Found ${features.length} American Elm historical range boundary(ies)${containingRange && containingRange.isContaining ? ' (location is within a range)' : ''}.`;
+      }
+      
+      if (radius && radius > 0) {
+        result.fia_american_elm_historical_range_search_radius_miles = radius;
+      }
+      
+      console.log(`✅ FIA American Elm Historical Range data processed:`, {
+        totalCount: result.fia_american_elm_historical_range_count,
+        containing: result.fia_american_elm_historical_range_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FIA American Elm Historical Range data:', error);
+      return {
+        fia_american_elm_historical_range_containing: null,
+        fia_american_elm_historical_range_containing_message: 'Error querying American Elm historical range',
+        fia_american_elm_historical_range_count: 0,
+        fia_american_elm_historical_range_all: [],
+        fia_american_elm_historical_range_summary: 'Error querying American Elm historical range'
+      };
+    }
+  }
+
+  private async getFIAAmericanElmModeledAbundance(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌳 Fetching FIA American Elm Modeled Abundance data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Cap radius at 50 miles
+      const cappedRadius = radius && radius > 0 ? Math.min(radius, 50.0) : 0;
+      
+      // Layer 3: FIA Modeled Abundance American Elm
+      const features = await getFIAForestAtlasData('107_American_elm_spp', 3, lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.fia_american_elm_modeled_abundance_containing = null;
+        result.fia_american_elm_modeled_abundance_containing_message = 'No American Elm modeled abundance data found at this location';
+        result.fia_american_elm_modeled_abundance_count = 0;
+        result.fia_american_elm_modeled_abundance_all = [];
+        result.fia_american_elm_modeled_abundance_summary = 'No American Elm modeled abundance data found.';
+      } else {
+        // Get the first containing feature (should typically be only one for point-in-polygon)
+        const containingFeature = features.find(f => f.isContaining) || features[0];
+        
+        if (containingFeature && containingFeature.isContaining) {
+          result.fia_american_elm_modeled_abundance_containing = 'American Elm Modeled Abundance';
+          result.fia_american_elm_modeled_abundance_containing_message = 'Location has American Elm (Ulmus americana) modeled abundance data';
+        } else {
+          result.fia_american_elm_modeled_abundance_containing = null;
+          result.fia_american_elm_modeled_abundance_containing_message = 'No American Elm modeled abundance data found at this location';
+        }
+        
+        result.fia_american_elm_modeled_abundance_count = features.length;
+        result.fia_american_elm_modeled_abundance_all = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+        
+        result.fia_american_elm_modeled_abundance_summary = `Found ${features.length} American Elm modeled abundance feature(s)${containingFeature && containingFeature.isContaining ? ' (location has abundance data)' : ''}.`;
+      }
+      
+      if (radius && radius > 0) {
+        result.fia_american_elm_modeled_abundance_search_radius_miles = radius;
+      }
+      
+      console.log(`✅ FIA American Elm Modeled Abundance data processed:`, {
+        totalCount: result.fia_american_elm_modeled_abundance_count,
+        containing: result.fia_american_elm_modeled_abundance_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FIA American Elm Modeled Abundance data:', error);
+      return {
+        fia_american_elm_modeled_abundance_containing: null,
+        fia_american_elm_modeled_abundance_containing_message: 'Error querying American Elm modeled abundance',
+        fia_american_elm_modeled_abundance_count: 0,
+        fia_american_elm_modeled_abundance_all: [],
+        fia_american_elm_modeled_abundance_summary: 'Error querying American Elm modeled abundance'
       };
     }
   }

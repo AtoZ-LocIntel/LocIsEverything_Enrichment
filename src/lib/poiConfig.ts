@@ -571,6 +571,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_mountain_biking', label: 'Mountain Biking & Biking Trails', description: 'Mountain bike trails, bike paths, and cycling routes via OpenStreetMap', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
   
   // Natural Resources
+  // FIA Forest Atlas - American Elm
+  { id: 'fia_american_elm_historical_range', label: 'FIA American Elm Historical Range Boundary', description: 'USDA Forest Service FIA - Historical Range Boundary for American Elm (Ulmus americana) - point-in-polygon and proximity queries up to 50 miles', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'fiaforestatlas', section: 'natural_resources' },
+  { id: 'fia_american_elm_modeled_abundance', label: 'FIA American Elm Modeled Abundance', description: 'USDA Forest Service FIA - Modeled Abundance for American Elm (Ulmus americana) - point-in-polygon and proximity queries up to 50 miles', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'fiaforestatlas', section: 'natural_resources' },
   { id: 'poi_beaches', label: 'Beaches', description: 'Natural beaches and coastal areas', isPOI: true, defaultRadius: 5, category: 'natural_resources', section: 'natural_resources' },
   { id: 'nri_rivers', label: 'Nationwide Rivers Inventory', description: 'Free-flowing river segments with outstandingly remarkable natural or cultural values (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'natural_resources', section: 'natural_resources' },
   { id: 'poi_lakes_ponds', label: 'Lakes & Ponds', description: 'Lakes, ponds, and water bodies', isPOI: true, defaultRadius: 5, category: 'natural_resources', section: 'natural_resources' },

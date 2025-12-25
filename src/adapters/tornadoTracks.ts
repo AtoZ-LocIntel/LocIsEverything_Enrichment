@@ -7,7 +7,7 @@ interface TornadoTrackFeature {
   lat?: number;
   lon?: number;
   distance?: number;
-  containing?: boolean;
+  intersects?: boolean; // True if the point intersects the polyline
   layerName: string;
 }
 
@@ -78,7 +78,9 @@ export async function getTornadoTracksData(
       let latVal: number | undefined;
       let lonVal: number | undefined;
       let distance: number | undefined;
-      let containing = false;
+      // Polylines can intersect points, but never contain them
+      // Since we're using esriSpatialRelIntersects, all returned features intersect
+      let intersects = true;
 
       if (geom && Array.isArray(geom.paths)) {
         const cent = centroidFromPaths(geom.paths);
@@ -96,7 +98,7 @@ export async function getTornadoTracksData(
         lat: latVal,
         lon: lonVal,
         distance,
-        containing,
+        intersects,
         layerName
       };
     }).filter((f: TornadoTrackFeature) => {

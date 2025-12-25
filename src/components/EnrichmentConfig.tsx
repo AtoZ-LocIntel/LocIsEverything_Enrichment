@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, Settings, TreePine, Check, ArrowLeft } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
+import { BASEMAP_CONFIGS } from './MapView';
 
 interface EnrichmentConfigProps {
   selectedEnrichments: string[];
@@ -1219,6 +1220,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   }, []);
 
   // Calculate total count of all open data layers dynamically
+  // Includes both queryable enrichment layers and visual basemap layers
   const totalLayersCount = useMemo(() => {
     let total = 0;
     enrichmentCategories.forEach(category => {
@@ -1232,6 +1234,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         });
       }
     });
+    
+    // Add basemap layers count (visual layers available in basemap dropdown)
+    const basemapCount = Object.keys(BASEMAP_CONFIGS).length;
+    total += basemapCount;
+    
     return total;
   }, [enrichmentCategories]);
 

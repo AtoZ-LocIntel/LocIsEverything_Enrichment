@@ -601,15 +601,12 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Property_and_Land_WebMercator/FeatureServer"
-        },
-        {
-          name: "National Risk Index (NRI) Annualized Frequency Hurricane - County",
-          description: "USGS National Trails - Terra trails, snow trails, and water trails with national designations (proximity queries up to 50 miles)",
-          coverage: "United States",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://partnerships.nationalmap.gov/arcgis/rest/services/USGSTrails/MapServer/0"
-        },
+        }
+      ]
+    },
+    {
+      category: "Natural Hazards",
+      sources: [
         {
           name: "National Risk Index (NRI) Annualized Frequency Hurricane - County",
           description: "FEMA National Risk Index - Annualized frequency of hurricane events (County). Point-in-polygon + proximity up to 25 miles.",
@@ -1775,6 +1772,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Chinook_Salmon_Ranges/FeatureServer/0"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - American Elm",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - American Elm (Ulmus americana) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_American_elm_spp/MapServer"
         }
       ]
     },
@@ -5753,6 +5758,38 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free (with API key)",
           url: "https://www.maptiler.com/"
+        },
+        {
+          name: "USGS National Map Basemaps",
+          description: "USGS The National Map basemap services including hydrography, imagery, topo, shaded relief, and contours",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://basemap.nationalmap.gov/"
+        },
+        {
+          name: "USGS MRLC Land Cover",
+          description: "USGS Multi-Resolution Land Characteristics (MRLC) Consortium - NLCD land cover, canopy cover, imperviousness, and shrublands",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://www.mrlc.gov/"
+        },
+        {
+          name: "USFS FIA Forest Carbon",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Above Ground and Below Ground Forest Carbon density visualization layers",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/services/Ecosystems/"
+        },
+        {
+          name: "USFS FIA Forest Atlas - American Elm",
+          description: "USDA Forest Service FIA Forest Atlas - American Elm (Ulmus americana) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_American_elm_spp/MapServer"
         }
       ]
     }

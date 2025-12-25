@@ -25,6 +25,21 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Lake County Buildings Nearby';
     }
     
+    // Special case for tornado tracks intersects field
+    if (key.includes('tornado_tracks') && key.includes('_intersects')) {
+      return key
+        .replace(/tornado_tracks_1950_2017_intersects/g, 'Tornado Tracks Intersecting')
+        .replace(/^poi_/g, 'POI ')
+        .replace(/^at_/g, 'AT ')
+        .replace(/^pct_/g, 'PCT ')
+        .replace(/^de_/g, 'DE ')
+        .replace(/nws/g, 'NWS')
+        .replace(/fws/g, 'FWS')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase())
+        .replace(/\bDe\b/g, 'DE');
+    }
+    
     return key
       .replace(/^poi_/g, 'POI ')
       .replace(/^at_/g, 'AT ')
@@ -236,6 +251,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('nri_') && key.includes('annualized_frequency')) {
       return 'Natural Hazards';
     }
+    
+    // Natural Hazards layers - check early to catch all Natural Hazards layers
+    if (key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions') || key.includes('hurricane_evacuation_routes_hazards')) {
+      return 'Natural Hazards';
+    }
 
     // Geographic Information
     if (key.includes('elevation') || key.includes('fips_') || key.includes('county_') || key.includes('state_') || key.includes('census_') || key.includes('city_') || key.includes('urban_area_') || key.includes('metro_area_') || key.includes('subdivision_')) {
@@ -364,7 +384,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'FWS Species & Wildlife';
     }
     
-    if (key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_wildfires') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire'))) {
+    if (key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_wildfires') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire')) || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('hurricane_evacuation_routes_hazards')) {
       return 'Natural Hazards';
     }
     

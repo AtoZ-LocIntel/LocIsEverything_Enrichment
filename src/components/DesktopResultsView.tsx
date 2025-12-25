@@ -23,6 +23,23 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       return 'Lake County Buildings Nearby';
     }
     
+    // Special case for tornado tracks intersects field
+    if (key.includes('tornado_tracks') && key.includes('_intersects')) {
+      return key
+        .replace(/tornado_tracks_1950_2017_intersects/g, 'Tornado Tracks Intersecting')
+        .replace(/^poi_/g, 'POI ')
+        .replace(/^at_/g, 'AT ')
+        .replace(/^pct_/g, 'PCT ')
+        .replace(/^de_/g, 'DE ')
+        .replace(/^ca_/g, 'CA ')
+        .replace(/nws/g, 'NWS')
+        .replace(/fws/g, 'FWS')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase())
+        .replace(/\bDe\b/g, 'DE')
+        .replace(/\bCa\b/g, 'CA');
+    }
+    
     return key
       .replace(/^poi_/g, 'POI ')
       .replace(/^at_/g, 'AT ')
@@ -711,6 +728,9 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         // National Risk Index (NRI) annualized frequency layers should always be categorized as Natural Hazards
         // (tract keys contain "census" which would otherwise match Demographics & Census)
         category = 'Natural Hazards';
+      } else if (key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions') || key.includes('hurricane_evacuation_routes_hazards')) {
+        // Natural Hazards layers - check before other categories
+        category = 'Natural Hazards';
       } else if (key.includes('elev') || key.includes('elevation')) {
         category = 'Elevation & Terrain';
       } else if (key.includes('airq') || key.includes('air_quality')) {
@@ -721,7 +741,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'The National Map';
       } else if (key.startsWith('dc_utc_') || key.startsWith('dc_urban_tree_canopy_') || key === 'dc_trees' || key === 'dc_ufa_street_trees' || key === 'dc_arborists_zone' || key.startsWith('dc_bike_') || key.startsWith('dc_property_')) {
         category = 'District of Columbia';
-      } else if (key.includes('hurricane_evacuation_routes_hazards')) {
+      } else if (key.includes('hurricane_evacuation_routes_hazards') || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions')) {
+        // Natural Hazards layers - check before other categories to ensure proper categorization
         category = 'Natural Hazards';
       } else if (key.includes('ireland_provinces') || key.includes('ireland_built_up_areas') || key.includes('ireland_small_areas') || key.includes('ireland_electoral_divisions') || key.includes('ireland_centres_of_population')) {
         category = 'Ireland Data';
@@ -744,7 +765,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Safety & Crime';
       } else if (key.includes('transport') || key.includes('transit')) {
         category = 'Transportation';
-      } else if (key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire'))) {
+      } else if (key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire')) || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('hurricane_evacuation_routes_hazards')) {
         category = 'Natural Hazards';
       } else if (key.includes('poi_epa_')) {
         category = 'Human Caused Hazards';

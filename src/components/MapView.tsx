@@ -22,8 +22,8 @@ interface LegendItem {
   ranges?: Array<{ label: string; color: string; count: number }>; // For color-coded layers like broadband
 }
 
-// Basemap configuration supporting both MapLibre (vector) and WMS (raster) basemaps
-type BasemapType = 'maplibre' | 'wms';
+// Basemap configuration supporting MapLibre (vector), WMS (raster), and direct tile layers
+type BasemapType = 'maplibre' | 'wms' | 'tile';
 
 interface BasemapConfig {
   type: BasemapType;
@@ -35,9 +35,13 @@ interface BasemapConfig {
   wmsUrl?: string;
   wmsLayers?: string;
   wmsFormat?: string;
+  wmsCrs?: string; // 'EPSG4326' or 'EPSG3857'
+  wmsUppercase?: boolean; // Required for some WMS 1.3.0 services
+  // For direct tile layers (ArcGIS MapServer tiles)
+  tileUrl?: string; // URL template with {z}/{y}/{x} placeholders
 }
 
-const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
+export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
   // OpenFreeMap (MapLibre vector tiles)
   liberty: {
     type: 'maplibre',
@@ -161,6 +165,98 @@ const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsLayers: '0', // Contours - Large-Scale
     wmsFormat: 'image/png',
   },
+  // USGS Geographic Names (GNIS) WMS
+  usgs_geographic_names: {
+    type: 'wms',
+    name: 'USGS Geographic Names (GNIS)',
+    attribution: 'USGS The National Map',
+    wmsUrl: 'https://carto.nationalmap.gov/arcgis/services/geonames/MapServer/WMSServer',
+    wmsLayers: '12', // Populated Places
+    wmsFormat: 'image/png',
+  },
+  // USGS/FWS Wetlands WMS
+  usgs_wetlands: {
+    type: 'wms',
+    name: 'USGS/FWS Wetlands',
+    attribution: 'USGS/FWS National Wetlands Inventory',
+    wmsUrl: 'https://fwspublicservices.wim.usgs.gov/wetlandsmapservice/services/Wetlands/MapServer/WMSServer',
+    wmsLayers: '1', // Wetlands layer
+    wmsFormat: 'image/png',
+  },
+  // BLM PLSS (Public Land Survey System) WMS
+  blm_plss: {
+    type: 'wms',
+    name: 'BLM PLSS (Public Land Survey System)',
+    attribution: 'BLM Bureau of Land Management',
+    wmsUrl: 'https://gis.blm.gov/arcgis/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/WMSServer',
+    wmsLayers: '0,1,2,3', // PLSS layers: Intersected (0), Section (1), Township (2), State Boundaries (3)
+    wmsFormat: 'image/png',
+  },
+  // USFS Forest Inventory and Analysis Above Ground Forest Carbon WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  usfs_fia_forest_carbon: {
+    type: 'wms',
+    name: 'USFS FIA Above Ground Forest Carbon',
+    attribution: 'USFS Forest Inventory and Analysis',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Ecosystems/USFS_EDW_FIA_AboveGroundForestCarbon/ImageServer/WMSServer',
+    wmsLayers: 'USFS_EDW_FIA_AboveGroundForestCarbon', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Forest Inventory and Analysis Below Ground Forest Carbon WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  usfs_fia_belowground_forest_carbon: {
+    type: 'wms',
+    name: 'USFS FIA Below Ground Forest Carbon',
+    attribution: 'USFS Forest Inventory and Analysis',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Ecosystems/USFS_EDW_FIA_BelowGroundForestCarbon/ImageServer/WMSServer',
+    wmsLayers: 'USFS_EDW_FIA_BelowGroundForestCarbon', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS FIA Forest Atlas - American Elm Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  // Note: Single fused cache shows all layers, but this is the historical range layer
+  fia_american_elm_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA American Elm Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_American_elm_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - American Elm Modeled Abundance
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  // Note: Single fused cache shows all layers, but this is the abundance layer
+  fia_american_elm_modeled_abundance_basemap: {
+    type: 'tile',
+    name: 'FIA American Elm Modeled Abundance',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_American_elm_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Ashe Juniper Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_ashe_juniper_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Ashe Juniper Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Ashe_juniper_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Ashe Juniper Modeled Abundance
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_ashe_juniper_modeled_abundance_basemap: {
+    type: 'tile',
+    name: 'FIA Ashe Juniper Modeled Abundance',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Ashe_juniper_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // Note: ArcGIS Online services (services.arcgisonline.com) do not support WMS.
+  // They use WMTS or direct tile services instead, which would require a different implementation.
+  // The ArcGIS World Imagery layers have been removed as they don't support WMS protocol.
 };
 
 
@@ -1569,7 +1665,8 @@ const MapView: React.FC<MapViewProps> = ({
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
   // MapLibre GL Leaflet layer instance (plugin adds `L.maplibreGL`, type not in Leaflet typings)
-  const basemapLayerRef = useRef<any>(null);
+  const basemapLayerRef = useRef<any>(null); // Base map (OpenFreeMap)
+  const overlayLayerRef = useRef<any>(null); // Overlay layer (WMS/tile on top of base)
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
@@ -1583,7 +1680,8 @@ const MapView: React.FC<MapViewProps> = ({
     geometry: 'point' | 'polyline' | 'polygon';
   }>>([]);
   // Basemap selection state (OpenFreeMap styles)
-  const [selectedBasemap, setSelectedBasemap] = useState<string>('liberty');
+  const [selectedBasemap, setSelectedBasemap] = useState<string>('liberty'); // Selected basemap
+  const [showOpenFreeMapBase, setShowOpenFreeMapBase] = useState<boolean>(true); // Toggle for OpenFreeMap base layer
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
@@ -1842,44 +1940,119 @@ const MapView: React.FC<MapViewProps> = ({
         map.zoomControl.setPosition('topleft');
       }
 
-      // Initialize basemap (supports both MapLibre vector and WMS raster)
-      const basemapConfig = BASEMAP_CONFIGS[selectedBasemap] || BASEMAP_CONFIGS.liberty;
-      let basemapLayer: any;
+      // Initialize basemap system: OpenFreeMap base + optional overlay
+      const selectedConfig = BASEMAP_CONFIGS[selectedBasemap] || BASEMAP_CONFIGS.liberty;
+      let basemapLayer: any = null;
+      let overlayLayer: any = null;
       
-      if (basemapConfig.type === 'maplibre') {
-        // MapLibre vector tiles (OpenFreeMap)
+      // Determine base map: OpenFreeMap if enabled, otherwise the selected basemap (if it's not maplibre)
+      if (showOpenFreeMapBase) {
+        // Use OpenFreeMap as base
+        const baseMapConfig = selectedConfig.type === 'maplibre' 
+          ? selectedConfig 
+          : BASEMAP_CONFIGS.liberty; // Default to liberty if non-maplibre selected
+        
         basemapLayer = (L as any).maplibreGL({
-          style: basemapConfig.styleUrl,
-          attribution: basemapConfig.attribution,
-          interactive: false, // Leaflet handles interactions
+          style: baseMapConfig.styleUrl,
+          attribution: baseMapConfig.attribution,
+          interactive: false,
         }).addTo(map);
-      } else if (basemapConfig.type === 'wms') {
-        // WMS raster tiles (USGS National Map)
-        const wmsOptions: any = {
-          format: basemapConfig.wmsFormat || 'image/png',
-          transparent: true,
-          attribution: basemapConfig.attribution,
-          crs: L.CRS.EPSG3857, // Web Mercator
-          version: '1.3.0', // Explicitly set WMS version
-        };
         
-        // Only add layers parameter if it's not empty (ImageServer WMS may need service name)
-        if (basemapConfig.wmsLayers && basemapConfig.wmsLayers.trim() !== '') {
-          wmsOptions.layers = basemapConfig.wmsLayers;
+        // If a non-maplibre basemap is selected, add it as a transparent overlay
+        if (selectedConfig.type !== 'maplibre') {
+          if (selectedConfig.type === 'tile') {
+            overlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
+              attribution: selectedConfig.attribution,
+              maxZoom: 15,
+              minZoom: 4,
+              noWrap: true,
+              opacity: 0.7, // Transparent overlay
+            }).addTo(map);
+            
+            overlayLayer.on('tileerror', (_error: any, tile: any) => {
+              if (tile && tile.src) {
+                const img = tile as HTMLImageElement;
+                if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                  return;
+                }
+              }
+            });
+          } else if (selectedConfig.type === 'wms') {
+            const wmsOptions: any = {
+              format: selectedConfig.wmsFormat || 'image/png',
+              transparent: true,
+              attribution: selectedConfig.attribution,
+              crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
+              version: '1.3.0',
+              opacity: 0.7, // Transparent overlay
+            };
+            
+            if (selectedConfig.wmsUppercase === true) {
+              wmsOptions.uppercase = true;
+            }
+            
+            if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
+              wmsOptions.layers = selectedConfig.wmsLayers;
+            }
+            
+            overlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
+            overlayLayer.on('tileerror', (_error: any, tile: any) => {
+              console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
+            });
+            overlayLayer.addTo(map);
+          }
+          overlayLayerRef.current = overlayLayer;
         }
-        
-        basemapLayer = L.tileLayer.wms(basemapConfig.wmsUrl!, wmsOptions);
-        
-        // Add error handling for WMS layers
-        basemapLayer.on('tileerror', (error: any, tile: any) => {
-          console.warn('WMS tile error:', error, 'for basemap:', selectedBasemap, 'tile:', tile);
-        });
-        
-        basemapLayer.on('load', () => {
-          console.log('WMS tile loaded successfully for basemap:', selectedBasemap);
-        });
-        
-        basemapLayer.addTo(map);
+      } else {
+        // OpenFreeMap is off - use selected basemap as the base (not overlay)
+        if (selectedConfig.type === 'maplibre') {
+          basemapLayer = (L as any).maplibreGL({
+            style: selectedConfig.styleUrl,
+            attribution: selectedConfig.attribution,
+            interactive: false,
+          }).addTo(map);
+        } else if (selectedConfig.type === 'tile') {
+          basemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
+            attribution: selectedConfig.attribution,
+            maxZoom: 15,
+            minZoom: 4,
+            noWrap: true,
+            opacity: 1.0, // Full opacity when used as base
+          }).addTo(map);
+          
+          basemapLayer.on('tileerror', (_error: any, tile: any) => {
+            if (tile && tile.src) {
+              const img = tile as HTMLImageElement;
+              if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                return;
+              }
+            }
+          });
+        } else if (selectedConfig.type === 'wms') {
+          const wmsOptions: any = {
+            format: selectedConfig.wmsFormat || 'image/png',
+            transparent: true,
+            attribution: selectedConfig.attribution,
+            crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
+            version: '1.3.0',
+            opacity: 1.0, // Full opacity when used as base
+          };
+          
+          if (selectedConfig.wmsUppercase === true) {
+            wmsOptions.uppercase = true;
+          }
+          
+          if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
+            wmsOptions.layers = selectedConfig.wmsLayers;
+          }
+          
+          basemapLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
+          basemapLayer.on('tileerror', (_error: any, tile: any) => {
+            console.warn('WMS tile error for basemap:', selectedBasemap, 'tile:', tile);
+          });
+          basemapLayer.addTo(map);
+        }
+        overlayLayerRef.current = null; // No overlay when OpenFreeMap is off
       }
       
       basemapLayerRef.current = basemapLayer;
@@ -2034,7 +2207,7 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [showWeatherRadar, isInitialized, results]);
 
-  // Handle basemap changes without re-initializing the map
+  // Handle basemap changes and OpenFreeMap toggle
   useEffect(() => {
     // Only handle basemap changes if map is already initialized
     // Initial basemap is set during map initialization
@@ -2042,69 +2215,155 @@ const MapView: React.FC<MapViewProps> = ({
       return;
     }
 
-    const basemapConfig = BASEMAP_CONFIGS[selectedBasemap] || BASEMAP_CONFIGS.liberty;
+    const selectedConfig = BASEMAP_CONFIGS[selectedBasemap] || BASEMAP_CONFIGS.liberty;
+    const map = mapInstanceRef.current;
     
-    // Remove old basemap layer
+    // Remove old layers
     if (basemapLayerRef.current) {
-      mapInstanceRef.current.removeLayer(basemapLayerRef.current);
+      map.removeLayer(basemapLayerRef.current);
+      basemapLayerRef.current = null;
+    }
+    if (overlayLayerRef.current) {
+      map.removeLayer(overlayLayerRef.current);
+      overlayLayerRef.current = null;
     }
 
-    // Add new basemap layer based on type
-    let newBasemapLayer: any;
+    let newBasemapLayer: any = null;
+    let newOverlayLayer: any = null;
     
-    if (basemapConfig.type === 'maplibre') {
-      // MapLibre vector tiles (OpenFreeMap)
+    // Determine base map: OpenFreeMap if enabled, otherwise the selected basemap (if it's not maplibre)
+    if (showOpenFreeMapBase) {
+      // Use OpenFreeMap as base
+      const baseMapConfig = selectedConfig.type === 'maplibre' 
+        ? selectedConfig 
+        : BASEMAP_CONFIGS.liberty; // Default to liberty if non-maplibre selected
+      
       newBasemapLayer = (L as any).maplibreGL({
-        style: basemapConfig.styleUrl,
-        attribution: basemapConfig.attribution,
+        style: baseMapConfig.styleUrl,
+        attribution: baseMapConfig.attribution,
         interactive: false,
-      }).addTo(mapInstanceRef.current);
+      }).addTo(map);
       
-      // Ensure MapLibre canvas resizes after basemap swaps (especially on mobile)
-      try {
-        const layer: any = newBasemapLayer;
-        const ml =
-          (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
-          layer?._maplibreMap ||
-          layer?._map;
-        if (ml && typeof ml.resize === 'function') {
-          ml.resize();
-          setTimeout(() => ml.resize(), 50);
+      // If a non-maplibre basemap is selected, add it as a transparent overlay
+      if (selectedConfig.type !== 'maplibre') {
+        if (selectedConfig.type === 'tile') {
+          newOverlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
+            attribution: selectedConfig.attribution,
+            maxZoom: 15,
+            minZoom: 4,
+            noWrap: true,
+            opacity: 0.7, // Transparent overlay
+          }).addTo(map);
+          
+          newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
+            if (tile && tile.src) {
+              const img = tile as HTMLImageElement;
+              if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                return;
+              }
+            }
+          });
+        } else if (selectedConfig.type === 'wms') {
+          const wmsOptions: any = {
+            format: selectedConfig.wmsFormat || 'image/png',
+            transparent: true,
+            attribution: selectedConfig.attribution,
+            crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
+            version: '1.3.0',
+            opacity: 0.7, // Transparent overlay
+          };
+          
+          if (selectedConfig.wmsUppercase === true) {
+            wmsOptions.uppercase = true;
+          }
+          
+          if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
+            wmsOptions.layers = selectedConfig.wmsLayers;
+          }
+          
+          newOverlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
+          newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
+            console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
+          });
+          newOverlayLayer.addTo(map);
         }
-      } catch {
-        // ignore
+        overlayLayerRef.current = newOverlayLayer;
       }
-    } else if (basemapConfig.type === 'wms') {
-      // WMS raster tiles (USGS National Map)
-      const wmsOptions: any = {
-        format: basemapConfig.wmsFormat || 'image/png',
-        transparent: true,
-        attribution: basemapConfig.attribution,
-        crs: L.CRS.EPSG3857, // Web Mercator
-        version: '1.3.0', // Explicitly set WMS version
-      };
-      
-      // Only add layers parameter if it's not empty (ImageServer WMS may need service name)
-      if (basemapConfig.wmsLayers && basemapConfig.wmsLayers.trim() !== '') {
-        wmsOptions.layers = basemapConfig.wmsLayers;
+    } else {
+      // OpenFreeMap is off - use selected basemap as the base (not overlay)
+      if (selectedConfig.type === 'maplibre') {
+        newBasemapLayer = (L as any).maplibreGL({
+          style: selectedConfig.styleUrl,
+          attribution: selectedConfig.attribution,
+          interactive: false,
+        }).addTo(map);
+        
+        // Ensure MapLibre canvas resizes after basemap swaps (especially on mobile)
+        try {
+          const layer: any = newBasemapLayer;
+          const ml =
+            (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
+            layer?._maplibreMap ||
+            layer?._map;
+          if (ml && typeof ml.resize === 'function') {
+            ml.resize();
+            setTimeout(() => ml.resize(), 50);
+          }
+        } catch {
+          // ignore
+        }
+      } else if (selectedConfig.type === 'tile') {
+        newBasemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
+          attribution: selectedConfig.attribution,
+          maxZoom: 15,
+          minZoom: 4,
+          noWrap: true,
+          opacity: 1.0, // Full opacity when used as base
+        }).addTo(map);
+        
+        newBasemapLayer.on('tileerror', (_error: any, tile: any) => {
+          if (tile && tile.src) {
+            const img = tile as HTMLImageElement;
+            if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+              return;
+            }
+          }
+        });
+        
+        newBasemapLayer.on('load', () => {
+          console.log('Tile loaded successfully for basemap:', selectedBasemap);
+        });
+      } else if (selectedConfig.type === 'wms') {
+        const wmsOptions: any = {
+          format: selectedConfig.wmsFormat || 'image/png',
+          transparent: true,
+          attribution: selectedConfig.attribution,
+          crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
+          version: '1.3.0',
+          opacity: 1.0, // Full opacity when used as base
+        };
+        
+        if (selectedConfig.wmsUppercase === true) {
+          wmsOptions.uppercase = true;
+        }
+        
+        if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
+          wmsOptions.layers = selectedConfig.wmsLayers;
+        }
+        
+        newBasemapLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
+        newBasemapLayer.on('tileerror', (error: any, tile: any) => {
+          console.warn('WMS tile error:', error, 'for basemap:', selectedBasemap, 'tile:', tile);
+        });
+        newBasemapLayer.on('load', () => {
+          console.log('WMS tile loaded successfully for basemap:', selectedBasemap);
+        });
+        newBasemapLayer.addTo(map);
       }
-      
-      newBasemapLayer = L.tileLayer.wms(basemapConfig.wmsUrl!, wmsOptions);
-      
-      // Add error handling for WMS layers
-      newBasemapLayer.on('tileerror', (error: any, tile: any) => {
-        console.warn('WMS tile error:', error, 'for basemap:', selectedBasemap, 'tile:', tile);
-      });
-      
-      newBasemapLayer.on('load', () => {
-        console.log('WMS tile loaded successfully for basemap:', selectedBasemap);
-      });
-      
-      newBasemapLayer.addTo(mapInstanceRef.current);
     }
     
     basemapLayerRef.current = newBasemapLayer;
-  }, [selectedBasemap, isInitialized]);
+  }, [selectedBasemap, showOpenFreeMapBase, isInitialized]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -33338,7 +33597,35 @@ const MapView: React.FC<MapViewProps> = ({
                       </option>
                     ))}
                 </optgroup>
+                {/* FIA Forest Atlas basemaps */}
+                <optgroup label="FIA Forest Atlas">
+                  {Object.entries(BASEMAP_CONFIGS)
+                    .filter(([key]) => key.startsWith('fia_') && key.endsWith('_basemap'))
+                    .map(([key, config]) => (
+                      <option key={key} value={key} style={{ color: 'black' }}>
+                        {config.name}
+                      </option>
+                    ))}
+                </optgroup>
               </select>
+            </div>
+            
+            {/* OpenFreeMap Base Toggle */}
+            <div className="border-t border-gray-200 pt-3">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showOpenFreeMapBase}
+                  onChange={(e) => setShowOpenFreeMapBase(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">
+                  Show OpenFreeMap base layer
+                </span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1 ml-6">
+                When enabled, selected basemaps appear as transparent overlays on top of OpenFreeMap. When disabled, selected basemaps are shown in isolation.
+              </p>
             </div>
             
             {/* Weather Radar Toggle */}
