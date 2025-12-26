@@ -138,15 +138,15 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsLayers: 'NLCD_Land_Cover',
     wmsFormat: 'image/png',
   },
-  // NLCD Shrublands WMS
-  nlcd_shrubland: {
-    type: 'wms',
-    name: 'NLCD Shrublands',
-    attribution: 'USGS MRLC',
-    wmsUrl: 'https://www.mrlc.gov/geoserver/NLCD_Shrubland/wms',
-    wmsLayers: 'NLCD_Shrubland',
-    wmsFormat: 'image/png',
-  },
+  // NLCD Shrublands WMS - REMOVED: Service returns 404 (not available)
+  // nlcd_shrubland: {
+  //   type: 'wms',
+  //   name: 'NLCD Shrublands',
+  //   attribution: 'USGS MRLC',
+  //   wmsUrl: 'https://www.mrlc.gov/geoserver/NLCD_Shrubland/wms',
+  //   wmsLayers: 'NLCD_Shrubland',
+  //   wmsFormat: 'image/png',
+  // },
   // USGS NAIP Plus Imagery WMS
   usgs_naip_plus: {
     type: 'wms',
@@ -226,16 +226,6 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     attribution: 'USDA Forest Service – FIA Forest Atlas',
     tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_American_elm_spp/MapServer/tile/{z}/{y}/{x}',
   },
-  // USFS FIA Forest Atlas - American Elm Modeled Abundance
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  // Note: Single fused cache shows all layers, but this is the abundance layer
-  fia_american_elm_modeled_abundance_basemap: {
-    type: 'tile',
-    name: 'FIA American Elm Modeled Abundance',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_American_elm_spp/MapServer/tile/{z}/{y}/{x}',
-  },
   // USFS FIA Forest Atlas - Ashe Juniper Historical Range Boundary
   // Raster/tiled basemap service - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
@@ -245,14 +235,383 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     attribution: 'USDA Forest Service – FIA Forest Atlas',
     tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Ashe_juniper_spp/MapServer/tile/{z}/{y}/{x}',
   },
-  // USFS FIA Forest Atlas - Ashe Juniper Modeled Abundance
+  // USFS FIA Forest Atlas - Balsam Fir Historical Range Boundary
   // Raster/tiled basemap service - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_ashe_juniper_modeled_abundance_basemap: {
+  fia_balsam_fir_historical_range_basemap: {
     type: 'tile',
-    name: 'FIA Ashe Juniper Modeled Abundance',
+    name: 'FIA Balsam Fir Historical Range',
     attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Ashe_juniper_spp/MapServer/tile/{z}/{y}/{x}',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_balsam_fir_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Chestnut Oak Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_chestnut_oak_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Chestnut Oak Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_chestnut_oak_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Common Pinyon Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_common_pinyon_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Common Pinyon Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_common_pinyon_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Douglas Fir Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_douglas_fir_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Douglas Fir Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Douglas_fir_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Gambel Oak Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_gambel_oak_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Gambel Oak Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Gambel_oak_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Honey Mesquite Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_honey_mesquite_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Honey Mesquite Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_honey_mesquite_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Loblolly Pine Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_loblolly_pine_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Loblolly Pine Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_loblolly_pine_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Lodgepole Pine Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_lodgepole_pine_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Lodgepole Pine Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_lodgepole_pine_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Pond Cypress Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_pond_cypress_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Pond Cypress Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_pondcypress_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Ponderosa Pine Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_ponderosa_pine_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Ponderosa Pine Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_ponderosa_pine_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Post Oak Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_post_oak_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Post Oak Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_post_oak_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Quaking Aspen Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_quaking_aspen_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Quaking Aspen Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_quaking_aspen_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Red Alder Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_red_alder_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Red Alder Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_red_alder_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Red Maple Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_red_maple_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Red Maple Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_red_maple_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Redwood Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_redwood_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Redwood Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_redwood_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Shortleaf Pine Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_shortleaf_pine_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Shortleaf Pine Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_shortleaf_pine_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Sugar Maple Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_sugar_maple_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Sugar Maple Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_sugar_maple_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Sweetgum Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_sweetgum_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Sweetgum Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_sweetgum_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Tanoak Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_tanoak_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Tanoak Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_tanoak_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Utah Juniper Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_utah_juniper_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Utah Juniper Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Utah_juniper_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Western Hemlock Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_western_hemlock_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA Western Hemlock Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_western_hemlock_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - White Oak Historical Range Boundary
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_white_oak_historical_range_basemap: {
+    type: 'tile',
+    name: 'FIA White Oak Historical Range',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_white_oak_spp/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - White/Red/Jack Pine Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_white_red_jack_pine_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA White/Red/Jack Pine Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_100WhiteRedJackPine/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Spruce Fir Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_spruce_fir_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Spruce Fir Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_120SpruceFir/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Longleaf/Slash Pine Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_longleaf_slash_pine_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Longleaf/Slash Pine Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_140LongleafSlashPine/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Loblolly/Shortleaf Pine Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_loblolly_shortleaf_pine_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Loblolly/Shortleaf Pine Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_160LoblollyShortleafPine/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Pinyon/Juniper Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_pinyon_juniper_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Pinyon/Juniper Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_180PinyonJuniper/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Douglas Fir Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_douglas_fir_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Douglas Fir Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_200DouglasFir/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Ponderosa Pine Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_ponderosa_pine_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Ponderosa Pine Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_220PonderosaPine/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Western White Pine Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_western_white_pine_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Western White Pine Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_240WesternWhitePine/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Fir/Spruce/Mountain Hemlock Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_fir_spruce_mountain_hemlock_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Fir/Spruce/Mountain Hemlock Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_260FirSpruceMountainHemlock/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Lodgepole Pine Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_lodgepole_pine_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Lodgepole Pine Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_280LodgepolePine/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Hemlock/Sitka Spruce Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_hemlock_sitka_spruce_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Hemlock/Sitka Spruce Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_300HemlockSitkaSpruce/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Western Larch Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_western_larch_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Western Larch Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_320WesternLarch/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Redwood Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_redwood_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Redwood Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_340Redwood/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Other Western Softwoods Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_other_western_softwoods_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Other Western Softwoods Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_360OtherWesternSoftwoods/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - California Mixed Conifer Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_california_mixed_conifer_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA California Mixed Conifer Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_370CaliforniaMixedConifer/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Exotic Softwoods Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_exotic_softwoods_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Exotic Softwoods Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_380ExoticSoftwoods/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Oak/Pine Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_oak_pine_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Oak/Pine Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_400OakPine/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Oak/Hickory Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_oak_hickory_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Oak/Hickory Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_500OakHickory/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Oak/Gum/Cypress Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_oak_gum_cypress_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Oak/Gum/Cypress Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_600OakGumCypress/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Elm/Ash/Cottonwood Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_elm_ash_cottonwood_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Elm/Ash/Cottonwood Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_700ElmAshCottonwood/MapServer/tile/{z}/{y}/{x}',
   },
   // Note: ArcGIS Online services (services.arcgisonline.com) do not support WMS.
   // They use WMTS or direct tile services instead, which would require a different implementation.
@@ -1683,6 +2042,12 @@ const MapView: React.FC<MapViewProps> = ({
   const [selectedBasemap, setSelectedBasemap] = useState<string>('liberty'); // Selected basemap
   const [showOpenFreeMapBase, setShowOpenFreeMapBase] = useState<boolean>(true); // Toggle for OpenFreeMap base layer
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
+  // Collapsible basemap sections state
+  const [expandedBasemapSections, setExpandedBasemapSections] = useState<Record<string, boolean>>({
+    'OpenFreeMap': true, // Default to expanded
+    'USGS National Map & MRLC': false,
+    'FIA Forest Atlas': false,
+  });
   const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
 
@@ -1997,7 +2362,16 @@ const MapView: React.FC<MapViewProps> = ({
             
             overlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
             overlayLayer.on('tileerror', (_error: any, tile: any) => {
-              console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
+              // Suppress errors for missing tiles (common with WMS services that have limited extent)
+              if (tile && tile.src) {
+                const img = tile as HTMLImageElement;
+                if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                  // Missing tile - this is expected for areas outside the service extent
+                  return;
+                }
+              }
+              // Only log actual errors, not missing tiles
+              // console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
             });
             overlayLayer.addTo(map);
           }
@@ -2283,7 +2657,16 @@ const MapView: React.FC<MapViewProps> = ({
           
           newOverlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
           newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
-            console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
+            // Suppress errors for missing tiles (common with WMS services that have limited extent)
+            if (tile && tile.src) {
+              const img = tile as HTMLImageElement;
+              if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                // Missing tile - this is expected for areas outside the service extent
+                return;
+              }
+            }
+            // Only log actual errors, not missing tiles
+            // console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
           });
           newOverlayLayer.addTo(map);
         }
@@ -2352,8 +2735,18 @@ const MapView: React.FC<MapViewProps> = ({
         }
         
         newBasemapLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
-        newBasemapLayer.on('tileerror', (error: any, tile: any) => {
-          console.warn('WMS tile error:', error, 'for basemap:', selectedBasemap, 'tile:', tile);
+        newBasemapLayer.on('tileerror', (_error: any, tile: any) => {
+          // Suppress errors for missing tiles (common with WMS services that have limited extent)
+          // Only log actual errors, not missing tiles outside service coverage
+          if (tile && tile.src) {
+            const img = tile as HTMLImageElement;
+            if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+              // Missing tile - this is expected for areas outside the service extent
+              return;
+            }
+          }
+          // Only log actual errors, not missing tiles
+          // console.warn('WMS tile error:', error, 'for basemap:', selectedBasemap, 'tile:', tile);
         });
         newBasemapLayer.on('load', () => {
           console.log('WMS tile loaded successfully for basemap:', selectedBasemap);
@@ -33565,49 +33958,102 @@ const MapView: React.FC<MapViewProps> = ({
         
         {/* Basemap Dropdown and Weather Radar Toggle - Desktop only */}
         {!isMobile && (
-          <div className="absolute top-4 left-20 bg-white rounded-lg shadow-lg p-3 z-10 space-y-3">
+          <div className="absolute top-4 left-20 bg-white rounded-lg shadow-lg p-3 z-10 space-y-3" style={{ minWidth: '280px', maxWidth: '320px' }}>
             <div>
-              <label htmlFor="basemap-select" className="block text-sm font-semibold text-black mb-2">
-                Basemap
+              <label className="block text-sm font-semibold text-black mb-2">
+                Available Basemap Themes
               </label>
-              <select
-                id="basemap-select"
-                value={selectedBasemap}
-                onChange={(e) => setSelectedBasemap(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-black bg-white"
-                style={{ color: 'black' }}
-              >
+              <div className="border border-gray-300 rounded-md bg-white max-h-96 overflow-y-auto">
                 {/* OpenFreeMap basemaps */}
-                <optgroup label="OpenFreeMap">
-                  {Object.entries(BASEMAP_CONFIGS)
-                    .filter(([_, config]) => config.type === 'maplibre')
-                    .map(([key, config]) => (
-                      <option key={key} value={key} style={{ color: 'black' }}>
-                        {config.name}
-                      </option>
-                    ))}
-                </optgroup>
+                <div className="border-b border-gray-200 last:border-b-0">
+                  <button
+                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'OpenFreeMap': !prev['OpenFreeMap'] }))}
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <span>OpenFreeMap</span>
+                    <span className={`transform transition-transform ${expandedBasemapSections['OpenFreeMap'] ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {expandedBasemapSections['OpenFreeMap'] && (
+                    <div className="pb-1">
+                      {Object.entries(BASEMAP_CONFIGS)
+                        .filter(([_, config]) => config.type === 'maplibre')
+                        .map(([key, config]) => (
+                          <button
+                            key={key}
+                            onClick={() => setSelectedBasemap(key)}
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                              selectedBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                            }`}
+                          >
+                            {config.name}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+                
                 {/* USGS National Map & MRLC basemaps */}
-                <optgroup label="USGS National Map & MRLC">
-                  {Object.entries(BASEMAP_CONFIGS)
-                    .filter(([_, config]) => config.type === 'wms')
-                    .map(([key, config]) => (
-                      <option key={key} value={key} style={{ color: 'black' }}>
-                        {config.name}
-                      </option>
-                    ))}
-                </optgroup>
+                <div className="border-b border-gray-200 last:border-b-0">
+                  <button
+                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USGS National Map & MRLC': !prev['USGS National Map & MRLC'] }))}
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <span>USGS National Map & MRLC</span>
+                    <span className={`transform transition-transform ${expandedBasemapSections['USGS National Map & MRLC'] ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {expandedBasemapSections['USGS National Map & MRLC'] && (
+                    <div className="pb-1">
+                      {Object.entries(BASEMAP_CONFIGS)
+                        .filter(([_, config]) => config.type === 'wms')
+                        .map(([key, config]) => (
+                          <button
+                            key={key}
+                            onClick={() => setSelectedBasemap(key)}
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                              selectedBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                            }`}
+                          >
+                            {config.name}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+                
                 {/* FIA Forest Atlas basemaps */}
-                <optgroup label="FIA Forest Atlas">
-                  {Object.entries(BASEMAP_CONFIGS)
-                    .filter(([key]) => key.startsWith('fia_') && key.endsWith('_basemap'))
-                    .map(([key, config]) => (
-                      <option key={key} value={key} style={{ color: 'black' }}>
-                        {config.name}
-                      </option>
-                    ))}
-                </optgroup>
-              </select>
+                <div className="border-b border-gray-200 last:border-b-0">
+                  <button
+                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'FIA Forest Atlas': !prev['FIA Forest Atlas'] }))}
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <span>FIA Forest Atlas</span>
+                    <span className={`transform transition-transform ${expandedBasemapSections['FIA Forest Atlas'] ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {expandedBasemapSections['FIA Forest Atlas'] && (
+                    <div className="pb-1">
+                      {Object.entries(BASEMAP_CONFIGS)
+                        .filter(([key]) => key.startsWith('fia_') && key.endsWith('_basemap'))
+                        .map(([key, config]) => (
+                          <button
+                            key={key}
+                            onClick={() => setSelectedBasemap(key)}
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                              selectedBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                            }`}
+                          >
+                            {config.name}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             
             {/* OpenFreeMap Base Toggle */}
@@ -33622,10 +34068,21 @@ const MapView: React.FC<MapViewProps> = ({
                 <span className="text-sm text-gray-700">
                   Show OpenFreeMap base layer
                 </span>
+                <div className="relative group">
+                  <button
+                    type="button"
+                    className="w-4 h-4 rounded-full bg-gray-300 hover:bg-gray-400 text-white text-xs flex items-center justify-center font-semibold focus:outline-none"
+                    onMouseEnter={(e) => e.preventDefault()}
+                    onMouseLeave={(e) => e.preventDefault()}
+                  >
+                    i
+                  </button>
+                  <div className="absolute left-0 bottom-full mb-2 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                    When enabled, selected basemaps appear as transparent overlays on top of OpenFreeMap. When disabled, selected basemaps are shown in isolation.
+                    <div className="absolute left-2 bottom-0 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-800"></div>
+                  </div>
+                </div>
               </label>
-              <p className="text-xs text-gray-500 mt-1 ml-6">
-                When enabled, selected basemaps appear as transparent overlays on top of OpenFreeMap. When disabled, selected basemaps are shown in isolation.
-              </p>
             </div>
             
             {/* Weather Radar Toggle */}

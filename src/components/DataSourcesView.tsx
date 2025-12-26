@@ -1780,6 +1780,350 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_American_elm_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Ashe Juniper",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Ashe Juniper (Juniperus ashei) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Ashe_juniper_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Balsam Fir",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Balsam Fir (Abies balsamea) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_balsam_fir_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Chestnut Oak",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Chestnut Oak (Quercus prinus) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_chestnut_oak_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Common Pinyon",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Common Pinyon (Pinus edulis, two-needle pinyon) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_common_pinyon_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Douglas Fir",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Douglas Fir (Pseudotsuga menziesii) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Douglas_fir_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Gambel Oak",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Gambel Oak (Quercus gambelii) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Gambel_oak_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Honey Mesquite",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Honey Mesquite (Prosopis glandulosa) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_honey_mesquite_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Loblolly Pine",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Loblolly Pine (Pinus taeda) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_loblolly_pine_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Lodgepole Pine",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Lodgepole Pine Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_lodgepole_pine_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Pond Cypress",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Pond Cypress (Taxodium ascendens) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_pondcypress_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Ponderosa Pine",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Ponderosa Pine (Pinus ponderosa) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_ponderosa_pine_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Post Oak",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Post Oak (Quercus stellata) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_post_oak_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Quaking Aspen",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Quaking Aspen (Populus tremuloides) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_quaking_aspen_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Red Alder",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Red Alder (Alnus rubra) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_red_alder_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Red Maple",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Red Maple (Acer rubrum) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_red_maple_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Redwood",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Redwood (Sequoia sempervirens) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_redwood_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Shortleaf Pine",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Shortleaf Pine (Pinus echinata) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_shortleaf_pine_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Sugar Maple",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Sugar Maple (Acer saccharum) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_sugar_maple_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Sweetgum",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Sweetgum (Liquidambar styraciflua) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_sweetgum_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Tanoak",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Tanoak (Lithocarpus densiflorus) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_tanoak_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Utah Juniper",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Utah Juniper (Juniperus osteosperma) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Utah_juniper_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Western Hemlock",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Western Hemlock (Tsuga heterophylla) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_western_hemlock_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - White Oak",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - White Oak (Quercus alba) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_white_oak_spp/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - White/Red/Jack Pine Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - White/Red/Jack Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_100WhiteRedJackPine/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Spruce Fir Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Spruce Fir Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_120SpruceFir/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Longleaf/Slash Pine Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Longleaf/Slash Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_140LongleafSlashPine/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Loblolly/Shortleaf Pine Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Loblolly/Shortleaf Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_160LoblollyShortleafPine/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Pinyon/Juniper Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Pinyon/Juniper Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_180PinyonJuniper/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Douglas Fir Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Douglas Fir Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_200DouglasFir/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Ponderosa Pine Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Ponderosa Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_220PonderosaPine/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Western White Pine Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Western White Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_240WesternWhitePine/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Fir/Spruce/Mountain Hemlock Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Fir/Spruce/Mountain Hemlock Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_260FirSpruceMountainHemlock/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Lodgepole Pine Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Lodgepole Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_280LodgepolePine/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Hemlock/Sitka Spruce Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Hemlock/Sitka Spruce Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_300HemlockSitkaSpruce/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Western Larch Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Western Larch Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_320WesternLarch/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Redwood Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Redwood Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_340Redwood/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Other Western Softwoods Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Other Western Softwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_360OtherWesternSoftwoods/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - California Mixed Conifer Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - California Mixed Conifer Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_370CaliforniaMixedConifer/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Exotic Softwoods Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Exotic Softwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_380ExoticSoftwoods/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Oak/Pine Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Oak/Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_400OakPine/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Oak/Hickory Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Oak/Hickory Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_500OakHickory/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Oak/Gum/Cypress Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Oak/Gum/Cypress Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_600OakGumCypress/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Elm/Ash/Cottonwood Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Elm/Ash/Cottonwood Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_700ElmAshCottonwood/MapServer"
         }
       ]
     },
@@ -5790,6 +6134,350 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_American_elm_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Ashe Juniper",
+          description: "USDA Forest Service FIA Forest Atlas - Ashe Juniper (Juniperus ashei) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Ashe_juniper_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Balsam Fir",
+          description: "USDA Forest Service FIA Forest Atlas - Balsam Fir (Abies balsamea) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_balsam_fir_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Chestnut Oak",
+          description: "USDA Forest Service FIA Forest Atlas - Chestnut Oak (Quercus prinus) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_chestnut_oak_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Common Pinyon",
+          description: "USDA Forest Service FIA Forest Atlas - Common Pinyon (Pinus edulis, two-needle pinyon) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_common_pinyon_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Douglas Fir",
+          description: "USDA Forest Service FIA Forest Atlas - Douglas Fir (Pseudotsuga menziesii) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Douglas_fir_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Gambel Oak",
+          description: "USDA Forest Service FIA Forest Atlas - Gambel Oak (Quercus gambelii) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Gambel_oak_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Honey Mesquite",
+          description: "USDA Forest Service FIA Forest Atlas - Honey Mesquite (Prosopis glandulosa) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_honey_mesquite_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Loblolly Pine",
+          description: "USDA Forest Service FIA Forest Atlas - Loblolly Pine (Pinus taeda) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_loblolly_pine_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Lodgepole Pine",
+          description: "USDA Forest Service FIA Forest Atlas - Lodgepole Pine Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_lodgepole_pine_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Pond Cypress",
+          description: "USDA Forest Service FIA Forest Atlas - Pond Cypress (Taxodium ascendens) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_pondcypress_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Ponderosa Pine",
+          description: "USDA Forest Service FIA Forest Atlas - Ponderosa Pine (Pinus ponderosa) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_ponderosa_pine_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Post Oak",
+          description: "USDA Forest Service FIA Forest Atlas - Post Oak (Quercus stellata) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_post_oak_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Quaking Aspen",
+          description: "USDA Forest Service FIA Forest Atlas - Quaking Aspen (Populus tremuloides) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_quaking_aspen_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Red Alder",
+          description: "USDA Forest Service FIA Forest Atlas - Red Alder (Alnus rubra) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_red_alder_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Red Maple",
+          description: "USDA Forest Service FIA Forest Atlas - Red Maple (Acer rubrum) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_red_maple_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Redwood",
+          description: "USDA Forest Service FIA Forest Atlas - Redwood (Sequoia sempervirens) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_redwood_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Shortleaf Pine",
+          description: "USDA Forest Service FIA Forest Atlas - Shortleaf Pine (Pinus echinata) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_shortleaf_pine_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Sugar Maple",
+          description: "USDA Forest Service FIA Forest Atlas - Sugar Maple (Acer saccharum) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_sugar_maple_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Sweetgum",
+          description: "USDA Forest Service FIA Forest Atlas - Sweetgum (Liquidambar styraciflua) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_sweetgum_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Tanoak",
+          description: "USDA Forest Service FIA Forest Atlas - Tanoak (Lithocarpus densiflorus) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_tanoak_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Utah Juniper",
+          description: "USDA Forest Service FIA Forest Atlas - Utah Juniper (Juniperus osteosperma) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Utah_juniper_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Western Hemlock",
+          description: "USDA Forest Service FIA Forest Atlas - Western Hemlock (Tsuga heterophylla) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_western_hemlock_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - White Oak",
+          description: "USDA Forest Service FIA Forest Atlas - White Oak (Quercus alba) Historical Range Boundary and Modeled Abundance visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_white_oak_spp/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - White/Red/Jack Pine Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - White/Red/Jack Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_100WhiteRedJackPine/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Spruce Fir Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Spruce Fir Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_120SpruceFir/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Longleaf/Slash Pine Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Longleaf/Slash Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_140LongleafSlashPine/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Loblolly/Shortleaf Pine Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Loblolly/Shortleaf Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_160LoblollyShortleafPine/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Pinyon/Juniper Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Pinyon/Juniper Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_180PinyonJuniper/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Douglas Fir Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Douglas Fir Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_200DouglasFir/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Ponderosa Pine Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Ponderosa Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_220PonderosaPine/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Western White Pine Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Western White Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_240WesternWhitePine/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Fir/Spruce/Mountain Hemlock Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Fir/Spruce/Mountain Hemlock Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_260FirSpruceMountainHemlock/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Lodgepole Pine Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Lodgepole Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_280LodgepolePine/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Hemlock/Sitka Spruce Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Hemlock/Sitka Spruce Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_300HemlockSitkaSpruce/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Western Larch Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Western Larch Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_320WesternLarch/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Redwood Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Redwood Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_340Redwood/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Other Western Softwoods Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Other Western Softwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_360OtherWesternSoftwoods/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - California Mixed Conifer Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - California Mixed Conifer Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_370CaliforniaMixedConifer/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Exotic Softwoods Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Exotic Softwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_380ExoticSoftwoods/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Oak/Pine Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Oak/Pine Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_400OakPine/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Oak/Hickory Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Oak/Hickory Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_500OakHickory/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Oak/Gum/Cypress Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Oak/Gum/Cypress Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_600OakGumCypress/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Elm/Ash/Cottonwood Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Elm/Ash/Cottonwood Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_700ElmAshCottonwood/MapServer"
         }
       ]
     }
