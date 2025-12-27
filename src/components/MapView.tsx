@@ -12,6 +12,8 @@ interface MapViewProps {
   onBackToConfig: () => void;
   isMobile?: boolean;
   previousViewMode?: string | null;
+  initialCenter?: [number, number];
+  initialZoom?: number;
 }
 
 interface LegendItem {
@@ -2169,6 +2171,8 @@ const MapView: React.FC<MapViewProps> = ({
   onBackToConfig,
   isMobile = false,
   previousViewMode: _previousViewMode,
+  initialCenter,
+  initialZoom,
 }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -2272,19 +2276,31 @@ const MapView: React.FC<MapViewProps> = ({
    * Update weather radar overlay based on current map bounds
    */
   const updateWeatherRadarOverlay = () => {
-    if (!mapInstanceRef.current || !showWeatherRadar || !results || results.length === 0) {
+    if (!mapInstanceRef.current || !showWeatherRadar) {
       return;
     }
     
     const map = mapInstanceRef.current;
-    const location = results[0]?.location;
     
-    if (!location) {
-      return;
+    // Use result location if available, otherwise use map center
+    let lat: number;
+    let lon: number;
+    
+    if (results && results.length > 0 && results[0]?.location) {
+      lat = results[0].location.lat;
+      lon = results[0].location.lon;
+    } else {
+      // Use map center when no results (e.g., when opening map directly for basemap exploration)
+      const mapCenter = map.getCenter();
+      if (!mapCenter) {
+        return;
+      }
+      lat = mapCenter.lat;
+      lon = mapCenter.lng;
     }
     
     // Determine which regional layer to use
-    const layerName = getRegionalWMSLayer(location.lat, location.lon);
+    const layerName = getRegionalWMSLayer(lat, lon);
     
     // Get current map bounds (with some padding for better coverage)
     const bounds = map.getBounds();
@@ -2433,15 +2449,16 @@ const MapView: React.FC<MapViewProps> = ({
       }
 
       // Simple, direct initialization - map starts at geocoded location immediately
-      const initialCenter: [number, number] = results && results.length > 0 && results[0]?.location
+      // Use provided initialCenter/initialZoom if available, otherwise use results or default to US center
+      const mapCenter: [number, number] = initialCenter || (results && results.length > 0 && results[0]?.location
         ? [results[0].location.lat, results[0].location.lon] as [number, number]
-        : [37.0902, -95.7129] as [number, number];
-      const initialZoom = results && results.length > 0 && results[0]?.location ? 13 : 4;
+        : [37.0902, -95.7129] as [number, number]);
+      const mapZoom = initialZoom !== undefined ? initialZoom : (results && results.length > 0 && results[0]?.location ? 13 : 4);
       
       // For mobile, disable fade animation which can cause rendering issues
       const map = L.map(mapRef.current, {
-        center: initialCenter,
-        zoom: initialZoom,
+        center: mapCenter,
+        zoom: mapZoom,
         zoomControl: true, // Enable zoom controls for mobile too
         attributionControl: true,
         fadeAnimation: !isMobile, // Disable on mobile to prevent white screen

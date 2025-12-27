@@ -221,6 +221,14 @@ function App() {
     }, 0);
   };
 
+  const handleViewMapForBasemaps = () => {
+    // Navigate to map view with US centered for basemap exploration
+    // Clear any existing results so map centers on US
+    setEnrichmentResults([]);
+    setViewMode('map');
+    setPreviousViewMode('config');
+  };
+
   const handleViewEnrichmentCategory = (category: any) => {
     // Save current scroll position before navigating to category view
     setSavedScrollPosition(window.pageYOffset || document.documentElement.scrollTop);
@@ -323,6 +331,7 @@ function App() {
                   searchInput={searchInput}
                   onSearchInputChange={setSearchInput}
                   onViewProTips={isMobile ? handleViewProTips : undefined}
+                  onViewMap={!isMobile ? handleViewMapForBasemaps : undefined}
                 />
               </div>
               {!isMobile && (
@@ -433,6 +442,8 @@ function App() {
               onBackToConfig={handleBackToConfig}
               isMobile={isMobile}
               previousViewMode={previousViewMode}
+              initialCenter={enrichmentResults.length === 0 ? [37.0902, -95.7129] as [number, number] : undefined}
+              initialZoom={enrichmentResults.length === 0 ? 4 : undefined}
             />
           </div>
         )

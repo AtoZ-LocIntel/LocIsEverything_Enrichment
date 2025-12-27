@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Loader2, Lightbulb, X } from 'lucide-react';
+import { Search, Loader2, Lightbulb, X, Map } from 'lucide-react';
 
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
@@ -7,6 +7,7 @@ interface SingleSearchProps {
   searchInput: string;
   onSearchInputChange: (value: string) => void;
   onViewProTips?: () => void;
+  onViewMap?: () => void;
 }
 
 const SingleSearch: React.FC<SingleSearchProps> = ({
@@ -14,7 +15,8 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
   onLocationSearch,
   searchInput,
   onSearchInputChange,
-  onViewProTips
+  onViewProTips,
+  onViewMap
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLocationLoading, setIsLocationLoading] = useState(false);
@@ -65,20 +67,31 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
               </div>
             </div>
             
-            {/* Pro Tips Lightbulb */}
-            <button
-              onClick={() => {
-                if (isMobile && onViewProTips) {
-                  onViewProTips();
-                } else {
-                  setShowProTips(!showProTips);
-                }
-              }}
-              className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
-              title="Pro Tips"
-            >
-              <Lightbulb className="w-5 h-5" />
-            </button>
+            {/* Pro Tips Lightbulb and Map Icon (desktop only) */}
+            <div className="flex items-center space-x-2">
+              {!isMobile && onViewMap && (
+                <button
+                  onClick={onViewMap}
+                  className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
+                  title="Explore Basemaps"
+                >
+                  <Map className="w-5 h-5" />
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  if (isMobile && onViewProTips) {
+                    onViewProTips();
+                  } else {
+                    setShowProTips(!showProTips);
+                  }
+                }}
+                className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
+                title="Pro Tips"
+              >
+                <Lightbulb className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
         
