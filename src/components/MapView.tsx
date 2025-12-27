@@ -1569,6 +1569,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'sc_coastal_well_inventory_all' || // Skip SC Coastal Well Inventory array (handled separately for map drawing)
     key === 'usfws_final_critical_habitat_all' || // Skip USFWS Final Critical Habitat array (handled separately for map drawing)
     key === 'usfws_proposed_critical_habitat_all' || // Skip USFWS Proposed Critical Habitat array (handled separately for map drawing)
+    key === 'national_aquatic_barrier_dams_all' || // Skip National Aquatic Barrier Dam Inventory array (handled separately for map drawing)
     key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately for map drawing)
     key === 'us_drilling_platforms_all' || // Skip US Drilling Platforms array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
@@ -23305,6 +23306,106 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing USFWS Proposed Critical Habitat:', error);
+      }
+
+      // Draw National Aquatic Barrier Dam Inventory as point markers on the map
+      try {
+        if (enrichments.national_aquatic_barrier_dams_all && Array.isArray(enrichments.national_aquatic_barrier_dams_all)) {
+          let damCount = 0;
+          enrichments.national_aquatic_barrier_dams_all.forEach((dam: any) => {
+            if (dam.lat && dam.lon) {
+              try {
+                const damLat = dam.lat;
+                const damLon = dam.lon;
+                const barrierName = dam.barrierName || dam.Barrier_Name || dam.barrier_name || 'Unnamed Dam';
+                const otherBarrierName = dam.otherBarrierName || dam.Other_Barrier_Name || dam.other_barrier_name || null;
+                const stateAbbreviation = dam.stateAbbreviation || dam.StateAbbreviation || dam.state_abbreviation || null;
+                const county = dam.county || dam.COUNTY || dam.County || null;
+                const river = dam.river || dam.RIVER || dam.River || null;
+                const height = dam.height !== null && dam.height !== undefined ? dam.height : null;
+                const width = dam.width !== null && dam.width !== undefined ? dam.width : null;
+                const length = dam.length !== null && dam.length !== undefined ? dam.length : null;
+                const yearCompleted = dam.yearCompleted !== null && dam.yearCompleted !== undefined ? dam.yearCompleted : null;
+                const structureCategory = dam.structureCategory !== null && dam.structureCategory !== undefined ? dam.structureCategory : null;
+                const structureClass = dam.structureClass !== null && dam.structureClass !== undefined ? dam.structureClass : null;
+                const purposeCategory = dam.purposeCategory !== null && dam.purposeCategory !== undefined ? dam.purposeCategory : null;
+                
+                // Create a custom icon for dams
+                const icon = createPOIIcon('🏗️', '#dc2626'); // Red icon for dams
+                
+                const marker = L.marker([damLat, damLon], { icon });
+                
+                // Build popup content with dam attributes
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏗️ National Aquatic Barrier Dam
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Barrier Name:</strong> ${barrierName}</div>
+                      ${otherBarrierName ? `<div><strong>Other Name:</strong> ${otherBarrierName}</div>` : ''}
+                      ${stateAbbreviation ? `<div><strong>State:</strong> ${stateAbbreviation}</div>` : ''}
+                      ${county ? `<div><strong>County:</strong> ${county}</div>` : ''}
+                      ${river ? `<div><strong>River:</strong> ${river}</div>` : ''}
+                      ${height !== null ? `<div><strong>Height (ft):</strong> ${height.toLocaleString()}</div>` : ''}
+                      ${width !== null ? `<div><strong>Width (ft):</strong> ${width.toLocaleString()}</div>` : ''}
+                      ${length !== null ? `<div><strong>Length (ft):</strong> ${length.toLocaleString()}</div>` : ''}
+                      ${yearCompleted !== null ? `<div><strong>Year Completed:</strong> ${yearCompleted}</div>` : ''}
+                      ${structureCategory !== null ? `<div><strong>Structure Category:</strong> ${structureCategory}</div>` : ''}
+                      ${structureClass !== null ? `<div><strong>Structure Class:</strong> ${structureClass}</div>` : ''}
+                      ${purposeCategory !== null ? `<div><strong>Purpose Category:</strong> ${purposeCategory}</div>` : ''}
+                      ${dam.distance_miles !== null && dam.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${dam.distance_miles.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      <div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">All Attributes:</div>
+                `;
+                
+                // Add all dam attributes (excluding internal fields)
+                const excludeFields = ['barrierName', 'otherBarrierName', 'stateAbbreviation', 'county', 'river', 'height', 'width', 'length', 'yearCompleted', 'structureCategory', 'structureClass', 'purposeCategory', 'lat', 'lon', 'distance_miles', 'attributes', 'objectid'];
+                Object.entries(dam).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(mapInstanceRef.current!);
+                damCount++;
+              } catch (error) {
+                console.error('Error drawing National Aquatic Barrier Dam marker:', error);
+              }
+            }
+          });
+          if (damCount > 0) {
+            if (!legendAccumulator['national_aquatic_barrier_dams']) {
+              legendAccumulator['national_aquatic_barrier_dams'] = {
+                icon: '🏗️',
+                color: '#dc2626',
+                title: 'National Aquatic Barrier Dams',
+                count: 0,
+              };
+            }
+            legendAccumulator['national_aquatic_barrier_dams'].count += damCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing National Aquatic Barrier Dam Inventory:', error);
       }
 
       // Draw SC Coastal Well Inventory as point markers on the map

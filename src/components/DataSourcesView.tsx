@@ -1790,6 +1790,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services.arcgis.com/QVENGdaPbd4LUkLV/arcgis/rest/services/USFWS_Critical_Habitat/FeatureServer/2"
         },
         {
+          name: "National Aquatic Barrier Dam Inventory",
+          description: "National Aquatic Barrier Inventory - Dams including large regulated dams, small dams, unregulated dams, diversion dams, farm ponds, and lowhead dams - proximity queries up to 25 miles",
+          coverage: "United States, Puerto Rico, US Virgin Islands",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.arcgis.com/QVENGdaPbd4LUkLV/arcgis/rest/services/Dams_National_Aquatic_Barrier_Inventory_Dec_2023/FeatureServer/0"
+        },
+        {
           name: "USDA Forest Service FIA Forest Atlas - American Elm",
           description: "USDA Forest Service Forest Inventory and Analysis (FIA) - American Elm (Ulmus americana) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
           coverage: "United States (contiguous)",

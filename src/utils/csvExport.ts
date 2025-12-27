@@ -630,6 +630,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'sc_coastal_well_inventory_all' || // Skip SC Coastal Well Inventory array (handled separately)
         key === 'usfws_final_critical_habitat_all' || // Skip USFWS Final Critical Habitat array (handled separately)
         key === 'usfws_proposed_critical_habitat_all' || // Skip USFWS Proposed Critical Habitat array (handled separately)
+        key === 'national_aquatic_barrier_dams_all' || // Skip National Aquatic Barrier Dam Inventory array (handled separately)
         key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately)
         key === 'us_drilling_platforms_all' || // Skip US Drilling Platforms array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
@@ -10848,6 +10849,52 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'US Fish and Wildlife Service'
+        ]);
+      });
+    } else if (key === 'national_aquatic_barrier_dams_all' && Array.isArray(value)) {
+      // Handle National Aquatic Barrier Dam Inventory - each dam gets its own row with all attributes
+      value.forEach((dam: any) => {
+        const distance = dam.distance_miles !== null && dam.distance_miles !== undefined ? dam.distance_miles.toFixed(2) : '';
+        
+        const damLat = dam.lat || location.lat.toString();
+        const damLon = dam.lon || location.lon.toString();
+        
+        const allAttributes = { ...dam };
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = dam.objectid || dam.OBJECTID || '';
+        const barrierName = dam.barrierName || dam.Barrier_Name || dam.barrier_name || 'Unnamed Dam';
+        const otherBarrierName = dam.otherBarrierName || dam.Other_Barrier_Name || dam.other_barrier_name || null;
+        const stateAbbreviation = dam.stateAbbreviation || dam.StateAbbreviation || dam.state_abbreviation || null;
+        const county = dam.county || dam.COUNTY || dam.County || null;
+        const river = dam.river || dam.RIVER || dam.River || null;
+        const height = dam.height !== null && dam.height !== undefined ? dam.height : null;
+        const width = dam.width !== null && dam.width !== undefined ? dam.width : null;
+        const length = dam.length !== null && dam.length !== undefined ? dam.length : null;
+        const yearCompleted = dam.yearCompleted !== null && dam.yearCompleted !== undefined ? dam.yearCompleted : null;
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'National Aquatic Barrier Inventory',
+          (location.confidence || 'N/A').toString(),
+          'NATIONAL_AQUATIC_BARRIER_DAM',
+          `${barrierName}${otherBarrierName ? ` (${otherBarrierName})` : ''}${stateAbbreviation ? ` - ${stateAbbreviation}` : ''}${county ? `, ${county}` : ''}${river ? ` on ${river}` : ''}${objectId ? ` (ID ${objectId})` : ''}`,
+          damLat,
+          damLon,
+          distance,
+          'Dam',
+          '',
+          height !== null ? `Height: ${height} ft` : '',
+          width !== null ? `Width: ${width} ft` : '',
+          attributesJson,
+          'National Aquatic Barrier Inventory',
+          length !== null ? `Length: ${length} ft` : '',
+          yearCompleted !== null ? `Year: ${yearCompleted}` : ''
         ]);
       });
     } else if (key === 'orlando_christmas_lights_all' && Array.isArray(value)) {

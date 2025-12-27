@@ -289,6 +289,7 @@ import { getSCGameZonesData } from '../adapters/scGameZones';
 import { getSCCoastalPondsData } from '../adapters/scCoastalPonds';
 import { getSCLakesReservoirsData } from '../adapters/scLakesReservoirs';
 import { getUSFWSCriticalHabitatData } from '../adapters/usfwsCriticalHabitat';
+import { getNationalAquaticBarrierDamsData } from '../adapters/nationalAquaticBarrierDams';
 import { getSCCoastalWellInventoryData } from '../adapters/scCoastalWellInventory';
 import { getSCScenicRiversData } from '../adapters/scScenicRivers';
 import { getOrlandoChristmasLightsData } from '../adapters/orlandoChristmasLights';
@@ -6087,6 +6088,10 @@ export class EnrichmentService {
       // USFWS Critical Habitat - Proposed Critical Habitat Features - Point-in-polygon and proximity query (max 50 miles)
       case 'usfws_proposed_critical_habitat':
         return await this.getUSFWSProposedCriticalHabitat(lat, lon, radius);
+      
+      // National Aquatic Barrier Dam Inventory - Proximity query (max 25 miles)
+      case 'national_aquatic_barrier_dams':
+        return await this.getNationalAquaticBarrierDams(lat, lon, radius);
       
       // TX School Districts 2024 - Point-in-polygon and proximity query (max 50 miles)
       case 'tx_school_districts_2024':
@@ -19779,6 +19784,64 @@ out center;`;
     }
   }
 
+  private async getNationalAquaticBarrierDams(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏗️ Fetching National Aquatic Barrier Dam Inventory data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+
+      // Cap radius at 25 miles
+      const cappedRadius = radius ? Math.min(radius, 25.0) : 25.0;
+
+      const dams = await getNationalAquaticBarrierDamsData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {};
+
+      if (dams.length === 0) {
+        result.national_aquatic_barrier_dams_count = 0;
+        result.national_aquatic_barrier_dams_all = [];
+        result.national_aquatic_barrier_dams_summary = 'No dams found within the specified radius.';
+      } else {
+        result.national_aquatic_barrier_dams_count = dams.length;
+        result.national_aquatic_barrier_dams_all = dams.map(dam => ({
+          ...dam.attributes,
+          objectid: dam.objectid,
+          barrierName: dam.barrierName,
+          otherBarrierName: dam.otherBarrierName,
+          stateAbbreviation: dam.stateAbbreviation,
+          county: dam.county,
+          river: dam.river,
+          height: dam.height,
+          width: dam.width,
+          length: dam.length,
+          yearCompleted: dam.yearCompleted,
+          structureCategory: dam.structureCategory,
+          structureClass: dam.structureClass,
+          purposeCategory: dam.purposeCategory,
+          lat: dam.lat,
+          lon: dam.lon,
+          distance_miles: dam.distance_miles
+        }));
+
+        result.national_aquatic_barrier_dams_summary = `Found ${dams.length} dam(s) within ${cappedRadius} miles.`;
+      }
+
+      if (radius && radius > 0) {
+        result.national_aquatic_barrier_dams_search_radius_miles = radius;
+      }
+
+      console.log(`✅ National Aquatic Barrier Dam Inventory data processed:`, {
+        totalCount: result.national_aquatic_barrier_dams_count
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching National Aquatic Barrier Dam Inventory data:', error);
+      return {
+        national_aquatic_barrier_dams_count: 0,
+        national_aquatic_barrier_dams_all: [],
+        national_aquatic_barrier_dams_summary: 'Error querying National Aquatic Barrier Dam Inventory'
+      };
+    }
+  }
 
   private async getUSFSWildernessAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
