@@ -1584,6 +1584,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'usfws_final_critical_habitat_all' || // Skip USFWS Final Critical Habitat array (handled separately for map drawing)
     key === 'usfws_proposed_critical_habitat_all' || // Skip USFWS Proposed Critical Habitat array (handled separately for map drawing)
     key === 'national_aquatic_barrier_dams_all' || // Skip National Aquatic Barrier Dam Inventory array (handled separately for map drawing)
+    key === 'american_eel_current_range_all' || // Skip American Eel Current Range array (handled separately for map drawing)
+    key === 'bighorn_sheep_captures_releases_all' || // Skip Bighorn Sheep Captures and Releases array (handled separately for map drawing)
     key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately for map drawing)
     key === 'us_drilling_platforms_all' || // Skip US Drilling Platforms array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
@@ -23335,6 +23337,209 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing USFWS Proposed Critical Habitat:', error);
+      }
+
+      // Draw American Eel Current Range as polygons on the map
+      try {
+        if (enrichments.american_eel_current_range_all && Array.isArray(enrichments.american_eel_current_range_all)) {
+          let featureCount = 0;
+          enrichments.american_eel_current_range_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('American Eel Current Range outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#16a34a'; // Green color for American Eel Current Range
+                  const weight = 2;
+                  const opacity = 0.8;
+
+                  const featurePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const isContaining = feature.isContaining || false;
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                  const region = feature.region || feature.REGION || '';
+                  const subregion = feature.subregion || feature.SUBREGION || '';
+                  const basin = feature.basin || feature.BASIN || '';
+                  const subbasin = feature.subbasin || feature.SUBBASIN || '';
+                  const huc8 = feature.huc8 || feature.HUC_8 || feature.HUC8_dbl || '';
+                  const acres = feature.acres !== null && feature.acres !== undefined ? feature.acres : null;
+                  const sqMiles = feature.sqMiles !== null && feature.sqMiles !== undefined ? feature.sqMiles : null;
+
+                  const allAttributes = { ...feature };
+                  delete allAttributes.geometry;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.isContaining;
+                  delete allAttributes.region;
+                  delete allAttributes.subregion;
+                  delete allAttributes.basin;
+                  delete allAttributes.subbasin;
+                  delete allAttributes.huc8;
+                  delete allAttributes.acres;
+                  delete allAttributes.sqMiles;
+
+                  const attributeKeys = Object.keys(allAttributes).slice(0, 20);
+                  const attributeRows = attributeKeys.map(key => {
+                    const value = allAttributes[key];
+                    const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                    return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                  }).join('');
+
+                  const totalAttributeCount = Object.keys(allAttributes).length;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🐟 American Eel Current Range
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${region ? `<div><strong>Region:</strong> ${region}</div>` : ''}
+                        ${subregion ? `<div><strong>Subregion:</strong> ${subregion}</div>` : ''}
+                        ${basin ? `<div><strong>Basin:</strong> ${basin}</div>` : ''}
+                        ${subbasin ? `<div><strong>Subbasin:</strong> ${subbasin}</div>` : ''}
+                        ${huc8 ? `<div><strong>HUC-8:</strong> ${huc8}</div>` : ''}
+                        ${acres !== null ? `<div><strong>Acres:</strong> ${acres.toLocaleString()}</div>` : ''}
+                        ${sqMiles !== null ? `<div><strong>Square Miles:</strong> ${sqMiles.toLocaleString()}</div>` : ''}
+                        <div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>
+                        <div><strong>Containing:</strong> ${isContaining ? 'Yes' : 'No'}</div>
+                        ${attributeRows}
+                        ${totalAttributeCount > 20 ? `<div>... ${totalAttributeCount - 20} more attributes</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+
+                  featurePolygon.bindPopup(popupContent);
+                  featurePolygon.addTo(map);
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing American Eel Current Range polygon:', error);
+              }
+            }
+          });
+          if (featureCount > 0) {
+            if (!legendAccumulator['american_eel_current_range']) {
+              legendAccumulator['american_eel_current_range'] = {
+                icon: '🐟',
+                color: '#16a34a',
+                title: 'American Eel Current Range',
+                count: 0,
+              };
+            }
+            legendAccumulator['american_eel_current_range'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing American Eel Current Range:', error);
+      }
+
+      // Draw Bighorn Sheep Captures and Releases as point markers on the map
+      try {
+        if (enrichments.bighorn_sheep_captures_releases_all && Array.isArray(enrichments.bighorn_sheep_captures_releases_all)) {
+          let sheepCount = 0;
+          enrichments.bighorn_sheep_captures_releases_all.forEach((sheep: any) => {
+            if (sheep.y && sheep.x) { // y is latitude, x is longitude
+              try {
+                const sheepLat = sheep.y;
+                const sheepLon = sheep.x;
+                const capRelType = sheep.capRelType || sheep.CapRelType || 'Unknown';
+                const year = sheep.year || sheep.Year || 'N/A';
+                const subspecies = sheep.subspecies || sheep.Subspecies || 'N/A';
+                const captureSite = sheep.captureSite || sheep.CapturSite || 'N/A';
+                const releaseSite = sheep.releaseSite || sheep.ReleseSite || 'N/A';
+                const stateCapture = sheep.stateCapture || sheep.State_Capt || 'N/A';
+                const stateRelease = sheep.stateRelease || sheep.State_Rele || 'N/A';
+                const bighornNos = sheep.bighornNos !== null && sheep.bighornNos !== undefined ? sheep.bighornNos : 'N/A';
+
+                // Create a custom icon for bighorn sheep
+                const sheepIcon = createPOIIcon('🐑', '#8b5cf6'); // Purple icon for bighorn sheep
+
+                const marker = L.marker([sheepLat, sheepLon], { icon: sheepIcon });
+
+                // Build popup content with sheep attributes
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🐑 Bighorn Sheep ${capRelType}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> ${capRelType}</div>
+                      <div><strong>Year:</strong> ${year}</div>
+                      <div><strong>Subspecies:</strong> ${subspecies}</div>
+                      ${capRelType === 'Capture' ? `<div><strong>Capture Site:</strong> ${captureSite}</div>` : ''}
+                      ${capRelType === 'Capture' ? `<div><strong>State:</strong> ${stateCapture}</div>` : ''}
+                      ${capRelType === 'Release' ? `<div><strong>Release Site:</strong> ${releaseSite}</div>` : ''}
+                      ${capRelType === 'Release' ? `<div><strong>State:</strong> ${stateRelease}</div>` : ''}
+                      ${bighornNos !== 'N/A' ? `<div><strong>Number of Bighorn:</strong> ${bighornNos}</div>` : ''}
+                      ${sheep.distance_miles !== null && sheep.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${sheep.distance_miles.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      <div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">All Attributes:</div>
+                `;
+
+                // Add all sheep attributes (excluding internal fields)
+                const excludeFields = ['capRelType', 'year', 'subspecies', 'releaseDate', 'releaseSite', 'stateRelease', 'bighornNos', 'captureSite', 'capMethod', 'captureDate', 'stateCapture', 'rams', 'ewes', 'm_lambs', 'f_lambs', 'x', 'y', 'distance_miles', 'attributes', 'objectid', 'OBJECTID', 'CapRelType', 'Year', 'Subspecies', 'ReleseDate', 'ReleseSite', 'State_Rele', 'BighornNos', 'CapturSite', 'CapMethod', 'CapturDate', 'State_Capt', 'Rams', 'Ewes', 'M_lambs', 'F_lambs'];
+                Object.entries(sheep).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                marker.addTo(map);
+                sheepCount++;
+              } catch (error) {
+                console.error('Error drawing Bighorn Sheep marker:', error);
+              }
+            }
+          });
+
+          // Add to legend
+          if (sheepCount > 0) {
+            if (!legendAccumulator['bighorn_sheep_captures_releases']) {
+              legendAccumulator['bighorn_sheep_captures_releases'] = {
+                icon: '🐑',
+                color: '#8b5cf6',
+                title: 'Bighorn Sheep Captures and Releases',
+                count: 0,
+              };
+            }
+            legendAccumulator['bighorn_sheep_captures_releases'].count += sheepCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Bighorn Sheep Captures and Releases:', error);
       }
 
       // Draw National Aquatic Barrier Dam Inventory as point markers on the map

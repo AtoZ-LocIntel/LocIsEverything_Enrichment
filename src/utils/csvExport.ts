@@ -631,6 +631,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'usfws_final_critical_habitat_all' || // Skip USFWS Final Critical Habitat array (handled separately)
         key === 'usfws_proposed_critical_habitat_all' || // Skip USFWS Proposed Critical Habitat array (handled separately)
         key === 'national_aquatic_barrier_dams_all' || // Skip National Aquatic Barrier Dam Inventory array (handled separately)
+        key === 'american_eel_current_range_all' || // Skip American Eel Current Range array (handled separately)
+        key === 'bighorn_sheep_captures_releases_all' || // Skip Bighorn Sheep Captures and Releases array (handled separately)
         key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately)
         key === 'us_drilling_platforms_all' || // Skip US Drilling Platforms array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
@@ -10846,6 +10848,105 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'Critical Habitat',
           isContaining,
           status,
+          '',
+          attributesJson,
+          'US Fish and Wildlife Service'
+        ]);
+      });
+    } else if (key === 'american_eel_current_range_all' && Array.isArray(value)) {
+      // Handle American Eel Current Range - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate of outer ring)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            // ESRI rings are [lon, lat] format
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.region;
+        delete allAttributes.subregion;
+        delete allAttributes.basin;
+        delete allAttributes.subbasin;
+        delete allAttributes.huc8;
+        delete allAttributes.acres;
+        delete allAttributes.sqMiles;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.objectid || feature.OBJECTID || '';
+        const region = feature.region || feature.REGION || '';
+        const subregion = feature.subregion || feature.SUBREGION || '';
+        const basin = feature.basin || feature.BASIN || '';
+        const subbasin = feature.subbasin || feature.SUBBASIN || '';
+        const huc8 = feature.huc8 || feature.HUC_8 || feature.HUC8_dbl || '';
+        const rangeLabel = region || basin || subbasin || `Range ${objectId}`;
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'US Fish and Wildlife Service',
+          (location.confidence || 'N/A').toString(),
+          'AMERICAN_EEL_CURRENT_RANGE',
+          `American Eel Current Range${rangeLabel ? ` - ${rangeLabel}` : ''}${objectId ? ` (ID ${objectId})` : ''}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Fish and Wildlife',
+          isContaining,
+          region || '',
+          subregion || '',
+          attributesJson,
+          'US Fish and Wildlife Service',
+          basin || '',
+          subbasin || '',
+          huc8 || ''
+        ]);
+      });
+    } else if (key === 'bighorn_sheep_captures_releases_all' && Array.isArray(value)) {
+      // Handle Bighorn Sheep Captures and Releases - each event gets its own row with all attributes
+      value.forEach((sheep: any) => {
+        const distance = sheep.distance_miles !== null && sheep.distance_miles !== undefined ? sheep.distance_miles.toFixed(2) : '';
+
+        const sheepLat = sheep.y !== null && sheep.y !== undefined ? sheep.y.toString() : location.lat.toString();
+        const sheepLon = sheep.x !== null && sheep.x !== undefined ? sheep.x.toString() : location.lon.toString();
+
+        const allAttributes = { ...sheep };
+        delete allAttributes.geometry; // Point geometry is simple x,y, so it's already handled by sheep.x, sheep.y
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        const objectId = sheep.objectid || sheep.OBJECTID || '';
+        const capRelType = sheep.capRelType || sheep.CapRelType || 'Unknown';
+        const year = sheep.year || sheep.Year || '';
+        const subspecies = sheep.subspecies || sheep.Subspecies || '';
+        const eventLabel = `${capRelType}${year ? ` (${year})` : ''}${subspecies ? ` - ${subspecies}` : ''}`;
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'US Fish and Wildlife Service',
+          (location.confidence || 'N/A').toString(),
+          'BIGHORN_SHEEP_CAPTURES_RELEASES',
+          `Bighorn Sheep ${eventLabel}${objectId ? ` (ID ${objectId})` : ''}`,
+          sheepLat,
+          sheepLon,
+          distance,
+          'Fish and Wildlife', // Category for display in CSV
+          '', // isContaining not applicable for point proximity
+          '',
           '',
           attributesJson,
           'US Fish and Wildlife Service'

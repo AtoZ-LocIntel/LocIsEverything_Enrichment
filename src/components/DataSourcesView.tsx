@@ -1798,6 +1798,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services.arcgis.com/QVENGdaPbd4LUkLV/arcgis/rest/services/Dams_National_Aquatic_Barrier_Inventory_Dec_2023/FeatureServer/0"
         },
         {
+          name: "American Eel Current Range",
+          description: "American Eel (Anguilla rostrata) current range polygons - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.arcgis.com/QVENGdaPbd4LUkLV/arcgis/rest/services/AmericanEelCurrent/FeatureServer/0"
+        },
+        {
+          name: "Bighorn Sheep Captures and Releases",
+          description: "Bighorn Sheep Captures and Releases 1947-2013 - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.arcgis.com/QVENGdaPbd4LUkLV/arcgis/rest/services/Bighorn_Sheep/FeatureServer/0"
+        },
+        {
           name: "USDA Forest Service FIA Forest Atlas - American Elm",
           description: "USDA Forest Service Forest Inventory and Analysis (FIA) - American Elm (Ulmus americana) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
           coverage: "United States (contiguous)",

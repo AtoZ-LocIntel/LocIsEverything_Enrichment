@@ -748,8 +748,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Ireland Data';
       } else if (key.includes('fips') || key.includes('census') || key.includes('demographic')) {
         category = 'Demographics & Census';
-      } else if (key.includes('fws_')) {
-        category = 'FWS Species & Wildlife';
+      } else if (key.includes('fws_') || key.includes('usfws_') || key.includes('american_eel_current_range') || key.includes('bighorn_sheep_captures_releases') || key.includes('chinook_salmon_ranges') || key.includes('national_aquatic_barrier_dams') || key.includes('national_marine_sanctuaries')) {
+        category = 'Fish and Wildlife';
       } else if (key.includes('poi_epa_') || key.startsWith('tri_')) {
         // Ensure EPA/Toxic Release fields don't get captured by the generic POI count bucket
         category = 'Human Caused Hazards';

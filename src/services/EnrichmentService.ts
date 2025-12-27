@@ -290,6 +290,8 @@ import { getSCCoastalPondsData } from '../adapters/scCoastalPonds';
 import { getSCLakesReservoirsData } from '../adapters/scLakesReservoirs';
 import { getUSFWSCriticalHabitatData } from '../adapters/usfwsCriticalHabitat';
 import { getNationalAquaticBarrierDamsData } from '../adapters/nationalAquaticBarrierDams';
+import { getAmericanEelCurrentData } from '../adapters/americanEelCurrent';
+import { getBighornSheepData } from '../adapters/bighornSheep';
 import { getSCCoastalWellInventoryData } from '../adapters/scCoastalWellInventory';
 import { getSCScenicRiversData } from '../adapters/scScenicRivers';
 import { getOrlandoChristmasLightsData } from '../adapters/orlandoChristmasLights';
@@ -6092,6 +6094,14 @@ export class EnrichmentService {
       // National Aquatic Barrier Dam Inventory - Proximity query (max 25 miles)
       case 'national_aquatic_barrier_dams':
         return await this.getNationalAquaticBarrierDams(lat, lon, radius);
+      
+      // American Eel Current Range - Point-in-polygon and proximity query (max 50 miles)
+      case 'american_eel_current_range':
+        return await this.getAmericanEelCurrentRange(lat, lon, radius);
+      
+      // Bighorn Sheep Captures and Releases - Proximity query (max 50 miles)
+      case 'bighorn_sheep_captures_releases':
+        return await this.getBighornSheepCapturesReleases(lat, lon, radius);
       
       // TX School Districts 2024 - Point-in-polygon and proximity query (max 50 miles)
       case 'tx_school_districts_2024':
@@ -19839,6 +19849,141 @@ out center;`;
         national_aquatic_barrier_dams_count: 0,
         national_aquatic_barrier_dams_all: [],
         national_aquatic_barrier_dams_summary: 'Error querying National Aquatic Barrier Dam Inventory'
+      };
+    }
+  }
+
+  private async getAmericanEelCurrentRange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐟 Fetching American Eel Current Range data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+
+      // Layer 0: AE_Current
+      const features = await getAmericanEelCurrentData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.american_eel_current_range_containing = null;
+        result.american_eel_current_range_containing_message = 'No American Eel Current Range found containing this location';
+        result.american_eel_current_range_count = 0;
+        result.american_eel_current_range_all = [];
+        result.american_eel_current_range_summary = 'No American Eel Current Range found.';
+      } else {
+        // Get the first containing range (should typically be only one for point-in-polygon)
+        const containingRange = features.find(f => f.isContaining) || features[0];
+
+        const rangeLabel = containingRange.region || containingRange.basin || containingRange.subbasin || `Range ${containingRange.objectid}`;
+
+        if (containingRange && containingRange.isContaining) {
+          result.american_eel_current_range_containing = rangeLabel;
+          result.american_eel_current_range_containing_message = `Location is within American Eel Current Range: ${rangeLabel}`;
+        } else {
+          result.american_eel_current_range_containing = null;
+          result.american_eel_current_range_containing_message = 'No American Eel Current Range found containing this location';
+        }
+
+        result.american_eel_current_range_count = features.length;
+        result.american_eel_current_range_all = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          region: feature.region,
+          subregion: feature.subregion,
+          basin: feature.basin,
+          subbasin: feature.subbasin,
+          huc8: feature.huc8,
+          acres: feature.acres,
+          sqMiles: feature.sqMiles,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }));
+
+        result.american_eel_current_range_summary = `Found ${features.length} American Eel Current Range feature(s)${containingRange && containingRange.isContaining ? ' (location is within a range)' : ''}.`;
+      }
+
+      if (radius && radius > 0) {
+        result.american_eel_current_range_search_radius_miles = radius;
+      }
+
+      console.log(`✅ American Eel Current Range data processed:`, {
+        totalCount: result.american_eel_current_range_count,
+        containing: result.american_eel_current_range_containing
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching American Eel Current Range data:', error);
+      return {
+        american_eel_current_range_containing: null,
+        american_eel_current_range_containing_message: 'Error querying American Eel Current Range',
+        american_eel_current_range_count: 0,
+        american_eel_current_range_all: [],
+        american_eel_current_range_summary: 'Error querying American Eel Current Range'
+      };
+    }
+  }
+
+  private async getBighornSheepCapturesReleases(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐑 Fetching Bighorn Sheep Captures and Releases data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+
+      // Cap radius at 50 miles
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+
+      const sheep = await getBighornSheepData(lat, lon, cappedRadius);
+
+      const result: Record<string, any> = {};
+
+      if (sheep.length === 0) {
+        result.bighorn_sheep_captures_releases_count = 0;
+        result.bighorn_sheep_captures_releases_all = [];
+        result.bighorn_sheep_captures_releases_summary = 'No Bighorn Sheep Captures and Releases found.';
+      } else {
+        result.bighorn_sheep_captures_releases_count = sheep.length;
+        result.bighorn_sheep_captures_releases_all = sheep.map(sheepItem => ({
+          ...sheepItem.attributes,
+          objectid: sheepItem.objectid,
+          year: sheepItem.year,
+          capRelType: sheepItem.capRelType,
+          subspecies: sheepItem.subspecies,
+          releaseDate: sheepItem.releaseDate,
+          releaseSite: sheepItem.releaseSite,
+          stateRelease: sheepItem.stateRelease,
+          bighornNos: sheepItem.bighornNos,
+          captureSite: sheepItem.captureSite,
+          capMethod: sheepItem.capMethod,
+          captureDate: sheepItem.captureDate,
+          stateCapture: sheepItem.stateCapture,
+          rams: sheepItem.rams,
+          ewes: sheepItem.ewes,
+          m_lambs: sheepItem.m_lambs,
+          f_lambs: sheepItem.f_lambs,
+          x: sheepItem.x,
+          y: sheepItem.y,
+          distance_miles: sheepItem.distance_miles
+        }));
+
+        result.bighorn_sheep_captures_releases_summary = `Found ${sheep.length} Bighorn Sheep Capture/Release event(s).`;
+      }
+
+      if (radius && radius > 0) {
+        result.bighorn_sheep_captures_releases_search_radius_miles = radius;
+      }
+
+      console.log(`✅ Bighorn Sheep Captures and Releases data processed:`, {
+        totalCount: result.bighorn_sheep_captures_releases_count
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Bighorn Sheep Captures and Releases data:', error);
+      return {
+        bighorn_sheep_captures_releases_count: 0,
+        bighorn_sheep_captures_releases_all: [],
+        bighorn_sheep_captures_releases_summary: 'Error querying Bighorn Sheep Captures and Releases'
       };
     }
   }

@@ -409,8 +409,8 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
       return 'Natural Resources';
     }
-    if (key.includes('national_marine_sanctuaries')) {
-      return 'Natural Resources';
+    if (key.includes('usfws_') || key.includes('american_eel_current_range') || key.includes('bighorn_sheep_captures_releases') || key.includes('chinook_salmon_ranges') || key.includes('national_aquatic_barrier_dams') || key.includes('national_marine_sanctuaries')) {
+      return 'Fish and Wildlife';
     }
     if (key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_parks') || key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_town_halls') || key.includes('poi_courthouses') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_colleges') || key.includes('poi_childcare') || key.includes('poi_mail_shipping') || key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
       return 'Community & Services';
