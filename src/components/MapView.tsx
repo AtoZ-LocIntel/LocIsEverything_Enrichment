@@ -613,6 +613,141 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     attribution: 'USDA Forest Service – FIA Forest Atlas',
     tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_700ElmAshCottonwood/MapServer/tile/{z}/{y}/{x}',
   },
+  // USFS FIA Forest Atlas - Maple/Beech/Birch Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_maple_beech_birch_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Maple/Beech/Birch Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_800MmapleBeechBirch/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Aspen/Birch Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_aspen_birch_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Aspen/Birch Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_900AspenBirch/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Western Oak Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_western_oak_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Western Oak Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_920WesternOak/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Tanoak/Laurel Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_tanoak_laurel_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Tanoak/Laurel Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_940TanoakLaurel/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Other Western Hardwoods Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_other_western_hardwoods_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Other Western Hardwoods Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_950OtherWesternHardwoods/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Tropical Hardwoods Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_tropical_hardwoods_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Tropical Hardwoods Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_980TropicalHardwoods/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Exotic Hardwoods Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_exotic_hardwoods_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Exotic Hardwoods Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_990ExoticHardwoods/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Alaska Forest-Type Group
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_alaska_forest_type_basemap: {
+    type: 'tile',
+    name: 'FIA Alaska Forest-Type',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_ak_forest_type_group/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Hardwood Groups
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_hardwoods_basemap: {
+    type: 'tile',
+    name: 'FIA Hardwood Groups',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_Hardwoods/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Softwood Groups
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_softwoods_basemap: {
+    type: 'tile',
+    name: 'FIA Softwood Groups',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_Softwoods/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Harvest as a Fraction of Live Volume
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_harvest_fraction_by_county_basemap: {
+    type: 'tile',
+    name: 'FIA Harvest Fraction by County',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/308_HarvestFractionByCounty/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Harvest as a Fraction of Annual Growth
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_harvest_fraction_growth_state_basemap: {
+    type: 'tile',
+    name: 'FIA Harvest Fraction by Growth State',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/308_HarvestFractionGrowthState/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Forest Ownership
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_forest_ownership_basemap: {
+    type: 'tile',
+    name: 'FIA Forest Ownership',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/501_ForestOwnership/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Carbon Growth Per Year
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_carbon_growth_basemap: {
+    type: 'tile',
+    name: 'FIA Carbon Growth Per Year',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonGrowth/MapServer/tile/{z}/{y}/{x}',
+  },
+  // USFS FIA Forest Atlas - Carbon Sequestered in Harvested Products
+  // Raster/tiled basemap service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  fia_carbon_harvest_basemap: {
+    type: 'tile',
+    name: 'FIA Carbon Sequestered in Harvested Products',
+    attribution: 'USDA Forest Service – FIA Forest Atlas',
+    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonHarvest/MapServer/tile/{z}/{y}/{x}',
+  },
   // Note: ArcGIS Online services (services.arcgisonline.com) do not support WMS.
   // They use WMTS or direct tile services instead, which would require a different implementation.
   // The ArcGIS World Imagery layers have been removed as they don't support WMS protocol.
@@ -1432,6 +1567,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'sc_coastal_ponds_all' || // Skip SC Coastal Ponds array (handled separately for map drawing)
     key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately for map drawing)
     key === 'sc_coastal_well_inventory_all' || // Skip SC Coastal Well Inventory array (handled separately for map drawing)
+    key === 'usfws_final_critical_habitat_all' || // Skip USFWS Final Critical Habitat array (handled separately for map drawing)
+    key === 'usfws_proposed_critical_habitat_all' || // Skip USFWS Proposed Critical Habitat array (handled separately for map drawing)
     key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately for map drawing)
     key === 'us_drilling_platforms_all' || // Skip US Drilling Platforms array (handled separately for map drawing)
     key === 'guam_villages_all' || // Skip Guam Villages array (handled separately for map drawing)
@@ -22974,6 +23111,200 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing SC Lakes and Reservoirs:', error);
+      }
+
+      // Draw USFWS Final Critical Habitat polygons on the map
+      try {
+        if (enrichments.usfws_final_critical_habitat_all && Array.isArray(enrichments.usfws_final_critical_habitat_all)) {
+          let featureCount = 0;
+          enrichments.usfws_final_critical_habitat_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('USFWS Final Critical Habitat outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#dc2626'; // Red color for critical habitat
+                  const weight = 2;
+                  const opacity = 0.8;
+
+                  const featurePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const isContaining = feature.isContaining || false;
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                  const speciesName = feature.speciesName || feature.SCIENTIFIC_NAME || feature.scientific_name || 'Unknown Species';
+                  const commonName = feature.commonName || feature.COMMON_NAME || feature.common_name || null;
+                  const status = feature.status || 'Final';
+
+                  const allAttributes = { ...feature };
+                  delete allAttributes.geometry;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.isContaining;
+                  delete allAttributes.speciesName;
+                  delete allAttributes.commonName;
+                  delete allAttributes.status;
+                  
+                  const attributeKeys = Object.keys(allAttributes).slice(0, 20);
+                  const attributeRows = attributeKeys.map(key => {
+                    const value = allAttributes[key];
+                    const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                    return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                  }).join('');
+
+                  const totalAttributeCount = Object.keys(allAttributes).length;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🦅 USFWS Final Critical Habitat
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${commonName ? `<div><strong>Common Name:</strong> ${commonName}</div>` : ''}
+                        <div><strong>Scientific Name:</strong> ${speciesName}</div>
+                        <div><strong>Status:</strong> ${status}</div>
+                        ${isContaining ? '<div style="color: #dc2626; font-weight: 600;">✓ Location is within this habitat</div>' : ''}
+                        ${!isContaining && distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      ${attributeRows ? `<div style="border-top: 1px solid #e5e7eb; padding-top: 8px; margin-top: 8px; font-size: 11px; color: #4b5563;">${attributeRows}</div>` : ''}
+                      ${totalAttributeCount > 20 ? `<div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">... and ${totalAttributeCount - 20} more attributes</div>` : ''}
+                    </div>
+                  `;
+
+                  featurePolygon.bindPopup(popupContent);
+                  featurePolygon.addTo(mapInstanceRef.current!);
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing USFWS Final Critical Habitat polygon:', error);
+              }
+            }
+          });
+          if (featureCount > 0) {
+            if (!legendAccumulator['usfws_final_critical_habitat']) {
+              legendAccumulator['usfws_final_critical_habitat'] = {
+                icon: '🦅',
+                color: '#dc2626',
+                title: 'USFWS Final Critical Habitat',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfws_final_critical_habitat'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFWS Final Critical Habitat:', error);
+      }
+
+      // Draw USFWS Proposed Critical Habitat polygons on the map
+      try {
+        if (enrichments.usfws_proposed_critical_habitat_all && Array.isArray(enrichments.usfws_proposed_critical_habitat_all)) {
+          let featureCount = 0;
+          enrichments.usfws_proposed_critical_habitat_all.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings && Array.isArray(feature.geometry.rings)) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngsArray: [number, number][][] = rings.map((ring: number[][]) => {
+                    return ring.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  });
+
+                  if (latlngsArray[0].length < 3) {
+                    console.warn('USFWS Proposed Critical Habitat outer ring has less than 3 coordinates, skipping');
+                    return;
+                  }
+
+                  const color = '#f59e0b'; // Orange color for proposed critical habitat
+                  const weight = 2;
+                  const opacity = 0.8;
+
+                  const featurePolygon = L.polygon(latlngsArray, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const isContaining = feature.isContaining || false;
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+                  const speciesName = feature.speciesName || feature.SCIENTIFIC_NAME || feature.scientific_name || 'Unknown Species';
+                  const commonName = feature.commonName || feature.COMMON_NAME || feature.common_name || null;
+                  const status = feature.status || 'Proposed';
+
+                  const allAttributes = { ...feature };
+                  delete allAttributes.geometry;
+                  delete allAttributes.distance_miles;
+                  delete allAttributes.isContaining;
+                  delete allAttributes.speciesName;
+                  delete allAttributes.commonName;
+                  delete allAttributes.status;
+                  
+                  const attributeKeys = Object.keys(allAttributes).slice(0, 20);
+                  const attributeRows = attributeKeys.map(key => {
+                    const value = allAttributes[key];
+                    const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+                    return `<div><strong>${key}:</strong> ${displayValue}</div>`;
+                  }).join('');
+
+                  const totalAttributeCount = Object.keys(allAttributes).length;
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🦅 USFWS Proposed Critical Habitat
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${commonName ? `<div><strong>Common Name:</strong> ${commonName}</div>` : ''}
+                        <div><strong>Scientific Name:</strong> ${speciesName}</div>
+                        <div><strong>Status:</strong> ${status}</div>
+                        ${isContaining ? '<div style="color: #dc2626; font-weight: 600;">✓ Location is within this habitat</div>' : ''}
+                        ${!isContaining && distance > 0 ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      ${attributeRows ? `<div style="border-top: 1px solid #e5e7eb; padding-top: 8px; margin-top: 8px; font-size: 11px; color: #4b5563;">${attributeRows}</div>` : ''}
+                      ${totalAttributeCount > 20 ? `<div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">... and ${totalAttributeCount - 20} more attributes</div>` : ''}
+                    </div>
+                  `;
+
+                  featurePolygon.bindPopup(popupContent);
+                  featurePolygon.addTo(mapInstanceRef.current!);
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing USFWS Proposed Critical Habitat polygon:', error);
+              }
+            }
+          });
+          if (featureCount > 0) {
+            if (!legendAccumulator['usfws_proposed_critical_habitat']) {
+              legendAccumulator['usfws_proposed_critical_habitat'] = {
+                icon: '🦅',
+                color: '#f59e0b',
+                title: 'USFWS Proposed Critical Habitat',
+                count: 0,
+              };
+            }
+            legendAccumulator['usfws_proposed_critical_habitat'].count += featureCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing USFWS Proposed Critical Habitat:', error);
       }
 
       // Draw SC Coastal Well Inventory as point markers on the map

@@ -1774,6 +1774,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Chinook_Salmon_Ranges/FeatureServer/0"
         },
         {
+          name: "US Fish and Wildlife Service - Final Critical Habitat",
+          description: "US Fish and Wildlife Service - Final Critical Habitat features for threatened and endangered species - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.arcgis.com/QVENGdaPbd4LUkLV/arcgis/rest/services/USFWS_Critical_Habitat/FeatureServer/0"
+        },
+        {
+          name: "US Fish and Wildlife Service - Proposed Critical Habitat",
+          description: "US Fish and Wildlife Service - Proposed Critical Habitat features for threatened and endangered species - point-in-polygon and proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.arcgis.com/QVENGdaPbd4LUkLV/arcgis/rest/services/USFWS_Critical_Habitat/FeatureServer/2"
+        },
+        {
           name: "USDA Forest Service FIA Forest Atlas - American Elm",
           description: "USDA Forest Service Forest Inventory and Analysis (FIA) - American Elm (Ulmus americana) Historical Range Boundary and Modeled Abundance - point-in-polygon and proximity queries up to 50 miles. Available as both queryable spatial layers and visual basemap layers.",
           coverage: "United States (contiguous)",
@@ -2124,6 +2140,126 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_700ElmAshCottonwood/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Maple/Beech/Birch Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Maple/Beech/Birch Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_800MmapleBeechBirch/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Aspen/Birch Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Aspen/Birch Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_900AspenBirch/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Western Oak Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Western Oak Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_920WesternOak/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Tanoak/Laurel Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Tanoak/Laurel Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_940TanoakLaurel/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Other Western Hardwoods Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Other Western Hardwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_950OtherWesternHardwoods/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Tropical Hardwoods Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Tropical Hardwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_980TropicalHardwoods/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Exotic Hardwoods Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Exotic Hardwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_990ExoticHardwoods/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Alaska Forest-Type Group",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Alaska Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "Alaska",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_ak_forest_type_group/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Hardwood Groups",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Hardwood Groups visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_Hardwoods/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Softwood Groups",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Softwood Groups visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_Softwoods/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Harvest Fraction by County",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Harvest as a Fraction of Live Volume by County visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/308_HarvestFractionByCounty/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Harvest Fraction by Growth State",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Harvest as a Fraction of Annual Growth by State visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/308_HarvestFractionGrowthState/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Forest Ownership",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Forest Ownership Type visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/501_ForestOwnership/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Carbon Growth Per Year",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Carbon Growth Per Year (Mg C) visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonGrowth/MapServer"
+        },
+        {
+          name: "USDA Forest Service FIA Forest Atlas - Carbon Sequestered in Harvested Products",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Carbon Sequestered in Harvested Products (Mg) visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonHarvest/MapServer"
         }
       ]
     },
@@ -6478,6 +6614,126 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_700ElmAshCottonwood/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Maple/Beech/Birch Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Maple/Beech/Birch Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_800MmapleBeechBirch/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Aspen/Birch Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Aspen/Birch Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_900AspenBirch/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Western Oak Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Western Oak Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_920WesternOak/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Tanoak/Laurel Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Tanoak/Laurel Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_940TanoakLaurel/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Other Western Hardwoods Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Other Western Hardwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_950OtherWesternHardwoods/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Tropical Hardwoods Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Tropical Hardwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_980TropicalHardwoods/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Exotic Hardwoods Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Exotic Hardwoods Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_990ExoticHardwoods/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Alaska Forest-Type Group",
+          description: "USDA Forest Service FIA Forest Atlas - Alaska Forest-Type Group visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "Alaska",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_ak_forest_type_group/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Hardwood Groups",
+          description: "USDA Forest Service FIA Forest Atlas - Hardwood Groups visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_Hardwoods/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Softwood Groups",
+          description: "USDA Forest Service FIA Forest Atlas - Softwood Groups visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_Softwoods/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Harvest Fraction by County",
+          description: "USDA Forest Service FIA Forest Atlas - Harvest as a Fraction of Live Volume by County visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/308_HarvestFractionByCounty/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Harvest Fraction by Growth State",
+          description: "USDA Forest Service FIA Forest Atlas - Harvest as a Fraction of Annual Growth by State visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/308_HarvestFractionGrowthState/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Forest Ownership",
+          description: "USDA Forest Service FIA Forest Atlas - Forest Ownership Type visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/501_ForestOwnership/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Carbon Growth Per Year",
+          description: "USDA Forest Service FIA Forest Atlas - Carbon Growth Per Year (Mg C) visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonGrowth/MapServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas - Carbon Sequestered in Harvested Products",
+          description: "USDA Forest Service FIA Forest Atlas - Carbon Sequestered in Harvested Products (Mg) visualization layers. Raster/tiled basemap service for visual reference.",
+          coverage: "United States (contiguous)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonHarvest/MapServer"
         }
       ]
     }

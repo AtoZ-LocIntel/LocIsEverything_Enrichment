@@ -98,7 +98,6 @@ import { getUSGSTrailsData } from '../adapters/usgsTrails';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
-import { getFIAForestAtlasData } from '../adapters/fiaForestAtlas';
 import { getUSHistoricalCulturalPoliticalPointsData } from '../adapters/usHistoricalCulturalPoliticalPoints';
 import { getUSHistoricalHydrographicPointsData } from '../adapters/usHistoricalHydrographicPoints';
 import { getUSHistoricalPhysicalPointsData } from '../adapters/usHistoricalPhysicalPoints';
@@ -289,6 +288,7 @@ import { getSCTroutStreamsData } from '../adapters/scTroutStreams';
 import { getSCGameZonesData } from '../adapters/scGameZones';
 import { getSCCoastalPondsData } from '../adapters/scCoastalPonds';
 import { getSCLakesReservoirsData } from '../adapters/scLakesReservoirs';
+import { getUSFWSCriticalHabitatData } from '../adapters/usfwsCriticalHabitat';
 import { getSCCoastalWellInventoryData } from '../adapters/scCoastalWellInventory';
 import { getSCScenicRiversData } from '../adapters/scScenicRivers';
 import { getOrlandoChristmasLightsData } from '../adapters/orlandoChristmasLights';
@@ -6080,13 +6080,13 @@ export class EnrichmentService {
       case 'chinook_salmon_ranges':
         return await this.getChinookSalmonRanges(lat, lon, radius);
       
-      // FIA Forest Atlas - American Elm Historical Range Boundary - Point-in-polygon and proximity query (max 50 miles)
-      case 'fia_american_elm_historical_range':
-        return await this.getFIAAmericanElmHistoricalRange(lat, lon, radius);
+      // USFWS Critical Habitat - Final Critical Habitat Features - Point-in-polygon and proximity query (max 50 miles)
+      case 'usfws_final_critical_habitat':
+        return await this.getUSFWSFinalCriticalHabitat(lat, lon, radius);
       
-      // FIA Forest Atlas - American Elm Modeled Abundance - Point-in-polygon and proximity query (max 50 miles)
-      case 'fia_american_elm_modeled_abundance':
-        return await this.getFIAAmericanElmModeledAbundance(lat, lon, radius);
+      // USFWS Critical Habitat - Proposed Critical Habitat Features - Point-in-polygon and proximity query (max 50 miles)
+      case 'usfws_proposed_critical_habitat':
+        return await this.getUSFWSProposedCriticalHabitat(lat, lon, radius);
       
       // TX School Districts 2024 - Point-in-polygon and proximity query (max 50 miles)
       case 'tx_school_districts_2024':
@@ -19631,7 +19631,7 @@ out center;`;
         totalCount: result.chinook_salmon_ranges_count,
         containing: result.chinook_salmon_ranges_containing
       });
-      
+
       return result;
     } catch (error) {
       console.error('❌ Error fetching Chinook Salmon Ranges data:', error);
@@ -19645,133 +19645,140 @@ out center;`;
     }
   }
 
-  private async getFIAAmericanElmHistoricalRange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+  private async getUSFWSFinalCriticalHabitat(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
-      console.log(`🌳 Fetching FIA American Elm Historical Range data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
-      
+      console.log(`🦅 Fetching USFWS Final Critical Habitat data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+
       // Cap radius at 50 miles
-      const cappedRadius = radius && radius > 0 ? Math.min(radius, 50.0) : 0;
-      
-      // Layer 2: Historical Range Boundary American Elm
-      const features = await getFIAForestAtlasData('107_American_elm_spp', 2, lat, lon, cappedRadius);
-      
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+
+      // Layer 0: Final Critical Habitat Features
+      const features = await getUSFWSCriticalHabitatData(0, lat, lon, cappedRadius);
+
       const result: Record<string, any> = {};
 
       if (features.length === 0) {
-        result.fia_american_elm_historical_range_containing = null;
-        result.fia_american_elm_historical_range_containing_message = 'No American Elm historical range found containing this location';
-        result.fia_american_elm_historical_range_count = 0;
-        result.fia_american_elm_historical_range_all = [];
-        result.fia_american_elm_historical_range_summary = 'No American Elm historical ranges found.';
+        result.usfws_final_critical_habitat_containing = null;
+        result.usfws_final_critical_habitat_containing_message = 'No Final Critical Habitat found containing this location';
+        result.usfws_final_critical_habitat_count = 0;
+        result.usfws_final_critical_habitat_all = [];
+        result.usfws_final_critical_habitat_summary = 'No Final Critical Habitat found.';
       } else {
-        // Get the first containing range (should typically be only one for point-in-polygon)
-        const containingRange = features.find(f => f.isContaining) || features[0];
-        
-        if (containingRange && containingRange.isContaining) {
-          result.fia_american_elm_historical_range_containing = 'American Elm Historical Range';
-          result.fia_american_elm_historical_range_containing_message = 'Location is within American Elm (Ulmus americana) historical range boundary';
+        const containingHabitat = features.find(f => f.isContaining) || features[0];
+
+        if (containingHabitat && containingHabitat.isContaining) {
+          const habitatLabel = containingHabitat.commonName || containingHabitat.speciesName || 'Critical Habitat';
+          result.usfws_final_critical_habitat_containing = habitatLabel;
+          result.usfws_final_critical_habitat_containing_message = `Location is within Final Critical Habitat for ${habitatLabel}`;
         } else {
-          result.fia_american_elm_historical_range_containing = null;
-          result.fia_american_elm_historical_range_containing_message = 'No American Elm historical range found containing this location';
+          result.usfws_final_critical_habitat_containing = null;
+          result.usfws_final_critical_habitat_containing_message = 'No Final Critical Habitat found containing this location';
         }
-        
-        result.fia_american_elm_historical_range_count = features.length;
-        result.fia_american_elm_historical_range_all = features.map(feature => ({
+
+        result.usfws_final_critical_habitat_count = features.length;
+        result.usfws_final_critical_habitat_all = features.map(feature => ({
           ...feature.attributes,
           objectid: feature.objectid,
+          speciesName: feature.speciesName,
+          commonName: feature.commonName,
+          status: feature.status,
           geometry: feature.geometry,
           distance_miles: feature.distance_miles,
           isContaining: feature.isContaining
         }));
-        
-        result.fia_american_elm_historical_range_summary = `Found ${features.length} American Elm historical range boundary(ies)${containingRange && containingRange.isContaining ? ' (location is within a range)' : ''}.`;
+
+        result.usfws_final_critical_habitat_summary = `Found ${features.length} Final Critical Habitat feature(s)${containingHabitat && containingHabitat.isContaining ? ' (location is within a habitat)' : ''}.`;
       }
-      
+
       if (radius && radius > 0) {
-        result.fia_american_elm_historical_range_search_radius_miles = radius;
+        result.usfws_final_critical_habitat_search_radius_miles = radius;
       }
-      
-      console.log(`✅ FIA American Elm Historical Range data processed:`, {
-        totalCount: result.fia_american_elm_historical_range_count,
-        containing: result.fia_american_elm_historical_range_containing
+
+      console.log(`✅ USFWS Final Critical Habitat data processed:`, {
+        totalCount: result.usfws_final_critical_habitat_count,
+        containing: result.usfws_final_critical_habitat_containing
       });
-      
+
       return result;
     } catch (error) {
-      console.error('❌ Error fetching FIA American Elm Historical Range data:', error);
+      console.error('❌ Error fetching USFWS Final Critical Habitat data:', error);
       return {
-        fia_american_elm_historical_range_containing: null,
-        fia_american_elm_historical_range_containing_message: 'Error querying American Elm historical range',
-        fia_american_elm_historical_range_count: 0,
-        fia_american_elm_historical_range_all: [],
-        fia_american_elm_historical_range_summary: 'Error querying American Elm historical range'
+        usfws_final_critical_habitat_containing: null,
+        usfws_final_critical_habitat_containing_message: 'Error querying Final Critical Habitat',
+        usfws_final_critical_habitat_count: 0,
+        usfws_final_critical_habitat_all: [],
+        usfws_final_critical_habitat_summary: 'Error querying Final Critical Habitat'
       };
     }
   }
 
-  private async getFIAAmericanElmModeledAbundance(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+  private async getUSFWSProposedCriticalHabitat(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
-      console.log(`🌳 Fetching FIA American Elm Modeled Abundance data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
-      
+      console.log(`🦅 Fetching USFWS Proposed Critical Habitat data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+
       // Cap radius at 50 miles
-      const cappedRadius = radius && radius > 0 ? Math.min(radius, 50.0) : 0;
-      
-      // Layer 3: FIA Modeled Abundance American Elm
-      const features = await getFIAForestAtlasData('107_American_elm_spp', 3, lat, lon, cappedRadius);
-      
+      const cappedRadius = radius ? Math.min(radius, 50.0) : 50.0;
+
+      // Layer 2: Proposed Critical Habitat Features
+      const features = await getUSFWSCriticalHabitatData(2, lat, lon, cappedRadius);
+
       const result: Record<string, any> = {};
 
       if (features.length === 0) {
-        result.fia_american_elm_modeled_abundance_containing = null;
-        result.fia_american_elm_modeled_abundance_containing_message = 'No American Elm modeled abundance data found at this location';
-        result.fia_american_elm_modeled_abundance_count = 0;
-        result.fia_american_elm_modeled_abundance_all = [];
-        result.fia_american_elm_modeled_abundance_summary = 'No American Elm modeled abundance data found.';
+        result.usfws_proposed_critical_habitat_containing = null;
+        result.usfws_proposed_critical_habitat_containing_message = 'No Proposed Critical Habitat found containing this location';
+        result.usfws_proposed_critical_habitat_count = 0;
+        result.usfws_proposed_critical_habitat_all = [];
+        result.usfws_proposed_critical_habitat_summary = 'No Proposed Critical Habitat found.';
       } else {
-        // Get the first containing feature (should typically be only one for point-in-polygon)
-        const containingFeature = features.find(f => f.isContaining) || features[0];
-        
-        if (containingFeature && containingFeature.isContaining) {
-          result.fia_american_elm_modeled_abundance_containing = 'American Elm Modeled Abundance';
-          result.fia_american_elm_modeled_abundance_containing_message = 'Location has American Elm (Ulmus americana) modeled abundance data';
+        const containingHabitat = features.find(f => f.isContaining) || features[0];
+
+        if (containingHabitat && containingHabitat.isContaining) {
+          const habitatLabel = containingHabitat.commonName || containingHabitat.speciesName || 'Critical Habitat';
+          result.usfws_proposed_critical_habitat_containing = habitatLabel;
+          result.usfws_proposed_critical_habitat_containing_message = `Location is within Proposed Critical Habitat for ${habitatLabel}`;
         } else {
-          result.fia_american_elm_modeled_abundance_containing = null;
-          result.fia_american_elm_modeled_abundance_containing_message = 'No American Elm modeled abundance data found at this location';
+          result.usfws_proposed_critical_habitat_containing = null;
+          result.usfws_proposed_critical_habitat_containing_message = 'No Proposed Critical Habitat found containing this location';
         }
-        
-        result.fia_american_elm_modeled_abundance_count = features.length;
-        result.fia_american_elm_modeled_abundance_all = features.map(feature => ({
+
+        result.usfws_proposed_critical_habitat_count = features.length;
+        result.usfws_proposed_critical_habitat_all = features.map(feature => ({
           ...feature.attributes,
           objectid: feature.objectid,
+          speciesName: feature.speciesName,
+          commonName: feature.commonName,
+          status: feature.status,
           geometry: feature.geometry,
           distance_miles: feature.distance_miles,
           isContaining: feature.isContaining
         }));
-        
-        result.fia_american_elm_modeled_abundance_summary = `Found ${features.length} American Elm modeled abundance feature(s)${containingFeature && containingFeature.isContaining ? ' (location has abundance data)' : ''}.`;
+
+        result.usfws_proposed_critical_habitat_summary = `Found ${features.length} Proposed Critical Habitat feature(s)${containingHabitat && containingHabitat.isContaining ? ' (location is within a habitat)' : ''}.`;
       }
-      
+
       if (radius && radius > 0) {
-        result.fia_american_elm_modeled_abundance_search_radius_miles = radius;
+        result.usfws_proposed_critical_habitat_search_radius_miles = radius;
       }
-      
-      console.log(`✅ FIA American Elm Modeled Abundance data processed:`, {
-        totalCount: result.fia_american_elm_modeled_abundance_count,
-        containing: result.fia_american_elm_modeled_abundance_containing
+
+      console.log(`✅ USFWS Proposed Critical Habitat data processed:`, {
+        totalCount: result.usfws_proposed_critical_habitat_count,
+        containing: result.usfws_proposed_critical_habitat_containing
       });
-      
+
       return result;
     } catch (error) {
-      console.error('❌ Error fetching FIA American Elm Modeled Abundance data:', error);
+      console.error('❌ Error fetching USFWS Proposed Critical Habitat data:', error);
       return {
-        fia_american_elm_modeled_abundance_containing: null,
-        fia_american_elm_modeled_abundance_containing_message: 'Error querying American Elm modeled abundance',
-        fia_american_elm_modeled_abundance_count: 0,
-        fia_american_elm_modeled_abundance_all: [],
-        fia_american_elm_modeled_abundance_summary: 'Error querying American Elm modeled abundance'
+        usfws_proposed_critical_habitat_containing: null,
+        usfws_proposed_critical_habitat_containing_message: 'Error querying Proposed Critical Habitat',
+        usfws_proposed_critical_habitat_count: 0,
+        usfws_proposed_critical_habitat_all: [],
+        usfws_proposed_critical_habitat_summary: 'Error querying Proposed Critical Habitat'
       };
     }
   }
+
 
   private async getUSFSWildernessAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {

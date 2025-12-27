@@ -628,6 +628,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'sc_coastal_ponds_all' || // Skip SC Coastal Ponds array (handled separately)
         key === 'sc_lakes_reservoirs_all' || // Skip SC Lakes and Reservoirs array (handled separately)
         key === 'sc_coastal_well_inventory_all' || // Skip SC Coastal Well Inventory array (handled separately)
+        key === 'usfws_final_critical_habitat_all' || // Skip USFWS Final Critical Habitat array (handled separately)
+        key === 'usfws_proposed_critical_habitat_all' || // Skip USFWS Proposed Critical Habitat array (handled separately)
         key === 'orlando_christmas_lights_all' || // Skip Orlando Christmas Lights array (handled separately)
         key === 'us_drilling_platforms_all' || // Skip US Drilling Platforms array (handled separately)
         key === 'guam_villages_all' || // Skip Guam Villages array (handled separately)
@@ -10744,6 +10746,108 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           attributesJson,
           'South Carolina Department of Natural Resources'
+        ]);
+      });
+    } else if (key === 'usfws_final_critical_habitat_all' && Array.isArray(value)) {
+      // Handle USFWS Final Critical Habitat - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate of outer ring)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            // ESRI rings are [lon, lat] format
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.speciesName;
+        delete allAttributes.commonName;
+        delete allAttributes.status;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.objectid || feature.OBJECTID || '';
+        const speciesName = feature.speciesName || feature.SCIENTIFIC_NAME || feature.scientific_name || 'Unknown Species';
+        const commonName = feature.commonName || feature.COMMON_NAME || feature.common_name || '';
+        const status = feature.status || 'Final';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'US Fish and Wildlife Service',
+          (location.confidence || 'N/A').toString(),
+          'USFWS_FINAL_CRITICAL_HABITAT',
+          `${commonName ? `${commonName} (${speciesName})` : speciesName}${objectId ? ` (ID ${objectId})` : ''}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Critical Habitat',
+          isContaining,
+          status,
+          '',
+          attributesJson,
+          'US Fish and Wildlife Service'
+        ]);
+      });
+    } else if (key === 'usfws_proposed_critical_habitat_all' && Array.isArray(value)) {
+      // Handle USFWS Proposed Critical Habitat - each feature gets its own row with all attributes
+      value.forEach((feature: any) => {
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        
+        // Extract coordinates from geometry (polygon - use first coordinate of outer ring)
+        let lat = '';
+        let lon = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const outerRing = feature.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            // ESRI rings are [lon, lat] format
+            lat = outerRing[0][1].toString();
+            lon = outerRing[0][0].toString();
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.speciesName;
+        delete allAttributes.commonName;
+        delete allAttributes.status;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        const objectId = feature.objectid || feature.OBJECTID || '';
+        const speciesName = feature.speciesName || feature.SCIENTIFIC_NAME || feature.scientific_name || 'Unknown Species';
+        const commonName = feature.commonName || feature.COMMON_NAME || feature.common_name || '';
+        const status = feature.status || 'Proposed';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'US Fish and Wildlife Service',
+          (location.confidence || 'N/A').toString(),
+          'USFWS_PROPOSED_CRITICAL_HABITAT',
+          `${commonName ? `${commonName} (${speciesName})` : speciesName}${objectId ? ` (ID ${objectId})` : ''}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          'Critical Habitat',
+          isContaining,
+          status,
+          '',
+          attributesJson,
+          'US Fish and Wildlife Service'
         ]);
       });
     } else if (key === 'orlando_christmas_lights_all' && Array.isArray(value)) {
