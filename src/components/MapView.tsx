@@ -61,6 +61,18 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     name: 'Positron (OpenFreeMap)',
     attribution: 'OpenFreeMap © OpenMapTiles Data © OpenStreetMap contributors',
   },
+  natgeo_world_map: {
+    type: 'tile',
+    name: 'National Geographic World Map',
+    attribution: 'National Geographic, Esri, Garmin, HERE, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, increment P Corp.',
+    tileUrl: 'https://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',
+  },
+  usa_topo_maps: {
+    type: 'tile',
+    name: 'USA Topo Maps',
+    attribution: 'Copyright:© 2013 National Geographic Society, i-cubed',
+    tileUrl: 'https://services.arcgisonline.com/arcgis/rest/services/USA_Topo_Maps/MapServer/tile/{z}/{y}/{x}',
+  },
   // USGS National Map WMS basemaps
   usgs_hydrography: {
     type: 'wms',
@@ -2178,11 +2190,11 @@ const MapView: React.FC<MapViewProps> = ({
   }>>([]);
   // Basemap selection state (OpenFreeMap styles)
   const [selectedBasemap, setSelectedBasemap] = useState<string>('liberty'); // Selected basemap
-  const [showOpenFreeMapBase, setShowOpenFreeMapBase] = useState<boolean>(true); // Toggle for OpenFreeMap base layer
+  const [showOpenFreeMapBase, setShowOpenFreeMapBase] = useState<boolean>(false); // Toggle for OpenFreeMap base layer
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   // Collapsible basemap sections state
   const [expandedBasemapSections, setExpandedBasemapSections] = useState<Record<string, boolean>>({
-    'OpenFreeMap': true, // Default to expanded
+    'Basemaps': true, // Default to expanded
     'USGS National Map & MRLC': false,
     'FIA Forest Atlas': false,
   });
@@ -34396,21 +34408,21 @@ const MapView: React.FC<MapViewProps> = ({
                 Available Basemap Themes
               </label>
               <div className="border border-gray-300 rounded-md bg-white max-h-96 overflow-y-auto">
-                {/* OpenFreeMap basemaps */}
+                {/* Basemaps */}
                 <div className="border-b border-gray-200 last:border-b-0">
                   <button
-                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'OpenFreeMap': !prev['OpenFreeMap'] }))}
+                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'Basemaps': !prev['Basemaps'] }))}
                     className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    <span>OpenFreeMap</span>
-                    <span className={`transform transition-transform ${expandedBasemapSections['OpenFreeMap'] ? 'rotate-180' : ''}`}>
+                    <span>Basemaps</span>
+                    <span className={`transform transition-transform ${expandedBasemapSections['Basemaps'] ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
                   </button>
-                  {expandedBasemapSections['OpenFreeMap'] && (
+                  {expandedBasemapSections['Basemaps'] && (
                     <div className="pb-1">
                       {Object.entries(BASEMAP_CONFIGS)
-                        .filter(([_, config]) => config.type === 'maplibre')
+                        .filter(([key, config]) => config.type === 'maplibre' || key === 'natgeo_world_map' || key === 'usa_topo_maps')
                         .map(([key, config]) => (
                           <button
                             key={key}
@@ -34498,7 +34510,7 @@ const MapView: React.FC<MapViewProps> = ({
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-700">
-                  Show OpenFreeMap base layer
+                  Show Basemap
                 </span>
                 <div className="relative group">
                   <button

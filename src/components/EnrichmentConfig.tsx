@@ -48,6 +48,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   core: <Settings className="w-5 h-5" />,
   nws: <img src="/assets/NWS.webp" alt="National Weather Service Watches and Warnings" className="w-5 h-5" />,
   hazards: <img src="/assets/human_hazards.webp" alt="Human Caused Hazards" className="w-8 h-8" />,
+  fish_wildlife: <img src="/assets/fishwildlife.webp" alt="Fish and Wildlife" className="w-5 h-5" />,
   community: <span className="text-xl">👥</span>,
   retail: <span className="text-xl">🏢</span>,
   health: <span className="text-xl">❤️</span>,
@@ -1261,6 +1262,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     const iconMap: { [key: string]: string } = {
       'nws': 'NWS',
       'hazards': 'hazards_risk',
+      'fish_wildlife': 'fishwildlife',
       'community': 'community_services',
       'retail': 'retail_commerce',
       'nh': 'newhampshire',

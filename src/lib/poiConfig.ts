@@ -40,6 +40,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: '🌊'
   },
   {
+    id: 'fish_wildlife',
+    title: 'Fish and Wildlife',
+    description: 'Fish and wildlife species, critical habitat, and aquatic barriers',
+    icon: 'fishwildlife.webp'
+  },
+  {
     id: 'community',
     title: 'Community & Services',
     description: 'Schools, hospitals, parks, and community facilities',
@@ -570,23 +576,24 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_bars_nightlife', label: 'Bars & Nightlife', description: 'Bars, taverns, nightclubs, and live music venues', isPOI: true, defaultRadius: 2, category: 'recreation', section: 'recreation' },
   { id: 'poi_mountain_biking', label: 'Mountain Biking & Biking Trails', description: 'Mountain bike trails, bike paths, and cycling routes via OpenStreetMap', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
   
+  // Fish and Wildlife
+  { id: 'usfws_final_critical_habitat', label: 'USFWS Final Critical Habitat', description: 'US Fish and Wildlife Service - Final Critical Habitat features for threatened and endangered species - point-in-polygon and proximity queries up to 50 miles', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'fish_wildlife', section: 'fish_wildlife' },
+  { id: 'usfws_proposed_critical_habitat', label: 'USFWS Proposed Critical Habitat', description: 'US Fish and Wildlife Service - Proposed Critical Habitat features for threatened and endangered species - point-in-polygon and proximity queries up to 50 miles', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'fish_wildlife', section: 'fish_wildlife' },
+  { id: 'national_aquatic_barrier_dams', label: 'National Aquatic Barrier Dam Inventory', description: 'National Aquatic Barrier Inventory - Dams including large regulated dams, small dams, unregulated dams, diversion dams, farm ponds, and lowhead dams - proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'fish_wildlife', section: 'fish_wildlife' },
+  { id: 'poi_fws_species', label: 'FWS Species & Critical Habitat', description: 'US Fish and Wildlife Service - endangered/threatened species, critical habitat, wildlife refuges, wetlands, marine mammals, migratory birds, and fish hatcheries within proximity', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'fish_wildlife', section: 'fish_wildlife' },
+  { id: 'chinook_salmon_ranges', label: 'Chinook Salmon Ranges', description: 'Chinook salmon range polygons - point-in-polygon and proximity queries up to 50 miles', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'fish_wildlife', section: 'fish_wildlife' },
+  { id: 'national_marine_sanctuaries', label: 'National Marine Sanctuaries', description: 'NOAA - National Marine Sanctuaries (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'fish_wildlife', section: 'fish_wildlife' },
+  
   // Natural Resources
-  // FIA Forest Atlas - American Elm
-  { id: 'usfws_final_critical_habitat', label: 'USFWS Final Critical Habitat', description: 'US Fish and Wildlife Service - Final Critical Habitat features for threatened and endangered species - point-in-polygon and proximity queries up to 50 miles', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'natural_resources', section: 'natural_resources' },
-  { id: 'usfws_proposed_critical_habitat', label: 'USFWS Proposed Critical Habitat', description: 'US Fish and Wildlife Service - Proposed Critical Habitat features for threatened and endangered species - point-in-polygon and proximity queries up to 50 miles', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'natural_resources', section: 'natural_resources' },
-  { id: 'national_aquatic_barrier_dams', label: 'National Aquatic Barrier Dam Inventory', description: 'National Aquatic Barrier Inventory - Dams including large regulated dams, small dams, unregulated dams, diversion dams, farm ponds, and lowhead dams - proximity queries up to 25 miles', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'natural_resources', section: 'natural_resources' },
   { id: 'poi_beaches', label: 'Beaches', description: 'Natural beaches and coastal areas', isPOI: true, defaultRadius: 5, category: 'natural_resources', section: 'natural_resources' },
   { id: 'nri_rivers', label: 'Nationwide Rivers Inventory', description: 'Free-flowing river segments with outstandingly remarkable natural or cultural values (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'natural_resources', section: 'natural_resources' },
   { id: 'poi_lakes_ponds', label: 'Lakes & Ponds', description: 'Lakes, ponds, and water bodies', isPOI: true, defaultRadius: 5, category: 'natural_resources', section: 'natural_resources' },
   { id: 'poi_rivers_streams', label: 'Rivers & Streams', description: 'Rivers, streams, brooks, and waterways', isPOI: true, defaultRadius: 5, category: 'natural_resources', section: 'natural_resources' },
   { id: 'poi_mountains_peaks', label: 'Mountains & Peaks', description: 'Mountain peaks and high elevation features', isPOI: true, defaultRadius: 5, category: 'natural_resources', section: 'natural_resources' },
-  { id: 'poi_fws_species', label: 'FWS Species & Critical Habitat', description: 'US Fish and Wildlife Service - endangered/threatened species, critical habitat, wildlife refuges, wetlands, marine mammals, migratory birds, and fish hatcheries within proximity', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'natural_resources', section: 'natural_resources' },
-  { id: 'chinook_salmon_ranges', label: 'Chinook Salmon Ranges', description: 'Chinook salmon range polygons - point-in-polygon and proximity queries up to 50 miles', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'natural_resources', section: 'natural_resources' },
   { id: 'poi_aurora_viewing_sites', label: 'Aurora Viewing Sites', description: 'Auroras.live curated northern/southern lights viewing locations', isPOI: true, defaultRadius: 100, maxRadius: 250, category: 'quirky', section: 'quirky' },
   { id: 'poi_ebird_hotspots', label: 'Birding Hotspots', description: 'Nearby eBird lister hotspots with species richness and recent activity', isPOI: true, defaultRadius: 25, maxRadius: 50, category: 'quirky', section: 'quirky' },
   { id: 'ebird_recent_observations', label: 'Recent Bird Observations', description: 'Recent species observations reported to eBird near this location (25-mile default search radius)', isPOI: false, defaultRadius: 25, category: 'quirky', section: 'quirky' },
   { id: 'soil_organic_carbon_density', label: 'Soil Organic Carbon Density', description: 'ISRIC Soilgrids via ESRI Living Atlas - World Soils 250m Organic Carbon Density (kg/m²) at point location', isPOI: false, defaultRadius: 0, category: 'natural_resources', section: 'natural_resources' },
-  { id: 'national_marine_sanctuaries', label: 'National Marine Sanctuaries', description: 'NOAA - National Marine Sanctuaries (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'natural_resources', section: 'natural_resources' },
   
   // Quirky
   { id: 'poi_breweries', label: 'Breweries', description: 'Craft breweries with names, types, addresses, contact info', isPOI: true, defaultRadius: 5, category: 'quirky', section: 'quirky' },
