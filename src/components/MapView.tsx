@@ -849,7 +849,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_breweries': { icon: '🍺', color: '#f59e0b', title: 'Breweries' },
   'poi_police_stations': { icon: '🚔', color: '#1f2937', title: 'Police Stations' },
   'poi_fire_stations': { icon: '🚒', color: '#dc2626', title: 'Fire Stations' },
-  'poi_schools': { icon: '🏫', color: '#10b981', title: 'Schools' },
+  'poi_osm_elementary_schools': { icon: '🏫', color: '#10b981', title: 'Elementary Schools' },
   'poi_osm_daycares_preschools': { icon: '👶', color: '#f59e0b', title: 'Daycares/Preschools' },
   'poi_osm_vocational_technical': { icon: '🔧', color: '#8b5cf6', title: 'Vocational/Technical Schools' },
   'poi_osm_tutoring_centers': { icon: '📚', color: '#10b981', title: 'Tutoring Centers' },

@@ -1518,8 +1518,9 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       return;
     }
     
-    // Handle POI arrays: _all_pois, _detailed, or _all (for gas stations, mail shipping, etc.)
-    if ((key.includes('_all_pois') || key.endsWith('_detailed') || (key.endsWith('_all') && key.includes('poi_'))) && Array.isArray(value)) {
+    // Handle POI arrays: _all_pois, or _all (for gas stations, mail shipping, etc.)
+    // Skip _detailed arrays - they're for map display only, use _all for CSV export
+    if ((key.includes('_all_pois') || (key.endsWith('_all') && key.includes('poi_'))) && Array.isArray(value)) {
       // Handle ALL POI arrays (complete dataset for CSV)
       value.forEach((poi: any) => {
         // Special handling for AVI data

@@ -502,7 +502,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'dc_property_vacant_and_blighted_building_addresses', label: 'DC Vacant and Blighted Building Addresses', description: 'DC Vacant and Blighted Building Addresses - proximity queries up to 5 miles', isPOI: true, defaultRadius: 1, maxRadius: 5, category: 'dcpropertyland', section: 'dc' },
   
   // Education
-  { id: 'poi_schools', label: 'Schools', description: 'Educational institutions', isPOI: true, defaultRadius: 5, category: 'education', section: 'education' },
+  { id: 'poi_osm_elementary_schools', label: 'Elementary Schools', description: 'Elementary and primary schools (public and private) via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'education', section: 'education' },
   { id: 'poi_colleges_universities', label: 'Colleges & Universities', description: 'Colleges, universities, and educational institutions via OSM Overpass API', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'education', section: 'education' },
   { id: 'poi_osm_daycares_preschools', label: 'Daycares/Preschools', description: 'Daycares, preschools, and childcare facilities via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'education', section: 'education' },
   { id: 'poi_osm_vocational_technical', label: 'Vocational/Technical Schools', description: 'Technical, vocational, trade, and career training schools via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'education', section: 'education' },

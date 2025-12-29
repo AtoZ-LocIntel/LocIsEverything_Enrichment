@@ -2037,6 +2037,8 @@ export class EnrichmentService {
           return await this.getTutoringCenters(lat, lon, radius);
         case 'poi_osm_libraries':
           return await this.getLibraries(lat, lon, radius);
+        case 'poi_osm_elementary_schools':
+          return await this.getElementarySchools(lat, lon, radius);
         
         case 'poi_mail_shipping':
           return await this.getMailShipping(lat, lon, radius);
@@ -11899,10 +11901,6 @@ export class EnrichmentService {
     // Add comprehensive logging to debug POI filter issues
     console.log(`🔍 Looking for OSM filters for: ${id}`);
     
-    if (id === "poi_schools") {
-      console.log(`🏫 Schools filter requested - returning ["amenity=school"]`);
-      return ["amenity=school"];
-    }
     if (id === "poi_hospitals") return ["amenity=hospital"];
     if (id === "poi_parks") return ["leisure=park"];
     if (id === "poi_grocery") return ["shop=supermarket", "shop=convenience"];
@@ -12500,7 +12498,6 @@ out center;`;
     }
 
     const defaultRadii: Record<string, number> = {
-      'poi_schools': 5,
       'poi_hospitals': 5,
       'poi_parks': 5,
       'poi_grocery': 3,
@@ -31256,42 +31253,376 @@ out center tags;`;
     }
   }
 
+  private async getElementarySchools(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏫 Elementary Schools query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query - fetch all schools and buildings tagged as schools
+      // Then filter for elementary/primary schools in JavaScript (more reliable than complex Overpass regex)
+      const query = `[out:json][timeout:25];
+(
+  /* All schools (will filter by school tag, name, and religion in JS) */
+  nwr["amenity"="school"](around:${radiusMeters},${lat},${lon});
+  
+  /* Buildings tagged as schools (will filter by name in JS) */
+  nwr["building"="school"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🏫 Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🏫 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🏫 Alternative Overpass API also failed:`, altError);
+          const altErrorMessage = altError?.message || altError?.toString() || 'Unknown error';
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}, Alternative: ${altErrorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🏫 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🏫 Overpass returned ${allElements.length} potential school elements`);
+      
+      // Filter for elementary/primary schools in JavaScript
+      const elementaryKeywords = /elementary|primary/i;
+      const nonElementaryKeywords = /high|middle|secondary|junior|senior|college|university/i;
+      
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const name = tags.name || '';
+        const schoolType = tags.school || '';
+        const amenity = tags.amenity;
+        const building = tags.building;
+        const hasReligion = !!tags.religion;
+        
+        // Must be a school (amenity=school or building=school)
+        if (amenity !== 'school' && building !== 'school') {
+          return false;
+        }
+        
+        // Check if school tag indicates elementary/primary
+        if (schoolType && elementaryKeywords.test(schoolType)) {
+          return true;
+        }
+        
+        // Check if name contains elementary/primary keywords
+        if (name && elementaryKeywords.test(name)) {
+          // But exclude if name also contains non-elementary keywords (unless religious)
+          if (nonElementaryKeywords.test(name) && !hasReligion) {
+            return false;
+          }
+          return true;
+        }
+        
+        // Religious schools - include if they don't have non-elementary keywords in name
+        if (hasReligion && amenity === 'school') {
+          // Exclude if name clearly indicates non-elementary (e.g., "St. Mary's High School")
+          if (name && nonElementaryKeywords.test(name)) {
+            return false;
+          }
+          // Include religious schools without clear non-elementary indicators
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🏫 Found ${filteredElements.length} elementary schools after filtering`);
+      
+      // First, deduplicate filteredElements by OSM id (same element might match multiple criteria)
+      const uniqueFilteredElements = new Map<number, any>();
+      for (const element of filteredElements) {
+        if (!uniqueFilteredElements.has(element.id)) {
+          uniqueFilteredElements.set(element.id, element);
+        }
+      }
+      const deduplicatedElements = Array.from(uniqueFilteredElements.values());
+      console.log(`🏫 Deduplicated to ${deduplicatedElements.length} unique elements (from ${filteredElements.length} filtered)`);
+      
+      // Calculate distances and filter by radius
+      const schoolsWithDistance: any[] = [];
+      const seenCoords = new Map<string, number>(); // Deduplicate by coordinates (for same school as node+way)
+      const seenNameCoords = new Map<string, number>(); // Deduplicate by name+coordinates
+      const coordinateTolerance = 0.0005; // ~50 meters tolerance for coordinate matching (increased for better deduplication)
+      
+      for (const element of deduplicatedElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let schoolLat: number | null = null;
+        let schoolLon: number | null = null;
+        
+        if (element.type === 'node') {
+          schoolLat = element.lat;
+          schoolLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          schoolLat = element.center?.lat;
+          schoolLon = element.center?.lon;
+        }
+        
+        if (schoolLat == null || schoolLon == null) {
+          console.warn(`🏫 Skipping school ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same school might be represented as both node and way with different IDs)
+        // Round coordinates to tolerance level to catch near-duplicates - use consistent rounding
+        const coordKey = `${Math.round(schoolLat / coordinateTolerance)}_${Math.round(schoolLon / coordinateTolerance)}`;
+        
+        // Also check by name+coordinates (more aggressive deduplication)
+        const name = (element.tags?.name || '').trim().toLowerCase();
+        const nameCoordKey = name ? `${name}_${coordKey}` : null;
+        
+        // Check coordinate-based deduplication
+        if (seenCoords.has(coordKey)) {
+          const existingId = seenCoords.get(coordKey);
+          const existingName = element.tags?.name || 'Unnamed';
+          // Same location - this is a duplicate (likely node+way representation of same school)
+          console.log(`🏫 Skipping duplicate at coordinates [${schoolLat}, ${schoolLon}]: OSM ${element.id} "${element.tags?.name || 'Unnamed'}" (already seen as OSM ${existingId} "${existingName}")`);
+          continue;
+        }
+        
+        // Check name+coordinate deduplication (if name exists)
+        if (nameCoordKey && seenNameCoords.has(nameCoordKey)) {
+          const existingId = seenNameCoords.get(nameCoordKey);
+          console.log(`🏫 Skipping duplicate by name+coordinates: OSM ${element.id} "${element.tags?.name}" at [${schoolLat}, ${schoolLon}] (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        seenCoords.set(coordKey, element.id);
+        if (nameCoordKey) {
+          seenNameCoords.set(nameCoordKey, element.id);
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, schoolLat, schoolLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include schools within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          schoolsWithDistance.push({
+            ...element,
+            lat: schoolLat,
+            lon: schoolLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      schoolsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      // Final aggressive deduplication - use multiple strategies to ensure zero duplicates
+      const finalDeduplicated: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>(); // coord -> OSM ID
+      const seenByNameAndCoords = new Map<string, number>(); // name_coord -> OSM ID
+      
+      for (const school of schoolsWithDistance) {
+        const schoolId = school.id;
+        const schoolLat = school.lat;
+        const schoolLon = school.lon;
+        const schoolName = (school.tags?.name || '').trim().toLowerCase();
+        
+        // Strategy 1: Deduplicate by OSM ID (same element shouldn't appear twice)
+        if (seenByOSMId.has(schoolId)) {
+          console.log(`🏫 Removing duplicate OSM ID: ${schoolId}`);
+          continue;
+        }
+        
+        // Strategy 2: Deduplicate by coordinates (same location = same school, even if different OSM IDs)
+        const coordKey = `${Math.round(schoolLat / coordinateTolerance)}_${Math.round(schoolLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🏫 Removing duplicate at coordinates [${schoolLat}, ${schoolLon}]: OSM ${schoolId} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Strategy 3: Deduplicate by name + coordinates (same name at same location = duplicate)
+        if (schoolName) {
+          const nameCoordKey = `${schoolName}_${coordKey}`;
+          if (seenByNameAndCoords.has(nameCoordKey)) {
+            const existingId = seenByNameAndCoords.get(nameCoordKey);
+            console.log(`🏫 Removing duplicate by name+coords: "${school.tags?.name}" at [${schoolLat}, ${schoolLon}] (OSM ${schoolId}, already seen as ${existingId})`);
+            continue;
+          }
+          seenByNameAndCoords.set(nameCoordKey, schoolId);
+        }
+        
+        // All checks passed - this is a unique school
+        seenByOSMId.add(schoolId);
+        seenByCoords.set(coordKey, schoolId);
+        finalDeduplicated.push(school);
+      }
+      
+      const count = finalDeduplicated.length;
+      console.log(`🏫 Final count: ${count} unique elementary schools (started with ${schoolsWithDistance.length}, removed ${schoolsWithDistance.length - count} duplicates)`);
+      
+      // Process school details for mapping - create from the deduplicated array
+      // Ensure both arrays contain exactly the same schools (1:1 mapping)
+      const schoolDetails = finalDeduplicated.map((element: any) => ({
+        id: element.id,
+        name: element.tags?.name || 'Unnamed School',
+        amenity: element.tags?.amenity || null,
+        school: element.tags?.school || null,
+        building: element.tags?.building || null,
+        religion: element.tags?.religion || null,
+        address: element.tags?.['addr:street'] || null,
+        city: element.tags?.['addr:city'] || null,
+        state: element.tags?.['addr:state'] || null,
+        postcode: element.tags?.['addr:postcode'] || null,
+        lat: element.lat,
+        lon: element.lon,
+        type: element.type,
+        phone: element.tags?.phone || null,
+        website: element.tags?.website || null,
+        email: element.tags?.email || null,
+        operator: element.tags?.operator || null,
+        distance_miles: element.distance_miles,
+        tags: element.tags // Include all tags for CSV export
+      }));
+      
+      // Final verification - ensure counts match
+      if (schoolDetails.length !== finalDeduplicated.length) {
+        console.error(`🏫 ERROR: Mismatch! schoolDetails.length (${schoolDetails.length}) !== finalDeduplicated.length (${finalDeduplicated.length})`);
+      }
+      
+      console.log(`🏫 Returning ${count} unique schools:`, {
+        detailed: schoolDetails.length,
+        all: finalDeduplicated.length,
+        summary: count
+      });
+      
+      // Return only _all array to prevent duplication - map can use _all, CSV uses _all
+      // This ensures single source of truth
+      return {
+        poi_osm_elementary_schools_summary: `Found ${count} elementary schools within ${cappedRadius} miles.`,
+        poi_osm_elementary_schools_all: finalDeduplicated // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Elementary Schools query failed:', error);
+      return { 
+        poi_osm_elementary_schools_summary: 'No elementary schools found due to error.',
+        poi_osm_elementary_schools_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
   private async getCollegesUniversities(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
       console.log(`🎓 Colleges & Universities query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
       const radiusMeters = Math.round(radiusMiles * 1609.34);
       
-      // Build Overpass query based on user's provided query structure
-      const query = `[out:json][timeout:50];
+      // Build Overpass query - simplified to avoid timeouts
+      // Fetch only amenity-tagged colleges/universities, filter buildings and names in JavaScript
+      const query = `[out:json][timeout:25];
 (
-  node["amenity"~"college|university"](around:${radiusMeters},${lat},${lon});
-  way["amenity"~"college|university"](around:${radiusMeters},${lat},${lon});
-  relation["amenity"~"college|university"](around:${radiusMeters},${lat},${lon});
-  way["landuse"="education"](around:${radiusMeters},${lat},${lon});
-  relation["landuse"="education"](around:${radiusMeters},${lat},${lon});
-  node["office"="educational_institution"](around:${radiusMeters},${lat},${lon});
-  way["office"="educational_institution"](around:${radiusMeters},${lat},${lon});
-  relation["office"="educational_institution"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="college"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="university"](around:${radiusMeters},${lat},${lon});
 );
-out center;`;
+out center tags;`;
       
-      let response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      console.log(`🎓 Overpass query: ${query}`);
       
-      // Fallback to alternative server if first fails
-      if (!response.ok) {
-        console.log(`🎓 Primary server failed, trying fallback...`);
-        response = await fetch(`https://lz4.overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🎓 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🎓 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
       }
       
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
+      if (!data || !data.elements) {
+        console.warn(`🎓 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
       
-      const elements = data.elements || [];
-      console.log(`🎓 Overpass returned ${elements.length} college/university elements`);
+      const allElements = data.elements || [];
+      console.log(`🎓 Overpass returned ${allElements.length} potential college/university elements`);
       
-      // Calculate distances and filter by radius
+      // All elements from query are already colleges/universities (amenity=college or amenity=university)
+      // No additional filtering needed - the query already filtered by amenity
+      const filteredElements = allElements;
+      console.log(`🎓 Found ${filteredElements.length} colleges/universities from Overpass query`);
+      
+      // First deduplicate by OSM ID (same element might match multiple criteria)
+      const uniqueElements = new Map<number, any>();
+      for (const element of filteredElements) {
+        if (!uniqueElements.has(element.id)) {
+          uniqueElements.set(element.id, element);
+        }
+      }
+      const deduplicatedElements = Array.from(uniqueElements.values());
+      console.log(`🎓 Deduplicated to ${deduplicatedElements.length} unique elements`);
+      
+      // Calculate distances, filter by radius, and deduplicate by coordinates
       const institutionsWithDistance: any[] = [];
-      for (const element of elements) {
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of deduplicatedElements) {
         // Get coordinates - nodes have direct lat/lon, ways/relations use center
         let instLat: number | null = null;
         let instLon: number | null = null;
@@ -31309,12 +31640,27 @@ out center;`;
           continue;
         }
         
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same institution, even if different OSM IDs)
+        const coordKey = `${Math.round(instLat / coordinateTolerance)}_${Math.round(instLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🎓 Removing duplicate at [${instLat}, ${instLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
         // Calculate distance in miles
         const distanceKm = this.calculateDistance(lat, lon, instLat, instLon);
         const distanceMiles = distanceKm * 0.621371;
         
         // Only include institutions within the specified radius
         if (Number.isFinite(distanceMiles) && distanceMiles <= radiusMiles) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
           institutionsWithDistance.push({
             ...element,
             lat: instLat,
@@ -31328,33 +31674,12 @@ out center;`;
       institutionsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
       
       const count = institutionsWithDistance.length;
-      console.log(`🎓 Found ${count} colleges/universities within ${radiusMiles} miles (after distance filtering)`);
+      console.log(`🎓 Found ${count} unique colleges/universities within ${radiusMiles} miles`);
       
-      // Process institution details for mapping
-      const institutionDetails = institutionsWithDistance.map((element: any) => ({
-        id: element.id,
-        name: element.tags?.name || 'Unnamed Institution',
-        amenity: element.tags?.amenity || 'Unknown',
-        office: element.tags?.office || null,
-        landuse: element.tags?.landuse || null,
-        address: element.tags?.['addr:street'] || null,
-        city: element.tags?.['addr:city'] || null,
-        state: element.tags?.['addr:state'] || null,
-        postcode: element.tags?.['addr:postcode'] || null,
-        lat: element.lat,
-        lon: element.lon,
-        type: element.type,
-        phone: element.tags?.phone || null,
-        website: element.tags?.website || null,
-        email: element.tags?.email || null,
-        distance_miles: element.distance_miles,
-        tags: element.tags // Include all tags for CSV export
-      }));
-      
+      // Return only _all array to prevent duplication - single source of truth
       return {
         poi_colleges_universities_summary: `Found ${count} colleges/universities within ${radiusMiles} miles.`,
-        poi_colleges_universities_detailed: institutionDetails,
-        poi_colleges_universities_all: institutionsWithDistance // Include all institutions for CSV export
+        poi_colleges_universities_all: institutionsWithDistance // Single deduplicated array for both map and CSV
       };
     } catch (error) {
       console.error('Colleges & Universities query failed:', error);
