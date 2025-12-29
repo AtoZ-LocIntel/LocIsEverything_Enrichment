@@ -52,38 +52,27 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
     <>
       <div className="single-search card">
         <div className="card-header">
-          <div className="flex items-center justify-start md:justify-between">
-            <div className="flex items-center space-x-3 flex-1 min-w-0">
-              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg flex items-center justify-center">
                 <img 
                   src="/assets/new-logo.webp"
                   alt="The Location Is Everything Co Logo" 
                   className="w-16 h-16 lg:w-20 lg:h-20 object-contain"
                 />
               </div>
-              <div className="min-w-0">
+              <div>
                 <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>Single Location Search</h3>
                 <p className="text-sm text-gray-200">Search from your location or enter an address</p>
               </div>
             </div>
             
             {/* Pro Tips Lightbulb and Map Icon (desktop only) */}
-            <div className="flex items-center space-x-2 flex-shrink-0 md:ml-0 ml-auto">
-              {!isMobile && onViewMap && (
-                <button
-                  onClick={onViewMap}
-                  className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
-                  title="Explore Basemaps"
-                >
-                  <Map className="w-5 h-5" />
-                </button>
-              )}
+            {isMobile ? (
               <button
                 onClick={() => {
-                  if (isMobile && onViewProTips) {
+                  if (onViewProTips) {
                     onViewProTips();
-                  } else {
-                    setShowProTips(!showProTips);
                   }
                 }}
                 className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
@@ -91,7 +80,26 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
               >
                 <Lightbulb className="w-5 h-5" />
               </button>
-            </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                {onViewMap && (
+                  <button
+                    onClick={onViewMap}
+                    className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
+                    title="Explore Basemaps"
+                  >
+                    <Map className="w-5 h-5" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowProTips(!showProTips)}
+                  className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
+                  title="Pro Tips"
+                >
+                  <Lightbulb className="w-5 h-5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
         
