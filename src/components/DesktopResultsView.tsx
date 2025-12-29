@@ -775,7 +775,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Appalachian Trail';
       } else if (key.startsWith('pct_') || (key.includes('pct_') && !key.includes('blm_'))) {
         category = 'Pacific Crest Trail';
-      } else if (key.includes('poi_') && (key.includes('grocery') || key.includes('restaurant') || key.includes('bank') || key.includes('pharmacy') || key.includes('convenience') || key.includes('hardware') || key.includes('liquor') || key.includes('bakery') || key.includes('butcher') || key.includes('seafood') || key.includes('sporting') || key.includes('bookstore') || key.includes('clothing') || key.includes('shoes') || key.includes('thrift') || key.includes('pet') || key.includes('florist') || key.includes('variety') || key.includes('gas_stations') || key.includes('car_wash') || key.includes('auto_repair') || key.includes('auto_parts') || key.includes('auto_dealers'))) {
+      } else if (key.includes('poi_restaurants') || key.includes('poi_osm_fast_food') || key.includes('poi_osm_bars_pubs') || key.includes('poi_osm_bakeries') || key.includes('poi_osm_ice_cream_shops') || key.includes('poi_osm_food_trucks') || key.includes('poi_grocery') || key.includes('poi_cafes') || key.includes('poi_markets') || key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
+        // Food & Beverage category (check before other POI categories)
+        category = 'Food & Beverage';
+      } else if (key.includes('poi_') && (key.includes('bank') || key.includes('pharmacy') || key.includes('convenience') || key.includes('hardware') || key.includes('liquor') || key.includes('bakery') || key.includes('butcher') || key.includes('seafood') || key.includes('sporting') || key.includes('bookstore') || key.includes('clothing') || key.includes('shoes') || key.includes('thrift') || key.includes('pet') || key.includes('florist') || key.includes('variety') || key.includes('gas_stations') || key.includes('car_wash') || key.includes('auto_repair') || key.includes('auto_parts') || key.includes('auto_dealers'))) {
         category = 'Community & Services';
       } else if (key.includes('poi_') && (key.includes('gym') || key.includes('dentist') || key.includes('doctor') || key.includes('chiropractor') || key.includes('optometry') || key.includes('veterinary') || key.includes('hospital') || key.includes('police_stations') || key.includes('fire_stations') || key.includes('urgent_care'))) {
         category = 'Health & Wellness';
@@ -823,8 +826,6 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NJ Data';
       } else if (key.startsWith('nj_')) {
         category = 'NJ Data';
-      } else if (key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
-        category = 'Community & Services';
       } else if (key.includes('poi_osm_libraries') || key.includes('poi_osm_prep_schools') || key.includes('poi_osm_middle_schools') || key.includes('poi_osm_high_schools') || (key.includes('poi_') && (key.includes('poi_osm_elementary') || key.includes('elementary') || key.includes('school') || key.includes('college') || key.includes('colleges_universities') || key.includes('poi_osm_daycares') || key.includes('daycares') || key.includes('preschools') || key.includes('poi_osm_vocational') || key.includes('vocational') || key.includes('poi_osm_tutoring') || key.includes('prep') || key.includes('middle') || key.includes('junior') || key.includes('high') || key.includes('secondary') || key.includes('technical') || key.includes('tutoring') || key.includes('library')))) {
         category = 'Education';
       } else if (key.includes('poi_') && (key.includes('childcare') || key.includes('community_centre') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('worship') || key.includes('mail_shipping'))) {

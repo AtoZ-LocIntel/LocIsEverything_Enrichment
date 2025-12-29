@@ -153,6 +153,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
       'health': '#9d174d',
       'transportation': '#3730a3',
       'infrastructure': '#92400e',
+      'food_beverage': '#dc2626',
       'environment': '#166534',
       'recreation': '#065f46',
       'natural_resources': '#115e59',

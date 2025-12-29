@@ -76,6 +76,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: '⚡'
   },
   {
+    id: 'food_beverage',
+    title: 'Food & Beverage',
+    description: 'Restaurants, cafes, grocery stores, markets, and food-related establishments',
+    icon: 'FoodBeverage.webp'
+  },
+  {
     id: 'recreation',
     title: 'Recreation & Leisure',
     description: 'Entertainment, sports, and outdoor activities',
@@ -526,18 +532,24 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_police_stations', label: 'Police Stations', description: 'Law enforcement facilities', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   { id: 'poi_fire_stations', label: 'Fire Stations', description: 'Fire and emergency services', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   
+  // Food & Beverage
   // Food & Dining
-  { id: 'poi_restaurants', label: 'Restaurants', description: 'Dining establishments', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
-  { id: 'poi_cafes_coffee', label: 'Cafes & Coffee', description: 'Coffee shops and cafes', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
-  { id: 'poi_grocery', label: 'Grocery Stores', description: 'Supermarkets and grocery stores', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
-  { id: 'poi_markets', label: 'Markets', description: 'Marketplaces and bazaars', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_restaurants', label: 'Restaurants', description: 'Dining establishments', isPOI: true, defaultRadius: 3, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_osm_fast_food', label: 'Fast Food', description: 'Fast food restaurants and chains via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_osm_bars_pubs', label: 'Bars & Pubs', description: 'Bars, pubs, breweries, taverns, and drinking establishments via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_osm_bakeries', label: 'Bakeries', description: 'Bakeries, bakeshops, patisseries, and pastry shops via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_osm_ice_cream_shops', label: 'Ice Cream Shops', description: 'Ice cream shops, gelato shops, frozen yogurt shops, and creameries via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_osm_food_trucks', label: 'Food Trucks', description: 'Food trucks, food carts, and mobile food vendors via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_cafes_coffee', label: 'Cafes & Coffee', description: 'Coffee shops and cafes', isPOI: true, defaultRadius: 3, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_grocery', label: 'Grocery Stores', description: 'Supermarkets and grocery stores', isPOI: true, defaultRadius: 3, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_markets', label: 'Markets', description: 'Marketplaces and bazaars', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
   
   // Local Food & Agriculture
-  { id: 'poi_usda_farmers_market', label: 'Farmers Markets', description: 'Traditional farmers markets and farm stands', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_usda_csa', label: 'CSA Programs', description: 'Community Supported Agriculture farm shares', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_usda_agritourism', label: 'Agritourism', description: 'Farm tours, pick-your-own, and farm experiences', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_usda_food_hub', label: 'Food Hubs', description: 'Local food distribution and aggregation centers', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_usda_onfarm_market', label: 'On-Farm Markets', description: 'Direct farm sales and on-site markets', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_usda_farmers_market', label: 'Farmers Markets', description: 'Traditional farmers markets and farm stands', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_usda_csa', label: 'CSA Programs', description: 'Community Supported Agriculture farm shares', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_usda_agritourism', label: 'Agritourism', description: 'Farm tours, pick-your-own, and farm experiences', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_usda_food_hub', label: 'Food Hubs', description: 'Local food distribution and aggregation centers', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_usda_onfarm_market', label: 'On-Farm Markets', description: 'Direct farm sales and on-site markets', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
   
   // Financial Services
   { id: 'poi_banks', label: 'Banks & ATMs', description: 'Financial institutions and ATMs', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },

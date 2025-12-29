@@ -54,6 +54,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   health: <span className="text-xl">❤️</span>,
   transportation: <span className="text-xl">🚌</span>,
   infrastructure: <span className="text-xl">⚡</span>,
+  food_beverage: <img src="/assets/FoodBeverage.webp" alt="Food & Beverage" className="w-5 h-5" />,
   environment: <TreePine className="w-5 h-5" />,
   recreation: <span className="text-xl">🎯</span>,
   natural_resources: <span className="text-xl">🏔️</span>,
@@ -1269,6 +1270,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'health': 'health_wellness',
       'transportation': 'transportation',
       'infrastructure': 'power_inf',
+      'food_beverage': 'FoodBeverage',
       'recreation': 'recreation_leisure',
       'natural_resources': 'natural_resources',
       'public_lands': 'public_lands',
@@ -2888,6 +2890,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     category.id === 'health' ? '#9d174d' :
                                     category.id === 'transportation' ? '#3730a3' :
                                     category.id === 'infrastructure' ? '#92400e' :
+                                    category.id === 'food_beverage' ? '#dc2626' :
                                     category.id === 'environment' ? '#166534' :
                                     category.id === 'recreation' ? '#065f46' :
                                     category.id === 'natural_resources' ? '#115e59' :

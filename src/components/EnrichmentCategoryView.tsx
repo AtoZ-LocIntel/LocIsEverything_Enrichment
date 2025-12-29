@@ -118,6 +118,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                           category.id === 'health' ? '#9d174d' :
                           category.id === 'transportation' ? '#3730a3' :
                           category.id === 'infrastructure' ? '#92400e' :
+                          category.id === 'food_beverage' ? '#dc2626' :
                           category.id === 'environment' ? '#166534' :
                           category.id === 'recreation' ? '#065f46' :
                           category.id === 'natural_resources' ? '#115e59' :

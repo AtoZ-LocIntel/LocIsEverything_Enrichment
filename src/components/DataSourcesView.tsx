@@ -1723,6 +1723,27 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
+      category: "Food & Beverage",
+      sources: [
+        {
+          name: "OpenStreetMap Food & Beverage",
+          description: "Restaurants, fast food establishments, bars, pubs, breweries, bakeries, ice cream shops, food trucks, cafes, coffee shops, grocery stores, markets, farmers markets, and other food-related venues via OSM Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/"
+        },
+        {
+          name: "USDA Local Food Directories",
+          description: "Traditional farmers markets, CSA programs, agritourism sites, food hubs, and on-farm markets",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://www.ams.usda.gov/local-food-directories"
+        }
+      ]
+    },
+    {
       category: "Recreation & Entertainment",
       sources: [
         {

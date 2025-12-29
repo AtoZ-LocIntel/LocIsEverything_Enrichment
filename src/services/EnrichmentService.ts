@@ -2045,6 +2045,16 @@ export class EnrichmentService {
           return await this.getMiddleSchools(lat, lon, radius);
         case 'poi_osm_high_schools':
           return await this.getHighSchools(lat, lon, radius);
+        case 'poi_osm_fast_food':
+          return await this.getFastFood(lat, lon, radius);
+        case 'poi_osm_bars_pubs':
+          return await this.getBarsPubs(lat, lon, radius);
+        case 'poi_osm_bakeries':
+          return await this.getBakeries(lat, lon, radius);
+        case 'poi_osm_ice_cream_shops':
+          return await this.getIceCreamShops(lat, lon, radius);
+        case 'poi_osm_food_trucks':
+          return await this.getFoodTrucks(lat, lon, radius);
         
         case 'poi_mail_shipping':
           return await this.getMailShipping(lat, lon, radius);
@@ -32131,6 +32141,917 @@ out center tags;`;
       return { 
         poi_osm_high_schools_summary: 'No high schools found due to error.',
         poi_osm_high_schools_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getFastFood(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🍔 Fast Food query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query - fetch fast_food amenities, restaurants with fast food cuisines, and shop=fast_food
+      // Simplified query - we'll do name-based filtering in JavaScript
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="fast_food"](around:${radiusMeters},${lat},${lon});
+  nwr["shop"="fast_food"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="restaurant"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🍔 Fast Food Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🍔 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🍔 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🍔 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🍔 Overpass returned ${allElements.length} potential food elements`);
+      
+      // Fast food chain name patterns
+      const fastFoodChainPatterns = /mcdonald|burger king|wendy|subway|kfc|taco bell|domino|pizza hut|little caesars|popeyes|dunkin|starbucks|chick-fil-a|chick fil a|chickfila|chipotle|panera|panda express|jimmy john|papa john|papa johns|jack in the box|arby|hardee|sonic|five guys|in-n-out|in n out|innout|shake shack|whataburger|white castle|del taco|qdoba|carl's jr|carls jr|culver|steak n shake|steak 'n shake|red robin|ihop|denny|waffle house|olive garden|red lobster|outback|applebees|chili|tgi friday|tgi fridays|texas roadhouse|longhorn|logan|ruby tuesday|buffalo wild|bww|wingstop|zaxby|raising cane|canes|bojangles|church's chicken|churchs chicken|krispy kreme|jamba juice|smoothie king|tropical smoothie/i;
+      
+      // Fast food cuisine types
+      const fastFoodCuisines = /burger|pizza|sandwich|chicken|mexican|taco|hotdog|hot dog|donut|fried chicken|fast food/i;
+      
+      // Filter for fast food in JavaScript
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const amenity = tags.amenity;
+        const shop = tags.shop;
+        const cuisine = tags.cuisine || '';
+        const name = tags.name || '';
+        
+        // Direct fast_food tag
+        if (amenity === 'fast_food' || shop === 'fast_food') {
+          return true;
+        }
+        
+        // Restaurant with fast food cuisine tags
+        if (amenity === 'restaurant' && cuisine && fastFoodCuisines.test(cuisine)) {
+          return true;
+        }
+        
+        // Name-based matching for fast food chains
+        if (name && fastFoodChainPatterns.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🍔 Found ${filteredElements.length} fast food establishments after filtering`);
+      
+      // First deduplicate by OSM ID (same element might match multiple criteria)
+      const uniqueFilteredElements = new Map<number, any>();
+      for (const element of filteredElements) {
+        if (!uniqueFilteredElements.has(element.id)) {
+          uniqueFilteredElements.set(element.id, element);
+        }
+      }
+      const deduplicatedElements = Array.from(uniqueFilteredElements.values());
+      console.log(`🍔 Deduplicated to ${deduplicatedElements.length} unique elements`);
+      
+      // Calculate distances, filter by radius, and deduplicate by coordinates
+      const fastFoodWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of deduplicatedElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let fastFoodLat: number | null = null;
+        let fastFoodLon: number | null = null;
+        
+        if (element.type === 'node') {
+          fastFoodLat = element.lat;
+          fastFoodLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          fastFoodLat = element.center?.lat;
+          fastFoodLon = element.center?.lon;
+        }
+        
+        if (fastFoodLat == null || fastFoodLon == null) {
+          console.warn(`🍔 Skipping fast food ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(fastFoodLat / coordinateTolerance)}_${Math.round(fastFoodLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🍔 Removing duplicate at [${fastFoodLat}, ${fastFoodLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, fastFoodLat, fastFoodLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include establishments within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          fastFoodWithDistance.push({
+            ...element,
+            lat: fastFoodLat,
+            lon: fastFoodLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      fastFoodWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = fastFoodWithDistance.length;
+      console.log(`🍔 Found ${count} unique fast food establishments within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_fast_food_summary: `Found ${count} fast food establishments within ${cappedRadius} miles.`,
+        poi_osm_fast_food_all: fastFoodWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Fast Food query failed:', error);
+      return { 
+        poi_osm_fast_food_summary: 'No fast food establishments found due to error.',
+        poi_osm_fast_food_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getBarsPubs(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🍺 Bars & Pubs query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query - fetch bars, pubs, breweries, restaurants, and alcohol shops
+      // Simplified query - we'll do name-based filtering in JavaScript
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="bar"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="pub"](around:${radiusMeters},${lat},${lon});
+  nwr["craft"="brewery"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="restaurant"](around:${radiusMeters},${lat},${lon});
+  nwr["shop"="alcohol"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🍺 Bars & Pubs Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🍺 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🍺 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🍺 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🍺 Overpass returned ${allElements.length} potential bar/pub elements`);
+      
+      // Bar/pub name patterns for restaurants and other venues
+      const barPubNamePatterns = /bar|pub|tavern|lounge|saloon|taproom|brewery|brewhouse|alehouse|beer garden|beer hall|cocktail/i;
+      
+      // Filter for bars and pubs in JavaScript
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const amenity = tags.amenity;
+        const shop = tags.shop;
+        const craft = tags.craft;
+        const name = tags.name || '';
+        
+        // Direct bar/pub/brewery tags
+        if (amenity === 'bar' || amenity === 'pub' || craft === 'brewery') {
+          return true;
+        }
+        
+        // Alcohol shops (bottle shops, wine bars)
+        if (shop === 'alcohol') {
+          return true;
+        }
+        
+        // Restaurant with bar/pub/tavern/lounge in name
+        if (amenity === 'restaurant' && name && barPubNamePatterns.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🍺 Found ${filteredElements.length} bars & pubs after filtering`);
+      
+      // First deduplicate by OSM ID (same element might match multiple criteria)
+      const uniqueFilteredElements = new Map<number, any>();
+      for (const element of filteredElements) {
+        if (!uniqueFilteredElements.has(element.id)) {
+          uniqueFilteredElements.set(element.id, element);
+        }
+      }
+      const deduplicatedElements = Array.from(uniqueFilteredElements.values());
+      console.log(`🍺 Deduplicated to ${deduplicatedElements.length} unique elements`);
+      
+      // Calculate distances, filter by radius, and deduplicate by coordinates
+      const barsPubsWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of deduplicatedElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let barLat: number | null = null;
+        let barLon: number | null = null;
+        
+        if (element.type === 'node') {
+          barLat = element.lat;
+          barLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          barLat = element.center?.lat;
+          barLon = element.center?.lon;
+        }
+        
+        if (barLat == null || barLon == null) {
+          console.warn(`🍺 Skipping bar/pub ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(barLat / coordinateTolerance)}_${Math.round(barLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🍺 Removing duplicate at [${barLat}, ${barLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, barLat, barLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include establishments within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          barsPubsWithDistance.push({
+            ...element,
+            lat: barLat,
+            lon: barLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      barsPubsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = barsPubsWithDistance.length;
+      console.log(`🍺 Found ${count} unique bars & pubs within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_bars_pubs_summary: `Found ${count} bars & pubs within ${cappedRadius} miles.`,
+        poi_osm_bars_pubs_all: barsPubsWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Bars & Pubs query failed:', error);
+      return { 
+        poi_osm_bars_pubs_summary: 'No bars & pubs found due to error.',
+        poi_osm_bars_pubs_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getBakeries(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🥖 Bakeries query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query - fetch bakeries, cafes, restaurants, and supermarkets
+      // Simplified query - we'll do name/cuisine-based filtering in JavaScript
+      const query = `[out:json][timeout:25];
+(
+  nwr["shop"="bakery"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="cafe"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="restaurant"](around:${radiusMeters},${lat},${lon});
+  nwr["shop"="supermarket"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🥖 Bakeries Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🥖 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🥖 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🥖 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🥖 Overpass returned ${allElements.length} potential bakery elements`);
+      
+      // Bakery name patterns
+      const bakeryNamePatterns = /bakery|bakeshop|patisserie|pastry|bread|donut|bagel/i;
+      const bakeryCuisinePatterns = /bakery|pastry|dessert/i;
+      
+      // Filter for bakeries in JavaScript
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const shop = tags.shop;
+        const amenity = tags.amenity;
+        const cuisine = tags.cuisine || '';
+        const name = tags.name || '';
+        
+        // Direct bakery shop tag
+        if (shop === 'bakery') {
+          return true;
+        }
+        
+        // Cafes with bakery/pastry/dessert cuisine
+        if (amenity === 'cafe' && cuisine && bakeryCuisinePatterns.test(cuisine)) {
+          return true;
+        }
+        
+        // Restaurants with bakery-related names
+        if (amenity === 'restaurant' && name && bakeryNamePatterns.test(name)) {
+          return true;
+        }
+        
+        // Supermarkets with bakery in name (in-house bakeries)
+        if (shop === 'supermarket' && name && bakeryNamePatterns.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🥖 Found ${filteredElements.length} bakeries after filtering`);
+      
+      // First deduplicate by OSM ID (same element might match multiple criteria)
+      const uniqueFilteredElements = new Map<number, any>();
+      for (const element of filteredElements) {
+        if (!uniqueFilteredElements.has(element.id)) {
+          uniqueFilteredElements.set(element.id, element);
+        }
+      }
+      const deduplicatedElements = Array.from(uniqueFilteredElements.values());
+      console.log(`🥖 Deduplicated to ${deduplicatedElements.length} unique elements`);
+      
+      // Calculate distances, filter by radius, and deduplicate by coordinates
+      const bakeriesWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of deduplicatedElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let bakeryLat: number | null = null;
+        let bakeryLon: number | null = null;
+        
+        if (element.type === 'node') {
+          bakeryLat = element.lat;
+          bakeryLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          bakeryLat = element.center?.lat;
+          bakeryLon = element.center?.lon;
+        }
+        
+        if (bakeryLat == null || bakeryLon == null) {
+          console.warn(`🥖 Skipping bakery ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(bakeryLat / coordinateTolerance)}_${Math.round(bakeryLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🥖 Removing duplicate at [${bakeryLat}, ${bakeryLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, bakeryLat, bakeryLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include establishments within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          bakeriesWithDistance.push({
+            ...element,
+            lat: bakeryLat,
+            lon: bakeryLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      bakeriesWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = bakeriesWithDistance.length;
+      console.log(`🥖 Found ${count} unique bakeries within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_bakeries_summary: `Found ${count} bakeries within ${cappedRadius} miles.`,
+        poi_osm_bakeries_all: bakeriesWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Bakeries query failed:', error);
+      return { 
+        poi_osm_bakeries_summary: 'No bakeries found due to error.',
+        poi_osm_bakeries_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getIceCreamShops(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🍦 Ice Cream Shops query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query - fetch ice cream amenities, cafes, restaurants, and shops
+      // Simplified query - we'll do name/cuisine-based filtering in JavaScript
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="ice_cream"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="cafe"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="restaurant"](around:${radiusMeters},${lat},${lon});
+  nwr["shop"="ice_cream"](around:${radiusMeters},${lat},${lon});
+  nwr["shop"="confectionery"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🍦 Ice Cream Shops Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🍦 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🍦 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🍦 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🍦 Overpass returned ${allElements.length} potential ice cream shop elements`);
+      
+      // Ice cream name patterns
+      const iceCreamNamePatterns = /ice cream|creamery|gelato|frozen yogurt|frozen yoghurt|froyo|custard|scoop/i;
+      const iceCreamCuisinePatterns = /ice_cream|ice cream|dessert|gelato|frozen_yogurt|frozen yogurt/i;
+      
+      // Filter for ice cream shops in JavaScript
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const amenity = tags.amenity;
+        const shop = tags.shop;
+        const cuisine = tags.cuisine || '';
+        const name = tags.name || '';
+        
+        // Direct ice cream amenity tag
+        if (amenity === 'ice_cream') {
+          return true;
+        }
+        
+        // Ice cream or confectionery shop tags
+        if (shop === 'ice_cream' || shop === 'confectionery') {
+          return true;
+        }
+        
+        // Cafes with ice cream/dessert/gelato/frozen yogurt cuisine
+        if (amenity === 'cafe' && cuisine && iceCreamCuisinePatterns.test(cuisine)) {
+          return true;
+        }
+        
+        // Restaurants with ice cream-related names
+        if (amenity === 'restaurant' && name && iceCreamNamePatterns.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🍦 Found ${filteredElements.length} ice cream shops after filtering`);
+      
+      // First deduplicate by OSM ID (same element might match multiple criteria)
+      const uniqueFilteredElements = new Map<number, any>();
+      for (const element of filteredElements) {
+        if (!uniqueFilteredElements.has(element.id)) {
+          uniqueFilteredElements.set(element.id, element);
+        }
+      }
+      const deduplicatedElements = Array.from(uniqueFilteredElements.values());
+      console.log(`🍦 Deduplicated to ${deduplicatedElements.length} unique elements`);
+      
+      // Calculate distances, filter by radius, and deduplicate by coordinates
+      const iceCreamShopsWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of deduplicatedElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let shopLat: number | null = null;
+        let shopLon: number | null = null;
+        
+        if (element.type === 'node') {
+          shopLat = element.lat;
+          shopLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          shopLat = element.center?.lat;
+          shopLon = element.center?.lon;
+        }
+        
+        if (shopLat == null || shopLon == null) {
+          console.warn(`🍦 Skipping ice cream shop ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(shopLat / coordinateTolerance)}_${Math.round(shopLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🍦 Removing duplicate at [${shopLat}, ${shopLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, shopLat, shopLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include establishments within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          iceCreamShopsWithDistance.push({
+            ...element,
+            lat: shopLat,
+            lon: shopLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      iceCreamShopsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = iceCreamShopsWithDistance.length;
+      console.log(`🍦 Found ${count} unique ice cream shops within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_ice_cream_shops_summary: `Found ${count} ice cream shops within ${cappedRadius} miles.`,
+        poi_osm_ice_cream_shops_all: iceCreamShopsWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Ice Cream Shops query failed:', error);
+      return { 
+        poi_osm_ice_cream_shops_summary: 'No ice cream shops found due to error.',
+        poi_osm_ice_cream_shops_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getFoodTrucks(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚚 Food Trucks query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query - fetch food trucks, food carts, fast food, and restaurants
+      // Simplified query - we'll do name/mobile tag filtering in JavaScript
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="food_truck"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="food_cart"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="fast_food"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="restaurant"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🚚 Food Trucks Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🚚 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🚚 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🚚 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🚚 Overpass returned ${allElements.length} potential food truck elements`);
+      
+      // Food truck name patterns
+      const foodTruckNamePatterns = /food truck|food cart|street food|taco truck|bbq truck/i;
+      
+      // Filter for food trucks in JavaScript
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const amenity = tags.amenity;
+        const mobile = tags.mobile;
+        const streetFood = tags.street_food;
+        const name = tags.name || '';
+        
+        // Direct food truck/food cart tags
+        if (amenity === 'food_truck' || amenity === 'food_cart') {
+          return true;
+        }
+        
+        // Fast food or restaurant with mobile=yes tag
+        if ((amenity === 'fast_food' || amenity === 'restaurant') && mobile === 'yes') {
+          return true;
+        }
+        
+        // Fast food or restaurant with food truck-related names
+        if ((amenity === 'fast_food' || amenity === 'restaurant') && name && foodTruckNamePatterns.test(name)) {
+          return true;
+        }
+        
+        // Street food tag
+        if (streetFood === 'yes') {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🚚 Found ${filteredElements.length} food trucks after filtering`);
+      
+      // First deduplicate by OSM ID (same element might match multiple criteria)
+      const uniqueFilteredElements = new Map<number, any>();
+      for (const element of filteredElements) {
+        if (!uniqueFilteredElements.has(element.id)) {
+          uniqueFilteredElements.set(element.id, element);
+        }
+      }
+      const deduplicatedElements = Array.from(uniqueFilteredElements.values());
+      console.log(`🚚 Deduplicated to ${deduplicatedElements.length} unique elements`);
+      
+      // Calculate distances, filter by radius, and deduplicate by coordinates
+      const foodTrucksWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of deduplicatedElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let truckLat: number | null = null;
+        let truckLon: number | null = null;
+        
+        if (element.type === 'node') {
+          truckLat = element.lat;
+          truckLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          truckLat = element.center?.lat;
+          truckLon = element.center?.lon;
+        }
+        
+        if (truckLat == null || truckLon == null) {
+          console.warn(`🚚 Skipping food truck ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(truckLat / coordinateTolerance)}_${Math.round(truckLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🚚 Removing duplicate at [${truckLat}, ${truckLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, truckLat, truckLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include establishments within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          foodTrucksWithDistance.push({
+            ...element,
+            lat: truckLat,
+            lon: truckLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      foodTrucksWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = foodTrucksWithDistance.length;
+      console.log(`🚚 Found ${count} unique food trucks within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_food_trucks_summary: `Found ${count} food trucks within ${cappedRadius} miles.`,
+        poi_osm_food_trucks_all: foodTrucksWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Food Trucks query failed:', error);
+      return { 
+        poi_osm_food_trucks_summary: 'No food trucks found due to error.',
+        poi_osm_food_trucks_error: error instanceof Error ? error.message : 'Unknown error' 
       };
     }
   }
