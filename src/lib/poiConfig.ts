@@ -545,7 +545,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_markets', label: 'Markets', description: 'Marketplaces and bazaars', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
   
   // Local Food & Agriculture
-  { id: 'poi_usda_farmers_market', label: 'Farmers Markets', description: 'Traditional farmers markets and farm stands', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
+  { id: 'poi_osm_farmers_markets', label: 'Farmers Markets', description: 'Farmers markets, public markets, and farm stands via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'food_beverage', section: 'food_beverage' },
   { id: 'poi_usda_csa', label: 'CSA Programs', description: 'Community Supported Agriculture farm shares', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
   { id: 'poi_usda_agritourism', label: 'Agritourism', description: 'Farm tours, pick-your-own, and farm experiences', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
   { id: 'poi_usda_food_hub', label: 'Food Hubs', description: 'Local food distribution and aggregation centers', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },

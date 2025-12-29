@@ -2015,6 +2015,8 @@ export class EnrichmentService {
         return await this.getUSDALocalFood(lat, lon, radius, 'agritourism');
       case 'poi_usda_csa':
         return await this.getUSDALocalFood(lat, lon, radius, 'csa');
+      case 'poi_osm_farmers_markets':
+        return await this.getFarmersMarkets(lat, lon, radius);
       case 'poi_usda_farmers_market':
         return await this.getUSDALocalFood(lat, lon, radius, 'farmersmarket');
       case 'poi_usda_food_hub':
@@ -2053,6 +2055,8 @@ export class EnrichmentService {
           return await this.getBakeries(lat, lon, radius);
         case 'poi_osm_ice_cream_shops':
           return await this.getIceCreamShops(lat, lon, radius);
+        case 'poi_osm_farmers_markets':
+          return await this.getFarmersMarkets(lat, lon, radius);
         case 'poi_osm_food_trucks':
           return await this.getFoodTrucks(lat, lon, radius);
         
@@ -32869,6 +32873,193 @@ out center tags;`;
       return { 
         poi_osm_ice_cream_shops_summary: 'No ice cream shops found due to error.',
         poi_osm_ice_cream_shops_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getFarmersMarkets(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌾 Farmers Markets query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query - fetch marketplaces, shops, and events venues
+      // Simplified query - we'll do name/marketplace tag filtering in JavaScript
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="marketplace"](around:${radiusMeters},${lat},${lon});
+  nwr["shop"="farm"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="events_venue"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🌾 Farmers Markets Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🌾 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🌾 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🌾 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🌾 Overpass returned ${allElements.length} potential market elements`);
+      
+      // Farmers market name patterns
+      const farmersMarketNamePatterns = /farmers market|farm market|public market|greenmarket/i;
+      
+      // Filter for farmers markets in JavaScript
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const amenity = tags.amenity;
+        const shop = tags.shop;
+        const marketplace = tags.marketplace;
+        const name = tags.name || '';
+        
+        // Direct marketplace with farmers subtype
+        if (amenity === 'marketplace' && marketplace === 'farmers') {
+          return true;
+        }
+        
+        // Marketplace without subtype (very common - include all marketplaces)
+        if (amenity === 'marketplace') {
+          return true;
+        }
+        
+        // Farm shops
+        if (shop === 'farm') {
+          return true;
+        }
+        
+        // Events venues with market in name
+        if (amenity === 'events_venue' && name && /market/i.test(name)) {
+          return true;
+        }
+        
+        // Name-based detection for seasonal/pop-up markets
+        if (name && farmersMarketNamePatterns.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🌾 Found ${filteredElements.length} farmers markets after filtering`);
+      
+      // First deduplicate by OSM ID (same element might match multiple criteria)
+      const uniqueFilteredElements = new Map<number, any>();
+      for (const element of filteredElements) {
+        if (!uniqueFilteredElements.has(element.id)) {
+          uniqueFilteredElements.set(element.id, element);
+        }
+      }
+      const deduplicatedElements = Array.from(uniqueFilteredElements.values());
+      console.log(`🌾 Deduplicated to ${deduplicatedElements.length} unique elements`);
+      
+      // Calculate distances, filter by radius, and deduplicate by coordinates
+      const marketsWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of deduplicatedElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let marketLat: number | null = null;
+        let marketLon: number | null = null;
+        
+        if (element.type === 'node') {
+          marketLat = element.lat;
+          marketLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          marketLat = element.center?.lat;
+          marketLon = element.center?.lon;
+        }
+        
+        if (marketLat == null || marketLon == null) {
+          console.warn(`🌾 Skipping farmers market ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same market, even if different OSM IDs)
+        const coordKey = `${Math.round(marketLat / coordinateTolerance)}_${Math.round(marketLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🌾 Removing duplicate at [${marketLat}, ${marketLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, marketLat, marketLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include markets within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          marketsWithDistance.push({
+            ...element,
+            lat: marketLat,
+            lon: marketLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      marketsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = marketsWithDistance.length;
+      console.log(`🌾 Found ${count} unique farmers markets within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_farmers_markets_summary: `Found ${count} farmers markets within ${cappedRadius} miles.`,
+        poi_osm_farmers_markets_all: marketsWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Farmers Markets query failed:', error);
+      return { 
+        poi_osm_farmers_markets_summary: 'No farmers markets found due to error.',
+        poi_osm_farmers_markets_error: error instanceof Error ? error.message : 'Unknown error' 
       };
     }
   }

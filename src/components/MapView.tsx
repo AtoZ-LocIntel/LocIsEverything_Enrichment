@@ -861,6 +861,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_osm_bars_pubs': { icon: '🍺', color: '#ea580c', title: 'Bars & Pubs' },
   'poi_osm_bakeries': { icon: '🥖', color: '#d97706', title: 'Bakeries' },
   'poi_osm_ice_cream_shops': { icon: '🍦', color: '#eab308', title: 'Ice Cream Shops' },
+  'poi_osm_farmers_markets': { icon: '🌾', color: '#84cc16', title: 'Farmers Markets' },
   'poi_osm_food_trucks': { icon: '🚚', color: '#f59e0b', title: 'Food Trucks' },
   'poi_hospitals': { icon: '🏥', color: '#f97316', title: 'Hospitals' },
   'poi_pharmacies': { icon: '💊', color: '#06b6d4', title: 'Pharmacies' },
