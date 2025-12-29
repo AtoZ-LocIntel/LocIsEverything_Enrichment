@@ -191,13 +191,14 @@ function App() {
     // Otherwise, go to config (home)
     const targetViewMode = previousViewMode || 'config';
     const isComingFromCategory = viewMode === 'enrichment-category';
+    const isComingFromMap = viewMode === 'map';
     setViewMode(targetViewMode);
     setPreviousViewMode(null); // Clear the previous view mode
     setError(null);
-    // If coming from category page, scroll to top for better UX (user typically wants to search next)
+    // If coming from category page or map view, scroll to top for better UX
     // Otherwise, restore scroll position after a brief delay to ensure the view has rendered
     setTimeout(() => {
-      if (isComingFromCategory) {
+      if (isComingFromCategory || isComingFromMap) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         window.scrollTo(0, savedScrollPosition);

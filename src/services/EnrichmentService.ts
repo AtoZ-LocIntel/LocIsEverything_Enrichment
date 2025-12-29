@@ -2029,6 +2029,8 @@ export class EnrichmentService {
           return await this.getGasStations(lat, lon, radius);
         case 'poi_colleges_universities':
           return await this.getCollegesUniversities(lat, lon, radius);
+        case 'poi_osm_daycares_preschools':
+          return await this.getDaycaresPreschools(lat, lon, radius);
         
         case 'poi_mail_shipping':
           return await this.getMailShipping(lat, lon, radius);
@@ -30590,6 +30592,134 @@ out center;`;
       return { 
         poi_gas_stations_summary: 'No gas stations found due to error.',
         poi_gas_stations_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getDaycaresPreschools(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`👶 Daycares/Preschools query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for daycares and preschools - using nwr shorthand for efficiency
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="kindergarten"](around:${radiusMeters},${lat},${lon});
+  nwr["amenity"="childcare"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`👶 Overpass query: ${query}`);
+      
+      // Try Overpass API with POST and retry logic
+      let data;
+      try {
+        data = await fetchJSONSmart('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+      } catch (overpassError) {
+        console.warn(`👶 Primary Overpass API failed, trying alternative server:`, overpassError);
+        // Try alternative Overpass server
+        try {
+          data = await fetchJSONSmart('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+        } catch (altError) {
+          console.warn(`👶 Alternative Overpass API also failed:`, altError);
+          throw new Error('All Overpass API servers unavailable');
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`👶 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const elements = data.elements || [];
+      console.log(`👶 Overpass returned ${elements.length} daycare/preschool elements`);
+      
+      // Calculate distances and filter by radius
+      const facilitiesWithDistance: any[] = [];
+      for (const element of elements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let facilityLat: number | null = null;
+        let facilityLon: number | null = null;
+        
+        if (element.type === 'node') {
+          facilityLat = element.lat;
+          facilityLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          facilityLat = element.center?.lat;
+          facilityLon = element.center?.lon;
+        }
+        
+        if (facilityLat == null || facilityLon == null) {
+          console.warn(`👶 Skipping daycare/preschool ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, facilityLat, facilityLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include facilities within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          facilitiesWithDistance.push({
+            ...element,
+            lat: facilityLat,
+            lon: facilityLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      facilitiesWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = facilitiesWithDistance.length;
+      console.log(`👶 Found ${count} daycares/preschools within ${cappedRadius} miles (after distance filtering)`);
+      
+      // Process facility details for mapping
+      const facilityDetails = facilitiesWithDistance.map((element: any) => ({
+        id: element.id,
+        name: element.tags?.name || 'Unnamed Facility',
+        amenity: element.tags?.amenity || null,
+        operator: element.tags?.operator || null,
+        min_age: element.tags?.min_age || null,
+        max_age: element.tags?.max_age || null,
+        address: element.tags?.['addr:street'] || null,
+        city: element.tags?.['addr:city'] || null,
+        state: element.tags?.['addr:state'] || null,
+        postcode: element.tags?.['addr:postcode'] || null,
+        lat: element.lat,
+        lon: element.lon,
+        type: element.type,
+        phone: element.tags?.phone || null,
+        website: element.tags?.website || null,
+        email: element.tags?.email || null,
+        distance_miles: element.distance_miles,
+        tags: element.tags // Include all tags for CSV export
+      }));
+      
+      return {
+        poi_osm_daycares_preschools_summary: `Found ${count} daycares/preschools within ${cappedRadius} miles.`,
+        poi_osm_daycares_preschools_detailed: facilityDetails,
+        poi_osm_daycares_preschools_all: facilitiesWithDistance // Include all facilities for CSV export
+      };
+    } catch (error) {
+      console.error('Daycares/Preschools query failed:', error);
+      return { 
+        poi_osm_daycares_preschools_summary: 'No daycares/preschools found due to error.',
+        poi_osm_daycares_preschools_error: error instanceof Error ? error.message : 'Unknown error' 
       };
     }
   }

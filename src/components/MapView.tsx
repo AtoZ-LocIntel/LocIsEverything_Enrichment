@@ -850,6 +850,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_police_stations': { icon: '🚔', color: '#1f2937', title: 'Police Stations' },
   'poi_fire_stations': { icon: '🚒', color: '#dc2626', title: 'Fire Stations' },
   'poi_schools': { icon: '🏫', color: '#10b981', title: 'Schools' },
+  'poi_osm_daycares_preschools': { icon: '👶', color: '#f59e0b', title: 'Daycares/Preschools' },
   'poi_hospitals': { icon: '🏥', color: '#f97316', title: 'Hospitals' },
   'poi_pharmacies': { icon: '💊', color: '#06b6d4', title: 'Pharmacies' },
   'poi_parks': { icon: '🏞️', color: '#22c55e', title: 'Parks' },

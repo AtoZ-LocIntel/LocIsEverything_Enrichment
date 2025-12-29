@@ -278,7 +278,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                       <h4 className="font-semibold text-gray-900 mb-2">Points of Interest</h4>
                       <ul className="text-sm text-gray-600 space-y-1">
                         <li>• Schools, hospitals, parks</li>
-                        <li>• Retail & commercial services</li>
+                        <li>• Community & commercial services</li>
                         <li>• Transportation & infrastructure</li>
                         <li>• Environmental hazards & recreation</li>
                       </ul>
@@ -624,7 +624,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                         <div>• <strong>Infrastructure:</strong> Power plants, substations, cell towers</div>
                         <div>• <strong>Emergency:</strong> Police stations, fire stations</div>
                         <div>• <strong>Recreation:</strong> Parks, golf courses, cinemas, theatres</div>
-                        <div>• <strong>Retail:</strong> Restaurants, cafes, banks, gas stations</div>
+                        <div>• <strong>Community:</strong> Restaurants, cafes, banks, gas stations</div>
                         <div>• <strong>Natural Resources:</strong> Beaches, lakes, rivers, mountains, peaks</div>
                       </div>
                     </div>

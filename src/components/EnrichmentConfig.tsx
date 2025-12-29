@@ -50,7 +50,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   hazards: <img src="/assets/human_hazards.webp" alt="Human Caused Hazards" className="w-8 h-8" />,
   fish_wildlife: <img src="/assets/fishwildlife.webp" alt="Fish and Wildlife" className="w-5 h-5" />,
   community: <span className="text-xl">👥</span>,
-  retail: <span className="text-xl">🏢</span>,
+  education: <img src="/assets/Education.webp" alt="Education" className="w-5 h-5" />,
   health: <span className="text-xl">❤️</span>,
   transportation: <span className="text-xl">🚌</span>,
   infrastructure: <span className="text-xl">⚡</span>,
@@ -1264,7 +1264,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'hazards': 'hazards_risk',
       'fish_wildlife': 'fishwildlife',
       'community': 'community_services',
-      'retail': 'retail_commerce',
+      'education': 'Education',
       'nh': 'newhampshire',
       'health': 'health_wellness',
       'transportation': 'transportation',
@@ -2884,7 +2884,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   
                   const headerColor = category.id === 'hazards' ? '#991b1b' :
                                     category.id === 'community' ? '#1e40af' :
-                                    category.id === 'retail' ? '#6b21a8' :
+                                    category.id === 'education' ? '#1e40af' :
                                     category.id === 'health' ? '#9d174d' :
                                     category.id === 'transportation' ? '#3730a3' :
                                     category.id === 'infrastructure' ? '#92400e' :

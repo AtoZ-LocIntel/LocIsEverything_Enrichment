@@ -1697,11 +1697,24 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
+      category: "Education",
+      sources: [
+        {
+          name: "OpenStreetMap Education",
+          description: "Schools, colleges, universities, daycares, and preschools via OSM Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/"
+        }
+      ]
+    },
+    {
       category: "Community & Services",
       sources: [
         {
           name: "OpenStreetMap Community Services",
-          description: "Colleges, universities, gas stations, mail & shipping locations, schools, hospitals, parks, and other community facilities via OSM Overpass API",
+          description: "Gas stations, mail & shipping locations, hospitals, parks, and other community facilities via OSM Overpass API",
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",

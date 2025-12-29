@@ -412,11 +412,14 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('usfws_') || key.includes('american_eel_current_range') || key.includes('bighorn_sheep_captures_releases') || key.includes('chinook_salmon_ranges') || key.includes('national_aquatic_barrier_dams') || key.includes('national_marine_sanctuaries')) {
       return 'Fish and Wildlife';
     }
-    if (key.includes('poi_schools') || key.includes('poi_hospitals') || key.includes('poi_parks') || key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_town_halls') || key.includes('poi_courthouses') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_colleges') || key.includes('poi_childcare') || key.includes('poi_mail_shipping') || key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
+    if (key.includes('poi_schools') || key.includes('poi_colleges') || key.includes('poi_osm_daycares') || key.includes('daycares') || key.includes('preschools')) {
+      return 'Education';
+    }
+    if (key.includes('poi_hospitals') || key.includes('poi_parks') || key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_town_halls') || key.includes('poi_courthouses') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_childcare') || key.includes('poi_mail_shipping') || key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
       return 'Community & Services';
     }
     if (key.includes('poi_grocery') || key.includes('poi_restaurants') || key.includes('poi_banks') || key.includes('poi_pharmacies') || key.includes('poi_convenience') || key.includes('poi_hardware') || key.includes('poi_liquor') || key.includes('poi_bakery') || key.includes('poi_butcher') || key.includes('poi_seafood') || key.includes('poi_sporting') || key.includes('poi_bookstore') || key.includes('poi_clothing') || key.includes('poi_shoes') || key.includes('poi_thrift') || key.includes('poi_pet') || key.includes('poi_florist') || key.includes('poi_variety') || key.includes('poi_gas_stations') || key.includes('poi_car_wash') || key.includes('poi_auto_repair') || key.includes('poi_auto_parts') || key.includes('poi_auto_dealers')) {
-      return 'Retail & Commerce';
+      return 'Community & Services';
     }
     if (key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_gyms') || key.includes('poi_chiropractor') || key.includes('poi_optometry') || key.includes('poi_veterinary') || key.includes('poi_hospitals') || key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_urgent_care')) {
       return 'Health & Wellness';

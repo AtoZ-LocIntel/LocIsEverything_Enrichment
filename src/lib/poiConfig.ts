@@ -48,14 +48,14 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
   {
     id: 'community',
     title: 'Community & Services',
-    description: 'Schools, hospitals, parks, and community facilities',
+    description: 'Hospitals, parks, and community facilities',
     icon: '👥'
   },
   {
-    id: 'retail',
-    title: 'Retail & Commerce',
-    description: 'Shopping, dining, and commercial services',
-    icon: '🏢'
+    id: 'education',
+    title: 'Education',
+    description: 'Schools, colleges, and educational institutions',
+    icon: 'Education.webp'
   },
   {
     id: 'health',
@@ -501,37 +501,47 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'dc_property_vacant_and_blighted_building_footprints', label: 'DC Vacant and Blighted Building Footprints', description: 'DC Vacant and Blighted Building Footprints - point-in-polygon and proximity queries up to 5 miles', isPOI: true, defaultRadius: 0, maxRadius: 5, category: 'dcpropertyland', section: 'dc' },
   { id: 'dc_property_vacant_and_blighted_building_addresses', label: 'DC Vacant and Blighted Building Addresses', description: 'DC Vacant and Blighted Building Addresses - proximity queries up to 5 miles', isPOI: true, defaultRadius: 1, maxRadius: 5, category: 'dcpropertyland', section: 'dc' },
   
+  // Education
+  { id: 'poi_schools', label: 'Schools', description: 'Educational institutions', isPOI: true, defaultRadius: 5, category: 'education', section: 'education' },
+  { id: 'poi_colleges_universities', label: 'Colleges & Universities', description: 'Colleges, universities, and educational institutions via OSM Overpass API', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'education', section: 'education' },
+  { id: 'poi_osm_daycares_preschools', label: 'Daycares/Preschools', description: 'Daycares, preschools, and childcare facilities via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'education', section: 'education' },
+  
   // Community and Services
-  { id: 'poi_gas_stations', label: 'Gas Stations', description: 'Gas/petrol stations via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_schools', label: 'Schools', description: 'Educational institutions', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  // Healthcare & Medical
   { id: 'poi_hospitals', label: 'Hospitals', description: 'Medical facilities and hospitals', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_parks', label: 'Parks', description: 'Public parks and recreation areas', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_grocery', label: 'Grocery Stores', description: 'Supermarkets and grocery stores', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
-  { id: 'poi_restaurants', label: 'Restaurants', description: 'Dining establishments', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
-  { id: 'poi_banks', label: 'Banks & ATMs', description: 'Financial institutions and ATMs', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
-  { id: 'poi_pharmacies', label: 'Pharmacies', description: 'Drug stores and pharmacies', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
-  { id: 'poi_worship', label: 'Places of Worship', description: 'Churches, temples, and religious sites', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   { id: 'poi_doctors_clinics', label: 'Doctors & Clinics', description: 'Medical offices and clinics', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   { id: 'poi_dentists', label: 'Dentists', description: 'Dental offices and clinics', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_urgent_care', label: 'Urgent Care', description: 'Urgent care facilities', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_pharmacies', label: 'Pharmacies', description: 'Drug stores and pharmacies', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
+  
+  // Public Safety & Emergency Services
   { id: 'poi_police_stations', label: 'Police Stations', description: 'Law enforcement facilities', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   { id: 'poi_fire_stations', label: 'Fire Stations', description: 'Fire and emergency services', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_urgent_care', label: 'Urgent Care', description: 'Urgent care facilities', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  
+  // Food & Dining
+  { id: 'poi_restaurants', label: 'Restaurants', description: 'Dining establishments', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
   { id: 'poi_cafes_coffee', label: 'Cafes & Coffee', description: 'Coffee shops and cafes', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
+  { id: 'poi_grocery', label: 'Grocery Stores', description: 'Supermarkets and grocery stores', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
   { id: 'poi_markets', label: 'Markets', description: 'Marketplaces and bazaars', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  // USDA Local Food Portal - Farmers Markets & Local Food
-  { id: 'poi_usda_agritourism', label: 'Agritourism', description: 'Farm tours, pick-your-own, and farm experiences', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_usda_csa', label: 'CSA Programs', description: 'Community Supported Agriculture farm shares', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  
+  // Local Food & Agriculture
   { id: 'poi_usda_farmers_market', label: 'Farmers Markets', description: 'Traditional farmers markets and farm stands', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_usda_csa', label: 'CSA Programs', description: 'Community Supported Agriculture farm shares', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_usda_agritourism', label: 'Agritourism', description: 'Farm tours, pick-your-own, and farm experiences', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   { id: 'poi_usda_food_hub', label: 'Food Hubs', description: 'Local food distribution and aggregation centers', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   { id: 'poi_usda_onfarm_market', label: 'On-Farm Markets', description: 'Direct farm sales and on-site markets', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   
-  // Retail
-  { id: 'poi_grocery', label: 'Grocery Stores', description: 'Supermarkets and food markets', isPOI: true, defaultRadius: 3, category: 'retail', section: 'retail' },
-  { id: 'poi_restaurants', label: 'Restaurants', description: 'Dining establishments', isPOI: true, defaultRadius: 3, category: 'retail', section: 'retail' },
-  { id: 'poi_banks', label: 'Banks & ATMs', description: 'Financial institutions', isPOI: true, defaultRadius: 3, category: 'retail', section: 'retail' },
-  { id: 'poi_pharmacies', label: 'Pharmacies', description: 'Drug stores and pharmacies', isPOI: true, defaultRadius: 3, category: 'retail', section: 'retail' },
-  { id: 'poi_cafes_coffee', label: 'Cafes & Coffee', description: 'Coffee shops, cafes, and tea houses', isPOI: true, defaultRadius: 3, category: 'retail', section: 'retail' },
-  { id: 'poi_markets', label: 'Markets & Bazaars', description: 'Marketplaces, bazaars, fairs, and flea markets', isPOI: true, defaultRadius: 5, category: 'retail', section: 'retail' },
+  // Financial Services
+  { id: 'poi_banks', label: 'Banks & ATMs', description: 'Financial institutions and ATMs', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
+  
+  // Community & Civic Services
+  { id: 'poi_community_centers', label: 'Community Centers', description: 'Community centers and gathering places via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_worship', label: 'Places of Worship', description: 'Churches, temples, and religious sites', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_mail_shipping', label: 'Mail & Shipping', description: 'Post offices, parcel lockers, UPS/FedEx/DHL stores, shipping centers, and courier services', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  { id: 'poi_parks', label: 'Parks', description: 'Public parks and recreation areas', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  
+  // Transportation & Fuel
+  { id: 'poi_gas_stations', label: 'Gas Stations', description: 'Gas/petrol stations via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   
   // Health
   { id: 'poi_osm_health_medical_care', label: 'OSM Medical Care', description: 'OpenStreetMap - Hospitals, clinics, doctors, specialists (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
@@ -674,9 +684,6 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'nps_campgrounds', label: 'NPS Campgrounds', description: 'National Park Service Campgrounds - campground facilities within national parks for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
   { id: 'nps_visitor_centers', label: 'NPS Visitor Centers', description: 'National Park Service Visitor Centers - visitor center facilities within national parks for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
   { id: 'nps_nrhp_locations', label: 'NPS National Register of Historic Places', description: 'National Park Service National Register of Historic Places - historic properties listed on the National Register for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'poi_community_centers', label: 'Community Centers', description: 'Community centers and gathering places via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_mail_shipping', label: 'Mail & Shipping', description: 'Post offices, parcel lockers, UPS/FedEx/DHL stores, shipping centers, and courier services', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_colleges_universities', label: 'Colleges & Universities', description: 'Colleges, universities, and educational institutions via OSM Overpass API', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'community', section: 'community' },
   
   // Natural Hazards - Wildfire Risk & Monitoring (grouped at top)
   { id: 'nri_hurricane_annualized_frequency_county', label: 'NRI Hurricane Annualized Frequency (County)', description: 'FEMA National Risk Index - Annualized frequency of hurricane events (County). Point-in-polygon + proximity up to 50 miles.', isPOI: true, defaultRadius: 25, maxRadius: 50, category: 'wildfire', section: 'wildfire' },

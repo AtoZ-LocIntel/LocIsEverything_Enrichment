@@ -114,7 +114,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
         style={{
           backgroundColor: category.id === 'hazards' ? '#991b1b' :
                           category.id === 'community' ? '#1e40af' :
-                          category.id === 'retail' ? '#6b21a8' :
+                          category.id === 'education' ? '#1e40af' :
                           category.id === 'health' ? '#9d174d' :
                           category.id === 'transportation' ? '#3730a3' :
                           category.id === 'infrastructure' ? '#92400e' :

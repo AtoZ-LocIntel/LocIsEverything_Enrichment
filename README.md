@@ -14,7 +14,7 @@ A professional geocoding and enrichment platform that provides comprehensive loc
 ### 📊 Comprehensive Enrichment
 - **Core Attributes**: Elevation, Air Quality, Census IDs, Demographics, Weather Alerts
 - **Community POIs**: Schools, Hospitals, Parks, Places of Worship
-- **Retail & Commerce**: Grocery stores, restaurants, banks, pharmacies
+- **Community & Services**: Grocery stores, restaurants, banks, pharmacies, and commercial services
 - **Health & Wellness**: Medical facilities, fitness centers, dental care
 - **Transportation**: Airports, railroads, trails, public transit
 - **Infrastructure**: Power plants, substations, cell towers
