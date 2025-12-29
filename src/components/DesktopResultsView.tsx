@@ -763,7 +763,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Healthcare';
       } else if (key.includes('crime') || key.includes('safety')) {
         category = 'Safety & Crime';
-      } else if (key.includes('transport') || key.includes('transit')) {
+      } else if (key.includes('poi_gas_stations') || key.includes('transport') || key.includes('transit') || (key.includes('poi_') && (key.includes('bus') || key.includes('train') || key.includes('subway') || key.includes('metro') || key.includes('tram') || key.includes('monorail') || key.includes('aerialway') || key.includes('ferry') || key.includes('airport') || key.includes('taxi') || key.includes('bike') || key.includes('parking') || key.includes('charging')))) {
         category = 'Transportation';
       } else if (key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire')) || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('hurricane_evacuation_routes_hazards')) {
         category = 'Natural Hazards';
@@ -778,10 +778,12 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       } else if (key.includes('poi_restaurants') || key.includes('poi_osm_fast_food') || key.includes('poi_osm_bars_pubs') || key.includes('poi_osm_bakeries') || key.includes('poi_osm_ice_cream_shops') || key.includes('poi_osm_farmers_markets') || key.includes('poi_osm_food_trucks') || key.includes('poi_grocery') || key.includes('poi_cafes') || key.includes('poi_markets') || key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
         // Food & Beverage category (check before other POI categories)
         category = 'Food & Beverage';
-      } else if (key.includes('poi_') && (key.includes('bank') || key.includes('pharmacy') || key.includes('convenience') || key.includes('hardware') || key.includes('liquor') || key.includes('bakery') || key.includes('butcher') || key.includes('seafood') || key.includes('sporting') || key.includes('bookstore') || key.includes('clothing') || key.includes('shoes') || key.includes('thrift') || key.includes('pet') || key.includes('florist') || key.includes('variety') || key.includes('gas_stations') || key.includes('car_wash') || key.includes('auto_repair') || key.includes('auto_parts') || key.includes('auto_dealers'))) {
+      } else if (key.includes('poi_') && (key.includes('bank') || key.includes('convenience') || key.includes('hardware') || key.includes('liquor') || key.includes('bakery') || key.includes('butcher') || key.includes('seafood') || key.includes('sporting') || key.includes('bookstore') || key.includes('clothing') || key.includes('shoes') || key.includes('thrift') || key.includes('pet') || key.includes('florist') || key.includes('variety') || key.includes('car_wash') || key.includes('auto_repair') || key.includes('auto_parts') || key.includes('auto_dealers'))) {
         category = 'Community & Services';
-      } else if (key.includes('poi_') && (key.includes('gym') || key.includes('dentist') || key.includes('doctor') || key.includes('chiropractor') || key.includes('optometry') || key.includes('veterinary') || key.includes('hospital') || key.includes('police_stations') || key.includes('fire_stations') || key.includes('urgent_care'))) {
+      } else if (key.includes('poi_hospitals') || key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_urgent_care') || key.includes('poi_pharmacies') || (key.includes('poi_') && (key.includes('gym') || key.includes('chiropractor') || key.includes('optometry') || key.includes('veterinary') || key.includes('hospital') || key.includes('urgent_care'))) || key.includes('poi_osm_health')) {
         category = 'Health & Wellness';
+      } else if (key.includes('poi_police_stations') || key.includes('poi_fire_stations')) {
+        category = 'Government & Public Services';
       } else if (key.includes('poi_') && (key.includes('park') || key.includes('trail') || key.includes('recreation') || key.includes('bowling') || key.includes('arcade') || key.includes('cinema') || key.includes('theatre') || key.includes('hotel') || key.includes('rv_park') || key.includes('campground') || key.includes('wikipedia') || key.includes('brewery'))) {
         category = 'Recreation & Leisure';
       } else if (key.includes('poi_') && (key.includes('power') || key.includes('substation') || key.includes('grid') || key.includes('cell_tower'))) {
@@ -828,7 +830,9 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NJ Data';
       } else if (key.includes('poi_osm_libraries') || key.includes('poi_osm_prep_schools') || key.includes('poi_osm_middle_schools') || key.includes('poi_osm_high_schools') || (key.includes('poi_') && (key.includes('poi_osm_elementary') || key.includes('elementary') || key.includes('school') || key.includes('college') || key.includes('colleges_universities') || key.includes('poi_osm_daycares') || key.includes('daycares') || key.includes('preschools') || key.includes('poi_osm_vocational') || key.includes('vocational') || key.includes('poi_osm_tutoring') || key.includes('prep') || key.includes('middle') || key.includes('junior') || key.includes('high') || key.includes('secondary') || key.includes('technical') || key.includes('tutoring') || key.includes('library')))) {
         category = 'Education';
-      } else if (key.includes('poi_') && (key.includes('childcare') || key.includes('community_centre') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('worship') || key.includes('mail_shipping'))) {
+      } else if (key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_community_centers')) {
+        category = 'Religious & Community';
+      } else if (key.includes('poi_') && (key.includes('childcare') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('mail_shipping'))) {
         category = 'Community & Services';
       }
 

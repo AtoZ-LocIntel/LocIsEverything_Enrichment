@@ -55,6 +55,8 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   transportation: <span className="text-xl">🚌</span>,
   infrastructure: <span className="text-xl">⚡</span>,
   food_beverage: <img src="/assets/FoodBeverage.webp" alt="Food & Beverage" className="w-5 h-5" />,
+  government: <img src="/assets/government_publicservices.webp" alt="Government & Public Services" className="w-5 h-5" />,
+  religious_community: <img src="/assets/religious_community.webp" alt="Religious & Community" className="w-5 h-5" />,
   environment: <TreePine className="w-5 h-5" />,
   recreation: <span className="text-xl">🎯</span>,
   natural_resources: <span className="text-xl">🏔️</span>,
@@ -1271,6 +1273,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'transportation': 'transportation',
       'infrastructure': 'power_inf',
       'food_beverage': 'FoodBeverage',
+      'government': 'government_publicservices',
+      'religious_community': 'religious_community',
       'recreation': 'recreation_leisure',
       'natural_resources': 'natural_resources',
       'public_lands': 'public_lands',
@@ -2891,6 +2895,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     category.id === 'transportation' ? '#3730a3' :
                                     category.id === 'infrastructure' ? '#92400e' :
                                     category.id === 'food_beverage' ? '#dc2626' :
+                                    category.id === 'government' ? '#1e3a8a' :
+                                    category.id === 'religious_community' ? '#7c2d12' :
                                     category.id === 'environment' ? '#166534' :
                                     category.id === 'recreation' ? '#065f46' :
                                     category.id === 'natural_resources' ? '#115e59' :

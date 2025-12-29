@@ -11933,19 +11933,9 @@ export class EnrichmentService {
     if (id === "poi_gyms") return ["leisure=fitness_centre", "leisure=gym"];
     
     // OSM Health & Wellness layers
-    if (id === "poi_osm_health_medical_care") return ["amenity=hospital", "healthcare=hospital", "amenity=clinic", "healthcare=clinic", "healthcare=centre", "healthcare=doctor", "healthcare=specialist"];
     if (id === "poi_osm_health_mental_behavioral") return ["healthcare=psychotherapist", "healthcare=psychologist", "healthcare=psychiatrist", "healthcare=clinic", "social_facility=drug_rehabilitation", "healthcare=social_worker"];
-    if (id === "poi_osm_health_pharmacy_diagnostics") return ["amenity=pharmacy", "healthcare=pharmacy", "healthcare=laboratory", "healthcare=diagnostic_centre"];
     if (id === "poi_osm_health_fitness_movement") return ["leisure=fitness_centre", "sport=fitness", "leisure=sports_centre", "amenity=gym", "healthcare=physiotherapist", "healthcare=rehabilitation"];
     if (id === "poi_osm_health_wellness_alternative") return ["healthcare=chiropractor", "healthcare=acupuncture", "healthcare=alternative", "healthcare=massage", "healthcare=naturopath", "healthcare=osteopath"];
-    if (id === "poi_osm_health_dental_vision") return [
-      "amenity=dentist", 
-      "healthcare=dentist", 
-      "healthcare=orthodontist", 
-      "healthcare=oral_surgeon", 
-      "healthcare=optometrist", 
-      "healthcare=ophthalmologist"
-    ];
     if (id === "poi_osm_health_public_community") return ["healthcare=public_health", "healthcare=clinic", "amenity=social_facility", "healthcare=community_health_centre"];
     if (id === "poi_osm_health_senior_assisted") return ["amenity=nursing_home", "social_facility=assisted_living", "healthcare=rehabilitation", "healthcare=hospice"];
     if (id === "poi_cinemas") return ["amenity=cinema"];

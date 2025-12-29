@@ -82,6 +82,18 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'FoodBeverage.webp'
   },
   {
+    id: 'government',
+    title: 'Government & Public Services',
+    description: 'Government facilities, public safety, and civic services',
+    icon: 'government_publicservices.webp'
+  },
+  {
+    id: 'religious_community',
+    title: 'Religious & Community',
+    description: 'Places of worship, community centers, and religious organizations',
+    icon: 'religious_community.webp'
+  },
+  {
     id: 'recreation',
     title: 'Recreation & Leisure',
     description: 'Entertainment, sports, and outdoor activities',
@@ -522,16 +534,6 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   
   // Community and Services
   // Healthcare & Medical
-  { id: 'poi_hospitals', label: 'Hospitals', description: 'Medical facilities and hospitals', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_doctors_clinics', label: 'Doctors & Clinics', description: 'Medical offices and clinics', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_dentists', label: 'Dentists', description: 'Dental offices and clinics', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_urgent_care', label: 'Urgent Care', description: 'Urgent care facilities', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_pharmacies', label: 'Pharmacies', description: 'Drug stores and pharmacies', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
-  
-  // Public Safety & Emergency Services
-  { id: 'poi_police_stations', label: 'Police Stations', description: 'Law enforcement facilities', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_fire_stations', label: 'Fire Stations', description: 'Fire and emergency services', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  
   // Food & Beverage
   // Food & Dining
   { id: 'poi_restaurants', label: 'Restaurants', description: 'Dining establishments', isPOI: true, defaultRadius: 3, category: 'food_beverage', section: 'food_beverage' },
@@ -554,26 +556,32 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   // Financial Services
   { id: 'poi_banks', label: 'Banks & ATMs', description: 'Financial institutions and ATMs', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
   
-  // Community & Civic Services
-  { id: 'poi_community_centers', label: 'Community Centers', description: 'Community centers and gathering places via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_worship', label: 'Places of Worship', description: 'Churches, temples, and religious sites', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  // Mail & Shipping
   { id: 'poi_mail_shipping', label: 'Mail & Shipping', description: 'Post offices, parcel lockers, UPS/FedEx/DHL stores, shipping centers, and courier services', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   { id: 'poi_parks', label: 'Parks', description: 'Public parks and recreation areas', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
   
-  // Transportation & Fuel
-  { id: 'poi_gas_stations', label: 'Gas Stations', description: 'Gas/petrol stations via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
+  // Health & Wellness
+  { id: 'poi_hospitals', label: 'Hospitals', description: 'Medical facilities and hospitals', isPOI: true, defaultRadius: 5, category: 'health', section: 'health' },
+  { id: 'poi_doctors_clinics', label: 'Doctors & Clinics', description: 'Medical offices and clinics', isPOI: true, defaultRadius: 5, category: 'health', section: 'health' },
+  { id: 'poi_dentists', label: 'Dentists', description: 'Dental offices and clinics', isPOI: true, defaultRadius: 5, category: 'health', section: 'health' },
+  { id: 'poi_urgent_care', label: 'Urgent Care', description: 'Urgent care facilities', isPOI: true, defaultRadius: 5, category: 'health', section: 'health' },
+  { id: 'poi_pharmacies', label: 'Pharmacies', description: 'Drug stores and pharmacies', isPOI: true, defaultRadius: 3, category: 'health', section: 'health' },
+  { id: 'poi_osm_health_mental_behavioral', label: 'Mental & Behavioral Health', description: 'OpenStreetMap - Psychotherapists, psychologists, psychiatrists, mental health clinics (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
+  { id: 'poi_osm_health_fitness_movement', label: 'Fitness & Movement', description: 'OpenStreetMap - Fitness centers, gyms, sports centers, physiotherapists (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
+  { id: 'poi_osm_health_wellness_alternative', label: 'Wellness & Alternative Care', description: 'OpenStreetMap - Chiropractors, acupuncturists, massage, naturopaths, osteopaths (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
+  { id: 'poi_osm_health_public_community', label: 'Public & Community Health', description: 'OpenStreetMap - Public health facilities, community health centers (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
+  { id: 'poi_osm_health_senior_assisted', label: 'Senior & Assisted Care', description: 'OpenStreetMap - Nursing homes, assisted living, rehabilitation, hospices (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
   
-  // Health
-  { id: 'poi_osm_health_medical_care', label: 'OSM Medical Care', description: 'OpenStreetMap - Hospitals, clinics, doctors, specialists (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
-  { id: 'poi_osm_health_mental_behavioral', label: 'OSM Mental & Behavioral Health', description: 'OpenStreetMap - Psychotherapists, psychologists, psychiatrists, mental health clinics (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
-  { id: 'poi_osm_health_pharmacy_diagnostics', label: 'OSM Pharmacy & Diagnostics', description: 'OpenStreetMap - Pharmacies, laboratories, diagnostic centers (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
-  { id: 'poi_osm_health_fitness_movement', label: 'OSM Fitness & Movement', description: 'OpenStreetMap - Fitness centers, gyms, sports centers, physiotherapists (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
-  { id: 'poi_osm_health_wellness_alternative', label: 'OSM Wellness & Alternative Care', description: 'OpenStreetMap - Chiropractors, acupuncturists, massage, naturopaths, osteopaths (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
-  { id: 'poi_osm_health_dental_vision', label: 'OSM Dental & Vision', description: 'OpenStreetMap - Dentists, orthodontists, oral surgeons, optometrists, ophthalmologists (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
-  { id: 'poi_osm_health_public_community', label: 'OSM Public & Community Health', description: 'OpenStreetMap - Public health facilities, community health centers (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
-  { id: 'poi_osm_health_senior_assisted', label: 'OSM Senior & Assisted Care', description: 'OpenStreetMap - Nursing homes, assisted living, rehabilitation, hospices (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'health', section: 'health' },
+  // Government & Public Services
+  { id: 'poi_police_stations', label: 'Police Stations', description: 'Law enforcement facilities', isPOI: true, defaultRadius: 5, category: 'government', section: 'government' },
+  { id: 'poi_fire_stations', label: 'Fire Stations', description: 'Fire and emergency services', isPOI: true, defaultRadius: 5, category: 'government', section: 'government' },
+  
+  // Religious & Community
+  { id: 'poi_worship', label: 'Places of Worship', description: 'Churches, temples, and religious sites', isPOI: true, defaultRadius: 5, category: 'religious_community', section: 'religious_community' },
+  { id: 'poi_community_centers', label: 'Community Centers', description: 'Community centers and gathering places via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'religious_community', section: 'religious_community' },
   
   // Transportation
+  { id: 'poi_gas_stations', label: 'Gas Stations', description: 'Gas/petrol stations via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
   { id: 'poi_bus', label: 'Bus', description: 'Bus stops and bus stations', isPOI: true, defaultRadius: 3, category: 'transportation', section: 'transportation' },
   { id: 'poi_train', label: 'Train', description: 'Train stations, halts, and platforms', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
   { id: 'poi_subway_metro', label: 'Subway/Metro', description: 'Subway stations, entrances, and platforms', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
