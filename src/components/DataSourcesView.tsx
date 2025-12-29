@@ -1701,7 +1701,7 @@ export const getDataSources = (): DataSourceCategory[] => {
       sources: [
         {
           name: "OpenStreetMap Education",
-          description: "Schools, colleges, universities, daycares, preschools, vocational/technical schools, tutoring centers, and libraries via OSM Overpass API (proximity queries up to 25 miles)",
+          description: "K-12 schools (elementary, middle, high), colleges, universities, daycares, preschools, vocational/technical schools, tutoring centers, prep schools, and libraries via OSM Overpass API (proximity queries up to 25 miles)",
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
