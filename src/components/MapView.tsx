@@ -39,8 +39,11 @@ interface BasemapConfig {
   wmsFormat?: string;
   wmsCrs?: string; // 'EPSG4326' or 'EPSG3857'
   wmsUppercase?: boolean; // Required for some WMS 1.3.0 services
+  wmsRasterFunction?: string; // Raster function name for ImageServer services (e.g., 'RoadDensity')
   // For direct tile layers (ArcGIS MapServer tiles)
-  tileUrl?: string; // URL template with {z}/{y}/{x} placeholders
+  tileUrl?: string; // URL template with {z}/{y}/{x} placeholders, or ExportImage endpoint URL
+  // For ExportImage-based tile layers
+  exportImageRasterFunction?: string; // Raster function name for ExportImage endpoint
 }
 
 export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
@@ -229,6 +232,29 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsFormat: 'image/png',
     wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
     wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Riparian Areas WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  usfs_riparian_areas: {
+    type: 'wms',
+    name: 'USFS Riparian Areas',
+    attribution: 'USDA Forest Service',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Ecosystems/USFS_EDW_Riparian_Areas/ImageServer/WMSServer',
+    wmsLayers: 'USFS_EDW_Riparian_Areas', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS TCA Road Density - Using ExportImage endpoint with raster function
+  // Note: ImageServer services with raster functions work better via ExportImage than WMS
+  // This requires a custom tile URL function to construct the ExportImage URL with bbox
+  usfs_tca_road_density: {
+    type: 'tile',
+    name: 'USFS TCA Road Density',
+    attribution: 'USDA Forest Service',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_TCA_RoadDensity/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'RoadDensity',
   },
   // USFS FIA Forest Atlas - American Elm Historical Range Boundary
   // Raster/tiled basemap service - visualization only, not queryable
@@ -775,6 +801,44 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
+// Custom tile layer for ArcGIS ImageServer ExportImage endpoint with raster functions
+const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: string, options: any): L.TileLayer => {
+  // Create a standard tile layer with a placeholder URL
+  const layer = L.tileLayer('', options);
+  
+  // Store the export image URL and raster function
+  (layer as any)._exportImageUrl = exportImageUrl;
+  (layer as any)._rasterFunction = rasterFunction;
+  
+  // Override getTileUrl method
+  (layer as any).getTileUrl = function(coords: any) {
+    const z = coords.z;
+    const x = coords.x;
+    const y = coords.y;
+    const layerInstance = this as any;
+    
+    // Convert tile coordinates to bbox (Web Mercator/EPSG:3857)
+    const n = Math.pow(2, z);
+    const lonMin = (x / n) * 360 - 180;
+    const lonMax = ((x + 1) / n) * 360 - 180;
+    const latMin = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 1) / n))) * 180 / Math.PI;
+    const latMax = Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / Math.PI;
+    
+    // Convert to Web Mercator bbox (EPSG:3857)
+    const bboxMinX = lonMin * 20037508.34 / 180;
+    const bboxMaxX = lonMax * 20037508.34 / 180;
+    const bboxMinY = Math.log(Math.tan((90 + latMin) * Math.PI / 360)) / (Math.PI / 180) * 20037508.34 / 180;
+    const bboxMaxY = Math.log(Math.tan((90 + latMax) * Math.PI / 360)) / (Math.PI / 180) * 20037508.34 / 180;
+    
+    const bbox = `${bboxMinX},${bboxMinY},${bboxMaxX},${bboxMaxY}`;
+    const rasterFunctionJson = JSON.stringify({ rasterFunction: layerInstance._rasterFunction });
+    
+    return `${layerInstance._exportImageUrl}?bbox=${bbox}&bboxSR=3857&imageSR=3857&size=256,256&f=image&rasterFunction=${encodeURIComponent(rasterFunctionJson)}`;
+  };
+  
+  return layer;
+};
 
 // POI Category Icons and Colors
 const POI_ICONS: Record<string, { icon: string; color: string; title: string }> = {
@@ -2203,6 +2267,7 @@ const MapView: React.FC<MapViewProps> = ({
     'Basemaps': true, // Default to expanded
     'USGS National Map & MRLC': false,
     'FIA Forest Atlas': false,
+    'USFS': false,
   });
   const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
@@ -2495,13 +2560,31 @@ const MapView: React.FC<MapViewProps> = ({
         // If a non-maplibre basemap is selected, add it as a transparent overlay
         if (selectedConfig.type !== 'maplibre') {
           if (selectedConfig.type === 'tile') {
-            overlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
-              attribution: selectedConfig.attribution,
-              maxZoom: 15,
-              minZoom: 4,
-              noWrap: true,
-              opacity: 0.7, // Transparent overlay
-            }).addTo(map);
+            // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
+            if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
+              // Use custom ExportImage tile layer
+              overlayLayer = createExportImageTileLayer(
+                selectedConfig.tileUrl,
+                selectedConfig.exportImageRasterFunction,
+                {
+                  attribution: selectedConfig.attribution,
+                  maxZoom: 15,
+                  minZoom: 4,
+                  noWrap: true,
+                  opacity: 0.7, // Transparent overlay
+                  tileSize: 256,
+                }
+              ).addTo(map);
+            } else {
+              // Standard tile layer with {z}/{y}/{x} pattern
+              overlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
+                attribution: selectedConfig.attribution,
+                maxZoom: 15,
+                minZoom: 4,
+                noWrap: true,
+                opacity: 0.7, // Transparent overlay
+              }).addTo(map);
+            }
             
             overlayLayer.on('tileerror', (_error: any, tile: any) => {
               if (tile && tile.src) {
@@ -2527,6 +2610,11 @@ const MapView: React.FC<MapViewProps> = ({
             
             if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
               wmsOptions.layers = selectedConfig.wmsLayers;
+            }
+            
+            // Add raster function parameter if specified (for ImageServer services)
+            if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
+              wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
             }
             
             overlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
@@ -2555,13 +2643,31 @@ const MapView: React.FC<MapViewProps> = ({
             interactive: false,
           }).addTo(map);
         } else if (selectedConfig.type === 'tile') {
-          basemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
-            attribution: selectedConfig.attribution,
-            maxZoom: 15,
-            minZoom: 4,
-            noWrap: true,
-            opacity: 1.0, // Full opacity when used as base
-          }).addTo(map);
+          // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
+          if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
+            // Use custom ExportImage tile layer
+            basemapLayer = createExportImageTileLayer(
+              selectedConfig.tileUrl,
+              selectedConfig.exportImageRasterFunction,
+              {
+                attribution: selectedConfig.attribution,
+                maxZoom: 15,
+                minZoom: 4,
+                noWrap: true,
+                opacity: 1.0, // Full opacity when used as base
+                tileSize: 256,
+              }
+            ).addTo(map);
+          } else {
+            // Standard tile layer with {z}/{y}/{x} pattern
+            basemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
+              attribution: selectedConfig.attribution,
+              maxZoom: 15,
+              minZoom: 4,
+              noWrap: true,
+              opacity: 1.0, // Full opacity when used as base
+            }).addTo(map);
+          }
           
           basemapLayer.on('tileerror', (_error: any, tile: any) => {
             if (tile && tile.src) {
@@ -2587,6 +2693,11 @@ const MapView: React.FC<MapViewProps> = ({
           
           if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
             wmsOptions.layers = selectedConfig.wmsLayers;
+          }
+          
+          // Add raster function parameter if specified (for ImageServer services)
+          if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
+            wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
           }
           
           basemapLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
@@ -2790,13 +2901,31 @@ const MapView: React.FC<MapViewProps> = ({
       // If a non-maplibre basemap is selected, add it as a transparent overlay
       if (selectedConfig.type !== 'maplibre') {
         if (selectedConfig.type === 'tile') {
-          newOverlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
-            attribution: selectedConfig.attribution,
-            maxZoom: 15,
-            minZoom: 4,
-            noWrap: true,
-            opacity: 0.7, // Transparent overlay
-          }).addTo(map);
+          // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
+          if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
+            // Use custom ExportImage tile layer
+            newOverlayLayer = createExportImageTileLayer(
+              selectedConfig.tileUrl,
+              selectedConfig.exportImageRasterFunction,
+              {
+                attribution: selectedConfig.attribution,
+                maxZoom: 15,
+                minZoom: 4,
+                noWrap: true,
+                opacity: 0.7, // Transparent overlay
+                tileSize: 256,
+              }
+            ).addTo(map);
+          } else {
+            // Standard tile layer with {z}/{y}/{x} pattern
+            newOverlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
+              attribution: selectedConfig.attribution,
+              maxZoom: 15,
+              minZoom: 4,
+              noWrap: true,
+              opacity: 0.7, // Transparent overlay
+            }).addTo(map);
+          }
           
           newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
             if (tile && tile.src) {
@@ -2822,6 +2951,11 @@ const MapView: React.FC<MapViewProps> = ({
           
           if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
             wmsOptions.layers = selectedConfig.wmsLayers;
+          }
+          
+          // Add raster function parameter if specified (for ImageServer services)
+          if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
+            wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
           }
           
           newOverlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
@@ -2865,13 +2999,31 @@ const MapView: React.FC<MapViewProps> = ({
           // ignore
         }
       } else if (selectedConfig.type === 'tile') {
-        newBasemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
-          attribution: selectedConfig.attribution,
-          maxZoom: 15,
-          minZoom: 4,
-          noWrap: true,
-          opacity: 1.0, // Full opacity when used as base
-        }).addTo(map);
+        // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
+        if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
+          // Use custom ExportImage tile layer
+          newBasemapLayer = createExportImageTileLayer(
+            selectedConfig.tileUrl,
+            selectedConfig.exportImageRasterFunction,
+            {
+              attribution: selectedConfig.attribution,
+              maxZoom: 15,
+              minZoom: 4,
+              noWrap: true,
+              opacity: 1.0, // Full opacity when used as base
+              tileSize: 256,
+            }
+          ).addTo(map);
+        } else {
+          // Standard tile layer with {z}/{y}/{x} pattern
+          newBasemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
+            attribution: selectedConfig.attribution,
+            maxZoom: 15,
+            minZoom: 4,
+            noWrap: true,
+            opacity: 1.0, // Full opacity when used as base
+          }).addTo(map);
+        }
         
         newBasemapLayer.on('tileerror', (_error: any, tile: any) => {
           if (tile && tile.src) {
@@ -2901,6 +3053,11 @@ const MapView: React.FC<MapViewProps> = ({
         
         if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
           wmsOptions.layers = selectedConfig.wmsLayers;
+        }
+        
+        // Add raster function parameter if specified (for ImageServer services)
+        if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
+          wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
         }
         
         newBasemapLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
@@ -34705,6 +34862,36 @@ const MapView: React.FC<MapViewProps> = ({
                     <div className="pb-1">
                       {Object.entries(BASEMAP_CONFIGS)
                         .filter(([key]) => key.startsWith('fia_') && key.endsWith('_basemap'))
+                        .map(([key, config]) => (
+                          <button
+                            key={key}
+                            onClick={() => setSelectedBasemap(key)}
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                              selectedBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                            }`}
+                          >
+                            {config.name}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* USFS basemaps */}
+                <div className="border-b border-gray-200 last:border-b-0">
+                  <button
+                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USFS': !prev['USFS'] }))}
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <span>USFS</span>
+                    <span className={`transform transition-transform ${expandedBasemapSections['USFS'] ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {expandedBasemapSections['USFS'] && (
+                    <div className="pb-1">
+                      {Object.entries(BASEMAP_CONFIGS)
+                        .filter(([key]) => key.startsWith('usfs_') && !key.startsWith('usfs_fia_'))
                         .map(([key, config]) => (
                           <button
                             key={key}
