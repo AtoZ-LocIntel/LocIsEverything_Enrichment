@@ -2031,6 +2031,12 @@ export class EnrichmentService {
           return await this.getCollegesUniversities(lat, lon, radius);
         case 'poi_osm_daycares_preschools':
           return await this.getDaycaresPreschools(lat, lon, radius);
+        case 'poi_osm_vocational_technical':
+          return await this.getVocationalTechnicalSchools(lat, lon, radius);
+        case 'poi_osm_tutoring_centers':
+          return await this.getTutoringCenters(lat, lon, radius);
+        case 'poi_osm_libraries':
+          return await this.getLibraries(lat, lon, radius);
         
         case 'poi_mail_shipping':
           return await this.getMailShipping(lat, lon, radius);
@@ -30720,6 +30726,532 @@ out center tags;`;
       return { 
         poi_osm_daycares_preschools_summary: 'No daycares/preschools found due to error.',
         poi_osm_daycares_preschools_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getVocationalTechnicalSchools(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🔧 Vocational/Technical Schools query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query - query for base amenities first, then filter by name/college tag in JavaScript
+      // This approach is more reliable than complex regex queries in Overpass
+      const query = `[out:json][timeout:25];
+(
+  /* Colleges (will filter by college=vocational and name regex in JS) */
+  node["amenity"="college"](around:${radiusMeters},${lat},${lon});
+  way["amenity"="college"](around:${radiusMeters},${lat},${lon});
+  relation["amenity"="college"](around:${radiusMeters},${lat},${lon});
+  
+  /* Schools (will filter by name regex in JS) */
+  node["amenity"="school"](around:${radiusMeters},${lat},${lon});
+  way["amenity"="school"](around:${radiusMeters},${lat},${lon});
+  relation["amenity"="school"](around:${radiusMeters},${lat},${lon});
+  
+  /* Training facilities */
+  node["amenity"="training"](around:${radiusMeters},${lat},${lon});
+  way["amenity"="training"](around:${radiusMeters},${lat},${lon});
+  relation["amenity"="training"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🔧 Overpass query: ${query}`);
+      
+      // Try Overpass API with POST and retry logic
+      let data;
+      try {
+        data = await fetchJSONSmart('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+      } catch (overpassError: any) {
+        console.warn(`🔧 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        console.warn(`🔧 Error details:`, errorMessage);
+        // Try alternative Overpass server
+        try {
+          data = await fetchJSONSmart('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+        } catch (altError: any) {
+          console.warn(`🔧 Alternative Overpass API also failed:`, altError);
+          const altErrorMessage = altError?.message || altError?.toString() || 'Unknown error';
+          console.warn(`🔧 Alternative error details:`, altErrorMessage);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}, Alternative: ${altErrorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🔧 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🔧 Overpass returned ${allElements.length} potential elements`);
+      
+      // Filter elements by vocational/technical criteria in JavaScript
+      const nameKeywords = ['technical', 'technology', 'tech', 'polytechnic', 'career', 'trade', 'vocational'];
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const name = (tags.name || '').toLowerCase();
+        const amenity = tags.amenity;
+        const college = tags.college;
+        
+        // Explicit vocational schools
+        if (amenity === 'college' && college === 'vocational') {
+          return true;
+        }
+        
+        // Training facilities
+        if (amenity === 'training') {
+          return true;
+        }
+        
+        // Colleges/schools with matching name keywords
+        if ((amenity === 'college' || amenity === 'school') && name) {
+          return nameKeywords.some(keyword => name.includes(keyword));
+        }
+        
+        return false;
+      });
+      
+      console.log(`🔧 Filtered to ${filteredElements.length} vocational/technical school elements`);
+      
+      // Calculate distances and filter by radius
+      const schoolsWithDistance: any[] = [];
+      const seenIds = new Set<string>(); // Deduplicate by type+id
+      
+      for (const element of filteredElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let schoolLat: number | null = null;
+        let schoolLon: number | null = null;
+        
+        if (element.type === 'node') {
+          schoolLat = element.lat;
+          schoolLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          schoolLat = element.center?.lat;
+          schoolLon = element.center?.lon;
+        }
+        
+        if (schoolLat == null || schoolLon == null) {
+          console.warn(`🔧 Skipping vocational/technical school ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by type+id
+        const uniqueId = `${element.type}_${element.id}`;
+        if (seenIds.has(uniqueId)) {
+          continue;
+        }
+        seenIds.add(uniqueId);
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, schoolLat, schoolLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include schools within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          schoolsWithDistance.push({
+            ...element,
+            lat: schoolLat,
+            lon: schoolLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      schoolsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = schoolsWithDistance.length;
+      console.log(`🔧 Found ${count} vocational/technical schools within ${cappedRadius} miles (after distance filtering)`);
+      
+      // Process school details for mapping
+      const schoolDetails = schoolsWithDistance.map((element: any) => ({
+        id: element.id,
+        name: element.tags?.name || 'Unnamed School',
+        amenity: element.tags?.amenity || null,
+        college: element.tags?.college || null,
+        address: element.tags?.['addr:street'] || null,
+        city: element.tags?.['addr:city'] || null,
+        state: element.tags?.['addr:state'] || null,
+        postcode: element.tags?.['addr:postcode'] || null,
+        lat: element.lat,
+        lon: element.lon,
+        type: element.type,
+        phone: element.tags?.phone || null,
+        website: element.tags?.website || null,
+        email: element.tags?.email || null,
+        operator: element.tags?.operator || null,
+        distance_miles: element.distance_miles,
+        tags: element.tags // Include all tags for CSV export
+      }));
+      
+      return {
+        poi_osm_vocational_technical_summary: `Found ${count} vocational/technical schools within ${cappedRadius} miles.`,
+        poi_osm_vocational_technical_detailed: schoolDetails,
+        poi_osm_vocational_technical_all: schoolsWithDistance // Include all schools for CSV export
+      };
+    } catch (error) {
+      console.error('Vocational/Technical Schools query failed:', error);
+      return { 
+        poi_osm_vocational_technical_summary: 'No vocational/technical schools found due to error.',
+        poi_osm_vocational_technical_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getTutoringCenters(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📚 Tutoring Centers query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query - query for base amenities first, then filter by name/type in JavaScript
+      const query = `[out:json][timeout:25];
+(
+  /* Explicit tutoring facilities */
+  node["amenity"="tutoring"](around:${radiusMeters},${lat},${lon});
+  way["amenity"="tutoring"](around:${radiusMeters},${lat},${lon});
+  relation["amenity"="tutoring"](around:${radiusMeters},${lat},${lon});
+  
+  /* Training / education centers */
+  node["amenity"="training"](around:${radiusMeters},${lat},${lon});
+  way["amenity"="training"](around:${radiusMeters},${lat},${lon});
+  relation["amenity"="training"](around:${radiusMeters},${lat},${lon});
+  
+  /* Schools (will filter by name in JS) */
+  node["amenity"="school"](around:${radiusMeters},${lat},${lon});
+  way["amenity"="school"](around:${radiusMeters},${lat},${lon});
+  relation["amenity"="school"](around:${radiusMeters},${lat},${lon});
+  
+  /* Educational offices (will filter by name in JS) */
+  node["office"="educational"](around:${radiusMeters},${lat},${lon});
+  way["office"="educational"](around:${radiusMeters},${lat},${lon});
+  relation["office"="educational"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`📚 Overpass query: ${query}`);
+      
+      // Try Overpass API with POST and retry logic
+      let data;
+      try {
+        data = await fetchJSONSmart('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+      } catch (overpassError: any) {
+        console.warn(`📚 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        console.warn(`📚 Error details:`, errorMessage);
+        // Try alternative Overpass server
+        try {
+          data = await fetchJSONSmart('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+        } catch (altError: any) {
+          console.warn(`📚 Alternative Overpass API also failed:`, altError);
+          const altErrorMessage = altError?.message || altError?.toString() || 'Unknown error';
+          console.warn(`📚 Alternative error details:`, altErrorMessage);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}, Alternative: ${altErrorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`📚 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`📚 Overpass returned ${allElements.length} potential elements`);
+      
+      // Filter elements by tutoring center criteria in JavaScript
+      const tutoringNameKeywords = ['tutor', 'tutoring', 'learning center', 'learning centre', 'study center', 'study centre', 'education center', 'education centre', 'learning', 'study', 'prep', 'academy'];
+      const chainBrands = ['kumon', 'sylvan', 'mathnasium', 'huntington learning', 'princeton review', 'kaplan', 'score'];
+      
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const name = (tags.name || '').toLowerCase();
+        const amenity = tags.amenity;
+        const office = tags.office;
+        
+        // Explicit tutoring facilities
+        if (amenity === 'tutoring') {
+          return true;
+        }
+        
+        // Training facilities (commonly used for tutoring)
+        if (amenity === 'training') {
+          return true;
+        }
+        
+        // Schools with tutoring-related names
+        if (amenity === 'school' && name) {
+          return tutoringNameKeywords.some(keyword => name.includes(keyword)) ||
+                 chainBrands.some(brand => name.includes(brand));
+        }
+        
+        // Educational offices with tutoring-related names
+        if (office === 'educational' && name) {
+          return tutoringNameKeywords.some(keyword => name.includes(keyword)) ||
+                 chainBrands.some(brand => name.includes(brand));
+        }
+        
+        // Chain tutoring brands by name (any element type)
+        if (name) {
+          return chainBrands.some(brand => name.includes(brand));
+        }
+        
+        return false;
+      });
+      
+      console.log(`📚 Filtered to ${filteredElements.length} tutoring center elements`);
+      
+      // Calculate distances and filter by radius
+      const centersWithDistance: any[] = [];
+      const seenIds = new Set<string>(); // Deduplicate by type+id
+      
+      for (const element of filteredElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let centerLat: number | null = null;
+        let centerLon: number | null = null;
+        
+        if (element.type === 'node') {
+          centerLat = element.lat;
+          centerLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          centerLat = element.center?.lat;
+          centerLon = element.center?.lon;
+        }
+        
+        if (centerLat == null || centerLon == null) {
+          console.warn(`📚 Skipping tutoring center ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by type+id
+        const uniqueId = `${element.type}_${element.id}`;
+        if (seenIds.has(uniqueId)) {
+          continue;
+        }
+        seenIds.add(uniqueId);
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, centerLat, centerLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include centers within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          centersWithDistance.push({
+            ...element,
+            lat: centerLat,
+            lon: centerLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      centersWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = centersWithDistance.length;
+      console.log(`📚 Found ${count} tutoring centers within ${cappedRadius} miles (after distance filtering)`);
+      
+      // Process center details for mapping
+      const centerDetails = centersWithDistance.map((element: any) => ({
+        id: element.id,
+        name: element.tags?.name || 'Unnamed Center',
+        amenity: element.tags?.amenity || null,
+        office: element.tags?.office || null,
+        address: element.tags?.['addr:street'] || null,
+        city: element.tags?.['addr:city'] || null,
+        state: element.tags?.['addr:state'] || null,
+        postcode: element.tags?.['addr:postcode'] || null,
+        lat: element.lat,
+        lon: element.lon,
+        type: element.type,
+        phone: element.tags?.phone || null,
+        website: element.tags?.website || null,
+        email: element.tags?.email || null,
+        operator: element.tags?.operator || null,
+        distance_miles: element.distance_miles,
+        tags: element.tags // Include all tags for CSV export
+      }));
+      
+      return {
+        poi_osm_tutoring_centers_summary: `Found ${count} tutoring centers within ${cappedRadius} miles.`,
+        poi_osm_tutoring_centers_detailed: centerDetails,
+        poi_osm_tutoring_centers_all: centersWithDistance // Include all centers for CSV export
+      };
+    } catch (error) {
+      console.error('Tutoring Centers query failed:', error);
+      return { 
+        poi_osm_tutoring_centers_summary: 'No tutoring centers found due to error.',
+        poi_osm_tutoring_centers_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getLibraries(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📖 Libraries query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for libraries - using nwr shorthand for efficiency
+      const query = `[out:json][timeout:25];
+(
+  /* Primary library tagging */
+  nwr["amenity"="library"](around:${radiusMeters},${lat},${lon});
+  
+  /* University / institutional libraries sometimes tagged as buildings */
+  nwr["building"="library"](around:${radiusMeters},${lat},${lon});
+  
+  /* Public bookcases (Little Free Libraries) */
+  nwr["amenity"="public_bookcase"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`📖 Overpass query: ${query}`);
+      
+      // Try Overpass API with POST and retry logic
+      let data;
+      try {
+        data = await fetchJSONSmart('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+      } catch (overpassError: any) {
+        console.warn(`📖 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        console.warn(`📖 Error details:`, errorMessage);
+        // Try alternative Overpass server
+        try {
+          data = await fetchJSONSmart('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+        } catch (altError: any) {
+          console.warn(`📖 Alternative Overpass API also failed:`, altError);
+          const altErrorMessage = altError?.message || altError?.toString() || 'Unknown error';
+          console.warn(`📖 Alternative error details:`, altErrorMessage);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}, Alternative: ${altErrorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`📖 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const elements = data.elements || [];
+      console.log(`📖 Overpass returned ${elements.length} library elements`);
+      
+      // Calculate distances and filter by radius
+      const librariesWithDistance: any[] = [];
+      const seenIds = new Set<string>(); // Deduplicate by type+id
+      
+      for (const element of elements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let libraryLat: number | null = null;
+        let libraryLon: number | null = null;
+        
+        if (element.type === 'node') {
+          libraryLat = element.lat;
+          libraryLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          libraryLat = element.center?.lat;
+          libraryLon = element.center?.lon;
+        }
+        
+        if (libraryLat == null || libraryLon == null) {
+          console.warn(`📖 Skipping library ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by type+id
+        const uniqueId = `${element.type}_${element.id}`;
+        if (seenIds.has(uniqueId)) {
+          continue;
+        }
+        seenIds.add(uniqueId);
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, libraryLat, libraryLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include libraries within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          librariesWithDistance.push({
+            ...element,
+            lat: libraryLat,
+            lon: libraryLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      librariesWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = librariesWithDistance.length;
+      console.log(`📖 Found ${count} libraries within ${cappedRadius} miles (after distance filtering)`);
+      
+      // Process library details for mapping
+      const libraryDetails = librariesWithDistance.map((element: any) => ({
+        id: element.id,
+        name: element.tags?.name || 'Unnamed Library',
+        amenity: element.tags?.amenity || null,
+        building: element.tags?.building || null,
+        address: element.tags?.['addr:street'] || null,
+        city: element.tags?.['addr:city'] || null,
+        state: element.tags?.['addr:state'] || null,
+        postcode: element.tags?.['addr:postcode'] || null,
+        lat: element.lat,
+        lon: element.lon,
+        type: element.type,
+        phone: element.tags?.phone || null,
+        website: element.tags?.website || null,
+        email: element.tags?.email || null,
+        operator: element.tags?.operator || null,
+        distance_miles: element.distance_miles,
+        tags: element.tags // Include all tags for CSV export
+      }));
+      
+      return {
+        poi_osm_libraries_summary: `Found ${count} libraries within ${cappedRadius} miles.`,
+        poi_osm_libraries_detailed: libraryDetails,
+        poi_osm_libraries_all: librariesWithDistance // Include all libraries for CSV export
+      };
+    } catch (error) {
+      console.error('Libraries query failed:', error);
+      return { 
+        poi_osm_libraries_summary: 'No libraries found due to error.',
+        poi_osm_libraries_error: error instanceof Error ? error.message : 'Unknown error' 
       };
     }
   }

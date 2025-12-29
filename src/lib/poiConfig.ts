@@ -505,6 +505,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_schools', label: 'Schools', description: 'Educational institutions', isPOI: true, defaultRadius: 5, category: 'education', section: 'education' },
   { id: 'poi_colleges_universities', label: 'Colleges & Universities', description: 'Colleges, universities, and educational institutions via OSM Overpass API', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'education', section: 'education' },
   { id: 'poi_osm_daycares_preschools', label: 'Daycares/Preschools', description: 'Daycares, preschools, and childcare facilities via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'education', section: 'education' },
+  { id: 'poi_osm_vocational_technical', label: 'Vocational/Technical Schools', description: 'Technical, vocational, trade, and career training schools via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'education', section: 'education' },
+  { id: 'poi_osm_tutoring_centers', label: 'Tutoring Centers', description: 'Tutoring centers, learning centers, and educational support services via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'education', section: 'education' },
+  { id: 'poi_osm_libraries', label: 'Libraries', description: 'Public libraries, university libraries, and book exchange facilities via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'education', section: 'education' },
   
   // Community and Services
   // Healthcare & Medical

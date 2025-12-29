@@ -825,7 +825,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NJ Data';
       } else if (key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
         category = 'Community & Services';
-      } else if (key.includes('poi_') && (key.includes('school') || key.includes('college') || key.includes('daycares') || key.includes('preschools'))) {
+      } else if (key.includes('poi_') && (key.includes('school') || key.includes('college') || key.includes('daycares') || key.includes('preschools') || key.includes('vocational') || key.includes('technical') || key.includes('tutoring') || key.includes('library'))) {
         category = 'Education';
       } else if (key.includes('poi_') && (key.includes('childcare') || key.includes('community_centre') || key.includes('town_hall') || key.includes('courthouse') || key.includes('post_office') || key.includes('parcel_locker') || key.includes('worship') || key.includes('mail_shipping'))) {
         category = 'Community & Services';
