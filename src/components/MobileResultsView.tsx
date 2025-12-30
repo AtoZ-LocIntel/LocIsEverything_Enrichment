@@ -416,8 +416,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_osm_libraries') || key.includes('poi_osm_prep_schools') || key.includes('poi_osm_middle_schools') || key.includes('poi_osm_high_schools') || key.includes('poi_osm_elementary') || key.includes('poi_colleges') || key.includes('poi_colleges_universities') || key.includes('poi_osm_daycares') || key.includes('poi_osm_vocational') || key.includes('poi_osm_tutoring') || key.includes('prep') || key.includes('middle') || key.includes('junior') || key.includes('high') || key.includes('secondary') || key.includes('elementary') || key.includes('daycares') || key.includes('preschools') || key.includes('vocational') || key.includes('technical') || key.includes('tutoring') || key.includes('library')) {
       return 'Education';
     }
-    if (key.includes('poi_parks') || key.includes('poi_town_halls') || key.includes('poi_courthouses') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_childcare') || key.includes('poi_mail_shipping')) {
+    if (key.includes('poi_town_halls') || key.includes('poi_courthouses') || key.includes('poi_childcare')) {
       return 'Community & Services';
+    }
+    if (key.includes('poi_parks') || key.includes('poi_tnm_trailheads') || key.includes('poi_tnm_trails') || key.includes('poi_mountain_biking') || key.includes('poi_boat_ramps') || key.includes('poi_golf_courses')) {
+      return 'Parks & Recreation';
     }
     if (key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_community_centers')) {
       return 'Religious & Community';
@@ -426,17 +429,27 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_restaurants') || key.includes('poi_osm_fast_food') || key.includes('poi_osm_bars_pubs') || key.includes('poi_osm_bakeries') || key.includes('poi_osm_ice_cream_shops') || key.includes('poi_osm_farmers_markets') || key.includes('poi_osm_food_trucks') || key.includes('poi_grocery') || key.includes('poi_cafes') || key.includes('poi_markets') || key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
       return 'Food & Beverage';
     }
-    if (key.includes('poi_banks') || key.includes('poi_convenience') || key.includes('poi_hardware') || key.includes('poi_liquor') || key.includes('poi_bakery') || key.includes('poi_butcher') || key.includes('poi_seafood') || key.includes('poi_sporting') || key.includes('poi_bookstore') || key.includes('poi_clothing') || key.includes('poi_shoes') || key.includes('poi_thrift') || key.includes('poi_pet') || key.includes('poi_florist') || key.includes('poi_variety') || key.includes('poi_car_wash') || key.includes('poi_auto_repair') || key.includes('poi_auto_parts') || key.includes('poi_auto_dealers')) {
-      return 'Community & Services';
+    if (key.includes('poi_banks')) {
+      return 'Banking & Finance';
     }
     if (key.includes('poi_hospitals') || key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_urgent_care') || key.includes('poi_pharmacies') || key.includes('poi_gyms') || key.includes('poi_chiropractor') || key.includes('poi_optometry') || key.includes('poi_veterinary') || key.includes('poi_osm_health')) {
       return 'Health & Wellness';
     }
-    if (key.includes('poi_police_stations') || key.includes('poi_fire_stations')) {
+    if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_mail_shipping') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers')) {
       return 'Government & Public Services';
     }
-    if (key.includes('poi_cinemas') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_hotels') || key.includes('poi_breweries') || key.includes('poi_bowling') || key.includes('poi_arcade') || key.includes('poi_rv_park') || key.includes('poi_campground') || key.includes('poi_wikipedia')) {
-      return 'Recreation & Leisure';
+    if (key.includes('poi_cinemas') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_bars_nightlife')) {
+      return 'Arts & Entertainment';
+    }
+    if (key.includes('poi_hotels')) {
+      return 'Travel & Accommodations';
+    }
+    // Quirky & Fun category - check before other POI categories
+    if (key.includes('poi_aurora_viewing_sites') || key.includes('poi_ebird_hotspots') || key.includes('ebird_recent_observations') || key.includes('poi_breweries') || key.includes('poi_wikipedia') || key.includes('orlando_christmas_lights') || key.includes('median_sea_ice_extent_antarctic') || key.includes('median_sea_ice_extent_arctic')) {
+      return 'Quirky & Fun';
+    }
+    if (key.includes('poi_bowling') || key.includes('poi_arcade') || key.includes('poi_rv_park') || key.includes('poi_campground')) {
+      return 'Other';
     }
     if (key.includes('poi_substations') || key.includes('poi_powerlines') || key.includes('poi_power_plants_openei') || key.includes('poi_cell_towers') || key.includes('poi_grid')) {
       return 'Power & Infrastructure';

@@ -56,9 +56,12 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   infrastructure: <span className="text-xl">⚡</span>,
   food_beverage: <img src="/assets/FoodBeverage.webp" alt="Food & Beverage" className="w-5 h-5" />,
   government: <img src="/assets/government_publicservices.webp" alt="Government & Public Services" className="w-5 h-5" />,
+  banking_finance: <img src="/assets/banking_finance.webp" alt="Banking & Finance" className="w-5 h-5" />,
   religious_community: <img src="/assets/religious_community.webp" alt="Religious & Community" className="w-5 h-5" />,
+  parks_recreation: <img src="/assets/parks_rec.webp" alt="Parks & Recreation" className="w-5 h-5" />,
+  arts_entertainment: <img src="/assets/arts_entertainment.webp" alt="Arts & Entertainment" className="w-5 h-5" />,
+  travel_accommodations: <img src="/assets/travel_accommodations.webp" alt="Travel & Accommodations" className="w-5 h-5" />,
   environment: <TreePine className="w-5 h-5" />,
-  recreation: <span className="text-xl">🎯</span>,
   natural_resources: <span className="text-xl">🏔️</span>,
   public_lands: <span className="text-xl">🏞️</span>,
   tiger: <img src="/assets/TIGERweb.webp" alt="US Census TIGER Data" className="w-5 h-5" />,
@@ -1266,7 +1269,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'nws': 'NWS',
       'hazards': 'hazards_risk',
       'fish_wildlife': 'fishwildlife',
-      'community': 'community_services',
       'education': 'Education',
       'nh': 'newhampshire',
       'health': 'health_wellness',
@@ -1274,8 +1276,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'infrastructure': 'power_inf',
       'food_beverage': 'FoodBeverage',
       'government': 'government_publicservices',
+      'banking_finance': 'banking_finance',
       'religious_community': 'religious_community',
-      'recreation': 'recreation_leisure',
+      'parks_recreation': 'parks_rec',
+      'arts_entertainment': 'arts_entertainment',
+      'travel_accommodations': 'travel_accommodations',
       'natural_resources': 'natural_resources',
       'public_lands': 'public_lands',
       'quirky': 'quirky_and_fun',
@@ -2889,16 +2894,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               });
                   
                   const headerColor = category.id === 'hazards' ? '#991b1b' :
-                                    category.id === 'community' ? '#1e40af' :
                                     category.id === 'education' ? '#1e40af' :
                                     category.id === 'health' ? '#9d174d' :
                                     category.id === 'transportation' ? '#3730a3' :
                                     category.id === 'infrastructure' ? '#92400e' :
                                     category.id === 'food_beverage' ? '#dc2626' :
                                     category.id === 'government' ? '#1e3a8a' :
+                                    category.id === 'banking_finance' ? '#1e40af' :
                                     category.id === 'religious_community' ? '#7c2d12' :
+                                    category.id === 'parks_recreation' ? '#15803d' :
+                                    category.id === 'arts_entertainment' ? '#7c3aed' :
+                                    category.id === 'travel_accommodations' ? '#0891b2' :
                                     category.id === 'environment' ? '#166534' :
-                                    category.id === 'recreation' ? '#065f46' :
                                     category.id === 'natural_resources' ? '#115e59' :
                                     category.id === 'public_lands' ? '#365314' :
                                     category.id === 'quirky' ? '#9a3412' :

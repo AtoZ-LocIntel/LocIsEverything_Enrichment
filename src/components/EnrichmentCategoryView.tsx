@@ -113,16 +113,18 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
         className="shadow-lg border-b border-gray-300 sticky top-0 z-50"
         style={{
           backgroundColor: category.id === 'hazards' ? '#991b1b' :
-                          category.id === 'community' ? '#1e40af' :
                           category.id === 'education' ? '#1e40af' :
                           category.id === 'health' ? '#9d174d' :
                           category.id === 'transportation' ? '#3730a3' :
                           category.id === 'infrastructure' ? '#92400e' :
                           category.id === 'food_beverage' ? '#dc2626' :
                           category.id === 'government' ? '#1e3a8a' :
+                          category.id === 'banking_finance' ? '#1e40af' :
                           category.id === 'religious_community' ? '#7c2d12' :
+                          category.id === 'parks_recreation' ? '#15803d' :
+                          category.id === 'arts_entertainment' ? '#7c3aed' :
+                          category.id === 'travel_accommodations' ? '#0891b2' :
                           category.id === 'environment' ? '#166534' :
-                          category.id === 'recreation' ? '#065f46' :
                           category.id === 'natural_resources' ? '#115e59' :
                           category.id === 'public_lands' ? '#365314' :
                           category.id === 'quirky' ? '#9a3412' :

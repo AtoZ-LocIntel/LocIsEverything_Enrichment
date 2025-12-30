@@ -1589,6 +1589,9 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     } else if (key === 'poi_wikipedia_articles' && Array.isArray(value)) {
       // Handle Wikipedia articles
       value.forEach((article: any) => {
+        const articleLat = article.lat !== null && article.lat !== undefined ? article.lat.toString() : location.lat.toString();
+        const articleLon = article.lon !== null && article.lon !== undefined ? article.lon.toString() : location.lon.toString();
+        const distanceMiles = article.distance_miles !== null && article.distance_miles !== undefined ? article.distance_miles.toString() : '0';
         rows.push([
           location.name,
           location.lat.toString(),
@@ -1597,9 +1600,9 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           (location.confidence || 'N/A').toString(),
           'WIKIPEDIA_ARTICLE',
           article.title || 'Unnamed Article',
-          location.lat.toString(),
-          location.lon.toString(),
-          '0',
+          articleLat,
+          articleLon,
+          distanceMiles,
           'WIKIPEDIA',
           '',
           '',

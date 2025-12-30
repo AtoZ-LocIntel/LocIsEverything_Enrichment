@@ -46,12 +46,6 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'fishwildlife.webp'
   },
   {
-    id: 'community',
-    title: 'Community & Services',
-    description: 'Hospitals, parks, and community facilities',
-    icon: '👥'
-  },
-  {
     id: 'education',
     title: 'Education',
     description: 'Schools, colleges, and educational institutions',
@@ -88,16 +82,34 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'government_publicservices.webp'
   },
   {
+    id: 'banking_finance',
+    title: 'Banking & Finance',
+    description: 'Banks, ATMs, and financial institutions',
+    icon: 'banking_finance.webp'
+  },
+  {
     id: 'religious_community',
     title: 'Religious & Community',
     description: 'Places of worship, community centers, and religious organizations',
     icon: 'religious_community.webp'
   },
   {
-    id: 'recreation',
-    title: 'Recreation & Leisure',
-    description: 'Entertainment, sports, and outdoor activities',
-    icon: '🎯'
+    id: 'travel_accommodations',
+    title: 'Travel & Accommodations',
+    description: 'Hotels, lodging, and travel services',
+    icon: 'travel_accommodations.webp'
+  },
+  {
+    id: 'parks_recreation',
+    title: 'Parks & Recreation',
+    description: 'Parks, recreational facilities, and outdoor spaces',
+    icon: 'parks_rec.webp'
+  },
+  {
+    id: 'arts_entertainment',
+    title: 'Arts & Entertainment',
+    description: 'Museums, theaters, cinemas, and cultural venues',
+    icon: 'arts_entertainment.webp'
   },
   {
     id: 'natural_resources',
@@ -553,13 +565,6 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_usda_food_hub', label: 'Food Hubs', description: 'Local food distribution and aggregation centers', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
   { id: 'poi_usda_onfarm_market', label: 'On-Farm Markets', description: 'Direct farm sales and on-site markets', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
   
-  // Financial Services
-  { id: 'poi_banks', label: 'Banks & ATMs', description: 'Financial institutions and ATMs', isPOI: true, defaultRadius: 3, category: 'community', section: 'community' },
-  
-  // Mail & Shipping
-  { id: 'poi_mail_shipping', label: 'Mail & Shipping', description: 'Post offices, parcel lockers, UPS/FedEx/DHL stores, shipping centers, and courier services', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  { id: 'poi_parks', label: 'Parks', description: 'Public parks and recreation areas', isPOI: true, defaultRadius: 5, category: 'community', section: 'community' },
-  
   // Health & Wellness
   { id: 'poi_hospitals', label: 'Hospitals', description: 'Medical facilities and hospitals', isPOI: true, defaultRadius: 5, category: 'health', section: 'health' },
   { id: 'poi_doctors_clinics', label: 'Doctors & Clinics', description: 'Medical offices and clinics', isPOI: true, defaultRadius: 5, category: 'health', section: 'health' },
@@ -575,10 +580,22 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   // Government & Public Services
   { id: 'poi_police_stations', label: 'Police Stations', description: 'Law enforcement facilities', isPOI: true, defaultRadius: 5, category: 'government', section: 'government' },
   { id: 'poi_fire_stations', label: 'Fire Stations', description: 'Fire and emergency services', isPOI: true, defaultRadius: 5, category: 'government', section: 'government' },
+  { id: 'poi_mail_shipping', label: 'Mail & Shipping', description: 'Post offices, parcel lockers, UPS/FedEx/DHL stores, shipping centers, and courier services', isPOI: true, defaultRadius: 5, category: 'government', section: 'government' },
+  
+  // Banking & Finance
+  { id: 'poi_banks', label: 'Banks & ATMs', description: 'Financial institutions and ATMs', isPOI: true, defaultRadius: 3, category: 'banking_finance', section: 'banking_finance' },
   
   // Religious & Community
   { id: 'poi_worship', label: 'Places of Worship', description: 'Churches, temples, and religious sites', isPOI: true, defaultRadius: 5, category: 'religious_community', section: 'religious_community' },
   { id: 'poi_community_centers', label: 'Community Centers', description: 'Community centers and gathering places via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'religious_community', section: 'religious_community' },
+  
+  // Parks & Recreation
+  { id: 'poi_parks', label: 'Parks', description: 'Public parks and recreation areas', isPOI: true, defaultRadius: 5, category: 'parks_recreation', section: 'parks_recreation' },
+  { id: 'poi_tnm_trailheads', label: 'Trailheads', description: 'Hiking trail starting points', isPOI: true, defaultRadius: 5, category: 'parks_recreation', section: 'parks_recreation' },
+  { id: 'poi_tnm_trails', label: 'Trails', description: 'Hiking and biking trails', isPOI: true, defaultRadius: 5, category: 'parks_recreation', section: 'parks_recreation' },
+  { id: 'poi_mountain_biking', label: 'Mountain Biking & Biking Trails', description: 'Mountain bike trails, bike paths, and cycling routes via OpenStreetMap', isPOI: true, defaultRadius: 5, category: 'parks_recreation', section: 'parks_recreation' },
+  { id: 'poi_boat_ramps', label: 'Boat Ramps', description: 'Boat ramps and marinas', isPOI: true, defaultRadius: 5, category: 'parks_recreation', section: 'parks_recreation' },
+  { id: 'poi_golf_courses', label: 'Golf Courses', description: 'Golf courses and country clubs', isPOI: true, defaultRadius: 5, category: 'parks_recreation', section: 'parks_recreation' },
   
   // Transportation
   { id: 'poi_gas_stations', label: 'Gas Stations', description: 'Gas/petrol stations via OSM Overpass API', isPOI: true, defaultRadius: 5, category: 'transportation', section: 'transportation' },
@@ -602,17 +619,14 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'us_drilling_platforms', label: 'US Drilling Platforms', description: 'US Drilling Platforms (proximity up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'infrastructure', section: 'infrastructure' },
   { id: 'poi_cell_towers', label: 'Cell Towers', description: 'Cellular communication towers and masts', isPOI: true, defaultRadius: 5, category: 'infrastructure', section: 'infrastructure' },
   
-  // Recreation
-  { id: 'poi_tnm_trailheads', label: 'Trailheads', description: 'Hiking trail starting points', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
-  { id: 'poi_tnm_trails', label: 'Trails', description: 'Hiking and biking trails', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
-  { id: 'poi_cinemas', label: 'Cinemas', description: 'Movie theaters and cinemas', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
-  { id: 'poi_theatres', label: 'Theatres', description: 'Live performance venues for plays, concerts, and shows', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
-  { id: 'poi_museums_historic', label: 'Museums, Historic Sites & Memorials', description: 'Museums, historic landmarks, memorials, and cultural heritage sites', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
-  { id: 'poi_hotels', label: 'Hotels', description: 'Accommodation options', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
-  { id: 'poi_golf_courses', label: 'Golf Courses', description: 'Golf courses and country clubs', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
-  { id: 'poi_boat_ramps', label: 'Boat Ramps', description: 'Boat ramps and marinas', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
-  { id: 'poi_bars_nightlife', label: 'Bars & Nightlife', description: 'Bars, taverns, nightclubs, and live music venues', isPOI: true, defaultRadius: 2, category: 'recreation', section: 'recreation' },
-  { id: 'poi_mountain_biking', label: 'Mountain Biking & Biking Trails', description: 'Mountain bike trails, bike paths, and cycling routes via OpenStreetMap', isPOI: true, defaultRadius: 5, category: 'recreation', section: 'recreation' },
+  // Arts & Entertainment
+  { id: 'poi_cinemas', label: 'Cinemas', description: 'Movie theaters and cinemas', isPOI: true, defaultRadius: 5, category: 'arts_entertainment', section: 'arts_entertainment' },
+  { id: 'poi_theatres', label: 'Theatres', description: 'Live performance venues for plays, concerts, and shows', isPOI: true, defaultRadius: 5, category: 'arts_entertainment', section: 'arts_entertainment' },
+  { id: 'poi_museums_historic', label: 'Museums, Historic Sites & Memorials', description: 'Museums, historic landmarks, memorials, and cultural heritage sites', isPOI: true, defaultRadius: 5, category: 'arts_entertainment', section: 'arts_entertainment' },
+  { id: 'poi_bars_nightlife', label: 'Bars & Nightlife', description: 'Bars, taverns, nightclubs, and live music venues', isPOI: true, defaultRadius: 2, category: 'arts_entertainment', section: 'arts_entertainment' },
+  
+  // Travel & Accommodations
+  { id: 'poi_hotels', label: 'Hotels', description: 'Accommodation options', isPOI: true, defaultRadius: 5, category: 'travel_accommodations', section: 'travel_accommodations' },
   
   // Fish and Wildlife
   { id: 'usfws_final_critical_habitat', label: 'USFWS Final Critical Habitat', description: 'US Fish and Wildlife Service - Final Critical Habitat features for threatened and endangered species - point-in-polygon and proximity queries up to 50 miles', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'fish_wildlife', section: 'fish_wildlife' },

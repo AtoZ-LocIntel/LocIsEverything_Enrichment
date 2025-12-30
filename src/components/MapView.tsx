@@ -3443,6 +3443,60 @@ const MapView: React.FC<MapViewProps> = ({
         });
       }
 
+      // Draw Wikipedia articles as markers on the map
+      if (enrichments.poi_wikipedia_articles && Array.isArray(enrichments.poi_wikipedia_articles)) {
+        enrichments.poi_wikipedia_articles.forEach((article: any) => {
+          if (article.lat && article.lon) {
+            try {
+              const articleLat = article.lat;
+              const articleLon = article.lon;
+              const articleTitle = article.title || 'Unnamed Article';
+              const distanceMiles = article.distance_miles !== null && article.distance_miles !== undefined ? article.distance_miles : null;
+              const articleUrl = article.url || null;
+              const categories = article.categories || [];
+              
+              // Create a custom icon for Wikipedia articles
+              const icon = createPOIIcon('📖', '#1d4ed8'); // Blue icon for Wikipedia articles
+              
+              const marker = L.marker([articleLat, articleLon], { icon });
+              
+              // Build popup content with article details
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    📖 ${articleTitle}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${distanceMiles !== null ? `<div><strong>Distance:</strong> ${distanceMiles.toFixed(2)} miles</div>` : ''}
+                    ${categories.length > 0 ? `<div><strong>Categories:</strong> ${categories.join(', ')}</div>` : ''}
+                    ${articleUrl ? `<div style="margin-top: 8px;"><a href="${articleUrl}" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-size: 12px;">View on Wikipedia</a></div>` : ''}
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              
+              // Extend bounds to include this article
+              bounds.extend([articleLat, articleLon]);
+              
+              // Add to legend accumulator
+              if (!legendAccumulator['poi_wikipedia']) {
+                legendAccumulator['poi_wikipedia'] = {
+                  icon: '📖',
+                  color: '#1d4ed8',
+                  title: 'Wikipedia Articles',
+                  count: 0,
+                };
+              }
+              legendAccumulator['poi_wikipedia'].count += 1;
+            } catch (error) {
+              console.error('Error drawing Wikipedia article marker:', error);
+            }
+          }
+        });
+      }
+
       // Draw NH Places of Worship as markers on the map
       if (enrichments.nh_places_of_worship_all && Array.isArray(enrichments.nh_places_of_worship_all)) {
         enrichments.nh_places_of_worship_all.forEach((place: any) => {
