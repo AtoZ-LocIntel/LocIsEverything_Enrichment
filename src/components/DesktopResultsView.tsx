@@ -783,7 +783,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Banking & Finance';
       } else if (key.includes('poi_hospitals') || key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_urgent_care') || key.includes('poi_pharmacies') || (key.includes('poi_') && (key.includes('gym') || key.includes('chiropractor') || key.includes('optometry') || key.includes('veterinary') || key.includes('hospital') || key.includes('urgent_care'))) || key.includes('poi_osm_health')) {
         category = 'Health & Wellness';
-      } else if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_mail_shipping') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_osm_city_town_halls') || key.includes('poi_osm_courthouses') || key.includes('poi_osm_dmv_licensing')) {
+      } else if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_mail_shipping') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_osm_city_town_halls') || key.includes('poi_osm_courthouses') || key.includes('poi_osm_dmv_licensing') || key.includes('poi_osm_zoning_planning') || key.includes('poi_osm_public_works') || key.includes('poi_osm_social_services')) {
         category = 'Government & Public Services';
       } else if (key.includes('poi_parks') || key.includes('poi_tnm_trailheads') || key.includes('poi_tnm_trails') || key.includes('poi_mountain_biking') || key.includes('poi_boat_ramps') || key.includes('poi_golf_courses')) {
         category = 'Parks & Recreation';

@@ -1727,7 +1727,7 @@ export const getDataSources = (): DataSourceCategory[] => {
       sources: [
         {
           name: "OpenStreetMap Government & Public Services",
-          description: "Police stations, fire stations, mail & shipping locations (post offices, parcel lockers, UPS/FedEx/DHL stores), city/town halls, courthouses, and DMV/licensing offices via OSM Overpass API (proximity queries up to 25 miles)",
+          description: "Police stations, fire stations, mail & shipping locations (post offices, parcel lockers, UPS/FedEx/DHL stores), city/town halls, courthouses, DMV/licensing offices, zoning & planning offices, public works facilities, and social services offices via OSM Overpass API (proximity queries up to 25 miles)",
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",

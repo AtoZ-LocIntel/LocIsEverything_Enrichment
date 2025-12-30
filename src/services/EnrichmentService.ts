@@ -2076,6 +2076,12 @@ export class EnrichmentService {
           return await this.getCourthouses(lat, lon, radius);
         case 'poi_osm_dmv_licensing':
           return await this.getDMVLicensing(lat, lon, radius);
+        case 'poi_osm_zoning_planning':
+          return await this.getZoningPlanning(lat, lon, radius);
+        case 'poi_osm_public_works':
+          return await this.getPublicWorks(lat, lon, radius);
+        case 'poi_osm_social_services':
+          return await this.getSocialServices(lat, lon, radius);
         
         case 'pct_centerline':
         case 'pct_sheriff_offices':
@@ -34537,6 +34543,508 @@ out center tags;`;
       return { 
         poi_osm_dmv_licensing_summary: 'No DMV & licensing offices found due to error.',
         poi_osm_dmv_licensing_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getZoningPlanning(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📋 Zoning & Planning query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for zoning/planning offices - use simplified query and filter in JavaScript
+      // Query for office=government and building=civic (we'll filter by government tag and name in JS)
+      const query = `[out:json][timeout:30];
+(
+  nwr["office"="government"](around:${radiusMeters},${lat},${lon});
+  nwr["building"="civic"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`📋 Zoning & Planning Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`📋 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`📋 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`📋 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`📋 Overpass returned ${allElements.length} potential zoning/planning elements`);
+      
+      // Filter for zoning/planning offices in JavaScript
+      const zoningPlanningNamePattern = /planning|zoning|planning & zoning|land use|community development|development services/i;
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const office = tags.office;
+        const building = tags.building;
+        const government = tags.government;
+        const name = tags.name || '';
+        
+        // Office=government with planning/zoning/land_use/development government tag
+        if (office === 'government') {
+          if (government && /planning|zoning|land_use|development|community_development/i.test(government)) {
+            return true;
+          }
+          // Name-based detection for zoning/planning offices
+          if (name && zoningPlanningNamePattern.test(name)) {
+            return true;
+          }
+        }
+        
+        // Civic buildings with zoning/planning name patterns
+        if (building === 'civic' && name && zoningPlanningNamePattern.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`📋 Found ${filteredElements.length} zoning/planning offices after filtering`);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const zoningPlanningOfficesWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of filteredElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let zpLat: number | null = null;
+        let zpLon: number | null = null;
+        
+        if (element.type === 'node') {
+          zpLat = element.lat;
+          zpLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          zpLat = element.center?.lat;
+          zpLon = element.center?.lon;
+        }
+        
+        if (zpLat == null || zpLon == null) {
+          console.warn(`📋 Skipping zoning/planning office ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(zpLat / coordinateTolerance)}_${Math.round(zpLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`📋 Removing duplicate at [${zpLat}, ${zpLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, zpLat, zpLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include zoning/planning offices within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          zoningPlanningOfficesWithDistance.push({
+            ...element,
+            lat: zpLat,
+            lon: zpLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      zoningPlanningOfficesWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = zoningPlanningOfficesWithDistance.length;
+      console.log(`📋 Found ${count} unique zoning/planning offices within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_zoning_planning_summary: `Found ${count} zoning & planning offices within ${cappedRadius} miles.`,
+        poi_osm_zoning_planning_all: zoningPlanningOfficesWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Zoning & Planning query failed:', error);
+      return { 
+        poi_osm_zoning_planning_summary: 'No zoning & planning offices found due to error.',
+        poi_osm_zoning_planning_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getPublicWorks(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚧 Public Works query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for public works - query only building types first (more selective)
+      // This avoids the large office=government query that causes timeouts
+      // Public works facilities are typically tagged with building types and often have office=government tag too
+      const query = `[out:json][timeout:30];
+(
+  nwr["building"="service"](around:${radiusMeters},${lat},${lon});
+  nwr["building"="warehouse"](around:${radiusMeters},${lat},${lon});
+  nwr["building"="industrial"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🚧 Public Works Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🚧 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🚧 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🚧 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🚧 Overpass returned ${allElements.length} potential public works elements`);
+      
+      // Filter for public works facilities in JavaScript
+      // Since we're querying building types, check for public works name patterns OR office=government tag
+      const publicWorksNamePattern = /public works|dpw|department of public works|highway department|street department|road department|municipal garage|operations center|service yard/i;
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const office = tags.office;
+        const building = tags.building;
+        const government = tags.government;
+        const name = tags.name || '';
+        
+        // Must be one of the building types we queried
+        if (building !== 'service' && building !== 'warehouse' && building !== 'industrial') {
+          return false;
+        }
+        
+        // Service/warehouse/industrial buildings with public works name patterns
+        if (name && publicWorksNamePattern.test(name)) {
+          return true;
+        }
+        
+        // Buildings with office=government tag (likely public works facilities)
+        if (office === 'government') {
+          // Check for public works government tag
+          if (government && /public_works|transport|highway|roads|streets|infrastructure/i.test(government)) {
+            return true;
+          }
+          // If it has office=government tag, it's likely a public works facility (even without name match)
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🚧 Found ${filteredElements.length} public works facilities after filtering`);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const publicWorksWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of filteredElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let pwLat: number | null = null;
+        let pwLon: number | null = null;
+        
+        if (element.type === 'node') {
+          pwLat = element.lat;
+          pwLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          pwLat = element.center?.lat;
+          pwLon = element.center?.lon;
+        }
+        
+        if (pwLat == null || pwLon == null) {
+          console.warn(`🚧 Skipping public works facility ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(pwLat / coordinateTolerance)}_${Math.round(pwLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🚧 Removing duplicate at [${pwLat}, ${pwLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, pwLat, pwLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include public works facilities within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          publicWorksWithDistance.push({
+            ...element,
+            lat: pwLat,
+            lon: pwLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      publicWorksWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = publicWorksWithDistance.length;
+      console.log(`🚧 Found ${count} unique public works facilities within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_public_works_summary: `Found ${count} public works facilities within ${cappedRadius} miles.`,
+        poi_osm_public_works_all: publicWorksWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Public Works query failed:', error);
+      return { 
+        poi_osm_public_works_summary: 'No public works facilities found due to error.',
+        poi_osm_public_works_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getSocialServices(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Social Services query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for social services - use simplified query and filter in JavaScript
+      // Query for office=government and building=civic (we'll filter by government tag and name in JS)
+      const query = `[out:json][timeout:30];
+(
+  nwr["office"="government"](around:${radiusMeters},${lat},${lon});
+  nwr["building"="civic"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🏛️ Social Services Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🏛️ Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🏛️ Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🏛️ Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🏛️ Overpass returned ${allElements.length} potential social services elements`);
+      
+      // Filter for social services offices in JavaScript
+      const socialServicesNamePattern = /social services|human services|family services|children services|public assistance|welfare|community services/i;
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const office = tags.office;
+        const building = tags.building;
+        const government = tags.government;
+        const name = tags.name || '';
+        
+        // Office=government with social_services/welfare/human_services/family/children government tag
+        if (office === 'government') {
+          if (government && /social_services|welfare|human_services|family|children/i.test(government)) {
+            return true;
+          }
+          // Name-based detection for social services offices
+          if (name && socialServicesNamePattern.test(name)) {
+            return true;
+          }
+        }
+        
+        // Civic buildings with social services name patterns
+        if (building === 'civic' && name && socialServicesNamePattern.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🏛️ Found ${filteredElements.length} social services offices after filtering`);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const socialServicesWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of filteredElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let ssLat: number | null = null;
+        let ssLon: number | null = null;
+        
+        if (element.type === 'node') {
+          ssLat = element.lat;
+          ssLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          ssLat = element.center?.lat;
+          ssLon = element.center?.lon;
+        }
+        
+        if (ssLat == null || ssLon == null) {
+          console.warn(`🏛️ Skipping social services office ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(ssLat / coordinateTolerance)}_${Math.round(ssLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🏛️ Removing duplicate at [${ssLat}, ${ssLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, ssLat, ssLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include social services offices within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          socialServicesWithDistance.push({
+            ...element,
+            lat: ssLat,
+            lon: ssLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      socialServicesWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = socialServicesWithDistance.length;
+      console.log(`🏛️ Found ${count} unique social services offices within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_social_services_summary: `Found ${count} social services offices within ${cappedRadius} miles.`,
+        poi_osm_social_services_all: socialServicesWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Social Services query failed:', error);
+      return { 
+        poi_osm_social_services_summary: 'No social services offices found due to error.',
+        poi_osm_social_services_error: error instanceof Error ? error.message : 'Unknown error' 
       };
     }
   }
