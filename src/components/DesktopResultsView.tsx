@@ -776,7 +776,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       } else if (key.includes('poi_restaurants') || key.includes('poi_osm_fast_food') || key.includes('poi_osm_bars_pubs') || key.includes('poi_osm_bakeries') || key.includes('poi_osm_ice_cream_shops') || key.includes('poi_osm_farmers_markets') || key.includes('poi_osm_food_trucks') || key.includes('poi_grocery') || key.includes('poi_cafes') || key.includes('poi_markets') || key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
         // Food & Beverage category (check before other POI categories)
         category = 'Food & Beverage';
-      } else if (key.includes('poi_banks')) {
+      } else if (key.includes('poi_osm_banks') || key.includes('poi_osm_atms') || key.includes('poi_osm_credit_unions')) {
         category = 'Banking & Finance';
       } else if (key.includes('poi_hospitals') || key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_urgent_care') || key.includes('poi_pharmacies') || (key.includes('poi_') && (key.includes('gym') || key.includes('chiropractor') || key.includes('optometry') || key.includes('veterinary') || key.includes('hospital') || key.includes('urgent_care'))) || key.includes('poi_osm_health')) {
         category = 'Health & Wellness';
@@ -839,7 +839,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Education';
       } else if (key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_community_centers')) {
         category = 'Religious & Community';
-      } else if (key.includes('poi_banks')) {
+      } else if (key.includes('poi_osm_banks') || key.includes('poi_osm_atms') || key.includes('poi_osm_credit_unions')) {
         category = 'Banking & Finance';
       }
       

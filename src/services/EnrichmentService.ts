@@ -2059,6 +2059,12 @@ export class EnrichmentService {
           return await this.getFarmersMarkets(lat, lon, radius);
         case 'poi_osm_food_trucks':
           return await this.getFoodTrucks(lat, lon, radius);
+        case 'poi_osm_banks':
+          return await this.getBanks(lat, lon, radius);
+        case 'poi_osm_atms':
+          return await this.getATMs(lat, lon, radius);
+        case 'poi_osm_credit_unions':
+          return await this.getCreditUnions(lat, lon, radius);
         
         case 'poi_mail_shipping':
           return await this.getMailShipping(lat, lon, radius);
@@ -32863,6 +32869,432 @@ out center tags;`;
       return { 
         poi_osm_ice_cream_shops_summary: 'No ice cream shops found due to error.',
         poi_osm_ice_cream_shops_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getBanks(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏦 Banks query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for banks - use nwr shorthand for efficiency
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="bank"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🏦 Banks Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🏦 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🏦 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🏦 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const elements = data.elements || [];
+      console.log(`🏦 Overpass returned ${elements.length} bank elements`);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const banksWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of elements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let bankLat: number | null = null;
+        let bankLon: number | null = null;
+        
+        if (element.type === 'node') {
+          bankLat = element.lat;
+          bankLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          bankLat = element.center?.lat;
+          bankLon = element.center?.lon;
+        }
+        
+        if (bankLat == null || bankLon == null) {
+          console.warn(`🏦 Skipping bank ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(bankLat / coordinateTolerance)}_${Math.round(bankLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🏦 Removing duplicate at [${bankLat}, ${bankLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, bankLat, bankLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include banks within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          banksWithDistance.push({
+            ...element,
+            lat: bankLat,
+            lon: bankLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      banksWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = banksWithDistance.length;
+      console.log(`🏦 Found ${count} unique banks within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_banks_summary: `Found ${count} banks within ${cappedRadius} miles.`,
+        poi_osm_banks_all: banksWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Banks query failed:', error);
+      return { 
+        poi_osm_banks_summary: 'No banks found due to error.',
+        poi_osm_banks_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getATMs(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💳 ATMs query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for ATMs - use nwr shorthand for efficiency
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="atm"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`💳 ATMs Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`💳 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`💳 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`💳 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`💳 Overpass returned ${allElements.length} ATM elements`);
+      
+      // For ATMs, limit processing to first 1000 results to prevent timeout issues (ATMs are extremely common)
+      // We'll process and deduplicate, then filter by actual distance
+      const elementsToProcess = allElements.slice(0, 1000);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const atmsWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of elementsToProcess) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let atmLat: number | null = null;
+        let atmLon: number | null = null;
+        
+        if (element.type === 'node') {
+          atmLat = element.lat;
+          atmLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          atmLat = element.center?.lat;
+          atmLon = element.center?.lon;
+        }
+        
+        if (atmLat == null || atmLon == null) {
+          console.warn(`💳 Skipping ATM ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(atmLat / coordinateTolerance)}_${Math.round(atmLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`💳 Removing duplicate at [${atmLat}, ${atmLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, atmLat, atmLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include ATMs within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          atmsWithDistance.push({
+            ...element,
+            lat: atmLat,
+            lon: atmLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      atmsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = atmsWithDistance.length;
+      console.log(`💳 Found ${count} unique ATMs within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_atms_summary: `Found ${count} ATMs within ${cappedRadius} miles.`,
+        poi_osm_atms_all: atmsWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('ATMs query failed:', error);
+      return { 
+        poi_osm_atms_summary: 'No ATMs found due to error.',
+        poi_osm_atms_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getCreditUnions(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏦 Credit Unions query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for credit unions - need to query banks and filter by operator:type or name
+      // Use nwr shorthand for efficiency
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="bank"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🏦 Credit Unions Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🏦 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🏦 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🏦 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🏦 Overpass returned ${allElements.length} bank elements`);
+      
+      // Filter for credit unions in JavaScript
+      const creditUnionNamePattern = /credit union/i;
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const operatorType = tags['operator:type'];
+        const name = tags.name || '';
+        
+        // Explicitly tagged credit unions
+        if (operatorType === 'credit_union') {
+          return true;
+        }
+        
+        // Name-based fallback (very common)
+        if (name && creditUnionNamePattern.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🏦 Found ${filteredElements.length} credit unions after filtering`);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const creditUnionsWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of filteredElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let cuLat: number | null = null;
+        let cuLon: number | null = null;
+        
+        if (element.type === 'node') {
+          cuLat = element.lat;
+          cuLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          cuLat = element.center?.lat;
+          cuLon = element.center?.lon;
+        }
+        
+        if (cuLat == null || cuLon == null) {
+          console.warn(`🏦 Skipping credit union ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(cuLat / coordinateTolerance)}_${Math.round(cuLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🏦 Removing duplicate at [${cuLat}, ${cuLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, cuLat, cuLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include credit unions within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          creditUnionsWithDistance.push({
+            ...element,
+            lat: cuLat,
+            lon: cuLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      creditUnionsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = creditUnionsWithDistance.length;
+      console.log(`🏦 Found ${count} unique credit unions within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_credit_unions_summary: `Found ${count} credit unions within ${cappedRadius} miles.`,
+        poi_osm_credit_unions_all: creditUnionsWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Credit Unions query failed:', error);
+      return { 
+        poi_osm_credit_unions_summary: 'No credit unions found due to error.',
+        poi_osm_credit_unions_error: error instanceof Error ? error.message : 'Unknown error' 
       };
     }
   }

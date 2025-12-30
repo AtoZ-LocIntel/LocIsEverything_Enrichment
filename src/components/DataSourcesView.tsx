@@ -1710,6 +1710,19 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
+      category: "Banking & Finance",
+      sources: [
+        {
+          name: "OpenStreetMap Banking & Finance",
+          description: "Banks (retail bank branches, commercial banks, savings banks, national & regional branches), ATMs (standalone, bank-attached, store/gas station ATMs), and credit unions (member-owned financial institutions) via OSM Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/"
+        }
+      ]
+    },
+    {
       category: "Community & Services",
       sources: [
         {

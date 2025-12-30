@@ -583,7 +583,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_mail_shipping', label: 'Mail & Shipping', description: 'Post offices, parcel lockers, UPS/FedEx/DHL stores, shipping centers, and courier services', isPOI: true, defaultRadius: 5, category: 'government', section: 'government' },
   
   // Banking & Finance
-  { id: 'poi_banks', label: 'Banks & ATMs', description: 'Financial institutions and ATMs', isPOI: true, defaultRadius: 3, category: 'banking_finance', section: 'banking_finance' },
+  { id: 'poi_osm_banks', label: 'Banks', description: 'Retail bank branches (commercial banks, savings banks, national & regional branches) via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'banking_finance', section: 'banking_finance' },
+  { id: 'poi_osm_atms', label: 'ATMs', description: 'Automated teller machines (standalone, bank-attached, and store/gas station ATMs) via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'banking_finance', section: 'banking_finance' },
+  { id: 'poi_osm_credit_unions', label: 'Credit Unions', description: 'Member-owned financial institutions via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'banking_finance', section: 'banking_finance' },
   
   // Religious & Community
   { id: 'poi_worship', label: 'Places of Worship', description: 'Churches, temples, and religious sites', isPOI: true, defaultRadius: 5, category: 'religious_community', section: 'religious_community' },
