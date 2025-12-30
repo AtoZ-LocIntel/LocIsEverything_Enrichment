@@ -239,16 +239,19 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       // Skip POI "All" fields completely - they should not appear in the form
       // This includes any field that contains detailed POI data
       // BUT allow count fields (e.g., ca_fire_perimeters_all_count) to be displayed
+      // NOTE: Check for _all as a separate token (not substring like in "halls")
+      // Use regex to match _all as complete token: _all followed by _ or end of string
+      const hasAllToken = /_all(_|$)/.test(key) || key.endsWith('_all');
       if ((key.includes('_all_pois') || 
           key.includes('_detailed') || 
           key.includes('_elements') ||
           key.includes('_features') ||
           key.endsWith('_all') ||
           key.endsWith(' All') ||
-          (key.includes('_all') && !key.endsWith('_count')) ||
-          (key.includes('poi_') && key.includes('_all')) ||
+          (hasAllToken && !key.endsWith('_count')) ||
+          (key.includes('poi_') && hasAllToken) ||
           // Catch specific patterns like "Poi Cafes Coffee All" and "Poi Banks All"
-          (key.toLowerCase().includes('poi') && key.toLowerCase().includes('all')) ||
+          (key.toLowerCase().includes('poi') && /[^a-z]all[^a-z]|all$/.test(key.toLowerCase())) ||
           // Catch any field that ends with "All" regardless of case
           key.toLowerCase().endsWith('all')) && !key.endsWith('_count')) {
         return acc;
@@ -776,11 +779,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       } else if (key.includes('poi_restaurants') || key.includes('poi_osm_fast_food') || key.includes('poi_osm_bars_pubs') || key.includes('poi_osm_bakeries') || key.includes('poi_osm_ice_cream_shops') || key.includes('poi_osm_farmers_markets') || key.includes('poi_osm_food_trucks') || key.includes('poi_grocery') || key.includes('poi_cafes') || key.includes('poi_markets') || key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
         // Food & Beverage category (check before other POI categories)
         category = 'Food & Beverage';
-      } else if (key.includes('poi_osm_banks') || key.includes('poi_osm_atms') || key.includes('poi_osm_credit_unions')) {
+      } else if (key.includes('poi_osm_banks') || key.includes('poi_osm_atms') || key.includes('poi_osm_credit_unions') || key.includes('poi_osm_financial_institutions')) {
         category = 'Banking & Finance';
       } else if (key.includes('poi_hospitals') || key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_urgent_care') || key.includes('poi_pharmacies') || (key.includes('poi_') && (key.includes('gym') || key.includes('chiropractor') || key.includes('optometry') || key.includes('veterinary') || key.includes('hospital') || key.includes('urgent_care'))) || key.includes('poi_osm_health')) {
         category = 'Health & Wellness';
-      } else if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_mail_shipping') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers')) {
+      } else if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_mail_shipping') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_osm_city_town_halls') || key.includes('poi_osm_courthouses') || key.includes('poi_osm_dmv_licensing')) {
         category = 'Government & Public Services';
       } else if (key.includes('poi_parks') || key.includes('poi_tnm_trailheads') || key.includes('poi_tnm_trails') || key.includes('poi_mountain_biking') || key.includes('poi_boat_ramps') || key.includes('poi_golf_courses')) {
         category = 'Parks & Recreation';
@@ -839,7 +842,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Education';
       } else if (key.includes('poi_worship') || key.includes('poi_community_centres') || key.includes('poi_community_centers')) {
         category = 'Religious & Community';
-      } else if (key.includes('poi_osm_banks') || key.includes('poi_osm_atms') || key.includes('poi_osm_credit_unions')) {
+      } else if (key.includes('poi_osm_banks') || key.includes('poi_osm_atms') || key.includes('poi_osm_credit_unions') || key.includes('poi_osm_financial_institutions')) {
         category = 'Banking & Finance';
       }
       

@@ -581,11 +581,15 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_police_stations', label: 'Police Stations', description: 'Law enforcement facilities', isPOI: true, defaultRadius: 5, category: 'government', section: 'government' },
   { id: 'poi_fire_stations', label: 'Fire Stations', description: 'Fire and emergency services', isPOI: true, defaultRadius: 5, category: 'government', section: 'government' },
   { id: 'poi_mail_shipping', label: 'Mail & Shipping', description: 'Post offices, parcel lockers, UPS/FedEx/DHL stores, shipping centers, and courier services', isPOI: true, defaultRadius: 5, category: 'government', section: 'government' },
+  { id: 'poi_osm_city_town_halls', label: 'City and Town Halls', description: 'City halls, town halls, village halls, and municipal halls via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'government', section: 'government' },
+  { id: 'poi_osm_courthouses', label: 'Courthouses', description: 'Courthouses and judicial buildings via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'government', section: 'government' },
+  { id: 'poi_osm_dmv_licensing', label: 'DMV & Licensing', description: 'DMV offices, motor vehicle agencies, and driver licensing offices via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'government', section: 'government' },
   
   // Banking & Finance
   { id: 'poi_osm_banks', label: 'Banks', description: 'Retail bank branches (commercial banks, savings banks, national & regional branches) via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'banking_finance', section: 'banking_finance' },
   { id: 'poi_osm_atms', label: 'ATMs', description: 'Automated teller machines (standalone, bank-attached, and store/gas station ATMs) via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'banking_finance', section: 'banking_finance' },
   { id: 'poi_osm_credit_unions', label: 'Credit Unions', description: 'Member-owned financial institutions via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'banking_finance', section: 'banking_finance' },
+  { id: 'poi_osm_financial_institutions', label: 'Financial Institutions', description: 'Non-bank financial services (currency exchange, financial advisory offices, insurance offices, money lenders) via OSM Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'banking_finance', section: 'banking_finance' },
   
   // Religious & Community
   { id: 'poi_worship', label: 'Places of Worship', description: 'Churches, temples, and religious sites', isPOI: true, defaultRadius: 5, category: 'religious_community', section: 'religious_community' },

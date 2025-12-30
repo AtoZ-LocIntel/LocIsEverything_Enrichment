@@ -1714,7 +1714,20 @@ export const getDataSources = (): DataSourceCategory[] => {
       sources: [
         {
           name: "OpenStreetMap Banking & Finance",
-          description: "Banks (retail bank branches, commercial banks, savings banks, national & regional branches), ATMs (standalone, bank-attached, store/gas station ATMs), and credit unions (member-owned financial institutions) via OSM Overpass API (proximity queries up to 25 miles)",
+          description: "Banks (retail bank branches, commercial banks, savings banks, national & regional branches), ATMs (standalone, bank-attached, store/gas station ATMs), credit unions (member-owned financial institutions), and financial institutions (currency exchange, financial advisory offices, insurance offices, money lenders) via OSM Overpass API (proximity queries up to 25 miles)",
+          coverage: "Global",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/"
+        }
+      ]
+    },
+    {
+      category: "Government & Public Services",
+      sources: [
+        {
+          name: "OpenStreetMap Government & Public Services",
+          description: "Police stations, fire stations, mail & shipping locations (post offices, parcel lockers, UPS/FedEx/DHL stores), city/town halls, courthouses, and DMV/licensing offices via OSM Overpass API (proximity queries up to 25 miles)",
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",
@@ -1727,7 +1740,7 @@ export const getDataSources = (): DataSourceCategory[] => {
       sources: [
         {
           name: "OpenStreetMap Community Services",
-          description: "Gas stations, mail & shipping locations, hospitals, parks, and other community facilities via OSM Overpass API",
+          description: "Gas stations, hospitals, parks, and other community facilities via OSM Overpass API",
           coverage: "Global",
           accuracy: "Variable",
           cost: "Free",

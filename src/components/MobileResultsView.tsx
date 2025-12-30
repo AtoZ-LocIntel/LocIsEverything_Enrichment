@@ -429,13 +429,13 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_restaurants') || key.includes('poi_osm_fast_food') || key.includes('poi_osm_bars_pubs') || key.includes('poi_osm_bakeries') || key.includes('poi_osm_ice_cream_shops') || key.includes('poi_osm_farmers_markets') || key.includes('poi_osm_food_trucks') || key.includes('poi_grocery') || key.includes('poi_cafes') || key.includes('poi_markets') || key.includes('poi_usda_farmers_market') || key.includes('poi_usda_csa') || key.includes('poi_usda_agritourism') || key.includes('poi_usda_food_hub') || key.includes('poi_usda_onfarm_market')) {
       return 'Food & Beverage';
     }
-    if (key.includes('poi_osm_banks') || key.includes('poi_osm_atms') || key.includes('poi_osm_credit_unions')) {
+    if (key.includes('poi_osm_banks') || key.includes('poi_osm_atms') || key.includes('poi_osm_credit_unions') || key.includes('poi_osm_financial_institutions')) {
       return 'Banking & Finance';
     }
     if (key.includes('poi_hospitals') || key.includes('poi_doctors_clinics') || key.includes('poi_dentists') || key.includes('poi_urgent_care') || key.includes('poi_pharmacies') || key.includes('poi_gyms') || key.includes('poi_chiropractor') || key.includes('poi_optometry') || key.includes('poi_veterinary') || key.includes('poi_osm_health')) {
       return 'Health & Wellness';
     }
-    if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_mail_shipping') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers')) {
+    if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_mail_shipping') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_osm_city_town_halls') || key.includes('poi_osm_courthouses') || key.includes('poi_osm_dmv_licensing')) {
       return 'Government & Public Services';
     }
     if (key.includes('poi_cinemas') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_bars_nightlife')) {
@@ -482,15 +482,18 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
 
   const groupedEnrichments = Object.entries(enrichments).reduce((acc, [key, value]) => {
     // Filter out detailed POI data from mobile form display (same as desktop)
+    // NOTE: Check for _all as a separate token (not substring like in "halls")
+    // Use regex to match _all as complete token: _all followed by _ or end of string
+    const hasAllToken = /_all(_|$)/.test(key) || key.endsWith('_all');
     if (key.includes('_all_pois') ||
         key.includes('_detailed') ||
         key.includes('_elements') ||
         key.includes('_features') ||
         key.endsWith('_all') ||
         key.endsWith(' All') ||
-        key.includes('_all') ||
-        (key.includes('poi_') && key.includes('_all')) ||
-        (key.toLowerCase().includes('poi') && key.toLowerCase().includes('all')) ||
+        hasAllToken ||
+        (key.includes('poi_') && hasAllToken) ||
+        (key.toLowerCase().includes('poi') && /[^a-z]all[^a-z]|all$/.test(key.toLowerCase())) ||
         key.toLowerCase().endsWith('all')) {
       return acc;
     }

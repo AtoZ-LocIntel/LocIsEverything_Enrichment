@@ -2065,9 +2065,17 @@ export class EnrichmentService {
           return await this.getATMs(lat, lon, radius);
         case 'poi_osm_credit_unions':
           return await this.getCreditUnions(lat, lon, radius);
+        case 'poi_osm_financial_institutions':
+          return await this.getFinancialInstitutions(lat, lon, radius);
         
         case 'poi_mail_shipping':
           return await this.getMailShipping(lat, lon, radius);
+        case 'poi_osm_city_town_halls':
+          return await this.getCityTownHalls(lat, lon, radius);
+        case 'poi_osm_courthouses':
+          return await this.getCourthouses(lat, lon, radius);
+        case 'poi_osm_dmv_licensing':
+          return await this.getDMVLicensing(lat, lon, radius);
         
         case 'pct_centerline':
         case 'pct_sheriff_offices':
@@ -33299,6 +33307,143 @@ out center tags;`;
     }
   }
 
+  private async getFinancialInstitutions(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💰 Financial Institutions query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for financial institutions - currency exchange, financial offices, insurance, money lenders
+      // Use nwr shorthand for efficiency
+      const query = `[out:json][timeout:30];
+(
+  nwr["amenity"="bureau_de_change"](around:${radiusMeters},${lat},${lon});
+  nwr["office"="financial"](around:${radiusMeters},${lat},${lon});
+  nwr["office"="insurance"](around:${radiusMeters},${lat},${lon});
+  nwr["shop"="money_lender"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`💰 Financial Institutions Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`💰 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`💰 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`💰 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`💰 Overpass returned ${allElements.length} financial institution elements`);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const institutionsWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of allElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let instLat: number | null = null;
+        let instLon: number | null = null;
+        
+        if (element.type === 'node') {
+          instLat = element.lat;
+          instLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          instLat = element.center?.lat;
+          instLon = element.center?.lon;
+        }
+        
+        if (instLat == null || instLon == null) {
+          console.warn(`💰 Skipping financial institution ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(instLat / coordinateTolerance)}_${Math.round(instLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`💰 Removing duplicate at [${instLat}, ${instLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, instLat, instLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include institutions within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          institutionsWithDistance.push({
+            ...element,
+            lat: instLat,
+            lon: instLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      institutionsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = institutionsWithDistance.length;
+      console.log(`💰 Found ${count} unique financial institutions within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_financial_institutions_summary: `Found ${count} financial institutions within ${cappedRadius} miles.`,
+        poi_osm_financial_institutions_all: institutionsWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Financial Institutions query failed:', error);
+      return { 
+        poi_osm_financial_institutions_summary: 'No financial institutions found due to error.',
+        poi_osm_financial_institutions_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
   private async getFarmersMarkets(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
       console.log(`🌾 Farmers Markets query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
@@ -33910,6 +34055,488 @@ out center tags;`;
       return { 
         poi_mail_shipping_summary: 'No mail & shipping locations found due to error.',
         poi_mail_shipping_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getCityTownHalls(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ City and Town Halls query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for city/town halls - use simplified query and filter in JavaScript
+      // Query for amenity=townhall and building=civic (we'll filter by name in JS)
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="townhall"](around:${radiusMeters},${lat},${lon});
+  nwr["building"="civic"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🏛️ City and Town Halls Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🏛️ Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🏛️ Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🏛️ Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🏛️ Overpass returned ${allElements.length} potential city/town hall elements`);
+      
+      // Filter for city/town halls in JavaScript
+      const hallNamePattern = /city hall|town hall|village hall|municipal hall/i;
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const amenity = tags.amenity;
+        const building = tags.building;
+        const name = tags.name || '';
+        
+        // Canonical OSM tag for townhalls
+        if (amenity === 'townhall') {
+          return true;
+        }
+        
+        // Civic buildings with hall name patterns
+        if (building === 'civic' && name && hallNamePattern.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🏛️ Found ${filteredElements.length} city/town halls after filtering`);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const hallsWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of filteredElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let hallLat: number | null = null;
+        let hallLon: number | null = null;
+        
+        if (element.type === 'node') {
+          hallLat = element.lat;
+          hallLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          hallLat = element.center?.lat;
+          hallLon = element.center?.lon;
+        }
+        
+        if (hallLat == null || hallLon == null) {
+          console.warn(`🏛️ Skipping city/town hall ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(hallLat / coordinateTolerance)}_${Math.round(hallLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🏛️ Removing duplicate at [${hallLat}, ${hallLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, hallLat, hallLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include halls within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          hallsWithDistance.push({
+            ...element,
+            lat: hallLat,
+            lon: hallLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      hallsWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = hallsWithDistance.length;
+      console.log(`🏛️ Found ${count} unique city/town halls within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_city_town_halls_summary: `Found ${count} city and town halls within ${cappedRadius} miles.`,
+        poi_osm_city_town_halls_all: hallsWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('City and Town Halls query failed:', error);
+      return { 
+        poi_osm_city_town_halls_summary: 'No city and town halls found due to error.',
+        poi_osm_city_town_halls_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getCourthouses(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⚖️ Courthouses query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for courthouses - use simplified query and filter in JavaScript
+      // Query for amenity=courthouse and building=civic/government (we'll filter by name in JS)
+      const query = `[out:json][timeout:25];
+(
+  nwr["amenity"="courthouse"](around:${radiusMeters},${lat},${lon});
+  nwr["building"="civic"](around:${radiusMeters},${lat},${lon});
+  nwr["building"="government"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`⚖️ Courthouses Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`⚖️ Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`⚖️ Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`⚖️ Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`⚖️ Overpass returned ${allElements.length} potential courthouse elements`);
+      
+      // Filter for courthouses in JavaScript
+      const courthouseNamePattern = /courthouse|court house|judicial building/i;
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const amenity = tags.amenity;
+        const building = tags.building;
+        const name = tags.name || '';
+        
+        // Canonical OSM tag for courthouses
+        if (amenity === 'courthouse') {
+          return true;
+        }
+        
+        // Civic/government buildings with courthouse name patterns
+        if ((building === 'civic' || building === 'government') && name && courthouseNamePattern.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`⚖️ Found ${filteredElements.length} courthouses after filtering`);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const courthousesWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of filteredElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let courtLat: number | null = null;
+        let courtLon: number | null = null;
+        
+        if (element.type === 'node') {
+          courtLat = element.lat;
+          courtLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          courtLat = element.center?.lat;
+          courtLon = element.center?.lon;
+        }
+        
+        if (courtLat == null || courtLon == null) {
+          console.warn(`⚖️ Skipping courthouse ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(courtLat / coordinateTolerance)}_${Math.round(courtLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`⚖️ Removing duplicate at [${courtLat}, ${courtLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, courtLat, courtLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include courthouses within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          courthousesWithDistance.push({
+            ...element,
+            lat: courtLat,
+            lon: courtLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      courthousesWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = courthousesWithDistance.length;
+      console.log(`⚖️ Found ${count} unique courthouses within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_courthouses_summary: `Found ${count} courthouses within ${cappedRadius} miles.`,
+        poi_osm_courthouses_all: courthousesWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('Courthouses query failed:', error);
+      return { 
+        poi_osm_courthouses_summary: 'No courthouses found due to error.',
+        poi_osm_courthouses_error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  private async getDMVLicensing(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚗 DMV & Licensing query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const cappedRadius = Math.min(radiusMiles, 25.0); // Cap at 25 miles
+      const radiusMeters = Math.round(cappedRadius * 1609.34);
+      
+      // Build Overpass query for DMV/licensing offices - use simplified query and filter in JavaScript
+      // Query for office=government and building=civic (we'll filter by government tag and name in JS)
+      const query = `[out:json][timeout:25];
+(
+  nwr["office"="government"](around:${radiusMeters},${lat},${lon});
+  nwr["building"="civic"](around:${radiusMeters},${lat},${lon});
+);
+out center tags;`;
+      
+      console.log(`🚗 DMV & Licensing Overpass query: ${query}`);
+      
+      // Try Overpass API with direct POST (Overpass API supports CORS)
+      let data;
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: query,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        data = await response.json();
+      } catch (overpassError: any) {
+        console.warn(`🚗 Primary Overpass API failed:`, overpassError);
+        const errorMessage = overpassError?.message || overpassError?.toString() || 'Unknown error';
+        // Try alternative Overpass server
+        try {
+          const altResponse = await fetch('https://lz4.overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: query,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            }
+          });
+          if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${altResponse.status}`);
+          }
+          data = await altResponse.json();
+        } catch (altError: any) {
+          console.warn(`🚗 Alternative Overpass API also failed:`, altError);
+          throw new Error(`All Overpass API servers unavailable. Primary: ${errorMessage}`);
+        }
+      }
+      
+      if (!data || !data.elements) {
+        console.warn(`🚗 Invalid response from Overpass API`);
+        throw new Error('Invalid Overpass API response');
+      }
+      
+      const allElements = data.elements || [];
+      console.log(`🚗 Overpass returned ${allElements.length} potential DMV/licensing elements`);
+      
+      // Filter for DMV/licensing offices in JavaScript
+      const dmvNamePattern = /dmv|rmv|mvc|bmv|dps|dol|mvd|motor vehicle|driver licensing|drivers license|licensing office/i;
+      const filteredElements = allElements.filter((element: any) => {
+        const tags = element.tags || {};
+        const office = tags.office;
+        const building = tags.building;
+        const government = tags.government;
+        const name = tags.name || '';
+        
+        // Office=government with motor_vehicle or transport government tag
+        if (office === 'government') {
+          if (government && /motor_vehicle|transport/i.test(government)) {
+            return true;
+          }
+          // Name-based detection for DMV offices
+          if (name && dmvNamePattern.test(name)) {
+            return true;
+          }
+        }
+        
+        // Civic buildings with DMV/licensing name patterns
+        if (building === 'civic' && name && dmvNamePattern.test(name)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🚗 Found ${filteredElements.length} DMV/licensing offices after filtering`);
+      
+      // Calculate distances, filter by radius, and deduplicate
+      const dmvOfficesWithDistance: any[] = [];
+      const seenByOSMId = new Set<number>();
+      const seenByCoords = new Map<string, number>();
+      const coordinateTolerance = 0.0005; // ~50 meters
+      
+      for (const element of filteredElements) {
+        // Get coordinates - nodes have direct lat/lon, ways/relations use center
+        let dmvLat: number | null = null;
+        let dmvLon: number | null = null;
+        
+        if (element.type === 'node') {
+          dmvLat = element.lat;
+          dmvLon = element.lon;
+        } else if (element.type === 'way' || element.type === 'relation') {
+          dmvLat = element.center?.lat;
+          dmvLon = element.center?.lon;
+        }
+        
+        if (dmvLat == null || dmvLon == null) {
+          console.warn(`🚗 Skipping DMV/licensing office ${element.id} - missing coordinates`);
+          continue;
+        }
+        
+        // Deduplicate by OSM ID
+        if (seenByOSMId.has(element.id)) {
+          continue;
+        }
+        
+        // Deduplicate by coordinates (same location = same establishment, even if different OSM IDs)
+        const coordKey = `${Math.round(dmvLat / coordinateTolerance)}_${Math.round(dmvLon / coordinateTolerance)}`;
+        if (seenByCoords.has(coordKey)) {
+          const existingId = seenByCoords.get(coordKey);
+          console.log(`🚗 Removing duplicate at [${dmvLat}, ${dmvLon}]: OSM ${element.id} (already seen as OSM ${existingId})`);
+          continue;
+        }
+        
+        // Calculate distance in miles
+        const distanceKm = this.calculateDistance(lat, lon, dmvLat, dmvLon);
+        const distanceMiles = distanceKm * 0.621371;
+        
+        // Only include DMV/licensing offices within the specified radius
+        if (Number.isFinite(distanceMiles) && distanceMiles <= cappedRadius) {
+          seenByOSMId.add(element.id);
+          seenByCoords.set(coordKey, element.id);
+          dmvOfficesWithDistance.push({
+            ...element,
+            lat: dmvLat,
+            lon: dmvLon,
+            distance_miles: Number(distanceMiles.toFixed(2))
+          });
+        }
+      }
+      
+      // Sort by distance (closest first)
+      dmvOfficesWithDistance.sort((a, b) => a.distance_miles - b.distance_miles);
+      
+      const count = dmvOfficesWithDistance.length;
+      console.log(`🚗 Found ${count} unique DMV/licensing offices within ${cappedRadius} miles`);
+      
+      // Return only _all array to prevent duplication - single source of truth
+      return {
+        poi_osm_dmv_licensing_summary: `Found ${count} DMV & licensing offices within ${cappedRadius} miles.`,
+        poi_osm_dmv_licensing_all: dmvOfficesWithDistance // Single deduplicated array for both map and CSV
+      };
+    } catch (error) {
+      console.error('DMV & Licensing query failed:', error);
+      return { 
+        poi_osm_dmv_licensing_summary: 'No DMV & licensing offices found due to error.',
+        poi_osm_dmv_licensing_error: error instanceof Error ? error.message : 'Unknown error' 
       };
     }
   }
