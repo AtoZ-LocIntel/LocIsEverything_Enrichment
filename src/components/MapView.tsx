@@ -2595,6 +2595,15 @@ const MapView: React.FC<MapViewProps> = ({
         zoomAnimationThreshold: 4,
         preferCanvas: false, // Use SVG for better mobile compatibility
       });
+      
+      // On mobile, completely disable shadow pane to prevent white ovals
+      if (isMobile && map.getPane('shadowPane')) {
+        const shadowPane = map.getPane('shadowPane');
+        if (shadowPane) {
+          shadowPane.style.display = 'none';
+          shadowPane.style.visibility = 'hidden';
+        }
+      }
 
       // Initialize basemap system: OpenFreeMap base + optional overlay
       // On mobile, always use OpenFreeMap liberty basemap
@@ -34770,25 +34779,7 @@ const MapView: React.FC<MapViewProps> = ({
             ← Back
           </button>
 
-          {/* Download Button Overlay - Top Right (icon only, very compact for mobile) */}
-          
-          {/* Download Button Overlay - Top Right (icon only, very compact for mobile) */}
-          {results.length === 1 && (
-            <button
-              onClick={() => exportEnrichmentResultsToCSV(results)}
-              className="absolute z-[1100] bg-blue-600 text-white rounded shadow-lg p-1.5 hover:bg-blue-700 transition-colors border border-white/20"
-              style={{ 
-                top: 'calc(env(safe-area-inset-top) + 8px)',
-                right: '12px',
-                zIndex: 1100,
-                minWidth: 'auto',
-                width: 'auto'
-              }}
-              title="Download all proximity layers and distances for this location"
-            >
-              <span className="text-xs">⬇️</span>
-            </button>
-          )}
+          {/* Download button removed on mobile - available in summary view */}
           
           {/* Mobile Legend - Bottom Left (compact, doesn't hide attribution) */}
           {legendItems.length > 0 && (
