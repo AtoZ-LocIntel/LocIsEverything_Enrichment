@@ -3403,7 +3403,6 @@ const MapView: React.FC<MapViewProps> = ({
       });
       locationMarker.bindPopup(createPopupContent(results[0]), { 
         maxWidth: isMobile ? 280 : 540,
-        maxHeight: isMobile ? '70vh' : undefined,
         className: isMobile ? 'mobile-popup' : undefined
       });
       locationMarker.addTo(primary);
