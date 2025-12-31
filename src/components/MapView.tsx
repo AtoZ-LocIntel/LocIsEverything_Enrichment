@@ -2307,8 +2307,9 @@ const MapView: React.FC<MapViewProps> = ({
     geometry: 'point' | 'polyline' | 'polygon';
   }>>([]);
   // Basemap selection state (OpenFreeMap styles)
-  const [selectedBasemap, setSelectedBasemap] = useState<string>('liberty'); // Selected basemap
-  const [showOpenFreeMapBase, setShowOpenFreeMapBase] = useState<boolean>(false); // Toggle for OpenFreeMap base layer
+  // On mobile, always use OpenFreeMap liberty basemap (no selector needed)
+  const [selectedBasemap, setSelectedBasemap] = useState<string>(isMobile ? 'liberty' : 'liberty'); // Selected basemap
+  const [showOpenFreeMapBase, setShowOpenFreeMapBase] = useState<boolean>(isMobile ? true : false); // Toggle for OpenFreeMap base layer - force true on mobile
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   // Collapsible basemap sections state
   const [expandedBasemapSections, setExpandedBasemapSections] = useState<Record<string, boolean>>({
@@ -2588,12 +2589,17 @@ const MapView: React.FC<MapViewProps> = ({
       }
 
       // Initialize basemap system: OpenFreeMap base + optional overlay
-      const selectedConfig = BASEMAP_CONFIGS[selectedBasemap] || BASEMAP_CONFIGS.liberty;
+      // On mobile, always use OpenFreeMap liberty basemap
+      const basemapToUse = isMobile ? 'liberty' : selectedBasemap;
+      const selectedConfig = BASEMAP_CONFIGS[basemapToUse] || BASEMAP_CONFIGS.liberty;
       let basemapLayer: any = null;
       let overlayLayer: any = null;
       
-      // Determine base map: OpenFreeMap if enabled, otherwise the selected basemap (if it's not maplibre)
-      if (showOpenFreeMapBase) {
+      // On mobile, always use OpenFreeMap as base. On desktop, use OpenFreeMap if enabled.
+      const useOpenFreeMap = isMobile ? true : showOpenFreeMapBase;
+      
+      // Determine base map: OpenFreeMap if enabled (always on mobile), otherwise the selected basemap (if it's not maplibre)
+      if (useOpenFreeMap) {
         // Use OpenFreeMap as base
         const baseMapConfig = selectedConfig.type === 'maplibre' 
           ? selectedConfig 
@@ -2759,34 +2765,36 @@ const MapView: React.FC<MapViewProps> = ({
       
       basemapLayerRef.current = basemapLayer;
       
-      // Force immediate tile loading on mobile
+      // Force immediate tile loading on mobile - critical for MapLibre basemaps
       if (isMobile) {
+        // Multiple attempts to ensure basemap loads properly on mobile
         map.whenReady(() => {
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.invalidateSize(true);
-          }
-          // Critical for MapLibre basemaps on mobile: ensure WebGL canvas resizes after Leaflet invalidation.
-          resizeMaplibreBasemap();
+          setTimeout(() => {
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.invalidateSize(true);
+            }
+            // Critical for MapLibre basemaps on mobile: ensure WebGL canvas resizes after Leaflet invalidation.
+            resizeMaplibreBasemap();
+          }, 100);
           
-          // For tile/WMS basemaps, explicitly redraw after invalidation to force tile loading
-          if (basemapLayer && typeof basemapLayer.redraw === 'function') {
-            setTimeout(() => {
+          setTimeout(() => {
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.invalidateSize(true);
+            }
+            resizeMaplibreBasemap();
+            
+            // For tile/WMS basemaps, explicitly redraw after invalidation to force tile loading
+            if (basemapLayer && typeof basemapLayer.redraw === 'function') {
               basemapLayer.redraw();
-            }, 100);
-          }
+            }
+          }, 300);
           
           setTimeout(() => {
             resizeMaplibreBasemap();
             if (basemapLayer && typeof basemapLayer.redraw === 'function') {
               basemapLayer.redraw();
             }
-          }, 50);
-          setTimeout(() => {
-            resizeMaplibreBasemap();
-            if (basemapLayer && typeof basemapLayer.redraw === 'function') {
-              basemapLayer.redraw();
-            }
-          }, 250);
+          }, 600);
         });
       }
 
@@ -2929,6 +2937,11 @@ const MapView: React.FC<MapViewProps> = ({
 
   // Handle basemap changes and OpenFreeMap toggle
   useEffect(() => {
+    // On mobile, don't allow basemap changes - always use OpenFreeMap liberty
+    if (isMobile) {
+      return;
+    }
+    
     // Only handle basemap changes if map is already initialized
     // Initial basemap is set during map initialization
     if (!mapInstanceRef.current || !basemapLayerRef.current || !isInitialized) {
@@ -34754,10 +34767,11 @@ const MapView: React.FC<MapViewProps> = ({
           {/* Back Button Overlay - Mobile full-screen map UX */}
           <button
             onClick={onBackToConfig}
-            className="absolute z-[1200] bg-black/80 text-white rounded-full shadow-md px-3 py-2 border border-white/10"
+            className="absolute z-[1200] bg-black/90 text-white rounded-full shadow-lg px-3 py-2 border-2 border-white/20 font-medium"
             style={{
-              top: 'calc(env(safe-area-inset-top) + 8px)',
-              left: '8px',
+              top: 'calc(env(safe-area-inset-top) + 12px)',
+              left: '12px',
+              zIndex: 1200,
             }}
             aria-label="Back"
             title="Back"
@@ -34771,8 +34785,14 @@ const MapView: React.FC<MapViewProps> = ({
           {results.length === 1 && (
             <button
               onClick={() => exportEnrichmentResultsToCSV(results)}
-              className="absolute top-1 right-1 z-[1000] bg-blue-600 text-white rounded shadow-md p-1.5 hover:bg-blue-700 transition-colors"
-              style={{ zIndex: 1000, minWidth: 'auto', width: 'auto' }}
+              className="absolute z-[1100] bg-blue-600 text-white rounded shadow-lg p-1.5 hover:bg-blue-700 transition-colors border border-white/20"
+              style={{ 
+                top: 'calc(env(safe-area-inset-top) + 12px)',
+                right: '12px',
+                zIndex: 1100,
+                minWidth: 'auto',
+                width: 'auto'
+              }}
               title="Download all proximity layers and distances for this location"
             >
               <span className="text-xs">⬇️</span>
