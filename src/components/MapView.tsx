@@ -1388,7 +1388,36 @@ function filterPersonalNames(text: string | null | undefined): string | null {
 }
 
 // Create custom POI marker icons
-const createPOIIcon = (emoji: string, color: string) => {
+const createPOIIcon = (emoji: string, color: string, isMobile: boolean = false) => {
+  // Auto-detect mobile if not explicitly passed
+  const isMobileDevice = isMobile || (typeof window !== 'undefined' && window.innerWidth <= 768);
+  
+  // For mobile, use simpler styling without thick white border to avoid white space issues
+  if (isMobileDevice) {
+    return L.divIcon({
+      html: `<div style="
+        background-color: ${color};
+        border: 1px solid rgba(255,255,255,0.9);
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        line-height: 1;
+      ">${emoji}</div>`,
+      className: 'poi-marker poi-marker-mobile',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -14]
+    });
+  }
+  
   return L.divIcon({
     html: `<div style="
       background-color: ${color};
@@ -2738,8 +2767,26 @@ const MapView: React.FC<MapViewProps> = ({
           }
           // Critical for MapLibre basemaps on mobile: ensure WebGL canvas resizes after Leaflet invalidation.
           resizeMaplibreBasemap();
-          setTimeout(resizeMaplibreBasemap, 50);
-          setTimeout(resizeMaplibreBasemap, 250);
+          
+          // For tile/WMS basemaps, explicitly redraw after invalidation to force tile loading
+          if (basemapLayer && typeof basemapLayer.redraw === 'function') {
+            setTimeout(() => {
+              basemapLayer.redraw();
+            }, 100);
+          }
+          
+          setTimeout(() => {
+            resizeMaplibreBasemap();
+            if (basemapLayer && typeof basemapLayer.redraw === 'function') {
+              basemapLayer.redraw();
+            }
+          }, 50);
+          setTimeout(() => {
+            resizeMaplibreBasemap();
+            if (basemapLayer && typeof basemapLayer.redraw === 'function') {
+              basemapLayer.redraw();
+            }
+          }, 250);
         });
       }
 
@@ -3395,7 +3442,7 @@ const MapView: React.FC<MapViewProps> = ({
               const facilityType = facility.type || facility.TYPE || facility.Type || 'Unknown Type';
               
               // Create a custom icon for EMS facilities
-              const icon = createPOIIcon('🚑', '#ef4444'); // Red icon for emergency services
+              const icon = createPOIIcon('🚑', '#ef4444', isMobile); // Red icon for emergency services
               
               const marker = L.marker([facilityLat, facilityLon], { icon });
               
@@ -3465,7 +3512,7 @@ const MapView: React.FC<MapViewProps> = ({
               const categories = article.categories || [];
               
               // Create a custom icon for Wikipedia articles
-              const icon = createPOIIcon('📖', '#1d4ed8'); // Blue icon for Wikipedia articles
+              const icon = createPOIIcon('📖', '#1d4ed8', isMobile); // Blue icon for Wikipedia articles
               
               const marker = L.marker([articleLat, articleLon], { icon });
               
@@ -3518,7 +3565,7 @@ const MapView: React.FC<MapViewProps> = ({
               const denom = place.denom || place.DENOM || place.Denom || '';
               
               // Create a custom icon for places of worship
-              const icon = createPOIIcon('🕌', '#7c3aed'); // Purple icon for places of worship
+              const icon = createPOIIcon('🕌', '#7c3aed', isMobile); // Purple icon for places of worship
               
               const marker = L.marker([placeLat, placeLon], { icon });
               
@@ -3588,7 +3635,7 @@ const MapView: React.FC<MapViewProps> = ({
               const accessTyp = site.access_typ || site.ACCESS_TYP || site.AccessTyp || '';
               
               // Create a custom icon for water access sites
-              const icon = createPOIIcon('🌊', '#0ea5e9'); // Blue icon for water access
+              const icon = createPOIIcon('🌊', '#0ea5e9', isMobile); // Blue icon for water access
               
               const marker = L.marker([siteLat, siteLon], { icon });
               

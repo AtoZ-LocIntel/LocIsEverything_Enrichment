@@ -310,6 +310,17 @@ body.modal-open {
     height: 100% !important;
   }
 
+  /* Fix POI marker icons on mobile - remove white background from Leaflet divIcon */
+  .poi-marker-mobile,
+  .poi-marker-mobile div {
+    background: transparent !important;
+  }
+  
+  .poi-marker,
+  .poi-marker div {
+    background: transparent !important;
+  }
+
   /* Undo broad mobile rules within MapPage: the map should fill the fixed viewport, not calc(100vh - 60px). */
   .mobile-map-page .flex-1.relative,
   .mobile-map-page .map-container,
