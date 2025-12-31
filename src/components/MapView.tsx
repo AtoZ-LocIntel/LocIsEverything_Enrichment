@@ -2607,16 +2607,31 @@ const MapView: React.FC<MapViewProps> = ({
               ? selectedConfig 
               : BASEMAP_CONFIGS.liberty); // Default to liberty if non-maplibre selected
         
-        console.log('🗺️ [MOBILE BASEMAP] Creating MapLibre layer with style:', baseMapConfig.styleUrl);
-        basemapLayer = (L as any).maplibreGL({
-          style: baseMapConfig.styleUrl,
-          attribution: baseMapConfig.attribution,
-          interactive: false,
-        });
-        
-        // Add to map AFTER ensuring container has dimensions
-        basemapLayer.addTo(map);
-        console.log('🗺️ [MOBILE BASEMAP] MapLibre layer added to map');
+        console.log('🗺️ [MOBILE BASEMAP] Creating MapLibre layer with style:', baseMapConfig.styleUrl, 'isMobile:', isMobile);
+        try {
+          basemapLayer = (L as any).maplibreGL({
+            style: baseMapConfig.styleUrl,
+            attribution: baseMapConfig.attribution,
+            interactive: false,
+          });
+          
+          // Add to map immediately
+          basemapLayer.addTo(map);
+          console.log('🗺️ [MOBILE BASEMAP] MapLibre layer created and added to map successfully');
+          
+          // Force immediate resize to ensure canvas renders
+          if (isMobile) {
+            setTimeout(() => {
+              const mlMap = (basemapLayer as any)?.getMaplibreMap?.();
+              if (mlMap && typeof mlMap.resize === 'function') {
+                mlMap.resize();
+                console.log('🗺️ [MOBILE BASEMAP] Forced immediate resize of MapLibre canvas');
+              }
+            }, 50);
+          }
+        } catch (error) {
+          console.error('🗺️ [MOBILE BASEMAP] Error creating MapLibre layer:', error);
+        }
         
         // If a non-maplibre basemap is selected, add it as a transparent overlay
         if (selectedConfig.type !== 'maplibre') {
@@ -34776,7 +34791,7 @@ const MapView: React.FC<MapViewProps> = ({
             onClick={onBackToConfig}
             className="absolute z-[1200] bg-black/90 text-white rounded-full shadow-lg px-3 py-2 border-2 border-white/20 font-medium"
             style={{
-              top: 'calc(env(safe-area-inset-top) + 60px)',
+              top: 'calc(env(safe-area-inset-top) + 8px)',
               left: '12px',
               zIndex: 1200,
             }}
@@ -34794,7 +34809,7 @@ const MapView: React.FC<MapViewProps> = ({
               onClick={() => exportEnrichmentResultsToCSV(results)}
               className="absolute z-[1100] bg-blue-600 text-white rounded shadow-lg p-1.5 hover:bg-blue-700 transition-colors border border-white/20"
               style={{ 
-                top: 'calc(env(safe-area-inset-top) + 60px)',
+                top: 'calc(env(safe-area-inset-top) + 8px)',
                 right: '12px',
                 zIndex: 1100,
                 minWidth: 'auto',
@@ -34809,39 +34824,39 @@ const MapView: React.FC<MapViewProps> = ({
           {/* Mobile Legend - Bottom Left (compact, doesn't hide attribution) */}
           {legendItems.length > 0 && (
             <div
-              className="absolute bottom-12 left-2 bg-white rounded shadow-lg p-1.5 z-[1000] overflow-y-auto"
+              className="absolute bottom-12 left-2 bg-white rounded shadow-lg p-1 z-[1000] overflow-y-auto"
               style={{
-                width: 'min(40vw, 140px)',
-                maxHeight: '25vh',
+                width: 'min(35vw, 120px)',
+                maxHeight: '20vh',
                 touchAction: 'pan-y',
                 pointerEvents: 'auto',
               }}
             >
-              <h4 className="text-[9px] font-semibold text-gray-900 mb-0.5 sticky top-0 bg-white pb-0.5">Legend</h4>
+              <h4 className="text-[8px] font-semibold text-gray-900 mb-0.5 sticky top-0 bg-white pb-0.5">Legend</h4>
               <div className="space-y-0.5">
                 {legendItems.map((item, index) => (
                   <div key={index}>
-                    <div className="flex items-center gap-0.5 text-[8px] min-w-0">
+                    <div className="flex items-center gap-0.5 text-[7px] min-w-0">
                       <div
-                        className="w-2.5 h-2.5 rounded-full flex items-center justify-center text-[8px] flex-shrink-0"
+                        className="w-2 h-2 rounded-full flex items-center justify-center text-[7px] flex-shrink-0"
                         style={{ backgroundColor: item.color }}
                       >
                         {item.icon}
                       </div>
-                      <span className="text-gray-700 truncate min-w-0 text-[8px]">{item.title}</span>
-                      <span className="text-gray-500 flex-shrink-0 text-[8px]">({item.count})</span>
+                      <span className="text-gray-700 truncate min-w-0 text-[7px]">{item.title}</span>
+                      <span className="text-gray-500 flex-shrink-0 text-[7px]">({item.count})</span>
                     </div>
                     {/* Show ranges for broadband layer */}
                     {item.ranges && item.ranges.length > 0 && (
-                      <div className="ml-3 mt-0.5 space-y-0.5">
+                      <div className="ml-2.5 mt-0.5 space-y-0.5">
                         {item.ranges.map((range, rangeIndex) => (
-                          <div key={rangeIndex} className="flex items-center gap-0.5 text-[7px] min-w-0">
+                          <div key={rangeIndex} className="flex items-center gap-0.5 text-[6px] min-w-0">
                             <div 
-                              className="w-1.5 h-1.5 rounded flex-shrink-0"
+                              className="w-1 h-1 rounded flex-shrink-0"
                               style={{ backgroundColor: range.color }}
                             />
-                            <span className="text-gray-600 truncate min-w-0 text-[7px]">{range.label}</span>
-                            <span className="text-gray-400 flex-shrink-0 text-[7px]">({range.count})</span>
+                            <span className="text-gray-600 truncate min-w-0 text-[6px]">{range.label}</span>
+                            <span className="text-gray-400 flex-shrink-0 text-[6px]">({range.count})</span>
                           </div>
                         ))}
                       </div>

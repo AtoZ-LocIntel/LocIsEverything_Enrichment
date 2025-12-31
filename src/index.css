@@ -308,6 +308,19 @@ body.modal-open {
   .mobile-map-page .maplibregl-canvas-container {
     width: 100% !important;
     height: 100% !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+  
+  /* Ensure MapLibre GL container is visible */
+  .mobile-map-page .leaflet-layer.leaflet-tile-container .maplibregl-canvas-container {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
   }
 
   /* Fix POI marker icons on mobile - remove white background from Leaflet divIcon */
@@ -331,7 +344,7 @@ body.modal-open {
 
   /* Keep Leaflet controls accessible below the back-button overlay + safe area. */
   .mobile-map-page .leaflet-top {
-    top: calc(env(safe-area-inset-top) + 64px) !important;
+    top: calc(env(safe-area-inset-top) + 50px) !important;
   }
 }
 
