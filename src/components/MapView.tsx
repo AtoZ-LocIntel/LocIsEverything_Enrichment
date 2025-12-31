@@ -2600,16 +2600,23 @@ const MapView: React.FC<MapViewProps> = ({
       
       // Determine base map: OpenFreeMap if enabled (always on mobile), otherwise the selected basemap (if it's not maplibre)
       if (useOpenFreeMap) {
-        // Use OpenFreeMap as base
-        const baseMapConfig = selectedConfig.type === 'maplibre' 
-          ? selectedConfig 
-          : BASEMAP_CONFIGS.liberty; // Default to liberty if non-maplibre selected
+        // Use OpenFreeMap as base - on mobile always use liberty
+        const baseMapConfig = isMobile 
+          ? BASEMAP_CONFIGS.liberty  // Always use liberty on mobile
+          : (selectedConfig.type === 'maplibre' 
+              ? selectedConfig 
+              : BASEMAP_CONFIGS.liberty); // Default to liberty if non-maplibre selected
         
+        console.log('🗺️ [MOBILE BASEMAP] Creating MapLibre layer with style:', baseMapConfig.styleUrl);
         basemapLayer = (L as any).maplibreGL({
           style: baseMapConfig.styleUrl,
           attribution: baseMapConfig.attribution,
           interactive: false,
-        }).addTo(map);
+        });
+        
+        // Add to map AFTER ensuring container has dimensions
+        basemapLayer.addTo(map);
+        console.log('🗺️ [MOBILE BASEMAP] MapLibre layer added to map');
         
         // If a non-maplibre basemap is selected, add it as a transparent overlay
         if (selectedConfig.type !== 'maplibre') {
@@ -2766,35 +2773,35 @@ const MapView: React.FC<MapViewProps> = ({
       basemapLayerRef.current = basemapLayer;
       
       // Force immediate tile loading on mobile - critical for MapLibre basemaps
-      if (isMobile) {
+      if (isMobile && basemapLayer) {
+        console.log('🗺️ [MOBILE BASEMAP] Setting up mobile basemap loading...');
         // Multiple attempts to ensure basemap loads properly on mobile
         map.whenReady(() => {
+          console.log('🗺️ [MOBILE BASEMAP] Map is ready, starting resize attempts...');
           setTimeout(() => {
             if (mapInstanceRef.current) {
               mapInstanceRef.current.invalidateSize(true);
+              console.log('🗺️ [MOBILE BASEMAP] First invalidateSize called');
             }
             // Critical for MapLibre basemaps on mobile: ensure WebGL canvas resizes after Leaflet invalidation.
             resizeMaplibreBasemap();
-          }, 100);
+          }, 150);
           
           setTimeout(() => {
             if (mapInstanceRef.current) {
               mapInstanceRef.current.invalidateSize(true);
+              console.log('🗺️ [MOBILE BASEMAP] Second invalidateSize called');
             }
             resizeMaplibreBasemap();
-            
-            // For tile/WMS basemaps, explicitly redraw after invalidation to force tile loading
-            if (basemapLayer && typeof basemapLayer.redraw === 'function') {
-              basemapLayer.redraw();
-            }
-          }, 300);
+          }, 400);
           
           setTimeout(() => {
-            resizeMaplibreBasemap();
-            if (basemapLayer && typeof basemapLayer.redraw === 'function') {
-              basemapLayer.redraw();
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.invalidateSize(true);
+              console.log('🗺️ [MOBILE BASEMAP] Third invalidateSize called');
             }
-          }, 600);
+            resizeMaplibreBasemap();
+          }, 800);
         });
       }
 
@@ -34769,7 +34776,7 @@ const MapView: React.FC<MapViewProps> = ({
             onClick={onBackToConfig}
             className="absolute z-[1200] bg-black/90 text-white rounded-full shadow-lg px-3 py-2 border-2 border-white/20 font-medium"
             style={{
-              top: 'calc(env(safe-area-inset-top) + 12px)',
+              top: 'calc(env(safe-area-inset-top) + 60px)',
               left: '12px',
               zIndex: 1200,
             }}
@@ -34787,7 +34794,7 @@ const MapView: React.FC<MapViewProps> = ({
               onClick={() => exportEnrichmentResultsToCSV(results)}
               className="absolute z-[1100] bg-blue-600 text-white rounded shadow-lg p-1.5 hover:bg-blue-700 transition-colors border border-white/20"
               style={{ 
-                top: 'calc(env(safe-area-inset-top) + 12px)',
+                top: 'calc(env(safe-area-inset-top) + 60px)',
                 right: '12px',
                 zIndex: 1100,
                 minWidth: 'auto',
@@ -34799,42 +34806,42 @@ const MapView: React.FC<MapViewProps> = ({
             </button>
           )}
           
-          {/* Mobile Legend - Bottom Right (very compact for mobile) */}
+          {/* Mobile Legend - Bottom Left (compact, doesn't hide attribution) */}
           {legendItems.length > 0 && (
             <div
-              className="absolute bottom-2 right-2 bg-white rounded shadow-lg p-2 z-[1000] overflow-y-auto"
+              className="absolute bottom-12 left-2 bg-white rounded shadow-lg p-1.5 z-[1000] overflow-y-auto"
               style={{
-                width: 'min(44vw, 160px)',
-                maxHeight: '35dvh',
+                width: 'min(40vw, 140px)',
+                maxHeight: '25vh',
                 touchAction: 'pan-y',
                 pointerEvents: 'auto',
               }}
             >
-              <h4 className="text-[10px] font-semibold text-gray-900 mb-1 sticky top-0 bg-white pb-1">Legend</h4>
-              <div className="space-y-1">
+              <h4 className="text-[9px] font-semibold text-gray-900 mb-0.5 sticky top-0 bg-white pb-0.5">Legend</h4>
+              <div className="space-y-0.5">
                 {legendItems.map((item, index) => (
                   <div key={index}>
-                    <div className="flex items-center gap-1 text-[10px] min-w-0">
+                    <div className="flex items-center gap-0.5 text-[8px] min-w-0">
                       <div
-                        className="w-3 h-3 rounded-full flex items-center justify-center text-[9px] flex-shrink-0"
+                        className="w-2.5 h-2.5 rounded-full flex items-center justify-center text-[8px] flex-shrink-0"
                         style={{ backgroundColor: item.color }}
                       >
                         {item.icon}
                       </div>
-                      <span className="text-gray-700 truncate min-w-0">{item.title}</span>
-                      <span className="text-gray-500 flex-shrink-0">({item.count})</span>
+                      <span className="text-gray-700 truncate min-w-0 text-[8px]">{item.title}</span>
+                      <span className="text-gray-500 flex-shrink-0 text-[8px]">({item.count})</span>
                     </div>
                     {/* Show ranges for broadband layer */}
                     {item.ranges && item.ranges.length > 0 && (
-                      <div className="ml-4 mt-1 space-y-1">
+                      <div className="ml-3 mt-0.5 space-y-0.5">
                         {item.ranges.map((range, rangeIndex) => (
-                          <div key={rangeIndex} className="flex items-center gap-1 text-[9px] min-w-0">
+                          <div key={rangeIndex} className="flex items-center gap-0.5 text-[7px] min-w-0">
                             <div 
-                              className="w-2 h-2 rounded flex-shrink-0"
+                              className="w-1.5 h-1.5 rounded flex-shrink-0"
                               style={{ backgroundColor: range.color }}
                             />
-                            <span className="text-gray-600 truncate min-w-0">{range.label}</span>
-                            <span className="text-gray-400 flex-shrink-0">({range.count})</span>
+                            <span className="text-gray-600 truncate min-w-0 text-[7px]">{range.label}</span>
+                            <span className="text-gray-400 flex-shrink-0 text-[7px]">({range.count})</span>
                           </div>
                         ))}
                       </div>
