@@ -256,6 +256,17 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     // Custom parameters for ExportImage
     exportImageRasterFunction: 'RoadDensity',
   },
+  // USFS TCA Nitrogen Deposition - Using ExportImage endpoint with raster function
+  // Note: ImageServer services with raster functions work better via ExportImage than WMS
+  // This requires a custom tile URL function to construct the ExportImage URL with bbox
+  usfs_tca_nitrogen_deposition: {
+    type: 'tile',
+    name: 'USFS TCA Nitrogen Deposition',
+    attribution: 'USDA Forest Service - Total Deposition (TDep) modeling system',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_TCA_NitrogenDeposition/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'Nitrogen Deposition',
+  },
   // USFS FIA Forest Atlas - American Elm Historical Range Boundary
   // Raster/tiled basemap service - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
