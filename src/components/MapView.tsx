@@ -796,10 +796,14 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
 
 // Fix for Leaflet marker icons in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
+// Disable shadows on mobile to prevent white ovals (iOS Safari issue)
+const isMobileDevice = typeof window !== 'undefined' && window.innerWidth <= 768;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  shadowUrl: isMobileDevice ? null : 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  shadowSize: isMobileDevice ? [0, 0] : [41, 41],
+  shadowAnchor: isMobileDevice ? [0, 0] : [12, 41],
 });
 
 // Custom tile layer for ArcGIS ImageServer ExportImage endpoint with raster functions
@@ -2535,6 +2539,15 @@ const MapView: React.FC<MapViewProps> = ({
       return;
     }
 
+    // Disable Leaflet's default marker shadows globally to prevent white ovals on mobile
+    if (isMobile) {
+      L.Icon.Default.mergeOptions({
+        shadowUrl: null,
+        shadowSize: [0, 0],
+        shadowAnchor: [0, 0]
+      });
+    }
+
     // Wait for container to be fully rendered before initializing map
     // This prevents twitchy behavior when transitioning to map view
     const initializeMap = () => {
@@ -3388,7 +3401,11 @@ const MapView: React.FC<MapViewProps> = ({
         icon: locationIcon,
         pane: 'locationMarkerPane' // Use custom pane with higher z-index
       });
-      locationMarker.bindPopup(createPopupContent(results[0]), { maxWidth: 540 });
+      locationMarker.bindPopup(createPopupContent(results[0]), { 
+        maxWidth: isMobile ? 280 : 540,
+        maxHeight: isMobile ? '70vh' : undefined,
+        className: isMobile ? 'mobile-popup' : undefined
+      });
       locationMarker.addTo(primary);
       
       // Store reference to location marker so we can bring it to front after all features are added

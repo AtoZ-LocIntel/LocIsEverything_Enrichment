@@ -275,14 +275,56 @@ body.modal-open {
     -webkit-transform: translateZ(0);
   }
   
-  /* Better mobile popup handling */
-  .leaflet-popup {
+  /* Better mobile popup handling - make it scrollable and properly sized */
+  .mobile-map-page .leaflet-popup {
     max-width: 90vw !important;
+    max-height: 80vh !important;
   }
   
-  .leaflet-popup-content {
-    min-width: 300px !important;
+  .mobile-map-page .leaflet-popup-content-wrapper {
+    max-height: 80vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-radius: 8px !important;
+  }
+  
+  .mobile-map-page .leaflet-popup-content {
+    min-width: 0 !important;
     max-width: 90vw !important;
+    max-height: 75vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 12px !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+  }
+  
+  /* Ensure close button is visible and accessible on mobile */
+  .mobile-map-page .leaflet-popup-close-button {
+    z-index: 1000 !important;
+    font-size: 28px !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    line-height: 32px !important;
+    text-align: center !important;
+    background: rgba(0,0,0,0.1) !important;
+    border-radius: 50% !important;
+  }
+  
+  /* Disable Leaflet marker shadows globally on mobile to prevent white ovals */
+  .mobile-map-page .leaflet-marker-shadow {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Disable tap highlight on iOS Safari */
+  .mobile-map-page .leaflet-marker-icon,
+  .mobile-map-page .leaflet-marker-shadow {
+    -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+    tap-highlight-color: rgba(0,0,0,0) !important;
   }
 
   /* ==========================
@@ -369,6 +411,28 @@ body.modal-open {
     background: transparent !important;
     background-color: transparent !important;
   }
+  
+  /* Force the divIcon wrapper to be exactly the size of the icon with no extra space */
+  .mobile-map-page .leaflet-div-icon.poi-marker-mobile,
+  .mobile-map-page .leaflet-div-icon.poi-marker {
+    width: 28px !important;
+    height: 28px !important;
+    margin-left: -14px !important;
+    margin-top: -14px !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+  }
+  
+  /* Ensure the inner div fills exactly the wrapper with no overflow */
+  .mobile-map-page .leaflet-div-icon.poi-marker-mobile > div,
+  .mobile-map-page .leaflet-div-icon.poi-marker > div {
+    width: 28px !important;
+    height: 28px !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
 
   /* Undo broad mobile rules within MapPage: the map should fill the fixed viewport, not calc(100vh - 60px). */
   .mobile-map-page .flex-1.relative,
@@ -402,10 +466,12 @@ body.modal-open {
   @apply rounded-lg;
 }
 
-/* Ensure popup content has adequate width for tabs */
-.leaflet-popup-content {
-  min-width: 700px !important;
-  max-width: 800px !important;
+/* Ensure popup content has adequate width for tabs (desktop only) */
+@media (min-width: 769px) {
+  .leaflet-popup-content {
+    min-width: 700px !important;
+    max-width: 800px !important;
+  }
 }
 
 /* Ensure tabs don't wrap awkwardly */
