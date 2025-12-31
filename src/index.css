@@ -324,14 +324,39 @@ body.modal-open {
   }
 
   /* Fix POI marker icons on mobile - remove white background from Leaflet divIcon */
+  .mobile-map-page .leaflet-div-icon {
+    background: transparent !important;
+    border: none !important;
+  }
+  
+  .mobile-map-page .leaflet-div-icon,
+  .mobile-map-page .leaflet-div-icon * {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  
   .poi-marker-mobile,
   .poi-marker-mobile div {
     background: transparent !important;
+    background-color: transparent !important;
   }
   
   .poi-marker,
   .poi-marker div {
     background: transparent !important;
+    background-color: transparent !important;
+  }
+  
+  /* Remove any white backgrounds from all marker icons on mobile */
+  .mobile-map-page .leaflet-marker-icon {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+  }
+  
+  .mobile-map-page .leaflet-marker-icon div {
+    background: transparent !important;
+    background-color: transparent !important;
   }
 
   /* Undo broad mobile rules within MapPage: the map should fill the fixed viewport, not calc(100vh - 60px). */
