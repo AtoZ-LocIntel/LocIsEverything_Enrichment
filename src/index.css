@@ -348,11 +348,17 @@ body.modal-open {
   /* Completely disable Leaflet marker shadows globally on mobile to prevent white ovals */
   .mobile-map-page .leaflet-marker-shadow,
   .mobile-map-page .leaflet-shadow-pane,
-  .mobile-map-page .leaflet-shadow-pane * {
+  .mobile-map-page .leaflet-shadow-pane *,
+  .mobile-map-page img[src*="marker-shadow"],
+  .mobile-map-page img[alt*="shadow"] {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
     pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
   }
   
   /* Disable tap highlight on iOS Safari */
@@ -365,6 +371,22 @@ body.modal-open {
   /* Ensure no shadow elements are created or rendered */
   .mobile-map-page .leaflet-pane.leaflet-shadow-pane {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  
+  /* Hide any img elements that might be shadow images */
+  .mobile-map-page .leaflet-marker-icon img,
+  .mobile-map-page .leaflet-div-icon img {
+    display: none !important;
+  }
+  
+  /* Ensure divIcon elements don't have any background that could look like ovals */
+  .mobile-map-page .leaflet-div-icon:not(.leaflet-zoom-animated) {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
   }
 
   /* ==========================

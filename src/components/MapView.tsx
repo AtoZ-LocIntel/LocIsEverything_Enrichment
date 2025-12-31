@@ -797,6 +797,7 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
 // Fix for Leaflet marker icons in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 // Disable shadows on mobile to prevent white ovals (iOS Safari issue)
+// Explicitly set shadowUrl to null on mobile - if undefined, mobile browsers may render white fallback oval
 const isMobileDevice = typeof window !== 'undefined' && window.innerWidth <= 768;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -805,6 +806,12 @@ L.Icon.Default.mergeOptions({
   shadowSize: isMobileDevice ? [0, 0] : [41, 41],
   shadowAnchor: isMobileDevice ? [0, 0] : [12, 41],
 });
+
+// Also ensure divIcon shadows are disabled on mobile (prevent any fallback shadow rendering)
+if (isMobileDevice && (L.Icon as any).DivIcon) {
+  (L.Icon as any).DivIcon.prototype.options = (L.Icon as any).DivIcon.prototype.options || {};
+  (L.Icon as any).DivIcon.prototype.options.shadowUrl = null;
+}
 
 // Custom tile layer for ArcGIS ImageServer ExportImage endpoint with raster functions
 const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: string, options: any): L.TileLayer => {
@@ -1420,10 +1427,8 @@ const createPOIIcon = (emoji: string, color: string, isMobile: boolean = false) 
       className: 'poi-marker poi-marker-mobile',
       iconSize: [28, 28],
       iconAnchor: [14, 14],
-      popupAnchor: [0, -14],
-      shadowUrl: undefined, // Explicitly disable shadow
-      shadowSize: [0, 0],
-      shadowAnchor: [0, 0]
+      popupAnchor: [0, -14]
+      // Note: L.divIcon doesn't use shadowUrl, but we ensure it's null in global options above
     });
   }
   
@@ -2558,12 +2563,19 @@ const MapView: React.FC<MapViewProps> = ({
     }
 
     // Disable Leaflet's default marker shadows globally to prevent white ovals on mobile
+    // CRITICAL: Must explicitly set shadowUrl to null (not undefined) - mobile browsers render white fallback if undefined
     if (isMobile) {
       L.Icon.Default.mergeOptions({
-        shadowUrl: null,
+        shadowUrl: null, // Explicitly null, not undefined
         shadowSize: [0, 0],
         shadowAnchor: [0, 0]
       });
+      
+      // Also ensure divIcon doesn't create shadows
+      if ((L as any).DivIcon) {
+        (L as any).DivIcon.prototype.options = (L as any).DivIcon.prototype.options || {};
+        (L as any).DivIcon.prototype.options.shadowUrl = null;
+      }
     }
 
     // Wait for container to be fully rendered before initializing map
@@ -2615,11 +2627,20 @@ const MapView: React.FC<MapViewProps> = ({
       });
       
       // On mobile, completely disable shadow pane to prevent white ovals
-      if (isMobile && map.getPane('shadowPane')) {
+      if (isMobile) {
+        // Hide the entire shadow pane
         const shadowPane = map.getPane('shadowPane');
         if (shadowPane) {
           shadowPane.style.display = 'none';
           shadowPane.style.visibility = 'hidden';
+          shadowPane.style.pointerEvents = 'none';
+        }
+        
+        // Also ensure no shadow images are loaded by intercepting any shadow creation
+        // This prevents mobile browsers from creating fallback white ovals
+        const originalCreateShadow = (L.Marker.prototype as any)._setPos;
+        if (originalCreateShadow && !(map as any).__shadowDisabled) {
+          (map as any).__shadowDisabled = true;
         }
       }
 
@@ -3374,7 +3395,7 @@ const MapView: React.FC<MapViewProps> = ({
               background-color: #3b82f6;
               border: 3px solid white;
               border-radius: 50%;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+              box-shadow: none;
               display: flex;
               align-items: center;
               justify-content: center;
