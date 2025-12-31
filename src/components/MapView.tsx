@@ -34777,39 +34777,50 @@ const MapView: React.FC<MapViewProps> = ({
           {/* Mobile Legend - Bottom Left (compact, doesn't hide attribution) */}
           {legendItems.length > 0 && (
             <div
-              className="absolute bottom-12 left-2 bg-white rounded shadow-lg p-1 z-[1000] overflow-y-auto"
+              className="absolute bottom-12 left-2 bg-white/95 backdrop-blur-sm rounded shadow-lg z-[1000] overflow-y-auto"
               style={{
-                width: 'min(35vw, 120px)',
-                maxHeight: '20vh',
+                width: 'min(32vw, 100px)',
+                maxHeight: '18vh',
+                padding: '4px',
+                fontSize: '10px',
                 touchAction: 'pan-y',
                 pointerEvents: 'auto',
               }}
             >
-              <h4 className="text-[8px] font-semibold text-gray-900 mb-0.5 sticky top-0 bg-white pb-0.5">Legend</h4>
-              <div className="space-y-0.5">
+              <h4 className="text-[7px] font-semibold text-gray-900 mb-0.5 sticky top-0 bg-white pb-0.5 px-0.5">Legend</h4>
+              <div className="space-y-0.5" style={{ fontSize: '9px' }}>
                 {legendItems.map((item, index) => (
-                  <div key={index}>
-                    <div className="flex items-center gap-0.5 text-[7px] min-w-0">
+                  <div key={index} style={{ fontSize: '8px' }}>
+                    <div className="flex items-center gap-0.5 min-w-0" style={{ fontSize: '7px', lineHeight: '1.2' }}>
                       <div
-                        className="w-2 h-2 rounded-full flex items-center justify-center text-[7px] flex-shrink-0"
-                        style={{ backgroundColor: item.color }}
+                        className="rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ 
+                          backgroundColor: item.color,
+                          width: '10px',
+                          height: '10px',
+                          fontSize: '6px'
+                        }}
                       >
                         {item.icon}
                       </div>
-                      <span className="text-gray-700 truncate min-w-0 text-[7px]">{item.title}</span>
-                      <span className="text-gray-500 flex-shrink-0 text-[7px]">({item.count})</span>
+                      <span className="text-gray-700 truncate min-w-0" style={{ fontSize: '7px' }}>{item.title}</span>
+                      <span className="text-gray-500 flex-shrink-0" style={{ fontSize: '6px' }}>({item.count})</span>
                     </div>
                     {/* Show ranges for broadband layer */}
                     {item.ranges && item.ranges.length > 0 && (
-                      <div className="ml-2.5 mt-0.5 space-y-0.5">
+                      <div className="ml-2 mt-0.5 space-y-0.5" style={{ fontSize: '6px' }}>
                         {item.ranges.map((range, rangeIndex) => (
-                          <div key={rangeIndex} className="flex items-center gap-0.5 text-[6px] min-w-0">
+                          <div key={rangeIndex} className="flex items-center gap-0.5 min-w-0" style={{ fontSize: '6px', lineHeight: '1.1' }}>
                             <div 
-                              className="w-1 h-1 rounded flex-shrink-0"
-                              style={{ backgroundColor: range.color }}
+                              className="rounded flex-shrink-0"
+                              style={{ 
+                                backgroundColor: range.color,
+                                width: '6px',
+                                height: '6px'
+                              }}
                             />
-                            <span className="text-gray-600 truncate min-w-0 text-[6px]">{range.label}</span>
-                            <span className="text-gray-400 flex-shrink-0 text-[6px]">({range.count})</span>
+                            <span className="text-gray-600 truncate min-w-0" style={{ fontSize: '6px' }}>{range.label}</span>
+                            <span className="text-gray-400 flex-shrink-0" style={{ fontSize: '5px' }}>({range.count})</span>
                           </div>
                         ))}
                       </div>

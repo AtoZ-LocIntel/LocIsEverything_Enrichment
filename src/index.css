@@ -324,25 +324,30 @@ body.modal-open {
   }
 
   /* Fix POI marker icons on mobile - remove white background from Leaflet divIcon */
+  /* Leaflet creates a wrapper div with leaflet-div-icon class, we need to make it completely transparent */
   .mobile-map-page .leaflet-div-icon {
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
+    box-shadow: none !important;
   }
   
-  .mobile-map-page .leaflet-div-icon,
+  /* Target the actual icon container div inside */
+  .mobile-map-page .leaflet-div-icon > div {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  
+  /* Target all children */
   .mobile-map-page .leaflet-div-icon * {
-    background: transparent !important;
-    background-color: transparent !important;
+    background-color: inherit !important;
   }
   
-  .poi-marker-mobile,
-  .poi-marker-mobile div {
-    background: transparent !important;
-    background-color: transparent !important;
-  }
-  
-  .poi-marker,
-  .poi-marker div {
+  /* Specific targeting for POI markers */
+  .mobile-map-page .poi-marker-mobile,
+  .mobile-map-page .poi-marker-mobile *,
+  .mobile-map-page .poi-marker,
+  .mobile-map-page .poi-marker * {
     background: transparent !important;
     background-color: transparent !important;
   }
@@ -352,9 +357,11 @@ body.modal-open {
     background: transparent !important;
     background-color: transparent !important;
     border: none !important;
+    box-shadow: none !important;
   }
   
-  .mobile-map-page .leaflet-marker-icon div {
+  /* Override any inline styles that Leaflet might be applying */
+  .mobile-map-page .leaflet-div-icon[style*="background"] {
     background: transparent !important;
     background-color: transparent !important;
   }
