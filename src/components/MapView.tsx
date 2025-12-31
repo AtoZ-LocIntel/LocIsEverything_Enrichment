@@ -34797,63 +34797,28 @@ const MapView: React.FC<MapViewProps> = ({
             ← Back
           </button>
 
-          {/* Download button removed on mobile - available in summary view */}
-          
-          {/* Mobile Legend - Bottom Left (compact, doesn't hide attribution) */}
-          {legendItems.length > 0 && (
-            <div
-              className="absolute bottom-12 left-2 bg-white/95 backdrop-blur-sm rounded shadow-lg z-[1000] overflow-y-auto"
-              style={{
-                width: 'min(32vw, 100px)',
-                maxHeight: '18vh',
-                padding: '4px',
-                fontSize: '10px',
-                touchAction: 'pan-y',
-                pointerEvents: 'auto',
+          {/* Download Button - Bottom Left (replaces legend on mobile) */}
+          {results.length === 1 && (
+            <button
+              onClick={() => exportEnrichmentResultsToCSV(results)}
+              className="absolute z-[1000] bg-blue-600 text-white rounded shadow-lg hover:bg-blue-700 transition-colors border border-white/20"
+              style={{ 
+                bottom: '12px',
+                left: '12px',
+                zIndex: 1000,
+                padding: '8px 12px',
+                fontSize: '14px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                whiteSpace: 'nowrap'
               }}
+              title="Download all proximity layers and distances for this location"
             >
-              <h4 className="text-[7px] font-semibold text-gray-900 mb-0.5 sticky top-0 bg-white pb-0.5 px-0.5">Legend</h4>
-              <div className="space-y-0.5" style={{ fontSize: '9px' }}>
-                {legendItems.map((item, index) => (
-                  <div key={index} style={{ fontSize: '8px' }}>
-                    <div className="flex items-center gap-0.5 min-w-0" style={{ fontSize: '7px', lineHeight: '1.2' }}>
-                      <div
-                        className="rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ 
-                          backgroundColor: item.color,
-                          width: '10px',
-                          height: '10px',
-                          fontSize: '6px'
-                        }}
-                      >
-                        {item.icon}
-                      </div>
-                      <span className="text-gray-700 truncate min-w-0" style={{ fontSize: '7px' }}>{item.title}</span>
-                      <span className="text-gray-500 flex-shrink-0" style={{ fontSize: '6px' }}>({item.count})</span>
-                    </div>
-                    {/* Show ranges for broadband layer */}
-                    {item.ranges && item.ranges.length > 0 && (
-                      <div className="ml-2 mt-0.5 space-y-0.5" style={{ fontSize: '6px' }}>
-                        {item.ranges.map((range, rangeIndex) => (
-                          <div key={rangeIndex} className="flex items-center gap-0.5 min-w-0" style={{ fontSize: '6px', lineHeight: '1.1' }}>
-                            <div 
-                              className="rounded flex-shrink-0"
-                              style={{ 
-                                backgroundColor: range.color,
-                                width: '6px',
-                                height: '6px'
-                              }}
-                            />
-                            <span className="text-gray-600 truncate min-w-0" style={{ fontSize: '6px' }}>{range.label}</span>
-                            <span className="text-gray-400 flex-shrink-0" style={{ fontSize: '5px' }}>({range.count})</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+              <span>⬇️</span>
+              <span>Download</span>
+            </button>
           )}
           
           {/* Batch Success Message - Mobile */}
