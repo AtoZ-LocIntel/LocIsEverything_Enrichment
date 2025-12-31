@@ -324,44 +324,48 @@ body.modal-open {
   }
 
   /* Fix POI marker icons on mobile - remove white background from Leaflet divIcon */
-  /* Leaflet creates a wrapper div with leaflet-div-icon class, we need to make it completely transparent */
+  /* Leaflet creates a wrapper div with leaflet-marker-icon and leaflet-div-icon classes */
+  /* Use very high specificity to override Leaflet's defaults */
+  .mobile-map-page .leaflet-container .leaflet-marker-icon.leaflet-div-icon,
+  .mobile-map-page .leaflet-marker-icon.leaflet-div-icon,
   .mobile-map-page .leaflet-div-icon {
     background: transparent !important;
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    height: auto !important;
   }
   
-  /* Target the actual icon container div inside */
+  /* Target the inner div that contains our custom HTML - ensure no white space */
   .mobile-map-page .leaflet-div-icon > div {
-    background: transparent !important;
-    background-color: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
   }
   
-  /* Target all children */
-  .mobile-map-page .leaflet-div-icon * {
-    background-color: inherit !important;
-  }
-  
-  /* Specific targeting for POI markers */
-  .mobile-map-page .poi-marker-mobile,
-  .mobile-map-page .poi-marker-mobile *,
-  .mobile-map-page .poi-marker,
-  .mobile-map-page .poi-marker * {
+  /* Specific targeting for POI markers - highest specificity */
+  .mobile-map-page .leaflet-container .poi-marker-mobile,
+  .mobile-map-page .leaflet-container .poi-marker-mobile *,
+  .mobile-map-page .leaflet-container .poi-marker,
+  .mobile-map-page .leaflet-container .poi-marker * {
     background: transparent !important;
     background-color: transparent !important;
   }
   
   /* Remove any white backgrounds from all marker icons on mobile */
-  .mobile-map-page .leaflet-marker-icon {
+  .mobile-map-page .leaflet-container .leaflet-marker-icon {
     background: transparent !important;
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    margin: 0 !important;
   }
   
-  /* Override any inline styles that Leaflet might be applying */
-  .mobile-map-page .leaflet-div-icon[style*="background"] {
+  /* Override any inline background styles that might be set */
+  .mobile-map-page .leaflet-div-icon[style] {
     background: transparent !important;
     background-color: transparent !important;
   }
