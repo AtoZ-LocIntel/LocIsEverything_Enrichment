@@ -291,11 +291,14 @@ body.modal-open {
     border-radius: 8px !important;
     pointer-events: auto !important;
     touch-action: pan-y !important;
+    width: 90vw !important;
+    max-width: 90vw !important;
   }
   
   .mobile-map-page .leaflet-popup-content {
     min-width: 0 !important;
-    max-width: 90vw !important;
+    max-width: 100% !important;
+    width: 100% !important;
     max-height: 75vh !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
@@ -305,6 +308,15 @@ body.modal-open {
     margin: 0 !important;
     pointer-events: auto !important;
     touch-action: pan-y !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Force single column layout in mobile popup content */
+  .mobile-map-page .leaflet-popup-content div[style*="grid-template-columns"],
+  .mobile-map-page .leaflet-popup-content div[style*="display: grid"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
   }
   
   /* Ensure close button is visible, accessible, and clickable on mobile */
@@ -423,6 +435,28 @@ body.modal-open {
   .mobile-map-page .leaflet-container .poi-marker * {
     background: transparent !important;
     background-color: transparent !important;
+    box-shadow: none !important;
+  }
+  
+  /* Remove any pseudo-elements that might create ovals */
+  .mobile-map-page .leaflet-div-icon::before,
+  .mobile-map-page .leaflet-div-icon::after,
+  .mobile-map-page .leaflet-marker-icon::before,
+  .mobile-map-page .leaflet-marker-icon::after,
+  .mobile-map-page .poi-marker::before,
+  .mobile-map-page .poi-marker::after,
+  .mobile-map-page .poi-marker-mobile::before,
+  .mobile-map-page .poi-marker-mobile::after {
+    display: none !important;
+    content: none !important;
+  }
+  
+  /* Additional aggressive rules for inner div elements */
+  .mobile-map-page .leaflet-div-icon div,
+  .mobile-map-page .leaflet-marker-icon div {
+    position: relative !important;
+    z-index: 10 !important;
+    box-shadow: none !important;
   }
   
   /* Remove any white backgrounds from all marker icons on mobile */

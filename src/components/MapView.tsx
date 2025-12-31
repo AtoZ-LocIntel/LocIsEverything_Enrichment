@@ -1409,16 +1409,21 @@ const createPOIIcon = (emoji: string, color: string, isMobile: boolean = false) 
         align-items: center;
         justify-content: center;
         font-size: 14px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        box-shadow: none;
         margin: 0;
         padding: 0;
         box-sizing: border-box;
         line-height: 1;
+        position: relative;
+        z-index: 10;
       ">${emoji}</div>`,
       className: 'poi-marker poi-marker-mobile',
       iconSize: [28, 28],
       iconAnchor: [14, 14],
-      popupAnchor: [0, -14]
+      popupAnchor: [0, -14],
+      shadowUrl: undefined, // Explicitly disable shadow
+      shadowSize: [0, 0],
+      shadowAnchor: [0, 0]
     });
   }
   
@@ -2103,11 +2108,19 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
 };
 
 // Create popup content for main location
-const createPopupContent = (result: EnrichmentResult): string => {
+const createPopupContent = (result: EnrichmentResult, isMobile: boolean = false): string => {
     const { location, enrichments } = result;
     
+    // Use single column layout on mobile, multi-column on desktop
+    const containerStyle = isMobile 
+      ? 'min-width: 0; max-width: 100%; width: 100%;'
+      : 'min-width: 400px; max-width: 600px;';
+    const gridStyle = isMobile
+      ? 'display: flex; flex-direction: column; gap: 8px; font-size: 12px;'
+      : 'display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 12px;';
+    
     let content = `
-      <div style="min-width: 400px; max-width: 600px;">
+      <div style="${containerStyle}">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
           <img src="/assets/new-logo.webp" alt="The Location Is Everything Co" style="width: 48px; height: 48px; border-radius: 50%;" />
           <h3 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 16px;">${location.name}</h3>
@@ -2119,7 +2132,7 @@ const createPopupContent = (result: EnrichmentResult): string => {
         
         <!-- Key Summary Values -->
         <div style="margin: 12px 0; padding: 12px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 12px;">
+          <div style="${gridStyle}">
     `;
     
     // Add summary values if they exist
@@ -2224,11 +2237,16 @@ const createPopupContent = (result: EnrichmentResult): string => {
     // Add detailed enrichment sections similar to summary form
     const enrichmentSections = buildPopupSections(enrichments);
 
+    // Use single column layout on mobile for enrichment sections
+    const enrichmentGridStyle = isMobile
+      ? 'display: flex; flex-direction: column; gap: 8px; font-size: 11px; color: #1f2937;'
+      : 'display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; font-size: 11px; color: #1f2937;';
+    
     enrichmentSections.forEach(section => {
       content += `
         <div style="margin: 12px 0; padding: 12px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
           <h4 style="margin: 0 0 8px 0; color: #111827; font-weight: 600; font-size: 12px;">${section.category}</h4>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; font-size: 11px; color: #1f2937;">
+          <div style="${enrichmentGridStyle}">
       `;
 
       section.items.forEach(item => {
@@ -3410,7 +3428,7 @@ const MapView: React.FC<MapViewProps> = ({
         icon: locationIcon,
         pane: 'locationMarkerPane' // Use custom pane with higher z-index
       });
-      locationMarker.bindPopup(createPopupContent(results[0]), { 
+      locationMarker.bindPopup(createPopupContent(results[0], isMobile), { 
         maxWidth: isMobile ? 280 : 540,
         className: isMobile ? 'mobile-popup' : undefined
       });
