@@ -267,6 +267,28 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     // Custom parameters for ExportImage
     exportImageRasterFunction: 'Nitrogen Deposition',
   },
+  // USFS TCA Insect and Disease Hazard - Using ExportImage endpoint with raster function
+  // Note: ImageServer services with raster functions work better via ExportImage than WMS
+  // This requires a custom tile URL function to construct the ExportImage URL with bbox
+  usfs_tca_insect_disease_hazard: {
+    type: 'tile',
+    name: 'USFS TCA Insect and Disease Hazard',
+    attribution: 'USDA Forest Service - National Insect and Disease Risk Map (NIDRM) 2018',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_TCA_InsectAndDiseaseHazard/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'Insect and Disease Risk',
+  },
+  // USFS TCA Fire Deficit - Using ExportImage endpoint with raster function
+  // Note: ImageServer services with raster functions work better via ExportImage than WMS
+  // This requires a custom tile URL function to construct the ExportImage URL with bbox
+  usfs_tca_fire_deficit: {
+    type: 'tile',
+    name: 'USFS TCA Fire Deficit',
+    attribution: 'USDA Forest Service - MTBS, Landfire MFRI, NIFC Fire Perimeters',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_TCA_FireDeficit/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'Fire Deficit',
+  },
   // USFS FIA Forest Atlas - American Elm Historical Range Boundary
   // Raster/tiled basemap service - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
