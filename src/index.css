@@ -342,10 +342,7 @@ body.modal-open {
     min-height: 0 !important;
   }
 
-  /* Keep Leaflet controls accessible below the back-button overlay + safe area. */
-  .mobile-map-page .leaflet-top {
-    top: calc(env(safe-area-inset-top) + 50px) !important;
-  }
+  /* Zoom controls disabled on mobile, so no need to adjust position */
 }
 
 /* Map view layout fixes */

@@ -2575,18 +2575,13 @@ const MapView: React.FC<MapViewProps> = ({
       const map = L.map(mapRef.current, {
         center: mapCenter,
         zoom: mapZoom,
-        zoomControl: true, // Enable zoom controls for mobile too
+        zoomControl: !isMobile, // Disable zoom controls on mobile to avoid overlap with Back button
         attributionControl: true,
         fadeAnimation: !isMobile, // Disable on mobile to prevent white screen
         zoomAnimation: !isMobile, // Disable on mobile
         zoomAnimationThreshold: 4,
         preferCanvas: false, // Use SVG for better mobile compatibility
       });
-      
-      // Position zoom controls for mobile
-      if (isMobile) {
-        map.zoomControl.setPosition('topleft');
-      }
 
       // Initialize basemap system: OpenFreeMap base + optional overlay
       // On mobile, always use OpenFreeMap liberty basemap
@@ -2595,51 +2590,122 @@ const MapView: React.FC<MapViewProps> = ({
       let basemapLayer: any = null;
       let overlayLayer: any = null;
       
-      // On mobile, always use OpenFreeMap as base. On desktop, use OpenFreeMap if enabled.
-      const useOpenFreeMap = isMobile ? true : showOpenFreeMapBase;
-      
-      // Determine base map: OpenFreeMap if enabled (always on mobile), otherwise the selected basemap (if it's not maplibre)
-      if (useOpenFreeMap) {
-        // Use OpenFreeMap as base - on mobile always use liberty
-        const baseMapConfig = isMobile 
-          ? BASEMAP_CONFIGS.liberty  // Always use liberty on mobile
-          : (selectedConfig.type === 'maplibre' 
-              ? selectedConfig 
-              : BASEMAP_CONFIGS.liberty); // Default to liberty if non-maplibre selected
-        
-        console.log('🗺️ [MOBILE BASEMAP] Creating MapLibre layer with style:', baseMapConfig.styleUrl, 'isMobile:', isMobile);
-        try {
+      // On mobile, use simple OSM tile layer (reliable fallback). On desktop, use OpenFreeMap if enabled.
+      if (isMobile) {
+        // Use simple OSM tile layer for mobile - guaranteed to work, no WebGL required
+        console.log('🗺️ [MOBILE BASEMAP] Using OSM tile layer for mobile');
+        basemapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19,
+          minZoom: 1,
+        });
+        basemapLayer.addTo(map);
+        console.log('🗺️ [MOBILE BASEMAP] OSM tile layer added successfully');
+      } else {
+        // Desktop: use OpenFreeMap if enabled
+        const useOpenFreeMap = showOpenFreeMapBase;
+        if (useOpenFreeMap) {
+          const baseMapConfig = selectedConfig.type === 'maplibre' 
+            ? selectedConfig 
+            : BASEMAP_CONFIGS.liberty; // Default to liberty if non-maplibre selected
+          
           basemapLayer = (L as any).maplibreGL({
             style: baseMapConfig.styleUrl,
             attribution: baseMapConfig.attribution,
             interactive: false,
           });
-          
-          // Add to map immediately
           basemapLayer.addTo(map);
-          console.log('🗺️ [MOBILE BASEMAP] MapLibre layer created and added to map successfully');
           
-          // Force immediate resize to ensure canvas renders
-          if (isMobile) {
-            setTimeout(() => {
-              const mlMap = (basemapLayer as any)?.getMaplibreMap?.();
-              if (mlMap && typeof mlMap.resize === 'function') {
-                mlMap.resize();
-                console.log('🗺️ [MOBILE BASEMAP] Forced immediate resize of MapLibre canvas');
+          // If a non-maplibre basemap is selected, add it as a transparent overlay
+          if (selectedConfig.type !== 'maplibre') {
+            if (selectedConfig.type === 'tile') {
+              // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
+              if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
+                // Use custom ExportImage tile layer
+                overlayLayer = createExportImageTileLayer(
+                  selectedConfig.tileUrl,
+                  selectedConfig.exportImageRasterFunction,
+                  {
+                    attribution: selectedConfig.attribution,
+                    maxZoom: 15,
+                    minZoom: 4,
+                    noWrap: true,
+                    opacity: 0.7, // Transparent overlay
+                    tileSize: 256,
+                  }
+                ).addTo(map);
+              } else {
+                // Standard tile layer with {z}/{y}/{x} pattern
+                overlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
+                  attribution: selectedConfig.attribution,
+                  maxZoom: 15,
+                  minZoom: 4,
+                  noWrap: true,
+                  opacity: 0.7, // Transparent overlay
+                }).addTo(map);
               }
-            }, 50);
+              
+              overlayLayer.on('tileerror', (_error: any, tile: any) => {
+                if (tile && tile.src) {
+                  const img = tile as HTMLImageElement;
+                  if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                    return;
+                  }
+                }
+              });
+            } else if (selectedConfig.type === 'wms') {
+              const wmsOptions: any = {
+                format: selectedConfig.wmsFormat || 'image/png',
+                transparent: true,
+                attribution: selectedConfig.attribution,
+                crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
+                version: '1.3.0',
+                opacity: 0.7, // Transparent overlay
+              };
+              
+              if (selectedConfig.wmsUppercase === true) {
+                wmsOptions.uppercase = true;
+              }
+              
+              if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
+                wmsOptions.layers = selectedConfig.wmsLayers;
+              }
+              
+              // Add raster function parameter if specified (for ImageServer services)
+              if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
+                wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
+              }
+              
+              overlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
+              overlayLayer.on('tileerror', (_error: any, tile: any) => {
+                // Suppress errors for missing tiles (common with WMS services that have limited extent)
+                if (tile && tile.src) {
+                  const img = tile as HTMLImageElement;
+                  if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                    // Missing tile - this is expected for areas outside the service extent
+                    return;
+                  }
+                }
+                // Only log actual errors, not missing tiles
+                // console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
+              });
+              overlayLayer.addTo(map);
+            }
+            overlayLayerRef.current = overlayLayer;
           }
-        } catch (error) {
-          console.error('🗺️ [MOBILE BASEMAP] Error creating MapLibre layer:', error);
-        }
-        
-        // If a non-maplibre basemap is selected, add it as a transparent overlay
-        if (selectedConfig.type !== 'maplibre') {
-          if (selectedConfig.type === 'tile') {
+        } else {
+          // OpenFreeMap is off - use selected basemap as the base (not overlay)
+          if (selectedConfig.type === 'maplibre') {
+            basemapLayer = (L as any).maplibreGL({
+              style: selectedConfig.styleUrl,
+              attribution: selectedConfig.attribution,
+              interactive: false,
+            }).addTo(map);
+          } else if (selectedConfig.type === 'tile') {
             // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
             if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
               // Use custom ExportImage tile layer
-              overlayLayer = createExportImageTileLayer(
+              basemapLayer = createExportImageTileLayer(
                 selectedConfig.tileUrl,
                 selectedConfig.exportImageRasterFunction,
                 {
@@ -2647,22 +2713,22 @@ const MapView: React.FC<MapViewProps> = ({
                   maxZoom: 15,
                   minZoom: 4,
                   noWrap: true,
-                  opacity: 0.7, // Transparent overlay
+                  opacity: 1.0, // Full opacity when used as base
                   tileSize: 256,
                 }
               ).addTo(map);
             } else {
               // Standard tile layer with {z}/{y}/{x} pattern
-              overlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
+              basemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
                 attribution: selectedConfig.attribution,
                 maxZoom: 15,
                 minZoom: 4,
                 noWrap: true,
-                opacity: 0.7, // Transparent overlay
+                opacity: 1.0, // Full opacity when used as base
               }).addTo(map);
             }
             
-            overlayLayer.on('tileerror', (_error: any, tile: any) => {
+            basemapLayer.on('tileerror', (_error: any, tile: any) => {
               if (tile && tile.src) {
                 const img = tile as HTMLImageElement;
                 if (img.naturalWidth === 0 && img.naturalHeight === 0) {
@@ -2677,7 +2743,7 @@ const MapView: React.FC<MapViewProps> = ({
               attribution: selectedConfig.attribution,
               crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
               version: '1.3.0',
-              opacity: 0.7, // Transparent overlay
+              opacity: 1.0, // Full opacity when used as base
             };
             
             if (selectedConfig.wmsUppercase === true) {
@@ -2693,132 +2759,19 @@ const MapView: React.FC<MapViewProps> = ({
               wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
             }
             
-            overlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
-            overlayLayer.on('tileerror', (_error: any, tile: any) => {
-              // Suppress errors for missing tiles (common with WMS services that have limited extent)
-              if (tile && tile.src) {
-                const img = tile as HTMLImageElement;
-                if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-                  // Missing tile - this is expected for areas outside the service extent
-                  return;
-                }
-              }
-              // Only log actual errors, not missing tiles
-              // console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
+            basemapLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
+            basemapLayer.on('tileerror', (_error: any, tile: any) => {
+              console.warn('WMS tile error for basemap:', selectedBasemap, 'tile:', tile);
             });
-            overlayLayer.addTo(map);
+            basemapLayer.addTo(map);
           }
-          overlayLayerRef.current = overlayLayer;
+          overlayLayerRef.current = null; // No overlay when OpenFreeMap is off
         }
-      } else {
-        // OpenFreeMap is off - use selected basemap as the base (not overlay)
-        if (selectedConfig.type === 'maplibre') {
-          basemapLayer = (L as any).maplibreGL({
-            style: selectedConfig.styleUrl,
-            attribution: selectedConfig.attribution,
-            interactive: false,
-          }).addTo(map);
-        } else if (selectedConfig.type === 'tile') {
-          // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
-          if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
-            // Use custom ExportImage tile layer
-            basemapLayer = createExportImageTileLayer(
-              selectedConfig.tileUrl,
-              selectedConfig.exportImageRasterFunction,
-              {
-                attribution: selectedConfig.attribution,
-                maxZoom: 15,
-                minZoom: 4,
-                noWrap: true,
-                opacity: 1.0, // Full opacity when used as base
-                tileSize: 256,
-              }
-            ).addTo(map);
-          } else {
-            // Standard tile layer with {z}/{y}/{x} pattern
-            basemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
-              attribution: selectedConfig.attribution,
-              maxZoom: 15,
-              minZoom: 4,
-              noWrap: true,
-              opacity: 1.0, // Full opacity when used as base
-            }).addTo(map);
-          }
-          
-          basemapLayer.on('tileerror', (_error: any, tile: any) => {
-            if (tile && tile.src) {
-              const img = tile as HTMLImageElement;
-              if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-                return;
-              }
-            }
-          });
-        } else if (selectedConfig.type === 'wms') {
-          const wmsOptions: any = {
-            format: selectedConfig.wmsFormat || 'image/png',
-            transparent: true,
-            attribution: selectedConfig.attribution,
-            crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
-            version: '1.3.0',
-            opacity: 1.0, // Full opacity when used as base
-          };
-          
-          if (selectedConfig.wmsUppercase === true) {
-            wmsOptions.uppercase = true;
-          }
-          
-          if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
-            wmsOptions.layers = selectedConfig.wmsLayers;
-          }
-          
-          // Add raster function parameter if specified (for ImageServer services)
-          if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
-            wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
-          }
-          
-          basemapLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
-          basemapLayer.on('tileerror', (_error: any, tile: any) => {
-            console.warn('WMS tile error for basemap:', selectedBasemap, 'tile:', tile);
-          });
-          basemapLayer.addTo(map);
-        }
-        overlayLayerRef.current = null; // No overlay when OpenFreeMap is off
       }
       
       basemapLayerRef.current = basemapLayer;
       
-      // Force immediate tile loading on mobile - critical for MapLibre basemaps
-      if (isMobile && basemapLayer) {
-        console.log('🗺️ [MOBILE BASEMAP] Setting up mobile basemap loading...');
-        // Multiple attempts to ensure basemap loads properly on mobile
-        map.whenReady(() => {
-          console.log('🗺️ [MOBILE BASEMAP] Map is ready, starting resize attempts...');
-          setTimeout(() => {
-            if (mapInstanceRef.current) {
-              mapInstanceRef.current.invalidateSize(true);
-              console.log('🗺️ [MOBILE BASEMAP] First invalidateSize called');
-            }
-            // Critical for MapLibre basemaps on mobile: ensure WebGL canvas resizes after Leaflet invalidation.
-            resizeMaplibreBasemap();
-          }, 150);
-          
-          setTimeout(() => {
-            if (mapInstanceRef.current) {
-              mapInstanceRef.current.invalidateSize(true);
-              console.log('🗺️ [MOBILE BASEMAP] Second invalidateSize called');
-            }
-            resizeMaplibreBasemap();
-          }, 400);
-          
-          setTimeout(() => {
-            if (mapInstanceRef.current) {
-              mapInstanceRef.current.invalidateSize(true);
-              console.log('🗺️ [MOBILE BASEMAP] Third invalidateSize called');
-            }
-            resizeMaplibreBasemap();
-          }, 800);
-        });
-      }
+      // OSM tile layer on mobile loads normally - no special handling needed
 
       const primary = L.layerGroup().addTo(map);
       const poi = L.layerGroup().addTo(map);
@@ -2922,7 +2875,7 @@ const MapView: React.FC<MapViewProps> = ({
       setIsMapReady(false);
       setIsInitialized(false);
     };
-  }, [isMobile, results.length]);
+  }, [isMobile]);
 
   // Handle weather radar overlay toggle
   useEffect(() => {
