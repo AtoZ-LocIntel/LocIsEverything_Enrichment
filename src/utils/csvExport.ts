@@ -711,6 +711,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('usgs_gov_') && key.endsWith('_all')) || // Skip USGS Government Units arrays (handled separately)
         key === 'tnm_structures_all' || // Skip TNM Structures array (handled separately)
         key === 'usgs_trails_all' || // Skip USGS Trails array (handled separately)
+        (key.startsWith('usgs_transportation_') && key.endsWith('_all')) || // Skip USGS Transportation arrays (handled separately)
         (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately)
         (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately)
         (key.startsWith('dc_property_') && key.endsWith('_all')) || // Skip DC Property and Land arrays (handled separately)
@@ -13215,6 +13216,81 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           trailCoords ? trailCoords.split(',')[1] : location.lon.toString(),
           distance,
           'Nearby Trail',
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add USGS Transportation data rows
+    const transportationLayerMap: Record<string, { name: string, icon: string }> = {
+      'usgs_transportation_airport_all': { name: 'USGS_TRANSPORTATION_AIRPORT', icon: '✈️' },
+      'usgs_transportation_airport_runway_all': { name: 'USGS_TRANSPORTATION_AIRPORT_RUNWAY', icon: '🛫' },
+      'usgs_transportation_interstate_all': { name: 'USGS_TRANSPORTATION_INTERSTATE', icon: '🛣️' },
+      'usgs_transportation_us_route_all': { name: 'USGS_TRANSPORTATION_US_ROUTE', icon: '🛣️' },
+      'usgs_transportation_state_route_all': { name: 'USGS_TRANSPORTATION_STATE_ROUTE', icon: '🛣️' },
+      'usgs_transportation_us_railroad_all': { name: 'USGS_TRANSPORTATION_US_RAILROAD', icon: '🚂' },
+      'usgs_transportation_local_road_all': { name: 'USGS_TRANSPORTATION_LOCAL_ROAD', icon: '🛣️' },
+      'usgs_transportation_trails_all': { name: 'USGS_TRANSPORTATION_TRAILS', icon: '🥾' }
+    };
+    
+    if (transportationLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = transportationLayerMap[key];
+      value.forEach((feature: any) => {
+        // Try to find a name/identifier from common attribute fields
+        const featureName = feature.name || feature.fullname || feature.route || feature.rtnumber || 
+          feature.rtname || feature.rtnum || feature.facname || feature.facilityname || 
+          feature.airportname || feature.runwayname || feature.trailname || 
+          (feature.attributes ? (feature.attributes.name || feature.attributes.fullname || feature.attributes.route) : null) ||
+          feature.layerName || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry
+        let featureCoords = '';
+        if (feature.geometry) {
+          if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline geometry (roads, railroads, trails)
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const firstPoint = firstPath[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          } else if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Polygon geometry (airports)
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          } else if (feature.geometry.x && feature.geometry.y) {
+            // Point geometry
+            featureCoords = `${feature.geometry.y},${feature.geometry.x}`; // lat,lon
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          `${layerInfo.icon} ${featureName}`,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `Nearby ${feature.layerName || layerInfo.name.replace('USGS_TRANSPORTATION_', '').replace(/_/g, ' ')}`,
           attributesJson,
           '',
           '',

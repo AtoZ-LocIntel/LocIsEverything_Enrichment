@@ -1738,6 +1738,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'padus_public_access_all' || // Skip PAD-US public access array (handled separately for map drawing)
     key === 'padus_protection_status_all' || // Skip PAD-US protection status array (handled separately for map drawing)
     key === 'usgs_trails_all' || // Skip USGS Trails array (handled separately for map drawing)
+    (key.startsWith('usgs_transportation_') && key.endsWith('_all')) || // Skip USGS Transportation arrays (handled separately for map drawing)
     (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately for map drawing)
     (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately for map drawing)
     (key.startsWith('dc_property_') && key.endsWith('_all')) || // Skip DC Property and Land arrays (handled separately for map drawing)
@@ -2451,9 +2452,15 @@ const MapView: React.FC<MapViewProps> = ({
   }>>([]);
   // Basemap selection state (OpenFreeMap styles)
   // On mobile, always use OpenFreeMap liberty basemap (no selector needed)
-  const [selectedBasemap, setSelectedBasemap] = useState<string>(isMobile ? 'liberty' : 'liberty'); // Selected basemap
-  const [showOpenFreeMapBase, setShowOpenFreeMapBase] = useState<boolean>(isMobile ? true : false); // Toggle for OpenFreeMap base layer - force true on mobile
+  // Separate base basemap (from "Basemaps" section) from thematic overlay (from other sections)
+  // Simplified: Always show ONE basemap from "Basemaps" section (last selected or default) unless toggled off
+  // Thematic basemaps are always optional overlays on top
+  const [selectedBaseBasemap, setSelectedBaseBasemap] = useState<string>(isMobile ? 'liberty' : 'liberty'); // Base basemap from "Basemaps" section
+  const [selectedThematicBasemap, setSelectedThematicBasemap] = useState<string | null>(null); // Thematic basemap from other sections (WMS, tile, etc.) - optional overlay
+  const [showBaseBasemap, setShowBaseBasemap] = useState<boolean>(true); // Toggle to show/hide base basemap layers
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
+  const [showBasemapInfo, setShowBasemapInfo] = useState<boolean>(false); // Info tooltip state
+  const basemapInfoRef = useRef<HTMLDivElement>(null);
   // Collapsible basemap sections state
   const [expandedBasemapSections, setExpandedBasemapSections] = useState<Record<string, boolean>>({
     'Basemaps': true, // Default to expanded
@@ -2762,8 +2769,6 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Initialize basemap system: OpenFreeMap base + optional overlay
       // On mobile, always use OpenFreeMap liberty basemap
-      const basemapToUse = isMobile ? 'liberty' : selectedBasemap;
-      const selectedConfig = BASEMAP_CONFIGS[basemapToUse] || BASEMAP_CONFIGS.liberty;
       let basemapLayer: any = null;
       let overlayLayer: any = null;
       
@@ -2779,31 +2784,85 @@ const MapView: React.FC<MapViewProps> = ({
         basemapLayer.addTo(map);
         console.log('🗺️ [MOBILE BASEMAP] OSM tile layer added successfully');
       } else {
-        // Desktop: use OpenFreeMap if enabled
-        const useOpenFreeMap = showOpenFreeMapBase;
-        if (useOpenFreeMap) {
-          const baseMapConfig = selectedConfig.type === 'maplibre' 
-            ? selectedConfig 
-            : BASEMAP_CONFIGS.liberty; // Default to liberty if non-maplibre selected
+        // Desktop: Show basemap from "Basemaps" section + optional thematic overlay (if showBaseBasemap is true)
+        // If showBaseBasemap is false, only show thematic overlays
+        if (showBaseBasemap) {
+          const baseBasemapConfig = BASEMAP_CONFIGS[selectedBaseBasemap] || BASEMAP_CONFIGS.liberty;
           
+          // "Basemaps" section selection is the base layer (full opacity)
+          if (baseBasemapConfig.type === 'maplibre') {
           basemapLayer = (L as any).maplibreGL({
-            style: baseMapConfig.styleUrl,
-            attribution: baseMapConfig.attribution,
+            style: baseBasemapConfig.styleUrl,
+            attribution: baseBasemapConfig.attribution,
             interactive: false,
           });
           basemapLayer.addTo(map);
+        } else if (baseBasemapConfig.type === 'tile') {
+          if (baseBasemapConfig.exportImageRasterFunction && baseBasemapConfig.tileUrl) {
+            basemapLayer = createExportImageTileLayer(
+              baseBasemapConfig.tileUrl,
+              baseBasemapConfig.exportImageRasterFunction,
+              {
+                attribution: baseBasemapConfig.attribution,
+                maxZoom: 15,
+                minZoom: 4,
+                noWrap: true,
+                opacity: 1.0, // Full opacity - this is the base
+                tileSize: 256,
+              }
+            ).addTo(map);
+          } else {
+            basemapLayer = L.tileLayer(baseBasemapConfig.tileUrl!, {
+              attribution: baseBasemapConfig.attribution,
+              maxZoom: 15,
+              minZoom: 4,
+              noWrap: true,
+              opacity: 1.0, // Full opacity - this is the base
+            }).addTo(map);
+          }
+        } else if (baseBasemapConfig.type === 'wms') {
+          const wmsOptions: any = {
+            format: baseBasemapConfig.wmsFormat || 'image/png',
+            transparent: true,
+            attribution: baseBasemapConfig.attribution,
+            crs: baseBasemapConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
+            version: '1.3.0',
+            opacity: 1.0, // Full opacity - this is the base
+          };
           
-          // If a non-maplibre basemap is selected, add it as a transparent overlay
-          if (selectedConfig.type !== 'maplibre') {
-            if (selectedConfig.type === 'tile') {
-              // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
-              if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
-                // Use custom ExportImage tile layer
+          if (baseBasemapConfig.wmsUppercase === true) {
+            wmsOptions.uppercase = true;
+          }
+          
+          if (baseBasemapConfig.wmsLayers !== undefined && baseBasemapConfig.wmsLayers.trim() !== '') {
+            wmsOptions.layers = baseBasemapConfig.wmsLayers;
+          }
+          
+          if (baseBasemapConfig.wmsRasterFunction !== undefined && baseBasemapConfig.wmsRasterFunction.trim() !== '') {
+            wmsOptions.rasterFunction = baseBasemapConfig.wmsRasterFunction;
+          }
+          
+          basemapLayer = L.tileLayer.wms(baseBasemapConfig.wmsUrl!, wmsOptions);
+          basemapLayer.addTo(map);
+        }
+        } else {
+          // Base basemap toggle is OFF - no base layer
+          basemapLayer = null;
+        }
+        
+        // Add thematic basemap as optional overlay on top (if selected)
+        // Thematic overlay persists when switching basemaps from "Basemaps" section
+        if (selectedThematicBasemap) {
+          const thematicConfig = BASEMAP_CONFIGS[selectedThematicBasemap];
+          // Thematic basemaps are never maplibre type - they're always tile or wms from other sections
+          if (thematicConfig && thematicConfig.type !== 'maplibre' && selectedThematicBasemap !== 'usa_topo_maps' && selectedThematicBasemap !== 'natgeo_world_map') {
+            if (thematicConfig.type === 'tile') {
+              if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
                 overlayLayer = createExportImageTileLayer(
-                  selectedConfig.tileUrl,
-                  selectedConfig.exportImageRasterFunction,
+                  thematicConfig.tileUrl,
+                  thematicConfig.exportImageRasterFunction,
                   {
-                    attribution: selectedConfig.attribution,
+                    attribution: thematicConfig.attribution,
                     maxZoom: 15,
                     minZoom: 4,
                     noWrap: true,
@@ -2812,137 +2871,51 @@ const MapView: React.FC<MapViewProps> = ({
                   }
                 ).addTo(map);
               } else {
-                // Standard tile layer with {z}/{y}/{x} pattern
-                overlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
-                  attribution: selectedConfig.attribution,
+                overlayLayer = L.tileLayer(thematicConfig.tileUrl!, {
+                  attribution: thematicConfig.attribution,
                   maxZoom: 15,
                   minZoom: 4,
                   noWrap: true,
                   opacity: 0.7, // Transparent overlay
                 }).addTo(map);
               }
-              
-              overlayLayer.on('tileerror', (_error: any, tile: any) => {
-                if (tile && tile.src) {
-                  const img = tile as HTMLImageElement;
-                  if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-                    return;
-                  }
-                }
-              });
-            } else if (selectedConfig.type === 'wms') {
+            } else if (thematicConfig.type === 'wms') {
               const wmsOptions: any = {
-                format: selectedConfig.wmsFormat || 'image/png',
+                format: thematicConfig.wmsFormat || 'image/png',
                 transparent: true,
-                attribution: selectedConfig.attribution,
-                crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
+                attribution: thematicConfig.attribution,
+                crs: thematicConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
                 version: '1.3.0',
                 opacity: 0.7, // Transparent overlay
               };
               
-              if (selectedConfig.wmsUppercase === true) {
+              if (thematicConfig.wmsUppercase === true) {
                 wmsOptions.uppercase = true;
               }
               
-              if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
-                wmsOptions.layers = selectedConfig.wmsLayers;
+              if (thematicConfig.wmsLayers !== undefined && thematicConfig.wmsLayers.trim() !== '') {
+                wmsOptions.layers = thematicConfig.wmsLayers;
               }
               
-              // Add raster function parameter if specified (for ImageServer services)
-              if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
-                wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
+              if (thematicConfig.wmsRasterFunction !== undefined && thematicConfig.wmsRasterFunction.trim() !== '') {
+                wmsOptions.rasterFunction = thematicConfig.wmsRasterFunction;
               }
               
-              overlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
-              overlayLayer.on('tileerror', (_error: any, tile: any) => {
-                // Suppress errors for missing tiles (common with WMS services that have limited extent)
-                if (tile && tile.src) {
-                  const img = tile as HTMLImageElement;
-                  if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-                    // Missing tile - this is expected for areas outside the service extent
-                    return;
-                  }
-                }
-                // Only log actual errors, not missing tiles
-                // console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
-              });
+              overlayLayer = L.tileLayer.wms(thematicConfig.wmsUrl!, wmsOptions);
               overlayLayer.addTo(map);
             }
-            overlayLayerRef.current = overlayLayer;
+            
+            if (overlayLayer) {
+              overlayLayerRef.current = overlayLayer;
+            } else {
+              overlayLayerRef.current = null;
+            }
+          } else {
+            overlayLayerRef.current = null;
           }
         } else {
-          // OpenFreeMap is off - use selected basemap as the base (not overlay)
-          if (selectedConfig.type === 'maplibre') {
-            basemapLayer = (L as any).maplibreGL({
-              style: selectedConfig.styleUrl,
-              attribution: selectedConfig.attribution,
-              interactive: false,
-            }).addTo(map);
-          } else if (selectedConfig.type === 'tile') {
-            // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
-            if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
-              // Use custom ExportImage tile layer
-              basemapLayer = createExportImageTileLayer(
-                selectedConfig.tileUrl,
-                selectedConfig.exportImageRasterFunction,
-                {
-                  attribution: selectedConfig.attribution,
-                  maxZoom: 15,
-                  minZoom: 4,
-                  noWrap: true,
-                  opacity: 1.0, // Full opacity when used as base
-                  tileSize: 256,
-                }
-              ).addTo(map);
-            } else {
-              // Standard tile layer with {z}/{y}/{x} pattern
-              basemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
-                attribution: selectedConfig.attribution,
-                maxZoom: 15,
-                minZoom: 4,
-                noWrap: true,
-                opacity: 1.0, // Full opacity when used as base
-              }).addTo(map);
-            }
-            
-            basemapLayer.on('tileerror', (_error: any, tile: any) => {
-              if (tile && tile.src) {
-                const img = tile as HTMLImageElement;
-                if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-                  return;
-                }
-              }
-            });
-          } else if (selectedConfig.type === 'wms') {
-            const wmsOptions: any = {
-              format: selectedConfig.wmsFormat || 'image/png',
-              transparent: true,
-              attribution: selectedConfig.attribution,
-              crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
-              version: '1.3.0',
-              opacity: 1.0, // Full opacity when used as base
-            };
-            
-            if (selectedConfig.wmsUppercase === true) {
-              wmsOptions.uppercase = true;
-            }
-            
-            if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
-              wmsOptions.layers = selectedConfig.wmsLayers;
-            }
-            
-            // Add raster function parameter if specified (for ImageServer services)
-            if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
-              wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
-            }
-            
-            basemapLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
-            basemapLayer.on('tileerror', (_error: any, tile: any) => {
-              console.warn('WMS tile error for basemap:', selectedBasemap, 'tile:', tile);
-            });
-            basemapLayer.addTo(map);
-          }
-          overlayLayerRef.current = null; // No overlay when OpenFreeMap is off
+          // No thematic selected - clear overlay reference
+          overlayLayerRef.current = null;
         }
       }
       
@@ -3039,15 +3012,50 @@ const MapView: React.FC<MapViewProps> = ({
 
     return () => {
       if (mapInstanceRef.current) {
-        // Remove weather radar overlay if present
-        if (weatherRadarOverlayRef.current) {
-          mapInstanceRef.current.removeLayer(weatherRadarOverlayRef.current);
-          weatherRadarOverlayRef.current = null;
+        try {
+          // Remove weather radar overlay if present
+          if (weatherRadarOverlayRef.current) {
+            try {
+              if (mapInstanceRef.current.hasLayer(weatherRadarOverlayRef.current)) {
+                mapInstanceRef.current.removeLayer(weatherRadarOverlayRef.current);
+              }
+            } catch (e) {
+              // Layer might already be removed
+            }
+            weatherRadarOverlayRef.current = null;
+          }
+          
+          // Clean up basemap layers before removing map
+          if (basemapLayerRef.current) {
+            try {
+              if (mapInstanceRef.current.hasLayer(basemapLayerRef.current)) {
+                mapInstanceRef.current.removeLayer(basemapLayerRef.current);
+              }
+            } catch (e) {
+              // Layer might already be removed
+            }
+            basemapLayerRef.current = null;
+          }
+          
+          if (overlayLayerRef.current) {
+            try {
+              if (mapInstanceRef.current.hasLayer(overlayLayerRef.current)) {
+                mapInstanceRef.current.removeLayer(overlayLayerRef.current);
+              }
+            } catch (e) {
+              // Layer might already be removed
+            }
+            overlayLayerRef.current = null;
+          }
+          
+          // Remove map instance
+          mapInstanceRef.current.remove();
+        } catch (e) {
+          // Map might already be removed or in an invalid state
+          console.warn('Error during map cleanup:', e);
         }
-        mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
         layerGroupsRef.current = null;
-        basemapLayerRef.current = null;
       }
       setIsMapReady(false);
       setIsInitialized(false);
@@ -3096,224 +3104,266 @@ const MapView: React.FC<MapViewProps> = ({
     
     // Only handle basemap changes if map is already initialized
     // Initial basemap is set during map initialization
-    if (!mapInstanceRef.current || !basemapLayerRef.current || !isInitialized) {
+    // Note: basemapLayerRef.current might be null during layer switches, so we don't check it here
+    if (!mapInstanceRef.current || !isInitialized) {
       return;
     }
 
-    const selectedConfig = BASEMAP_CONFIGS[selectedBasemap] || BASEMAP_CONFIGS.liberty;
     const map = mapInstanceRef.current;
     
-    // Remove old layers
+    // Remove old layers FIRST to ensure clean state
+    // This ensures only one basemap from "Basemaps" section is ever visible
+    // CRITICAL: Must remove all layers completely before adding new ones to prevent stacking
+    // Remove ALL tile layers that might be basemaps to prevent any stacking
     if (basemapLayerRef.current) {
-      map.removeLayer(basemapLayerRef.current);
+      try {
+        const oldLayer = basemapLayerRef.current;
+        // For maplibre layers, we need defensive cleanup to prevent stacking
+        // MapLibre layers create canvas elements that can persist even after layer removal
+        if (oldLayer._maplibreMap || oldLayer.getMaplibreMap || oldLayer._container) {
+          try {
+            // First, try to get the maplibre map instance
+            const mlMap = oldLayer.getMaplibreMap ? oldLayer.getMaplibreMap() : oldLayer._maplibreMap;
+            if (mlMap) {
+              // Clean up maplibre map instance first (this handles most cleanup)
+              if (typeof mlMap.remove === 'function') {
+                try {
+                  mlMap.remove();
+                } catch (e) {
+                  // MapLibre might have already been cleaned up, continue
+                }
+              }
+            }
+          } catch (e) {
+            // Continue with normal removal even if maplibre cleanup fails
+          }
+        }
+        // Remove the layer from the map
+        if (map.hasLayer(oldLayer)) {
+          map.removeLayer(oldLayer);
+        }
+        // Double-check that layer is fully removed (especially important for maplibre)
+        if (map.hasLayer(oldLayer)) {
+          map.removeLayer(oldLayer);
+        }
+      } catch (e) {
+        // Layer might already be removed, continue
+      }
       basemapLayerRef.current = null;
     }
+    
+    // Remove overlay layer - but preserve the state so it can be recreated
     if (overlayLayerRef.current) {
-      map.removeLayer(overlayLayerRef.current);
+      try {
+        const oldOverlay = overlayLayerRef.current;
+        if (map.hasLayer(oldOverlay)) {
+          map.removeLayer(oldOverlay);
+        }
+        // Ensure overlay is fully removed
+        if (map.hasLayer(oldOverlay)) {
+          map.removeLayer(oldOverlay);
+        }
+      } catch (e) {
+        // Layer might already be removed, continue
+      }
       overlayLayerRef.current = null;
     }
 
     let newBasemapLayer: any = null;
     let newOverlayLayer: any = null;
     
-    // Determine base map: OpenFreeMap if enabled, otherwise the selected basemap (if it's not maplibre)
-    if (showOpenFreeMapBase) {
-      // Use OpenFreeMap as base
-      const baseMapConfig = selectedConfig.type === 'maplibre' 
-        ? selectedConfig 
-        : BASEMAP_CONFIGS.liberty; // Default to liberty if non-maplibre selected
-      
-      newBasemapLayer = (L as any).maplibreGL({
-        style: baseMapConfig.styleUrl,
-        attribution: baseMapConfig.attribution,
-        interactive: false,
-      }).addTo(map);
-      
-      // If a non-maplibre basemap is selected, add it as a transparent overlay
-      if (selectedConfig.type !== 'maplibre') {
-        if (selectedConfig.type === 'tile') {
-          // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
-          if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
-            // Use custom ExportImage tile layer
-            newOverlayLayer = createExportImageTileLayer(
-              selectedConfig.tileUrl,
-              selectedConfig.exportImageRasterFunction,
-              {
-                attribution: selectedConfig.attribution,
-                maxZoom: 15,
-                minZoom: 4,
-                noWrap: true,
-                opacity: 0.7, // Transparent overlay
-                tileSize: 256,
-              }
-            ).addTo(map);
-          } else {
-            // Standard tile layer with {z}/{y}/{x} pattern
-            newOverlayLayer = L.tileLayer(selectedConfig.tileUrl!, {
-              attribution: selectedConfig.attribution,
-              maxZoom: 15,
-              minZoom: 4,
-              noWrap: true,
-              opacity: 0.7, // Transparent overlay
-            }).addTo(map);
-          }
-          
-          newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
-            if (tile && tile.src) {
-              const img = tile as HTMLImageElement;
-              if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-                return;
-              }
-            }
-          });
-        } else if (selectedConfig.type === 'wms') {
-          const wmsOptions: any = {
-            format: selectedConfig.wmsFormat || 'image/png',
-            transparent: true,
-            attribution: selectedConfig.attribution,
-            crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
-            version: '1.3.0',
-            opacity: 0.7, // Transparent overlay
-          };
-          
-          if (selectedConfig.wmsUppercase === true) {
-            wmsOptions.uppercase = true;
-          }
-          
-          if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
-            wmsOptions.layers = selectedConfig.wmsLayers;
-          }
-          
-          // Add raster function parameter if specified (for ImageServer services)
-          if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
-            wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
-          }
-          
-          newOverlayLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
-          newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
-            // Suppress errors for missing tiles (common with WMS services that have limited extent)
-            if (tile && tile.src) {
-              const img = tile as HTMLImageElement;
-              if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-                // Missing tile - this is expected for areas outside the service extent
-                return;
-              }
-            }
-            // Only log actual errors, not missing tiles
-            // console.warn('WMS overlay tile error:', selectedBasemap, 'tile:', tile);
-          });
-          newOverlayLayer.addTo(map);
-        }
-        overlayLayerRef.current = newOverlayLayer;
+    // SIMPLIFIED: Show ONE basemap from "Basemaps" section + optional thematic overlay (if showBaseBasemap is true)
+    // If showBaseBasemap is false, only show thematic overlays
+    // CRITICAL: Use selectedBaseBasemap exactly as-is - NEVER reset or change it
+    
+    // Step 1: Add base basemap from "Basemaps" section (if toggle is ON)
+    if (showBaseBasemap) {
+      const baseBasemapConfig = BASEMAP_CONFIGS[selectedBaseBasemap];
+      if (!baseBasemapConfig) {
+        console.warn('Base basemap config not found for:', selectedBaseBasemap, 'using liberty as fallback');
       }
-    } else {
-      // OpenFreeMap is off - use selected basemap as the base (not overlay)
-      if (selectedConfig.type === 'maplibre') {
+      const finalBaseConfig = baseBasemapConfig || BASEMAP_CONFIGS.liberty;
+      
+      // "Basemaps" section selection is the base layer (full opacity)
+      // This includes maplibre (OpenFreeMap), tile (USA Topo, NatGeo), and wms types
+      // CRITICAL: All basemaps in "Basemaps" section are treated identically - they REPLACE each other, never stack
+      if (finalBaseConfig.type === 'maplibre') {
         newBasemapLayer = (L as any).maplibreGL({
-          style: selectedConfig.styleUrl,
-          attribution: selectedConfig.attribution,
+          style: finalBaseConfig.styleUrl,
+          attribution: finalBaseConfig.attribution,
           interactive: false,
         }).addTo(map);
-        
-        // Ensure MapLibre canvas resizes after basemap swaps (especially on mobile)
-        try {
-          const layer: any = newBasemapLayer;
-          const ml =
-            (layer?.getMaplibreMap && layer.getMaplibreMap()) ||
-            layer?._maplibreMap ||
-            layer?._map;
-          if (ml && typeof ml.resize === 'function') {
-            ml.resize();
-            setTimeout(() => ml.resize(), 50);
-          }
-        } catch {
-          // ignore
-        }
-      } else if (selectedConfig.type === 'tile') {
-        // Check if this is an ExportImage endpoint (has exportImageRasterFunction)
-        if (selectedConfig.exportImageRasterFunction && selectedConfig.tileUrl) {
-          // Use custom ExportImage tile layer
+      } else if (finalBaseConfig.type === 'tile') {
+        // Tile basemaps (USA Topo, NatGeo) - these REPLACE maplibre basemaps, not stack on top
+        if (finalBaseConfig.exportImageRasterFunction && finalBaseConfig.tileUrl) {
           newBasemapLayer = createExportImageTileLayer(
-            selectedConfig.tileUrl,
-            selectedConfig.exportImageRasterFunction,
+            finalBaseConfig.tileUrl,
+            finalBaseConfig.exportImageRasterFunction,
             {
-              attribution: selectedConfig.attribution,
+              attribution: finalBaseConfig.attribution,
               maxZoom: 15,
               minZoom: 4,
               noWrap: true,
-              opacity: 1.0, // Full opacity when used as base
+              opacity: 1.0, // Full opacity - this is the base, replaces any previous basemap
               tileSize: 256,
             }
           ).addTo(map);
         } else {
-          // Standard tile layer with {z}/{y}/{x} pattern
-          newBasemapLayer = L.tileLayer(selectedConfig.tileUrl!, {
-            attribution: selectedConfig.attribution,
+          newBasemapLayer = L.tileLayer(finalBaseConfig.tileUrl!, {
+            attribution: finalBaseConfig.attribution,
             maxZoom: 15,
             minZoom: 4,
             noWrap: true,
-            opacity: 1.0, // Full opacity when used as base
+            opacity: 1.0, // Full opacity - this is the base, replaces any previous basemap
           }).addTo(map);
         }
-        
-        newBasemapLayer.on('tileerror', (_error: any, tile: any) => {
-          if (tile && tile.src) {
-            const img = tile as HTMLImageElement;
-            if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-              return;
-            }
-          }
-        });
-        
-        newBasemapLayer.on('load', () => {
-          console.log('Tile loaded successfully for basemap:', selectedBasemap);
-        });
-      } else if (selectedConfig.type === 'wms') {
+      } else if (finalBaseConfig.type === 'wms') {
         const wmsOptions: any = {
-          format: selectedConfig.wmsFormat || 'image/png',
+          format: finalBaseConfig.wmsFormat || 'image/png',
           transparent: true,
-          attribution: selectedConfig.attribution,
-          crs: selectedConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
+          attribution: finalBaseConfig.attribution,
+          crs: finalBaseConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
           version: '1.3.0',
-          opacity: 1.0, // Full opacity when used as base
+          opacity: 1.0, // Full opacity - this is the base, replaces any previous basemap
         };
         
-        if (selectedConfig.wmsUppercase === true) {
+        if (finalBaseConfig.wmsUppercase === true) {
           wmsOptions.uppercase = true;
         }
         
-        if (selectedConfig.wmsLayers !== undefined && selectedConfig.wmsLayers.trim() !== '') {
-          wmsOptions.layers = selectedConfig.wmsLayers;
+        if (finalBaseConfig.wmsLayers !== undefined && finalBaseConfig.wmsLayers.trim() !== '') {
+          wmsOptions.layers = finalBaseConfig.wmsLayers;
         }
         
-        // Add raster function parameter if specified (for ImageServer services)
-        if (selectedConfig.wmsRasterFunction !== undefined && selectedConfig.wmsRasterFunction.trim() !== '') {
-          wmsOptions.rasterFunction = selectedConfig.wmsRasterFunction;
+        if (finalBaseConfig.wmsRasterFunction !== undefined && finalBaseConfig.wmsRasterFunction.trim() !== '') {
+          wmsOptions.rasterFunction = finalBaseConfig.wmsRasterFunction;
         }
         
-        newBasemapLayer = L.tileLayer.wms(selectedConfig.wmsUrl!, wmsOptions);
-        newBasemapLayer.on('tileerror', (_error: any, tile: any) => {
-          // Suppress errors for missing tiles (common with WMS services that have limited extent)
-          // Only log actual errors, not missing tiles outside service coverage
-          if (tile && tile.src) {
-            const img = tile as HTMLImageElement;
-            if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-              // Missing tile - this is expected for areas outside the service extent
-              return;
-            }
-          }
-          // Only log actual errors, not missing tiles
-          // console.warn('WMS tile error:', error, 'for basemap:', selectedBasemap, 'tile:', tile);
-        });
-        newBasemapLayer.on('load', () => {
-          console.log('WMS tile loaded successfully for basemap:', selectedBasemap);
-        });
+        newBasemapLayer = L.tileLayer.wms(finalBaseConfig.wmsUrl!, wmsOptions);
         newBasemapLayer.addTo(map);
       }
+    } else {
+      // Base basemap toggle is OFF - no base layer
+      newBasemapLayer = null;
     }
     
-    basemapLayerRef.current = newBasemapLayer;
-  }, [selectedBasemap, showOpenFreeMapBase, isInitialized]);
+    // Step 2: Add thematic basemap as optional overlay on top (if selected)
+    // CRITICAL: selectedThematicBasemap state is independent - it should NEVER be affected by selectedBaseBasemap changes
+    // Thematic overlay persists when switching basemaps from "Basemaps" section
+    if (selectedThematicBasemap) {
+      const thematicConfig = BASEMAP_CONFIGS[selectedThematicBasemap];
+      // Thematic basemaps are never maplibre type - they're always tile or wms from other sections (USGS, FIA, USFS)
+      // Make sure we're not accidentally treating "Basemaps" section basemaps as thematic
+      // Note: usa_topo_maps and natgeo_world_map are in "Basemaps" section, so they should never be in selectedThematicBasemap
+      if (thematicConfig && thematicConfig.type !== 'maplibre' && selectedThematicBasemap !== 'usa_topo_maps' && selectedThematicBasemap !== 'natgeo_world_map') {
+          // Thematic basemap as overlay (with opacity)
+          if (thematicConfig.type === 'tile') {
+            if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
+              newOverlayLayer = createExportImageTileLayer(
+                thematicConfig.tileUrl,
+                thematicConfig.exportImageRasterFunction,
+                {
+                  attribution: thematicConfig.attribution,
+                  maxZoom: 15,
+                  minZoom: 4,
+                  noWrap: true,
+                  opacity: 0.7, // Transparent overlay
+                  tileSize: 256,
+                }
+              ).addTo(map);
+            } else {
+              newOverlayLayer = L.tileLayer(thematicConfig.tileUrl!, {
+                attribution: thematicConfig.attribution,
+                maxZoom: 15,
+                minZoom: 4,
+                noWrap: true,
+                opacity: 0.7, // Transparent overlay
+              }).addTo(map);
+            }
+            
+            newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
+              if (tile && tile.src) {
+                const img = tile as HTMLImageElement;
+                if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                  return;
+                }
+              }
+            });
+          } else if (thematicConfig.type === 'wms') {
+            const wmsOptions: any = {
+              format: thematicConfig.wmsFormat || 'image/png',
+              transparent: true,
+              attribution: thematicConfig.attribution,
+              crs: thematicConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
+              version: '1.3.0',
+              opacity: 0.7, // Transparent overlay
+            };
+            
+            if (thematicConfig.wmsUppercase === true) {
+              wmsOptions.uppercase = true;
+            }
+            
+            if (thematicConfig.wmsLayers !== undefined && thematicConfig.wmsLayers.trim() !== '') {
+              wmsOptions.layers = thematicConfig.wmsLayers;
+            }
+            
+            if (thematicConfig.wmsRasterFunction !== undefined && thematicConfig.wmsRasterFunction.trim() !== '') {
+              wmsOptions.rasterFunction = thematicConfig.wmsRasterFunction;
+            }
+            
+            newOverlayLayer = L.tileLayer.wms(thematicConfig.wmsUrl!, wmsOptions);
+            newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
+              if (tile && tile.src) {
+                const img = tile as HTMLImageElement;
+                if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                  return;
+                }
+              }
+            });
+            newOverlayLayer.addTo(map);
+          }
+        }
+        
+        // Set overlay reference if we created one
+        // CRITICAL: Always recreate thematic overlay when selectedThematicBasemap exists
+        if (newOverlayLayer) {
+          overlayLayerRef.current = newOverlayLayer;
+        } else {
+          // If selectedThematicBasemap exists but overlay wasn't created, log for debugging
+          // The state will remain, so it will retry on next render
+          console.warn('Thematic overlay not created for:', selectedThematicBasemap);
+          overlayLayerRef.current = null;
+        }
+      } else {
+        // No thematic selected - clear overlay reference
+        overlayLayerRef.current = null;
+      }
+      
+    // CRITICAL: Ensure basemap layer reference is set after creating base layer
+    // This must happen AFTER base layer creation to ensure proper layer order
+    if (newBasemapLayer) {
+      basemapLayerRef.current = newBasemapLayer;
+    } else {
+      console.warn('Base basemap layer not created for:', selectedBaseBasemap);
+    }
+  }, [selectedBaseBasemap, selectedThematicBasemap, showBaseBasemap, isInitialized]);
+
+  // Close basemap info tooltip when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (basemapInfoRef.current && !basemapInfoRef.current.contains(event.target as Node)) {
+        setShowBasemapInfo(false);
+      }
+    };
+
+    if (showBasemapInfo) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showBasemapInfo]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -28708,6 +28758,145 @@ const MapView: React.FC<MapViewProps> = ({
         }
       }
 
+      // Draw USGS Transportation layers
+      const transportationLayers = [
+        { key: 'usgs_transportation_airport_all', icon: '✈️', color: '#3b82f6', title: 'USGS Transportation - Airport', isPolygon: true },
+        { key: 'usgs_transportation_airport_runway_all', icon: '🛫', color: '#2563eb', title: 'USGS Transportation - Airport Runway', isPolygon: true },
+        { key: 'usgs_transportation_interstate_all', icon: '🛣️', color: '#dc2626', title: 'USGS Transportation - Interstate', isPolyline: true },
+        { key: 'usgs_transportation_us_route_all', icon: '🛣️', color: '#ea580c', title: 'USGS Transportation - US Route', isPolyline: true },
+        { key: 'usgs_transportation_state_route_all', icon: '🛣️', color: '#f59e0b', title: 'USGS Transportation - State Route', isPolyline: true },
+        { key: 'usgs_transportation_us_railroad_all', icon: '🚂', color: '#7c2d12', title: 'USGS Transportation - US Railroad', isPolyline: true },
+        { key: 'usgs_transportation_local_road_all', icon: '🛣️', color: '#78716c', title: 'USGS Transportation - Local Road', isPolyline: true },
+        { key: 'usgs_transportation_trails_all', icon: '🥾', color: '#059669', title: 'USGS Transportation - Trails', isPolyline: true }
+      ];
+
+      transportationLayers.forEach((layerConfig) => {
+        if (enrichments[layerConfig.key] && Array.isArray(enrichments[layerConfig.key])) {
+          try {
+            console.log(`🚗 Drawing ${enrichments[layerConfig.key].length} ${layerConfig.title} features`);
+            let featureCount = 0;
+            enrichments[layerConfig.key].forEach((feature: any) => {
+              if (!feature.geometry) return;
+
+              try {
+                if (layerConfig.isPolyline && feature.geometry.paths && feature.geometry.paths.length > 0) {
+                  // Draw polyline (roads, railroads, trails)
+                  const paths = feature.geometry.paths;
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const featureName = feature.name || feature.fullname || feature.route || feature.rtnumber || 
+                      feature.rtname || feature.facname || feature.facilityname || feature.layerName || 'Unknown';
+                    const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                    const polyline = L.polyline(latlngs, {
+                      color: layerConfig.color,
+                      weight: layerConfig.key.includes('interstate') ? 5 : layerConfig.key.includes('us_route') ? 4 : layerConfig.key.includes('state_route') ? 3 : 2,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${layerConfig.icon} ${featureName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+
+                    const excludeFields = ['name', 'fullname', 'route', 'rtnumber', 'rtname', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName'];
+                    Object.entries(feature).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) return;
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+
+                    popupContent += `</div></div>`;
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(primary);
+                    bounds.extend(polyline.getBounds());
+                  });
+                  featureCount++;
+                } else if (layerConfig.isPolygon && feature.geometry.rings && feature.geometry.rings.length > 0) {
+                  // Draw polygon (airports, runways)
+                  const rings = feature.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    if (outerRing && outerRing.length >= 3) {
+                      const latlngs = outerRing.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+
+                      const featureName = feature.name || feature.fullname || feature.facname || feature.facilityname || 
+                        feature.airportname || feature.runwayname || feature.layerName || 'Unknown';
+                      const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                      const polygon = L.polygon(latlngs, {
+                        color: layerConfig.color,
+                        weight: 2,
+                        opacity: 0.7,
+                        fillColor: layerConfig.color,
+                        fillOpacity: 0.3
+                      });
+
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            ${layerConfig.icon} ${featureName}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                          </div>
+                          <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      `;
+
+                      const excludeFields = ['name', 'fullname', 'facname', 'facilityname', 'airportname', 'runwayname', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName'];
+                      Object.entries(feature).forEach(([key, value]) => {
+                        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                          if (typeof value === 'object' && !Array.isArray(value)) return;
+                          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                          popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                        }
+                      });
+
+                      popupContent += `</div></div>`;
+                      polygon.bindPopup(popupContent, { maxWidth: 400 });
+                      polygon.addTo(primary);
+                      bounds.extend(polygon.getBounds());
+                      featureCount++;
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing ${layerConfig.title} feature:`, error);
+              }
+            });
+
+            if (featureCount > 0) {
+              const legendKey = layerConfig.key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: layerConfig.icon,
+                  color: layerConfig.color,
+                  title: layerConfig.title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          } catch (error) {
+            console.error(`Error processing ${layerConfig.title}:`, error);
+          }
+        }
+      });
+
       // Draw DC Urban Tree Canopy layers (polygons and points)
       const dcUtcLayerKeys = [
         'dc_utc_anc_2020_all', 'dc_utc_census_block_2020_all', 'dc_utc_census_block_group_2020_all',
@@ -34990,11 +35179,16 @@ const MapView: React.FC<MapViewProps> = ({
       className="h-screen flex flex-col bg-white"
     >
       {/* Results Header */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0 relative z-20">
         <div className="flex items-center space-x-4 flex-shrink-0">
           <button
-            onClick={onBackToConfig}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onBackToConfig();
+            }}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
+            type="button"
           >
             <span className="w-5 h-5">←</span>
             <span className="text-sm font-medium">Back to Configuration</span>
@@ -35049,11 +35243,158 @@ const MapView: React.FC<MapViewProps> = ({
         {!isMobile && (
           <div className="absolute top-4 left-20 bg-white rounded-lg shadow-lg p-3 z-10 space-y-3" style={{ minWidth: '280px', maxWidth: '320px' }}>
             <div>
-              <label className="block text-sm font-semibold text-black mb-2">
-                Available Basemap Themes
-              </label>
+              <div className="flex items-center justify-between mb-2 relative">
+                <label className="block text-sm font-semibold text-black">
+                  Available Basemap Themes
+                </label>
+                <div className="relative" ref={basemapInfoRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowBasemapInfo(!showBasemapInfo)}
+                    className="w-5 h-5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-xs font-bold transition-colors"
+                    title="How basemaps work"
+                  >
+                    i
+                  </button>
+                  {showBasemapInfo && (
+                    <div className="absolute right-0 top-6 w-72 bg-gray-800 text-white text-xs rounded-lg shadow-xl p-4 z-50 pointer-events-auto">
+                      <button
+                        onClick={() => setShowBasemapInfo(false)}
+                        className="absolute top-2 right-2 text-white hover:text-gray-300 text-lg leading-none"
+                      >
+                        ×
+                      </button>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="font-bold text-sm mb-1">📌 BASE LAYER (Toggle On/Off)</div>
+                          <ul className="list-disc list-inside space-y-1 text-gray-200">
+                            <li>One basemap from "Basemaps" section can be shown (toggle enabled by default)</li>
+                            <li>Use "Show Base Basemap" toggle to show/hide the base layer</li>
+                            <li>Select any basemap to replace the current one</li>
+                            <li>Examples: OpenFreeMap styles, USA Topo Maps, National Geographic</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <div className="font-bold text-sm mb-1">🎨 THEMATIC OVERLAYS (Optional)</div>
+                          <ul className="list-disc list-inside space-y-1 text-gray-200">
+                            <li>Thematic basemaps draw on top of the base layer</li>
+                            <li>Click to toggle on/off</li>
+                            <li>Examples: USGS, USFS, FIA Forest Atlas</li>
+                          </ul>
+                        </div>
+                        <div className="text-gray-200 italic border-t border-gray-600 pt-2">
+                          💡 TIP: The base layer is always visible. Thematic layers are transparent overlays that enhance the base map.
+                        </div>
+                      </div>
+                      <div className="absolute right-2 bottom-0 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-800"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
               <div className="border border-gray-300 rounded-md bg-white max-h-96 overflow-y-auto">
-                {/* Basemaps */}
+                {/* USGS National Map & MRLC basemaps - First (top layer) */}
+                <div className="border-b border-gray-200">
+                  <button
+                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USGS National Map & MRLC': !prev['USGS National Map & MRLC'] }))}
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                    style={{ backgroundColor: '#2563eb' }}
+                  >
+                    <span>USGS National Map & MRLC</span>
+                    <span className={`transform transition-transform ${expandedBasemapSections['USGS National Map & MRLC'] ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {expandedBasemapSections['USGS National Map & MRLC'] && (
+                    <div className="pb-1">
+                      {Object.entries(BASEMAP_CONFIGS)
+                        .filter(([_, config]) => config.type === 'wms')
+                        .map(([key, config]) => (
+                          <button
+                            key={key}
+                            onClick={() => {
+                              // Toggle: if already selected, deselect it; otherwise select it
+                              setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                            }}
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                              selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                            }`}
+                          >
+                            {config.name}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* FIA Forest Atlas basemaps */}
+                <div className="border-b border-gray-200">
+                  <button
+                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'FIA Forest Atlas': !prev['FIA Forest Atlas'] }))}
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                    style={{ backgroundColor: '#16a34a' }}
+                  >
+                    <span>FIA Forest Atlas</span>
+                    <span className={`transform transition-transform ${expandedBasemapSections['FIA Forest Atlas'] ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {expandedBasemapSections['FIA Forest Atlas'] && (
+                    <div className="pb-1">
+                      {Object.entries(BASEMAP_CONFIGS)
+                        .filter(([key]) => key.startsWith('fia_') && key.endsWith('_basemap'))
+                        .map(([key, config]) => (
+                          <button
+                            key={key}
+                            onClick={() => {
+                              // Toggle: if already selected, deselect it; otherwise select it
+                              setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                            }}
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                              selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                            }`}
+                          >
+                            {config.name}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* USFS basemaps */}
+                <div className="border-b border-gray-200">
+                  <button
+                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USFS': !prev['USFS'] }))}
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                    style={{ backgroundColor: '#dc2626' }}
+                  >
+                    <span>USFS</span>
+                    <span className={`transform transition-transform ${expandedBasemapSections['USFS'] ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {expandedBasemapSections['USFS'] && (
+                    <div className="pb-1">
+                      {Object.entries(BASEMAP_CONFIGS)
+                        .filter(([key]) => key.startsWith('usfs_') && !key.startsWith('usfs_fia_'))
+                        .map(([key, config]) => (
+                          <button
+                            key={key}
+                            onClick={() => {
+                              // Toggle: if already selected, deselect it; otherwise select it
+                              setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                            }}
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                              selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                            }`}
+                          >
+                            {config.name}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Basemaps - Last (bottom/base layer) */}
                 <div className="border-b border-gray-200 last:border-b-0">
                   <button
                     onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'Basemaps': !prev['Basemaps'] }))}
@@ -35071,99 +35412,11 @@ const MapView: React.FC<MapViewProps> = ({
                         .map(([key, config]) => (
                           <button
                             key={key}
-                            onClick={() => setSelectedBasemap(key)}
+                            onClick={() => {
+                              setSelectedBaseBasemap(key);
+                            }}
                             className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                              selectedBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
-                            }`}
-                          >
-                            {config.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* USGS National Map & MRLC basemaps */}
-                <div className="border-b border-gray-200 last:border-b-0">
-                  <button
-                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USGS National Map & MRLC': !prev['USGS National Map & MRLC'] }))}
-                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <span>USGS National Map & MRLC</span>
-                    <span className={`transform transition-transform ${expandedBasemapSections['USGS National Map & MRLC'] ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </button>
-                  {expandedBasemapSections['USGS National Map & MRLC'] && (
-                    <div className="pb-1">
-                      {Object.entries(BASEMAP_CONFIGS)
-                        .filter(([_, config]) => config.type === 'wms')
-                        .map(([key, config]) => (
-                          <button
-                            key={key}
-                            onClick={() => setSelectedBasemap(key)}
-                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                              selectedBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
-                            }`}
-                          >
-                            {config.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* FIA Forest Atlas basemaps */}
-                <div className="border-b border-gray-200 last:border-b-0">
-                  <button
-                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'FIA Forest Atlas': !prev['FIA Forest Atlas'] }))}
-                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <span>FIA Forest Atlas</span>
-                    <span className={`transform transition-transform ${expandedBasemapSections['FIA Forest Atlas'] ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </button>
-                  {expandedBasemapSections['FIA Forest Atlas'] && (
-                    <div className="pb-1">
-                      {Object.entries(BASEMAP_CONFIGS)
-                        .filter(([key]) => key.startsWith('fia_') && key.endsWith('_basemap'))
-                        .map(([key, config]) => (
-                          <button
-                            key={key}
-                            onClick={() => setSelectedBasemap(key)}
-                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                              selectedBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
-                            }`}
-                          >
-                            {config.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* USFS basemaps */}
-                <div className="border-b border-gray-200 last:border-b-0">
-                  <button
-                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USFS': !prev['USFS'] }))}
-                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <span>USFS</span>
-                    <span className={`transform transition-transform ${expandedBasemapSections['USFS'] ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </button>
-                  {expandedBasemapSections['USFS'] && (
-                    <div className="pb-1">
-                      {Object.entries(BASEMAP_CONFIGS)
-                        .filter(([key]) => key.startsWith('usfs_') && !key.startsWith('usfs_fia_'))
-                        .map(([key, config]) => (
-                          <button
-                            key={key}
-                            onClick={() => setSelectedBasemap(key)}
-                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                              selectedBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                              selectedBaseBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
                             }`}
                           >
                             {config.name}
@@ -35175,33 +35428,22 @@ const MapView: React.FC<MapViewProps> = ({
               </div>
             </div>
             
-            {/* OpenFreeMap Base Toggle */}
+            {/* Show/Hide Base Basemap Toggle */}
             <div className="border-t border-gray-200 pt-3">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={showOpenFreeMapBase}
-                  onChange={(e) => setShowOpenFreeMapBase(e.target.checked)}
+                  checked={showBaseBasemap}
+                  onChange={(e) => setShowBaseBasemap(e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">
-                  Show Basemap
+                <span className="text-sm font-semibold text-black">
+                  Show Base Basemap
                 </span>
-                <div className="relative group">
-                  <button
-                    type="button"
-                    className="w-4 h-4 rounded-full bg-gray-300 hover:bg-gray-400 text-white text-xs flex items-center justify-center font-semibold focus:outline-none"
-                    onMouseEnter={(e) => e.preventDefault()}
-                    onMouseLeave={(e) => e.preventDefault()}
-                  >
-                    i
-                  </button>
-                  <div className="absolute left-0 bottom-full mb-2 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
-                    When enabled, selected basemaps appear as transparent overlays on top of OpenFreeMap. When disabled, selected basemaps are shown in isolation.
-                    <div className="absolute left-2 bottom-0 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-800"></div>
-                  </div>
-                </div>
               </label>
+              <p className="text-xs text-gray-500 mt-1">
+                Toggle to show/hide basemap from "Basemaps" section. Thematic overlays work independently.
+              </p>
             </div>
             
             {/* Weather Radar Toggle */}

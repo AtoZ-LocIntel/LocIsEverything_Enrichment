@@ -95,6 +95,16 @@ import { getUSNationalGridData } from '../adapters/usNationalGrid';
 import { getUSGSGovernmentUnitsData } from '../adapters/usgsGovernmentUnits';
 import { getTNMStructuresData } from '../adapters/tnmStructures';
 import { getUSGSTrailsData } from '../adapters/usgsTrails';
+import {
+  getUSGSTransportationAirportData,
+  getUSGSTransportationAirportRunwayData,
+  getUSGSTransportationInterstateData,
+  getUSGSTransportationUSRouteData,
+  getUSGSTransportationStateRouteData,
+  getUSGSTransportationUSRailroadData,
+  getUSGSTransportationLocalRoadData,
+  getUSGSTransportationTrailsData,
+} from '../adapters/usgsTransportation';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
@@ -2597,6 +2607,24 @@ export class EnrichmentService {
         return await this.getTNMStructures(lat, lon, radius);
       case 'usgs_trails':
         return await this.getUSGSTrails(lat, lon, radius);
+      
+      // USGS Transportation Layers
+      case 'usgs_transportation_airport':
+        return await this.getUSGSTransportationAirport(lat, lon, radius);
+      case 'usgs_transportation_airport_runway':
+        return await this.getUSGSTransportationAirportRunway(lat, lon, radius);
+      case 'usgs_transportation_interstate':
+        return await this.getUSGSTransportationInterstate(lat, lon, radius);
+      case 'usgs_transportation_us_route':
+        return await this.getUSGSTransportationUSRoute(lat, lon, radius);
+      case 'usgs_transportation_state_route':
+        return await this.getUSGSTransportationStateRoute(lat, lon, radius);
+      case 'usgs_transportation_us_railroad':
+        return await this.getUSGSTransportationUSRailroad(lat, lon, radius);
+      case 'usgs_transportation_local_road':
+        return await this.getUSGSTransportationLocalRoad(lat, lon, radius);
+      case 'usgs_transportation_trails':
+        return await this.getUSGSTransportationTrails(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -25202,6 +25230,286 @@ out center;`;
         'usgs_trails_count': 0,
         'usgs_trails_summary': 'Error fetching USGS trails data',
         'usgs_trails_all': []
+      };
+    }
+  }
+
+  private async getUSGSTransportationAirport(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`✈️ Fetching USGS Transportation Airport data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSTransportationAirportData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_transportation_airport_count'] = 0;
+        result['usgs_transportation_airport_summary'] = 'No airports found within the specified radius';
+        result['usgs_transportation_airport_all'] = [];
+      } else {
+        result['usgs_transportation_airport_count'] = features.length;
+        result['usgs_transportation_airport_summary'] = `Found ${features.length} airport(s) within ${radius || 25} miles`;
+        result['usgs_transportation_airport_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Transportation Airport data:`, error);
+      return {
+        'usgs_transportation_airport_count': 0,
+        'usgs_transportation_airport_summary': 'Error fetching USGS transportation airport data',
+        'usgs_transportation_airport_all': []
+      };
+    }
+  }
+
+  private async getUSGSTransportationAirportRunway(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛫 Fetching USGS Transportation Airport Runway data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSTransportationAirportRunwayData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_transportation_airport_runway_count'] = 0;
+        result['usgs_transportation_airport_runway_summary'] = 'No airport runways found within the specified radius';
+        result['usgs_transportation_airport_runway_all'] = [];
+      } else {
+        result['usgs_transportation_airport_runway_count'] = features.length;
+        result['usgs_transportation_airport_runway_summary'] = `Found ${features.length} airport runway(s) within ${radius || 25} miles`;
+        result['usgs_transportation_airport_runway_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Transportation Airport Runway data:`, error);
+      return {
+        'usgs_transportation_airport_runway_count': 0,
+        'usgs_transportation_airport_runway_summary': 'Error fetching USGS transportation airport runway data',
+        'usgs_transportation_airport_runway_all': []
+      };
+    }
+  }
+
+  private async getUSGSTransportationInterstate(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching USGS Transportation Interstate data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSTransportationInterstateData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_transportation_interstate_count'] = 0;
+        result['usgs_transportation_interstate_summary'] = 'No interstates found within the specified radius';
+        result['usgs_transportation_interstate_all'] = [];
+      } else {
+        result['usgs_transportation_interstate_count'] = features.length;
+        result['usgs_transportation_interstate_summary'] = `Found ${features.length} interstate(s) within ${radius || 25} miles`;
+        result['usgs_transportation_interstate_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Transportation Interstate data:`, error);
+      return {
+        'usgs_transportation_interstate_count': 0,
+        'usgs_transportation_interstate_summary': 'Error fetching USGS transportation interstate data',
+        'usgs_transportation_interstate_all': []
+      };
+    }
+  }
+
+  private async getUSGSTransportationUSRoute(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching USGS Transportation US Route data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSTransportationUSRouteData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_transportation_us_route_count'] = 0;
+        result['usgs_transportation_us_route_summary'] = 'No US routes found within the specified radius';
+        result['usgs_transportation_us_route_all'] = [];
+      } else {
+        result['usgs_transportation_us_route_count'] = features.length;
+        result['usgs_transportation_us_route_summary'] = `Found ${features.length} US route(s) within ${radius || 25} miles`;
+        result['usgs_transportation_us_route_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Transportation US Route data:`, error);
+      return {
+        'usgs_transportation_us_route_count': 0,
+        'usgs_transportation_us_route_summary': 'Error fetching USGS transportation US route data',
+        'usgs_transportation_us_route_all': []
+      };
+    }
+  }
+
+  private async getUSGSTransportationStateRoute(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching USGS Transportation State Route data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSTransportationStateRouteData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_transportation_state_route_count'] = 0;
+        result['usgs_transportation_state_route_summary'] = 'No state routes found within the specified radius';
+        result['usgs_transportation_state_route_all'] = [];
+      } else {
+        result['usgs_transportation_state_route_count'] = features.length;
+        result['usgs_transportation_state_route_summary'] = `Found ${features.length} state route(s) within ${radius || 25} miles`;
+        result['usgs_transportation_state_route_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Transportation State Route data:`, error);
+      return {
+        'usgs_transportation_state_route_count': 0,
+        'usgs_transportation_state_route_summary': 'Error fetching USGS transportation state route data',
+        'usgs_transportation_state_route_all': []
+      };
+    }
+  }
+
+  private async getUSGSTransportationUSRailroad(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚂 Fetching USGS Transportation US Railroad data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSTransportationUSRailroadData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_transportation_us_railroad_count'] = 0;
+        result['usgs_transportation_us_railroad_summary'] = 'No US railroads found within the specified radius';
+        result['usgs_transportation_us_railroad_all'] = [];
+      } else {
+        result['usgs_transportation_us_railroad_count'] = features.length;
+        result['usgs_transportation_us_railroad_summary'] = `Found ${features.length} US railroad(s) within ${radius || 25} miles`;
+        result['usgs_transportation_us_railroad_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Transportation US Railroad data:`, error);
+      return {
+        'usgs_transportation_us_railroad_count': 0,
+        'usgs_transportation_us_railroad_summary': 'Error fetching USGS transportation US railroad data',
+        'usgs_transportation_us_railroad_all': []
+      };
+    }
+  }
+
+  private async getUSGSTransportationLocalRoad(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching USGS Transportation Local Road data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSTransportationLocalRoadData(lat, lon, radius || 5);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_transportation_local_road_count'] = 0;
+        result['usgs_transportation_local_road_summary'] = 'No local roads found within the specified radius';
+        result['usgs_transportation_local_road_all'] = [];
+      } else {
+        result['usgs_transportation_local_road_count'] = features.length;
+        result['usgs_transportation_local_road_summary'] = `Found ${features.length} local road(s) within ${radius || 5} miles`;
+        result['usgs_transportation_local_road_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Transportation Local Road data:`, error);
+      return {
+        'usgs_transportation_local_road_count': 0,
+        'usgs_transportation_local_road_summary': 'Error fetching USGS transportation local road data',
+        'usgs_transportation_local_road_all': []
+      };
+    }
+  }
+
+  private async getUSGSTransportationTrails(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🥾 Fetching USGS Transportation Trails data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSTransportationTrailsData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_transportation_trails_count'] = 0;
+        result['usgs_transportation_trails_summary'] = 'No trails found within the specified radius';
+        result['usgs_transportation_trails_all'] = [];
+      } else {
+        result['usgs_transportation_trails_count'] = features.length;
+        result['usgs_transportation_trails_summary'] = `Found ${features.length} trail(s) within ${radius || 25} miles`;
+        result['usgs_transportation_trails_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Transportation Trails data:`, error);
+      return {
+        'usgs_transportation_trails_count': 0,
+        'usgs_transportation_trails_summary': 'Error fetching USGS transportation trails data',
+        'usgs_transportation_trails_all': []
       };
     }
   }

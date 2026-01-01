@@ -572,6 +572,70 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://partnerships.nationalmap.gov/arcgis/rest/services/USGSTrails/MapServer/0"
+        },
+        {
+          name: "USGS Transportation - Airport",
+          description: "USGS The National Map Transportation - Airports (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/1"
+        },
+        {
+          name: "USGS Transportation - Airport Runway",
+          description: "USGS The National Map Transportation - Airport Runways (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/2"
+        },
+        {
+          name: "USGS Transportation - Interstate",
+          description: "USGS The National Map Transportation - Interstate Highways (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/3"
+        },
+        {
+          name: "USGS Transportation - US Route",
+          description: "USGS The National Map Transportation - US Routes (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/4"
+        },
+        {
+          name: "USGS Transportation - State Route",
+          description: "USGS The National Map Transportation - State Routes (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/5"
+        },
+        {
+          name: "USGS Transportation - US Railroad",
+          description: "USGS The National Map Transportation - US Railroads (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/6"
+        },
+        {
+          name: "USGS Transportation - Local Road",
+          description: "USGS The National Map Transportation - Local Roads (proximity queries up to 5 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/7"
+        },
+        {
+          name: "USGS Transportation - Trails",
+          description: "USGS The National Map Transportation - Trails (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/8"
         }
       ]
     },
