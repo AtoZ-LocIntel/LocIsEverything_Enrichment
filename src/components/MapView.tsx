@@ -1490,6 +1490,31 @@ const createPOIIcon = (emoji: string, color: string, isMobile: boolean = false) 
 };
 
 const createPOIPopupContent = (poi: any, legendTitle: string, key: string): string => {
+    // Extract coordinates - try multiple possible field names
+    const lat = poi.lat || poi.latitude || poi.y || poi.coordinates?.[1] || poi.geometry?.coordinates?.[1];
+    const lon = poi.lon || poi.longitude || poi.x || poi.coordinates?.[0] || poi.geometry?.coordinates?.[0];
+    const hasCoordinates = lat !== undefined && lon !== undefined && !isNaN(lat) && !isNaN(lon);
+    
+    // Helper to add mapping links if coordinates are available
+    const addMappingLinks = (content: string, name?: string): string => {
+      if (!hasCoordinates) return content;
+      const mappingLinks = generateMappingLinks(lat, lon, name);
+      // Insert mapping links before the final closing </div> tag
+      const mappingSection = `
+                  <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                    <div style="margin-bottom: 4px; font-size: 11px; font-weight: 600; color: #374151;">Open in Maps:</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                      ${mappingLinks}
+                    </div>
+                  </div>`;
+      // Find the last </div> before the closing backtick and insert mapping section before it
+      const lastDivIndex = content.lastIndexOf('</div>');
+      if (lastDivIndex !== -1) {
+        return content.slice(0, lastDivIndex) + mappingSection + content.slice(lastDivIndex);
+      }
+      return content;
+    };
+    
     // Handle PADUS features specially
     if (key && key.includes('padus_')) {
       const name = poi.unitName || poi.boundaryName || poi.name || 'Unnamed Public Land';
@@ -1499,7 +1524,7 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
       const acres = poi.acres ? `${poi.acres.toLocaleString()} acres` : '';
       const state = poi.state || '';
       
-      return `
+      let content = `
         <div style="min-width: 250px; max-width: 350px;">
           <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
           <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
@@ -1513,6 +1538,7 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
           </div>
         </div>
       `;
+      return addMappingLinks(content, name);
     }
 
     if (key === 'poi_ebird_hotspots') {
@@ -1524,7 +1550,7 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
       const distance = poi.distance_miles ?? poi.distanceMiles ?? 'Unknown';
       const url = poi.url;
 
-      return `
+      let content = `
         <div style="min-width: 260px; max-width: 360px;">
           <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
           <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
@@ -1537,6 +1563,7 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
           ${url ? `<div style="margin-top: 8px;"><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-size: 12px;">View hotspot on eBird</a></div>` : ''}
         </div>
       `;
+      return addMappingLinks(content, name);
     }
 
     if (key === 'ebird_recent_observations') {
@@ -1548,10 +1575,10 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
       const distance = poi.distance_miles ?? 'Unknown';
       const checklistUrl = poi.checklistId ? `https://ebird.org/checklist/${poi.checklistId}` : poi.url;
 
-      return `
+      let content = `
         <div style="min-width: 260px; max-width: 360px;">
           <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${speciesName}</h3>
-          ${scientificName ? `<div style="margin: 4px 0; font-size: 12px; color: #6b7280;"><em>${scientificName}</em></div>` : ''}
+        ${scientificName ? `<div style="margin: 4px 0; font-size: 12px; color: #6b7280;"><em>${scientificName}</em></div>` : ''}
           <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
             📍 ${distance} miles away${locationName ? ` • ${locationName}` : ''}
           </div>
@@ -1562,6 +1589,7 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
           ${checklistUrl ? `<div style="margin-top: 8px;"><a href="${checklistUrl}" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-size: 12px;">View checklist</a></div>` : ''}
         </div>
       `;
+      return addMappingLinks(content, locationName || speciesName);
     }
 
     // Handle Ireland Centres of Population
@@ -1574,7 +1602,7 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
       // Use Irish Name as primary title if available, otherwise English Name
       const displayName = irishName || englishName || 'Unknown Centre';
       
-      return `
+      let content = `
         <div style="min-width: 250px; max-width: 400px;">
           <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
             🏘️ ${displayName}
@@ -1587,13 +1615,14 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
           </div>
         </div>
       `;
+      return addMappingLinks(content, displayName);
     }
     
     const name = poi.tags?.name || poi.name || poi.title || 'Unnamed POI';
     const amenity = poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI';
     const distance = poi.distance_miles || 'Unknown';
     
-    return `
+    let content = `
       <div style="min-width: 250px; max-width: 350px;">
         <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${name}</h3>
         <div style="margin: 4px 0; font-size: 12px; color: #6b7280;">
@@ -1604,6 +1633,7 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
         </div>
       </div>
     `;
+    return addMappingLinks(content, name);
   };
 
 const formatPopupFieldName = (key: string): string => {
@@ -2145,6 +2175,49 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     .filter(section => section.items.length > 0);
 };
 
+// Generate deep links to mapping platforms
+const generateMappingLinks = (lat: number, lon: number, name?: string): string => {
+  const encodedName = name ? encodeURIComponent(name) : '';
+  const links = [
+    {
+      name: 'Google Maps',
+      url: `https://www.google.com/maps?q=${lat},${lon}${encodedName ? `&query=${encodedName}` : ''}`,
+      icon: '🗺️'
+    },
+    {
+      name: 'Apple Maps',
+      url: `https://maps.apple.com/?ll=${lat},${lon}${encodedName ? `&q=${encodedName}` : ''}`,
+      icon: '🍎'
+    },
+    {
+      name: 'MapQuest',
+      url: `https://www.mapquest.com/search/results?query=${lat},${lon}`,
+      icon: '📍'
+    },
+    {
+      name: 'Bing Maps',
+      url: `https://www.bing.com/maps?cp=${lat}~${lon}&lvl=15`,
+      icon: '🌐'
+    },
+    {
+      name: 'Waze',
+      url: `https://www.waze.com/ul?ll=${lat},${lon}&navigate=yes`,
+      icon: '🚗'
+    },
+    {
+      name: 'OpenStreetMap',
+      url: `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15`,
+      icon: '🌍'
+    }
+  ];
+  
+  return links.map(link => 
+    `<a href="${link.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin: 2px 4px; padding: 4px 8px; background-color: #f3f4f6; border-radius: 4px; text-decoration: none; color: #1f2937; font-size: 11px; border: 1px solid #e5e7eb;">
+      ${link.icon} ${link.name}
+    </a>`
+  ).join('');
+};
+
 // Create popup content for main location
 const createPopupContent = (result: EnrichmentResult, isMobile: boolean = false): string => {
     const { location, enrichments } = result;
@@ -2332,6 +2405,16 @@ const createPopupContent = (result: EnrichmentResult, isMobile: boolean = false)
         </div>
       `;
     }
+    
+    // Add mapping platform links
+    content += `
+      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+        <div style="margin-bottom: 6px; font-size: 11px; font-weight: 600; color: #374151;">Open in Maps:</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+          ${generateMappingLinks(location.lat, location.lon, location.name)}
+        </div>
+      </div>
+    `;
     
     content += `
       </div>
@@ -3567,7 +3650,14 @@ const MapView: React.FC<MapViewProps> = ({
                 }
               });
               
+              // Add mapping platform links
               popupContent += `
+                  </div>
+                  <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                    <div style="margin-bottom: 4px; font-size: 11px; font-weight: 600; color: #374151;">Open in Maps:</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                      ${generateMappingLinks(facilityLat, facilityLon, facilityName)}
+                    </div>
                   </div>
                 </div>
               `;
@@ -3611,6 +3701,12 @@ const MapView: React.FC<MapViewProps> = ({
                     ${distanceMiles !== null ? `<div><strong>Distance:</strong> ${distanceMiles.toFixed(2)} miles</div>` : ''}
                     ${categories.length > 0 ? `<div><strong>Categories:</strong> ${categories.join(', ')}</div>` : ''}
                     ${articleUrl ? `<div style="margin-top: 8px;"><a href="${articleUrl}" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-size: 12px;">View on Wikipedia</a></div>` : ''}
+                  </div>
+                  <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                    <div style="margin-bottom: 4px; font-size: 11px; font-weight: 600; color: #374151;">Open in Maps:</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                      ${generateMappingLinks(articleLat, articleLon, articleTitle)}
+                    </div>
                   </div>
                 </div>
               `;
