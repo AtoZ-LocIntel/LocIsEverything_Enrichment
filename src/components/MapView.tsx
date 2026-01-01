@@ -1739,6 +1739,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'padus_protection_status_all' || // Skip PAD-US protection status array (handled separately for map drawing)
     key === 'usgs_trails_all' || // Skip USGS Trails array (handled separately for map drawing)
     (key.startsWith('usgs_transportation_') && key.endsWith('_all')) || // Skip USGS Transportation arrays (handled separately for map drawing)
+    (key.startsWith('usgs_geonames_') && key.endsWith('_all')) || // Skip USGS GeoNames arrays (handled separately for map drawing)
+    (key.startsWith('usgs_selectable_polygons_') && key.endsWith('_all')) || // Skip USGS Selectable Polygons arrays (handled separately for map drawing)
     (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately for map drawing)
     (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately for map drawing)
     (key.startsWith('dc_property_') && key.endsWith('_all')) || // Skip DC Property and Land arrays (handled separately for map drawing)
@@ -2464,8 +2466,7 @@ const MapView: React.FC<MapViewProps> = ({
   // Collapsible basemap sections state
   const [expandedBasemapSections, setExpandedBasemapSections] = useState<Record<string, boolean>>({
     'Basemaps': true, // Default to expanded
-    'USGS National Map & MRLC': false,
-    'FIA Forest Atlas': false,
+    'USGS National Map': false,
     'USFS': false,
   });
   const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
@@ -28897,6 +28898,241 @@ const MapView: React.FC<MapViewProps> = ({
         }
       });
 
+      // Draw USGS GeoNames layers
+      const geonamesLayers = [
+        { key: 'usgs_geonames_administrative_all', icon: '📍', color: '#3b82f6', title: 'USGS GeoNames - Administrative', isPoint: true },
+        { key: 'usgs_geonames_transportation_all', icon: '🚗', color: '#2563eb', title: 'USGS GeoNames - Transportation', isPoint: true },
+        { key: 'usgs_geonames_landform_all', icon: '⛰️', color: '#16a34a', title: 'USGS GeoNames - Landform', isPoint: true },
+        { key: 'usgs_geonames_hydro_lines_all', icon: '💧', color: '#0284c7', title: 'USGS GeoNames - Hydro Lines', isPolyline: true },
+        { key: 'usgs_geonames_hydro_points_all', icon: '💧', color: '#0ea5e9', title: 'USGS GeoNames - Hydro Points', isPoint: true },
+        { key: 'usgs_geonames_antarctica_all', icon: '🧊', color: '#e0e7ff', title: 'USGS GeoNames - Antarctica', isPoint: true },
+        { key: 'usgs_geonames_historical_all', icon: '📜', color: '#a855f7', title: 'USGS GeoNames - Historical', isPoint: true }
+      ];
+
+      geonamesLayers.forEach((layerConfig) => {
+        if (enrichments[layerConfig.key] && Array.isArray(enrichments[layerConfig.key])) {
+          try {
+            console.log(`📍 Drawing ${enrichments[layerConfig.key].length} ${layerConfig.title} features`);
+            let featureCount = 0;
+            enrichments[layerConfig.key].forEach((feature: any) => {
+              if (!feature.geometry) return;
+
+              try {
+                if (layerConfig.isPolyline && feature.geometry.paths && feature.geometry.paths.length > 0) {
+                  // Draw polyline (hydro lines)
+                  const paths = feature.geometry.paths;
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const featureName = feature.name || feature.FEATURE_NAME || feature.feature_name || 
+                      feature.GNIS_NAME || feature.gnis_name || feature.NAME || feature.NAME1 || 
+                      feature.NAME2 || feature.PRIMARY_NAME || feature.primary_name ||
+                      (feature.attributes ? (feature.attributes.name || feature.attributes.FEATURE_NAME || feature.attributes.GNIS_NAME) : null) ||
+                      feature.layerName || 'Unknown';
+                    const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                    const polyline = L.polyline(latlngs, {
+                      color: layerConfig.color,
+                      weight: 3,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${layerConfig.icon} ${featureName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+
+                    const excludeFields = ['name', 'FEATURE_NAME', 'feature_name', 'GNIS_NAME', 'gnis_name', 'NAME', 'NAME1', 'NAME2', 'PRIMARY_NAME', 'primary_name', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName'];
+                    Object.entries(feature).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) return;
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+
+                    popupContent += `</div></div>`;
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(primary);
+                    bounds.extend(polyline.getBounds());
+                  });
+                  featureCount++;
+                } else if (layerConfig.isPoint && feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
+                  // Draw point (administrative, transportation, landform, hydro points, antarctica, historical)
+                  const pointLat = feature.geometry.y;
+                  const pointLon = feature.geometry.x;
+                  const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                  const featureName = feature.name || feature.FEATURE_NAME || feature.feature_name || 
+                    feature.GNIS_NAME || feature.gnis_name || feature.NAME || feature.NAME1 || 
+                    feature.NAME2 || feature.PRIMARY_NAME || feature.primary_name ||
+                    (feature.attributes ? (feature.attributes.name || feature.attributes.FEATURE_NAME || feature.attributes.GNIS_NAME) : null) ||
+                    feature.layerName || 'Unknown';
+
+                  const icon = createPOIIcon(layerConfig.icon, layerConfig.color);
+                  const marker = L.marker([pointLat, pointLon], { icon });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${layerConfig.icon} ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+
+                  const excludeFields = ['name', 'FEATURE_NAME', 'feature_name', 'GNIS_NAME', 'gnis_name', 'NAME', 'NAME1', 'NAME2', 'PRIMARY_NAME', 'primary_name', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) return;
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+
+                  popupContent += `</div></div>`;
+                  marker.bindPopup(popupContent, { maxWidth: 400 });
+                  marker.addTo(primary);
+                  bounds.extend(marker.getLatLng());
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${layerConfig.title} feature:`, error);
+              }
+            });
+
+            if (featureCount > 0) {
+              const legendKey = layerConfig.key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: layerConfig.icon,
+                  color: layerConfig.color,
+                  title: layerConfig.title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          } catch (error) {
+            console.error(`Error processing ${layerConfig.title}:`, error);
+          }
+        }
+      });
+
+      // Draw USGS Selectable Polygons layers
+      const selectablePolygonsLayers = [
+        { key: 'usgs_selectable_polygons_state_territory_all', icon: '🗺️', color: '#3b82f6', title: 'USGS Selectable Polygons - State or Territory' },
+        { key: 'usgs_selectable_polygons_congressional_district_all', icon: '🏛️', color: '#2563eb', title: 'USGS Selectable Polygons - Congressional District' },
+        { key: 'usgs_selectable_polygons_county_equivalent_all', icon: '🏘️', color: '#16a34a', title: 'USGS Selectable Polygons - County or Equivalent' },
+        { key: 'usgs_selectable_polygons_incorporated_place_all', icon: '🏙️', color: '#dc2626', title: 'USGS Selectable Polygons - Incorporated Place' },
+        { key: 'usgs_selectable_polygons_unincorporated_place_all', icon: '🏘️', color: '#ea580c', title: 'USGS Selectable Polygons - Unincorporated Place' },
+        { key: 'usgs_selectable_polygons_1x1_degree_index_all', icon: '🗺️', color: '#7c2d12', title: 'USGS Selectable Polygons - 1x1 Degree Index' },
+        { key: 'usgs_selectable_polygons_100k_index_all', icon: '🗺️', color: '#78350f', title: 'USGS Selectable Polygons - 1:100K Index' },
+        { key: 'usgs_selectable_polygons_63k_index_all', icon: '🗺️', color: '#92400e', title: 'USGS Selectable Polygons - 1:63K Index (AK)' },
+        { key: 'usgs_selectable_polygons_24k_index_all', icon: '🗺️', color: '#b45309', title: 'USGS Selectable Polygons - 1:24K Index' },
+        { key: 'usgs_selectable_polygons_region_all', icon: '💧', color: '#0284c7', title: 'USGS Selectable Polygons - Hydrologic Unit Region' },
+        { key: 'usgs_selectable_polygons_subregion_all', icon: '💧', color: '#0ea5e9', title: 'USGS Selectable Polygons - Hydrologic Unit Subregion' },
+        { key: 'usgs_selectable_polygons_subbasin_all', icon: '💧', color: '#38bdf8', title: 'USGS Selectable Polygons - Hydrologic Unit Subbasin' }
+      ];
+
+      selectablePolygonsLayers.forEach((layerConfig) => {
+        if (enrichments[layerConfig.key] && Array.isArray(enrichments[layerConfig.key])) {
+          try {
+            console.log(`📍 Drawing ${enrichments[layerConfig.key].length} ${layerConfig.title} features`);
+            let featureCount = 0;
+            enrichments[layerConfig.key].forEach((feature: any) => {
+              if (!feature.geometry || !feature.geometry.rings) return;
+
+              try {
+                // Draw polygon
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  if (outerRing && outerRing.length >= 3) {
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const isContaining = feature.isContaining || feature.distance_miles === 0;
+                    const featureName = feature.name || feature.NAME || feature.NAME1 || feature.NAME2 || 
+                      feature.STATE_NAME || feature.state_name || feature.COUNTY_NAME || feature.county_name ||
+                      feature.PLACE_NAME || feature.place_name || feature.DISTRICT || feature.district ||
+                      feature.HUC || feature.huc || feature.REGION || feature.region ||
+                      feature.SUBREGION || feature.subregion || feature.SUBBASIN || feature.subbasin ||
+                      feature.INDEX || feature.index || feature.CELL_ID || feature.cell_id ||
+                      feature.layerName || 'Unknown';
+                    const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (isContaining ? '0.00' : '');
+
+                    const polygon = L.polygon(latlngs, {
+                      color: isContaining ? layerConfig.color : '#78716c',
+                      weight: isContaining ? 3 : 2,
+                      opacity: 0.8,
+                      fillColor: isContaining ? layerConfig.color : '#a3a3a3',
+                      fillOpacity: isContaining ? 0.4 : 0.2
+                    });
+
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${layerConfig.icon} ${featureName}${isContaining ? ' <span style="color: #16a34a;">(Contains Point)</span>' : ''}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${distance !== undefined && distance !== '' ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                          ${isContaining ? `<div style="color: #16a34a; font-weight: 600;">✓ Point is within this polygon</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+
+                    const excludeFields = ['name', 'NAME', 'NAME1', 'NAME2', 'STATE_NAME', 'state_name', 'COUNTY_NAME', 'county_name', 'PLACE_NAME', 'place_name', 'DISTRICT', 'district', 'HUC', 'huc', 'REGION', 'region', 'SUBREGION', 'subregion', 'SUBBASIN', 'subbasin', 'INDEX', 'index', 'CELL_ID', 'cell_id', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName', 'isContaining'];
+                    Object.entries(feature).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) return;
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+
+                    popupContent += `</div></div>`;
+                    polygon.bindPopup(popupContent, { maxWidth: 400 });
+                    polygon.addTo(primary);
+                    bounds.extend(polygon.getBounds());
+                    featureCount++;
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing ${layerConfig.title} feature:`, error);
+              }
+            });
+
+            if (featureCount > 0) {
+              const legendKey = layerConfig.key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: layerConfig.icon,
+                  color: layerConfig.color,
+                  title: layerConfig.title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          } catch (error) {
+            console.error(`Error processing ${layerConfig.title}:`, error);
+          }
+        }
+      });
+
       // Draw DC Urban Tree Canopy layers (polygons and points)
       const dcUtcLayerKeys = [
         'dc_utc_anc_2020_all', 'dc_utc_census_block_2020_all', 'dc_utc_census_block_group_2020_all',
@@ -35292,19 +35528,19 @@ const MapView: React.FC<MapViewProps> = ({
                 </div>
               </div>
               <div className="border border-gray-300 rounded-md bg-white max-h-96 overflow-y-auto">
-                {/* USGS National Map & MRLC basemaps - First (top layer) */}
+                {/* USGS National Map basemaps - First (top layer) */}
                 <div className="border-b border-gray-200">
                   <button
-                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USGS National Map & MRLC': !prev['USGS National Map & MRLC'] }))}
+                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USGS National Map': !prev['USGS National Map'] }))}
                     className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
                     style={{ backgroundColor: '#2563eb' }}
                   >
-                    <span>USGS National Map & MRLC</span>
-                    <span className={`transform transition-transform ${expandedBasemapSections['USGS National Map & MRLC'] ? 'rotate-180' : ''}`}>
+                    <span>USGS National Map</span>
+                    <span className={`transform transition-transform ${expandedBasemapSections['USGS National Map'] ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
                   </button>
-                  {expandedBasemapSections['USGS National Map & MRLC'] && (
+                  {expandedBasemapSections['USGS National Map'] && (
                     <div className="pb-1">
                       {Object.entries(BASEMAP_CONFIGS)
                         .filter(([_, config]) => config.type === 'wms')
@@ -35326,41 +35562,7 @@ const MapView: React.FC<MapViewProps> = ({
                   )}
                 </div>
                 
-                {/* FIA Forest Atlas basemaps */}
-                <div className="border-b border-gray-200">
-                  <button
-                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'FIA Forest Atlas': !prev['FIA Forest Atlas'] }))}
-                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
-                    style={{ backgroundColor: '#16a34a' }}
-                  >
-                    <span>FIA Forest Atlas</span>
-                    <span className={`transform transition-transform ${expandedBasemapSections['FIA Forest Atlas'] ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </button>
-                  {expandedBasemapSections['FIA Forest Atlas'] && (
-                    <div className="pb-1">
-                      {Object.entries(BASEMAP_CONFIGS)
-                        .filter(([key]) => key.startsWith('fia_') && key.endsWith('_basemap'))
-                        .map(([key, config]) => (
-                          <button
-                            key={key}
-                            onClick={() => {
-                              // Toggle: if already selected, deselect it; otherwise select it
-                              setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
-                            }}
-                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                              selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
-                            }`}
-                          >
-                            {config.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* USFS basemaps */}
+                {/* USFS basemaps (includes FIA Forest Atlas) */}
                 <div className="border-b border-gray-200">
                   <button
                     onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USFS': !prev['USFS'] }))}
@@ -35375,7 +35577,7 @@ const MapView: React.FC<MapViewProps> = ({
                   {expandedBasemapSections['USFS'] && (
                     <div className="pb-1">
                       {Object.entries(BASEMAP_CONFIGS)
-                        .filter(([key]) => key.startsWith('usfs_') && !key.startsWith('usfs_fia_'))
+                        .filter(([key]) => (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || (key.startsWith('fia_') && key.endsWith('_basemap')))
                         .map(([key, config]) => (
                           <button
                             key={key}

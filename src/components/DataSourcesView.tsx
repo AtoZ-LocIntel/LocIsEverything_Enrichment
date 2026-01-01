@@ -636,6 +636,158 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/8"
+        },
+        {
+          name: "USGS GeoNames - Administrative",
+          description: "USGS The National Map GeoNames - Administrative features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/0"
+        },
+        {
+          name: "USGS GeoNames - Transportation",
+          description: "USGS The National Map GeoNames - Transportation features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/1"
+        },
+        {
+          name: "USGS GeoNames - Landform",
+          description: "USGS The National Map GeoNames - Landform features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/2"
+        },
+        {
+          name: "USGS GeoNames - Hydro Lines",
+          description: "USGS The National Map GeoNames - Hydrographic line features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/3"
+        },
+        {
+          name: "USGS GeoNames - Hydro Points",
+          description: "USGS The National Map GeoNames - Hydrographic point features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/4"
+        },
+        {
+          name: "USGS GeoNames - Antarctica",
+          description: "USGS The National Map GeoNames - Antarctica features (proximity queries up to 25 miles)",
+          coverage: "Antarctica",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/5"
+        },
+        {
+          name: "USGS GeoNames - Historical",
+          description: "USGS The National Map GeoNames - Historical features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6"
+        },
+        {
+          name: "USGS Selectable Polygons - State or Territory",
+          description: "USGS The National Map Selectable Polygons - State or Territory boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/1"
+        },
+        {
+          name: "USGS Selectable Polygons - Congressional District",
+          description: "USGS The National Map Selectable Polygons - Congressional Districts (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/2"
+        },
+        {
+          name: "USGS Selectable Polygons - County or Equivalent",
+          description: "USGS The National Map Selectable Polygons - Counties or Equivalents (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/3"
+        },
+        {
+          name: "USGS Selectable Polygons - Incorporated Place",
+          description: "USGS The National Map Selectable Polygons - Incorporated Places (Cities and Towns) (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/4"
+        },
+        {
+          name: "USGS Selectable Polygons - Unincorporated Place",
+          description: "USGS The National Map Selectable Polygons - Unincorporated Places (Cities and Towns) (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/5"
+        },
+        {
+          name: "USGS Selectable Polygons - 1x1 Degree Index",
+          description: "USGS The National Map Selectable Polygons - 1x1 Degree Map Index (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/7"
+        },
+        {
+          name: "USGS Selectable Polygons - 1:100K Index",
+          description: "USGS The National Map Selectable Polygons - 1:100K Map Index (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/8"
+        },
+        {
+          name: "USGS Selectable Polygons - 1:63K Index (AK)",
+          description: "USGS The National Map Selectable Polygons - 1:63K Map Index for Alaska (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States (Alaska)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/9"
+        },
+        {
+          name: "USGS Selectable Polygons - 1:24K Index",
+          description: "USGS The National Map Selectable Polygons - 1:24K Map Index (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/10"
+        },
+        {
+          name: "USGS Selectable Polygons - Hydrologic Unit Region",
+          description: "USGS The National Map Selectable Polygons - Hydrologic Unit Regions (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/12"
+        },
+        {
+          name: "USGS Selectable Polygons - Hydrologic Unit Subregion",
+          description: "USGS The National Map Selectable Polygons - Hydrologic Unit Subregions (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/13"
+        },
+        {
+          name: "USGS Selectable Polygons - Hydrologic Unit Subbasin",
+          description: "USGS The National Map Selectable Polygons - Hydrologic Unit Subbasins (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/14"
         }
       ]
     },

@@ -712,6 +712,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'tnm_structures_all' || // Skip TNM Structures array (handled separately)
         key === 'usgs_trails_all' || // Skip USGS Trails array (handled separately)
         (key.startsWith('usgs_transportation_') && key.endsWith('_all')) || // Skip USGS Transportation arrays (handled separately)
+        (key.startsWith('usgs_geonames_') && key.endsWith('_all')) || // Skip USGS GeoNames arrays (handled separately)
+        (key.startsWith('usgs_selectable_polygons_') && key.endsWith('_all')) || // Skip USGS Selectable Polygons arrays (handled separately)
         (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately)
         (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately)
         (key.startsWith('dc_property_') && key.endsWith('_all')) || // Skip DC Property and Land arrays (handled separately)
@@ -13292,6 +13294,152 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           distance,
           `Nearby ${feature.layerName || layerInfo.name.replace('USGS_TRANSPORTATION_', '').replace(/_/g, ' ')}`,
           attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add USGS GeoNames data rows
+    const geonamesLayerMap: Record<string, { name: string, icon: string }> = {
+      'usgs_geonames_administrative_all': { name: 'USGS_GEONAMES_ADMINISTRATIVE', icon: '📍' },
+      'usgs_geonames_transportation_all': { name: 'USGS_GEONAMES_TRANSPORTATION', icon: '🚗' },
+      'usgs_geonames_landform_all': { name: 'USGS_GEONAMES_LANDFORM', icon: '⛰️' },
+      'usgs_geonames_hydro_lines_all': { name: 'USGS_GEONAMES_HYDRO_LINES', icon: '💧' },
+      'usgs_geonames_hydro_points_all': { name: 'USGS_GEONAMES_HYDRO_POINTS', icon: '💧' },
+      'usgs_geonames_antarctica_all': { name: 'USGS_GEONAMES_ANTARCTICA', icon: '🧊' },
+      'usgs_geonames_historical_all': { name: 'USGS_GEONAMES_HISTORICAL', icon: '📜' }
+    };
+    
+    if (geonamesLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = geonamesLayerMap[key];
+      value.forEach((feature: any) => {
+        // Try to find a name/identifier from common attribute fields
+        const featureName = feature.name || feature.FEATURE_NAME || feature.feature_name || 
+          feature.GNIS_NAME || feature.gnis_name || feature.NAME || feature.NAME1 || 
+          feature.NAME2 || feature.PRIMARY_NAME || feature.primary_name ||
+          (feature.attributes ? (feature.attributes.name || feature.attributes.FEATURE_NAME || feature.attributes.GNIS_NAME) : null) ||
+          feature.layerName || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry
+        let featureCoords = '';
+        if (feature.geometry) {
+          if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline geometry (hydro lines, transportation)
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const firstPoint = firstPath[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          } else if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Polygon geometry
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          } else if (feature.geometry.x && feature.geometry.y) {
+            // Point geometry
+            featureCoords = `${feature.geometry.y},${feature.geometry.x}`; // lat,lon
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          `${layerInfo.icon} ${featureName}`,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `Nearby ${feature.layerName || layerInfo.name.replace('USGS_GEONAMES_', '').replace(/_/g, ' ')}`,
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add USGS Selectable Polygons data rows
+    const selectablePolygonsLayerMap: Record<string, { name: string, icon: string }> = {
+      'usgs_selectable_polygons_state_territory_all': { name: 'USGS_SELECTABLE_POLYGONS_STATE_TERRITORY', icon: '🗺️' },
+      'usgs_selectable_polygons_congressional_district_all': { name: 'USGS_SELECTABLE_POLYGONS_CONGRESSIONAL_DISTRICT', icon: '🏛️' },
+      'usgs_selectable_polygons_county_equivalent_all': { name: 'USGS_SELECTABLE_POLYGONS_COUNTY_EQUIVALENT', icon: '🏘️' },
+      'usgs_selectable_polygons_incorporated_place_all': { name: 'USGS_SELECTABLE_POLYGONS_INCORPORATED_PLACE', icon: '🏙️' },
+      'usgs_selectable_polygons_unincorporated_place_all': { name: 'USGS_SELECTABLE_POLYGONS_UNINCORPORATED_PLACE', icon: '🏘️' },
+      'usgs_selectable_polygons_1x1_degree_index_all': { name: 'USGS_SELECTABLE_POLYGONS_1X1_DEGREE_INDEX', icon: '🗺️' },
+      'usgs_selectable_polygons_100k_index_all': { name: 'USGS_SELECTABLE_POLYGONS_100K_INDEX', icon: '🗺️' },
+      'usgs_selectable_polygons_63k_index_all': { name: 'USGS_SELECTABLE_POLYGONS_63K_INDEX', icon: '🗺️' },
+      'usgs_selectable_polygons_24k_index_all': { name: 'USGS_SELECTABLE_POLYGONS_24K_INDEX', icon: '🗺️' },
+      'usgs_selectable_polygons_region_all': { name: 'USGS_SELECTABLE_POLYGONS_REGION', icon: '💧' },
+      'usgs_selectable_polygons_subregion_all': { name: 'USGS_SELECTABLE_POLYGONS_SUBREGION', icon: '💧' },
+      'usgs_selectable_polygons_subbasin_all': { name: 'USGS_SELECTABLE_POLYGONS_SUBBASIN', icon: '💧' }
+    };
+    
+    if (selectablePolygonsLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = selectablePolygonsLayerMap[key];
+      value.forEach((feature: any) => {
+        // Try to find a name/identifier from common attribute fields
+        const featureName = feature.name || feature.NAME || feature.NAME1 || feature.NAME2 || 
+          feature.STATE_NAME || feature.state_name || feature.COUNTY_NAME || feature.county_name ||
+          feature.PLACE_NAME || feature.place_name || feature.DISTRICT || feature.district ||
+          feature.HUC || feature.huc || feature.REGION || feature.region ||
+          feature.SUBREGION || feature.subregion || feature.SUBBASIN || feature.subbasin ||
+          feature.INDEX || feature.index || feature.CELL_ID || feature.cell_id ||
+          (feature.attributes ? (feature.attributes.name || feature.attributes.NAME || feature.attributes.NAME1) : null) ||
+          feature.layerName || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        
+        // Extract coordinates from polygon geometry (centroid of first ring)
+        let featureCoords = '';
+        if (feature.geometry && feature.geometry.rings && feature.geometry.rings.length > 0) {
+          const firstRing = feature.geometry.rings[0];
+          if (firstRing && firstRing.length > 0) {
+            // Calculate centroid (simplified - use first point)
+            const firstPoint = firstRing[0];
+            featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          `${layerInfo.icon} ${featureName}${feature.isContaining ? ' (Contains Point)' : ''}`,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `Nearby ${feature.layerName || layerInfo.name.replace('USGS_SELECTABLE_POLYGONS_', '').replace(/_/g, ' ')}`,
+          `${attributesJson} | Contains Point: ${isContaining}`,
           '',
           '',
           'USGS The National Map'

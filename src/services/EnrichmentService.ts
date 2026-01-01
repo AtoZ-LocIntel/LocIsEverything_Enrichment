@@ -105,6 +105,29 @@ import {
   getUSGSTransportationLocalRoadData,
   getUSGSTransportationTrailsData,
 } from '../adapters/usgsTransportation';
+import {
+  getUSGSGeonamesAdministrativeData,
+  getUSGSGeonamesTransportationData,
+  getUSGSGeonamesLandformData,
+  getUSGSGeonamesHydroLinesData,
+  getUSGSGeonamesHydroPointsData,
+  getUSGSGeonamesAntarcticaData,
+  getUSGSGeonamesHistoricalData,
+} from '../adapters/usgsGeonames';
+import {
+  getUSGSSelectablePolygonsStateTerritoryData,
+  getUSGSSelectablePolygonsCongressionalDistrictData,
+  getUSGSSelectablePolygonsCountyEquivalentData,
+  getUSGSSelectablePolygonsIncorporatedPlaceData,
+  getUSGSSelectablePolygonsUnincorporatedPlaceData,
+  getUSGSSelectablePolygons1x1DegreeIndexData,
+  getUSGSSelectablePolygons100KIndexData,
+  getUSGSSelectablePolygons63KIndexData,
+  getUSGSSelectablePolygons24KIndexData,
+  getUSGSSelectablePolygonsRegionData,
+  getUSGSSelectablePolygonsSubregionData,
+  getUSGSSelectablePolygonsSubbasinData,
+} from '../adapters/usgsSelectablePolygons';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
@@ -2625,6 +2648,48 @@ export class EnrichmentService {
         return await this.getUSGSTransportationLocalRoad(lat, lon, radius);
       case 'usgs_transportation_trails':
         return await this.getUSGSTransportationTrails(lat, lon, radius);
+      
+      // USGS GeoNames Layers
+      case 'usgs_geonames_administrative':
+        return await this.getUSGSGeonamesAdministrative(lat, lon, radius);
+      case 'usgs_geonames_transportation':
+        return await this.getUSGSGeonamesTransportation(lat, lon, radius);
+      case 'usgs_geonames_landform':
+        return await this.getUSGSGeonamesLandform(lat, lon, radius);
+      case 'usgs_geonames_hydro_lines':
+        return await this.getUSGSGeonamesHydroLines(lat, lon, radius);
+      case 'usgs_geonames_hydro_points':
+        return await this.getUSGSGeonamesHydroPoints(lat, lon, radius);
+      case 'usgs_geonames_antarctica':
+        return await this.getUSGSGeonamesAntarctica(lat, lon, radius);
+      case 'usgs_geonames_historical':
+        return await this.getUSGSGeonamesHistorical(lat, lon, radius);
+      
+      // USGS Selectable Polygons Layers
+      case 'usgs_selectable_polygons_state_territory':
+        return await this.getUSGSSelectablePolygonsStateTerritory(lat, lon, radius);
+      case 'usgs_selectable_polygons_congressional_district':
+        return await this.getUSGSSelectablePolygonsCongressionalDistrict(lat, lon, radius);
+      case 'usgs_selectable_polygons_county_equivalent':
+        return await this.getUSGSSelectablePolygonsCountyEquivalent(lat, lon, radius);
+      case 'usgs_selectable_polygons_incorporated_place':
+        return await this.getUSGSSelectablePolygonsIncorporatedPlace(lat, lon, radius);
+      case 'usgs_selectable_polygons_unincorporated_place':
+        return await this.getUSGSSelectablePolygonsUnincorporatedPlace(lat, lon, radius);
+      case 'usgs_selectable_polygons_1x1_degree_index':
+        return await this.getUSGSSelectablePolygons1x1DegreeIndex(lat, lon, radius);
+      case 'usgs_selectable_polygons_100k_index':
+        return await this.getUSGSSelectablePolygons100KIndex(lat, lon, radius);
+      case 'usgs_selectable_polygons_63k_index':
+        return await this.getUSGSSelectablePolygons63KIndex(lat, lon, radius);
+      case 'usgs_selectable_polygons_24k_index':
+        return await this.getUSGSSelectablePolygons24KIndex(lat, lon, radius);
+      case 'usgs_selectable_polygons_region':
+        return await this.getUSGSSelectablePolygonsRegion(lat, lon, radius);
+      case 'usgs_selectable_polygons_subregion':
+        return await this.getUSGSSelectablePolygonsSubregion(lat, lon, radius);
+      case 'usgs_selectable_polygons_subbasin':
+        return await this.getUSGSSelectablePolygonsSubbasin(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -25510,6 +25575,695 @@ out center;`;
         'usgs_transportation_trails_count': 0,
         'usgs_transportation_trails_summary': 'Error fetching USGS transportation trails data',
         'usgs_transportation_trails_all': []
+      };
+    }
+  }
+
+  private async getUSGSGeonamesAdministrative(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📍 Fetching USGS GeoNames Administrative data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSGeonamesAdministrativeData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_geonames_administrative_count'] = 0;
+        result['usgs_geonames_administrative_summary'] = 'No administrative features found within the specified radius';
+        result['usgs_geonames_administrative_all'] = [];
+      } else {
+        result['usgs_geonames_administrative_count'] = features.length;
+        result['usgs_geonames_administrative_summary'] = `Found ${features.length} administrative feature(s) within ${radius || 25} miles`;
+        result['usgs_geonames_administrative_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS GeoNames Administrative data:`, error);
+      return {
+        'usgs_geonames_administrative_count': 0,
+        'usgs_geonames_administrative_summary': 'Error fetching USGS GeoNames administrative data',
+        'usgs_geonames_administrative_all': []
+      };
+    }
+  }
+
+  private async getUSGSGeonamesTransportation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚗 Fetching USGS GeoNames Transportation data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSGeonamesTransportationData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_geonames_transportation_count'] = 0;
+        result['usgs_geonames_transportation_summary'] = 'No transportation features found within the specified radius';
+        result['usgs_geonames_transportation_all'] = [];
+      } else {
+        result['usgs_geonames_transportation_count'] = features.length;
+        result['usgs_geonames_transportation_summary'] = `Found ${features.length} transportation feature(s) within ${radius || 25} miles`;
+        result['usgs_geonames_transportation_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS GeoNames Transportation data:`, error);
+      return {
+        'usgs_geonames_transportation_count': 0,
+        'usgs_geonames_transportation_summary': 'Error fetching USGS GeoNames transportation data',
+        'usgs_geonames_transportation_all': []
+      };
+    }
+  }
+
+  private async getUSGSGeonamesLandform(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛰️ Fetching USGS GeoNames Landform data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSGeonamesLandformData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_geonames_landform_count'] = 0;
+        result['usgs_geonames_landform_summary'] = 'No landform features found within the specified radius';
+        result['usgs_geonames_landform_all'] = [];
+      } else {
+        result['usgs_geonames_landform_count'] = features.length;
+        result['usgs_geonames_landform_summary'] = `Found ${features.length} landform feature(s) within ${radius || 25} miles`;
+        result['usgs_geonames_landform_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS GeoNames Landform data:`, error);
+      return {
+        'usgs_geonames_landform_count': 0,
+        'usgs_geonames_landform_summary': 'Error fetching USGS GeoNames landform data',
+        'usgs_geonames_landform_all': []
+      };
+    }
+  }
+
+  private async getUSGSGeonamesHydroLines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS GeoNames Hydro Lines data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSGeonamesHydroLinesData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_geonames_hydro_lines_count'] = 0;
+        result['usgs_geonames_hydro_lines_summary'] = 'No hydro line features found within the specified radius';
+        result['usgs_geonames_hydro_lines_all'] = [];
+      } else {
+        result['usgs_geonames_hydro_lines_count'] = features.length;
+        result['usgs_geonames_hydro_lines_summary'] = `Found ${features.length} hydro line feature(s) within ${radius || 25} miles`;
+        result['usgs_geonames_hydro_lines_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS GeoNames Hydro Lines data:`, error);
+      return {
+        'usgs_geonames_hydro_lines_count': 0,
+        'usgs_geonames_hydro_lines_summary': 'Error fetching USGS GeoNames hydro lines data',
+        'usgs_geonames_hydro_lines_all': []
+      };
+    }
+  }
+
+  private async getUSGSGeonamesHydroPoints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS GeoNames Hydro Points data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSGeonamesHydroPointsData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_geonames_hydro_points_count'] = 0;
+        result['usgs_geonames_hydro_points_summary'] = 'No hydro point features found within the specified radius';
+        result['usgs_geonames_hydro_points_all'] = [];
+      } else {
+        result['usgs_geonames_hydro_points_count'] = features.length;
+        result['usgs_geonames_hydro_points_summary'] = `Found ${features.length} hydro point feature(s) within ${radius || 25} miles`;
+        result['usgs_geonames_hydro_points_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS GeoNames Hydro Points data:`, error);
+      return {
+        'usgs_geonames_hydro_points_count': 0,
+        'usgs_geonames_hydro_points_summary': 'Error fetching USGS GeoNames hydro points data',
+        'usgs_geonames_hydro_points_all': []
+      };
+    }
+  }
+
+  private async getUSGSGeonamesAntarctica(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🧊 Fetching USGS GeoNames Antarctica data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSGeonamesAntarcticaData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_geonames_antarctica_count'] = 0;
+        result['usgs_geonames_antarctica_summary'] = 'No Antarctica features found within the specified radius';
+        result['usgs_geonames_antarctica_all'] = [];
+      } else {
+        result['usgs_geonames_antarctica_count'] = features.length;
+        result['usgs_geonames_antarctica_summary'] = `Found ${features.length} Antarctica feature(s) within ${radius || 25} miles`;
+        result['usgs_geonames_antarctica_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS GeoNames Antarctica data:`, error);
+      return {
+        'usgs_geonames_antarctica_count': 0,
+        'usgs_geonames_antarctica_summary': 'Error fetching USGS GeoNames Antarctica data',
+        'usgs_geonames_antarctica_all': []
+      };
+    }
+  }
+
+  private async getUSGSGeonamesHistorical(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📜 Fetching USGS GeoNames Historical data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSGeonamesHistoricalData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_geonames_historical_count'] = 0;
+        result['usgs_geonames_historical_summary'] = 'No historical features found within the specified radius';
+        result['usgs_geonames_historical_all'] = [];
+      } else {
+        result['usgs_geonames_historical_count'] = features.length;
+        result['usgs_geonames_historical_summary'] = `Found ${features.length} historical feature(s) within ${radius || 25} miles`;
+        result['usgs_geonames_historical_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS GeoNames Historical data:`, error);
+      return {
+        'usgs_geonames_historical_count': 0,
+        'usgs_geonames_historical_summary': 'Error fetching USGS GeoNames historical data',
+        'usgs_geonames_historical_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygonsStateTerritory(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Fetching USGS Selectable Polygons State/Territory data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygonsStateTerritoryData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_state_territory_count'] = 0;
+        result['usgs_selectable_polygons_state_territory_summary'] = 'No state/territory boundaries found';
+        result['usgs_selectable_polygons_state_territory_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_state_territory_count'] = features.length;
+        result['usgs_selectable_polygons_state_territory_summary'] = `Found ${features.length} state/territory boundary(ies)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_state_territory_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons State/Territory data:`, error);
+      return {
+        'usgs_selectable_polygons_state_territory_count': 0,
+        'usgs_selectable_polygons_state_territory_summary': 'Error fetching USGS selectable polygons state/territory data',
+        'usgs_selectable_polygons_state_territory_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygonsCongressionalDistrict(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching USGS Selectable Polygons Congressional District data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygonsCongressionalDistrictData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_congressional_district_count'] = 0;
+        result['usgs_selectable_polygons_congressional_district_summary'] = 'No congressional districts found';
+        result['usgs_selectable_polygons_congressional_district_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_congressional_district_count'] = features.length;
+        result['usgs_selectable_polygons_congressional_district_summary'] = `Found ${features.length} congressional district(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_congressional_district_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons Congressional District data:`, error);
+      return {
+        'usgs_selectable_polygons_congressional_district_count': 0,
+        'usgs_selectable_polygons_congressional_district_summary': 'Error fetching USGS selectable polygons congressional district data',
+        'usgs_selectable_polygons_congressional_district_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygonsCountyEquivalent(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏘️ Fetching USGS Selectable Polygons County/Equivalent data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygonsCountyEquivalentData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_county_equivalent_count'] = 0;
+        result['usgs_selectable_polygons_county_equivalent_summary'] = 'No counties found';
+        result['usgs_selectable_polygons_county_equivalent_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_county_equivalent_count'] = features.length;
+        result['usgs_selectable_polygons_county_equivalent_summary'] = `Found ${features.length} county/county equivalent(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_county_equivalent_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons County/Equivalent data:`, error);
+      return {
+        'usgs_selectable_polygons_county_equivalent_count': 0,
+        'usgs_selectable_polygons_county_equivalent_summary': 'Error fetching USGS selectable polygons county/equivalent data',
+        'usgs_selectable_polygons_county_equivalent_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygonsIncorporatedPlace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏙️ Fetching USGS Selectable Polygons Incorporated Place data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygonsIncorporatedPlaceData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_incorporated_place_count'] = 0;
+        result['usgs_selectable_polygons_incorporated_place_summary'] = 'No incorporated places found';
+        result['usgs_selectable_polygons_incorporated_place_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_incorporated_place_count'] = features.length;
+        result['usgs_selectable_polygons_incorporated_place_summary'] = `Found ${features.length} incorporated place(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_incorporated_place_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons Incorporated Place data:`, error);
+      return {
+        'usgs_selectable_polygons_incorporated_place_count': 0,
+        'usgs_selectable_polygons_incorporated_place_summary': 'Error fetching USGS selectable polygons incorporated place data',
+        'usgs_selectable_polygons_incorporated_place_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygonsUnincorporatedPlace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏘️ Fetching USGS Selectable Polygons Unincorporated Place data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygonsUnincorporatedPlaceData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_unincorporated_place_count'] = 0;
+        result['usgs_selectable_polygons_unincorporated_place_summary'] = 'No unincorporated places found';
+        result['usgs_selectable_polygons_unincorporated_place_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_unincorporated_place_count'] = features.length;
+        result['usgs_selectable_polygons_unincorporated_place_summary'] = `Found ${features.length} unincorporated place(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_unincorporated_place_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons Unincorporated Place data:`, error);
+      return {
+        'usgs_selectable_polygons_unincorporated_place_count': 0,
+        'usgs_selectable_polygons_unincorporated_place_summary': 'Error fetching USGS selectable polygons unincorporated place data',
+        'usgs_selectable_polygons_unincorporated_place_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygons1x1DegreeIndex(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Fetching USGS Selectable Polygons 1x1 Degree Index data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygons1x1DegreeIndexData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_1x1_degree_index_count'] = 0;
+        result['usgs_selectable_polygons_1x1_degree_index_summary'] = 'No 1x1 degree index features found';
+        result['usgs_selectable_polygons_1x1_degree_index_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_1x1_degree_index_count'] = features.length;
+        result['usgs_selectable_polygons_1x1_degree_index_summary'] = `Found ${features.length} 1x1 degree index feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_1x1_degree_index_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons 1x1 Degree Index data:`, error);
+      return {
+        'usgs_selectable_polygons_1x1_degree_index_count': 0,
+        'usgs_selectable_polygons_1x1_degree_index_summary': 'Error fetching USGS selectable polygons 1x1 degree index data',
+        'usgs_selectable_polygons_1x1_degree_index_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygons100KIndex(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Fetching USGS Selectable Polygons 1:100K Index data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygons100KIndexData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_100k_index_count'] = 0;
+        result['usgs_selectable_polygons_100k_index_summary'] = 'No 1:100K index features found';
+        result['usgs_selectable_polygons_100k_index_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_100k_index_count'] = features.length;
+        result['usgs_selectable_polygons_100k_index_summary'] = `Found ${features.length} 1:100K index feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_100k_index_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons 1:100K Index data:`, error);
+      return {
+        'usgs_selectable_polygons_100k_index_count': 0,
+        'usgs_selectable_polygons_100k_index_summary': 'Error fetching USGS selectable polygons 1:100K index data',
+        'usgs_selectable_polygons_100k_index_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygons63KIndex(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Fetching USGS Selectable Polygons 1:63K Index (AK) data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygons63KIndexData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_63k_index_count'] = 0;
+        result['usgs_selectable_polygons_63k_index_summary'] = 'No 1:63K index features found';
+        result['usgs_selectable_polygons_63k_index_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_63k_index_count'] = features.length;
+        result['usgs_selectable_polygons_63k_index_summary'] = `Found ${features.length} 1:63K index (AK) feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_63k_index_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons 1:63K Index data:`, error);
+      return {
+        'usgs_selectable_polygons_63k_index_count': 0,
+        'usgs_selectable_polygons_63k_index_summary': 'Error fetching USGS selectable polygons 1:63K index data',
+        'usgs_selectable_polygons_63k_index_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygons24KIndex(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Fetching USGS Selectable Polygons 1:24K Index data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygons24KIndexData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_24k_index_count'] = 0;
+        result['usgs_selectable_polygons_24k_index_summary'] = 'No 1:24K index features found';
+        result['usgs_selectable_polygons_24k_index_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_24k_index_count'] = features.length;
+        result['usgs_selectable_polygons_24k_index_summary'] = `Found ${features.length} 1:24K index feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_24k_index_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons 1:24K Index data:`, error);
+      return {
+        'usgs_selectable_polygons_24k_index_count': 0,
+        'usgs_selectable_polygons_24k_index_summary': 'Error fetching USGS selectable polygons 1:24K index data',
+        'usgs_selectable_polygons_24k_index_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygonsRegion(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS Selectable Polygons Hydrologic Unit - Region data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygonsRegionData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_region_count'] = 0;
+        result['usgs_selectable_polygons_region_summary'] = 'No hydrologic unit regions found';
+        result['usgs_selectable_polygons_region_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_region_count'] = features.length;
+        result['usgs_selectable_polygons_region_summary'] = `Found ${features.length} hydrologic unit region(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_region_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons Region data:`, error);
+      return {
+        'usgs_selectable_polygons_region_count': 0,
+        'usgs_selectable_polygons_region_summary': 'Error fetching USGS selectable polygons region data',
+        'usgs_selectable_polygons_region_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygonsSubregion(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS Selectable Polygons Hydrologic Unit - Subregion data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygonsSubregionData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_subregion_count'] = 0;
+        result['usgs_selectable_polygons_subregion_summary'] = 'No hydrologic unit subregions found';
+        result['usgs_selectable_polygons_subregion_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_subregion_count'] = features.length;
+        result['usgs_selectable_polygons_subregion_summary'] = `Found ${features.length} hydrologic unit subregion(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_subregion_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons Subregion data:`, error);
+      return {
+        'usgs_selectable_polygons_subregion_count': 0,
+        'usgs_selectable_polygons_subregion_summary': 'Error fetching USGS selectable polygons subregion data',
+        'usgs_selectable_polygons_subregion_all': []
+      };
+    }
+  }
+
+  private async getUSGSSelectablePolygonsSubbasin(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS Selectable Polygons Hydrologic Unit - Subbasin data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSSelectablePolygonsSubbasinData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_selectable_polygons_subbasin_count'] = 0;
+        result['usgs_selectable_polygons_subbasin_summary'] = 'No hydrologic unit subbasins found';
+        result['usgs_selectable_polygons_subbasin_all'] = [];
+      } else {
+        result['usgs_selectable_polygons_subbasin_count'] = features.length;
+        result['usgs_selectable_polygons_subbasin_summary'] = `Found ${features.length} hydrologic unit subbasin(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_selectable_polygons_subbasin_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Selectable Polygons Subbasin data:`, error);
+      return {
+        'usgs_selectable_polygons_subbasin_count': 0,
+        'usgs_selectable_polygons_subbasin_summary': 'Error fetching USGS selectable polygons subbasin data',
+        'usgs_selectable_polygons_subbasin_all': []
       };
     }
   }
