@@ -19,6 +19,7 @@ const BASE_SERVICE_URL_POPULATION_ESTIMATES_TRACTS = 'https://gis.bostonplans.or
 const BASE_SERVICE_URL_POPULATION_ESTIMATES_NEIGHBORHOODS = 'https://gis.bostonplans.org/hosting/rest/services/Hosted/Data_2025_Neighborhood_AnalyzeB/FeatureServer';
 const BASE_SERVICE_URL_POPULATION_ESTIMATES_CITY = 'https://gis.bostonplans.org/hosting/rest/services/Hosted/Data_2025_City_AnalyzeB/FeatureServer';
 const BASE_SERVICE_URL_TRASH_DAY = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/TrashDay/MapServer';
+const BASE_SERVICE_URL_BIKE_NETWORK = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/BikeNetwork/MapServer';
 
 export interface BostonOpenDataFeature {
   objectid: number;
@@ -1355,6 +1356,223 @@ export async function getBostonSnowDistrictsData(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_TRASH_DAY, 1, 'Snow Districts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston WiFi Locations layer (Layer 0) - Point layer
+ */
+export async function getBostonWiFiLocationsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_CHARGING, 0, 'WiFi Locations', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston WiFi Collector layer (Layer 1) - Point layer
+ */
+export async function getBostonWiFiCollectorData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_CHARGING, 1, 'WiFi Collector', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Budget Facilities layer (Layer 3) - Point layer
+ */
+export async function getBostonBudgetFacilitiesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_CHARGING, 3, 'Budget Facilities', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Hubway Stations layer (Layer 4) - Point layer
+ */
+export async function getBostonHubwayStationsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_CHARGING, 4, 'Hubway Stations', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Polling Locations layer (Layer 5) - Point layer
+ */
+export async function getBostonPollingLocationsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_CHARGING, 5, 'Polling Locations', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Public Libraries layer (Layer 6) - Point layer
+ */
+export async function getBostonPublicLibrariesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_CHARGING, 6, 'Public Libraries', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Bike Network layer - Polyline layer
+ * Generic function that can query Existing Facility, 5YR_plan, or 30YR_plan layers
+ */
+async function queryBostonBikeNetworkLayer(
+  layerId: number,
+  layerName: string,
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  try {
+    const radiusKm = radiusMiles * 1.60934;
+    const maxRecordCount = 2000;
+
+    console.log(
+      `🚴 Boston Open Data ${layerName} (Layer ${layerId}) query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`
+    );
+
+    let allFeatures: any[] = [];
+    let resultOffset = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const queryUrl = new URL(`${BASE_SERVICE_URL_BIKE_NETWORK}/${layerId}/query`);
+      queryUrl.searchParams.set('f', 'json');
+      queryUrl.searchParams.set('where', '1=1');
+      queryUrl.searchParams.set('outFields', '*');
+      queryUrl.searchParams.set('geometry', JSON.stringify({
+        x: lon,
+        y: lat,
+        spatialReference: { wkid: 4326 }
+      }));
+      queryUrl.searchParams.set('geometryType', 'esriGeometryPoint');
+      queryUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+      queryUrl.searchParams.set('distance', radiusKm.toString());
+      queryUrl.searchParams.set('units', 'esriSRUnit_Kilometer');
+      queryUrl.searchParams.set('inSR', '4326');
+      queryUrl.searchParams.set('outSR', '4326');
+      queryUrl.searchParams.set('returnGeometry', 'true');
+      queryUrl.searchParams.set('resultRecordCount', maxRecordCount.toString());
+      queryUrl.searchParams.set('resultOffset', resultOffset.toString());
+
+      const response = await fetchJSONSmart(queryUrl.toString());
+
+      if (response.error) {
+        throw new Error(
+          `Boston Open Data ${layerName} API error: ${JSON.stringify(response.error)}`
+        );
+      }
+
+      const batchFeatures = response.features || [];
+      allFeatures = allFeatures.concat(batchFeatures);
+
+      hasMore = batchFeatures.length === maxRecordCount || response.exceededTransferLimit === true;
+      resultOffset += batchFeatures.length;
+
+      if (resultOffset > 100000) {
+        console.warn(`⚠️ Boston Open Data ${layerName}: Stopping pagination at 100k records for safety`);
+        hasMore = false;
+      }
+
+      if (hasMore) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+
+    // Process features and calculate distances (polylines)
+    const processedFeatures: BostonOpenDataFeature[] = allFeatures.map(
+      (feature: any) => {
+        const attributes = feature.attributes || {};
+        const geometry = feature.geometry;
+        const objectid = attributes.OBJECTID || attributes.objectid || attributes.ObjectId || 0;
+
+        let distanceMiles = radiusMiles; // Default to max radius
+
+        // Calculate distance to polyline
+        if (geometry) {
+          if (geometry.paths && geometry.paths.length > 0) {
+            distanceMiles = distanceToPolyline(lat, lon, geometry.paths);
+          } else if (geometry.rings && geometry.rings.length > 0) {
+            // Some might have rings, treat as polylines
+            distanceMiles = distanceToPolyline(lat, lon, geometry.rings);
+          }
+        }
+
+        return {
+          objectid,
+          attributes,
+          geometry,
+          distance_miles: distanceMiles,
+          layerId,
+          layerName,
+        };
+      }
+    );
+
+    // Filter features within radius and sort
+    const withinRadius = processedFeatures.filter(f => (f.distance_miles || Infinity) <= radiusMiles);
+    
+    // Sort by distance
+    withinRadius.sort((a, b) => {
+      const distA = a.distance_miles || Infinity;
+      const distB = b.distance_miles || Infinity;
+      return distA - distB;
+    });
+
+    console.log(
+      `✅ Processed ${withinRadius.length} Boston Open Data ${layerName} feature(s) within ${radiusMiles} miles`
+    );
+
+    return withinRadius;
+  } catch (error) {
+    console.error(`❌ Boston Open Data ${layerName} API Error:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Query Boston Bike Network Existing Facility layer (Layer 0) - Polyline layer
+ */
+export async function getBostonBikeNetworkExistingFacilityData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonBikeNetworkLayer(0, 'Bike Network Existing Facility', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Bike Network 5YR_plan layer (Layer 1) - Polyline layer
+ */
+export async function getBostonBikeNetwork5YRPlanData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonBikeNetworkLayer(1, 'Bike Network 5YR Plan', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Bike Network 30YR_plan layer (Layer 2) - Polyline layer
+ */
+export async function getBostonBikeNetwork30YRPlanData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonBikeNetworkLayer(2, 'Bike Network 30YR Plan', lat, lon, Math.min(radiusMiles, 10));
 }
 
 /**

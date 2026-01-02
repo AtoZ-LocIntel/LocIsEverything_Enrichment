@@ -164,6 +164,15 @@ import {
   getBostonMBTAStopsData,
   getBostonPWDDistrictsData,
   getBostonSnowDistrictsData,
+  getBostonWiFiLocationsData,
+  getBostonWiFiCollectorData,
+  getBostonBudgetFacilitiesData,
+  getBostonHubwayStationsData,
+  getBostonPollingLocationsData,
+  getBostonPublicLibrariesData,
+  getBostonBikeNetworkExistingFacilityData,
+  getBostonBikeNetwork5YRPlanData,
+  getBostonBikeNetwork30YRPlanData,
 } from '../adapters/bostonOpenData';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
@@ -2795,6 +2804,24 @@ export class EnrichmentService {
         return await this.getBostonPWDDistricts(lat, lon, radius);
       case 'boston_snow_districts':
         return await this.getBostonSnowDistricts(lat, lon, radius);
+      case 'boston_wifi_locations':
+        return await this.getBostonWiFiLocations(lat, lon, radius);
+      case 'boston_wifi_collector':
+        return await this.getBostonWiFiCollector(lat, lon, radius);
+      case 'boston_budget_facilities':
+        return await this.getBostonBudgetFacilities(lat, lon, radius);
+      case 'boston_hubway_stations':
+        return await this.getBostonHubwayStations(lat, lon, radius);
+      case 'boston_polling_locations':
+        return await this.getBostonPollingLocations(lat, lon, radius);
+      case 'boston_public_libraries':
+        return await this.getBostonPublicLibraries(lat, lon, radius);
+      case 'boston_bike_network_existing_facility':
+        return await this.getBostonBikeNetworkExistingFacility(lat, lon, radius);
+      case 'boston_bike_network_5yr_plan':
+        return await this.getBostonBikeNetwork5YRPlan(lat, lon, radius);
+      case 'boston_bike_network_30yr_plan':
+        return await this.getBostonBikeNetwork30YRPlan(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -27486,6 +27513,321 @@ out center;`;
         'boston_snow_districts_count': 0,
         'boston_snow_districts_summary': 'Error fetching snow districts data',
         'boston_snow_districts_all': []
+      };
+    }
+  }
+
+  private async getBostonWiFiLocations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📶 Fetching Boston WiFi Locations data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonWiFiLocationsData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_wifi_locations_count'] = 0;
+        result['boston_wifi_locations_summary'] = 'No WiFi locations found within the specified radius';
+        result['boston_wifi_locations_all'] = [];
+      } else {
+        result['boston_wifi_locations_count'] = features.length;
+        result['boston_wifi_locations_summary'] = `Found ${features.length} WiFi location(s) within ${radius || 10} miles`;
+        result['boston_wifi_locations_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston WiFi Locations data:`, error);
+      return {
+        'boston_wifi_locations_count': 0,
+        'boston_wifi_locations_summary': 'Error fetching WiFi locations data',
+        'boston_wifi_locations_all': []
+      };
+    }
+  }
+
+  private async getBostonWiFiCollector(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📡 Fetching Boston WiFi Collector data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonWiFiCollectorData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_wifi_collector_count'] = 0;
+        result['boston_wifi_collector_summary'] = 'No WiFi collector locations found within the specified radius';
+        result['boston_wifi_collector_all'] = [];
+      } else {
+        result['boston_wifi_collector_count'] = features.length;
+        result['boston_wifi_collector_summary'] = `Found ${features.length} WiFi collector location(s) within ${radius || 10} miles`;
+        result['boston_wifi_collector_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston WiFi Collector data:`, error);
+      return {
+        'boston_wifi_collector_count': 0,
+        'boston_wifi_collector_summary': 'Error fetching WiFi collector data',
+        'boston_wifi_collector_all': []
+      };
+    }
+  }
+
+  private async getBostonBudgetFacilities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💰 Fetching Boston Budget Facilities data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonBudgetFacilitiesData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_budget_facilities_count'] = 0;
+        result['boston_budget_facilities_summary'] = 'No budget facilities found within the specified radius';
+        result['boston_budget_facilities_all'] = [];
+      } else {
+        result['boston_budget_facilities_count'] = features.length;
+        result['boston_budget_facilities_summary'] = `Found ${features.length} budget facilit${features.length === 1 ? 'y' : 'ies'} within ${radius || 10} miles`;
+        result['boston_budget_facilities_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Budget Facilities data:`, error);
+      return {
+        'boston_budget_facilities_count': 0,
+        'boston_budget_facilities_summary': 'Error fetching budget facilities data',
+        'boston_budget_facilities_all': []
+      };
+    }
+  }
+
+  private async getBostonHubwayStations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚴 Fetching Boston Hubway Stations data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonHubwayStationsData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_hubway_stations_count'] = 0;
+        result['boston_hubway_stations_summary'] = 'No Hubway stations found within the specified radius';
+        result['boston_hubway_stations_all'] = [];
+      } else {
+        result['boston_hubway_stations_count'] = features.length;
+        result['boston_hubway_stations_summary'] = `Found ${features.length} Hubway station(s) within ${radius || 10} miles`;
+        result['boston_hubway_stations_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Hubway Stations data:`, error);
+      return {
+        'boston_hubway_stations_count': 0,
+        'boston_hubway_stations_summary': 'Error fetching Hubway stations data',
+        'boston_hubway_stations_all': []
+      };
+    }
+  }
+
+  private async getBostonPollingLocations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗳️ Fetching Boston Polling Locations data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonPollingLocationsData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_polling_locations_count'] = 0;
+        result['boston_polling_locations_summary'] = 'No polling locations found within the specified radius';
+        result['boston_polling_locations_all'] = [];
+      } else {
+        result['boston_polling_locations_count'] = features.length;
+        result['boston_polling_locations_summary'] = `Found ${features.length} polling location(s) within ${radius || 10} miles`;
+        result['boston_polling_locations_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Polling Locations data:`, error);
+      return {
+        'boston_polling_locations_count': 0,
+        'boston_polling_locations_summary': 'Error fetching polling locations data',
+        'boston_polling_locations_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicLibraries(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📚 Fetching Boston Public Libraries data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonPublicLibrariesData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_public_libraries_count'] = 0;
+        result['boston_public_libraries_summary'] = 'No public libraries found within the specified radius';
+        result['boston_public_libraries_all'] = [];
+      } else {
+        result['boston_public_libraries_count'] = features.length;
+        result['boston_public_libraries_summary'] = `Found ${features.length} public librar${features.length === 1 ? 'y' : 'ies'} within ${radius || 10} miles`;
+        result['boston_public_libraries_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Public Libraries data:`, error);
+      return {
+        'boston_public_libraries_count': 0,
+        'boston_public_libraries_summary': 'Error fetching public libraries data',
+        'boston_public_libraries_all': []
+      };
+    }
+  }
+
+  private async getBostonBikeNetworkExistingFacility(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚴 Fetching Boston Bike Network Existing Facility data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonBikeNetworkExistingFacilityData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_bike_network_existing_facility_count'] = 0;
+        result['boston_bike_network_existing_facility_summary'] = 'No bike network existing facilities found within the specified radius';
+        result['boston_bike_network_existing_facility_all'] = [];
+      } else {
+        result['boston_bike_network_existing_facility_count'] = features.length;
+        result['boston_bike_network_existing_facility_summary'] = `Found ${features.length} bike network existing facilit${features.length === 1 ? 'y' : 'ies'} within ${radius || 10} miles`;
+        result['boston_bike_network_existing_facility_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Bike Network Existing Facility data:`, error);
+      return {
+        'boston_bike_network_existing_facility_count': 0,
+        'boston_bike_network_existing_facility_summary': 'Error fetching bike network existing facility data',
+        'boston_bike_network_existing_facility_all': []
+      };
+    }
+  }
+
+  private async getBostonBikeNetwork5YRPlan(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚴 Fetching Boston Bike Network 5YR Plan data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonBikeNetwork5YRPlanData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_bike_network_5yr_plan_count'] = 0;
+        result['boston_bike_network_5yr_plan_summary'] = 'No bike network 5YR plan features found within the specified radius';
+        result['boston_bike_network_5yr_plan_all'] = [];
+      } else {
+        result['boston_bike_network_5yr_plan_count'] = features.length;
+        result['boston_bike_network_5yr_plan_summary'] = `Found ${features.length} bike network 5YR plan feature(s) within ${radius || 10} miles`;
+        result['boston_bike_network_5yr_plan_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Bike Network 5YR Plan data:`, error);
+      return {
+        'boston_bike_network_5yr_plan_count': 0,
+        'boston_bike_network_5yr_plan_summary': 'Error fetching bike network 5YR plan data',
+        'boston_bike_network_5yr_plan_all': []
+      };
+    }
+  }
+
+  private async getBostonBikeNetwork30YRPlan(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚴 Fetching Boston Bike Network 30YR Plan data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonBikeNetwork30YRPlanData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_bike_network_30yr_plan_count'] = 0;
+        result['boston_bike_network_30yr_plan_summary'] = 'No bike network 30YR plan features found within the specified radius';
+        result['boston_bike_network_30yr_plan_all'] = [];
+      } else {
+        result['boston_bike_network_30yr_plan_count'] = features.length;
+        result['boston_bike_network_30yr_plan_summary'] = `Found ${features.length} bike network 30YR plan feature(s) within ${radius || 10} miles`;
+        result['boston_bike_network_30yr_plan_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Bike Network 30YR Plan data:`, error);
+      return {
+        'boston_bike_network_30yr_plan_count': 0,
+        'boston_bike_network_30yr_plan_summary': 'Error fetching bike network 30YR plan data',
+        'boston_bike_network_30yr_plan_all': []
       };
     }
   }

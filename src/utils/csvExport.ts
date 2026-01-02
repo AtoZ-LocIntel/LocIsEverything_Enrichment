@@ -13615,7 +13615,16 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'boston_population_estimates_2025_city_all': { name: 'BOSTON_POPULATION_ESTIMATES_2025_CITY', icon: '🏙️' },
       'boston_mbta_stops_all': { name: 'BOSTON_MBTA_STOPS', icon: '🚇' },
       'boston_pwd_districts_all': { name: 'BOSTON_PWD_DISTRICTS', icon: '🏛️' },
-      'boston_snow_districts_all': { name: 'BOSTON_SNOW_DISTRICTS', icon: '❄️' }
+      'boston_snow_districts_all': { name: 'BOSTON_SNOW_DISTRICTS', icon: '❄️' },
+      'boston_wifi_locations_all': { name: 'BOSTON_WIFI_LOCATIONS', icon: '📶' },
+      'boston_wifi_collector_all': { name: 'BOSTON_WIFI_COLLECTOR', icon: '📡' },
+      'boston_budget_facilities_all': { name: 'BOSTON_BUDGET_FACILITIES', icon: '💰' },
+      'boston_hubway_stations_all': { name: 'BOSTON_HUBWAY_STATIONS', icon: '🚴' },
+      'boston_polling_locations_all': { name: 'BOSTON_POLLING_LOCATIONS', icon: '🗳️' },
+      'boston_public_libraries_all': { name: 'BOSTON_PUBLIC_LIBRARIES', icon: '📚' },
+      'boston_bike_network_existing_facility_all': { name: 'BOSTON_BIKE_NETWORK_EXISTING_FACILITY', icon: '🚴' },
+      'boston_bike_network_5yr_plan_all': { name: 'BOSTON_BIKE_NETWORK_5YR_PLAN', icon: '🚴' },
+      'boston_bike_network_30yr_plan_all': { name: 'BOSTON_BIKE_NETWORK_30YR_PLAN', icon: '🚴' }
     };
     
     if (bostonLayerMap[key] && Array.isArray(value)) {

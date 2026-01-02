@@ -34050,7 +34050,16 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'boston_population_estimates_2025_neighborhoods_all', icon: '🏘️', color: '#a855f7', title: 'Boston Population Estimates 2025 Neighborhoods', isPolygon: true },
         { key: 'boston_population_estimates_2025_city_all', icon: '🏙️', color: '#9333ea', title: 'Boston Population Estimates 2025 City', isPolygon: true },
         { key: 'boston_pwd_districts_all', icon: '🏛️', color: '#0ea5e9', title: 'Boston PWD Districts', isPolygon: true },
-        { key: 'boston_snow_districts_all', icon: '❄️', color: '#06b6d4', title: 'Boston Snow Districts', isPolygon: true }
+        { key: 'boston_snow_districts_all', icon: '❄️', color: '#06b6d4', title: 'Boston Snow Districts', isPolygon: true },
+        { key: 'boston_wifi_locations_all', icon: '📶', color: '#8b5cf6', title: 'Boston WiFi Locations', isPoint: true },
+        { key: 'boston_wifi_collector_all', icon: '📡', color: '#a855f7', title: 'Boston WiFi Collector', isPoint: true },
+        { key: 'boston_budget_facilities_all', icon: '💰', color: '#10b981', title: 'Boston Budget Facilities', isPoint: true },
+        { key: 'boston_hubway_stations_all', icon: '🚴', color: '#f59e0b', title: 'Boston Hubway Stations', isPoint: true },
+        { key: 'boston_polling_locations_all', icon: '🗳️', color: '#3b82f6', title: 'Boston Polling Locations', isPoint: true },
+        { key: 'boston_public_libraries_all', icon: '📚', color: '#ef4444', title: 'Boston Public Libraries', isPoint: true },
+        { key: 'boston_bike_network_existing_facility_all', icon: '🚴', color: '#22c55e', title: 'Boston Bike Network Existing Facility', isPolyline: true },
+        { key: 'boston_bike_network_5yr_plan_all', icon: '🚴', color: '#3b82f6', title: 'Boston Bike Network 5YR Plan', isPolyline: true },
+        { key: 'boston_bike_network_30yr_plan_all', icon: '🚴', color: '#8b5cf6', title: 'Boston Bike Network 30YR Plan', isPolyline: true }
       ];
 
       bostonLayers.forEach((layerConfig) => {

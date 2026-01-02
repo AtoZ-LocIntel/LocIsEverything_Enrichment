@@ -3326,6 +3326,78 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/TrashDay/MapServer/1"
+        },
+        {
+          name: "Boston WiFi Locations",
+          description: "Boston Open Data - WiFi locations (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/OpenData/MapServer/0"
+        },
+        {
+          name: "Boston WiFi Collector",
+          description: "Boston Open Data - WiFi collector locations (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/OpenData/MapServer/1"
+        },
+        {
+          name: "Boston Budget Facilities",
+          description: "Boston Open Data - Budget facilities (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/OpenData/MapServer/3"
+        },
+        {
+          name: "Boston Hubway Stations",
+          description: "Boston Open Data - Hubway bike share stations (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/OpenData/MapServer/4"
+        },
+        {
+          name: "Boston Polling Locations",
+          description: "Boston Open Data - Polling locations (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/OpenData/MapServer/5"
+        },
+        {
+          name: "Boston Public Libraries",
+          description: "Boston Open Data - Public library locations (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/OpenData/MapServer/6"
+        },
+        {
+          name: "Boston Bike Network Existing Facility",
+          description: "Boston Open Data - Existing bike network facilities (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/BikeNetwork/MapServer/0"
+        },
+        {
+          name: "Boston Bike Network 5YR Plan",
+          description: "Boston Open Data - 5-year bike network plan (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/BikeNetwork/MapServer/1"
+        },
+        {
+          name: "Boston Bike Network 30YR Plan",
+          description: "Boston Open Data - 30-year bike network plan (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/BikeNetwork/MapServer/2"
         }
       ]
     },
