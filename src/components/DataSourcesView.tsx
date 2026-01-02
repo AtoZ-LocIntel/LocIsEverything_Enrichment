@@ -3278,6 +3278,54 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://gisportal.boston.gov/arcgis/rest/services/Parcels/Parcels25/MapServer/0"
+        },
+        {
+          name: "Boston Population Estimates 2025 Census Tracts",
+          description: "Boston Open Data - Population estimates 2025 census tract polygons in Boston (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gis.bostonplans.org/hosting/rest/services/Hosted/Data_2025_Tract_AnalyzeB/FeatureServer/0"
+        },
+        {
+          name: "Boston Population Estimates 2025 Neighborhoods",
+          description: "Boston Open Data - Population estimates 2025 neighborhood polygons in Boston (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gis.bostonplans.org/hosting/rest/services/Hosted/Data_2025_Neighborhood_AnalyzeB/FeatureServer/0"
+        },
+        {
+          name: "Boston Population Estimates 2025 City",
+          description: "Boston Open Data - Population estimates 2025 city boundary polygon in Boston (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gis.bostonplans.org/hosting/rest/services/Hosted/Data_2025_City_AnalyzeB/FeatureServer/0"
+        },
+        {
+          name: "MBTA Stops",
+          description: "Boston Open Data - MBTA rapid transit station stops on Blue, Green, Orange, Red, and Silver lines (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/PublicTransit/MapServer/0"
+        },
+        {
+          name: "Boston PWD Districts",
+          description: "Boston Open Data - Public Works Department district polygons (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/TrashDay/MapServer/0"
+        },
+        {
+          name: "Boston Snow Districts",
+          description: "Boston Open Data - Snow district polygons (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/TrashDay/MapServer/1"
         }
       ]
     },

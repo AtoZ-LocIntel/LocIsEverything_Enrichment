@@ -13609,15 +13609,22 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'boston_school_zones_all': { name: 'BOSTON_SCHOOL_ZONES', icon: '🏫' },
       'boston_crosswalks_all': { name: 'BOSTON_CROSSWALKS', icon: '🚶' },
       'boston_yellow_centerlines_all': { name: 'BOSTON_YELLOW_CENTERLINES', icon: '🟡' },
-      'boston_parcels_2025_all': { name: 'BOSTON_PARCELS_2025', icon: '🏘️' }
+      'boston_parcels_2025_all': { name: 'BOSTON_PARCELS_2025', icon: '🏘️' },
+      'boston_population_estimates_2025_all': { name: 'BOSTON_POPULATION_ESTIMATES_2025_CENSUS_TRACTS', icon: '📊' },
+      'boston_population_estimates_2025_neighborhoods_all': { name: 'BOSTON_POPULATION_ESTIMATES_2025_NEIGHBORHOODS', icon: '🏘️' },
+      'boston_population_estimates_2025_city_all': { name: 'BOSTON_POPULATION_ESTIMATES_2025_CITY', icon: '🏙️' },
+      'boston_mbta_stops_all': { name: 'BOSTON_MBTA_STOPS', icon: '🚇' },
+      'boston_pwd_districts_all': { name: 'BOSTON_PWD_DISTRICTS', icon: '🏛️' },
+      'boston_snow_districts_all': { name: 'BOSTON_SNOW_DISTRICTS', icon: '❄️' }
     };
     
     if (bostonLayerMap[key] && Array.isArray(value)) {
       const layerInfo = bostonLayerMap[key];
       value.forEach((feature: any) => {
-        // Handle charging stations, blue bike stations, bicycle network, managed streets, open space, park features, pavement markings, and parcels
+        // Handle charging stations, blue bike stations, bicycle network, managed streets, open space, park features, pavement markings, parcels, census tracts, and MBTA stops
         const stationName = feature.Station_Name || feature.station_name || feature.STATION_NAME || 
-          feature.Name || feature.name || feature.NAME || 
+          feature.STATION || feature.station || feature.Station ||
+          feature.Name || feature.name || feature.NAME || feature.NAME10 || feature.name10 ||
           feature.STREET_NAM || feature.street_nam || feature.STREET_NAME || 
           feature.STREETNAME || feature.streetname ||
           feature.SITE_NAME || feature.site_name || feature.SITE_NAME_ ||
@@ -13626,7 +13633,15 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           feature.School_Name || feature.school_name || feature.SCHOOL_NAME ||
           feature.Crosswalk_ID || feature.crosswalk_id || feature.CROSSWALK_ID ||
           feature.Segment_ID || feature.segment_id || feature.SEGMENT_ID ||
-          feature.MAP_PAR_ID || feature.map_par_id || feature.MAP_PAR_ID_ || 'Unknown';
+          feature.MAP_PAR_ID || feature.map_par_id || feature.MAP_PAR_ID_ ||
+          feature.Tract || feature.tract || feature.TRACT || 
+          feature.GEOID || feature.geoid || feature.GEOID10 || feature.geoid10 || 
+          feature.Neighborhood || feature.neighborhood || feature.NEIGHBORHOOD ||
+          feature.City || feature.city || feature.CITY ||
+          feature.DISTRICT_NAME || feature.district_name || feature.District_Name ||
+          feature.District || feature.district || feature.DISTRICT ||
+          feature.PWD_DISTRICT || feature.pwd_district || feature.PWD_District ||
+          feature.SNOW_DISTRICT || feature.snow_district || feature.Snow_District || 'Unknown';
         const streetAddress = feature.Street_Address || feature.street_address || feature.STREET_ADDRESS || feature.address || '';
         const city = feature.City || feature.city || feature.CITY || feature.District || feature.district || 'Boston';
         const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
@@ -13680,7 +13695,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         delete allAttributes.isContaining;
         const attributesJson = JSON.stringify(allAttributes);
         
-        // Get phone/website for charging stations, total_docks for blue bike stations, facility type for bicycle network, length for managed streets, acres for open space, asset for park features
+        // Get phone/website for charging stations, total_docks for blue bike stations, facility type for bicycle network, length for managed streets, acres for open space, asset for park features, population for census tracts
         const phone = feature.Station_Phone || feature.station_phone || '';
         const website = feature.EV_Network_Web || feature.ev_network_web || '';
         const totalDocks = feature.Total_docks || feature.total_docks || feature.Total_Docks || '';
@@ -13689,7 +13704,33 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const acres = feature.ACRES || feature.acres || feature.ACRES_ || '';
         const asset = feature.Asset || feature.asset || feature.ASSET || feature.Asset_ || '';
         const neighbor = feature.Neighbor || feature.neighbor || feature.NEIGHBOR || feature.Neighbor_ || '';
+        const population = feature.Population || feature.population || feature.POPULATION || feature.POP2025 || feature.pop2025 || '';
+        const households = feature.Households || feature.households || feature.HOUSEHOLDS || feature.HH2025 || feature.hh2025 || '';
+        const housingUnits = feature.Housing_Units || feature.housing_units || feature.HOUSING_UNITS || feature.HU2025 || feature.hu2025 || '';
+        const mbtaLine = feature.LINE || feature.line || feature.Line || '';
+        const mbtaRoute = feature.ROUTE || feature.route || feature.Route || '';
         const isContaining = feature.isContaining ? 'Yes' : 'No';
+        
+        // Build description with relevant fields
+        let description = `${layerInfo.icon} ${stationName}`;
+        if (mbtaLine) description += ` (${mbtaLine} Line)`;
+        else if (mbtaRoute) description += ` (${mbtaRoute})`;
+        else if (totalDocks) description += ` (${totalDocks} docks)`;
+        else if (existingFacility) description += ` (${existingFacility})`;
+        else if (lengthMi) description += ` (${lengthMi} mi)`;
+        else if (acres) description += ` (${acres} acres)`;
+        else if (asset) description += ` (${asset})`;
+        else if (population) {
+          const popValue = typeof population === 'number' ? population.toLocaleString() : population;
+          description += ` (Pop: ${popValue})`;
+        } else if (households) {
+          const hhValue = typeof households === 'number' ? households.toLocaleString() : households;
+          description += ` (HH: ${hhValue})`;
+        } else if (housingUnits) {
+          const huValue = typeof housingUnits === 'number' ? housingUnits.toLocaleString() : housingUnits;
+          description += ` (HU: ${huValue})`;
+        }
+        if (feature.isContaining) description += ' (Contains Point)';
         
         rows.push([
           location.name,
@@ -13698,7 +13739,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'Boston Open Data',
           (location.confidence || 'N/A').toString(),
           layerInfo.name,
-          `${layerInfo.icon} ${stationName}${totalDocks ? ` (${totalDocks} docks)` : existingFacility ? ` (${existingFacility})` : lengthMi ? ` (${lengthMi} mi)` : acres ? ` (${acres} acres)` : asset ? ` (${asset})` : ''}${feature.isContaining ? ' (Contains Point)' : ''}`,
+          description,
           lat || location.lat.toString(),
           lon || location.lon.toString(),
           distance,

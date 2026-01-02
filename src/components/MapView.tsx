@@ -34037,6 +34037,7 @@ const MapView: React.FC<MapViewProps> = ({
       const bostonLayers = [
         { key: 'boston_charging_stations_all', icon: '🔌', color: '#16a34a', title: 'Boston Charging Stations', isPoint: true },
         { key: 'boston_blue_bike_stations_all', icon: '🚴', color: '#2563eb', title: 'Boston Blue Bike Stations', isPoint: true },
+        { key: 'boston_mbta_stops_all', icon: '🚇', color: '#dc2626', title: 'MBTA Stops', isPoint: true },
         { key: 'boston_bicycle_network_2023_all', icon: '🚴', color: '#059669', title: 'Boston Bicycle Network 2023', isPolyline: true },
         { key: 'boston_managed_streets_all', icon: '🛣️', color: '#7c3aed', title: 'City of Boston Managed Streets', isPolyline: true },
         { key: 'boston_public_open_space_all', icon: '🌳', color: '#16a34a', title: 'Boston Public Open Space', isPolygon: true },
@@ -34044,7 +34045,12 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'boston_school_zones_all', icon: '🏫', color: '#f59e0b', title: 'Boston School Zones', isPolygon: true },
         { key: 'boston_crosswalks_all', icon: '🚶', color: '#3b82f6', title: 'Boston Crosswalks', isPoint: true },
         { key: 'boston_yellow_centerlines_all', icon: '🟡', color: '#fbbf24', title: 'Boston Yellow Centerlines', isPolyline: true },
-        { key: 'boston_parcels_2025_all', icon: '🏘️', color: '#ec4899', title: 'Boston Parcels 2025', isPolygon: true }
+        { key: 'boston_parcels_2025_all', icon: '🏘️', color: '#ec4899', title: 'Boston Parcels 2025', isPolygon: true },
+        { key: 'boston_population_estimates_2025_all', icon: '📊', color: '#8b5cf6', title: 'Boston Population Estimates 2025 Census Tracts', isPolygon: true },
+        { key: 'boston_population_estimates_2025_neighborhoods_all', icon: '🏘️', color: '#a855f7', title: 'Boston Population Estimates 2025 Neighborhoods', isPolygon: true },
+        { key: 'boston_population_estimates_2025_city_all', icon: '🏙️', color: '#9333ea', title: 'Boston Population Estimates 2025 City', isPolygon: true },
+        { key: 'boston_pwd_districts_all', icon: '🏛️', color: '#0ea5e9', title: 'Boston PWD Districts', isPolygon: true },
+        { key: 'boston_snow_districts_all', icon: '❄️', color: '#06b6d4', title: 'Boston Snow Districts', isPolygon: true }
       ];
 
       bostonLayers.forEach((layerConfig) => {
@@ -34097,8 +34103,9 @@ const MapView: React.FC<MapViewProps> = ({
                   const icon = createPOIIcon(layerConfig.icon, layerConfig.color);
                   const marker = L.marker([pointLat, pointLon], { icon });
 
-                  // Handle charging stations, blue bike stations, and park features
+                  // Handle charging stations, blue bike stations, park features, and MBTA stops
                   const stationName = feature.Station_Name || feature.station_name || feature.STATION_NAME || 
+                    feature.STATION || feature.station || feature.Station ||
                     feature.Name || feature.name || feature.NAME || 
                     feature.Park_Name || feature.park_name || feature.PARK_NAME || 
                     feature.Play_Name || feature.play_name || feature.PLAY_NAME || 'Unknown';
@@ -34112,6 +34119,10 @@ const MapView: React.FC<MapViewProps> = ({
                   const asset = feature.Asset || feature.asset || feature.ASSET || feature.Asset_ || '';
                   const assetDetail = feature.asset_deta || feature.asset_deta_ || feature.ASSET_DETA || '';
                   const publicAccess = feature.Public_ || feature.public_ || feature.PUBLIC_ || '';
+                  // MBTA stops fields
+                  const mbtaLine = feature.LINE || feature.line || feature.Line || '';
+                  const mbtaTerminus = feature.TERMINUS || feature.terminus || feature.Terminus || '';
+                  const mbtaRoute = feature.ROUTE || feature.route || feature.Route || '';
                   const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
                   
                   // For crosswalks and yellow centerlines, use different field names
@@ -34127,6 +34138,9 @@ const MapView: React.FC<MapViewProps> = ({
                       <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
                         ${streetAddress ? `<div><strong>Address:</strong> ${streetAddress}, ${city}</div>` : neighbor ? `<div><strong>Neighborhood:</strong> ${neighbor}</div>` : district ? `<div><strong>District:</strong> ${district}</div>` : ''}
                         ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                        ${mbtaLine ? `<div><strong>Line:</strong> ${mbtaLine}</div>` : ''}
+                        ${mbtaRoute ? `<div><strong>Route:</strong> ${mbtaRoute}</div>` : ''}
+                        ${mbtaTerminus ? `<div><strong>Terminus:</strong> ${mbtaTerminus === 'Y' ? 'Yes' : mbtaTerminus === 'N' ? 'No' : mbtaTerminus}</div>` : ''}
                         ${crosswalkId ? `<div><strong>Crosswalk ID:</strong> ${crosswalkId}</div>` : ''}
                         ${lineId ? `<div><strong>Line ID:</strong> ${lineId}</div>` : ''}
                         ${segmentId ? `<div><strong>Segment ID:</strong> ${segmentId}</div>` : ''}
@@ -34140,7 +34154,7 @@ const MapView: React.FC<MapViewProps> = ({
                       <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
                   `;
 
-                  const excludeFields = ['Station_Name', 'station_name', 'STATION_NAME', 'Name', 'name', 'NAME', 'Park_Name', 'park_name', 'PARK_NAME', 'Play_Name', 'play_name', 'PLAY_NAME', 'Street_Address', 'street_address', 'STREET_ADDRESS', 'address', 'City', 'city', 'CITY', 'District', 'district', 'Neighbor', 'neighbor', 'NEIGHBOR', 'Neighbor_', 'Asset', 'asset', 'ASSET', 'Asset_', 'asset_deta', 'asset_deta_', 'ASSET_DETA', 'Total_docks', 'total_docks', 'Total_Docks', 'Public_', 'public_', 'PUBLIC_', 'EV_Level2_EVSE_Num', 'ev_level2_evse_num', 'EV_Connector_Types', 'ev_connector_types', 'Crosswalk_ID', 'crosswalk_id', 'CROSSWALK_ID', 'Line_ID', 'line_id', 'LINE_ID', 'Segment_ID', 'segment_id', 'SEGMENT_ID', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'ObjectId', 'layerId', 'layerName', 'Latitude', 'Longitude', 'latitude', 'longitude'];
+                  const excludeFields = ['Station_Name', 'station_name', 'STATION_NAME', 'STATION', 'station', 'Station', 'Name', 'name', 'NAME', 'Park_Name', 'park_name', 'PARK_NAME', 'Play_Name', 'play_name', 'PLAY_NAME', 'Street_Address', 'street_address', 'STREET_ADDRESS', 'address', 'City', 'city', 'CITY', 'District', 'district', 'Neighbor', 'neighbor', 'NEIGHBOR', 'Neighbor_', 'Asset', 'asset', 'ASSET', 'Asset_', 'asset_deta', 'asset_deta_', 'ASSET_DETA', 'Total_docks', 'total_docks', 'Total_Docks', 'Public_', 'public_', 'PUBLIC_', 'EV_Level2_EVSE_Num', 'ev_level2_evse_num', 'EV_Connector_Types', 'ev_connector_types', 'LINE', 'line', 'Line', 'ROUTE', 'route', 'Route', 'TERMINUS', 'terminus', 'Terminus', 'Crosswalk_ID', 'crosswalk_id', 'CROSSWALK_ID', 'Line_ID', 'line_id', 'LINE_ID', 'Segment_ID', 'segment_id', 'SEGMENT_ID', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'ObjectId', 'layerId', 'layerName', 'Latitude', 'Longitude', 'latitude', 'longitude'];
                   Object.entries(feature).forEach(([key, value]) => {
                     if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                       if (typeof value === 'object' && !Array.isArray(value)) return;
@@ -34283,7 +34297,16 @@ const MapView: React.FC<MapViewProps> = ({
                         const siteName = feature.SITE_NAME || feature.site_name || feature.SITE_NAME_ || 
                           feature.School_Name || feature.school_name || feature.SCHOOL_NAME || 
                           feature.School_Zone_ID || feature.school_zone_id || feature.SCHOOL_ZONE_ID ||
-                          feature.MAP_PAR_ID || feature.map_par_id || feature.MAP_PAR_ID_ || 'Unknown';
+                          feature.MAP_PAR_ID || feature.map_par_id || feature.MAP_PAR_ID_ || 
+                          feature.Tract || feature.tract || feature.TRACT || 
+                          feature.GEOID || feature.geoid || feature.GEOID10 || feature.geoid10 || 
+                          feature.NAME || feature.name || feature.NAME10 || feature.name10 ||
+                          feature.Neighborhood || feature.neighborhood || feature.NEIGHBORHOOD ||
+                          feature.City || feature.city || feature.CITY ||
+                          feature.District || feature.district || feature.DISTRICT ||
+                          feature.DISTRICT_NAME || feature.district_name || feature.District_Name ||
+                          feature.PWD_DISTRICT || feature.pwd_district || feature.PWD_District ||
+                          feature.SNOW_DISTRICT || feature.snow_district || feature.Snow_District || 'Unknown';
                         const ownership = feature.OWNERSHIP || feature.ownership || feature.OWNERSHIP_ || '';
                         const protection = feature.PROTECTION || feature.protection || feature.PROTECTION_ || '';
                         const acres = feature.ACRES || feature.acres || feature.ACRES_ || '';
@@ -34294,6 +34317,18 @@ const MapView: React.FC<MapViewProps> = ({
                         const locId = feature.LOC_ID || feature.loc_id || feature.LOC_ID_ || '';
                         const polyType = feature.POLY_TYPE || feature.poly_type || feature.POLY_TYPE_ || '';
                         const mapNo = feature.MAP_NO || feature.map_no || feature.MAP_NO_ || '';
+                        // Census tract, neighborhood, city, and district fields
+                        const tract = feature.Tract || feature.tract || feature.TRACT || '';
+                        const geoid = feature.GEOID || feature.geoid || feature.GEOID10 || feature.geoid10 || '';
+                        const tractName = feature.NAME || feature.name || feature.NAME10 || feature.name10 || '';
+                        const neighborhood = feature.Neighborhood || feature.neighborhood || feature.NEIGHBORHOOD || '';
+                        const city = feature.City || feature.city || feature.CITY || '';
+                        const districtName = feature.DISTRICT_NAME || feature.district_name || feature.District_Name || feature.District || feature.district || feature.DISTRICT || '';
+                        const pwdDistrict = feature.PWD_DISTRICT || feature.pwd_district || feature.PWD_District || '';
+                        const snowDistrict = feature.SNOW_DISTRICT || feature.snow_district || feature.Snow_District || '';
+                        const population = feature.Population || feature.population || feature.POPULATION || feature.POP2025 || feature.pop2025 || '';
+                        const households = feature.Households || feature.households || feature.HOUSEHOLDS || feature.HH2025 || feature.hh2025 || '';
+                        const housingUnits = feature.Housing_Units || feature.housing_units || feature.HOUSING_UNITS || feature.HU2025 || feature.hu2025 || '';
 
                         const polygon = L.polygon(latlngs, {
                           color: isContaining ? layerConfig.color : '#78716c',
@@ -34309,6 +34344,17 @@ const MapView: React.FC<MapViewProps> = ({
                               ${layerConfig.icon} ${siteName}${isContaining ? ' <span style="color: #16a34a;">(Contains Point)</span>' : ''}
                             </h3>
                             <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                              ${districtName ? `<div><strong>District Name:</strong> ${districtName}</div>` : ''}
+                              ${pwdDistrict ? `<div><strong>PWD District:</strong> ${pwdDistrict}</div>` : ''}
+                              ${snowDistrict ? `<div><strong>Snow District:</strong> ${snowDistrict}</div>` : ''}
+                              ${neighborhood ? `<div><strong>Neighborhood:</strong> ${neighborhood}</div>` : ''}
+                              ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                              ${tract ? `<div><strong>Census Tract:</strong> ${tract}</div>` : ''}
+                              ${geoid ? `<div><strong>GEOID:</strong> ${geoid}</div>` : ''}
+                              ${tractName ? `<div><strong>Tract Name:</strong> ${tractName}</div>` : ''}
+                              ${population ? `<div><strong>Population (2025):</strong> ${typeof population === 'number' ? population.toLocaleString() : population}</div>` : ''}
+                              ${households ? `<div><strong>Households (2025):</strong> ${typeof households === 'number' ? households.toLocaleString() : households}</div>` : ''}
+                              ${housingUnits ? `<div><strong>Housing Units (2025):</strong> ${typeof housingUnits === 'number' ? housingUnits.toLocaleString() : housingUnits}</div>` : ''}
                               ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
                               ${district ? `<div><strong>District:</strong> ${district}</div>` : ''}
                               ${schoolId ? `<div><strong>School ID:</strong> ${schoolId}</div>` : ''}
@@ -34325,7 +34371,7 @@ const MapView: React.FC<MapViewProps> = ({
                             <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
                         `;
 
-                        const excludeFields = ['SITE_NAME', 'site_name', 'SITE_NAME_', 'School_Name', 'school_name', 'SCHOOL_NAME', 'School_Zone_ID', 'school_zone_id', 'SCHOOL_ZONE_ID', 'School_ID', 'school_id', 'SCHOOL_ID', 'MAP_PAR_ID', 'map_par_id', 'MAP_PAR_ID_', 'LOC_ID', 'loc_id', 'LOC_ID_', 'POLY_TYPE', 'poly_type', 'POLY_TYPE_', 'MAP_NO', 'map_no', 'MAP_NO_', 'OWNERSHIP', 'ownership', 'OWNERSHIP_', 'PROTECTION', 'protection', 'PROTECTION_', 'ACRES', 'acres', 'ACRES_', 'ADDRESS', 'address', 'ADDRESS_', 'DISTRICT', 'district', 'DISTRICT_', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'ObjectId', 'OBJECTID_', 'FID', 'fid', 'layerId', 'layerName', 'isContaining'];
+                        const excludeFields = ['SITE_NAME', 'site_name', 'SITE_NAME_', 'School_Name', 'school_name', 'SCHOOL_NAME', 'School_Zone_ID', 'school_zone_id', 'SCHOOL_ZONE_ID', 'School_ID', 'school_id', 'SCHOOL_ID', 'MAP_PAR_ID', 'map_par_id', 'MAP_PAR_ID_', 'LOC_ID', 'loc_id', 'LOC_ID_', 'POLY_TYPE', 'poly_type', 'POLY_TYPE_', 'MAP_NO', 'map_no', 'MAP_NO_', 'OWNERSHIP', 'ownership', 'OWNERSHIP_', 'PROTECTION', 'protection', 'PROTECTION_', 'ACRES', 'acres', 'ACRES_', 'ADDRESS', 'address', 'ADDRESS_', 'DISTRICT', 'district', 'DISTRICT_', 'DISTRICT_NAME', 'district_name', 'District_Name', 'PWD_DISTRICT', 'pwd_district', 'PWD_District', 'SNOW_DISTRICT', 'snow_district', 'Snow_District', 'Tract', 'tract', 'TRACT', 'GEOID', 'geoid', 'GEOID10', 'geoid10', 'NAME', 'name', 'NAME10', 'name10', 'Neighborhood', 'neighborhood', 'NEIGHBORHOOD', 'City', 'city', 'CITY', 'Population', 'population', 'POPULATION', 'POP2025', 'pop2025', 'Households', 'households', 'HOUSEHOLDS', 'HH2025', 'hh2025', 'Housing_Units', 'housing_units', 'HOUSING_UNITS', 'HU2025', 'hu2025', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'ObjectId', 'OBJECTID_', 'FID', 'fid', 'layerId', 'layerName', 'isContaining'];
                         Object.entries(feature).forEach(([key, value]) => {
                           if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                             if (typeof value === 'object' && !Array.isArray(value)) return;

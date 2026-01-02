@@ -158,6 +158,12 @@ import {
   getBostonCrosswalksData,
   getBostonYellowCenterlinesData,
   getBostonParcels2025Data,
+  getBostonPopulationEstimates2025Data,
+  getBostonPopulationEstimates2025NeighborhoodsData,
+  getBostonPopulationEstimates2025CityData,
+  getBostonMBTAStopsData,
+  getBostonPWDDistrictsData,
+  getBostonSnowDistrictsData,
 } from '../adapters/bostonOpenData';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
@@ -2777,6 +2783,18 @@ export class EnrichmentService {
         return await this.getBostonYellowCenterlines(lat, lon, radius);
       case 'boston_parcels_2025':
         return await this.getBostonParcels2025(lat, lon, radius);
+      case 'boston_population_estimates_2025':
+        return await this.getBostonPopulationEstimates2025(lat, lon, radius);
+      case 'boston_population_estimates_2025_neighborhoods':
+        return await this.getBostonPopulationEstimates2025Neighborhoods(lat, lon, radius);
+      case 'boston_population_estimates_2025_city':
+        return await this.getBostonPopulationEstimates2025City(lat, lon, radius);
+      case 'boston_mbta_stops':
+        return await this.getBostonMBTAStops(lat, lon, radius);
+      case 'boston_pwd_districts':
+        return await this.getBostonPWDDistricts(lat, lon, radius);
+      case 'boston_snow_districts':
+        return await this.getBostonSnowDistricts(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -27248,6 +27266,226 @@ out center;`;
         'boston_parcels_2025_count': 0,
         'boston_parcels_2025_summary': 'Error fetching Boston parcels data',
         'boston_parcels_2025_all': []
+      };
+    }
+  }
+
+  private async getBostonPopulationEstimates2025(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📊 Fetching Boston Population Estimates 2025 Census Tracts data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonPopulationEstimates2025Data(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_population_estimates_2025_count'] = 0;
+        result['boston_population_estimates_2025_summary'] = 'No Boston population estimates census tracts found within the specified radius';
+        result['boston_population_estimates_2025_all'] = [];
+      } else {
+        result['boston_population_estimates_2025_count'] = features.length;
+        result['boston_population_estimates_2025_summary'] = `Found ${features.length} Boston population estimates census tract(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`;
+        result['boston_population_estimates_2025_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Population Estimates 2025 Census Tracts data:`, error);
+      return {
+        'boston_population_estimates_2025_count': 0,
+        'boston_population_estimates_2025_summary': 'Error fetching Boston population estimates census tracts data',
+        'boston_population_estimates_2025_all': []
+      };
+    }
+  }
+
+  private async getBostonPopulationEstimates2025Neighborhoods(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📊 Fetching Boston Population Estimates 2025 Neighborhoods data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonPopulationEstimates2025NeighborhoodsData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_population_estimates_2025_neighborhoods_count'] = 0;
+        result['boston_population_estimates_2025_neighborhoods_summary'] = 'No Boston population estimates neighborhoods found within the specified radius';
+        result['boston_population_estimates_2025_neighborhoods_all'] = [];
+      } else {
+        result['boston_population_estimates_2025_neighborhoods_count'] = features.length;
+        result['boston_population_estimates_2025_neighborhoods_summary'] = `Found ${features.length} Boston population estimates neighborhood(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`;
+        result['boston_population_estimates_2025_neighborhoods_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Population Estimates 2025 Neighborhoods data:`, error);
+      return {
+        'boston_population_estimates_2025_neighborhoods_count': 0,
+        'boston_population_estimates_2025_neighborhoods_summary': 'Error fetching Boston population estimates neighborhoods data',
+        'boston_population_estimates_2025_neighborhoods_all': []
+      };
+    }
+  }
+
+  private async getBostonPopulationEstimates2025City(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📊 Fetching Boston Population Estimates 2025 City data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonPopulationEstimates2025CityData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_population_estimates_2025_city_count'] = 0;
+        result['boston_population_estimates_2025_city_summary'] = 'No Boston population estimates city boundary found within the specified radius';
+        result['boston_population_estimates_2025_city_all'] = [];
+      } else {
+        result['boston_population_estimates_2025_city_count'] = features.length;
+        result['boston_population_estimates_2025_city_summary'] = `Found ${features.length} Boston population estimates city boundary${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`;
+        result['boston_population_estimates_2025_city_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Population Estimates 2025 City data:`, error);
+      return {
+        'boston_population_estimates_2025_city_count': 0,
+        'boston_population_estimates_2025_city_summary': 'Error fetching Boston population estimates city boundary data',
+        'boston_population_estimates_2025_city_all': []
+      };
+    }
+  }
+
+  private async getBostonMBTAStops(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚇 Fetching Boston MBTA Stops data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonMBTAStopsData(lat, lon, radius || 2);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_mbta_stops_count'] = 0;
+        result['boston_mbta_stops_summary'] = 'No MBTA stops found within the specified radius';
+        result['boston_mbta_stops_all'] = [];
+      } else {
+        result['boston_mbta_stops_count'] = features.length;
+        result['boston_mbta_stops_summary'] = `Found ${features.length} MBTA stop(s) within ${radius || 2} miles`;
+        result['boston_mbta_stops_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston MBTA Stops data:`, error);
+      return {
+        'boston_mbta_stops_count': 0,
+        'boston_mbta_stops_summary': 'Error fetching MBTA stops data',
+        'boston_mbta_stops_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching Boston PWD Districts data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonPWDDistrictsData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_pwd_districts_count'] = 0;
+        result['boston_pwd_districts_summary'] = 'No PWD districts found within the specified radius';
+        result['boston_pwd_districts_all'] = [];
+      } else {
+        result['boston_pwd_districts_count'] = features.length;
+        result['boston_pwd_districts_summary'] = `Found ${features.length} PWD district(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`;
+        result['boston_pwd_districts_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston PWD Districts data:`, error);
+      return {
+        'boston_pwd_districts_count': 0,
+        'boston_pwd_districts_summary': 'Error fetching PWD districts data',
+        'boston_pwd_districts_all': []
+      };
+    }
+  }
+
+  private async getBostonSnowDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`❄️ Fetching Boston Snow Districts data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonSnowDistrictsData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_snow_districts_count'] = 0;
+        result['boston_snow_districts_summary'] = 'No snow districts found within the specified radius';
+        result['boston_snow_districts_all'] = [];
+      } else {
+        result['boston_snow_districts_count'] = features.length;
+        result['boston_snow_districts_summary'] = `Found ${features.length} snow district(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`;
+        result['boston_snow_districts_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Snow Districts data:`, error);
+      return {
+        'boston_snow_districts_count': 0,
+        'boston_snow_districts_summary': 'Error fetching snow districts data',
+        'boston_snow_districts_all': []
       };
     }
   }

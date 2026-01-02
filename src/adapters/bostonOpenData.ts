@@ -8,12 +8,17 @@ import { fetchJSONSmart } from '../services/EnrichmentService';
 
 const BASE_SERVICE_URL_CHARGING = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/OpenData/MapServer';
 const BASE_SERVICE_URL_BLUEBIKE = 'https://services.arcgis.com/sFnw0xNflSi8J0uh/arcgis/rest/services/Blue_Bike_Stations/FeatureServer';
+const BASE_SERVICE_URL_PUBLIC_TRANSIT = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/PublicTransit/MapServer';
 const BASE_SERVICE_URL_ACTIVE_TRANSPORT = 'https://services.arcgis.com/sFnw0xNflSi8J0uh/arcgis/rest/services/Active_Transportation_Network_2023/FeatureServer';
 const BASE_SERVICE_URL_MANAGED_STREETS = 'https://services.arcgis.com/sFnw0xNflSi8J0uh/arcgis/rest/services/City_of_Boston_Managed_Streets/FeatureServer';
 const BASE_SERVICE_URL_OPEN_SPACE = 'https://gisportal.boston.gov/arcgis/rest/services/BaseServices/Open_Space_Public/FeatureServer';
 const BASE_SERVICE_URL_PARK_FEATURES = 'https://gisportal.boston.gov/arcgis/rest/services/BaseServices/Park_Features/FeatureServer';
 const BASE_SERVICE_URL_PAVEMENT_MARKINGS = 'https://gisportal.boston.gov/arcgis/rest/services/BTD/PavementMarkings/FeatureServer';
 const BASE_SERVICE_URL_PARCELS = 'https://gisportal.boston.gov/arcgis/rest/services/Parcels/Parcels25/MapServer';
+const BASE_SERVICE_URL_POPULATION_ESTIMATES_TRACTS = 'https://gis.bostonplans.org/hosting/rest/services/Hosted/Data_2025_Tract_AnalyzeB/FeatureServer';
+const BASE_SERVICE_URL_POPULATION_ESTIMATES_NEIGHBORHOODS = 'https://gis.bostonplans.org/hosting/rest/services/Hosted/Data_2025_Neighborhood_AnalyzeB/FeatureServer';
+const BASE_SERVICE_URL_POPULATION_ESTIMATES_CITY = 'https://gis.bostonplans.org/hosting/rest/services/Hosted/Data_2025_City_AnalyzeB/FeatureServer';
+const BASE_SERVICE_URL_TRASH_DAY = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/TrashDay/MapServer';
 
 export interface BostonOpenDataFeature {
   objectid: number;
@@ -178,9 +183,10 @@ function distanceToPolygon(lat: number, lon: number, rings: number[][][]): numbe
 }
 
 /**
- * Query a specific Boston Open Data layer
+ * Query a specific Boston Open Data layer (generic function for point layers)
  */
 async function queryBostonLayer(
+  baseServiceUrl: string,
   layerId: number,
   layerName: string,
   lat: number,
@@ -200,7 +206,7 @@ async function queryBostonLayer(
     let hasMore = true;
 
     while (hasMore) {
-      const queryUrl = new URL(`${BASE_SERVICE_URL_CHARGING}/${layerId}/query`);
+      const queryUrl = new URL(`${baseServiceUrl}/${layerId}/query`);
       queryUrl.searchParams.set('f', 'json');
       queryUrl.searchParams.set('where', '1=1');
       queryUrl.searchParams.set('outFields', '*');
@@ -308,7 +314,7 @@ export async function getBostonChargingStationsData(
   lon: number,
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
-  return queryBostonLayer(2, 'Charging Stations', lat, lon, Math.min(radiusMiles, 25));
+  return queryBostonLayer(BASE_SERVICE_URL_CHARGING, 2, 'Charging Stations', lat, lon, Math.min(radiusMiles, 25));
 }
 
 /**
@@ -1283,5 +1289,207 @@ export async function getBostonParcels2025Data(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   return queryBostonParcelsLayer(0, 'Parcels 2025', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Population Estimates 2025 Census Tracts layer (Layer 0) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPopulationEstimates2025Data(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_POPULATION_ESTIMATES_TRACTS, 0, 'Population Estimates 2025 Census Tracts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Population Estimates 2025 Neighborhoods layer (Layer 0) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPopulationEstimates2025NeighborhoodsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_POPULATION_ESTIMATES_NEIGHBORHOODS, 0, 'Population Estimates 2025 Neighborhoods', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Population Estimates 2025 City layer (Layer 0) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPopulationEstimates2025CityData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_POPULATION_ESTIMATES_CITY, 0, 'Population Estimates 2025 City', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query MBTA Stops layer (Layer 0) - Point layer
+ */
+export async function getBostonMBTAStopsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_PUBLIC_TRANSIT, 0, 'MBTA Stops', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston PWD Districts layer (Layer 0) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPWDDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_TRASH_DAY, 0, 'PWD Districts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Snow Districts layer (Layer 1) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonSnowDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_TRASH_DAY, 1, 'Snow Districts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Population Estimates layer - Polygon layer with point-in-polygon support
+ * Generic function that can query Tracts, Neighborhoods, or City layers
+ */
+async function queryBostonPopulationEstimatesLayer(
+  baseServiceUrl: string,
+  layerId: number,
+  layerName: string,
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  try {
+    const maxRecordCount = 2000;
+
+    console.log(
+      `📊 Boston Open Data ${layerName} (Layer ${layerId}) query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`
+    );
+
+    let allFeatures: any[] = [];
+    let resultOffset = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      // Calculate bounding box for the radius
+      const latDelta = radiusMiles / 69.0; // Approximate miles per degree latitude
+      const lonDelta = radiusMiles / (69.0 * Math.cos(lat * Math.PI / 180)); // Adjust for longitude
+      
+      const minX = lon - lonDelta;
+      const maxX = lon + lonDelta;
+      const minY = lat - latDelta;
+      const maxY = lat + latDelta;
+
+      const queryUrl = new URL(`${baseServiceUrl}/${layerId}/query`);
+      queryUrl.searchParams.set('f', 'json');
+      queryUrl.searchParams.set('where', '1=1');
+      queryUrl.searchParams.set('outFields', '*');
+      queryUrl.searchParams.set('geometry', JSON.stringify({
+        xmin: minX,
+        ymin: minY,
+        xmax: maxX,
+        ymax: maxY,
+        spatialReference: { wkid: 4326 }
+      }));
+      queryUrl.searchParams.set('geometryType', 'esriGeometryEnvelope');
+      queryUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+      queryUrl.searchParams.set('inSR', '4326');
+      queryUrl.searchParams.set('outSR', '4326');
+      queryUrl.searchParams.set('returnGeometry', 'true');
+      queryUrl.searchParams.set('resultRecordCount', maxRecordCount.toString());
+      queryUrl.searchParams.set('resultOffset', resultOffset.toString());
+
+      const response = await fetchJSONSmart(queryUrl.toString());
+
+      if (response.error) {
+        throw new Error(
+          `Boston Open Data ${layerName} API error: ${JSON.stringify(response.error)}`
+        );
+      }
+
+      const batchFeatures = response.features || [];
+      allFeatures = allFeatures.concat(batchFeatures);
+
+      hasMore = batchFeatures.length === maxRecordCount || response.exceededTransferLimit === true;
+      resultOffset += batchFeatures.length;
+
+      if (resultOffset > 100000) {
+        console.warn(`⚠️ Boston Open Data ${layerName}: Stopping pagination at 100k records for safety`);
+        hasMore = false;
+      }
+
+      if (hasMore) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+
+    // Process features and calculate distances / point-in-polygon (polygons)
+    const processedFeatures: BostonOpenDataFeature[] = allFeatures.map(
+      (feature: any) => {
+        const attributes = feature.attributes || {};
+        const geometry = feature.geometry;
+        const objectid = attributes.OBJECTID || attributes.objectid || attributes.ObjectId || attributes.OBJECTID_ || attributes.FID || 0;
+
+        let distanceMiles = radiusMiles; // Default to max radius
+        let isContaining = false;
+
+        // Calculate distance to polygon and check point-in-polygon
+        if (geometry) {
+          if (geometry.rings && geometry.rings.length > 0) {
+            // Check if point is inside polygon
+            isContaining = pointInPolygon(lat, lon, geometry.rings);
+            
+            if (isContaining) {
+              distanceMiles = 0;
+            } else {
+              // Calculate distance to polygon boundary
+              distanceMiles = distanceToPolygon(lat, lon, geometry.rings);
+            }
+          }
+        }
+
+        return {
+          objectid,
+          attributes,
+          geometry,
+          distance_miles: distanceMiles,
+          isContaining,
+          layerId,
+          layerName,
+        };
+      }
+    );
+
+    // Filter features within radius and sort
+    const withinRadius = processedFeatures.filter(f => (f.distance_miles || Infinity) <= radiusMiles);
+    
+    // Sort by distance (containing features first, then by distance)
+    withinRadius.sort((a, b) => {
+      if (a.isContaining && !b.isContaining) return -1;
+      if (!a.isContaining && b.isContaining) return 1;
+      const distA = a.distance_miles || Infinity;
+      const distB = b.distance_miles || Infinity;
+      return distA - distB;
+    });
+
+    console.log(
+      `✅ Processed ${withinRadius.length} Boston Open Data ${layerName} feature(s) within ${radiusMiles} miles (${withinRadius.filter(f => f.isContaining).length} containing point)`
+    );
+
+    return withinRadius;
+  } catch (error) {
+    console.error(`❌ Boston Open Data ${layerName} API Error:`, error);
+    throw error;
+  }
 }
 
