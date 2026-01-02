@@ -275,11 +275,11 @@ function App() {
               
               {/* Dynamic Layer Count Badge */}
               {totalLayersCount > 0 && (
-                <div className="inline-flex items-center justify-center px-4 py-2 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                <div className="inline-flex items-center justify-center px-2 sm:px-4 py-2 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
                   <span className="text-white font-semibold text-sm sm:text-base">
                     <span className="font-bold text-2xl sm:text-3xl">{totalLayersCount.toLocaleString()}</span> Open Data Layers Available
                   </span>
-                  <span className="ml-1 sm:ml-2 text-white text-xs opacity-90 flex flex-col items-center justify-center">
+                  <span className="ml-0.5 sm:ml-2 text-white text-xs opacity-90 flex flex-col items-center justify-center">
                     <span className="italic opacity-75 text-center">and</span>
                     <span className="flex items-center justify-center">
                       <span className="inline-block w-2 h-2 bg-green-400 rounded-full mr-1.5 animate-pulse"></span>
