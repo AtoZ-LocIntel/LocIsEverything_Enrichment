@@ -706,7 +706,6 @@ async function queryBostonOpenSpaceLayer(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   try {
-    const radiusKm = radiusMiles * 1.60934;
     const maxRecordCount = 2000;
 
     console.log(
@@ -981,7 +980,6 @@ async function queryBostonPavementMarkingsLayer(
   isPolygon: boolean = false
 ): Promise<BostonOpenDataFeature[]> {
   try {
-    const radiusKm = radiusMiles * 1.60934;
     const maxRecordCount = 2000;
 
     console.log(
@@ -1153,7 +1151,6 @@ async function queryBostonParcelsLayer(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   try {
-    const radiusKm = radiusMiles * 1.60934;
     const maxRecordCount = 2000;
 
     console.log(

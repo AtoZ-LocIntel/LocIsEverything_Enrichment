@@ -13686,7 +13686,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const totalDocks = feature.Total_docks || feature.total_docks || feature.Total_Docks || '';
         const existingFacility = feature.ExisFacil || feature.exis_facil || feature.EXIS_FACIL || '';
         const lengthMi = feature.LENGTH_MI || feature.length_mi || feature.Length_Mi || '';
-        const speedLimit = feature.SPEED_LIM || feature.speed_lim || feature.Speed_Lim || '';
         const acres = feature.ACRES || feature.acres || feature.ACRES_ || '';
         const asset = feature.Asset || feature.asset || feature.ASSET || feature.Asset_ || '';
         const neighbor = feature.Neighbor || feature.neighbor || feature.NEIGHBOR || feature.Neighbor_ || '';
