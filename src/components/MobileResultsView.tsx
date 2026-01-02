@@ -262,8 +262,8 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Geographic Info';
     }
     
-    // Political Districts (excluding NH layers which go to New Hampshire Data)
-    if (key.includes('congressional_') || key.includes('state_senate_') || key.includes('state_house_')) {
+    // Political Districts (excluding NH layers which go to New Hampshire Data, and USGS layers which go to USGS National Map)
+    if ((key.includes('congressional_') || key.includes('state_senate_') || key.includes('state_house_')) && !key.includes('usgs_')) {
       return 'Political Districts';
     }
     
@@ -272,6 +272,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'New Hampshire Data';
     }
     
+    if (key.includes('boston_')) {
+      return 'Boston Open Data';
+    }
     if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs') || key.includes('ma_parcel')) {
       return 'Massachusetts Data';
     }
@@ -321,29 +324,29 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'TIGER Data';
     }
     
-    // US National Grid - The National Map
+    // US National Grid - USGS National Map
     if (key.includes('us_national_grid_')) {
-      return 'The National Map';
+      return 'USGS National Map';
     }
     
-    // US Historical Cultural Political Points - The National Map
+    // US Historical Cultural Political Points - USGS National Map
     if (key.includes('us_historical_cultural_political_points')) {
-      return 'The National Map';
+      return 'USGS National Map';
     }
     
-    // US Historical Hydrographic Points - The National Map
+    // US Historical Hydrographic Points - USGS National Map
     if (key.includes('us_historical_hydrographic_points')) {
-      return 'The National Map';
+      return 'USGS National Map';
     }
     
-    // US Historical Physical Points - The National Map
+    // US Historical Physical Points - USGS National Map
     if (key.includes('us_historical_physical_points')) {
-      return 'The National Map';
+      return 'USGS National Map';
     }
     
-    // Hurricane Evacuation Routes - The National Map (but not the Natural Hazards version)
+    // Hurricane Evacuation Routes - USGS National Map (but not the Natural Hazards version)
     if (key.includes('hurricane_evacuation_routes') && !key.includes('hurricane_evacuation_routes_hazards')) {
-      return 'The National Map';
+      return 'USGS National Map';
     }
     
     // Hurricane Evacuation Routes (Natural Hazards) - Natural Hazards
@@ -351,14 +354,39 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Natural Hazards';
     }
     
-    // USGS Government Units - The National Map
+    // USGS Government Units - USGS National Map
     if (key.includes('usgs_gov_')) {
-      return 'The National Map';
+      return 'USGS National Map';
     }
     
-    // TNM Structures - The National Map
+    // USGS Transportation - USGS National Map
+    if (key.includes('usgs_transportation_')) {
+      return 'USGS National Map';
+    }
+    
+    // USGS GeoNames - USGS National Map
+    if (key.includes('usgs_geonames_')) {
+      return 'USGS National Map';
+    }
+    
+    // USGS Selectable Polygons - USGS National Map
+    if (key.includes('usgs_selectable_polygons_')) {
+      return 'USGS National Map';
+    }
+    
+    // USGS WBD - USGS National Map
+    if (key.includes('usgs_wbd_')) {
+      return 'USGS National Map';
+    }
+    
+    // USGS Contours - USGS National Map
+    if (key.includes('usgs_contours_')) {
+      return 'USGS National Map';
+    }
+    
+    // TNM Structures - USGS National Map
     if (key.includes('tnm_structures') || key.includes('usgs_trails')) {
-      return 'The National Map';
+      return 'USGS National Map';
     }
     if (key.startsWith('dc_utc_') || key.startsWith('dc_urban_tree_canopy_') || key === 'dc_trees' || key === 'dc_ufa_street_trees' || key === 'dc_arborists_zone' || key.startsWith('dc_bike_') || key.startsWith('dc_property_')) {
       return 'District of Columbia';

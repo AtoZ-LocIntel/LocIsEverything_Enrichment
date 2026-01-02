@@ -385,6 +385,29 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             enrichments: maMassGISEnrichments.map(e => e.id)
           });
           
+          // Filter enrichments for Boston Open Data sub-category
+          const maBostonPOIs = poiTypes.filter(poi => poi.section === 'ma' && poi.category === 'boston');
+          
+          console.log('🔍 Loading MA Boston Open Data enrichments:', {
+            allPOITypes: poiTypes.length,
+            bostonPOIs: maBostonPOIs.length,
+            bostonPOIIds: maBostonPOIs.map(p => p.id)
+          });
+          
+          const maBostonEnrichments = maBostonPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          console.log('✅ MA Boston Open Data Enrichments created:', {
+            count: maBostonEnrichments.length,
+            enrichments: maBostonEnrichments.map(e => e.id)
+          });
+          
           // Define MA sub-categories
           const maSubCategories: EnrichmentCategory[] = [
             {
@@ -393,6 +416,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               icon: <img src="/assets/MassGIS.webp" alt="MassGIS" className="w-full h-full object-cover rounded-full" />,
               description: 'Massachusetts Geographic Information System data layers',
               enrichments: maMassGISEnrichments
+            },
+            {
+              id: 'ma_boston',
+              title: 'Boston Open Data',
+              icon: <img src="/assets/BostonOpenData.webp" alt="Boston Open Data" className="w-full h-full object-cover rounded-full" />,
+              description: 'Boston Open Data portal data layers',
+              enrichments: maBostonEnrichments
             }
           ];
           
@@ -2218,11 +2248,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         {selectedCount}
                       </div>
                     )}
-                        
-                        {/* Category Title Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold p-2 text-center z-10">
-                          {subCategory.title}
-                        </div>
                   </button>
                 );
                   })

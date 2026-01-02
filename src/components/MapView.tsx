@@ -34033,6 +34033,338 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing NRI Hurricane layers:', error);
       }
 
+      // Draw Boston Open Data layers
+      const bostonLayers = [
+        { key: 'boston_charging_stations_all', icon: '🔌', color: '#16a34a', title: 'Boston Charging Stations', isPoint: true },
+        { key: 'boston_blue_bike_stations_all', icon: '🚴', color: '#2563eb', title: 'Boston Blue Bike Stations', isPoint: true },
+        { key: 'boston_bicycle_network_2023_all', icon: '🚴', color: '#059669', title: 'Boston Bicycle Network 2023', isPolyline: true },
+        { key: 'boston_managed_streets_all', icon: '🛣️', color: '#7c3aed', title: 'City of Boston Managed Streets', isPolyline: true },
+        { key: 'boston_public_open_space_all', icon: '🌳', color: '#16a34a', title: 'Boston Public Open Space', isPolygon: true },
+        { key: 'boston_park_features_all', icon: '🌳', color: '#22c55e', title: 'Boston Park Features', isPoint: true },
+        { key: 'boston_school_zones_all', icon: '🏫', color: '#f59e0b', title: 'Boston School Zones', isPolygon: true },
+        { key: 'boston_crosswalks_all', icon: '🚶', color: '#3b82f6', title: 'Boston Crosswalks', isPoint: true },
+        { key: 'boston_yellow_centerlines_all', icon: '🟡', color: '#fbbf24', title: 'Boston Yellow Centerlines', isPolyline: true },
+        { key: 'boston_parcels_2025_all', icon: '🏘️', color: '#ec4899', title: 'Boston Parcels 2025', isPolygon: true }
+      ];
+
+      bostonLayers.forEach((layerConfig) => {
+        if (enrichments[layerConfig.key] && Array.isArray(enrichments[layerConfig.key])) {
+          try {
+            console.log(`🏙️ Drawing ${enrichments[layerConfig.key].length} ${layerConfig.title} features`);
+            let featureCount = 0;
+            enrichments[layerConfig.key].forEach((feature: any) => {
+              const geometry = feature.geometry;
+              if (!geometry) {
+                console.warn(`⚠️ ${layerConfig.title}: Feature missing geometry`, feature);
+                return;
+              }
+
+              try {
+                // Check if this is actually a point geometry (x, y) even if marked as polyline
+                // Some layers might return point geometry even if they're supposed to be polylines
+                // Also handle crosswalks and yellow centerlines that might be points
+                const isPointGeometry = geometry.x !== undefined && geometry.y !== undefined && 
+                                      (!geometry.paths || geometry.paths.length === 0) && 
+                                      (!geometry.rings || geometry.rings.length === 0);
+                
+                if (layerConfig.isPoint || isPointGeometry) {
+                  // Point geometry
+                  let pointLat: number | null = null;
+                  let pointLon: number | null = null;
+
+                  // Try to get coordinates from geometry first, then attributes
+                  if (geometry.x !== undefined && geometry.y !== undefined) {
+                    pointLat = geometry.y;
+                    pointLon = geometry.x;
+                  } else if (geometry.coordinates && geometry.coordinates.length >= 2) {
+                    pointLon = geometry.coordinates[0];
+                    pointLat = geometry.coordinates[1];
+                  } else if (feature.Latitude && feature.Longitude) {
+                    pointLat = feature.Latitude;
+                    pointLon = feature.Longitude;
+                  }
+
+                  if (pointLat === null || pointLon === null) {
+                    console.warn(`⚠️ ${layerConfig.title}: Could not extract point coordinates from geometry`, {
+                      hasX: geometry.x !== undefined,
+                      hasY: geometry.y !== undefined,
+                      hasCoordinates: !!geometry.coordinates,
+                      hasLatLon: !!(feature.Latitude && feature.Longitude)
+                    });
+                    return;
+                  }
+
+                  const icon = createPOIIcon(layerConfig.icon, layerConfig.color);
+                  const marker = L.marker([pointLat, pointLon], { icon });
+
+                  // Handle charging stations, blue bike stations, and park features
+                  const stationName = feature.Station_Name || feature.station_name || feature.STATION_NAME || 
+                    feature.Name || feature.name || feature.NAME || 
+                    feature.Park_Name || feature.park_name || feature.PARK_NAME || 
+                    feature.Play_Name || feature.play_name || feature.PLAY_NAME || 'Unknown';
+                  const streetAddress = feature.Street_Address || feature.street_address || feature.STREET_ADDRESS || feature.address || '';
+                  const city = feature.City || feature.city || feature.CITY || feature.District || feature.district || feature.Neighbor || feature.neighbor || feature.NEIGHBOR || 'Boston';
+                  const evLevel2 = feature.EV_Level2_EVSE_Num || feature.ev_level2_evse_num || 0;
+                  const evConnectorTypes = feature.EV_Connector_Types || feature.ev_connector_types || '';
+                  const totalDocks = feature.Total_docks || feature.total_docks || feature.Total_Docks || '';
+                  const district = feature.District || feature.district || '';
+                  const neighbor = feature.Neighbor || feature.neighbor || feature.NEIGHBOR || feature.Neighbor_ || '';
+                  const asset = feature.Asset || feature.asset || feature.ASSET || feature.Asset_ || '';
+                  const assetDetail = feature.asset_deta || feature.asset_deta_ || feature.ASSET_DETA || '';
+                  const publicAccess = feature.Public_ || feature.public_ || feature.PUBLIC_ || '';
+                  const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+                  
+                  // For crosswalks and yellow centerlines, use different field names
+                  const crosswalkId = feature.Crosswalk_ID || feature.crosswalk_id || feature.CROSSWALK_ID || '';
+                  const lineId = feature.Line_ID || feature.line_id || feature.LINE_ID || '';
+                  const segmentId = feature.Segment_ID || feature.segment_id || feature.SEGMENT_ID || '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${layerConfig.icon} ${stationName || crosswalkId || lineId || segmentId || 'Unknown'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${streetAddress ? `<div><strong>Address:</strong> ${streetAddress}, ${city}</div>` : neighbor ? `<div><strong>Neighborhood:</strong> ${neighbor}</div>` : district ? `<div><strong>District:</strong> ${district}</div>` : ''}
+                        ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                        ${crosswalkId ? `<div><strong>Crosswalk ID:</strong> ${crosswalkId}</div>` : ''}
+                        ${lineId ? `<div><strong>Line ID:</strong> ${lineId}</div>` : ''}
+                        ${segmentId ? `<div><strong>Segment ID:</strong> ${segmentId}</div>` : ''}
+                        ${totalDocks ? `<div><strong>Total Docks:</strong> ${totalDocks}</div>` : ''}
+                        ${evLevel2 ? `<div><strong>Level 2 EVSE:</strong> ${evLevel2}</div>` : ''}
+                        ${evConnectorTypes ? `<div><strong>Connector Types:</strong> ${evConnectorTypes}</div>` : ''}
+                        ${asset ? `<div><strong>Asset:</strong> ${asset}</div>` : ''}
+                        ${assetDetail ? `<div><strong>Asset Detail:</strong> ${assetDetail}</div>` : ''}
+                        ${publicAccess ? `<div><strong>Public Access:</strong> ${publicAccess}</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+
+                  const excludeFields = ['Station_Name', 'station_name', 'STATION_NAME', 'Name', 'name', 'NAME', 'Park_Name', 'park_name', 'PARK_NAME', 'Play_Name', 'play_name', 'PLAY_NAME', 'Street_Address', 'street_address', 'STREET_ADDRESS', 'address', 'City', 'city', 'CITY', 'District', 'district', 'Neighbor', 'neighbor', 'NEIGHBOR', 'Neighbor_', 'Asset', 'asset', 'ASSET', 'Asset_', 'asset_deta', 'asset_deta_', 'ASSET_DETA', 'Total_docks', 'total_docks', 'Total_Docks', 'Public_', 'public_', 'PUBLIC_', 'EV_Level2_EVSE_Num', 'ev_level2_evse_num', 'EV_Connector_Types', 'ev_connector_types', 'Crosswalk_ID', 'crosswalk_id', 'CROSSWALK_ID', 'Line_ID', 'line_id', 'LINE_ID', 'Segment_ID', 'segment_id', 'SEGMENT_ID', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'ObjectId', 'layerId', 'layerName', 'Latitude', 'Longitude', 'latitude', 'longitude'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) return;
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+
+                  popupContent += `</div></div>`;
+                  marker.bindPopup(popupContent, { maxWidth: 400 });
+                  marker.addTo(primary);
+                  bounds.extend([pointLat, pointLon]);
+                  featureCount++;
+                } else if (layerConfig.isPolyline) {
+                  // Polyline geometry (bicycle network, managed streets, crosswalks, yellow centerlines)
+                  let paths: number[][][] = [];
+                  
+                  // Check for paths first (most common for polylines)
+                  if (geometry.paths && Array.isArray(geometry.paths) && geometry.paths.length > 0) {
+                    paths = geometry.paths;
+                  } 
+                  // Check for rings (some polylines stored as rings)
+                  else if (geometry.rings && Array.isArray(geometry.rings) && geometry.rings.length > 0) {
+                    paths = geometry.rings;
+                  }
+                  // Debug: log geometry structure if neither paths nor rings found
+                  else {
+                    console.warn(`⚠️ ${layerConfig.title}: Feature has geometry but no paths or rings`, {
+                      geometryType: geometry.type,
+                      geometryKeys: Object.keys(geometry),
+                      hasPaths: !!geometry.paths,
+                      hasRings: !!geometry.rings,
+                      featureKeys: Object.keys(feature).slice(0, 20)
+                    });
+                  }
+
+                  if (paths.length > 0) {
+                    paths.forEach((path: number[][]) => {
+                      if (path && Array.isArray(path) && path.length >= 2) {
+                        const latlngs = path
+                          .map((coord: number[]) => {
+                            // Handle both [lon, lat] and [x, y] coordinate formats
+                            if (Array.isArray(coord) && coord.length >= 2) {
+                              // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                              // Convert [lon, lat] to [lat, lon] for Leaflet
+                              return [coord[1], coord[0]] as [number, number];
+                            }
+                            return null;
+                          })
+                          .filter((coord): coord is [number, number] => coord !== null && coord[0] !== null && coord[1] !== null);
+
+                        if (latlngs.length < 2) {
+                          console.warn(`⚠️ ${layerConfig.title}: Skipping polyline with less than 2 valid coordinates (got ${latlngs.length} from ${path.length} coords)`);
+                          return;
+                        }
+
+                        const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+                        const streetName = feature.STREET_NAM || feature.street_nam || feature.STREET_NAME || feature.street_name || 
+                          feature.STREETNAME || feature.streetname ||
+                          feature.Crosswalk_ID || feature.crosswalk_id || feature.CROSSWALK_ID ||
+                          feature.Segment_ID || feature.segment_id || feature.SEGMENT_ID ||
+                          feature.Line_ID || feature.line_id || feature.LINE_ID || 'Unknown';
+                        const existingFacility = feature.ExisFacil || feature.exis_facil || feature.EXIS_FACIL || '';
+                        const installDate = feature.InstallDat || feature.install_dat || feature.INSTALL_DAT || '';
+                        const km = feature.Km || feature.km || feature.KM || '';
+                        const lengthMi = feature.LENGTH_MI || feature.length_mi || feature.Length_Mi || feature.Length || feature.length || '';
+                        const speedLimit = feature.SPEED_LIM || feature.speed_lim || feature.Speed_Lim || '';
+                        const crosswalkId = feature.Crosswalk_ID || feature.crosswalk_id || feature.CROSSWALK_ID || '';
+                        const segmentId = feature.Segment_ID || feature.segment_id || feature.SEGMENT_ID || '';
+                        const lineId = feature.Line_ID || feature.line_id || feature.LINE_ID || '';
+                        const numLanes = feature.NUM_LANES || feature.num_lanes || feature.Num_Lanes || '';
+                        const fromStreet = feature.FM_ST_NAME || feature.fm_st_name || feature.FM_STREET_NAME || '';
+                        const toStreet = feature.TO_ST_NAME || feature.to_st_name || feature.TO_STREET_NAME || '';
+
+                        const polyline = L.polyline(latlngs, {
+                          color: layerConfig.color,
+                          weight: 3,
+                          opacity: 0.8
+                        });
+
+                        let popupContent = `
+                          <div style="min-width: 250px; max-width: 400px;">
+                            <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                              ${layerConfig.icon} ${streetName}
+                            </h3>
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                              ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                              ${crosswalkId ? `<div><strong>Crosswalk ID:</strong> ${crosswalkId}</div>` : ''}
+                              ${segmentId ? `<div><strong>Segment ID:</strong> ${segmentId}</div>` : ''}
+                              ${lineId ? `<div><strong>Line ID:</strong> ${lineId}</div>` : ''}
+                              ${fromStreet && toStreet ? `<div><strong>From:</strong> ${fromStreet} <strong>To:</strong> ${toStreet}</div>` : ''}
+                              ${lengthMi ? `<div><strong>Length:</strong> ${lengthMi} miles</div>` : km ? `<div><strong>Length:</strong> ${km} km</div>` : ''}
+                              ${speedLimit ? `<div><strong>Speed Limit:</strong> ${speedLimit} mph</div>` : ''}
+                              ${numLanes ? `<div><strong>Number of Lanes:</strong> ${numLanes}</div>` : ''}
+                              ${existingFacility ? `<div><strong>Facility Type:</strong> ${existingFacility}</div>` : ''}
+                              ${installDate ? `<div><strong>Installation Date:</strong> ${installDate}</div>` : ''}
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                        `;
+
+                        const excludeFields = ['STREET_NAM', 'street_nam', 'STREET_NAME', 'street_name', 'STREETNAME', 'streetname', 'Crosswalk_ID', 'crosswalk_id', 'CROSSWALK_ID', 'Segment_ID', 'segment_id', 'SEGMENT_ID', 'Line_ID', 'line_id', 'LINE_ID', 'FM_ST_NAME', 'fm_st_name', 'FM_STREET_NAME', 'TO_ST_NAME', 'to_st_name', 'TO_STREET_NAME', 'LENGTH_MI', 'length_mi', 'Length_Mi', 'Length', 'length', 'SPEED_LIM', 'speed_lim', 'Speed_Lim', 'NUM_LANES', 'num_lanes', 'Num_Lanes', 'ExisFacil', 'exis_facil', 'EXIS_FACIL', 'InstallDat', 'install_dat', 'INSTALL_DAT', 'Km', 'km', 'KM', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'ObjectId', 'FID', 'fid', 'layerId', 'layerName'];
+                        Object.entries(feature).forEach(([key, value]) => {
+                          if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                            if (typeof value === 'object' && !Array.isArray(value)) return;
+                            const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                            popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                          }
+                        });
+
+                        popupContent += `</div></div>`;
+                        polyline.bindPopup(popupContent, { maxWidth: 400 });
+                        polyline.addTo(primary);
+                        bounds.extend(polyline.getBounds());
+                        featureCount++;
+                      }
+                    });
+                  } else {
+                    // Debug: Log when geometry exists but no paths/rings found
+                    console.warn(`⚠️ ${layerConfig.title}: Feature has geometry but no paths or rings found`, {
+                      hasPaths: !!geometry.paths,
+                      pathsLength: geometry.paths?.length || 0,
+                      hasRings: !!geometry.rings,
+                      ringsLength: geometry.rings?.length || 0,
+                      geometryKeys: Object.keys(geometry)
+                    });
+                  }
+                } else if (layerConfig.isPolygon) {
+                  // Polygon geometry (public open space, school zones, parcels)
+                  if (geometry.rings && geometry.rings.length > 0) {
+                    const rings = geometry.rings;
+                    if (rings && rings.length > 0) {
+                      const outerRing = rings[0];
+                      if (outerRing && outerRing.length >= 3) {
+                        const latlngs = outerRing.map((coord: number[]) => {
+                          return [coord[1], coord[0]] as [number, number];
+                        });
+
+                        const isContaining = feature.isContaining || feature.distance_miles === 0;
+                        const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (isContaining ? '0.00' : '');
+                        const siteName = feature.SITE_NAME || feature.site_name || feature.SITE_NAME_ || 
+                          feature.School_Name || feature.school_name || feature.SCHOOL_NAME || 
+                          feature.School_Zone_ID || feature.school_zone_id || feature.SCHOOL_ZONE_ID ||
+                          feature.MAP_PAR_ID || feature.map_par_id || feature.MAP_PAR_ID_ || 'Unknown';
+                        const ownership = feature.OWNERSHIP || feature.ownership || feature.OWNERSHIP_ || '';
+                        const protection = feature.PROTECTION || feature.protection || feature.PROTECTION_ || '';
+                        const acres = feature.ACRES || feature.acres || feature.ACRES_ || '';
+                        const address = feature.ADDRESS || feature.address || feature.ADDRESS_ || '';
+                        const district = feature.DISTRICT || feature.district || feature.DISTRICT_ || '';
+                        const schoolId = feature.School_ID || feature.school_id || feature.SCHOOL_ID || '';
+                        const mapParId = feature.MAP_PAR_ID || feature.map_par_id || feature.MAP_PAR_ID_ || '';
+                        const locId = feature.LOC_ID || feature.loc_id || feature.LOC_ID_ || '';
+                        const polyType = feature.POLY_TYPE || feature.poly_type || feature.POLY_TYPE_ || '';
+                        const mapNo = feature.MAP_NO || feature.map_no || feature.MAP_NO_ || '';
+
+                        const polygon = L.polygon(latlngs, {
+                          color: isContaining ? layerConfig.color : '#78716c',
+                          weight: isContaining ? 3 : 2,
+                          opacity: 0.8,
+                          fillColor: isContaining ? layerConfig.color : '#a3a3a3',
+                          fillOpacity: isContaining ? 0.4 : 0.2
+                        });
+
+                        let popupContent = `
+                          <div style="min-width: 250px; max-width: 400px;">
+                            <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                              ${layerConfig.icon} ${siteName}${isContaining ? ' <span style="color: #16a34a;">(Contains Point)</span>' : ''}
+                            </h3>
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                              ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                              ${district ? `<div><strong>District:</strong> ${district}</div>` : ''}
+                              ${schoolId ? `<div><strong>School ID:</strong> ${schoolId}</div>` : ''}
+                              ${mapParId ? `<div><strong>Map Parcel ID:</strong> ${mapParId}</div>` : ''}
+                              ${locId ? `<div><strong>Location ID:</strong> ${locId}</div>` : ''}
+                              ${polyType ? `<div><strong>Polygon Type:</strong> ${polyType}</div>` : ''}
+                              ${mapNo ? `<div><strong>Map Number:</strong> ${mapNo}</div>` : ''}
+                              ${distance !== undefined && distance !== '' ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                              ${isContaining ? `<div style="color: #16a34a; font-weight: 600;">✓ Point is within this area</div>` : ''}
+                              ${acres ? `<div><strong>Acres:</strong> ${acres}</div>` : ''}
+                              ${ownership ? `<div><strong>Ownership:</strong> ${ownership}</div>` : ''}
+                              ${protection ? `<div><strong>Protection:</strong> ${protection}</div>` : ''}
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                        `;
+
+                        const excludeFields = ['SITE_NAME', 'site_name', 'SITE_NAME_', 'School_Name', 'school_name', 'SCHOOL_NAME', 'School_Zone_ID', 'school_zone_id', 'SCHOOL_ZONE_ID', 'School_ID', 'school_id', 'SCHOOL_ID', 'MAP_PAR_ID', 'map_par_id', 'MAP_PAR_ID_', 'LOC_ID', 'loc_id', 'LOC_ID_', 'POLY_TYPE', 'poly_type', 'POLY_TYPE_', 'MAP_NO', 'map_no', 'MAP_NO_', 'OWNERSHIP', 'ownership', 'OWNERSHIP_', 'PROTECTION', 'protection', 'PROTECTION_', 'ACRES', 'acres', 'ACRES_', 'ADDRESS', 'address', 'ADDRESS_', 'DISTRICT', 'district', 'DISTRICT_', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'ObjectId', 'OBJECTID_', 'FID', 'fid', 'layerId', 'layerName', 'isContaining'];
+                        Object.entries(feature).forEach(([key, value]) => {
+                          if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                            if (typeof value === 'object' && !Array.isArray(value)) return;
+                            const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                            popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                          }
+                        });
+
+                        popupContent += `</div></div>`;
+                        polygon.bindPopup(popupContent, { maxWidth: 400 });
+                        polygon.addTo(primary);
+                        bounds.extend(polygon.getBounds());
+                        featureCount++;
+                      }
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing ${layerConfig.title} feature:`, error);
+              }
+            });
+
+            if (featureCount > 0) {
+              const legendKey = layerConfig.key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                legendAccumulator[legendKey] = {
+                  icon: layerConfig.icon,
+                  color: layerConfig.color,
+                  title: layerConfig.title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          } catch (error) {
+            console.error(`Error processing ${layerConfig.title}:`, error);
+          }
+        }
+      });
 
       // All enrichment features are drawn here (map already zoomed in STEP 1 above)
       Object.entries(enrichments).forEach(([key, value]) => {

@@ -431,6 +431,45 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           });
         }
         
+        // USGS Transportation fields - handle usgs_transportation_ prefix in field keys
+        if (key.includes('usgs_transportation_')) {
+          return selectedEnrichments.some(selected => {
+            if (selected.includes('usgs_transportation_')) {
+              // Extract the layer type from selected (e.g., 'usgs_transportation_airport' -> 'airport')
+              const layerType = selected.replace('usgs_transportation_', '');
+              // Field keys have the same prefix, so check if key includes the layer type
+              return key.includes(`usgs_transportation_${layerType}`);
+            }
+            return false;
+          });
+        }
+        
+        // USGS GeoNames fields - handle usgs_geonames_ prefix in field keys
+        if (key.includes('usgs_geonames_')) {
+          return selectedEnrichments.some(selected => {
+            if (selected.includes('usgs_geonames_')) {
+              // Extract the layer type from selected (e.g., 'usgs_geonames_administrative' -> 'administrative')
+              const layerType = selected.replace('usgs_geonames_', '');
+              // Field keys have the same prefix, so check if key includes the layer type
+              return key.includes(`usgs_geonames_${layerType}`);
+            }
+            return false;
+          });
+        }
+        
+        // USGS Selectable Polygons fields - handle usgs_selectable_polygons_ prefix in field keys
+        if (key.includes('usgs_selectable_polygons_')) {
+          return selectedEnrichments.some(selected => {
+            if (selected.includes('usgs_selectable_polygons_')) {
+              // Extract the layer type from selected (e.g., 'usgs_selectable_polygons_congressional_district' -> 'congressional_district')
+              const layerType = selected.replace('usgs_selectable_polygons_', '');
+              // Field keys have the same prefix, so check if key includes the layer type
+              return key.includes(`usgs_selectable_polygons_${layerType}`);
+            }
+            return false;
+          });
+        }
+        
         // TNM Structures fields
         if (key.includes('tnm_structures')) {
           return selectedEnrichments.includes('tnm_structures');
@@ -740,8 +779,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Air Quality';
       } else if (key.includes('tiger_')) {
         category = 'TIGER Data';
-      } else if (key.includes('us_national_grid_') || key.includes('us_historical_cultural_political_points') || key.includes('us_historical_hydrographic_points') || key.includes('us_historical_physical_points') || (key.includes('hurricane_evacuation_routes') && !key.includes('hurricane_evacuation_routes_hazards')) || key.includes('usgs_gov_') || key.includes('tnm_structures') || key.includes('usgs_trails')) {
-        category = 'The National Map';
+      } else if (key.includes('usgs_transportation_') || key.includes('usgs_geonames_') || key.includes('usgs_selectable_polygons_') || key.includes('usgs_wbd_') || key.includes('usgs_contours_') || key.includes('us_national_grid_') || key.includes('us_historical_cultural_political_points') || key.includes('us_historical_hydrographic_points') || key.includes('us_historical_physical_points') || (key.includes('hurricane_evacuation_routes') && !key.includes('hurricane_evacuation_routes_hazards')) || key.includes('usgs_gov_') || key.includes('tnm_structures') || key.includes('usgs_trails')) {
+        category = 'USGS National Map';
       } else if (key.startsWith('dc_utc_') || key.startsWith('dc_urban_tree_canopy_') || key === 'dc_trees' || key === 'dc_ufa_street_trees' || key === 'dc_arborists_zone' || key.startsWith('dc_bike_') || key.startsWith('dc_property_')) {
         category = 'District of Columbia';
       } else if (key.includes('hurricane_evacuation_routes_hazards') || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions')) {
@@ -806,6 +845,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Resources';
       } else if (key.includes('nh_house_district') || key.includes('nh_voting_ward') || key.includes('nh_senate_district') || key.includes('nh_ssurgo') || key.includes('nh_bedrock_geology') || key.includes('nh_geographic_names') || key.includes('nh_parcel') || key.includes('nh_key_destinations') || key.includes('nh_nursing_homes') || key.includes('nh_ems') || key.includes('nh_fire_stations') || key.includes('nh_places_of_worship') || key.includes('nh_hospitals') || key.includes('nh_public_waters_access') || key.includes('nh_law_enforcement') || key.includes('nh_recreation_trails') || key.includes('nh_dot_roads') || key.includes('nh_railroads') || key.includes('nh_transmission_pipelines') || key.includes('nh_cell_towers') || key.includes('nh_underground_storage_tanks') || key.includes('nh_water_wells') || key.includes('nh_public_water_supply_wells') || key.includes('nh_remediation_sites') || key.includes('nh_automobile_salvage_yards') || key.includes('nh_solid_waste_facilities') || key.includes('nh_source_water_protection_area') || key.includes('nh_nwi_plus')) {
         category = 'New Hampshire Data';
+      } else if (key.includes('boston_')) {
+        category = 'Boston Open Data';
       } else if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs') || key.includes('ma_parcel')) {
         category = 'Massachusetts Data';
       } else if (key.includes('ca_fire_perimeters') || key.includes('ca_wildland_fire') || key.includes('ca_calvtp_treatment_areas') || key.includes('ca_power_outage_areas') || key.includes('ca_')) {

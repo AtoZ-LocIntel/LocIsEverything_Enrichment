@@ -128,6 +128,37 @@ import {
   getUSGSSelectablePolygonsSubregionData,
   getUSGSSelectablePolygonsSubbasinData,
 } from '../adapters/usgsSelectablePolygons';
+import {
+  getUSGSWBDLineData,
+  getUSGSWBD2DigitHUData,
+  getUSGSWBD4DigitHUData,
+  getUSGSWBD6DigitHUData,
+  getUSGSWBD8DigitHUData,
+  getUSGSWBD10DigitHUData,
+  getUSGSWBD12DigitHUData,
+  getUSGSWBD14DigitHUData,
+  getUSGSWBD16DigitHUData,
+} from '../adapters/usgsWBD';
+import {
+  getUSGSContours100FootData,
+  getUSGSContours100FootLinesData,
+  getUSGSContours50FootData,
+  getUSGSContours50FootLinesData,
+  getUSGSContoursLargeScaleData,
+  getUSGSContoursLargeScaleLinesData,
+} from '../adapters/usgsContours';
+import {
+  getBostonChargingStationsData,
+  getBostonBlueBikeStationsData,
+  getBostonBicycleNetwork2023Data,
+  getBostonManagedStreetsData,
+  getBostonPublicOpenSpaceData,
+  getBostonParkFeaturesData,
+  getBostonSchoolZonesData,
+  getBostonCrosswalksData,
+  getBostonYellowCenterlinesData,
+  getBostonParcels2025Data,
+} from '../adapters/bostonOpenData';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
@@ -2690,6 +2721,62 @@ export class EnrichmentService {
         return await this.getUSGSSelectablePolygonsSubregion(lat, lon, radius);
       case 'usgs_selectable_polygons_subbasin':
         return await this.getUSGSSelectablePolygonsSubbasin(lat, lon, radius);
+      
+      // USGS WBD (Watershed Boundary Dataset) Layers
+      case 'usgs_wbd_line':
+        return await this.getUSGSWBDLine(lat, lon, radius);
+      case 'usgs_wbd_2_digit_hu':
+        return await this.getUSGSWBD2DigitHU(lat, lon, radius);
+      case 'usgs_wbd_4_digit_hu':
+        return await this.getUSGSWBD4DigitHU(lat, lon, radius);
+      case 'usgs_wbd_6_digit_hu':
+        return await this.getUSGSWBD6DigitHU(lat, lon, radius);
+      case 'usgs_wbd_8_digit_hu':
+        return await this.getUSGSWBD8DigitHU(lat, lon, radius);
+      case 'usgs_wbd_10_digit_hu':
+        return await this.getUSGSWBD10DigitHU(lat, lon, radius);
+      case 'usgs_wbd_12_digit_hu':
+        return await this.getUSGSWBD12DigitHU(lat, lon, radius);
+      case 'usgs_wbd_14_digit_hu':
+        return await this.getUSGSWBD14DigitHU(lat, lon, radius);
+      case 'usgs_wbd_16_digit_hu':
+        return await this.getUSGSWBD16DigitHU(lat, lon, radius);
+      
+      // USGS Contours Layers
+      case 'usgs_contours_100_foot':
+        return await this.getUSGSContours100Foot(lat, lon, radius);
+      case 'usgs_contours_100_foot_lines':
+        return await this.getUSGSContours100FootLines(lat, lon, radius);
+      case 'usgs_contours_50_foot':
+        return await this.getUSGSContours50Foot(lat, lon, radius);
+      case 'usgs_contours_50_foot_lines':
+        return await this.getUSGSContours50FootLines(lat, lon, radius);
+      case 'usgs_contours_large_scale':
+        return await this.getUSGSContoursLargeScale(lat, lon, radius);
+      case 'usgs_contours_large_scale_lines':
+        return await this.getUSGSContoursLargeScaleLines(lat, lon, radius);
+      
+      // Boston Open Data Layers
+      case 'boston_charging_stations':
+        return await this.getBostonChargingStations(lat, lon, radius);
+      case 'boston_blue_bike_stations':
+        return await this.getBostonBlueBikeStations(lat, lon, radius);
+      case 'boston_bicycle_network_2023':
+        return await this.getBostonBicycleNetwork2023(lat, lon, radius);
+      case 'boston_managed_streets':
+        return await this.getBostonManagedStreets(lat, lon, radius);
+      case 'boston_public_open_space':
+        return await this.getBostonPublicOpenSpace(lat, lon, radius);
+      case 'boston_park_features':
+        return await this.getBostonParkFeatures(lat, lon, radius);
+      case 'boston_school_zones':
+        return await this.getBostonSchoolZones(lat, lon, radius);
+      case 'boston_crosswalks':
+        return await this.getBostonCrosswalks(lat, lon, radius);
+      case 'boston_yellow_centerlines':
+        return await this.getBostonYellowCenterlines(lat, lon, radius);
+      case 'boston_parcels_2025':
+        return await this.getBostonParcels2025(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -26264,6 +26351,903 @@ out center;`;
         'usgs_selectable_polygons_subbasin_count': 0,
         'usgs_selectable_polygons_subbasin_summary': 'Error fetching USGS selectable polygons subbasin data',
         'usgs_selectable_polygons_subbasin_all': []
+      };
+    }
+  }
+
+  private async getUSGSWBDLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS WBD Line data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSWBDLineData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_wbd_line_count'] = 0;
+        result['usgs_wbd_line_summary'] = 'No WBD lines found within the specified radius';
+        result['usgs_wbd_line_all'] = [];
+      } else {
+        result['usgs_wbd_line_count'] = features.length;
+        result['usgs_wbd_line_summary'] = `Found ${features.length} WBD line feature(s) within ${radius || 25} miles`;
+        result['usgs_wbd_line_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS WBD Line data:`, error);
+      return {
+        'usgs_wbd_line_count': 0,
+        'usgs_wbd_line_summary': 'Error fetching USGS WBD line data',
+        'usgs_wbd_line_all': []
+      };
+    }
+  }
+
+  private async getUSGSWBD2DigitHU(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS WBD 2-digit HU (Region) data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSWBD2DigitHUData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_wbd_2_digit_hu_count'] = 0;
+        result['usgs_wbd_2_digit_hu_summary'] = 'No 2-digit HU (Region) boundaries found';
+        result['usgs_wbd_2_digit_hu_all'] = [];
+      } else {
+        result['usgs_wbd_2_digit_hu_count'] = features.length;
+        result['usgs_wbd_2_digit_hu_summary'] = `Found ${features.length} 2-digit HU (Region) boundary(ies)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_wbd_2_digit_hu_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS WBD 2-digit HU data:`, error);
+      return {
+        'usgs_wbd_2_digit_hu_count': 0,
+        'usgs_wbd_2_digit_hu_summary': 'Error fetching USGS WBD 2-digit HU data',
+        'usgs_wbd_2_digit_hu_all': []
+      };
+    }
+  }
+
+  private async getUSGSWBD4DigitHU(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS WBD 4-digit HU (Subregion) data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSWBD4DigitHUData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_wbd_4_digit_hu_count'] = 0;
+        result['usgs_wbd_4_digit_hu_summary'] = 'No 4-digit HU (Subregion) boundaries found';
+        result['usgs_wbd_4_digit_hu_all'] = [];
+      } else {
+        result['usgs_wbd_4_digit_hu_count'] = features.length;
+        result['usgs_wbd_4_digit_hu_summary'] = `Found ${features.length} 4-digit HU (Subregion) boundary(ies)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_wbd_4_digit_hu_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS WBD 4-digit HU data:`, error);
+      return {
+        'usgs_wbd_4_digit_hu_count': 0,
+        'usgs_wbd_4_digit_hu_summary': 'Error fetching USGS WBD 4-digit HU data',
+        'usgs_wbd_4_digit_hu_all': []
+      };
+    }
+  }
+
+  private async getUSGSWBD6DigitHU(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS WBD 6-digit HU (Basin) data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSWBD6DigitHUData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_wbd_6_digit_hu_count'] = 0;
+        result['usgs_wbd_6_digit_hu_summary'] = 'No 6-digit HU (Basin) boundaries found';
+        result['usgs_wbd_6_digit_hu_all'] = [];
+      } else {
+        result['usgs_wbd_6_digit_hu_count'] = features.length;
+        result['usgs_wbd_6_digit_hu_summary'] = `Found ${features.length} 6-digit HU (Basin) boundary(ies)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_wbd_6_digit_hu_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS WBD 6-digit HU data:`, error);
+      return {
+        'usgs_wbd_6_digit_hu_count': 0,
+        'usgs_wbd_6_digit_hu_summary': 'Error fetching USGS WBD 6-digit HU data',
+        'usgs_wbd_6_digit_hu_all': []
+      };
+    }
+  }
+
+  private async getUSGSWBD8DigitHU(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS WBD 8-digit HU (Subbasin) data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSWBD8DigitHUData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_wbd_8_digit_hu_count'] = 0;
+        result['usgs_wbd_8_digit_hu_summary'] = 'No 8-digit HU (Subbasin) boundaries found';
+        result['usgs_wbd_8_digit_hu_all'] = [];
+      } else {
+        result['usgs_wbd_8_digit_hu_count'] = features.length;
+        result['usgs_wbd_8_digit_hu_summary'] = `Found ${features.length} 8-digit HU (Subbasin) boundary(ies)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_wbd_8_digit_hu_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS WBD 8-digit HU data:`, error);
+      return {
+        'usgs_wbd_8_digit_hu_count': 0,
+        'usgs_wbd_8_digit_hu_summary': 'Error fetching USGS WBD 8-digit HU data',
+        'usgs_wbd_8_digit_hu_all': []
+      };
+    }
+  }
+
+  private async getUSGSWBD10DigitHU(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS WBD 10-digit HU (Watershed) data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSWBD10DigitHUData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_wbd_10_digit_hu_count'] = 0;
+        result['usgs_wbd_10_digit_hu_summary'] = 'No 10-digit HU (Watershed) boundaries found';
+        result['usgs_wbd_10_digit_hu_all'] = [];
+      } else {
+        result['usgs_wbd_10_digit_hu_count'] = features.length;
+        result['usgs_wbd_10_digit_hu_summary'] = `Found ${features.length} 10-digit HU (Watershed) boundary(ies)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_wbd_10_digit_hu_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS WBD 10-digit HU data:`, error);
+      return {
+        'usgs_wbd_10_digit_hu_count': 0,
+        'usgs_wbd_10_digit_hu_summary': 'Error fetching USGS WBD 10-digit HU data',
+        'usgs_wbd_10_digit_hu_all': []
+      };
+    }
+  }
+
+  private async getUSGSWBD12DigitHU(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS WBD 12-digit HU (Subwatershed) data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSWBD12DigitHUData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_wbd_12_digit_hu_count'] = 0;
+        result['usgs_wbd_12_digit_hu_summary'] = 'No 12-digit HU (Subwatershed) boundaries found';
+        result['usgs_wbd_12_digit_hu_all'] = [];
+      } else {
+        result['usgs_wbd_12_digit_hu_count'] = features.length;
+        result['usgs_wbd_12_digit_hu_summary'] = `Found ${features.length} 12-digit HU (Subwatershed) boundary(ies)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_wbd_12_digit_hu_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS WBD 12-digit HU data:`, error);
+      return {
+        'usgs_wbd_12_digit_hu_count': 0,
+        'usgs_wbd_12_digit_hu_summary': 'Error fetching USGS WBD 12-digit HU data',
+        'usgs_wbd_12_digit_hu_all': []
+      };
+    }
+  }
+
+  private async getUSGSWBD14DigitHU(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS WBD 14-digit HU data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSWBD14DigitHUData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_wbd_14_digit_hu_count'] = 0;
+        result['usgs_wbd_14_digit_hu_summary'] = 'No 14-digit HU boundaries found';
+        result['usgs_wbd_14_digit_hu_all'] = [];
+      } else {
+        result['usgs_wbd_14_digit_hu_count'] = features.length;
+        result['usgs_wbd_14_digit_hu_summary'] = `Found ${features.length} 14-digit HU boundary(ies)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_wbd_14_digit_hu_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS WBD 14-digit HU data:`, error);
+      return {
+        'usgs_wbd_14_digit_hu_count': 0,
+        'usgs_wbd_14_digit_hu_summary': 'Error fetching USGS WBD 14-digit HU data',
+        'usgs_wbd_14_digit_hu_all': []
+      };
+    }
+  }
+
+  private async getUSGSWBD16DigitHU(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`💧 Fetching USGS WBD 16-digit HU data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSWBD16DigitHUData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['usgs_wbd_16_digit_hu_count'] = 0;
+        result['usgs_wbd_16_digit_hu_summary'] = 'No 16-digit HU boundaries found';
+        result['usgs_wbd_16_digit_hu_all'] = [];
+      } else {
+        result['usgs_wbd_16_digit_hu_count'] = features.length;
+        result['usgs_wbd_16_digit_hu_summary'] = `Found ${features.length} 16-digit HU boundary(ies)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['usgs_wbd_16_digit_hu_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS WBD 16-digit HU data:`, error);
+      return {
+        'usgs_wbd_16_digit_hu_count': 0,
+        'usgs_wbd_16_digit_hu_summary': 'Error fetching USGS WBD 16-digit HU data',
+        'usgs_wbd_16_digit_hu_all': []
+      };
+    }
+  }
+
+  private async getUSGSContours100Foot(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛰️ Fetching USGS Contours 100 Foot data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSContours100FootData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_contours_100_foot_count'] = 0;
+        result['usgs_contours_100_foot_summary'] = 'No 100-foot contours found within the specified radius';
+        result['usgs_contours_100_foot_all'] = [];
+      } else {
+        result['usgs_contours_100_foot_count'] = features.length;
+        result['usgs_contours_100_foot_summary'] = `Found ${features.length} 100-foot contour feature(s) within ${radius || 25} miles`;
+        result['usgs_contours_100_foot_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Contours 100 Foot data:`, error);
+      return {
+        'usgs_contours_100_foot_count': 0,
+        'usgs_contours_100_foot_summary': 'Error fetching USGS Contours 100 Foot data',
+        'usgs_contours_100_foot_all': []
+      };
+    }
+  }
+
+  private async getUSGSContours100FootLines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛰️ Fetching USGS Contours 100 Foot Lines data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSContours100FootLinesData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_contours_100_foot_lines_count'] = 0;
+        result['usgs_contours_100_foot_lines_summary'] = 'No 100-foot contour lines found within the specified radius';
+        result['usgs_contours_100_foot_lines_all'] = [];
+      } else {
+        result['usgs_contours_100_foot_lines_count'] = features.length;
+        result['usgs_contours_100_foot_lines_summary'] = `Found ${features.length} 100-foot contour line feature(s) within ${radius || 25} miles`;
+        result['usgs_contours_100_foot_lines_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Contours 100 Foot Lines data:`, error);
+      return {
+        'usgs_contours_100_foot_lines_count': 0,
+        'usgs_contours_100_foot_lines_summary': 'Error fetching USGS Contours 100 Foot Lines data',
+        'usgs_contours_100_foot_lines_all': []
+      };
+    }
+  }
+
+  private async getUSGSContours50Foot(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛰️ Fetching USGS Contours 50 Foot data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSContours50FootData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_contours_50_foot_count'] = 0;
+        result['usgs_contours_50_foot_summary'] = 'No 50-foot contours found within the specified radius';
+        result['usgs_contours_50_foot_all'] = [];
+      } else {
+        result['usgs_contours_50_foot_count'] = features.length;
+        result['usgs_contours_50_foot_summary'] = `Found ${features.length} 50-foot contour feature(s) within ${radius || 25} miles`;
+        result['usgs_contours_50_foot_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Contours 50 Foot data:`, error);
+      return {
+        'usgs_contours_50_foot_count': 0,
+        'usgs_contours_50_foot_summary': 'Error fetching USGS Contours 50 Foot data',
+        'usgs_contours_50_foot_all': []
+      };
+    }
+  }
+
+  private async getUSGSContours50FootLines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛰️ Fetching USGS Contours 50 Foot Lines data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSContours50FootLinesData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_contours_50_foot_lines_count'] = 0;
+        result['usgs_contours_50_foot_lines_summary'] = 'No 50-foot contour lines found within the specified radius';
+        result['usgs_contours_50_foot_lines_all'] = [];
+      } else {
+        result['usgs_contours_50_foot_lines_count'] = features.length;
+        result['usgs_contours_50_foot_lines_summary'] = `Found ${features.length} 50-foot contour line feature(s) within ${radius || 25} miles`;
+        result['usgs_contours_50_foot_lines_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Contours 50 Foot Lines data:`, error);
+      return {
+        'usgs_contours_50_foot_lines_count': 0,
+        'usgs_contours_50_foot_lines_summary': 'Error fetching USGS Contours 50 Foot Lines data',
+        'usgs_contours_50_foot_lines_all': []
+      };
+    }
+  }
+
+  private async getUSGSContoursLargeScale(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛰️ Fetching USGS Contours Large Scale data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSContoursLargeScaleData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_contours_large_scale_count'] = 0;
+        result['usgs_contours_large_scale_summary'] = 'No large-scale contours found within the specified radius';
+        result['usgs_contours_large_scale_all'] = [];
+      } else {
+        result['usgs_contours_large_scale_count'] = features.length;
+        result['usgs_contours_large_scale_summary'] = `Found ${features.length} large-scale contour feature(s) within ${radius || 25} miles`;
+        result['usgs_contours_large_scale_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Contours Large Scale data:`, error);
+      return {
+        'usgs_contours_large_scale_count': 0,
+        'usgs_contours_large_scale_summary': 'Error fetching USGS Contours Large Scale data',
+        'usgs_contours_large_scale_all': []
+      };
+    }
+  }
+
+  private async getUSGSContoursLargeScaleLines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⛰️ Fetching USGS Contours Large Scale Lines data for [${lat}, ${lon}]`);
+      
+      const features = await getUSGSContoursLargeScaleLinesData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['usgs_contours_large_scale_lines_count'] = 0;
+        result['usgs_contours_large_scale_lines_summary'] = 'No large-scale contour lines found within the specified radius';
+        result['usgs_contours_large_scale_lines_all'] = [];
+      } else {
+        result['usgs_contours_large_scale_lines_count'] = features.length;
+        result['usgs_contours_large_scale_lines_summary'] = `Found ${features.length} large-scale contour line feature(s) within ${radius || 25} miles`;
+        result['usgs_contours_large_scale_lines_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching USGS Contours Large Scale Lines data:`, error);
+      return {
+        'usgs_contours_large_scale_lines_count': 0,
+        'usgs_contours_large_scale_lines_summary': 'Error fetching USGS Contours Large Scale Lines data',
+        'usgs_contours_large_scale_lines_all': []
+      };
+    }
+  }
+
+  private async getBostonChargingStations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏙️ Fetching Boston Charging Stations data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonChargingStationsData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_charging_stations_count'] = 0;
+        result['boston_charging_stations_summary'] = 'No Boston charging stations found within the specified radius';
+        result['boston_charging_stations_all'] = [];
+      } else {
+        result['boston_charging_stations_count'] = features.length;
+        result['boston_charging_stations_summary'] = `Found ${features.length} Boston charging station(s) within ${radius || 25} miles`;
+        result['boston_charging_stations_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Charging Stations data:`, error);
+      return {
+        'boston_charging_stations_count': 0,
+        'boston_charging_stations_summary': 'Error fetching Boston charging stations data',
+        'boston_charging_stations_all': []
+      };
+    }
+  }
+
+  private async getBostonBlueBikeStations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚴 Fetching Boston Blue Bike Stations data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonBlueBikeStationsData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_blue_bike_stations_count'] = 0;
+        result['boston_blue_bike_stations_summary'] = 'No Boston Blue Bike stations found within the specified radius';
+        result['boston_blue_bike_stations_all'] = [];
+      } else {
+        result['boston_blue_bike_stations_count'] = features.length;
+        result['boston_blue_bike_stations_summary'] = `Found ${features.length} Boston Blue Bike station(s) within ${radius || 25} miles`;
+        result['boston_blue_bike_stations_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Blue Bike Stations data:`, error);
+      return {
+        'boston_blue_bike_stations_count': 0,
+        'boston_blue_bike_stations_summary': 'Error fetching Boston Blue Bike stations data',
+        'boston_blue_bike_stations_all': []
+      };
+    }
+  }
+
+  private async getBostonBicycleNetwork2023(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚴 Fetching Boston Bicycle Network 2023 data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonBicycleNetwork2023Data(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_bicycle_network_2023_count'] = 0;
+        result['boston_bicycle_network_2023_summary'] = 'No Boston bicycle network segments found within the specified radius';
+        result['boston_bicycle_network_2023_all'] = [];
+      } else {
+        result['boston_bicycle_network_2023_count'] = features.length;
+        result['boston_bicycle_network_2023_summary'] = `Found ${features.length} Boston bicycle network segment(s) within ${radius || 25} miles`;
+        result['boston_bicycle_network_2023_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Bicycle Network 2023 data:`, error);
+      return {
+        'boston_bicycle_network_2023_count': 0,
+        'boston_bicycle_network_2023_summary': 'Error fetching Boston bicycle network data',
+        'boston_bicycle_network_2023_all': []
+      };
+    }
+  }
+
+  private async getBostonManagedStreets(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛣️ Fetching Boston Managed Streets data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonManagedStreetsData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_managed_streets_count'] = 0;
+        result['boston_managed_streets_summary'] = 'No Boston managed streets found within the specified radius';
+        result['boston_managed_streets_all'] = [];
+      } else {
+        result['boston_managed_streets_count'] = features.length;
+        result['boston_managed_streets_summary'] = `Found ${features.length} Boston managed street segment(s) within ${radius || 25} miles`;
+        result['boston_managed_streets_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Managed Streets data:`, error);
+      return {
+        'boston_managed_streets_count': 0,
+        'boston_managed_streets_summary': 'Error fetching Boston managed streets data',
+        'boston_managed_streets_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicOpenSpace(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌳 Fetching Boston Public Open Space data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonPublicOpenSpaceData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_public_open_space_count'] = 0;
+        result['boston_public_open_space_summary'] = 'No Boston public open space found within the specified radius';
+        result['boston_public_open_space_all'] = [];
+      } else {
+        result['boston_public_open_space_count'] = features.length;
+        result['boston_public_open_space_summary'] = `Found ${features.length} Boston public open space area(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 25} miles`;
+        result['boston_public_open_space_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Public Open Space data:`, error);
+      return {
+        'boston_public_open_space_count': 0,
+        'boston_public_open_space_summary': 'Error fetching Boston public open space data',
+        'boston_public_open_space_all': []
+      };
+    }
+  }
+
+  private async getBostonParkFeatures(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌳 Fetching Boston Park Features data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonParkFeaturesData(lat, lon, radius || 25);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_park_features_count'] = 0;
+        result['boston_park_features_summary'] = 'No Boston park features found within the specified radius';
+        result['boston_park_features_all'] = [];
+      } else {
+        result['boston_park_features_count'] = features.length;
+        result['boston_park_features_summary'] = `Found ${features.length} Boston park feature(s) within ${radius || 25} miles`;
+        result['boston_park_features_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Park Features data:`, error);
+      return {
+        'boston_park_features_count': 0,
+        'boston_park_features_summary': 'Error fetching Boston park features data',
+        'boston_park_features_all': []
+      };
+    }
+  }
+
+  private async getBostonSchoolZones(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏫 Fetching Boston School Zones data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonSchoolZonesData(lat, lon, radius || 1);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_school_zones_count'] = 0;
+        result['boston_school_zones_summary'] = 'No Boston school zones found within the specified radius';
+        result['boston_school_zones_all'] = [];
+      } else {
+        result['boston_school_zones_count'] = features.length;
+        result['boston_school_zones_summary'] = `Found ${features.length} Boston school zone(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 1} miles`;
+        result['boston_school_zones_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston School Zones data:`, error);
+      return {
+        'boston_school_zones_count': 0,
+        'boston_school_zones_summary': 'Error fetching Boston school zones data',
+        'boston_school_zones_all': []
+      };
+    }
+  }
+
+  private async getBostonCrosswalks(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚶 Fetching Boston Crosswalks data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonCrosswalksData(lat, lon, radius || 1);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_crosswalks_count'] = 0;
+        result['boston_crosswalks_summary'] = 'No Boston crosswalks found within the specified radius';
+        result['boston_crosswalks_all'] = [];
+      } else {
+        result['boston_crosswalks_count'] = features.length;
+        result['boston_crosswalks_summary'] = `Found ${features.length} Boston crosswalk(s) within ${radius || 1} miles`;
+        result['boston_crosswalks_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Crosswalks data:`, error);
+      return {
+        'boston_crosswalks_count': 0,
+        'boston_crosswalks_summary': 'Error fetching Boston crosswalks data',
+        'boston_crosswalks_all': []
+      };
+    }
+  }
+
+  private async getBostonYellowCenterlines(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🟡 Fetching Boston Yellow Centerlines data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonYellowCenterlinesData(lat, lon, radius || 1);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_yellow_centerlines_count'] = 0;
+        result['boston_yellow_centerlines_summary'] = 'No Boston yellow centerlines found within the specified radius';
+        result['boston_yellow_centerlines_all'] = [];
+      } else {
+        result['boston_yellow_centerlines_count'] = features.length;
+        result['boston_yellow_centerlines_summary'] = `Found ${features.length} Boston yellow centerline(s) within ${radius || 1} miles`;
+        result['boston_yellow_centerlines_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Yellow Centerlines data:`, error);
+      return {
+        'boston_yellow_centerlines_count': 0,
+        'boston_yellow_centerlines_summary': 'Error fetching Boston yellow centerlines data',
+        'boston_yellow_centerlines_all': []
+      };
+    }
+  }
+
+  private async getBostonParcels2025(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏘️ Fetching Boston Parcels 2025 data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonParcels2025Data(lat, lon, radius || 2);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_parcels_2025_count'] = 0;
+        result['boston_parcels_2025_summary'] = 'No Boston parcels found within the specified radius';
+        result['boston_parcels_2025_all'] = [];
+      } else {
+        result['boston_parcels_2025_count'] = features.length;
+        result['boston_parcels_2025_summary'] = `Found ${features.length} Boston parcel(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 2} miles`;
+        result['boston_parcels_2025_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Parcels 2025 data:`, error);
+      return {
+        'boston_parcels_2025_count': 0,
+        'boston_parcels_2025_summary': 'Error fetching Boston parcels data',
+        'boston_parcels_2025_all': []
       };
     }
   }

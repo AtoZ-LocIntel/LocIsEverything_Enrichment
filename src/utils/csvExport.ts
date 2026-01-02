@@ -714,6 +714,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('usgs_transportation_') && key.endsWith('_all')) || // Skip USGS Transportation arrays (handled separately)
         (key.startsWith('usgs_geonames_') && key.endsWith('_all')) || // Skip USGS GeoNames arrays (handled separately)
         (key.startsWith('usgs_selectable_polygons_') && key.endsWith('_all')) || // Skip USGS Selectable Polygons arrays (handled separately)
+        (key.startsWith('usgs_wbd_') && key.endsWith('_all')) || // Skip USGS WBD arrays (handled separately)
+        (key.startsWith('usgs_contours_') && key.endsWith('_all')) || // Skip USGS Contours arrays (handled separately)
+        (key.startsWith('boston_') && key.endsWith('_all')) || // Skip Boston Open Data arrays (handled separately)
         (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately)
         (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately)
         (key.startsWith('dc_property_') && key.endsWith('_all')) || // Skip DC Property and Land arrays (handled separately)
@@ -13443,6 +13446,268 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add USGS WBD (Watershed Boundary Dataset) data rows
+    const wbdLayerMap: Record<string, { name: string, icon: string }> = {
+      'usgs_wbd_line_all': { name: 'USGS_WBD_LINE', icon: '💧' },
+      'usgs_wbd_2_digit_hu_all': { name: 'USGS_WBD_2_DIGIT_HU_REGION', icon: '💧' },
+      'usgs_wbd_4_digit_hu_all': { name: 'USGS_WBD_4_DIGIT_HU_SUBREGION', icon: '💧' },
+      'usgs_wbd_6_digit_hu_all': { name: 'USGS_WBD_6_DIGIT_HU_BASIN', icon: '💧' },
+      'usgs_wbd_8_digit_hu_all': { name: 'USGS_WBD_8_DIGIT_HU_SUBBASIN', icon: '💧' },
+      'usgs_wbd_10_digit_hu_all': { name: 'USGS_WBD_10_DIGIT_HU_WATERSHED', icon: '💧' },
+      'usgs_wbd_12_digit_hu_all': { name: 'USGS_WBD_12_DIGIT_HU_SUBWATERSHED', icon: '💧' },
+      'usgs_wbd_14_digit_hu_all': { name: 'USGS_WBD_14_DIGIT_HU', icon: '💧' },
+      'usgs_wbd_16_digit_hu_all': { name: 'USGS_WBD_16_DIGIT_HU', icon: '💧' }
+    };
+    
+    if (wbdLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = wbdLayerMap[key];
+      value.forEach((feature: any) => {
+        // Try to find a name/identifier from common attribute fields
+        const featureName = feature.name || feature.NAME || feature.NAME1 || feature.NAME2 || 
+          feature.HUC || feature.huc || feature.HUC8 || feature.huc8 || feature.HUC12 || feature.huc12 ||
+          feature.HUC16 || feature.huc16 || feature.REGION || feature.region ||
+          feature.SUBREGION || feature.subregion || feature.BASIN || feature.basin ||
+          feature.SUBBASIN || feature.subbasin || feature.WATERSHED || feature.watershed ||
+          feature.SUBWATERSHED || feature.subwatershed ||
+          (feature.attributes ? (feature.attributes.name || feature.attributes.NAME || feature.attributes.HUC) : null) ||
+          feature.layerName || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        
+        // Extract coordinates from geometry
+        let featureCoords = '';
+        if (feature.geometry) {
+          if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Polygon geometry - use first point of first ring
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          } else if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline geometry (WBDLine) - use first point of first path
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const firstPoint = firstPath[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          `${layerInfo.icon} ${featureName}${feature.isContaining ? ' (Contains Point)' : ''}`,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `Nearby ${feature.layerName || layerInfo.name.replace('USGS_WBD_', '').replace(/_/g, ' ')}`,
+          `${attributesJson} | Contains Point: ${isContaining}`,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add USGS Contours data rows
+    const contoursLayerMap: Record<string, { name: string, icon: string }> = {
+      'usgs_contours_100_foot_all': { name: 'USGS_CONTOURS_100_FOOT', icon: '⛰️' },
+      'usgs_contours_100_foot_lines_all': { name: 'USGS_CONTOURS_100_FOOT_LINES', icon: '⛰️' },
+      'usgs_contours_50_foot_all': { name: 'USGS_CONTOURS_50_FOOT', icon: '⛰️' },
+      'usgs_contours_50_foot_lines_all': { name: 'USGS_CONTOURS_50_FOOT_LINES', icon: '⛰️' },
+      'usgs_contours_large_scale_all': { name: 'USGS_CONTOURS_LARGE_SCALE', icon: '⛰️' },
+      'usgs_contours_large_scale_lines_all': { name: 'USGS_CONTOURS_LARGE_SCALE_LINES', icon: '⛰️' }
+    };
+    
+    if (contoursLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = contoursLayerMap[key];
+      value.forEach((feature: any) => {
+        // Try to find elevation or identifier from common attribute fields
+        const featureName = feature.ELEV || feature.elev || feature.ELEVATION || feature.elevation ||
+          feature.CONTOUR || feature.contour || feature.INDEX || feature.index ||
+          feature.OBJECTID || feature.objectid ||
+          (feature.attributes ? (feature.attributes.ELEV || feature.attributes.elev || feature.attributes.ELEVATION) : null) ||
+          feature.layerName || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polylines)
+        let featureCoords = '';
+        if (feature.geometry) {
+          if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline geometry - use first point of first path
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const firstPoint = firstPath[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          } else if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Some contours might have rings - use first point of first ring
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'USGS The National Map',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          `${layerInfo.icon} ${featureName}${feature.ELEV || feature.elev || feature.ELEVATION ? ` (${feature.ELEV || feature.elev || feature.ELEVATION} ft)` : ''}`,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `Nearby ${feature.layerName || layerInfo.name.replace('USGS_CONTOURS_', '').replace(/_/g, ' ')}`,
+          attributesJson,
+          '',
+          '',
+          'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add Boston Open Data data rows
+    const bostonLayerMap: Record<string, { name: string, icon: string }> = {
+      'boston_charging_stations_all': { name: 'BOSTON_CHARGING_STATIONS', icon: '🔌' },
+      'boston_blue_bike_stations_all': { name: 'BOSTON_BLUE_BIKE_STATIONS', icon: '🚴' },
+      'boston_bicycle_network_2023_all': { name: 'BOSTON_BICYCLE_NETWORK_2023', icon: '🚴' },
+      'boston_managed_streets_all': { name: 'BOSTON_MANAGED_STREETS', icon: '🛣️' },
+      'boston_public_open_space_all': { name: 'BOSTON_PUBLIC_OPEN_SPACE', icon: '🌳' },
+      'boston_park_features_all': { name: 'BOSTON_PARK_FEATURES', icon: '🌳' },
+      'boston_school_zones_all': { name: 'BOSTON_SCHOOL_ZONES', icon: '🏫' },
+      'boston_crosswalks_all': { name: 'BOSTON_CROSSWALKS', icon: '🚶' },
+      'boston_yellow_centerlines_all': { name: 'BOSTON_YELLOW_CENTERLINES', icon: '🟡' },
+      'boston_parcels_2025_all': { name: 'BOSTON_PARCELS_2025', icon: '🏘️' }
+    };
+    
+    if (bostonLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = bostonLayerMap[key];
+      value.forEach((feature: any) => {
+        // Handle charging stations, blue bike stations, bicycle network, managed streets, open space, park features, pavement markings, and parcels
+        const stationName = feature.Station_Name || feature.station_name || feature.STATION_NAME || 
+          feature.Name || feature.name || feature.NAME || 
+          feature.STREET_NAM || feature.street_nam || feature.STREET_NAME || 
+          feature.STREETNAME || feature.streetname ||
+          feature.SITE_NAME || feature.site_name || feature.SITE_NAME_ ||
+          feature.Park_Name || feature.park_name || feature.PARK_NAME || 
+          feature.Play_Name || feature.play_name || feature.PLAY_NAME ||
+          feature.School_Name || feature.school_name || feature.SCHOOL_NAME ||
+          feature.Crosswalk_ID || feature.crosswalk_id || feature.CROSSWALK_ID ||
+          feature.Segment_ID || feature.segment_id || feature.SEGMENT_ID ||
+          feature.MAP_PAR_ID || feature.map_par_id || feature.MAP_PAR_ID_ || 'Unknown';
+        const streetAddress = feature.Street_Address || feature.street_address || feature.STREET_ADDRESS || feature.address || '';
+        const city = feature.City || feature.city || feature.CITY || feature.District || feature.district || 'Boston';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry or attributes
+        let lat = '';
+        let lon = '';
+        if (feature.Latitude && feature.Longitude) {
+          lat = feature.Latitude.toString();
+          lon = feature.Longitude.toString();
+        } else if (feature.geometry) {
+          if (feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
+            lat = feature.geometry.y.toString();
+            lon = feature.geometry.x.toString();
+          } else if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline - use first point of first path
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const firstPoint = firstPath[0];
+              lat = firstPoint[1].toString();
+              lon = firstPoint[0].toString();
+            }
+          } else if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Polygon - use first point of first ring
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              lat = firstPoint[1].toString();
+              lon = firstPoint[0].toString();
+            }
+          }
+        }
+        
+        if (!lat || !lon) {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.ObjectId;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        delete allAttributes.Latitude;
+        delete allAttributes.Longitude;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        // Get phone/website for charging stations, total_docks for blue bike stations, facility type for bicycle network, length for managed streets, acres for open space, asset for park features
+        const phone = feature.Station_Phone || feature.station_phone || '';
+        const website = feature.EV_Network_Web || feature.ev_network_web || '';
+        const totalDocks = feature.Total_docks || feature.total_docks || feature.Total_Docks || '';
+        const existingFacility = feature.ExisFacil || feature.exis_facil || feature.EXIS_FACIL || '';
+        const lengthMi = feature.LENGTH_MI || feature.length_mi || feature.Length_Mi || '';
+        const speedLimit = feature.SPEED_LIM || feature.speed_lim || feature.Speed_Lim || '';
+        const acres = feature.ACRES || feature.acres || feature.ACRES_ || '';
+        const asset = feature.Asset || feature.asset || feature.ASSET || feature.Asset_ || '';
+        const neighbor = feature.Neighbor || feature.neighbor || feature.NEIGHBOR || feature.Neighbor_ || '';
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Boston Open Data',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          `${layerInfo.icon} ${stationName}${totalDocks ? ` (${totalDocks} docks)` : existingFacility ? ` (${existingFacility})` : lengthMi ? ` (${lengthMi} mi)` : acres ? ` (${acres} acres)` : asset ? ` (${asset})` : ''}${feature.isContaining ? ' (Contains Point)' : ''}`,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          streetAddress ? `${streetAddress}, ${city}` : neighbor ? neighbor : city,
+          `${attributesJson}${feature.isContaining !== undefined ? ` | Contains Point: ${isContaining}` : ''}`,
+          phone,
+          website,
+          'Boston Open Data'
         ]);
       });
     }

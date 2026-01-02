@@ -788,6 +788,126 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/14"
+        },
+        {
+          name: "USGS WBD - WBDLine",
+          description: "USGS Watershed Boundary Dataset - WBDLine boundaries (proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/0"
+        },
+        {
+          name: "USGS WBD - 2-digit HU (Region)",
+          description: "USGS Watershed Boundary Dataset - 2-digit Hydrologic Unit (Region) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/1"
+        },
+        {
+          name: "USGS WBD - 4-digit HU (Subregion)",
+          description: "USGS Watershed Boundary Dataset - 4-digit Hydrologic Unit (Subregion) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/2"
+        },
+        {
+          name: "USGS WBD - 6-digit HU (Basin)",
+          description: "USGS Watershed Boundary Dataset - 6-digit Hydrologic Unit (Basin) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/3"
+        },
+        {
+          name: "USGS WBD - 8-digit HU (Subbasin)",
+          description: "USGS Watershed Boundary Dataset - 8-digit Hydrologic Unit (Subbasin) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/4"
+        },
+        {
+          name: "USGS WBD - 10-digit HU (Watershed)",
+          description: "USGS Watershed Boundary Dataset - 10-digit Hydrologic Unit (Watershed) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/5"
+        },
+        {
+          name: "USGS WBD - 12-digit HU (Subwatershed)",
+          description: "USGS Watershed Boundary Dataset - 12-digit Hydrologic Unit (Subwatershed) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6"
+        },
+        {
+          name: "USGS WBD - 14-digit HU",
+          description: "USGS Watershed Boundary Dataset - 14-digit Hydrologic Unit boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/7"
+        },
+        {
+          name: "USGS WBD - 16-digit HU",
+          description: "USGS Watershed Boundary Dataset - 16-digit Hydrologic Unit boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/8"
+        },
+        {
+          name: "USGS Contours - 100 Foot",
+          description: "USGS The National Map Elevation Contours - 100-foot contours generated from 1 arc-second data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/0"
+        },
+        {
+          name: "USGS Contours - 100 Foot Lines",
+          description: "USGS The National Map Elevation Contours - 100-foot contour lines generated from 1 arc-second data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/1"
+        },
+        {
+          name: "USGS Contours - 50 Foot",
+          description: "USGS The National Map Elevation Contours - 50-foot contours generated from 1/3-arc-second data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/2"
+        },
+        {
+          name: "USGS Contours - 50 Foot Lines",
+          description: "USGS The National Map Elevation Contours - 50-foot contour lines generated from 1/3-arc-second data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/3"
+        },
+        {
+          name: "USGS Contours - Large Scale",
+          description: "USGS The National Map Elevation Contours - Large-scale contours created for 7.5' 1:24,000-scale US Topo digital map series, derived from 1/3 arc-second or better resolution data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/4"
+        },
+        {
+          name: "USGS Contours - Large Scale Lines",
+          description: "USGS The National Map Elevation Contours - Large-scale contour lines created for 7.5' 1:24,000-scale US Topo digital map series, derived from 1/3 arc-second or better resolution data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/5"
         }
       ]
     },
@@ -3073,6 +3193,91 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://gis-services.capecodcommission.org/arcgis/rest/services/Reference/Boundaries/MapServer/20"
+        }
+      ]
+    },
+    {
+      category: "Boston Open Data",
+      sources: [
+        {
+          name: "Boston Charging Stations",
+          description: "Boston Open Data - Electric vehicle charging stations in Boston (proximity queries up to 25 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/OpenData/MapServer/2"
+        },
+        {
+          name: "Boston Blue Bike Stations",
+          description: "Boston Open Data - Blue Bike share stations in Boston (proximity queries up to 25 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/sFnw0xNflSi8J0uh/arcgis/rest/services/Blue_Bike_Stations/FeatureServer/0"
+        },
+        {
+          name: "Boston Bicycle Network 2023",
+          description: "Boston Open Data - Active Transportation Network bicycle infrastructure including bike lanes, shared lane markings, and other bicycle facilities (proximity queries up to 25 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/sFnw0xNflSi8J0uh/arcgis/rest/services/Active_Transportation_Network_2023/FeatureServer/0"
+        },
+        {
+          name: "City of Boston Managed Streets",
+          description: "Boston Open Data - City of Boston managed street segments with detailed road attributes including speed limits, number of lanes, length, and other infrastructure details (proximity queries up to 25 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/sFnw0xNflSi8J0uh/arcgis/rest/services/City_of_Boston_Managed_Streets/FeatureServer/0"
+        },
+        {
+          name: "Boston Public Open Space",
+          description: "Boston Open Data - Public open space areas in Boston including parks, playgrounds, and other recreational areas (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/BaseServices/Open_Space_Public/FeatureServer/0"
+        },
+        {
+          name: "Boston Park Features",
+          description: "Boston Open Data - Park features and amenities in Boston parks including playgrounds, sports facilities, and other park assets (proximity queries up to 25 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/BaseServices/Park_Features/FeatureServer/0"
+        },
+        {
+          name: "Boston School Zones",
+          description: "Boston Open Data - School zone pavement markings defining school zones in Boston (point-in-polygon and proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/BTD/PavementMarkings/FeatureServer/0"
+        },
+        {
+          name: "Boston Crosswalks",
+          description: "Boston Open Data - Crosswalk pavement markings in Boston (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/BTD/PavementMarkings/FeatureServer/1"
+        },
+        {
+          name: "Boston Yellow Centerlines",
+          description: "Boston Open Data - Yellow centerline pavement markings in Boston (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/BTD/PavementMarkings/FeatureServer/2"
+        },
+        {
+          name: "Boston Parcels 2025",
+          description: "Boston Open Data - Parcel polygons representing parcels, water, and rights of way in Boston (point-in-polygon and proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Parcels/Parcels25/MapServer/0"
         }
       ]
     },
