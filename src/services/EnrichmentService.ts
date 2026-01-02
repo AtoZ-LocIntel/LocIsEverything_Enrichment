@@ -173,6 +173,8 @@ import {
   getBostonBikeNetworkExistingFacilityData,
   getBostonBikeNetwork5YRPlanData,
   getBostonBikeNetwork30YRPlanData,
+  getBoston311AddressesData,
+  getBostonParcels2023Data,
 } from '../adapters/bostonOpenData';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
@@ -2790,6 +2792,8 @@ export class EnrichmentService {
         return await this.getBostonCrosswalks(lat, lon, radius);
       case 'boston_yellow_centerlines':
         return await this.getBostonYellowCenterlines(lat, lon, radius);
+      case 'boston_parcels_2023':
+        return await this.getBostonParcels2023(lat, lon, radius);
       case 'boston_parcels_2025':
         return await this.getBostonParcels2025(lat, lon, radius);
       case 'boston_population_estimates_2025':
@@ -2822,6 +2826,8 @@ export class EnrichmentService {
         return await this.getBostonBikeNetwork5YRPlan(lat, lon, radius);
       case 'boston_bike_network_30yr_plan':
         return await this.getBostonBikeNetwork30YRPlan(lat, lon, radius);
+      case 'boston_311_addresses':
+        return await this.getBoston311Addresses(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -27260,6 +27266,43 @@ out center;`;
     }
   }
 
+  private async getBostonParcels2023(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏘️ Fetching Boston Parcels 2023 data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonParcels2023Data(lat, lon, radius || 0.25);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_parcels_2023_count'] = 0;
+        result['boston_parcels_2023_summary'] = 'No parcels found within the specified radius';
+        result['boston_parcels_2023_all'] = [];
+      } else {
+        result['boston_parcels_2023_count'] = features.length;
+        result['boston_parcels_2023_summary'] = `Found ${features.length} parcel(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 0.25} mile${(radius || 0.25) === 1 ? '' : 's'}`;
+        result['boston_parcels_2023_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Parcels 2023 data:`, error);
+      return {
+        'boston_parcels_2023_count': 0,
+        'boston_parcels_2023_summary': 'Error fetching parcels 2023 data',
+        'boston_parcels_2023_all': []
+      };
+    }
+  }
+
   private async getBostonParcels2025(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`🏘️ Fetching Boston Parcels 2025 data for [${lat}, ${lon}]`);
@@ -27828,6 +27871,41 @@ out center;`;
         'boston_bike_network_30yr_plan_count': 0,
         'boston_bike_network_30yr_plan_summary': 'Error fetching bike network 30YR plan data',
         'boston_bike_network_30yr_plan_all': []
+      };
+    }
+  }
+
+  private async getBoston311Addresses(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📞 Fetching Boston 311 Bulk Item PickUp Locations data for [${lat}, ${lon}]`);
+      
+      const features = await getBoston311AddressesData(lat, lon, radius || 1);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_311_addresses_count'] = 0;
+        result['boston_311_addresses_summary'] = 'No 311 bulk item pickup locations found within the specified radius';
+        result['boston_311_addresses_all'] = [];
+      } else {
+        result['boston_311_addresses_count'] = features.length;
+        result['boston_311_addresses_summary'] = `Found ${features.length} 311 bulk item pickup location${features.length === 1 ? '' : 's'} within ${radius || 1} mile${features.length === 1 ? '' : 's'}`;
+        result['boston_311_addresses_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston 311 Bulk Item PickUp Locations data:`, error);
+      return {
+        'boston_311_addresses_count': 0,
+        'boston_311_addresses_summary': 'Error fetching 311 bulk item pickup locations data',
+        'boston_311_addresses_all': []
       };
     }
   }

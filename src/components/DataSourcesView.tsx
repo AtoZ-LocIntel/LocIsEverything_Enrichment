@@ -3200,6 +3200,14 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "Boston Open Data",
       sources: [
         {
+          name: "Boston Parcels 2023",
+          description: "Boston Open Data - Parcel polygons for FY23 (point-in-polygon and proximity queries up to 0.25 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/DND/MOH_Parcel_Join_FY23/MapServer/0"
+        },
+        {
           name: "Boston Charging Stations",
           description: "Boston Open Data - Electric vehicle charging stations in Boston (proximity queries up to 25 miles)",
           coverage: "Boston, Massachusetts",
@@ -3398,6 +3406,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/BikeNetwork/MapServer/2"
+        },
+        {
+          name: "Boston 311 Bulk Item PickUp Locations",
+          description: "Boston Open Data - 311 bulk item pickup locations (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/Addresses_Mattress_Pickup_311/FeatureServer/0"
         }
       ]
     },

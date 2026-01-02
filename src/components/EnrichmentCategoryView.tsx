@@ -287,6 +287,8 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               radiusOptions = [0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0];
             } else if (enrichment.id === 'chicago_311' || enrichment.id === 'chicago_building_footprints' || enrichment.id === 'houston_site_addresses') {
               radiusOptions = [0.25, 0.50, 0.75, 1.0];
+            } else if (enrichment.id === 'boston_parcels_2023') {
+              radiusOptions = [0.25];
             } else if (enrichment.id === 'nyc_bike_routes' || enrichment.id === 'nyc_business_improvement_districts' || enrichment.id === 'nyc_community_districts') {
               radiusOptions = [0.5, 1.0, 2.5, 5.0];
             } else {

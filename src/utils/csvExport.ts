@@ -13600,6 +13600,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
     
     // Add Boston Open Data data rows
     const bostonLayerMap: Record<string, { name: string, icon: string }> = {
+      'boston_parcels_2023_all': { name: 'BOSTON_PARCELS_2023', icon: '🏘️' },
       'boston_charging_stations_all': { name: 'BOSTON_CHARGING_STATIONS', icon: '🔌' },
       'boston_blue_bike_stations_all': { name: 'BOSTON_BLUE_BIKE_STATIONS', icon: '🚴' },
       'boston_bicycle_network_2023_all': { name: 'BOSTON_BICYCLE_NETWORK_2023', icon: '🚴' },
@@ -13624,7 +13625,8 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'boston_public_libraries_all': { name: 'BOSTON_PUBLIC_LIBRARIES', icon: '📚' },
       'boston_bike_network_existing_facility_all': { name: 'BOSTON_BIKE_NETWORK_EXISTING_FACILITY', icon: '🚴' },
       'boston_bike_network_5yr_plan_all': { name: 'BOSTON_BIKE_NETWORK_5YR_PLAN', icon: '🚴' },
-      'boston_bike_network_30yr_plan_all': { name: 'BOSTON_BIKE_NETWORK_30YR_PLAN', icon: '🚴' }
+      'boston_bike_network_30yr_plan_all': { name: 'BOSTON_BIKE_NETWORK_30YR_PLAN', icon: '🚴' },
+      'boston_311_addresses_all': { name: 'BOSTON_311_BULK_ITEM_PICKUP_LOCATIONS', icon: '📞' }
     };
     
     if (bostonLayerMap[key] && Array.isArray(value)) {

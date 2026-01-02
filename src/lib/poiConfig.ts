@@ -978,6 +978,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'ma_acecs', label: 'MA Areas of Critical Environmental Concern', description: 'MassGIS - Massachusetts Areas of Critical Environmental Concern (ACECs) (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'ma', section: 'ma' },
   
   // Boston Open Data
+  { id: 'boston_parcels_2023', label: 'Boston Parcels 2023', description: 'Boston Open Data - Parcel polygons for FY23 (point-in-polygon and proximity queries up to 0.25 miles)', isPOI: true, defaultRadius: 0.25, maxRadius: 0.25, category: 'boston', section: 'ma' },
   { id: 'boston_charging_stations', label: 'Boston Charging Stations', description: 'Boston Open Data - Electric vehicle charging stations in Boston (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'boston', section: 'ma' },
   { id: 'boston_blue_bike_stations', label: 'Boston Blue Bike Stations', description: 'Boston Open Data - Blue Bike share stations in Boston (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'boston', section: 'ma' },
   { id: 'boston_bicycle_network_2023', label: 'Boston Bicycle Network 2023', description: 'Boston Open Data - Active Transportation Network bicycle infrastructure in Boston (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'boston', section: 'ma' },
@@ -1002,6 +1003,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'boston_bike_network_existing_facility', label: 'Boston Bike Network Existing Facility', description: 'Boston Open Data - Existing bike network facilities (proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'boston', section: 'ma' },
   { id: 'boston_bike_network_5yr_plan', label: 'Boston Bike Network 5YR Plan', description: 'Boston Open Data - 5-year bike network plan (proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'boston', section: 'ma' },
   { id: 'boston_bike_network_30yr_plan', label: 'Boston Bike Network 30YR Plan', description: 'Boston Open Data - 30-year bike network plan (proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 10, category: 'boston', section: 'ma' },
+  { id: 'boston_311_addresses', label: 'Boston 311 Bulk Item PickUp Locations', description: 'Boston Open Data - 311 bulk item pickup locations (proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1, category: 'boston', section: 'ma' },
   { id: 'boston_snow_districts', label: 'Boston Snow Districts', description: 'Boston Open Data - Snow district polygons (point-in-polygon and proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0, maxRadius: 10, category: 'boston', section: 'ma' },
   
   { id: 'ct_parcels', label: 'CT Parcels', description: 'CT Geodata Portal - Connecticut State Parcel Layer 2023 for point-in-polygon and proximity queries', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'ct', section: 'ct' },

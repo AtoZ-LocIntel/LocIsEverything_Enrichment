@@ -34035,6 +34035,7 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw Boston Open Data layers
       const bostonLayers = [
+        { key: 'boston_parcels_2023_all', icon: '🏘️', color: '#f97316', title: 'Boston Parcels 2023', isPolygon: true },
         { key: 'boston_charging_stations_all', icon: '🔌', color: '#16a34a', title: 'Boston Charging Stations', isPoint: true },
         { key: 'boston_blue_bike_stations_all', icon: '🚴', color: '#2563eb', title: 'Boston Blue Bike Stations', isPoint: true },
         { key: 'boston_mbta_stops_all', icon: '🚇', color: '#dc2626', title: 'MBTA Stops', isPoint: true },
@@ -34059,7 +34060,8 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'boston_public_libraries_all', icon: '📚', color: '#ef4444', title: 'Boston Public Libraries', isPoint: true },
         { key: 'boston_bike_network_existing_facility_all', icon: '🚴', color: '#22c55e', title: 'Boston Bike Network Existing Facility', isPolyline: true },
         { key: 'boston_bike_network_5yr_plan_all', icon: '🚴', color: '#3b82f6', title: 'Boston Bike Network 5YR Plan', isPolyline: true },
-        { key: 'boston_bike_network_30yr_plan_all', icon: '🚴', color: '#8b5cf6', title: 'Boston Bike Network 30YR Plan', isPolyline: true }
+        { key: 'boston_bike_network_30yr_plan_all', icon: '🚴', color: '#8b5cf6', title: 'Boston Bike Network 30YR Plan', isPolyline: true },
+        { key: 'boston_311_addresses_all', icon: '📞', color: '#ec4899', title: 'Boston 311 Bulk Item PickUp Locations', isPoint: true }
       ];
 
       bostonLayers.forEach((layerConfig) => {

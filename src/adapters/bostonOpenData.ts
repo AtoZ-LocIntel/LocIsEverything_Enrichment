@@ -20,6 +20,8 @@ const BASE_SERVICE_URL_POPULATION_ESTIMATES_NEIGHBORHOODS = 'https://gis.bostonp
 const BASE_SERVICE_URL_POPULATION_ESTIMATES_CITY = 'https://gis.bostonplans.org/hosting/rest/services/Hosted/Data_2025_City_AnalyzeB/FeatureServer';
 const BASE_SERVICE_URL_TRASH_DAY = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/TrashDay/MapServer';
 const BASE_SERVICE_URL_BIKE_NETWORK = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/BikeNetwork/MapServer';
+const BASE_SERVICE_URL_311_ADDRESSES = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/Addresses_Mattress_Pickup_311/FeatureServer';
+const BASE_SERVICE_URL_MOH_PARCELS_2023 = 'https://gisportal.boston.gov/arcgis/rest/services/DND/MOH_Parcel_Join_FY23/MapServer';
 
 export interface BostonOpenDataFeature {
   objectid: number;
@@ -1573,6 +1575,28 @@ export async function getBostonBikeNetwork30YRPlanData(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   return queryBostonBikeNetworkLayer(2, 'Bike Network 30YR Plan', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston 311 Bulk Item PickUp Locations layer (Layer 0) - Point layer
+ */
+export async function getBoston311AddressesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_311_ADDRESSES, 0, '311 Bulk Item PickUp Locations', lat, lon, Math.min(radiusMiles, 1));
+}
+
+/**
+ * Query Boston Parcels 2023 layer (Layer 0) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonParcels2023Data(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_MOH_PARCELS_2023, 0, 'Parcels 2023', lat, lon, Math.min(radiusMiles, 0.25));
 }
 
 /**
