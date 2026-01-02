@@ -275,7 +275,7 @@ function App() {
               
               {/* Dynamic Layer Count Badge */}
               {totalLayersCount > 0 && (
-                <div className="inline-flex items-center justify-center px-1 sm:px-4 py-2 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                <div className="inline-flex items-center justify-center px-2.5 sm:px-4 py-2 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
                   <span className="text-white font-semibold text-sm sm:text-base whitespace-nowrap">
                     <span className="font-bold text-2xl sm:text-3xl">{totalLayersCount.toLocaleString()}</span> Open Data Layers Available
                   </span>
