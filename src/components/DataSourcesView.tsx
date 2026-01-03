@@ -3438,6 +3438,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://gisportal.boston.gov/arcgis/rest/services/Education/OpenData/MapServer/2"
+        },
+        {
+          name: "Boston Historic Districts and Protection Areas",
+          description: "Boston Open Data - Historic districts and protection areas (point-in-polygon and proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/BLC_HISTORIC_DISTRICTS/MapServer/0"
         }
       ]
     },

@@ -178,6 +178,7 @@ import {
   getBostonPublicSchoolsData,
   getBostonNonPublicSchoolsData,
   getBostonCollegesUniversitiesData,
+  getBostonHistoricDistrictsData,
 } from '../adapters/bostonOpenData';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
@@ -2837,6 +2838,8 @@ export class EnrichmentService {
         return await this.getBostonNonPublicSchools(lat, lon, radius);
       case 'boston_colleges_universities':
         return await this.getBostonCollegesUniversities(lat, lon, radius);
+      case 'boston_historic_districts':
+        return await this.getBostonHistoricDistricts(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -28021,6 +28024,44 @@ out center;`;
         'boston_colleges_universities_count': 0,
         'boston_colleges_universities_summary': 'Error fetching colleges/universities data',
         'boston_colleges_universities_all': []
+      };
+    }
+  }
+
+  private async getBostonHistoricDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching Boston Historic Districts and Protection Areas data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonHistoricDistrictsData(lat, lon, radius || 5);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['boston_historic_districts_count'] = 0;
+        result['boston_historic_districts_summary'] = 'No historic districts or protection areas found within the specified radius';
+        result['boston_historic_districts_all'] = [];
+      } else {
+        result['boston_historic_districts_count'] = features.length;
+        const districtText = features.length === 1 ? 'historic district/protection area' : 'historic districts/protection areas';
+        result['boston_historic_districts_summary'] = `Found ${features.length} ${districtText}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 5} miles`;
+        result['boston_historic_districts_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Historic Districts and Protection Areas data:`, error);
+      return {
+        'boston_historic_districts_count': 0,
+        'boston_historic_districts_summary': 'Error fetching historic districts data',
+        'boston_historic_districts_all': []
       };
     }
   }

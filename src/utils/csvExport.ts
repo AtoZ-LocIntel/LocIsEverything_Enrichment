@@ -13629,7 +13629,8 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'boston_311_addresses_all': { name: 'BOSTON_311_BULK_ITEM_PICKUP_LOCATIONS', icon: '📞' },
       'boston_public_schools_all': { name: 'BOSTON_PUBLIC_SCHOOLS', icon: '🏫' },
       'boston_non_public_schools_all': { name: 'BOSTON_NON_PUBLIC_SCHOOLS', icon: '🏫' },
-      'boston_colleges_universities_all': { name: 'BOSTON_COLLEGES_UNIVERSITIES', icon: '🎓' }
+      'boston_colleges_universities_all': { name: 'BOSTON_COLLEGES_UNIVERSITIES', icon: '🎓' },
+      'boston_historic_districts_all': { name: 'BOSTON_HISTORIC_DISTRICTS', icon: '🏛️' }
     };
     
     if (bostonLayerMap[key] && Array.isArray(value)) {
