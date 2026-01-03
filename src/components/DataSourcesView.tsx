@@ -3464,6 +3464,38 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://gisportal.boston.gov/arcgis/rest/services/bprd_non_bprd_assets_combined_sports_vw/FeatureServer/0"
         },
         {
+          name: "Boston DOIT Buildings",
+          description: "Boston DOIT Buildings (point-in-polygon and proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Assessing/DOIT_buildings/MapServer/2"
+        },
+        {
+          name: "Boston DOIT Hydro",
+          description: "Boston DOIT Hydro (proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Assessing/DOIT_rail_and_hydro/MapServer/0"
+        },
+        {
+          name: "Boston DOIT MBTA Rapid Transit",
+          description: "Boston DOIT MBTA Rapid Transit (proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Assessing/DOIT_rail_and_hydro/MapServer/1"
+        },
+        {
+          name: "Boston DOIT Rail",
+          description: "Boston DOIT Rail (proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Assessing/DOIT_rail_and_hydro/MapServer/2"
+        },
+        {
           name: "Boston Parcels 2023",
           description: "Boston Open Data - Parcel polygons for FY23 (point-in-polygon and proximity queries up to 0.25 miles)",
           coverage: "Boston, Massachusetts",

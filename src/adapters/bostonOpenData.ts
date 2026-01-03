@@ -36,6 +36,8 @@ const BASE_SERVICE_URL_PWD_CARTEGRAPH = 'https://gisportal.boston.gov/arcgis/res
 const BASE_SERVICE_URL_PWD_PAVEMENT_SIDEWALK_CONDITION = 'https://gisportal.boston.gov/arcgis/rest/services/PWD/Pavement_sidewalk_condition/FeatureServer';
 const BASE_SERVICE_URL_STORYMAPS_COOLING_CENTERS = 'https://gisportal.boston.gov/arcgis/rest/services/StoryMaps/CoolingCenters/FeatureServer';
 const BASE_SERVICE_URL_BPRD_SPORTS = 'https://gisportal.boston.gov/arcgis/rest/services/bprd_non_bprd_assets_combined_sports_vw/FeatureServer';
+const BASE_SERVICE_URL_DOIT_BUILDINGS = 'https://gisportal.boston.gov/arcgis/rest/services/Assessing/DOIT_buildings/MapServer';
+const BASE_SERVICE_URL_DOIT_RAIL_AND_HYDRO = 'https://gisportal.boston.gov/arcgis/rest/services/Assessing/DOIT_rail_and_hydro/MapServer';
 
 export interface BostonOpenDataFeature {
   objectid: number;
@@ -2729,6 +2731,50 @@ export async function getBostonBPRDSportingActivityLocationsData(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   return queryBostonLayer(BASE_SERVICE_URL_BPRD_SPORTS, 0, 'Sporting Activity Locations', lat, lon, Math.min(radiusMiles, 5.0));
+}
+
+/**
+ * Query Boston DOIT Buildings (Layer 2) - Polygon layer with point-in-polygon and proximity support
+ */
+export async function getBostonDOITBuildingsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_DOIT_BUILDINGS, 2, 'DOIT Buildings', lat, lon, Math.min(radiusMiles, 1.0));
+}
+
+/**
+ * Query Boston DOIT Hydro (Layer 0) - Polyline layer with proximity support
+ */
+export async function getBostonDOITHydroData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_DOIT_RAIL_AND_HYDRO, 0, 'DOIT Hydro', lat, lon, Math.min(radiusMiles, 5.0));
+}
+
+/**
+ * Query Boston DOIT MBTA Rapid Transit (Layer 1) - Polyline layer with proximity support
+ */
+export async function getBostonDOITMBTARapidTransitData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_DOIT_RAIL_AND_HYDRO, 1, 'DOIT MBTA Rapid Transit', lat, lon, Math.min(radiusMiles, 5.0));
+}
+
+/**
+ * Query Boston DOIT Rail (Layer 2) - Polyline layer with proximity support
+ */
+export async function getBostonDOITRailData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_DOIT_RAIL_AND_HYDRO, 2, 'DOIT Rail', lat, lon, Math.min(radiusMiles, 5.0));
 }
 
 /**

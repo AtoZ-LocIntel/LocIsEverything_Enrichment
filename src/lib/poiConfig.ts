@@ -400,12 +400,6 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'NM.webp'
   },
   {
-    id: 'nv',
-    title: 'Nevada Open Data',
-    description: 'Nevada state open data services and layers',
-    icon: 'NV.webp'
-  },
-  {
     id: 'ny',
     title: 'New York Open Data',
     description: 'New York state open data services and layers',
@@ -1106,6 +1100,10 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'boston_pwd_pavement_sidewalk_condition_pavement_condition', label: 'Boston PWD - Pavement Condition', description: 'Boston PWD Pavement Sidewalk Condition - Pavement Condition (proximity queries up to 2 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 2.0, category: 'boston', section: 'ma' },
   { id: 'boston_cooling_centers', label: 'Boston Cooling Centers', description: 'Boston Cooling Centers (proximity queries up to 10 miles)', isPOI: true, defaultRadius: 5, maxRadius: 10, category: 'boston', section: 'ma' },
   { id: 'boston_bprd_sporting_activity_locations', label: 'Boston BPRD Sporting Activity Locations', description: 'Boston BPRD Sporting Activity Locations (proximity queries up to 5 miles)', isPOI: true, defaultRadius: 2, maxRadius: 5, category: 'boston', section: 'ma' },
+  { id: 'boston_doit_buildings', label: 'Boston DOIT Buildings', description: 'Boston DOIT Buildings (point-in-polygon and proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0, maxRadius: 1, category: 'boston', section: 'ma' },
+  { id: 'boston_doit_hydro', label: 'Boston DOIT Hydro', description: 'Boston DOIT Hydro (proximity queries up to 5 miles)', isPOI: true, defaultRadius: 2, maxRadius: 5, category: 'boston', section: 'ma' },
+  { id: 'boston_doit_mbta_rapid_transit', label: 'Boston DOIT MBTA Rapid Transit', description: 'Boston DOIT MBTA Rapid Transit (proximity queries up to 5 miles)', isPOI: true, defaultRadius: 2, maxRadius: 5, category: 'boston', section: 'ma' },
+  { id: 'boston_doit_rail', label: 'Boston DOIT Rail', description: 'Boston DOIT Rail (proximity queries up to 5 miles)', isPOI: true, defaultRadius: 2, maxRadius: 5, category: 'boston', section: 'ma' },
   { id: 'boston_population_estimates_2025', label: 'Boston Population Estimates 2025 Census Tracts', description: 'Boston Open Data - Population estimates 2025 census tract polygons (point-in-polygon and proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0, maxRadius: 10, category: 'boston', section: 'ma' },
   { id: 'boston_population_estimates_2025_neighborhoods', label: 'Boston Population Estimates 2025 Neighborhoods', description: 'Boston Open Data - Population estimates 2025 neighborhood polygons (point-in-polygon and proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0, maxRadius: 10, category: 'boston', section: 'ma' },
   { id: 'boston_population_estimates_2025_city', label: 'Boston Population Estimates 2025 City', description: 'Boston Open Data - Population estimates 2025 city boundary polygon (point-in-polygon and proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0, maxRadius: 10, category: 'boston', section: 'ma' },

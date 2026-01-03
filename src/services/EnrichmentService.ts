@@ -252,6 +252,10 @@ import {
   getBostonPWDPavementSidewalkConditionPavementConditionData,
   getBostonCoolingCentersData,
   getBostonBPRDSportingActivityLocationsData,
+  getBostonDOITBuildingsData,
+  getBostonDOITHydroData,
+  getBostonDOITMBTARapidTransitData,
+  getBostonDOITRailData,
 } from '../adapters/bostonOpenData';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
@@ -3059,6 +3063,14 @@ export class EnrichmentService {
         return await this.getBostonCoolingCenters(lat, lon, radius);
       case 'boston_bprd_sporting_activity_locations':
         return await this.getBostonBPRDSportingActivityLocations(lat, lon, radius);
+      case 'boston_doit_buildings':
+        return await this.getBostonDOITBuildings(lat, lon, radius);
+      case 'boston_doit_hydro':
+        return await this.getBostonDOITHydro(lat, lon, radius);
+      case 'boston_doit_mbta_rapid_transit':
+        return await this.getBostonDOITMBTARapidTransit(lat, lon, radius);
+      case 'boston_doit_rail':
+        return await this.getBostonDOITRail(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -31057,6 +31069,138 @@ out center;`;
         'boston_bprd_sporting_activity_locations_count': 0,
         'boston_bprd_sporting_activity_locations_summary': 'Error fetching Sporting Activity Locations data',
         'boston_bprd_sporting_activity_locations_all': []
+      };
+    }
+  }
+
+  private async getBostonDOITBuildings(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonDOITBuildingsData(lat, lon, radius || 1);
+      
+      if (features.length === 0) {
+        return {
+          'boston_doit_buildings_count': 0,
+          'boston_doit_buildings_summary': 'No Buildings found within the specified radius',
+          'boston_doit_buildings_all': []
+        };
+      }
+      
+      return {
+        'boston_doit_buildings_count': features.length,
+        'boston_doit_buildings_summary': `Found ${features.length} Building${features.length === 1 ? '' : 's'} within ${radius || 1} miles`,
+        'boston_doit_buildings_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston DOIT Buildings data:', error);
+      return {
+        'boston_doit_buildings_count': 0,
+        'boston_doit_buildings_summary': 'Error fetching Buildings data',
+        'boston_doit_buildings_all': []
+      };
+    }
+  }
+
+  private async getBostonDOITHydro(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonDOITHydroData(lat, lon, radius || 5);
+      
+      if (features.length === 0) {
+        return {
+          'boston_doit_hydro_count': 0,
+          'boston_doit_hydro_summary': 'No Hydro features found within the specified radius',
+          'boston_doit_hydro_all': []
+        };
+      }
+      
+      return {
+        'boston_doit_hydro_count': features.length,
+        'boston_doit_hydro_summary': `Found ${features.length} Hydro feature${features.length === 1 ? '' : 's'} within ${radius || 5} miles`,
+        'boston_doit_hydro_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston DOIT Hydro data:', error);
+      return {
+        'boston_doit_hydro_count': 0,
+        'boston_doit_hydro_summary': 'Error fetching Hydro data',
+        'boston_doit_hydro_all': []
+      };
+    }
+  }
+
+  private async getBostonDOITMBTARapidTransit(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonDOITMBTARapidTransitData(lat, lon, radius || 5);
+      
+      if (features.length === 0) {
+        return {
+          'boston_doit_mbta_rapid_transit_count': 0,
+          'boston_doit_mbta_rapid_transit_summary': 'No MBTA Rapid Transit features found within the specified radius',
+          'boston_doit_mbta_rapid_transit_all': []
+        };
+      }
+      
+      return {
+        'boston_doit_mbta_rapid_transit_count': features.length,
+        'boston_doit_mbta_rapid_transit_summary': `Found ${features.length} MBTA Rapid Transit feature${features.length === 1 ? '' : 's'} within ${radius || 5} miles`,
+        'boston_doit_mbta_rapid_transit_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston DOIT MBTA Rapid Transit data:', error);
+      return {
+        'boston_doit_mbta_rapid_transit_count': 0,
+        'boston_doit_mbta_rapid_transit_summary': 'Error fetching MBTA Rapid Transit data',
+        'boston_doit_mbta_rapid_transit_all': []
+      };
+    }
+  }
+
+  private async getBostonDOITRail(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonDOITRailData(lat, lon, radius || 5);
+      
+      if (features.length === 0) {
+        return {
+          'boston_doit_rail_count': 0,
+          'boston_doit_rail_summary': 'No Rail features found within the specified radius',
+          'boston_doit_rail_all': []
+        };
+      }
+      
+      return {
+        'boston_doit_rail_count': features.length,
+        'boston_doit_rail_summary': `Found ${features.length} Rail feature${features.length === 1 ? '' : 's'} within ${radius || 5} miles`,
+        'boston_doit_rail_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston DOIT Rail data:', error);
+      return {
+        'boston_doit_rail_count': 0,
+        'boston_doit_rail_summary': 'Error fetching Rail data',
+        'boston_doit_rail_all': []
       };
     }
   }
