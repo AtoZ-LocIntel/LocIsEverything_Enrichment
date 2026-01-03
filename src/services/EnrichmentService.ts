@@ -221,6 +221,23 @@ import {
   getBostonInfrastructureMBCRTrainStationsData,
   getBostonApprovedBuildingPermitsData,
   getBostonISDInspectorDistrictsData,
+  getBostonPlanningMainStreetDistrictsData,
+  getBostonPlanningZipCodesData,
+  getBostonPlanningPublicWorksDistrictsData,
+  getBostonPlanningParcels2015Data,
+  getBostonPlanningCityCouncilDistrictsData,
+  getBostonPlanningBTDDistrictsData,
+  getBostonPlanningArticle80ProjectsActiveData,
+  getBostonPlanningPrecinctsData,
+  getBostonPlanningWardsData,
+  getBostonPlanningBostonBoundaryData,
+  getBostonPublicSafetyFireHydrantsData,
+  getBostonPublicSafetyFireBoxesData,
+  getBostonPublicSafetyFireDepartmentsData,
+  getBostonPublicSafetyFireDistrictsData,
+  getBostonPublicSafetyFireSubdistrictsData,
+  getBostonPublicSafetyPoliceDistrictsData,
+  getBostonPublicSafetyPoliceDepartmentsData,
 } from '../adapters/bostonOpenData';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
@@ -2966,6 +2983,40 @@ export class EnrichmentService {
         return await this.getBostonApprovedBuildingPermits(lat, lon, radius);
       case 'boston_isd_inspector_districts':
         return await this.getBostonISDInspectorDistricts(lat, lon, radius);
+      case 'boston_planning_main_street_districts':
+        return await this.getBostonPlanningMainStreetDistricts(lat, lon, radius);
+      case 'boston_planning_zip_codes':
+        return await this.getBostonPlanningZipCodes(lat, lon, radius);
+      case 'boston_planning_public_works_districts':
+        return await this.getBostonPlanningPublicWorksDistricts(lat, lon, radius);
+      case 'boston_planning_parcels_2015':
+        return await this.getBostonPlanningParcels2015(lat, lon, radius);
+      case 'boston_planning_city_council_districts':
+        return await this.getBostonPlanningCityCouncilDistricts(lat, lon, radius);
+      case 'boston_planning_btd_districts':
+        return await this.getBostonPlanningBTDDistricts(lat, lon, radius);
+      case 'boston_planning_article80_projects_active':
+        return await this.getBostonPlanningArticle80ProjectsActive(lat, lon, radius);
+      case 'boston_planning_precincts':
+        return await this.getBostonPlanningPrecincts(lat, lon, radius);
+      case 'boston_planning_wards':
+        return await this.getBostonPlanningWards(lat, lon, radius);
+      case 'boston_planning_boston_boundary':
+        return await this.getBostonPlanningBostonBoundary(lat, lon, radius);
+      case 'boston_public_safety_fire_hydrants':
+        return await this.getBostonPublicSafetyFireHydrants(lat, lon, radius);
+      case 'boston_public_safety_fire_boxes':
+        return await this.getBostonPublicSafetyFireBoxes(lat, lon, radius);
+      case 'boston_public_safety_fire_departments':
+        return await this.getBostonPublicSafetyFireDepartments(lat, lon, radius);
+      case 'boston_public_safety_fire_districts':
+        return await this.getBostonPublicSafetyFireDistricts(lat, lon, radius);
+      case 'boston_public_safety_fire_subdistricts':
+        return await this.getBostonPublicSafetyFireSubdistricts(lat, lon, radius);
+      case 'boston_public_safety_police_districts':
+        return await this.getBostonPublicSafetyPoliceDistricts(lat, lon, radius);
+      case 'boston_public_safety_police_departments':
+        return await this.getBostonPublicSafetyPoliceDepartments(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -29611,6 +29662,336 @@ out center;`;
     }
   }
 
+  private async getBostonPlanningMainStreetDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningMainStreetDistrictsData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_main_street_districts_count': 0,
+          'boston_planning_main_street_districts_summary': 'No Main Street Districts found within the specified radius',
+          'boston_planning_main_street_districts_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_main_street_districts_count': features.length,
+        'boston_planning_main_street_districts_summary': `Found ${features.length} Main Street District${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_main_street_districts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning Main Street Districts data:', error);
+      return {
+        'boston_planning_main_street_districts_count': 0,
+        'boston_planning_main_street_districts_summary': 'Error fetching Main Street Districts data',
+        'boston_planning_main_street_districts_all': []
+      };
+    }
+  }
+
+  private async getBostonPlanningZipCodes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningZipCodesData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_zip_codes_count': 0,
+          'boston_planning_zip_codes_summary': 'No ZIP Codes found within the specified radius',
+          'boston_planning_zip_codes_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_zip_codes_count': features.length,
+        'boston_planning_zip_codes_summary': `Found ${features.length} ZIP Code${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_zip_codes_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning ZIP Codes data:', error);
+      return {
+        'boston_planning_zip_codes_count': 0,
+        'boston_planning_zip_codes_summary': 'Error fetching ZIP Codes data',
+        'boston_planning_zip_codes_all': []
+      };
+    }
+  }
+
+  private async getBostonPlanningPublicWorksDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningPublicWorksDistrictsData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_public_works_districts_count': 0,
+          'boston_planning_public_works_districts_summary': 'No Public Works Districts found within the specified radius',
+          'boston_planning_public_works_districts_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_public_works_districts_count': features.length,
+        'boston_planning_public_works_districts_summary': `Found ${features.length} Public Works District${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_public_works_districts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning Public Works Districts data:', error);
+      return {
+        'boston_planning_public_works_districts_count': 0,
+        'boston_planning_public_works_districts_summary': 'Error fetching Public Works Districts data',
+        'boston_planning_public_works_districts_all': []
+      };
+    }
+  }
+
+  private async getBostonPlanningParcels2015(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningParcels2015Data(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_parcels_2015_count': 0,
+          'boston_planning_parcels_2015_summary': 'No Parcels 2015 found within the specified radius',
+          'boston_planning_parcels_2015_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_parcels_2015_count': features.length,
+        'boston_planning_parcels_2015_summary': `Found ${features.length} Parcel${features.length === 1 ? '' : 's'} 2015${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_parcels_2015_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning Parcels 2015 data:', error);
+      return {
+        'boston_planning_parcels_2015_count': 0,
+        'boston_planning_parcels_2015_summary': 'Error fetching Parcels 2015 data',
+        'boston_planning_parcels_2015_all': []
+      };
+    }
+  }
+
+  private async getBostonPlanningCityCouncilDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningCityCouncilDistrictsData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_city_council_districts_count': 0,
+          'boston_planning_city_council_districts_summary': 'No City Council Districts found within the specified radius',
+          'boston_planning_city_council_districts_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_city_council_districts_count': features.length,
+        'boston_planning_city_council_districts_summary': `Found ${features.length} City Council District${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_city_council_districts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning City Council Districts data:', error);
+      return {
+        'boston_planning_city_council_districts_count': 0,
+        'boston_planning_city_council_districts_summary': 'Error fetching City Council Districts data',
+        'boston_planning_city_council_districts_all': []
+      };
+    }
+  }
+
+  private async getBostonPlanningBTDDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningBTDDistrictsData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_btd_districts_count': 0,
+          'boston_planning_btd_districts_summary': 'No BTD Districts found within the specified radius',
+          'boston_planning_btd_districts_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_btd_districts_count': features.length,
+        'boston_planning_btd_districts_summary': `Found ${features.length} BTD District${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_btd_districts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning BTD Districts data:', error);
+      return {
+        'boston_planning_btd_districts_count': 0,
+        'boston_planning_btd_districts_summary': 'Error fetching BTD Districts data',
+        'boston_planning_btd_districts_all': []
+      };
+    }
+  }
+
+  private async getBostonPlanningArticle80ProjectsActive(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningArticle80ProjectsActiveData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_article80_projects_active_count': 0,
+          'boston_planning_article80_projects_active_summary': 'No Article80 Projects Active found within the specified radius',
+          'boston_planning_article80_projects_active_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_article80_projects_active_count': features.length,
+        'boston_planning_article80_projects_active_summary': `Found ${features.length} Article80 Project${features.length === 1 ? '' : 's'} Active${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_article80_projects_active_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning Article80 Projects Active data:', error);
+      return {
+        'boston_planning_article80_projects_active_count': 0,
+        'boston_planning_article80_projects_active_summary': 'Error fetching Article80 Projects Active data',
+        'boston_planning_article80_projects_active_all': []
+      };
+    }
+  }
+
+  private async getBostonPlanningPrecincts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningPrecinctsData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_precincts_count': 0,
+          'boston_planning_precincts_summary': 'No Precincts found within the specified radius',
+          'boston_planning_precincts_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_precincts_count': features.length,
+        'boston_planning_precincts_summary': `Found ${features.length} Precinct${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_precincts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning Precincts data:', error);
+      return {
+        'boston_planning_precincts_count': 0,
+        'boston_planning_precincts_summary': 'Error fetching Precincts data',
+        'boston_planning_precincts_all': []
+      };
+    }
+  }
+
+  private async getBostonPlanningWards(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningWardsData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_wards_count': 0,
+          'boston_planning_wards_summary': 'No Wards found within the specified radius',
+          'boston_planning_wards_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_wards_count': features.length,
+        'boston_planning_wards_summary': `Found ${features.length} Ward${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_wards_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning Wards data:', error);
+      return {
+        'boston_planning_wards_count': 0,
+        'boston_planning_wards_summary': 'Error fetching Wards data',
+        'boston_planning_wards_all': []
+      };
+    }
+  }
+
+  private async getBostonPlanningBostonBoundary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPlanningBostonBoundaryData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_planning_boston_boundary_count': 0,
+          'boston_planning_boston_boundary_summary': 'No Boston Boundary found within the specified radius',
+          'boston_planning_boston_boundary_all': []
+        };
+      }
+      
+      return {
+        'boston_planning_boston_boundary_count': features.length,
+        'boston_planning_boston_boundary_summary': `Found ${features.length} Boston Boundary${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_planning_boston_boundary_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Planning Boston Boundary data:', error);
+      return {
+        'boston_planning_boston_boundary_count': 0,
+        'boston_planning_boston_boundary_summary': 'Error fetching Boston Boundary data',
+        'boston_planning_boston_boundary_all': []
+      };
+    }
+  }
+
   private async getDCUrbanTreeCanopy(layerId: number, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       const layerKeyMap: Record<number, string> = {
@@ -29941,6 +30322,237 @@ out center;`;
         'us_historical_cultural_political_points_count': 0,
         'us_historical_cultural_political_points_summary': 'Error fetching historical cultural political points data',
         'us_historical_cultural_political_points_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicSafetyFireHydrants(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPublicSafetyFireHydrantsData(lat, lon, radius || 10);
+      
+      if (features.length === 0) {
+        return {
+          'boston_public_safety_fire_hydrants_count': 0,
+          'boston_public_safety_fire_hydrants_summary': 'No Fire Hydrants found within the specified radius',
+          'boston_public_safety_fire_hydrants_all': []
+        };
+      }
+      
+      return {
+        'boston_public_safety_fire_hydrants_count': features.length,
+        'boston_public_safety_fire_hydrants_summary': `Found ${features.length} Fire Hydrant${features.length === 1 ? '' : 's'} within ${radius || 10} miles`,
+        'boston_public_safety_fire_hydrants_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Public Safety Fire Hydrants data:', error);
+      return {
+        'boston_public_safety_fire_hydrants_count': 0,
+        'boston_public_safety_fire_hydrants_summary': 'Error fetching Fire Hydrants data',
+        'boston_public_safety_fire_hydrants_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicSafetyFireBoxes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPublicSafetyFireBoxesData(lat, lon, radius || 10);
+      
+      if (features.length === 0) {
+        return {
+          'boston_public_safety_fire_boxes_count': 0,
+          'boston_public_safety_fire_boxes_summary': 'No Fire Boxes found within the specified radius',
+          'boston_public_safety_fire_boxes_all': []
+        };
+      }
+      
+      return {
+        'boston_public_safety_fire_boxes_count': features.length,
+        'boston_public_safety_fire_boxes_summary': `Found ${features.length} Fire Box${features.length === 1 ? '' : 'es'} within ${radius || 10} miles`,
+        'boston_public_safety_fire_boxes_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Public Safety Fire Boxes data:', error);
+      return {
+        'boston_public_safety_fire_boxes_count': 0,
+        'boston_public_safety_fire_boxes_summary': 'Error fetching Fire Boxes data',
+        'boston_public_safety_fire_boxes_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicSafetyFireDepartments(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPublicSafetyFireDepartmentsData(lat, lon, radius || 10);
+      
+      if (features.length === 0) {
+        return {
+          'boston_public_safety_fire_departments_count': 0,
+          'boston_public_safety_fire_departments_summary': 'No Fire Departments found within the specified radius',
+          'boston_public_safety_fire_departments_all': []
+        };
+      }
+      
+      return {
+        'boston_public_safety_fire_departments_count': features.length,
+        'boston_public_safety_fire_departments_summary': `Found ${features.length} Fire Department${features.length === 1 ? '' : 's'} within ${radius || 10} miles`,
+        'boston_public_safety_fire_departments_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Public Safety Fire Departments data:', error);
+      return {
+        'boston_public_safety_fire_departments_count': 0,
+        'boston_public_safety_fire_departments_summary': 'Error fetching Fire Departments data',
+        'boston_public_safety_fire_departments_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicSafetyFireDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPublicSafetyFireDistrictsData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_public_safety_fire_districts_count': 0,
+          'boston_public_safety_fire_districts_summary': 'No Fire Districts found within the specified radius',
+          'boston_public_safety_fire_districts_all': []
+        };
+      }
+      
+      return {
+        'boston_public_safety_fire_districts_count': features.length,
+        'boston_public_safety_fire_districts_summary': `Found ${features.length} Fire District${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_public_safety_fire_districts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Public Safety Fire Districts data:', error);
+      return {
+        'boston_public_safety_fire_districts_count': 0,
+        'boston_public_safety_fire_districts_summary': 'Error fetching Fire Districts data',
+        'boston_public_safety_fire_districts_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicSafetyFireSubdistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPublicSafetyFireSubdistrictsData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_public_safety_fire_subdistricts_count': 0,
+          'boston_public_safety_fire_subdistricts_summary': 'No Fire Subdistricts found within the specified radius',
+          'boston_public_safety_fire_subdistricts_all': []
+        };
+      }
+      
+      return {
+        'boston_public_safety_fire_subdistricts_count': features.length,
+        'boston_public_safety_fire_subdistricts_summary': `Found ${features.length} Fire Subdistrict${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_public_safety_fire_subdistricts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Public Safety Fire Subdistricts data:', error);
+      return {
+        'boston_public_safety_fire_subdistricts_count': 0,
+        'boston_public_safety_fire_subdistricts_summary': 'Error fetching Fire Subdistricts data',
+        'boston_public_safety_fire_subdistricts_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicSafetyPoliceDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPublicSafetyPoliceDistrictsData(lat, lon, radius || 10);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_public_safety_police_districts_count': 0,
+          'boston_public_safety_police_districts_summary': 'No Police Districts found within the specified radius',
+          'boston_public_safety_police_districts_all': []
+        };
+      }
+      
+      return {
+        'boston_public_safety_police_districts_count': features.length,
+        'boston_public_safety_police_districts_summary': `Found ${features.length} Police District${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 10} miles`,
+        'boston_public_safety_police_districts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Public Safety Police Districts data:', error);
+      return {
+        'boston_public_safety_police_districts_count': 0,
+        'boston_public_safety_police_districts_summary': 'Error fetching Police Districts data',
+        'boston_public_safety_police_districts_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicSafetyPoliceDepartments(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPublicSafetyPoliceDepartmentsData(lat, lon, radius || 10);
+      
+      if (features.length === 0) {
+        return {
+          'boston_public_safety_police_departments_count': 0,
+          'boston_public_safety_police_departments_summary': 'No Police Departments found within the specified radius',
+          'boston_public_safety_police_departments_all': []
+        };
+      }
+      
+      return {
+        'boston_public_safety_police_departments_count': features.length,
+        'boston_public_safety_police_departments_summary': `Found ${features.length} Police Department${features.length === 1 ? '' : 's'} within ${radius || 10} miles`,
+        'boston_public_safety_police_departments_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Public Safety Police Departments data:', error);
+      return {
+        'boston_public_safety_police_departments_count': 0,
+        'boston_public_safety_police_departments_summary': 'Error fetching Police Departments data',
+        'boston_public_safety_police_departments_all': []
       };
     }
   }

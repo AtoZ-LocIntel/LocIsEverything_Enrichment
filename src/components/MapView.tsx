@@ -2478,20 +2478,18 @@ const MapView: React.FC<MapViewProps> = ({
       }
     }
     
-    // Fallback: Try to get default radius from POI config if poiRadii is empty
-    // This helps when user hasn't explicitly set a radius but we want to show what was used
-    if (Object.keys(poiRadii).length === 0) {
-      const poiMeta = poiConfigManager.getPOIType(legendKey);
-      if (poiMeta && poiMeta.defaultRadius !== undefined && poiMeta.defaultRadius > 0) {
-        return poiMeta.defaultRadius;
-      }
-      // Also try without _all suffix
-      const keyWithoutAll = legendKey.replace(/_all$/, '');
-      if (keyWithoutAll !== legendKey) {
-        const poiMetaWithoutAll = poiConfigManager.getPOIType(keyWithoutAll);
-        if (poiMetaWithoutAll && poiMetaWithoutAll.defaultRadius !== undefined && poiMetaWithoutAll.defaultRadius > 0) {
-          return poiMetaWithoutAll.defaultRadius;
-        }
+    // Fallback: Always try to get default radius from POI config if not found in poiRadii
+    // This ensures we show proximity values even when user hasn't explicitly set a radius
+    const poiMeta = poiConfigManager.getPOIType(legendKey);
+    if (poiMeta && poiMeta.defaultRadius !== undefined && poiMeta.defaultRadius > 0) {
+      return poiMeta.defaultRadius;
+    }
+    // Also try without _all suffix
+    const keyWithoutAll = legendKey.replace(/_all$/, '');
+    if (keyWithoutAll !== legendKey) {
+      const poiMetaWithoutAll = poiConfigManager.getPOIType(keyWithoutAll);
+      if (poiMetaWithoutAll && poiMetaWithoutAll.defaultRadius !== undefined && poiMetaWithoutAll.defaultRadius > 0) {
+        return poiMetaWithoutAll.defaultRadius;
       }
     }
     
@@ -4172,11 +4170,15 @@ const MapView: React.FC<MapViewProps> = ({
         // Add to legend accumulator
         if (trailCount > 0) {
           if (!legendAccumulator['nh_recreation_trails']) {
+            const radius = getRadiusForLegendKey('nh_recreation_trails');
+            const radiusDisplay = formatRadiusDisplay('nh_recreation_trails', radius);
             legendAccumulator['nh_recreation_trails'] = {
               icon: '🥾',
               color: '#059669',
               title: 'NH Recreation Trails',
               count: 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
             };
           }
           legendAccumulator['nh_recreation_trails'].count += trailCount;
@@ -4265,11 +4267,15 @@ const MapView: React.FC<MapViewProps> = ({
         // Add to legend accumulator
         if (wallCount > 0) {
           if (!legendAccumulator['nh_stone_walls']) {
+            const radius = getRadiusForLegendKey('nh_stone_walls');
+            const radiusDisplay = formatRadiusDisplay('nh_stone_walls', radius);
             legendAccumulator['nh_stone_walls'] = {
               icon: '🧱',
               color: '#8b7355',
               title: 'NH Stone Walls',
               count: 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
             };
           }
           legendAccumulator['nh_stone_walls'].count += wallCount;
@@ -4360,11 +4366,15 @@ const MapView: React.FC<MapViewProps> = ({
         // Add to legend accumulator
         if (roadCount > 0) {
           if (!legendAccumulator['nh_dot_roads']) {
+            const radius = getRadiusForLegendKey('nh_dot_roads');
+            const radiusDisplay = formatRadiusDisplay('nh_dot_roads', radius);
             legendAccumulator['nh_dot_roads'] = {
               icon: '🛣️',
               color: '#fbbf24',
               title: 'NH DOT Roads',
               count: 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
             };
           }
           legendAccumulator['nh_dot_roads'].count += roadCount;
@@ -4465,11 +4475,15 @@ const MapView: React.FC<MapViewProps> = ({
         // Add to legend accumulator
         if (railroadCount > 0) {
           if (!legendAccumulator['nh_railroads']) {
+            const radius = getRadiusForLegendKey('nh_railroads');
+            const radiusDisplay = formatRadiusDisplay('nh_railroads', radius);
             legendAccumulator['nh_railroads'] = {
               icon: '🚂',
               color: '#92400e',
               title: 'NH Railroads',
               count: 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
             };
           }
           legendAccumulator['nh_railroads'].count += railroadCount;
@@ -34138,6 +34152,23 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'boston_crosswalks_all', icon: '🚶', color: '#3b82f6', title: 'Boston Crosswalks', isPoint: true },
         { key: 'boston_yellow_centerlines_all', icon: '🟡', color: '#fbbf24', title: 'Boston Yellow Centerlines', isPolyline: true },
         { key: 'boston_parcels_2025_all', icon: '🏘️', color: '#ec4899', title: 'Boston Parcels 2025', isPolygon: true },
+        { key: 'boston_planning_main_street_districts_all', icon: '🏪', color: '#8b5cf6', title: 'Boston Planning - Main Street Districts', isPolygon: true },
+        { key: 'boston_planning_zip_codes_all', icon: '📮', color: '#06b6d4', title: 'Boston Planning - ZIP Codes', isPolygon: true },
+        { key: 'boston_planning_public_works_districts_all', icon: '🔧', color: '#f59e0b', title: 'Boston Planning - Public Works Districts', isPolygon: true },
+        { key: 'boston_planning_parcels_2015_all', icon: '🏘️', color: '#ef4444', title: 'Boston Planning - Parcels 2015', isPolygon: true },
+        { key: 'boston_planning_city_council_districts_all', icon: '🏛️', color: '#3b82f6', title: 'Boston Planning - City Council Districts', isPolygon: true },
+        { key: 'boston_planning_btd_districts_all', icon: '🚌', color: '#10b981', title: 'Boston Planning - BTD Districts', isPolygon: true },
+        { key: 'boston_planning_article80_projects_active_all', icon: '🏗️', color: '#f97316', title: 'Boston Planning - Article80 Projects Active', isPolygon: true },
+        { key: 'boston_planning_precincts_all', icon: '👮', color: '#6366f1', title: 'Boston Planning - Precincts', isPolygon: true },
+        { key: 'boston_planning_wards_all', icon: '🗳️', color: '#ec4899', title: 'Boston Planning - Wards', isPolygon: true },
+        { key: 'boston_planning_boston_boundary_all', icon: '📍', color: '#14b8a6', title: 'Boston Planning - Boston Boundary', isPolygon: true },
+        { key: 'boston_public_safety_fire_hydrants_all', icon: '🚒', color: '#ef4444', title: 'Boston Public Safety - Fire Hydrants', isPoint: true },
+        { key: 'boston_public_safety_fire_boxes_all', icon: '📞', color: '#dc2626', title: 'Boston Public Safety - Fire Boxes', isPoint: true },
+        { key: 'boston_public_safety_fire_departments_all', icon: '🏢', color: '#b91c1c', title: 'Boston Public Safety - Fire Departments', isPoint: true },
+        { key: 'boston_public_safety_fire_districts_all', icon: '🔥', color: '#991b1b', title: 'Boston Public Safety - Fire Districts', isPolygon: true },
+        { key: 'boston_public_safety_fire_subdistricts_all', icon: '🛡️', color: '#7f1d1d', title: 'Boston Public Safety - Fire Subdistricts', isPolygon: true },
+        { key: 'boston_public_safety_police_districts_all', icon: '👮', color: '#1e40af', title: 'Boston Public Safety - Police Districts', isPolygon: true },
+        { key: 'boston_public_safety_police_departments_all', icon: '🚔', color: '#1e3a8a', title: 'Boston Public Safety - Police Departments', isPoint: true },
         { key: 'boston_population_estimates_2025_all', icon: '📊', color: '#8b5cf6', title: 'Boston Population Estimates 2025 Census Tracts', isPolygon: true },
         { key: 'boston_population_estimates_2025_neighborhoods_all', icon: '🏘️', color: '#a855f7', title: 'Boston Population Estimates 2025 Neighborhoods', isPolygon: true },
         { key: 'boston_population_estimates_2025_city_all', icon: '🏙️', color: '#9333ea', title: 'Boston Population Estimates 2025 City', isPolygon: true },
@@ -34556,8 +34587,8 @@ const MapView: React.FC<MapViewProps> = ({
                 };
               }
               legendAccumulator[legendKey].count += featureCount;
-              // Update radius info if not already set
-              if (radius !== undefined && !legendAccumulator[legendKey].radius) {
+              // Always update radius info (in case poiRadii was updated or we want to ensure it's set)
+              if (radius !== undefined) {
                 legendAccumulator[legendKey].radius = radius;
                 legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
               }
@@ -34961,13 +34992,16 @@ const MapView: React.FC<MapViewProps> = ({
           console.log('🗺️ poiRadii is empty - no proximity values available');
         }
         
-        // Ensure all legend items have radius info if available in poiRadii or POI config
+        // Ensure ALL legend items (points, polylines, AND polygons) have radius info if available
+        // This is critical for showing proximity values in the legend for all layer types
         Object.keys(legendAccumulator).forEach(legendKey => {
           const item = legendAccumulator[legendKey];
           if (item) {
-            // Always try to get radius, even if already set (in case poiRadii was updated)
+            // Always try to get radius - this works for all geometry types (points, polylines, polygons)
+            // Priority: poiRadii (user-selected) > POI config defaultRadius
             const radius = getRadiusForLegendKey(legendKey);
             if (radius !== undefined) {
+              // Always set radius and radiusDisplay for all legend items
               item.radius = radius;
               item.radiusDisplay = formatRadiusDisplay(legendKey, radius);
               // Check if this came from poiRadii or default
@@ -34977,8 +35011,10 @@ const MapView: React.FC<MapViewProps> = ({
               const source = fromPoiRadii ? 'poiRadii' : 'POI config default';
               console.log(`✅ Found radius for ${legendKey}: ${radius} -> ${item.radiusDisplay} (from ${source})`);
             } else {
-              // Debug: Log when radius is not found
-              console.log(`❌ No radius found for legend key: ${legendKey} (tried variations and POI config)`);
+              // Debug: Log when radius is not found (but don't set undefined - keep existing value if any)
+              if (!item.radius) {
+                console.log(`❌ No radius found for legend key: ${legendKey} (tried variations and POI config)`);
+              }
             }
           }
         });

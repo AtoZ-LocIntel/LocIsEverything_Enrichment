@@ -30,6 +30,8 @@ const BASE_SERVICE_URL_FIBER = 'https://gisportal.boston.gov/arcgis/rest/service
 const BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA = 'https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer';
 const BASE_SERVICE_URL_APPROVED_BUILDING_PERMITS = 'https://gisportal.boston.gov/arcgis/rest/services/ISD/approved_building_permits/MapServer';
 const BASE_SERVICE_URL_ISD_INSPECTOR_DISTRICTS = 'https://gisportal.boston.gov/arcgis/rest/services/ISD/ISD_inspector_districts_viewing/MapServer';
+const BASE_SERVICE_URL_PLANNING_OPENDATA = 'https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer';
+const BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA = 'https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer';
 
 export interface BostonOpenDataFeature {
   objectid: number;
@@ -2249,6 +2251,193 @@ export async function getBostonISDInspectorDistrictsData(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_ISD_INSPECTOR_DISTRICTS, 0, 'ISD Inspector Districts', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Planning OpenData - Main Street Districts (Layer 0) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningMainStreetDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 0, 'Main Street Districts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Planning OpenData - ZIP Codes (Layer 1) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningZipCodesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 1, 'ZIP Codes', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Planning OpenData - Public Works Districts (Layer 2) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningPublicWorksDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 2, 'Public Works Districts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Planning OpenData - Parcels 2015 Data BostonMaps (Layer 3) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningParcels2015Data(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 3, 'Parcels 2015 Data BostonMaps', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Planning OpenData - City Council Districts (Layer 4) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningCityCouncilDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 4, 'City Council Districts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Planning OpenData - BTD Districts (Layer 5) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningBTDDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 5, 'BTD Districts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Planning OpenData - Article80 Projects Active (Layer 6) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningArticle80ProjectsActiveData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 6, 'Article80 Projects Active', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Planning OpenData - Precincts (Layer 7) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningPrecinctsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 7, 'Precincts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Planning OpenData - Wards (Layer 8) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningWardsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 8, 'Wards', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Planning OpenData - Boston Boundary (Layer 9) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPlanningBostonBoundaryData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PLANNING_OPENDATA, 9, 'Boston Boundary', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Public Safety OpenData - Fire Hydrants (Layer 0) - Point layer
+ */
+export async function getBostonPublicSafetyFireHydrantsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA, 0, 'Fire Hydrants', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Public Safety OpenData - Fire Boxes (Layer 1) - Point layer
+ */
+export async function getBostonPublicSafetyFireBoxesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA, 1, 'Fire Boxes', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Public Safety OpenData - Fire Departments (Layer 2) - Point layer
+ */
+export async function getBostonPublicSafetyFireDepartmentsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA, 2, 'Fire Departments', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Public Safety OpenData - Fire Districts (Layer 3) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPublicSafetyFireDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA, 3, 'Fire Districts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Public Safety OpenData - Fire Subdistricts (Layer 4) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPublicSafetyFireSubdistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA, 4, 'Fire Subdistricts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Public Safety OpenData - Police Districts (Layer 5) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPublicSafetyPoliceDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA, 5, 'Police Districts', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Public Safety OpenData - Police Departments (Layer 6) - Point layer
+ */
+export async function getBostonPublicSafetyPoliceDepartmentsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA, 6, 'Police Departments', lat, lon, Math.min(radiusMiles, 10));
 }
 
 /**

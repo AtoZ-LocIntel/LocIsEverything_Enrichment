@@ -3216,6 +3216,142 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://gisportal.boston.gov/arcgis/rest/services/ISD/ISD_inspector_districts_viewing/MapServer/0"
         },
         {
+          name: "Boston Planning - Main Street Districts",
+          description: "Boston Planning OpenData - Main Street Districts (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/0"
+        },
+        {
+          name: "Boston Planning - ZIP Codes",
+          description: "Boston Planning OpenData - ZIP Codes (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/1"
+        },
+        {
+          name: "Boston Planning - Public Works Districts",
+          description: "Boston Planning OpenData - Public Works Districts (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/2"
+        },
+        {
+          name: "Boston Planning - Parcels 2015 Data BostonMaps",
+          description: "Boston Planning OpenData - Parcels 2015 Data BostonMaps (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/3"
+        },
+        {
+          name: "Boston Planning - City Council Districts",
+          description: "Boston Planning OpenData - City Council Districts (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/4"
+        },
+        {
+          name: "Boston Planning - BTD Districts",
+          description: "Boston Planning OpenData - BTD Districts (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/5"
+        },
+        {
+          name: "Boston Planning - Article80 Projects Active",
+          description: "Boston Planning OpenData - Article80 Projects Active (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/6"
+        },
+        {
+          name: "Boston Planning - Precincts",
+          description: "Boston Planning OpenData - Precincts (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/7"
+        },
+        {
+          name: "Boston Planning - Wards",
+          description: "Boston Planning OpenData - Wards (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/8"
+        },
+        {
+          name: "Boston Planning - Boston Boundary",
+          description: "Boston Planning OpenData - Boston Boundary (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer/9"
+        },
+        {
+          name: "Boston Public Safety - Fire Hydrants",
+          description: "Boston Public Safety OpenData - Fire Hydrants (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer/0"
+        },
+        {
+          name: "Boston Public Safety - Fire Boxes",
+          description: "Boston Public Safety OpenData - Fire Boxes (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer/1"
+        },
+        {
+          name: "Boston Public Safety - Fire Departments",
+          description: "Boston Public Safety OpenData - Fire Departments (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer/2"
+        },
+        {
+          name: "Boston Public Safety - Fire Districts",
+          description: "Boston Public Safety OpenData - Fire Districts (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer/3"
+        },
+        {
+          name: "Boston Public Safety - Fire Subdistricts",
+          description: "Boston Public Safety OpenData - Fire Subdistricts (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer/4"
+        },
+        {
+          name: "Boston Public Safety - Police Districts",
+          description: "Boston Public Safety OpenData - Police Districts (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer/5"
+        },
+        {
+          name: "Boston Public Safety - Police Departments",
+          description: "Boston Public Safety OpenData - Police Departments (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer/6"
+        },
+        {
           name: "Boston Parcels 2023",
           description: "Boston Open Data - Parcel polygons for FY23 (point-in-polygon and proximity queries up to 0.25 miles)",
           coverage: "Boston, Massachusetts",
