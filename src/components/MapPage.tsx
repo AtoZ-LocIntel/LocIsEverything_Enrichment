@@ -7,9 +7,10 @@ interface MapPageProps {
   results: EnrichmentResult[];
   onBack: () => void;
   previousViewMode?: string;
+  poiRadii?: Record<string, number>;
 }
 
-const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode }) => {
+const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode, poiRadii }) => {
   return (
     <div
       className="mobile-map-page bg-black text-white overflow-hidden"
@@ -26,6 +27,7 @@ const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode }) 
           onBackToConfig={onBack}
           isMobile={true}
           previousViewMode={previousViewMode}
+          poiRadii={poiRadii}
         />
       </main>
     </div>

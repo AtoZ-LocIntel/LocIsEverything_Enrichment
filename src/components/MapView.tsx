@@ -2442,6 +2442,62 @@ const MapView: React.FC<MapViewProps> = ({
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
   
+  // Helper function to get radius from poiRadii, trying multiple key variations
+  // Falls back to POI config defaultRadius if poiRadii is empty
+  const getRadiusForLegendKey = (legendKey: string): number | undefined => {
+    // Try exact match first
+    if (poiRadii[legendKey] !== undefined) {
+      return poiRadii[legendKey];
+    }
+    
+    // Try with _all suffix
+    if (poiRadii[`${legendKey}_all`] !== undefined) {
+      return poiRadii[`${legendKey}_all`];
+    }
+    
+    // Try without _all if key ends with it
+    if (legendKey.endsWith('_all')) {
+      const keyWithoutAll = legendKey.replace(/_all$/, '');
+      if (poiRadii[keyWithoutAll] !== undefined) {
+        return poiRadii[keyWithoutAll];
+      }
+    }
+    
+    // Try common variations
+    const variations = [
+      legendKey.replace(/_all_pois$/, ''),
+      legendKey.replace(/_detailed$/, ''),
+      legendKey.replace(/_elements$/, ''),
+      legendKey.replace(/_features$/, ''),
+      legendKey.replace(/_facilities$/, ''),
+    ];
+    
+    for (const variation of variations) {
+      if (variation !== legendKey && poiRadii[variation] !== undefined) {
+        return poiRadii[variation];
+      }
+    }
+    
+    // Fallback: Try to get default radius from POI config if poiRadii is empty
+    // This helps when user hasn't explicitly set a radius but we want to show what was used
+    if (Object.keys(poiRadii).length === 0) {
+      const poiMeta = poiConfigManager.getPOIType(legendKey);
+      if (poiMeta && poiMeta.defaultRadius !== undefined && poiMeta.defaultRadius > 0) {
+        return poiMeta.defaultRadius;
+      }
+      // Also try without _all suffix
+      const keyWithoutAll = legendKey.replace(/_all$/, '');
+      if (keyWithoutAll !== legendKey) {
+        const poiMetaWithoutAll = poiConfigManager.getPOIType(keyWithoutAll);
+        if (poiMetaWithoutAll && poiMetaWithoutAll.defaultRadius !== undefined && poiMetaWithoutAll.defaultRadius > 0) {
+          return poiMetaWithoutAll.defaultRadius;
+        }
+      }
+    }
+    
+    return undefined;
+  };
+
   // Helper function to format radius display
   const formatRadiusDisplay = (legendKey: string, radius: number | undefined): string | undefined => {
     if (radius === undefined) return undefined;
@@ -3799,11 +3855,15 @@ const MapView: React.FC<MapViewProps> = ({
               
               // Add to legend accumulator
               if (!legendAccumulator['poi_wikipedia']) {
+                const radius = getRadiusForLegendKey('poi_wikipedia');
+                const radiusDisplay = formatRadiusDisplay('poi_wikipedia', radius);
                 legendAccumulator['poi_wikipedia'] = {
                   icon: '📖',
                   color: '#1d4ed8',
                   title: 'Wikipedia Articles',
                   count: 0,
+                  radius: radius,
+                  radiusDisplay: radiusDisplay,
                 };
               }
               legendAccumulator['poi_wikipedia'].count += 1;
@@ -34482,7 +34542,7 @@ const MapView: React.FC<MapViewProps> = ({
 
             if (featureCount > 0) {
               const legendKey = layerConfig.key.replace('_all', '');
-              const radius = poiRadii[legendKey];
+              const radius = getRadiusForLegendKey(legendKey);
               const radiusDisplay = formatRadiusDisplay(legendKey, radius);
               
               if (!legendAccumulator[legendKey]) {
@@ -34791,6 +34851,10 @@ const MapView: React.FC<MapViewProps> = ({
         // Ensure unique color for point features
         const iconColor = getUniqueColorForPointFeature(baseKey, defaultColor);
         const legendTitle = poiMeta?.label || poiInfo.title || formatPopupFieldName(baseKey);
+        
+        // Get radius info if available
+        const radius = getRadiusForLegendKey(baseKey);
+        const radiusDisplay = formatRadiusDisplay(baseKey, radius);
 
         if (!legendAccumulator[baseKey]) {
           legendAccumulator[baseKey] = {
@@ -34798,10 +34862,17 @@ const MapView: React.FC<MapViewProps> = ({
             color: iconColor,
             title: legendTitle,
             count: 0,
+            radius: radius,
+            radiusDisplay: radiusDisplay,
           };
         } else {
           // Update color to ensure uniqueness even if entry exists
           legendAccumulator[baseKey].color = iconColor;
+          // Update radius info if not already set
+          if (radius !== undefined && !legendAccumulator[baseKey].radius) {
+            legendAccumulator[baseKey].radius = radius;
+            legendAccumulator[baseKey].radiusDisplay = radiusDisplay;
+          }
         }
 
         const itemsArray = value as Array<any>;
@@ -34882,11 +34953,53 @@ const MapView: React.FC<MapViewProps> = ({
     }); // Close results.forEach
 
         console.log('🗺️ STEP 2: Finished drawing all features, setting legend items');
-        setLegendItems(
-          Object.values(legendAccumulator)
-            .filter(item => item.count > 0) // Filter out items with zero count
-            .sort((a, b) => b.count - a.count)
-        );
+        
+        // Debug: Log poiRadii to help diagnose
+        if (Object.keys(poiRadii).length > 0) {
+          console.log('🗺️ poiRadii available:', Object.keys(poiRadii).slice(0, 10), '... (showing first 10 keys)');
+        } else {
+          console.log('🗺️ poiRadii is empty - no proximity values available');
+        }
+        
+        // Ensure all legend items have radius info if available in poiRadii or POI config
+        Object.keys(legendAccumulator).forEach(legendKey => {
+          const item = legendAccumulator[legendKey];
+          if (item) {
+            // Always try to get radius, even if already set (in case poiRadii was updated)
+            const radius = getRadiusForLegendKey(legendKey);
+            if (radius !== undefined) {
+              item.radius = radius;
+              item.radiusDisplay = formatRadiusDisplay(legendKey, radius);
+              // Check if this came from poiRadii or default
+              const fromPoiRadii = poiRadii[legendKey] !== undefined || 
+                                   poiRadii[`${legendKey}_all`] !== undefined ||
+                                   (legendKey.endsWith('_all') && poiRadii[legendKey.replace(/_all$/, '')] !== undefined);
+              const source = fromPoiRadii ? 'poiRadii' : 'POI config default';
+              console.log(`✅ Found radius for ${legendKey}: ${radius} -> ${item.radiusDisplay} (from ${source})`);
+            } else {
+              // Debug: Log when radius is not found
+              console.log(`❌ No radius found for legend key: ${legendKey} (tried variations and POI config)`);
+            }
+          }
+        });
+        
+        const finalLegendItems = Object.values(legendAccumulator)
+          .filter(item => item.count > 0) // Filter out items with zero count
+          .sort((a, b) => b.count - a.count);
+        
+        // Debug logging to help diagnose radius display issues
+        if (finalLegendItems.length > 0) {
+          console.log('🗺️ Legend items with radius info:', finalLegendItems.map(item => ({
+            title: item.title,
+            count: item.count,
+            radius: item.radius,
+            radiusDisplay: item.radiusDisplay,
+            hasRadius: !!item.radius,
+            hasRadiusDisplay: !!item.radiusDisplay
+          })));
+        }
+        
+        setLegendItems(finalLegendItems);
         setShowBatchSuccess(results.length > 1);
         
         // Features drawn - smoothly animate to geocoded location if needed
@@ -36190,10 +36303,12 @@ const MapView: React.FC<MapViewProps> = ({
                       {item.icon}
                     </div>
                     <span className="text-gray-700 font-medium flex-1">{item.title}</span>
-                    <div className="flex flex-col items-end ml-auto">
+                    <div className="flex items-center gap-2 ml-auto">
                       <span className="text-gray-600 font-semibold">{item.count || 0}</span>
-                      {item.radiusDisplay && (
-                        <span className="text-xs text-gray-500 mt-0.5">{item.radiusDisplay}</span>
+                      {(item.radiusDisplay || (item.radius !== undefined && item.radius > 0)) && (
+                        <span className="text-xs text-gray-500">
+                          ({item.radiusDisplay || (item.radius !== undefined ? `${item.radius} ${item.radius === 1 ? 'mile' : 'miles'}` : '')})
+                        </span>
                       )}
                     </div>
                   </div>

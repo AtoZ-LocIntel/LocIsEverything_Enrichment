@@ -434,6 +434,7 @@ function App() {
             results={enrichmentResults}
             onBack={handleBackToConfig}
             previousViewMode={previousViewMode || undefined}
+            poiRadii={poiRadii}
           />
         ) : (
           <div className="flex-1 h-full">
