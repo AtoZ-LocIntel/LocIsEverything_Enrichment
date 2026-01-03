@@ -202,6 +202,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'AK.webp'
   },
   {
+    id: 'al',
+    title: 'Alabama Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'AL.webp'
+  },
+  {
     id: 'ar',
     title: 'Arkansas Open Data',
     description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
@@ -280,6 +286,18 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'IN.webp'
   },
   {
+    id: 'ia',
+    title: 'Iowa Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'IA.webp'
+  },
+  {
+    id: 'ks',
+    title: 'Kansas Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'KS.webp'
+  },
+  {
     id: 'ky',
     title: 'Kentucky Open Data',
     description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
@@ -310,10 +328,28 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'ME.webp'
   },
   {
+    id: 'mi',
+    title: 'Michigan Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'MI.webp'
+  },
+  {
+    id: 'mn',
+    title: 'Minnesota Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'MN.webp'
+  },
+  {
     id: 'mo',
     title: 'Missouri Open Data',
     description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
     icon: 'MO.webp'
+  },
+  {
+    id: 'ms',
+    title: 'Mississippi Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'MS.webp'
   },
   {
     id: 'mt',
@@ -322,10 +358,28 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'MT.webp'
   },
   {
+    id: 'ne',
+    title: 'Nebraska Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'NE.webp'
+  },
+  {
+    id: 'nv',
+    title: 'Nevada Open Data',
+    description: 'Nevada state open data services and layers',
+    icon: 'NV.webp'
+  },
+  {
     id: 'nc',
     title: 'North Carolina Open Data',
     description: 'North Carolina state open data services and layers',
     icon: 'NC.webp'
+  },
+  {
+    id: 'nd',
+    title: 'North Dakota Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'ND.webp'
   },
   {
     id: 'nh',
@@ -358,6 +412,18 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'NY.webp'
   },
   {
+    id: 'oh',
+    title: 'Ohio Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'OH.webp'
+  },
+  {
+    id: 'ok',
+    title: 'Oklahoma Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'OK.webp'
+  },
+  {
     id: 'or',
     title: 'Oregon Open Data',
     description: 'Oregon state open data services and layers',
@@ -380,6 +446,18 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'South Carolina Open Data',
     description: 'South Carolina state open data services and layers',
     icon: 'SC.webp'
+  },
+  {
+    id: 'sd',
+    title: 'South Dakota Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'SD.webp'
+  },
+  {
+    id: 'tn',
+    title: 'Tennessee Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'TN.webp'
   },
   {
     id: 'tx',
@@ -416,6 +494,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     title: 'West Virginia Open Data',
     description: 'West Virginia state open data services and layers',
     icon: 'WV.webp'
+  },
+  {
+    id: 'wi',
+    title: 'Wisconsin Open Data',
+    description: "Open Data Sources Coming Soon! We're working on adding data layers for this state. Check back soon for updates!",
+    icon: 'WI.webp'
   },
   {
     id: 'wy',
@@ -1008,6 +1092,20 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'boston_public_safety_fire_subdistricts', label: 'Boston Public Safety - Fire Subdistricts', description: 'Boston Public Safety OpenData - Fire Subdistricts (point-in-polygon and proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0, maxRadius: 10, category: 'boston', section: 'ma' },
   { id: 'boston_public_safety_police_districts', label: 'Boston Public Safety - Police Districts', description: 'Boston Public Safety OpenData - Police Districts (point-in-polygon and proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0, maxRadius: 10, category: 'boston', section: 'ma' },
   { id: 'boston_public_safety_police_departments', label: 'Boston Public Safety - Police Departments', description: 'Boston Public Safety OpenData - Police Departments (proximity queries up to 10 miles)', isPOI: true, defaultRadius: 5, maxRadius: 10, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_cartegraph_street_lights', label: 'Boston PWD Cartegraph - Street Lights', description: 'Boston PWD Cartegraph - Street Lights (proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_cartegraph_bus_shelters', label: 'Boston PWD Cartegraph - Bus Shelters', description: 'Boston PWD Cartegraph - Bus Shelters (proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_cartegraph_hydrants', label: 'Boston PWD Cartegraph - Hydrants', description: 'Boston PWD Cartegraph - Hydrants (proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_cartegraph_waste_receptacles', label: 'Boston PWD Cartegraph - Waste Receptacles', description: 'Boston PWD Cartegraph - Waste Receptacles (proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_cartegraph_street_light_cabinets', label: 'Boston PWD Cartegraph - Street Light Cabinets', description: 'Boston PWD Cartegraph - Street Light Cabinets (proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_cartegraph_access_point', label: 'Boston PWD Cartegraph - Access Point', description: 'Boston PWD Cartegraph - Access Point (proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_cartegraph_street_light_control_box', label: 'Boston PWD Cartegraph - Street Light Control Box', description: 'Boston PWD Cartegraph - Street Light Control Box (proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_cartegraph_fire_alarm_light', label: 'Boston PWD Cartegraph - Fire Alarm Light', description: 'Boston PWD Cartegraph - Fire Alarm Light (proximity queries up to 1 mile)', isPOI: true, defaultRadius: 0.25, maxRadius: 1.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_pavement_sidewalk_condition_ramp_condition', label: 'Boston PWD - Ramp Condition', description: 'Boston PWD Pavement Sidewalk Condition - Ramp Condition (proximity queries up to 2 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 2.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_pavement_sidewalk_condition_intersection_condition', label: 'Boston PWD - Intersection Condition', description: 'Boston PWD Pavement Sidewalk Condition - Intersection Condition (proximity queries up to 2 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 2.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_pavement_sidewalk_condition_sidewalk_condition', label: 'Boston PWD - Sidewalk Condition', description: 'Boston PWD Pavement Sidewalk Condition - Sidewalk Condition (point-in-polygon and proximity queries up to 2 miles)', isPOI: true, defaultRadius: 0, maxRadius: 2.0, category: 'boston', section: 'ma' },
+  { id: 'boston_pwd_pavement_sidewalk_condition_pavement_condition', label: 'Boston PWD - Pavement Condition', description: 'Boston PWD Pavement Sidewalk Condition - Pavement Condition (proximity queries up to 2 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 2.0, category: 'boston', section: 'ma' },
+  { id: 'boston_cooling_centers', label: 'Boston Cooling Centers', description: 'Boston Cooling Centers (proximity queries up to 10 miles)', isPOI: true, defaultRadius: 5, maxRadius: 10, category: 'boston', section: 'ma' },
+  { id: 'boston_bprd_sporting_activity_locations', label: 'Boston BPRD Sporting Activity Locations', description: 'Boston BPRD Sporting Activity Locations (proximity queries up to 5 miles)', isPOI: true, defaultRadius: 2, maxRadius: 5, category: 'boston', section: 'ma' },
   { id: 'boston_population_estimates_2025', label: 'Boston Population Estimates 2025 Census Tracts', description: 'Boston Open Data - Population estimates 2025 census tract polygons (point-in-polygon and proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0, maxRadius: 10, category: 'boston', section: 'ma' },
   { id: 'boston_population_estimates_2025_neighborhoods', label: 'Boston Population Estimates 2025 Neighborhoods', description: 'Boston Open Data - Population estimates 2025 neighborhood polygons (point-in-polygon and proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0, maxRadius: 10, category: 'boston', section: 'ma' },
   { id: 'boston_population_estimates_2025_city', label: 'Boston Population Estimates 2025 City', description: 'Boston Open Data - Population estimates 2025 city boundary polygon (point-in-polygon and proximity queries up to 10 miles)', isPOI: true, defaultRadius: 0, maxRadius: 10, category: 'boston', section: 'ma' },

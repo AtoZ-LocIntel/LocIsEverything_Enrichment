@@ -32,6 +32,10 @@ const BASE_SERVICE_URL_APPROVED_BUILDING_PERMITS = 'https://gisportal.boston.gov
 const BASE_SERVICE_URL_ISD_INSPECTOR_DISTRICTS = 'https://gisportal.boston.gov/arcgis/rest/services/ISD/ISD_inspector_districts_viewing/MapServer';
 const BASE_SERVICE_URL_PLANNING_OPENDATA = 'https://gisportal.boston.gov/arcgis/rest/services/Planning/OpenData/MapServer';
 const BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA = 'https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer';
+const BASE_SERVICE_URL_PWD_CARTEGRAPH = 'https://gisportal.boston.gov/arcgis/rest/services/PWD/Cartegraph_PWD_readonly/FeatureServer';
+const BASE_SERVICE_URL_PWD_PAVEMENT_SIDEWALK_CONDITION = 'https://gisportal.boston.gov/arcgis/rest/services/PWD/Pavement_sidewalk_condition/FeatureServer';
+const BASE_SERVICE_URL_STORYMAPS_COOLING_CENTERS = 'https://gisportal.boston.gov/arcgis/rest/services/StoryMaps/CoolingCenters/FeatureServer';
+const BASE_SERVICE_URL_BPRD_SPORTS = 'https://gisportal.boston.gov/arcgis/rest/services/bprd_non_bprd_assets_combined_sports_vw/FeatureServer';
 
 export interface BostonOpenDataFeature {
   objectid: number;
@@ -2438,6 +2442,293 @@ export async function getBostonPublicSafetyPoliceDepartmentsData(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   return queryBostonLayer(BASE_SERVICE_URL_PUBLIC_SAFETY_OPENDATA, 6, 'Police Departments', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston PWD Cartegraph layers using envelope-based query
+ * This service requires envelope queries instead of point + distance queries
+ */
+async function queryBostonPWDCartegraphLayer(
+  layerId: number,
+  layerName: string,
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  try {
+    const maxRecordCount = 2000;
+
+    console.log(
+      `🏗️ Boston PWD Cartegraph ${layerName} (Layer ${layerId}) query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`
+    );
+
+    // Calculate bounding box for the radius
+    const latDelta = radiusMiles / 69.0; // Approximate miles per degree latitude
+    const lonDelta = radiusMiles / (69.0 * Math.cos(lat * Math.PI / 180)); // Adjust for longitude
+    
+    const minX = lon - lonDelta;
+    const maxX = lon + lonDelta;
+    const minY = lat - latDelta;
+    const maxY = lat + latDelta;
+
+    let allFeatures: any[] = [];
+    let resultOffset = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const queryUrl = new URL(`${BASE_SERVICE_URL_PWD_CARTEGRAPH}/${layerId}/query`);
+      queryUrl.searchParams.set('f', 'json');
+      queryUrl.searchParams.set('where', '1=1');
+      queryUrl.searchParams.set('outFields', '*');
+      queryUrl.searchParams.set('geometry', JSON.stringify({
+        xmin: minX,
+        ymin: minY,
+        xmax: maxX,
+        ymax: maxY,
+        spatialReference: { wkid: 4326 }
+      }));
+      queryUrl.searchParams.set('geometryType', 'esriGeometryEnvelope');
+      queryUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+      queryUrl.searchParams.set('inSR', '4326');
+      queryUrl.searchParams.set('outSR', '4326');
+      queryUrl.searchParams.set('returnGeometry', 'true');
+      queryUrl.searchParams.set('resultRecordCount', maxRecordCount.toString());
+      queryUrl.searchParams.set('resultOffset', resultOffset.toString());
+
+      const response = await fetchJSONSmart(queryUrl.toString());
+
+      if (response.error) {
+        throw new Error(
+          `Boston PWD Cartegraph ${layerName} API error: ${JSON.stringify(response.error)}`
+        );
+      }
+
+      const batchFeatures = response.features || [];
+      allFeatures = allFeatures.concat(batchFeatures);
+
+      hasMore = batchFeatures.length === maxRecordCount || response.exceededTransferLimit === true;
+      resultOffset += batchFeatures.length;
+
+      if (resultOffset > 100000) {
+        console.warn(`⚠️ Boston PWD Cartegraph ${layerName}: Stopping pagination at 100k records for safety`);
+        hasMore = false;
+      }
+
+      if (hasMore) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+
+    // Process features and calculate distances
+    const processedFeatures: BostonOpenDataFeature[] = allFeatures.map(
+      (feature: any) => {
+        const attributes = feature.attributes || {};
+        const geometry = feature.geometry;
+        const objectid = attributes.OBJECTID || attributes.objectid || attributes.OBJECTID_1 || 0;
+
+        let distanceMiles = radiusMiles; // Default to max radius
+
+        // Calculate distance using latitude/longitude from attributes or geometry
+        let featureLat: number | null = null;
+        let featureLon: number | null = null;
+
+        if (attributes.Latitude && attributes.Longitude) {
+          featureLat = attributes.Latitude;
+          featureLon = attributes.Longitude;
+        } else if (geometry && geometry.x !== undefined && geometry.y !== undefined) {
+          featureLon = geometry.x;
+          featureLat = geometry.y;
+        } else if (geometry && geometry.coordinates && geometry.coordinates.length >= 2) {
+          featureLon = geometry.coordinates[0];
+          featureLat = geometry.coordinates[1];
+        }
+
+        if (featureLat !== null && featureLon !== null) {
+          distanceMiles = calculateHaversineDistance(lat, lon, featureLat, featureLon);
+        }
+
+        return {
+          objectid,
+          attributes,
+          geometry,
+          distance_miles: distanceMiles,
+          layerId,
+          layerName,
+        };
+      }
+    );
+
+    // Filter by actual distance and sort by distance
+    const filteredFeatures = processedFeatures.filter(f => f.distance_miles <= radiusMiles);
+    filteredFeatures.sort((a, b) => {
+      const distA = a.distance_miles || Infinity;
+      const distB = b.distance_miles || Infinity;
+      return distA - distB;
+    });
+
+    console.log(
+      `✅ Processed ${filteredFeatures.length} Boston PWD Cartegraph ${layerName} feature(s) within ${radiusMiles} miles`
+    );
+
+    return filteredFeatures;
+  } catch (error) {
+    console.error(`❌ Boston PWD Cartegraph ${layerName} API Error:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Query Boston PWD Cartegraph - Street Lights (Layer 1) - Point layer
+ */
+export async function getBostonPWDCartegraphStreetLightsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPWDCartegraphLayer(1, 'Street Lights', lat, lon, Math.min(radiusMiles, 1.0));
+}
+
+/**
+ * Query Boston PWD Cartegraph - Bus Shelters (Layer 2) - Point layer
+ */
+export async function getBostonPWDCartegraphBusSheltersData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPWDCartegraphLayer(2, 'Bus Shelters', lat, lon, Math.min(radiusMiles, 1.0));
+}
+
+/**
+ * Query Boston PWD Cartegraph - Hydrants (Layer 3) - Point layer
+ */
+export async function getBostonPWDCartegraphHydrantsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPWDCartegraphLayer(3, 'Hydrants', lat, lon, Math.min(radiusMiles, 1.0));
+}
+
+/**
+ * Query Boston PWD Cartegraph - Waste Receptacles (Layer 4) - Point layer
+ */
+export async function getBostonPWDCartegraphWasteReceptaclesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPWDCartegraphLayer(4, 'Waste Receptacles', lat, lon, Math.min(radiusMiles, 1.0));
+}
+
+/**
+ * Query Boston PWD Cartegraph - Street Light Cabinets (Layer 5) - Point layer
+ */
+export async function getBostonPWDCartegraphStreetLightCabinetsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPWDCartegraphLayer(5, 'Street Light Cabinets', lat, lon, Math.min(radiusMiles, 1.0));
+}
+
+/**
+ * Query Boston PWD Cartegraph - Access Point (Layer 8) - Point layer
+ */
+export async function getBostonPWDCartegraphAccessPointData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPWDCartegraphLayer(8, 'Access Point', lat, lon, Math.min(radiusMiles, 1.0));
+}
+
+/**
+ * Query Boston PWD Cartegraph - Street Light Control Box (Layer 9) - Point layer
+ */
+export async function getBostonPWDCartegraphStreetLightControlBoxData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPWDCartegraphLayer(9, 'Street Light Control Box', lat, lon, Math.min(radiusMiles, 1.0));
+}
+
+/**
+ * Query Boston PWD Cartegraph - Fire Alarm Light (Layer 10) - Point layer
+ */
+export async function getBostonPWDCartegraphFireAlarmLightData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPWDCartegraphLayer(10, 'Fire Alarm Light', lat, lon, Math.min(radiusMiles, 1.0));
+}
+
+/**
+ * Query Boston PWD Pavement Sidewalk Condition - Ramp Condition (Layer 0) - Point layer
+ */
+export async function getBostonPWDPavementSidewalkConditionRampConditionData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_PWD_PAVEMENT_SIDEWALK_CONDITION, 0, 'Ramp Condition', lat, lon, Math.min(radiusMiles, 2.0));
+}
+
+/**
+ * Query Boston PWD Pavement Sidewalk Condition - Intersection Condition (Layer 1) - Point layer
+ */
+export async function getBostonPWDPavementSidewalkConditionIntersectionConditionData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_PWD_PAVEMENT_SIDEWALK_CONDITION, 1, 'Intersection Condition', lat, lon, Math.min(radiusMiles, 2.0));
+}
+
+/**
+ * Query Boston PWD Pavement Sidewalk Condition - Sidewalk Condition (Layer 2) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonPWDPavementSidewalkConditionSidewalkConditionData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_PWD_PAVEMENT_SIDEWALK_CONDITION, 2, 'Sidewalk Condition', lat, lon, Math.min(radiusMiles, 2.0));
+}
+
+/**
+ * Query Boston PWD Pavement Sidewalk Condition - Pavement Condition (Layer 3) - Polyline layer
+ */
+export async function getBostonPWDPavementSidewalkConditionPavementConditionData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_PWD_PAVEMENT_SIDEWALK_CONDITION, 3, 'Pavement Condition', lat, lon, Math.min(radiusMiles, 2.0));
+}
+
+/**
+ * Query Boston Cooling Centers (Layer 0) - Point layer
+ */
+export async function getBostonCoolingCentersData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_STORYMAPS_COOLING_CENTERS, 0, 'Cooling Centers', lat, lon, Math.min(radiusMiles, 10.0));
+}
+
+/**
+ * Query Boston BPRD Sporting Activity Locations (Layer 0) - Point layer
+ */
+export async function getBostonBPRDSportingActivityLocationsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_BPRD_SPORTS, 0, 'Sporting Activity Locations', lat, lon, Math.min(radiusMiles, 5.0));
 }
 
 /**

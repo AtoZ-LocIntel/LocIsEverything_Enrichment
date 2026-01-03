@@ -3352,6 +3352,118 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://gisportal.boston.gov/arcgis/rest/services/PublicSafety/OpenData/MapServer/6"
         },
         {
+          name: "Boston PWD Cartegraph - Street Lights",
+          description: "Boston PWD Cartegraph - Street Lights (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Cartegraph_PWD_readonly/FeatureServer/1"
+        },
+        {
+          name: "Boston PWD Cartegraph - Bus Shelters",
+          description: "Boston PWD Cartegraph - Bus Shelters (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Cartegraph_PWD_readonly/FeatureServer/2"
+        },
+        {
+          name: "Boston PWD Cartegraph - Hydrants",
+          description: "Boston PWD Cartegraph - Hydrants (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Cartegraph_PWD_readonly/FeatureServer/3"
+        },
+        {
+          name: "Boston PWD Cartegraph - Waste Receptacles",
+          description: "Boston PWD Cartegraph - Waste Receptacles (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Cartegraph_PWD_readonly/FeatureServer/4"
+        },
+        {
+          name: "Boston PWD Cartegraph - Street Light Cabinets",
+          description: "Boston PWD Cartegraph - Street Light Cabinets (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Cartegraph_PWD_readonly/FeatureServer/5"
+        },
+        {
+          name: "Boston PWD Cartegraph - Access Point",
+          description: "Boston PWD Cartegraph - Access Point (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Cartegraph_PWD_readonly/FeatureServer/8"
+        },
+        {
+          name: "Boston PWD Cartegraph - Street Light Control Box",
+          description: "Boston PWD Cartegraph - Street Light Control Box (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Cartegraph_PWD_readonly/FeatureServer/9"
+        },
+        {
+          name: "Boston PWD Cartegraph - Fire Alarm Light",
+          description: "Boston PWD Cartegraph - Fire Alarm Light (proximity queries up to 1 mile)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Cartegraph_PWD_readonly/FeatureServer/10"
+        },
+        {
+          name: "Boston PWD - Ramp Condition",
+          description: "Boston PWD Pavement Sidewalk Condition - Ramp Condition (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Pavement_sidewalk_condition/FeatureServer/0"
+        },
+        {
+          name: "Boston PWD - Intersection Condition",
+          description: "Boston PWD Pavement Sidewalk Condition - Intersection Condition (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Pavement_sidewalk_condition/FeatureServer/1"
+        },
+        {
+          name: "Boston PWD - Sidewalk Condition",
+          description: "Boston PWD Pavement Sidewalk Condition - Sidewalk Condition (point-in-polygon and proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Pavement_sidewalk_condition/FeatureServer/2"
+        },
+        {
+          name: "Boston PWD - Pavement Condition",
+          description: "Boston PWD Pavement Sidewalk Condition - Pavement Condition (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/PWD/Pavement_sidewalk_condition/FeatureServer/3"
+        },
+        {
+          name: "Boston Cooling Centers",
+          description: "Boston Cooling Centers (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/StoryMaps/CoolingCenters/FeatureServer/0"
+        },
+        {
+          name: "Boston BPRD Sporting Activity Locations",
+          description: "Boston BPRD Sporting Activity Locations (proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/bprd_non_bprd_assets_combined_sports_vw/FeatureServer/0"
+        },
+        {
           name: "Boston Parcels 2023",
           description: "Boston Open Data - Parcel polygons for FY23 (point-in-polygon and proximity queries up to 0.25 miles)",
           coverage: "Boston, Massachusetts",

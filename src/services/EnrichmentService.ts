@@ -238,6 +238,20 @@ import {
   getBostonPublicSafetyFireSubdistrictsData,
   getBostonPublicSafetyPoliceDistrictsData,
   getBostonPublicSafetyPoliceDepartmentsData,
+  getBostonPWDCartegraphStreetLightsData,
+  getBostonPWDCartegraphBusSheltersData,
+  getBostonPWDCartegraphHydrantsData,
+  getBostonPWDCartegraphWasteReceptaclesData,
+  getBostonPWDCartegraphStreetLightCabinetsData,
+  getBostonPWDCartegraphAccessPointData,
+  getBostonPWDCartegraphStreetLightControlBoxData,
+  getBostonPWDCartegraphFireAlarmLightData,
+  getBostonPWDPavementSidewalkConditionRampConditionData,
+  getBostonPWDPavementSidewalkConditionIntersectionConditionData,
+  getBostonPWDPavementSidewalkConditionSidewalkConditionData,
+  getBostonPWDPavementSidewalkConditionPavementConditionData,
+  getBostonCoolingCentersData,
+  getBostonBPRDSportingActivityLocationsData,
 } from '../adapters/bostonOpenData';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
@@ -3017,6 +3031,34 @@ export class EnrichmentService {
         return await this.getBostonPublicSafetyPoliceDistricts(lat, lon, radius);
       case 'boston_public_safety_police_departments':
         return await this.getBostonPublicSafetyPoliceDepartments(lat, lon, radius);
+      case 'boston_pwd_cartegraph_street_lights':
+        return await this.getBostonPWDCartegraphStreetLights(lat, lon, radius);
+      case 'boston_pwd_cartegraph_bus_shelters':
+        return await this.getBostonPWDCartegraphBusShelters(lat, lon, radius);
+      case 'boston_pwd_cartegraph_hydrants':
+        return await this.getBostonPWDCartegraphHydrants(lat, lon, radius);
+      case 'boston_pwd_cartegraph_waste_receptacles':
+        return await this.getBostonPWDCartegraphWasteReceptacles(lat, lon, radius);
+      case 'boston_pwd_cartegraph_street_light_cabinets':
+        return await this.getBostonPWDCartegraphStreetLightCabinets(lat, lon, radius);
+      case 'boston_pwd_cartegraph_access_point':
+        return await this.getBostonPWDCartegraphAccessPoint(lat, lon, radius);
+      case 'boston_pwd_cartegraph_street_light_control_box':
+        return await this.getBostonPWDCartegraphStreetLightControlBox(lat, lon, radius);
+      case 'boston_pwd_cartegraph_fire_alarm_light':
+        return await this.getBostonPWDCartegraphFireAlarmLight(lat, lon, radius);
+      case 'boston_pwd_pavement_sidewalk_condition_ramp_condition':
+        return await this.getBostonPWDPavementSidewalkConditionRampCondition(lat, lon, radius);
+      case 'boston_pwd_pavement_sidewalk_condition_intersection_condition':
+        return await this.getBostonPWDPavementSidewalkConditionIntersectionCondition(lat, lon, radius);
+      case 'boston_pwd_pavement_sidewalk_condition_sidewalk_condition':
+        return await this.getBostonPWDPavementSidewalkConditionSidewalkCondition(lat, lon, radius);
+      case 'boston_pwd_pavement_sidewalk_condition_pavement_condition':
+        return await this.getBostonPWDPavementSidewalkConditionPavementCondition(lat, lon, radius);
+      case 'boston_cooling_centers':
+        return await this.getBostonCoolingCenters(lat, lon, radius);
+      case 'boston_bprd_sporting_activity_locations':
+        return await this.getBostonBPRDSportingActivityLocations(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -30553,6 +30595,468 @@ out center;`;
         'boston_public_safety_police_departments_count': 0,
         'boston_public_safety_police_departments_summary': 'Error fetching Police Departments data',
         'boston_public_safety_police_departments_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDCartegraphStreetLights(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDCartegraphStreetLightsData(lat, lon, radius || 1.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_cartegraph_street_lights_count': 0,
+          'boston_pwd_cartegraph_street_lights_summary': 'No Street Lights found within the specified radius',
+          'boston_pwd_cartegraph_street_lights_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_cartegraph_street_lights_count': features.length,
+        'boston_pwd_cartegraph_street_lights_summary': `Found ${features.length} Street Light${features.length === 1 ? '' : 's'} within ${radius || 1.0} miles`,
+        'boston_pwd_cartegraph_street_lights_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Cartegraph Street Lights data:', error);
+      return {
+        'boston_pwd_cartegraph_street_lights_count': 0,
+        'boston_pwd_cartegraph_street_lights_summary': 'Error fetching Street Lights data',
+        'boston_pwd_cartegraph_street_lights_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDCartegraphBusShelters(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDCartegraphBusSheltersData(lat, lon, radius || 1.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_cartegraph_bus_shelters_count': 0,
+          'boston_pwd_cartegraph_bus_shelters_summary': 'No Bus Shelters found within the specified radius',
+          'boston_pwd_cartegraph_bus_shelters_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_cartegraph_bus_shelters_count': features.length,
+        'boston_pwd_cartegraph_bus_shelters_summary': `Found ${features.length} Bus Shelter${features.length === 1 ? '' : 's'} within ${radius || 1.0} miles`,
+        'boston_pwd_cartegraph_bus_shelters_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Cartegraph Bus Shelters data:', error);
+      return {
+        'boston_pwd_cartegraph_bus_shelters_count': 0,
+        'boston_pwd_cartegraph_bus_shelters_summary': 'Error fetching Bus Shelters data',
+        'boston_pwd_cartegraph_bus_shelters_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDCartegraphHydrants(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDCartegraphHydrantsData(lat, lon, radius || 1.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_cartegraph_hydrants_count': 0,
+          'boston_pwd_cartegraph_hydrants_summary': 'No Hydrants found within the specified radius',
+          'boston_pwd_cartegraph_hydrants_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_cartegraph_hydrants_count': features.length,
+        'boston_pwd_cartegraph_hydrants_summary': `Found ${features.length} Hydrant${features.length === 1 ? '' : 's'} within ${radius || 1.0} miles`,
+        'boston_pwd_cartegraph_hydrants_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Cartegraph Hydrants data:', error);
+      return {
+        'boston_pwd_cartegraph_hydrants_count': 0,
+        'boston_pwd_cartegraph_hydrants_summary': 'Error fetching Hydrants data',
+        'boston_pwd_cartegraph_hydrants_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDCartegraphWasteReceptacles(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDCartegraphWasteReceptaclesData(lat, lon, radius || 1.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_cartegraph_waste_receptacles_count': 0,
+          'boston_pwd_cartegraph_waste_receptacles_summary': 'No Waste Receptacles found within the specified radius',
+          'boston_pwd_cartegraph_waste_receptacles_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_cartegraph_waste_receptacles_count': features.length,
+        'boston_pwd_cartegraph_waste_receptacles_summary': `Found ${features.length} Waste Receptacle${features.length === 1 ? '' : 's'} within ${radius || 1.0} miles`,
+        'boston_pwd_cartegraph_waste_receptacles_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Cartegraph Waste Receptacles data:', error);
+      return {
+        'boston_pwd_cartegraph_waste_receptacles_count': 0,
+        'boston_pwd_cartegraph_waste_receptacles_summary': 'Error fetching Waste Receptacles data',
+        'boston_pwd_cartegraph_waste_receptacles_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDCartegraphStreetLightCabinets(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDCartegraphStreetLightCabinetsData(lat, lon, radius || 1.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_cartegraph_street_light_cabinets_count': 0,
+          'boston_pwd_cartegraph_street_light_cabinets_summary': 'No Street Light Cabinets found within the specified radius',
+          'boston_pwd_cartegraph_street_light_cabinets_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_cartegraph_street_light_cabinets_count': features.length,
+        'boston_pwd_cartegraph_street_light_cabinets_summary': `Found ${features.length} Street Light Cabinet${features.length === 1 ? '' : 's'} within ${radius || 1.0} miles`,
+        'boston_pwd_cartegraph_street_light_cabinets_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Cartegraph Street Light Cabinets data:', error);
+      return {
+        'boston_pwd_cartegraph_street_light_cabinets_count': 0,
+        'boston_pwd_cartegraph_street_light_cabinets_summary': 'Error fetching Street Light Cabinets data',
+        'boston_pwd_cartegraph_street_light_cabinets_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDCartegraphAccessPoint(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDCartegraphAccessPointData(lat, lon, radius || 1.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_cartegraph_access_point_count': 0,
+          'boston_pwd_cartegraph_access_point_summary': 'No Access Points found within the specified radius',
+          'boston_pwd_cartegraph_access_point_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_cartegraph_access_point_count': features.length,
+        'boston_pwd_cartegraph_access_point_summary': `Found ${features.length} Access Point${features.length === 1 ? '' : 's'} within ${radius || 1.0} miles`,
+        'boston_pwd_cartegraph_access_point_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Cartegraph Access Point data:', error);
+      return {
+        'boston_pwd_cartegraph_access_point_count': 0,
+        'boston_pwd_cartegraph_access_point_summary': 'Error fetching Access Point data',
+        'boston_pwd_cartegraph_access_point_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDCartegraphStreetLightControlBox(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDCartegraphStreetLightControlBoxData(lat, lon, radius || 1.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_cartegraph_street_light_control_box_count': 0,
+          'boston_pwd_cartegraph_street_light_control_box_summary': 'No Street Light Control Boxes found within the specified radius',
+          'boston_pwd_cartegraph_street_light_control_box_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_cartegraph_street_light_control_box_count': features.length,
+        'boston_pwd_cartegraph_street_light_control_box_summary': `Found ${features.length} Street Light Control Box${features.length === 1 ? '' : 'es'} within ${radius || 1.0} miles`,
+        'boston_pwd_cartegraph_street_light_control_box_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Cartegraph Street Light Control Box data:', error);
+      return {
+        'boston_pwd_cartegraph_street_light_control_box_count': 0,
+        'boston_pwd_cartegraph_street_light_control_box_summary': 'Error fetching Street Light Control Box data',
+        'boston_pwd_cartegraph_street_light_control_box_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDCartegraphFireAlarmLight(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDCartegraphFireAlarmLightData(lat, lon, radius || 1.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_cartegraph_fire_alarm_light_count': 0,
+          'boston_pwd_cartegraph_fire_alarm_light_summary': 'No Fire Alarm Lights found within the specified radius',
+          'boston_pwd_cartegraph_fire_alarm_light_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_cartegraph_fire_alarm_light_count': features.length,
+        'boston_pwd_cartegraph_fire_alarm_light_summary': `Found ${features.length} Fire Alarm Light${features.length === 1 ? '' : 's'} within ${radius || 1.0} miles`,
+        'boston_pwd_cartegraph_fire_alarm_light_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Cartegraph Fire Alarm Light data:', error);
+      return {
+        'boston_pwd_cartegraph_fire_alarm_light_count': 0,
+        'boston_pwd_cartegraph_fire_alarm_light_summary': 'Error fetching Fire Alarm Light data',
+        'boston_pwd_cartegraph_fire_alarm_light_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDPavementSidewalkConditionRampCondition(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDPavementSidewalkConditionRampConditionData(lat, lon, radius || 2.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_pavement_sidewalk_condition_ramp_condition_count': 0,
+          'boston_pwd_pavement_sidewalk_condition_ramp_condition_summary': 'No Ramp Condition features found within the specified radius',
+          'boston_pwd_pavement_sidewalk_condition_ramp_condition_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_pavement_sidewalk_condition_ramp_condition_count': features.length,
+        'boston_pwd_pavement_sidewalk_condition_ramp_condition_summary': `Found ${features.length} Ramp Condition feature${features.length === 1 ? '' : 's'} within ${radius || 2.0} miles`,
+        'boston_pwd_pavement_sidewalk_condition_ramp_condition_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Pavement Sidewalk Condition Ramp Condition data:', error);
+      return {
+        'boston_pwd_pavement_sidewalk_condition_ramp_condition_count': 0,
+        'boston_pwd_pavement_sidewalk_condition_ramp_condition_summary': 'Error fetching Ramp Condition data',
+        'boston_pwd_pavement_sidewalk_condition_ramp_condition_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDPavementSidewalkConditionIntersectionCondition(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDPavementSidewalkConditionIntersectionConditionData(lat, lon, radius || 2.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_pavement_sidewalk_condition_intersection_condition_count': 0,
+          'boston_pwd_pavement_sidewalk_condition_intersection_condition_summary': 'No Intersection Condition features found within the specified radius',
+          'boston_pwd_pavement_sidewalk_condition_intersection_condition_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_pavement_sidewalk_condition_intersection_condition_count': features.length,
+        'boston_pwd_pavement_sidewalk_condition_intersection_condition_summary': `Found ${features.length} Intersection Condition feature${features.length === 1 ? '' : 's'} within ${radius || 2.0} miles`,
+        'boston_pwd_pavement_sidewalk_condition_intersection_condition_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Pavement Sidewalk Condition Intersection Condition data:', error);
+      return {
+        'boston_pwd_pavement_sidewalk_condition_intersection_condition_count': 0,
+        'boston_pwd_pavement_sidewalk_condition_intersection_condition_summary': 'Error fetching Intersection Condition data',
+        'boston_pwd_pavement_sidewalk_condition_intersection_condition_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDPavementSidewalkConditionSidewalkCondition(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDPavementSidewalkConditionSidewalkConditionData(lat, lon, radius || 2.0);
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_pavement_sidewalk_condition_sidewalk_condition_count': 0,
+          'boston_pwd_pavement_sidewalk_condition_sidewalk_condition_summary': 'No Sidewalk Condition features found within the specified radius',
+          'boston_pwd_pavement_sidewalk_condition_sidewalk_condition_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_pavement_sidewalk_condition_sidewalk_condition_count': features.length,
+        'boston_pwd_pavement_sidewalk_condition_sidewalk_condition_summary': `Found ${features.length} Sidewalk Condition feature${features.length === 1 ? '' : 's'}${containingCount > 0 ? ` (${containingCount} containing point)` : ''} within ${radius || 2.0} miles`,
+        'boston_pwd_pavement_sidewalk_condition_sidewalk_condition_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Pavement Sidewalk Condition Sidewalk Condition data:', error);
+      return {
+        'boston_pwd_pavement_sidewalk_condition_sidewalk_condition_count': 0,
+        'boston_pwd_pavement_sidewalk_condition_sidewalk_condition_summary': 'Error fetching Sidewalk Condition data',
+        'boston_pwd_pavement_sidewalk_condition_sidewalk_condition_all': []
+      };
+    }
+  }
+
+  private async getBostonPWDPavementSidewalkConditionPavementCondition(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonPWDPavementSidewalkConditionPavementConditionData(lat, lon, radius || 2.0);
+      
+      if (features.length === 0) {
+        return {
+          'boston_pwd_pavement_sidewalk_condition_pavement_condition_count': 0,
+          'boston_pwd_pavement_sidewalk_condition_pavement_condition_summary': 'No Pavement Condition features found within the specified radius',
+          'boston_pwd_pavement_sidewalk_condition_pavement_condition_all': []
+        };
+      }
+      
+      return {
+        'boston_pwd_pavement_sidewalk_condition_pavement_condition_count': features.length,
+        'boston_pwd_pavement_sidewalk_condition_pavement_condition_summary': `Found ${features.length} Pavement Condition feature${features.length === 1 ? '' : 's'} within ${radius || 2.0} miles`,
+        'boston_pwd_pavement_sidewalk_condition_pavement_condition_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston PWD Pavement Sidewalk Condition Pavement Condition data:', error);
+      return {
+        'boston_pwd_pavement_sidewalk_condition_pavement_condition_count': 0,
+        'boston_pwd_pavement_sidewalk_condition_pavement_condition_summary': 'Error fetching Pavement Condition data',
+        'boston_pwd_pavement_sidewalk_condition_pavement_condition_all': []
+      };
+    }
+  }
+
+  private async getBostonCoolingCenters(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonCoolingCentersData(lat, lon, radius || 10);
+      
+      if (features.length === 0) {
+        return {
+          'boston_cooling_centers_count': 0,
+          'boston_cooling_centers_summary': 'No Cooling Centers found within the specified radius',
+          'boston_cooling_centers_all': []
+        };
+      }
+      
+      return {
+        'boston_cooling_centers_count': features.length,
+        'boston_cooling_centers_summary': `Found ${features.length} Cooling Center${features.length === 1 ? '' : 's'} within ${radius || 10} miles`,
+        'boston_cooling_centers_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston Cooling Centers data:', error);
+      return {
+        'boston_cooling_centers_count': 0,
+        'boston_cooling_centers_summary': 'Error fetching Cooling Centers data',
+        'boston_cooling_centers_all': []
+      };
+    }
+  }
+
+  private async getBostonBPRDSportingActivityLocations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getBostonBPRDSportingActivityLocationsData(lat, lon, radius || 5);
+      
+      if (features.length === 0) {
+        return {
+          'boston_bprd_sporting_activity_locations_count': 0,
+          'boston_bprd_sporting_activity_locations_summary': 'No Sporting Activity Locations found within the specified radius',
+          'boston_bprd_sporting_activity_locations_all': []
+        };
+      }
+      
+      return {
+        'boston_bprd_sporting_activity_locations_count': features.length,
+        'boston_bprd_sporting_activity_locations_summary': `Found ${features.length} Sporting Activity Location${features.length === 1 ? '' : 's'} within ${radius || 5} miles`,
+        'boston_bprd_sporting_activity_locations_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Boston BPRD Sporting Activity Locations data:', error);
+      return {
+        'boston_bprd_sporting_activity_locations_count': 0,
+        'boston_bprd_sporting_activity_locations_summary': 'Error fetching Sporting Activity Locations data',
+        'boston_bprd_sporting_activity_locations_all': []
       };
     }
   }
