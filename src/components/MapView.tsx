@@ -14,6 +14,7 @@ interface MapViewProps {
   previousViewMode?: string | null;
   initialCenter?: [number, number];
   initialZoom?: number;
+  poiRadii?: Record<string, number>;
 }
 
 interface LegendItem {
@@ -21,6 +22,8 @@ interface LegendItem {
   color: string;
   title: string;
   count: number;
+  radius?: number; // Proximity radius used for this layer
+  radiusDisplay?: string; // Formatted radius display (e.g., "100ft", "2 miles")
   ranges?: Array<{ label: string; color: string; count: number }>; // For color-coded layers like broadband
 }
 
@@ -2433,10 +2436,25 @@ const MapView: React.FC<MapViewProps> = ({
   previousViewMode: _previousViewMode,
   initialCenter,
   initialZoom,
+  poiRadii = {},
 }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
+  
+  // Helper function to format radius display
+  const formatRadiusDisplay = (legendKey: string, radius: number | undefined): string | undefined => {
+    if (radius === undefined) return undefined;
+    
+    if (legendKey === 'boston_approved_building_permits') {
+      // Convert to feet and round to nearest 100
+      const feet = Math.round(Math.round(radius * 5280) / 100) * 100;
+      return `${feet}ft`;
+    } else {
+      // Format as miles
+      return Number.isInteger(radius) ? `${radius} ${radius === 1 ? 'mile' : 'miles'}` : `${radius.toFixed(1)} miles`;
+    }
+  };
   // MapLibre GL Leaflet layer instance (plugin adds `L.maplibreGL`, type not in Leaflet typings)
   const basemapLayerRef = useRef<any>(null); // Base map (OpenFreeMap)
   const overlayLayerRef = useRef<any>(null); // Overlay layer (WMS/tile on top of base)
@@ -2736,7 +2754,18 @@ const MapView: React.FC<MapViewProps> = ({
       const mapCenter: [number, number] = initialCenter || (results && results.length > 0 && results[0]?.location
         ? [results[0].location.lat, results[0].location.lon] as [number, number]
         : [37.0902, -95.7129] as [number, number]);
-      const mapZoom = initialZoom !== undefined ? initialZoom : (results && results.length > 0 && results[0]?.location ? 13 : 4);
+      
+      // Check if any Boston Open Data layers are present - use closer zoom for Boston
+      const hasBostonLayers = results && results.some(result => {
+        if (!result.enrichments) return false;
+        return Object.keys(result.enrichments).some(key => 
+          key.startsWith('boston_') && key.endsWith('_all')
+        );
+      });
+      
+      // Use closer initial zoom (15) for Boston layers, otherwise use standard zoom (13)
+      const defaultZoom = hasBostonLayers ? 15 : (results && results.length > 0 && results[0]?.location ? 13 : 4);
+      const mapZoom = initialZoom !== undefined ? initialZoom : defaultZoom;
       
       // For mobile, disable fade animation which can cause rendering issues
       const map = L.map(mapRef.current, {
@@ -34035,6 +34064,8 @@ const MapView: React.FC<MapViewProps> = ({
 
       // Draw Boston Open Data layers
       const bostonLayers = [
+        { key: 'boston_approved_building_permits_all', icon: '🏗️', color: '#dc2626', title: 'Boston Approved Building Permits', isPoint: true },
+        { key: 'boston_isd_inspector_districts_all', icon: '🏛️', color: '#7c3aed', title: 'Boston ISD Inspector Districts', isPolygon: true },
         { key: 'boston_parcels_2023_all', icon: '🏘️', color: '#f97316', title: 'Boston Parcels 2023', isPolygon: true },
         { key: 'boston_charging_stations_all', icon: '🔌', color: '#16a34a', title: 'Boston Charging Stations', isPoint: true },
         { key: 'boston_blue_bike_stations_all', icon: '🚴', color: '#2563eb', title: 'Boston Blue Bike Stations', isPoint: true },
@@ -34065,7 +34096,47 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'boston_public_schools_all', icon: '🏫', color: '#3b82f6', title: 'Boston Public Schools', isPoint: true },
         { key: 'boston_non_public_schools_all', icon: '🏫', color: '#8b5cf6', title: 'Boston Non Public Schools', isPoint: true },
         { key: 'boston_colleges_universities_all', icon: '🎓', color: '#10b981', title: 'Boston Colleges/Universities', isPoint: true },
-        { key: 'boston_historic_districts_all', icon: '🏛️', color: '#f59e0b', title: 'Boston Historic Districts and Protection Areas', isPolygon: true }
+        { key: 'boston_historic_districts_all', icon: '🏛️', color: '#f59e0b', title: 'Boston Historic Districts and Protection Areas', isPolygon: true },
+        { key: 'boston_impervious_other_all', icon: '🏗️', color: '#64748b', title: 'Boston Impervious Other', isPolygon: true },
+        { key: 'boston_municipal_building_energy_reporting_all', icon: '⚡', color: '#fbbf24', title: 'Boston Municipal Building Energy Reporting', isPolygon: true },
+        { key: 'boston_historic_districts_environment_energy_all', icon: '🏛️', color: '#f97316', title: 'Boston Historic Districts (EnvironmentEnergy)', isPolygon: true },
+        { key: 'boston_hydrography_poly_all', icon: '💧', color: '#06b6d4', title: 'Boston Hydrography (poly)', isPolygon: true },
+        { key: 'boston_open_space_environment_energy_all', icon: '🌳', color: '#22c55e', title: 'Boston Open Space (EnvironmentEnergy)', isPolygon: true },
+        { key: 'boston_open_space_planning_neighborhoods_all', icon: '🌳', color: '#16a34a', title: 'Boston Open Space Planning Neighborhoods', isPolygon: true },
+        { key: 'boston_green_links_existing_lines_all', icon: '🟢', color: '#22c55e', title: 'Boston Green Links Existing Lines', isPolyline: true },
+        { key: 'boston_green_links_in_progress_lines_all', icon: '🟡', color: '#facc15', title: 'Boston Green Links In Progress Lines', isPolyline: true },
+        { key: 'boston_green_links_proposed_lines_all', icon: '🔵', color: '#3b82f6', title: 'Boston Green Links Proposed Lines', isPolyline: true },
+        { key: 'boston_green_links_crossings_all', icon: '🚶', color: '#8b5cf6', title: 'Boston Green Links Crossings', isPoint: true },
+        { key: 'boston_green_links_greenway_all', icon: '🌿', color: '#10b981', title: 'Boston Green Links Greenway', isPolygon: true },
+        { key: 'boston_fiber_sites_all', icon: '📡', color: '#3b82f6', title: 'Boston Fiber Sites', isPoint: true },
+        { key: 'boston_fiber_segments_all', icon: '🔌', color: '#8b5cf6', title: 'Boston Fiber Segments', isPolyline: true },
+        { key: 'boston_fiber_other_assets_all', icon: '🔧', color: '#f59e0b', title: 'Boston Fiber Other Assets', isPolyline: true },
+        { key: 'boston_fiber_pic_conduit_all', icon: '🔌', color: '#10b981', title: 'Boston Fiber PIC Conduit', isPolyline: true },
+        { key: 'boston_fiber_rcn_fiber_all', icon: '🔌', color: '#06b6d4', title: 'Boston Fiber RCN Fiber', isPolyline: true },
+        { key: 'boston_fiber_nstar_conduit_all', icon: '🔌', color: '#6366f1', title: 'Boston Fiber NSTAR Conduit', isPolyline: true },
+        { key: 'boston_fiber_btd_all', icon: '🚗', color: '#ef4444', title: 'Boston Fiber BTD', isPolyline: true },
+        { key: 'boston_fiber_lit_fiber_all', icon: '💡', color: '#facc15', title: 'Boston Fiber Lit Fiber', isPolyline: true },
+        { key: 'boston_fiber_core_fiber_all', icon: '🔷', color: '#3b82f6', title: 'Boston Fiber Core Fiber', isPolyline: true },
+        { key: 'boston_fiber_wireless_all', icon: '📶', color: '#a855f7', title: 'Boston Fiber Wireless', isPoint: true },
+        { key: 'boston_fiber_planning_areas_all', icon: '🗺️', color: '#16a34a', title: 'Boston Fiber Planning Areas', isPolygon: true },
+        { key: 'boston_infrastructure_sidewalk_inventory_all', icon: '🚶', color: '#8b5cf6', title: 'Boston Sidewalk Inventory', isPolygon: true },
+        { key: 'boston_infrastructure_mbta_stops_all', icon: '🚇', color: '#3b82f6', title: 'Boston MBTA Stops (Infrastructure)', isPoint: true },
+        { key: 'boston_infrastructure_hospitals_all', icon: '🏥', color: '#ef4444', title: 'Boston Hospitals', isPoint: true },
+        { key: 'boston_infrastructure_ramp_inventory_all', icon: '♿', color: '#10b981', title: 'Boston Ramp Inventory', isPolygon: true },
+        { key: 'boston_infrastructure_mbta_bus_stops_all', icon: '🚌', color: '#f59e0b', title: 'Boston MBTA Bus Stops', isPoint: true },
+        { key: 'boston_infrastructure_sidewalk_centerline_all', icon: '🚶', color: '#a855f7', title: 'Boston Sidewalk Centerline', isPolyline: true },
+        { key: 'boston_infrastructure_curbs_all', icon: '🛣️', color: '#6366f1', title: 'Boston Curbs', isPolyline: true },
+        { key: 'boston_infrastructure_snow_emergency_routes_all', icon: '❄️', color: '#3b88c4', title: 'Boston Snow Emergency Routes', isPolyline: true },
+        { key: 'boston_infrastructure_segments_all', icon: '🛣️', color: '#8b5cf6', title: 'Boston Segments', isPolyline: true },
+        { key: 'boston_infrastructure_parking_meters_all', icon: '🅿️', color: '#facc15', title: 'Boston Parking Meters', isPoint: true },
+        { key: 'boston_infrastructure_trash_collection_days_all', icon: '🗑️', color: '#65a30d', title: 'Boston Trash Collection Days', isPolygon: true },
+        { key: 'boston_infrastructure_street_lights_all', icon: '💡', color: '#facc15', title: 'Boston Street Lights', isPoint: true },
+        { key: 'boston_infrastructure_traffic_signals_all', icon: '🚦', color: '#ef4444', title: 'Boston Traffic Signals', isPoint: true },
+        { key: 'boston_infrastructure_curbs2_all', icon: '🛣️', color: '#6366f1', title: 'Boston Curbs (Layer 13)', isPolyline: true },
+        { key: 'boston_infrastructure_massdot_road_inventory_all', icon: '🛣️', color: '#3b82f6', title: 'Boston MassDOT Road Inventory', isPolyline: true },
+        { key: 'boston_infrastructure_mbta_bus_routes_all', icon: '🚌', color: '#06b6d4', title: 'Boston MBTA Bus Routes', isPolyline: true },
+        { key: 'boston_infrastructure_mbcr_train_routes_all', icon: '🚂', color: '#8b5cf6', title: 'Boston MBCR Train Routes', isPolyline: true },
+        { key: 'boston_infrastructure_mbcr_train_stations_all', icon: '🚉', color: '#3b82f6', title: 'Boston MBCR Train Stations', isPoint: true }
       ];
 
       bostonLayers.forEach((layerConfig) => {
@@ -34411,15 +34482,25 @@ const MapView: React.FC<MapViewProps> = ({
 
             if (featureCount > 0) {
               const legendKey = layerConfig.key.replace('_all', '');
+              const radius = poiRadii[legendKey];
+              const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+              
               if (!legendAccumulator[legendKey]) {
                 legendAccumulator[legendKey] = {
                   icon: layerConfig.icon,
                   color: layerConfig.color,
                   title: layerConfig.title,
                   count: 0,
+                  radius: radius,
+                  radiusDisplay: radiusDisplay,
                 };
               }
               legendAccumulator[legendKey].count += featureCount;
+              // Update radius info if not already set
+              if (radius !== undefined && !legendAccumulator[legendKey].radius) {
+                legendAccumulator[legendKey].radius = radius;
+                legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+              }
             }
           } catch (error) {
             console.error(`Error processing ${layerConfig.title}:`, error);
@@ -34543,6 +34624,11 @@ const MapView: React.FC<MapViewProps> = ({
             key.includes('ireland_provinces_containing') ||
             key.includes('ireland_provinces_nearby_features') ||
             key.includes('ireland_provinces_all')) {
+          return;
+        }
+
+        // Skip Boston layers - they're handled separately with geometry drawing in bostonLayers.forEach above
+        if (key.startsWith('boston_') && key.endsWith('_all')) {
           return;
         }
 
@@ -34816,7 +34902,18 @@ const MapView: React.FC<MapViewProps> = ({
           
           // Only animate if we're significantly away from the target (more than 100 meters)
           // or if zoom level is not appropriate
-          const targetZoom = results.length === 1 ? 15 : 12;
+          // Check if any Boston Open Data layers are present - use closer zoom for Boston
+          const hasBostonLayers = results.some(result => {
+            if (!result.enrichments) return false;
+            return Object.keys(result.enrichments).some(key => 
+              key.startsWith('boston_') && key.endsWith('_all')
+            );
+          });
+          
+          // Use closer zoom (16) for Boston layers, otherwise use standard zoom
+          const targetZoom = hasBostonLayers 
+            ? (results.length === 1 ? 16 : 14)  // Closer zoom for Boston
+            : (results.length === 1 ? 15 : 12);  // Standard zoom for other layers
           const shouldAnimate = distance > 100 || Math.abs(currentZoom - targetZoom) > 2;
           
           if (shouldAnimate) {
@@ -36093,7 +36190,12 @@ const MapView: React.FC<MapViewProps> = ({
                       {item.icon}
                     </div>
                     <span className="text-gray-700 font-medium flex-1">{item.title}</span>
-                    <span className="text-gray-600 font-semibold ml-auto">{item.count || 0}</span>
+                    <div className="flex flex-col items-end ml-auto">
+                      <span className="text-gray-600 font-semibold">{item.count || 0}</span>
+                      {item.radiusDisplay && (
+                        <span className="text-xs text-gray-500 mt-0.5">{item.radiusDisplay}</span>
+                      )}
+                    </div>
                   </div>
                   {/* Show ranges for broadband layer */}
                   {item.ranges && item.ranges.length > 0 && (

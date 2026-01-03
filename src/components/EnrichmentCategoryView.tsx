@@ -289,6 +289,9 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               radiusOptions = [0.25, 0.50, 0.75, 1.0];
             } else if (enrichment.id === 'boston_parcels_2023') {
               radiusOptions = [0.25];
+            } else if (enrichment.id === 'boston_approved_building_permits') {
+              // Options in miles: 100ft (0.019), 200ft (0.038), 500ft (0.095)
+              radiusOptions = [0.019, 0.038, 0.095];
             } else if (enrichment.id === 'nyc_bike_routes' || enrichment.id === 'nyc_business_improvement_districts' || enrichment.id === 'nyc_community_districts') {
               radiusOptions = [0.5, 1.0, 2.5, 5.0];
             } else {
@@ -314,6 +317,24 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
             }
             const formatMiles = (value: number) =>
               Number.isInteger(value) ? value.toString() : value.toFixed(1);
+            
+            // Special formatting for building permits - show feet instead of miles
+            const formatRadius = (value: number) => {
+              if (enrichment.id === 'boston_approved_building_permits') {
+                const feet = Math.round(value * 5280);
+                // Round to nearest 100 for clean display (100ft, 200ft, 500ft)
+                const roundedFeet = Math.round(feet / 100) * 100;
+                return `${roundedFeet}ft`;
+              }
+              return formatMiles(value);
+            };
+            
+            const getRadiusUnit = () => {
+              if (enrichment.id === 'boston_approved_building_permits') {
+                return 'radius';
+              }
+              return currentRadius === 1 ? 'mile' : 'miles';
+            };
 
             return (
               <div key={enrichment.id} className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -378,13 +399,13 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                               >
                                 {radiusOptions.map(option => (
                                   <option key={option} value={option}>
-                                    {formatMiles(option)} {option === 1 ? 'mile' : 'miles'}
+                                    {formatRadius(option)} {enrichment.id === 'boston_approved_building_permits' ? '' : (option === 1 ? 'mile' : 'miles')}
                                   </option>
                                 ))}
                               </select>
                             </div>
                             <span className="text-sm text-black font-medium whitespace-nowrap flex-shrink-0">
-                              {currentRadius === 1 ? 'mile' : 'miles'} radius
+                              {getRadiusUnit()} radius
                             </span>
                           </div>
                         </div>

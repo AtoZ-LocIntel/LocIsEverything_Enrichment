@@ -444,6 +444,7 @@ function App() {
               previousViewMode={previousViewMode}
               initialCenter={enrichmentResults.length === 0 ? [37.0902, -95.7129] as [number, number] : undefined}
               initialZoom={enrichmentResults.length === 0 ? 4 : undefined}
+              poiRadii={poiRadii}
             />
           </div>
         )

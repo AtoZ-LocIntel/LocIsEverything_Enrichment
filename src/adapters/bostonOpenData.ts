@@ -24,6 +24,12 @@ const BASE_SERVICE_URL_311_ADDRESSES = 'https://gisportal.boston.gov/arcgis/rest
 const BASE_SERVICE_URL_MOH_PARCELS_2023 = 'https://gisportal.boston.gov/arcgis/rest/services/DND/MOH_Parcel_Join_FY23/MapServer';
 const BASE_SERVICE_URL_EDUCATION = 'https://gisportal.boston.gov/arcgis/rest/services/Education/OpenData/MapServer';
 const BASE_SERVICE_URL_HISTORIC_DISTRICTS = 'https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/BLC_HISTORIC_DISTRICTS/MapServer';
+const BASE_SERVICE_URL_ENVIRONMENT_ENERGY = 'https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/OpenData/MapServer';
+const BASE_SERVICE_URL_GREEN_LINKS = 'https://gisportal.boston.gov/arcgis/rest/services/GreenLinks/GreenLinks/MapServer';
+const BASE_SERVICE_URL_FIBER = 'https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer';
+const BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA = 'https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer';
+const BASE_SERVICE_URL_APPROVED_BUILDING_PERMITS = 'https://gisportal.boston.gov/arcgis/rest/services/ISD/approved_building_permits/MapServer';
+const BASE_SERVICE_URL_ISD_INSPECTOR_DISTRICTS = 'https://gisportal.boston.gov/arcgis/rest/services/ISD/ISD_inspector_districts_viewing/MapServer';
 
 export interface BostonOpenDataFeature {
   objectid: number;
@@ -1432,6 +1438,139 @@ export async function getBostonPublicLibrariesData(
  * Query Boston Bike Network layer - Polyline layer
  * Generic function that can query Existing Facility, 5YR_plan, or 30YR_plan layers
  */
+/**
+ * Generic polyline query function using envelope-based approach (works for most Boston services)
+ */
+async function queryBostonPolylineLayer(
+  baseServiceUrl: string,
+  layerId: number,
+  layerName: string,
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  try {
+    const maxRecordCount = 2000;
+
+    console.log(
+      `🛣️ Boston Open Data ${layerName} (Layer ${layerId}) query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`
+    );
+
+    let allFeatures: any[] = [];
+    let resultOffset = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      // Calculate bounding box for the radius
+      const latDelta = radiusMiles / 69.0; // Approximate miles per degree latitude
+      const lonDelta = radiusMiles / (69.0 * Math.cos(lat * Math.PI / 180)); // Adjust for longitude
+      
+      const minX = lon - lonDelta;
+      const maxX = lon + lonDelta;
+      const minY = lat - latDelta;
+      const maxY = lat + latDelta;
+
+      const queryUrl = new URL(`${baseServiceUrl}/${layerId}/query`);
+      queryUrl.searchParams.set('f', 'json');
+      queryUrl.searchParams.set('where', '1=1');
+      queryUrl.searchParams.set('outFields', '*');
+      queryUrl.searchParams.set('geometry', JSON.stringify({
+        xmin: minX,
+        ymin: minY,
+        xmax: maxX,
+        ymax: maxY,
+        spatialReference: { wkid: 4326 }
+      }));
+      queryUrl.searchParams.set('geometryType', 'esriGeometryEnvelope');
+      queryUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+      queryUrl.searchParams.set('inSR', '4326');
+      queryUrl.searchParams.set('outSR', '4326');
+      queryUrl.searchParams.set('returnGeometry', 'true');
+      queryUrl.searchParams.set('resultRecordCount', maxRecordCount.toString());
+      queryUrl.searchParams.set('resultOffset', resultOffset.toString());
+
+      const response = await fetchJSONSmart(queryUrl.toString());
+
+      if (response.error) {
+        if (response.error.code === 403) {
+          console.warn(`⚠️ Boston Open Data ${layerName} (Layer ${layerId}): Access denied (403). Returning empty results.`);
+          return []; // Return empty array for 403 errors
+        }
+        throw new Error(
+          `Boston Open Data ${layerName} API error: ${JSON.stringify(response.error)}`
+        );
+      }
+
+      const batchFeatures = response.features || [];
+      allFeatures = allFeatures.concat(batchFeatures);
+
+      hasMore = batchFeatures.length === maxRecordCount || response.exceededTransferLimit === true;
+      resultOffset += batchFeatures.length;
+
+      if (resultOffset > 100000) {
+        console.warn(`⚠️ Boston Open Data ${layerName}: Stopping pagination at 100k records for safety`);
+        hasMore = false;
+      }
+
+      if (hasMore) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+
+    // Process features and calculate distances (polylines)
+    const processedFeatures: BostonOpenDataFeature[] = allFeatures.map(
+      (feature: any) => {
+        const attributes = feature.attributes || {};
+        const geometry = feature.geometry;
+        const objectid = attributes.OBJECTID || attributes.objectid || attributes.ObjectId || attributes.OBJECTID_ || attributes.FID || 0;
+
+        let distanceMiles = radiusMiles; // Default to max radius
+
+        // Calculate distance to polyline
+        if (geometry) {
+          if (geometry.paths && geometry.paths.length > 0) {
+            distanceMiles = distanceToPolyline(lat, lon, geometry.paths);
+          } else if (geometry.rings && geometry.rings.length > 0) {
+            // Some might have rings, treat as polylines
+            distanceMiles = distanceToPolyline(lat, lon, geometry.rings);
+          }
+        }
+
+        return {
+          objectid,
+          attributes,
+          geometry,
+          distance_miles: distanceMiles,
+          layerId,
+          layerName,
+        };
+      }
+    );
+
+    // Filter features within radius and sort
+    const withinRadius = processedFeatures.filter(f => (f.distance_miles || Infinity) <= radiusMiles);
+    
+    // Sort by distance
+    withinRadius.sort((a, b) => {
+      const distA = a.distance_miles || Infinity;
+      const distB = b.distance_miles || Infinity;
+      return distA - distB;
+    });
+
+    console.log(
+      `✅ Processed ${withinRadius.length} Boston Open Data ${layerName} feature(s) within ${radiusMiles} miles`
+    );
+
+    return withinRadius;
+  } catch (error) {
+    console.error(`❌ Boston Open Data ${layerName} API Error:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Query Boston Bike Network layer - Uses point + distance query (works for Bike Network service)
+ */
 async function queryBostonBikeNetworkLayer(
   layerId: number,
   layerName: string,
@@ -1474,6 +1613,10 @@ async function queryBostonBikeNetworkLayer(
       const response = await fetchJSONSmart(queryUrl.toString());
 
       if (response.error) {
+        if (response.error.code === 403) {
+          console.warn(`⚠️ Boston Open Data ${layerName} (Layer ${layerId}): Access denied (403). Returning empty results.`);
+          return []; // Return empty array for 403 errors
+        }
         throw new Error(
           `Boston Open Data ${layerName} API error: ${JSON.stringify(response.error)}`
         );
@@ -1643,6 +1786,469 @@ export async function getBostonHistoricDistrictsData(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_HISTORIC_DISTRICTS, 0, 'Historic Districts and Protection Areas', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Impervious Other layer (Layer 0) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonImperviousOtherData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_ENVIRONMENT_ENERGY, 0, 'Impervious Other', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Municipal Building Energy Reporting layer (Layer 2) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonMunicipalBuildingEnergyReportingData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_ENVIRONMENT_ENERGY, 2, 'Municipal Building Energy Reporting', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Historic Districts and Protection Areas (EnvironmentEnergy) layer (Layer 4) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonHistoricDistrictsEnvironmentEnergyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_ENVIRONMENT_ENERGY, 4, 'Historic Districts and Protection Areas (EnvironmentEnergy)', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Hydrography (poly) layer (Layer 5) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonHydrographyPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_ENVIRONMENT_ENERGY, 5, 'Hydrography (poly)', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Open Space layer (Layer 7) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonOpenSpaceEnvironmentEnergyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_ENVIRONMENT_ENERGY, 7, 'Open Space (EnvironmentEnergy)', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Open Space Planning Neighborhoods layer (Layer 8) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonOpenSpacePlanningNeighborhoodsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_ENVIRONMENT_ENERGY, 8, 'Open Space Planning Neighborhoods', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Green Links Existing Lines layer (Layer 0) - Polyline layer
+ */
+export async function getBostonGreenLinksExistingLinesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_GREEN_LINKS, 0, 'Green Links Existing Lines', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Green Links In Progress Lines layer (Layer 1) - Polyline layer
+ */
+export async function getBostonGreenLinksInProgressLinesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_GREEN_LINKS, 1, 'Green Links In Progress Lines', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Green Links Proposed Lines layer (Layer 2) - Polyline layer
+ */
+export async function getBostonGreenLinksProposedLinesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_GREEN_LINKS, 2, 'Green Links Proposed Lines', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Green Links Crossings layer (Layer 3) - Polyline layer
+ */
+export async function getBostonGreenLinksCrossingsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_GREEN_LINKS, 3, 'Green Links Crossings', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Green Links Greenway layer (Layer 4) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonGreenLinksGreenwayData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_GREEN_LINKS, 4, 'Green Links Greenway', lat, lon, Math.min(radiusMiles, 5));
+}
+
+/**
+ * Query Boston Fiber Sites layer (Layer 1) - Point layer
+ */
+export async function getBostonFiberSitesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_FIBER, 1, 'Fiber Sites', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber EGIS.MIS.Boston_Segments layer (Layer 2) - Polyline layer
+ */
+export async function getBostonFiberSegmentsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_FIBER, 2, 'Fiber Boston Segments', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber Other Fiber Assets layer (Layer 3) - Point/Polyline layer
+ */
+export async function getBostonFiberOtherAssetsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_FIBER, 3, 'Fiber Other Assets', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber PIC Conduit layer (Layer 4) - Polyline layer
+ */
+export async function getBostonFiberPICConduitData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_FIBER, 4, 'Fiber PIC Conduit', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber RCN Fiber layer (Layer 5) - Polyline layer
+ */
+export async function getBostonFiberRCNFiberData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_FIBER, 5, 'Fiber RCN Fiber', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber NSTAR Conduit layer (Layer 6) - Polyline layer
+ */
+export async function getBostonFiberNSTARConduitData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_FIBER, 6, 'Fiber NSTAR Conduit', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber Boston Transportation Department layer (Layer 7) - Polyline layer
+ */
+export async function getBostonFiberBTDData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_FIBER, 7, 'Fiber BTD', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber Lit Fiber layer (Layer 8) - Polyline layer
+ */
+export async function getBostonFiberLitFiberData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_FIBER, 8, 'Fiber Lit Fiber', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber Core Fiber layer (Layer 9) - Polyline layer
+ */
+export async function getBostonFiberCoreFiberData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_FIBER, 9, 'Fiber Core Fiber', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber Wireless layer (Layer 10) - Point layer
+ */
+export async function getBostonFiberWirelessData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_FIBER, 10, 'Fiber Wireless', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Fiber Planning Areas layer (Layer 11) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonFiberPlanningAreasData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_FIBER, 11, 'Fiber Planning Areas', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Sidewalk Inventory layer (Layer 0) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonInfrastructureSidewalkInventoryData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 0, 'Sidewalk Inventory', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure MBTA Stops layer (Layer 1) - Point layer
+ */
+export async function getBostonInfrastructureMBTAStopsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 1, 'MBTA Stops (Infrastructure)', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Hospitals layer (Layer 2) - Point layer
+ */
+export async function getBostonInfrastructureHospitalsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 2, 'Hospitals', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Ramp Inventory layer (Layer 3) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonInfrastructureRampInventoryData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 3, 'Ramp Inventory', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure MBTA Bus Stops layer (Layer 4) - Point layer
+ */
+export async function getBostonInfrastructureMBTABusStopsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 4, 'MBTA Bus Stops', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Sidewalk Centerline layer (Layer 5) - Polyline layer
+ */
+export async function getBostonInfrastructureSidewalkCenterlineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 5, 'Sidewalk Centerline', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Curbs layer (Layer 6) - Polyline layer
+ */
+export async function getBostonInfrastructureCurbsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 6, 'Curbs', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Snow Emergency Routes layer (Layer 7) - Polyline layer
+ */
+export async function getBostonInfrastructureSnowEmergencyRoutesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 7, 'Snow Emergency Routes', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Boston Segments layer (Layer 8) - Polyline layer
+ */
+export async function getBostonInfrastructureSegmentsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 8, 'Boston Segments', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Parking Meters layer (Layer 9) - Point layer
+ */
+export async function getBostonInfrastructureParkingMetersData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 9, 'Parking Meters', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Trash Collection Days layer (Layer 10) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonInfrastructureTrashCollectionDaysData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 10, 'Trash Collection Days', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Street Lights layer (Layer 11) - Point layer
+ */
+export async function getBostonInfrastructureStreetLightsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 11, 'Street Lights', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Traffic Signals layer (Layer 12) - Point layer
+ */
+export async function getBostonInfrastructureTrafficSignalsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 12, 'Traffic Signals', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure Curbs layer (Layer 13) - Polyline layer (duplicate of layer 6)
+ */
+export async function getBostonInfrastructureCurbs2Data(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 13, 'Curbs (Layer 13)', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure MassDOT Road Inventory layer (Layer 14) - Polyline layer
+ */
+export async function getBostonInfrastructureMassDOTRoadInventoryData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 14, 'MassDOT Road Inventory', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure MBTA Bus Routes layer (Layer 15) - Polyline layer
+ */
+export async function getBostonInfrastructureMBTABusRoutesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 15, 'MBTA Bus Routes', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure MBCR Train Routes layer (Layer 16) - Polyline layer
+ */
+export async function getBostonInfrastructureMBCRTrainRoutesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPolylineLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 16, 'MBCR Train Routes', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Infrastructure MBCR Train Stations layer (Layer 17) - Point layer
+ */
+export async function getBostonInfrastructureMBCRTrainStationsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_INFRASTRUCTURE_OPENDATA, 17, 'MBCR Train Stations', lat, lon, Math.min(radiusMiles, 2));
+}
+
+/**
+ * Query Boston Approved Building Permits layer (Layer 0) - Point layer
+ */
+export async function getBostonApprovedBuildingPermitsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  // Cap at 500 feet (approximately 0.095 miles) to limit results
+  return queryBostonLayer(BASE_SERVICE_URL_APPROVED_BUILDING_PERMITS, 0, 'Approved Building Permits', lat, lon, Math.min(radiusMiles, 0.095));
+}
+
+/**
+ * Query Boston ISD Inspector Districts layer (Layer 0) - Polygon layer with point-in-polygon support
+ */
+export async function getBostonISDInspectorDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_ISD_INSPECTOR_DISTRICTS, 0, 'ISD Inspector Districts', lat, lon, Math.min(radiusMiles, 2));
 }
 
 /**

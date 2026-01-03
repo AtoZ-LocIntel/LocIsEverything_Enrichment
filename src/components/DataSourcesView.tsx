@@ -3200,6 +3200,22 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "Boston Open Data",
       sources: [
         {
+          name: "Boston Approved Building Permits",
+          description: "Boston Open Data - Approved building permits (proximity queries: 100ft, 200ft, 500ft)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/ISD/approved_building_permits/MapServer/0"
+        },
+        {
+          name: "Boston ISD Inspector Districts",
+          description: "Boston Open Data - ISD inspector districts (point-in-polygon and proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/ISD/ISD_inspector_districts_viewing/MapServer/0"
+        },
+        {
           name: "Boston Parcels 2023",
           description: "Boston Open Data - Parcel polygons for FY23 (point-in-polygon and proximity queries up to 0.25 miles)",
           coverage: "Boston, Massachusetts",
@@ -3446,6 +3462,326 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/BLC_HISTORIC_DISTRICTS/MapServer/0"
+        },
+        {
+          name: "Boston Impervious Other",
+          description: "Boston Open Data - Impervious other areas (point-in-polygon and proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/OpenData/MapServer/0"
+        },
+        {
+          name: "Boston Municipal Building Energy Reporting",
+          description: "Boston Open Data - Municipal building energy reporting (point-in-polygon and proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/OpenData/MapServer/2"
+        },
+        {
+          name: "Boston Historic Districts (EnvironmentEnergy)",
+          description: "Boston Open Data - Historic districts and protection areas from EnvironmentEnergy service (point-in-polygon and proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/OpenData/MapServer/4"
+        },
+        {
+          name: "Boston Hydrography (poly)",
+          description: "Boston Open Data - Hydrography polygons (point-in-polygon and proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/OpenData/MapServer/5"
+        },
+        {
+          name: "Boston Open Space (EnvironmentEnergy)",
+          description: "Boston Open Data - Open space from EnvironmentEnergy service (point-in-polygon and proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/OpenData/MapServer/7"
+        },
+        {
+          name: "Boston Open Space Planning Neighborhoods",
+          description: "Boston Open Data - Open space planning neighborhoods (point-in-polygon and proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/EnvironmentEnergy/OpenData/MapServer/8"
+        },
+        {
+          name: "Boston Green Links Existing Lines",
+          description: "Boston Open Data - Green Links existing lines (proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/GreenLinks/GreenLinks/MapServer/0"
+        },
+        {
+          name: "Boston Green Links In Progress Lines",
+          description: "Boston Open Data - Green Links in progress lines (proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/GreenLinks/GreenLinks/MapServer/1"
+        },
+        {
+          name: "Boston Green Links Proposed Lines",
+          description: "Boston Open Data - Green Links proposed lines (proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/GreenLinks/GreenLinks/MapServer/2"
+        },
+        {
+          name: "Boston Green Links Crossings",
+          description: "Boston Open Data - Green Links crossings (proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/GreenLinks/GreenLinks/MapServer/3"
+        },
+        {
+          name: "Boston Green Links Greenway",
+          description: "Boston Open Data - Green Links greenway (point-in-polygon and proximity queries up to 5 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/GreenLinks/GreenLinks/MapServer/4"
+        },
+        {
+          name: "Boston Fiber Sites",
+          description: "Boston Open Data - Fiber infrastructure sites (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/1"
+        },
+        {
+          name: "Boston Fiber Segments",
+          description: "Boston Open Data - Fiber network segments (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/2"
+        },
+        {
+          name: "Boston Fiber Other Assets",
+          description: "Boston Open Data - Other fiber assets (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/3"
+        },
+        {
+          name: "Boston Fiber PIC Conduit",
+          description: "Boston Open Data - PIC conduit infrastructure (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/4"
+        },
+        {
+          name: "Boston Fiber RCN Fiber",
+          description: "Boston Open Data - RCN fiber infrastructure (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/5"
+        },
+        {
+          name: "Boston Fiber NSTAR Conduit",
+          description: "Boston Open Data - NSTAR conduit infrastructure (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/6"
+        },
+        {
+          name: "Boston Fiber BTD",
+          description: "Boston Open Data - Boston Transportation Department fiber (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/7"
+        },
+        {
+          name: "Boston Fiber Lit Fiber",
+          description: "Boston Open Data - Lit fiber infrastructure (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/8"
+        },
+        {
+          name: "Boston Fiber Core Fiber",
+          description: "Boston Open Data - Core fiber infrastructure (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/9"
+        },
+        {
+          name: "Boston Fiber Wireless",
+          description: "Boston Open Data - Wireless infrastructure sites (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/10"
+        },
+        {
+          name: "Boston Fiber Planning Areas",
+          description: "Boston Open Data - Fiber planning areas (point-in-polygon and proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/fiber/MapServer/11"
+        },
+        {
+          name: "Boston Sidewalk Inventory",
+          description: "Boston Open Data - Sidewalk inventory polygons (point-in-polygon and proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/0"
+        },
+        {
+          name: "Boston MBTA Stops (Infrastructure)",
+          description: "Boston Open Data - MBTA stops from infrastructure service (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/1"
+        },
+        {
+          name: "Boston Hospitals",
+          description: "Boston Open Data - Hospital locations (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/2"
+        },
+        {
+          name: "Boston Ramp Inventory",
+          description: "Boston Open Data - Ramp inventory polygons (point-in-polygon and proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/3"
+        },
+        {
+          name: "Boston MBTA Bus Stops",
+          description: "Boston Open Data - MBTA bus stop locations (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/4"
+        },
+        {
+          name: "Boston Sidewalk Centerline",
+          description: "Boston Open Data - Sidewalk centerline polylines (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/5"
+        },
+        {
+          name: "Boston Curbs",
+          description: "Boston Open Data - Curb polylines (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/6"
+        },
+        {
+          name: "Boston Snow Emergency Routes",
+          description: "Boston Open Data - Snow emergency route polylines (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/7"
+        },
+        {
+          name: "Boston Segments",
+          description: "Boston Open Data - Boston segment polylines (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/8"
+        },
+        {
+          name: "Boston Parking Meters",
+          description: "Boston Open Data - Parking meter locations (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/9"
+        },
+        {
+          name: "Boston Trash Collection Days",
+          description: "Boston Open Data - Trash collection day polygons (point-in-polygon and proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/10"
+        },
+        {
+          name: "Boston Street Lights",
+          description: "Boston Open Data - Street light locations (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/11"
+        },
+        {
+          name: "Boston Traffic Signals",
+          description: "Boston Open Data - Traffic signal locations (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/12"
+        },
+        {
+          name: "Boston Curbs (Layer 13)",
+          description: "Boston Open Data - Curb polylines layer 13 (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/13"
+        },
+        {
+          name: "Boston MassDOT Road Inventory",
+          description: "Boston Open Data - MassDOT road inventory polylines (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/14"
+        },
+        {
+          name: "Boston MBTA Bus Routes",
+          description: "Boston Open Data - MBTA bus route polylines (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/15"
+        },
+        {
+          name: "Boston MBCR Train Routes",
+          description: "Boston Open Data - MBCR train route polylines (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/16"
+        },
+        {
+          name: "Boston MBCR Train Stations",
+          description: "Boston Open Data - MBCR train station locations (proximity queries up to 2 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Infrastructure/OpenData/MapServer/17"
         }
       ]
     },
