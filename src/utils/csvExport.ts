@@ -13626,7 +13626,10 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'boston_bike_network_existing_facility_all': { name: 'BOSTON_BIKE_NETWORK_EXISTING_FACILITY', icon: '🚴' },
       'boston_bike_network_5yr_plan_all': { name: 'BOSTON_BIKE_NETWORK_5YR_PLAN', icon: '🚴' },
       'boston_bike_network_30yr_plan_all': { name: 'BOSTON_BIKE_NETWORK_30YR_PLAN', icon: '🚴' },
-      'boston_311_addresses_all': { name: 'BOSTON_311_BULK_ITEM_PICKUP_LOCATIONS', icon: '📞' }
+      'boston_311_addresses_all': { name: 'BOSTON_311_BULK_ITEM_PICKUP_LOCATIONS', icon: '📞' },
+      'boston_public_schools_all': { name: 'BOSTON_PUBLIC_SCHOOLS', icon: '🏫' },
+      'boston_non_public_schools_all': { name: 'BOSTON_NON_PUBLIC_SCHOOLS', icon: '🏫' },
+      'boston_colleges_universities_all': { name: 'BOSTON_COLLEGES_UNIVERSITIES', icon: '🎓' }
     };
     
     if (bostonLayerMap[key] && Array.isArray(value)) {

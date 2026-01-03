@@ -34061,7 +34061,10 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'boston_bike_network_existing_facility_all', icon: '🚴', color: '#22c55e', title: 'Boston Bike Network Existing Facility', isPolyline: true },
         { key: 'boston_bike_network_5yr_plan_all', icon: '🚴', color: '#3b82f6', title: 'Boston Bike Network 5YR Plan', isPolyline: true },
         { key: 'boston_bike_network_30yr_plan_all', icon: '🚴', color: '#8b5cf6', title: 'Boston Bike Network 30YR Plan', isPolyline: true },
-        { key: 'boston_311_addresses_all', icon: '📞', color: '#ec4899', title: 'Boston 311 Bulk Item PickUp Locations', isPoint: true }
+        { key: 'boston_311_addresses_all', icon: '📞', color: '#ec4899', title: 'Boston 311 Bulk Item PickUp Locations', isPoint: true },
+        { key: 'boston_public_schools_all', icon: '🏫', color: '#3b82f6', title: 'Boston Public Schools', isPoint: true },
+        { key: 'boston_non_public_schools_all', icon: '🏫', color: '#8b5cf6', title: 'Boston Non Public Schools', isPoint: true },
+        { key: 'boston_colleges_universities_all', icon: '🎓', color: '#10b981', title: 'Boston Colleges/Universities', isPoint: true }
       ];
 
       bostonLayers.forEach((layerConfig) => {

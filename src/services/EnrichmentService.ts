@@ -175,6 +175,9 @@ import {
   getBostonBikeNetwork30YRPlanData,
   getBoston311AddressesData,
   getBostonParcels2023Data,
+  getBostonPublicSchoolsData,
+  getBostonNonPublicSchoolsData,
+  getBostonCollegesUniversitiesData,
 } from '../adapters/bostonOpenData';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
@@ -2828,6 +2831,12 @@ export class EnrichmentService {
         return await this.getBostonBikeNetwork30YRPlan(lat, lon, radius);
       case 'boston_311_addresses':
         return await this.getBoston311Addresses(lat, lon, radius);
+      case 'boston_public_schools':
+        return await this.getBostonPublicSchools(lat, lon, radius);
+      case 'boston_non_public_schools':
+        return await this.getBostonNonPublicSchools(lat, lon, radius);
+      case 'boston_colleges_universities':
+        return await this.getBostonCollegesUniversities(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -27906,6 +27915,112 @@ out center;`;
         'boston_311_addresses_count': 0,
         'boston_311_addresses_summary': 'Error fetching 311 bulk item pickup locations data',
         'boston_311_addresses_all': []
+      };
+    }
+  }
+
+  private async getBostonPublicSchools(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏫 Fetching Boston Public Schools data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonPublicSchoolsData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_public_schools_count'] = 0;
+        result['boston_public_schools_summary'] = 'No public schools found within the specified radius';
+        result['boston_public_schools_all'] = [];
+      } else {
+        result['boston_public_schools_count'] = features.length;
+        result['boston_public_schools_summary'] = `Found ${features.length} public school${features.length === 1 ? '' : 's'} within ${radius || 10} miles`;
+        result['boston_public_schools_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Public Schools data:`, error);
+      return {
+        'boston_public_schools_count': 0,
+        'boston_public_schools_summary': 'Error fetching public schools data',
+        'boston_public_schools_all': []
+      };
+    }
+  }
+
+  private async getBostonNonPublicSchools(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏫 Fetching Boston Non Public Schools data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonNonPublicSchoolsData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_non_public_schools_count'] = 0;
+        result['boston_non_public_schools_summary'] = 'No non-public schools found within the specified radius';
+        result['boston_non_public_schools_all'] = [];
+      } else {
+        result['boston_non_public_schools_count'] = features.length;
+        result['boston_non_public_schools_summary'] = `Found ${features.length} non-public school${features.length === 1 ? '' : 's'} within ${radius || 10} miles`;
+        result['boston_non_public_schools_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Non Public Schools data:`, error);
+      return {
+        'boston_non_public_schools_count': 0,
+        'boston_non_public_schools_summary': 'Error fetching non-public schools data',
+        'boston_non_public_schools_all': []
+      };
+    }
+  }
+
+  private async getBostonCollegesUniversities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🎓 Fetching Boston Colleges/Universities data for [${lat}, ${lon}]`);
+      
+      const features = await getBostonCollegesUniversitiesData(lat, lon, radius || 10);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['boston_colleges_universities_count'] = 0;
+        result['boston_colleges_universities_summary'] = 'No colleges/universities found within the specified radius';
+        result['boston_colleges_universities_all'] = [];
+      } else {
+        result['boston_colleges_universities_count'] = features.length;
+        const pluralText = features.length === 1 ? 'college/university' : 'colleges/universities';
+        result['boston_colleges_universities_summary'] = `Found ${features.length} ${pluralText} within ${radius || 10} miles`;
+        result['boston_colleges_universities_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching Boston Colleges/Universities data:`, error);
+      return {
+        'boston_colleges_universities_count': 0,
+        'boston_colleges_universities_summary': 'Error fetching colleges/universities data',
+        'boston_colleges_universities_all': []
       };
     }
   }

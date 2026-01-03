@@ -3414,6 +3414,30 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://gisportal.boston.gov/arcgis/rest/services/CityServices/Addresses_Mattress_Pickup_311/FeatureServer/0"
+        },
+        {
+          name: "Boston Public Schools",
+          description: "Boston Open Data - Public schools (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Education/OpenData/MapServer/0"
+        },
+        {
+          name: "Boston Non Public Schools",
+          description: "Boston Open Data - Non-public schools (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Education/OpenData/MapServer/1"
+        },
+        {
+          name: "Boston Colleges/Universities",
+          description: "Boston Open Data - Colleges and universities (proximity queries up to 10 miles)",
+          coverage: "Boston, Massachusetts",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gisportal.boston.gov/arcgis/rest/services/Education/OpenData/MapServer/2"
         }
       ]
     },

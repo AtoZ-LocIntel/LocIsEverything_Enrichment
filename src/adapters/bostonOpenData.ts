@@ -22,6 +22,7 @@ const BASE_SERVICE_URL_TRASH_DAY = 'https://gisportal.boston.gov/arcgis/rest/ser
 const BASE_SERVICE_URL_BIKE_NETWORK = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/BikeNetwork/MapServer';
 const BASE_SERVICE_URL_311_ADDRESSES = 'https://gisportal.boston.gov/arcgis/rest/services/CityServices/Addresses_Mattress_Pickup_311/FeatureServer';
 const BASE_SERVICE_URL_MOH_PARCELS_2023 = 'https://gisportal.boston.gov/arcgis/rest/services/DND/MOH_Parcel_Join_FY23/MapServer';
+const BASE_SERVICE_URL_EDUCATION = 'https://gisportal.boston.gov/arcgis/rest/services/Education/OpenData/MapServer';
 
 export interface BostonOpenDataFeature {
   objectid: number;
@@ -1597,6 +1598,39 @@ export async function getBostonParcels2023Data(
   radiusMiles: number
 ): Promise<BostonOpenDataFeature[]> {
   return queryBostonPopulationEstimatesLayer(BASE_SERVICE_URL_MOH_PARCELS_2023, 0, 'Parcels 2023', lat, lon, Math.min(radiusMiles, 0.25));
+}
+
+/**
+ * Query Boston Public Schools layer (Layer 0) - Point layer
+ */
+export async function getBostonPublicSchoolsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_EDUCATION, 0, 'Public Schools', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Non Public Schools layer (Layer 1) - Point layer
+ */
+export async function getBostonNonPublicSchoolsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_EDUCATION, 1, 'Non Public Schools', lat, lon, Math.min(radiusMiles, 10));
+}
+
+/**
+ * Query Boston Colleges/Universities layer (Layer 2) - Point layer
+ */
+export async function getBostonCollegesUniversitiesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<BostonOpenDataFeature[]> {
+  return queryBostonLayer(BASE_SERVICE_URL_EDUCATION, 2, 'Colleges/Universities', lat, lon, Math.min(radiusMiles, 10));
 }
 
 /**
