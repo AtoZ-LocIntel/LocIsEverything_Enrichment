@@ -2559,7 +2559,7 @@ async function queryBostonPWDCartegraphLayer(
     );
 
     // Filter by actual distance and sort by distance
-    const filteredFeatures = processedFeatures.filter(f => f.distance_miles <= radiusMiles);
+    const filteredFeatures = processedFeatures.filter(f => (f.distance_miles || Infinity) <= radiusMiles);
     filteredFeatures.sort((a, b) => {
       const distA = a.distance_miles || Infinity;
       const distB = b.distance_miles || Infinity;
