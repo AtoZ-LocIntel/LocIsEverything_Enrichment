@@ -34187,6 +34187,8 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'boston_doit_hydro_all', icon: '💧', color: '#06b6d4', title: 'Boston DOIT Hydro', isPolyline: true },
         { key: 'boston_doit_mbta_rapid_transit_all', icon: '🚇', color: '#f59e0b', title: 'Boston DOIT MBTA Rapid Transit', isPolyline: true },
         { key: 'boston_doit_rail_all', icon: '🚂', color: '#8b5cf6', title: 'Boston DOIT Rail', isPolyline: true },
+        { key: 'alaska_dnr_trans_alaska_pipeline_all', icon: '🛢️', color: '#dc2626', title: 'Alaska DNR - Trans Alaska Pipeline System', isPolyline: true },
+        { key: 'alaska_dnr_well_sites_all', icon: '⛽', color: '#f59e0b', title: 'Alaska DNR - Well Sites', isPoint: true },
         { key: 'boston_population_estimates_2025_all', icon: '📊', color: '#8b5cf6', title: 'Boston Population Estimates 2025 Census Tracts', isPolygon: true },
         { key: 'boston_population_estimates_2025_neighborhoods_all', icon: '🏘️', color: '#a855f7', title: 'Boston Population Estimates 2025 Neighborhoods', isPolygon: true },
         { key: 'boston_population_estimates_2025_city_all', icon: '🏙️', color: '#9333ea', title: 'Boston Population Estimates 2025 City', isPolygon: true },

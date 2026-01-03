@@ -275,6 +275,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('boston_')) {
       return 'Boston Open Data';
     }
+    if (key.includes('alaska_dnr_')) {
+      return 'Alaska DNR';
+    }
     if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs') || key.includes('ma_parcel')) {
       return 'Massachusetts Data';
     }

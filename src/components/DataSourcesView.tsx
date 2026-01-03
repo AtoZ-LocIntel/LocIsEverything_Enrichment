@@ -3496,6 +3496,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://gisportal.boston.gov/arcgis/rest/services/Assessing/DOIT_rail_and_hydro/MapServer/2"
         },
         {
+          name: "Alaska DNR - Trans Alaska Pipeline System",
+          description: "Alaska Department of Natural Resources - Trans Alaska Pipeline System (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Infrastructure_TransAlaskaPipeline/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - Well Sites",
+          description: "Alaska Department of Natural Resources - Well Sites (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/LandActivity_WellSite/MapServer/0"
+        },
+        {
           name: "Boston Parcels 2023",
           description: "Boston Open Data - Parcel polygons for FY23 (point-in-polygon and proximity queries up to 0.25 miles)",
           coverage: "Boston, Massachusetts",

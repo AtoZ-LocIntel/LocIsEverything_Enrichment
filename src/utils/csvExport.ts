@@ -13682,6 +13682,8 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'boston_doit_hydro_all': { name: 'BOSTON_DOIT_HYDRO', icon: '💧' },
       'boston_doit_mbta_rapid_transit_all': { name: 'BOSTON_DOIT_MBTA_RAPID_TRANSIT', icon: '🚇' },
       'boston_doit_rail_all': { name: 'BOSTON_DOIT_RAIL', icon: '🚂' },
+      'alaska_dnr_trans_alaska_pipeline_all': { name: 'ALASKA_DNR_TRANS_ALASKA_PIPELINE', icon: '🛢️' },
+      'alaska_dnr_well_sites_all': { name: 'ALASKA_DNR_WELL_SITES', icon: '⛽' },
       'boston_fiber_pic_conduit_all': { name: 'BOSTON_FIBER_PIC_CONDUIT', icon: '🔌' },
       'boston_fiber_rcn_fiber_all': { name: 'BOSTON_FIBER_RCN_FIBER', icon: '🔌' },
       'boston_fiber_nstar_conduit_all': { name: 'BOSTON_FIBER_NSTAR_CONDUIT', icon: '🔌' },

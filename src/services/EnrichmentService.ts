@@ -257,6 +257,7 @@ import {
   getBostonDOITMBTARapidTransitData,
   getBostonDOITRailData,
 } from '../adapters/bostonOpenData';
+import { getAlaskaDNRTransAlaskaPipelineData, getAlaskaDNRWellSitesData } from '../adapters/alaskaDNR';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
@@ -3071,6 +3072,10 @@ export class EnrichmentService {
         return await this.getBostonDOITMBTARapidTransit(lat, lon, radius);
       case 'boston_doit_rail':
         return await this.getBostonDOITRail(lat, lon, radius);
+      case 'alaska_dnr_trans_alaska_pipeline':
+        return await this.getAlaskaDNRTransAlaskaPipeline(lat, lon, radius);
+      case 'alaska_dnr_well_sites':
+        return await this.getAlaskaDNRWellSites(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -31201,6 +31206,72 @@ out center;`;
         'boston_doit_rail_count': 0,
         'boston_doit_rail_summary': 'Error fetching Rail data',
         'boston_doit_rail_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRTransAlaskaPipeline(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRTransAlaskaPipelineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_trans_alaska_pipeline_count': 0,
+          'alaska_dnr_trans_alaska_pipeline_summary': 'No Trans Alaska Pipeline features found within the specified radius',
+          'alaska_dnr_trans_alaska_pipeline_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_trans_alaska_pipeline_count': features.length,
+        'alaska_dnr_trans_alaska_pipeline_summary': `Found ${features.length} Trans Alaska Pipeline feature${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_trans_alaska_pipeline_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Trans Alaska Pipeline data:', error);
+      return {
+        'alaska_dnr_trans_alaska_pipeline_count': 0,
+        'alaska_dnr_trans_alaska_pipeline_summary': 'Error fetching Trans Alaska Pipeline data',
+        'alaska_dnr_trans_alaska_pipeline_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRWellSites(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRWellSitesData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_well_sites_count': 0,
+          'alaska_dnr_well_sites_summary': 'No Well Sites found within the specified radius',
+          'alaska_dnr_well_sites_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_well_sites_count': features.length,
+        'alaska_dnr_well_sites_summary': `Found ${features.length} Well Site${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_well_sites_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Well Sites data:', error);
+      return {
+        'alaska_dnr_well_sites_count': 0,
+        'alaska_dnr_well_sites_summary': 'Error fetching Well Sites data',
+        'alaska_dnr_well_sites_all': []
       };
     }
   }

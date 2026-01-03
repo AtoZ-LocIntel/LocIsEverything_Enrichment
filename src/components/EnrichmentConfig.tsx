@@ -848,15 +848,51 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           };
         }
         
+        // Special handling for AK - add sub-categories based on data sources
         if (section.id === 'ak') {
-          // AK will have sub-categories (to be added later)
+          // Filter enrichments for Alaska DNR sub-category
+          const akDNRPOIs = poiTypes.filter(poi => poi.section === 'ak' && poi.category === 'ak_dnr');
+          
+          console.log('🔍 Loading AK DNR enrichments:', {
+            allPOITypes: poiTypes.length,
+            akDNRPOIs: akDNRPOIs.length,
+            akDNRPOIIds: akDNRPOIs.map(p => p.id)
+          });
+          
+          const akDNREnrichments = akDNRPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          console.log('✅ AK DNR Enrichments created:', {
+            count: akDNREnrichments.length,
+            enrichments: akDNREnrichments.map(e => e.id)
+          });
+          
+          // Define AK sub-categories (organized by data source)
+          const akSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'ak_dnr',
+              title: 'Alaska DNR',
+              icon: <img src="/assets/AlaskaDNR.webp" alt="Alaska Department of Natural Resources" className="w-full h-full object-cover rounded-full" />,
+              description: 'Alaska Department of Natural Resources data layers',
+              enrichments: akDNREnrichments
+            }
+          ];
+          
+          console.log('🔵 AK SECTION PROCESSED - Sub-categories:', akSubCategories.length, akSubCategories.map(sc => sc.id));
+          
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
-            subCategories: []
+            enrichments: [], // AK parent category has no direct enrichments
+            subCategories: akSubCategories
           };
         }
         
@@ -2079,10 +2115,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             {selectedCount}
                           </div>
                         )}
-                        
-                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold p-2 text-center z-10">
-                          {subCategory.title}
-                        </div>
                       </button>
                     );
                   })

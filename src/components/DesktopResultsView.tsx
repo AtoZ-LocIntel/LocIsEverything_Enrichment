@@ -847,6 +847,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'New Hampshire Data';
       } else if (key.includes('boston_')) {
         category = 'Boston Open Data';
+      } else if (key.includes('alaska_dnr_')) {
+        category = 'Alaska DNR';
       } else if (key.includes('ma_dep_wetlands') || key.includes('ma_open_space') || key.includes('cape_cod_zoning') || key.includes('ma_trails') || key.includes('ma_nhesp_natural_communities') || key.includes('ma_lakes_and_ponds') || key.includes('ma_rivers_and_streams') || key.includes('ma_regional_planning_agencies') || key.includes('ma_acecs') || key.includes('ma_parcel')) {
         category = 'Massachusetts Data';
       } else if (key.includes('ca_fire_perimeters') || key.includes('ca_wildland_fire') || key.includes('ca_calvtp_treatment_areas') || key.includes('ca_power_outage_areas') || key.includes('ca_')) {
