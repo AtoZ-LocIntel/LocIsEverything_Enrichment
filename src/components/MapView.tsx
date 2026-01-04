@@ -29193,6 +29193,205 @@ const MapView: React.FC<MapViewProps> = ({
         }
       });
 
+      // Draw Alaska DNR layers using mapLayerConfig
+      // Find all Alaska DNR entries in mapLayerConfig array
+      const alaskaDNRLayers = [
+        { key: 'alaska_dnr_astar_public_airports_0_all', icon: '✈️', color: '#3b82f6', title: 'Alaska DNR - ASTAR Public Airports', isPoint: true },
+        { key: 'alaska_dnr_astar_alaska_ports_harbors_all', icon: '⚓', color: '#0ea5e9', title: 'Alaska DNR - ASTAR Alaska Ports Harbors (DOT)', isPoint: true },
+        { key: 'alaska_dnr_astar_public_airports_2_all', icon: '🛫', color: '#60a5fa', title: 'Alaska DNR - ASTAR Public Airports (2)', isPoint: true },
+        { key: 'alaska_dnr_astar_dew_line_sites_all', icon: '📡', color: '#7c3aed', title: 'Alaska DNR - ASTAR DEW Line Sites', isPoint: true },
+        { key: 'alaska_dnr_astar_roads_dot_all', icon: '🛣️', color: '#dc2626', title: 'Alaska DNR - ASTAR Roads (DOT)', isPolyline: true },
+        { key: 'alaska_dnr_astar_all_roads_nssi_all', icon: '🛣️', color: '#ea580c', title: 'Alaska DNR - ASTAR All Roads (NSSI)', isPolyline: true },
+        { key: 'alaska_dnr_astar_village_roads_nsb_all', icon: '🛣️', color: '#f97316', title: 'Alaska DNR - ASTAR Village Roads (NSB)', isPolyline: true },
+        { key: 'alaska_dnr_astar_trails_state_of_alaska_all', icon: '🥾', color: '#059669', title: 'Alaska DNR - ASTAR Trails (State of Alaska)', isPolyline: true },
+        { key: 'alaska_dnr_astar_airport_runway_usgs_all', icon: '🛬', color: '#0284c7', title: 'Alaska DNR - ASTAR Airport Runway (USGS)', isPolyline: true },
+        { key: 'alaska_dnr_astar_easements_nsb_all', icon: '🛤️', color: '#6366f1', title: 'Alaska DNR - ASTAR Easements (NSB)', isPolygon: true },
+        { key: 'alaska_dnr_astar_parcels_nsb_all', icon: '🏘️', color: '#8b5cf6', title: 'Alaska DNR - ASTAR Parcels (NSB)', isPolygon: true },
+        { key: 'alaska_dnr_astar_map_north_slope_communities_all', icon: '🏘️', color: '#3b82f6', title: 'Alaska DNR - ASTARMap North Slope Communities', isPoint: true },
+        { key: 'alaska_dnr_astar_map_existing_mineral_resource_all', icon: '⛏️', color: '#f59e0b', title: 'Alaska DNR - ASTARMap Existing Mineral Resource', isPolygon: true },
+        { key: 'alaska_dnr_astar_map_potential_marine_facilities_all', icon: '⚓', color: '#0ea5e9', title: 'Alaska DNR - ASTARMap Potential Marine Facilities', isPoint: true },
+        { key: 'alaska_dnr_astar_map_resource_areas_all', icon: '🗺️', color: '#10b981', title: 'Alaska DNR - ASTARMap Resource Areas', isPolygon: true },
+        { key: 'alaska_dnr_astar_map_transportation_corridors_potential_all', icon: '🛣️', color: '#f97316', title: 'Alaska DNR - ASTARMap Transportation Corridors Potential', isPolyline: true },
+        { key: 'alaska_dnr_astar_map_asap_proposed_all', icon: '📋', color: '#6366f1', title: 'Alaska DNR - ASTARMap ASAP proposed', isPolyline: true },
+        { key: 'alaska_dnr_astar_map_existing_roads_all', icon: '🛣️', color: '#dc2626', title: 'Alaska DNR - ASTARMap Existing Roads', isPolyline: true },
+        { key: 'alaska_dnr_astar_map_existing_infrastructure_all', icon: '🏗️', color: '#7c3aed', title: 'Alaska DNR - ASTARMap Existing Infrastructure', isPoint: true },
+        { key: 'alaska_dnr_astar_map_anwr_1002_boundary_all', icon: '🗺️', color: '#059669', title: 'Alaska DNR - ASTARMap ANWR 1002 Boundary', isPolygon: true },
+        { key: 'alaska_dnr_astar_map_csu_all', icon: '📐', color: '#8b5cf6', title: 'Alaska DNR - ASTARMap CSU', isPolygon: true },
+        { key: 'alaska_dnr_astar_map_usgs_mining_tracts_all', icon: '⛏️', color: '#f59e0b', title: 'Alaska DNR - ASTARMap USGS Mining Tracts', isPolygon: true },
+        { key: 'alaska_dnr_astar_map_ownership_all', icon: '🏛️', color: '#3b82f6', title: 'Alaska DNR - ASTARMap Ownership', isPolygon: true },
+        { key: 'alaska_dnr_ws_hydro_base_glacier_1mil_py_all', icon: '🧊', color: '#0ea5e9', title: 'Alaska DNR - WSHydroBase Glacier 1mil Py', isPolygon: true },
+        { key: 'alaska_dnr_ws_hydro_base_river_1mil_ln_all', icon: '🌊', color: '#0284c7', title: 'Alaska DNR - WSHydroBase River 1mil Ln', isPolyline: true },
+        { key: 'alaska_dnr_ws_hydro_base_lake_1mil_py_all', icon: '💧', color: '#06b6d4', title: 'Alaska DNR - WSHydroBase Lake 1mil Py', isPolygon: true },
+      ];
+
+      alaskaDNRLayers.forEach((layerConfig) => {
+        if (enrichments[layerConfig.key] && Array.isArray(enrichments[layerConfig.key])) {
+          try {
+            console.log(`🗺️ Drawing ${enrichments[layerConfig.key].length} ${layerConfig.title} features`);
+            let featureCount = 0;
+            enrichments[layerConfig.key].forEach((feature: any) => {
+              const geometry = feature.geometry || feature.__geometry;
+              if (!geometry) {
+                console.warn(`⚠️ ${layerConfig.title}: Feature missing geometry`, feature);
+                return;
+              }
+
+              try {
+                if (layerConfig.isPoint && geometry.x !== undefined && geometry.y !== undefined) {
+                  // Draw point
+                  const pointLat = geometry.y;
+                  const pointLon = geometry.x;
+                  const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                  const featureName = feature.name || feature.NAME || feature.FEATURE_NAME || feature.layerName || 'Unknown';
+
+                  const icon = createPOIIcon(layerConfig.icon, layerConfig.color);
+                  const marker = L.marker([pointLat, pointLon], { icon });
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${layerConfig.icon} ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+
+                  const excludeFields = ['name', 'NAME', 'FEATURE_NAME', 'geometry', '__geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName', 'isContaining'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) return;
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+
+                  popupContent += `</div></div>`;
+                  marker.bindPopup(popupContent, { maxWidth: 400 });
+                  marker.addTo(primary);
+                  bounds.extend(marker.getLatLng());
+                  featureCount++;
+                } else if (layerConfig.isPolyline && geometry.paths && geometry.paths.length > 0) {
+                  // Draw polyline
+                  const paths = geometry.paths;
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    const featureName = feature.name || feature.NAME || feature.FEATURE_NAME || feature.layerName || 'Unknown';
+                    const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+
+                    const polyline = L.polyline(latlngs, {
+                      color: layerConfig.color,
+                      weight: 3,
+                      opacity: 0.8,
+                      smoothFactor: 1
+                    });
+
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${layerConfig.icon} ${featureName}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    `;
+
+                    const excludeFields = ['name', 'NAME', 'FEATURE_NAME', 'geometry', '__geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName', 'isContaining'];
+                    Object.entries(feature).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        if (typeof value === 'object' && !Array.isArray(value)) return;
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                        popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                      }
+                    });
+
+                    popupContent += `</div></div>`;
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(primary);
+                    bounds.extend(polyline.getBounds());
+                  });
+                  featureCount++;
+                } else if (layerConfig.isPolygon && geometry.rings && geometry.rings.length > 0) {
+                  // Draw polygon
+                  const rings = geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    if (outerRing && outerRing.length >= 3) {
+                      const latlngs = outerRing.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+
+                      const featureName = feature.name || feature.NAME || feature.FEATURE_NAME || feature.layerName || 'Unknown';
+                      const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+                      const isContaining = feature.isContaining;
+
+                      const polygonColor = getUniqueColorForPolygonLayer(layerConfig.key, layerConfig.color);
+                      const polygon = L.polygon(latlngs, {
+                        color: polygonColor,
+                        weight: isContaining ? 3 : 2,
+                        opacity: 0.8,
+                        fillColor: polygonColor,
+                        fillOpacity: isContaining ? 0.4 : 0.2
+                      });
+
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            ${layerConfig.icon} ${featureName}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${isContaining ? `<div style="color: #059669; font-weight: 600;">📍 Location is within this area</div>` : distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                          </div>
+                          <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      `;
+
+                      const excludeFields = ['name', 'NAME', 'FEATURE_NAME', 'geometry', '__geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName', 'isContaining'];
+                      Object.entries(feature).forEach(([key, value]) => {
+                        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                          if (typeof value === 'object' && !Array.isArray(value)) return;
+                          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                          popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                        }
+                      });
+
+                      popupContent += `</div></div>`;
+                      polygon.bindPopup(popupContent, { maxWidth: 400 });
+                      polygon.addTo(primary);
+                      bounds.extend(polygon.getBounds());
+                      featureCount++;
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing ${layerConfig.title} feature:`, error);
+              }
+            });
+
+            if (featureCount > 0) {
+              const legendKey = layerConfig.key.replace('_all', '');
+              if (!legendAccumulator[legendKey]) {
+                const polygonColor = layerConfig.isPolygon ? getUniqueColorForPolygonLayer(layerConfig.key, layerConfig.color) : layerConfig.color;
+                legendAccumulator[legendKey] = {
+                  icon: layerConfig.icon,
+                  color: polygonColor,
+                  title: layerConfig.title,
+                  count: 0,
+                };
+              }
+              legendAccumulator[legendKey].count += featureCount;
+            }
+          } catch (error) {
+            console.error(`Error processing ${layerConfig.title}:`, error);
+          }
+        }
+      });
+
       // Draw USGS Selectable Polygons layers
       const selectablePolygonsLayers = [
         { key: 'usgs_selectable_polygons_state_territory_all', icon: '🗺️', color: '#3b82f6', title: 'USGS Selectable Polygons - State or Territory' },
@@ -34347,6 +34546,17 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'alaska_dnr_tundra_area_dalton_highway_all', icon: '🛣️', color: '#dc2626', title: 'Alaska DNR - Tundra Area Dalton Highway', isPolyline: true },
         { key: 'alaska_dnr_tundra_area_tundra_regions_all', icon: '🏔️', color: '#7c3aed', title: 'Alaska DNR - Tundra Area Tundra Regions', isPolygon: true },
         { key: 'alaska_dnr_soil_water_conservation_districts_all', icon: '💧', color: '#0891b2', title: 'Alaska DNR - Soil and Water Conservation Districts', isPolygon: true },
+        { key: 'alaska_dnr_astar_public_airports_0_all', icon: '✈️', color: '#3b82f6', title: 'Alaska DNR - ASTAR Public Airports', isPoint: true },
+        { key: 'alaska_dnr_astar_alaska_ports_harbors_all', icon: '⚓', color: '#0ea5e9', title: 'Alaska DNR - ASTAR Alaska Ports Harbors (DOT)', isPoint: true },
+        { key: 'alaska_dnr_astar_public_airports_2_all', icon: '🛫', color: '#60a5fa', title: 'Alaska DNR - ASTAR Public Airports (2)', isPoint: true },
+        { key: 'alaska_dnr_astar_dew_line_sites_all', icon: '📡', color: '#7c3aed', title: 'Alaska DNR - ASTAR DEW Line Sites', isPoint: true },
+        { key: 'alaska_dnr_astar_roads_dot_all', icon: '🛣️', color: '#dc2626', title: 'Alaska DNR - ASTAR Roads (DOT)', isPolyline: true },
+        { key: 'alaska_dnr_astar_all_roads_nssi_all', icon: '🛣️', color: '#ea580c', title: 'Alaska DNR - ASTAR All Roads (NSSI)', isPolyline: true },
+        { key: 'alaska_dnr_astar_village_roads_nsb_all', icon: '🛣️', color: '#f97316', title: 'Alaska DNR - ASTAR Village Roads (NSB)', isPolyline: true },
+        { key: 'alaska_dnr_astar_trails_state_of_alaska_all', icon: '🥾', color: '#059669', title: 'Alaska DNR - ASTAR Trails (State of Alaska)', isPolyline: true },
+        { key: 'alaska_dnr_astar_airport_runway_usgs_all', icon: '🛬', color: '#0284c7', title: 'Alaska DNR - ASTAR Airport Runway (USGS)', isPolyline: true },
+        { key: 'alaska_dnr_astar_easements_nsb_all', icon: '🛤️', color: '#6366f1', title: 'Alaska DNR - ASTAR Easements (NSB)', isPolygon: true },
+        { key: 'alaska_dnr_astar_parcels_nsb_all', icon: '🏘️', color: '#8b5cf6', title: 'Alaska DNR - ASTAR Parcels (NSB)', isPolygon: true },
         { key: 'alaska_dnr_mht_tlo_land_exchange_all', icon: '🔄', color: '#0369a1', title: 'Alaska DNR - MHT TLO Land Exchange', isPolygon: true },
         { key: 'alaska_dnr_mht_tlo_agreement_all', icon: '📜', color: '#0284c7', title: 'Alaska DNR - MHT TLO Agreement', isPolygon: true },
         { key: 'alaska_dnr_mht_title_all', icon: '📑', color: '#0ea5e9', title: 'Alaska DNR - MHT Title', isPolygon: true },
@@ -34996,6 +35206,11 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Skip Boston layers - they're handled separately with geometry drawing in bostonLayers.forEach above
         if (key.startsWith('boston_') && key.endsWith('_all')) {
+          return;
+        }
+
+        // Skip Alaska DNR layers - they're handled separately with mapLayerConfig
+        if (key.startsWith('alaska_dnr_') && key.endsWith('_all')) {
           return;
         }
 

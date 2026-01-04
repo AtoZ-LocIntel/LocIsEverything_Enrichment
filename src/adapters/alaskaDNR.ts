@@ -3313,6 +3313,474 @@ export async function getAlaskaDNRSoilWaterConservationDistrictsData(
 }
 
 /**
+ * Query Alaska DNR ASTAR Transportation - Public Airports (Layer 0) - Point layer
+ */
+export async function getAlaskaDNRASTARPublicAirports0Data(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    0,
+    'Public Airports',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - Alaska Ports Harbors (DOT) (Layer 1) - Point layer
+ */
+export async function getAlaskaDNRASTARAlaskaPortsHarborsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    1,
+    'Alaska Ports Harbors (DOT)',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - Public Airports (Layer 2) - Point layer
+ */
+export async function getAlaskaDNRASTARPublicAirports2Data(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    2,
+    'Public Airports',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - DEW Line Sites (Layer 3) - Point layer
+ */
+export async function getAlaskaDNRASTARDEWLineSitesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    3,
+    'DEW Line Sites',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - Roads (DOT) (Layer 5) - Polyline layer
+ */
+export async function getAlaskaDNRASTARRoadsDOTData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    5,
+    'Roads (DOT)',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - All Roads (NSSI) (Layer 6) - Polyline layer
+ */
+export async function getAlaskaDNRASTARAllRoadsNSSIData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    6,
+    'All Roads (NSSI)',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - Village Roads (NSB) (Layer 7) - Polyline layer
+ */
+export async function getAlaskaDNRASTARVillageRoadsNSBData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    7,
+    'Village Roads (NSB)',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - Trails (State of Alaska) (Layer 8) - Polyline layer
+ */
+export async function getAlaskaDNRASTARTrailsStateOfAlaskaData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    8,
+    'Trails (State of Alaska)',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - Airport Runway (USGS) (Layer 9) - Polyline layer
+ */
+export async function getAlaskaDNRASTARAirportRunwayUSGSData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    9,
+    'Airport Runway (USGS)',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - Easements (NSB) (Layer 10) - Polygon layer
+ */
+export async function getAlaskaDNRASTAREasementsNSBData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    10,
+    'Easements (NSB)',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTAR Transportation - Parcels (NSB) (Layer 11) - Polygon layer
+ */
+export async function getAlaskaDNRASTARParcelsNSBData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer',
+    11,
+    'Parcels (NSB)',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - North Slope Communities (Layer 2) - Point layer
+ */
+export async function getAlaskaDNRASTARMapNorthSlopeCommunitiesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    2,
+    'North Slope Communities',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - Existing Mineral Resource (Layer 3) - Polygon layer
+ */
+export async function getAlaskaDNRASTARMapExistingMineralResourceData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    3,
+    'Existing Mineral Resource',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - Potential Marine Facilities (Layer 4) - Point layer
+ */
+export async function getAlaskaDNRASTARMapPotentialMarineFacilitiesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    4,
+    'Potential Marine Facilities',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - Resource Areas (Layer 5) - Polygon layer
+ */
+export async function getAlaskaDNRASTARMapResourceAreasData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    5,
+    'Resource Areas',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - Transportation Corridors Potential (Layer 6) - Polyline layer
+ */
+export async function getAlaskaDNRASTARMapTransportationCorridorsPotentialData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    6,
+    'Transportation Corridors Potential',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - ASAP proposed (Layer 7) - Polyline layer
+ */
+export async function getAlaskaDNRASTARMapASAPProposedData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    7,
+    'ASAP proposed',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - Existing Roads (Layer 8) - Polyline layer
+ */
+export async function getAlaskaDNRASTARMapExistingRoadsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    8,
+    'Existing Roads',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - Existing Infrastructure (Layer 9) - Point layer
+ */
+export async function getAlaskaDNRASTARMapExistingInfrastructureData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    9,
+    'Existing Infrastructure',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - ANWR 1002 Boundary (Layer 10) - Polygon layer
+ */
+export async function getAlaskaDNRASTARMapANWR1002BoundaryData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    10,
+    'ANWR 1002 Boundary',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - CSU (Layer 11) - Polygon layer
+ */
+export async function getAlaskaDNRASTARMapCSUData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    11,
+    'CSU',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - USGS Mining Tracts (Layer 12) - Polygon layer
+ */
+export async function getAlaskaDNRASTARMapUSGSMiningTractsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    12,
+    'USGS Mining Tracts',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR ASTARMap - Ownership (Layer 13) - Polygon layer
+ */
+export async function getAlaskaDNRASTARMapOwnershipData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer',
+    13,
+    'Ownership',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR WSHydroBase - glacier_1mil_py (Layer 12) - Polygon layer
+ */
+export async function getAlaskaDNRWSHydroBaseGlacier1milPyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/WSHydroBase/MapServer',
+    12,
+    'glacier_1mil_py',
+    lat,
+    lon,
+    Math.min(radiusMiles, 50.0)
+  );
+}
+
+/**
+ * Query Alaska DNR WSHydroBase - river_1mil_ln (Layer 15) - Polyline layer
+ */
+export async function getAlaskaDNRWSHydroBaseRiver1milLnData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/WSHydroBase/MapServer',
+    15,
+    'river_1mil_ln',
+    lat,
+    lon,
+    Math.min(radiusMiles, 50.0)
+  );
+}
+
+/**
+ * Query Alaska DNR WSHydroBase - lake_1mil_py (Layer 18) - Polygon layer
+ */
+export async function getAlaskaDNRWSHydroBaseLake1milPyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/WSHydroBase/MapServer',
+    18,
+    'lake_1mil_py',
+    lat,
+    lon,
+    Math.min(radiusMiles, 50.0)
+  );
+}
+
+/**
  * Query Alaska DNR MHT Land Activity - TLO Land Exchange (Layer 34) - Polygon layer
  */
 export async function getAlaskaDNRMHTTLOLandExchangeData(

@@ -4224,6 +4224,214 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Administrative_SoilWaterConservationDistricts/MapServer/0"
         },
         {
+          name: "Alaska DNR - ASTAR Public Airports",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation Public Airports (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - ASTAR Alaska Ports Harbors (DOT)",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation Alaska Ports Harbors (DOT) (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/1"
+        },
+        {
+          name: "Alaska DNR - ASTAR Public Airports (2)",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation Public Airports (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/2"
+        },
+        {
+          name: "Alaska DNR - ASTAR DEW Line Sites",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation DEW Line Sites (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/3"
+        },
+        {
+          name: "Alaska DNR - ASTAR Roads (DOT)",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation Roads (DOT) (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/5"
+        },
+        {
+          name: "Alaska DNR - ASTAR All Roads (NSSI)",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation All Roads (NSSI) (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/6"
+        },
+        {
+          name: "Alaska DNR - ASTAR Village Roads (NSB)",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation Village Roads (NSB) (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/7"
+        },
+        {
+          name: "Alaska DNR - ASTAR Trails (State of Alaska)",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation Trails (State of Alaska) (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/8"
+        },
+        {
+          name: "Alaska DNR - ASTAR Airport Runway (USGS)",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation Airport Runway (USGS) (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/9"
+        },
+        {
+          name: "Alaska DNR - ASTAR Easements (NSB)",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation Easements (NSB) (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/10"
+        },
+        {
+          name: "Alaska DNR - ASTAR Parcels (NSB)",
+          description: "Alaska Department of Natural Resources - ASTAR Transportation Parcels (NSB) (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OPM/ASTAR_Transportation/MapServer/11"
+        },
+        {
+          name: "Alaska DNR - ASTARMap North Slope Communities",
+          description: "Alaska Department of Natural Resources - ASTARMap North Slope Communities (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/2"
+        },
+        {
+          name: "Alaska DNR - ASTARMap Existing Mineral Resource",
+          description: "Alaska Department of Natural Resources - ASTARMap Existing Mineral Resource (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/3"
+        },
+        {
+          name: "Alaska DNR - ASTARMap Potential Marine Facilities",
+          description: "Alaska Department of Natural Resources - ASTARMap Potential Marine Facilities (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/4"
+        },
+        {
+          name: "Alaska DNR - ASTARMap Resource Areas",
+          description: "Alaska Department of Natural Resources - ASTARMap Resource Areas (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/5"
+        },
+        {
+          name: "Alaska DNR - ASTARMap Transportation Corridors Potential",
+          description: "Alaska Department of Natural Resources - ASTARMap Transportation Corridors Potential (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/6"
+        },
+        {
+          name: "Alaska DNR - ASTARMap ASAP proposed",
+          description: "Alaska Department of Natural Resources - ASTARMap ASAP proposed (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/7"
+        },
+        {
+          name: "Alaska DNR - ASTARMap Existing Roads",
+          description: "Alaska Department of Natural Resources - ASTARMap Existing Roads (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/8"
+        },
+        {
+          name: "Alaska DNR - ASTARMap Existing Infrastructure",
+          description: "Alaska Department of Natural Resources - ASTARMap Existing Infrastructure (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/9"
+        },
+        {
+          name: "Alaska DNR - ASTARMap ANWR 1002 Boundary",
+          description: "Alaska Department of Natural Resources - ASTARMap ANWR 1002 Boundary (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/10"
+        },
+        {
+          name: "Alaska DNR - ASTARMap CSU",
+          description: "Alaska Department of Natural Resources - ASTARMap CSU (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/11"
+        },
+        {
+          name: "Alaska DNR - ASTARMap USGS Mining Tracts",
+          description: "Alaska Department of Natural Resources - ASTARMap USGS Mining Tracts (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/12"
+        },
+        {
+          name: "Alaska DNR - ASTARMap Ownership",
+          description: "Alaska Department of Natural Resources - ASTARMap Ownership (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/13"
+        },
+        {
+          name: "Alaska DNR - WSHydroBase Glacier 1mil Py",
+          description: "Alaska Department of Natural Resources - WSHydroBase Glacier 1mil Py (point-in-polygon and proximity queries up to 50 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/WSHydroBase/MapServer/12"
+        },
+        {
+          name: "Alaska DNR - WSHydroBase River 1mil Ln",
+          description: "Alaska Department of Natural Resources - WSHydroBase River 1mil Ln (proximity queries up to 50 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/WSHydroBase/MapServer/15"
+        },
+        {
+          name: "Alaska DNR - WSHydroBase Lake 1mil Py",
+          description: "Alaska Department of Natural Resources - WSHydroBase Lake 1mil Py (point-in-polygon and proximity queries up to 50 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/WSHydroBase/MapServer/18"
+        },
+        {
           name: "Alaska DNR - MHT TLO Land Exchange",
           description: "Alaska Department of Natural Resources - MHT Land Activity TLO Land Exchange (point-in-polygon and proximity queries up to 100 miles)",
           coverage: "Alaska",
