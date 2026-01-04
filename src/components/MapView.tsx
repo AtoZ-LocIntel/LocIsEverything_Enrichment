@@ -752,6 +752,39 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     attribution: 'USDA Forest Service – FIA Forest Atlas',
     tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_990ExoticHardwoods/MapServer/tile/{z}/{y}/{x}',
   },
+  // Alaska AHRI 2020 RGB Cache
+  // Tiled map service - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  alaska_ahri_2020_rgb_cache: {
+    type: 'tile',
+    name: 'Alaska AHRI 2020 RGB Cache',
+    attribution: 'Maxar Products. Dynamic Mosaic © 2020 Maxar Technologies Inc., Alaska Geospatial Office, USGS',
+    tileUrl: 'https://geoportal.alaska.gov/arcgis/rest/services/ahri_2020_rgb_cache/MapServer/tile/{z}/{y}/{x}',
+  },
+  // Alaska IFSAR DSM (Digital Surface Model)
+  // ImageServer service - visualization only, not queryable
+  // Note: Using ExportImage endpoint since Single Fused Map Cache: false
+  // Service has raster functions available (Hillshade, Shaded Relief, Slope, Aspect, etc.)
+  // Using 'Hillshade' raster function for better visualization of elevation data
+  alaska_ifsar_dsm: {
+    type: 'tile',
+    name: 'Alaska IFSAR DSM',
+    attribution: 'Alaska Geospatial Office',
+    tileUrl: 'https://geoportal.alaska.gov/arcgis/rest/services/Alaska_IFSAR_DSM/ImageServer/exportImage',
+    exportImageRasterFunction: 'Hillshade', // Use Hillshade for better elevation visualization
+  },
+  // Alaska IFSAR DTM (Digital Terrain Model)
+  // ImageServer service - visualization only, not queryable
+  // Note: Using ExportImage endpoint since Single Fused Map Cache: false
+  // Service has raster functions available (Hillshade, Shaded Relief, Slope, Aspect, etc.)
+  // Using 'Hillshade' raster function for better visualization of elevation data
+  alaska_ifsar_dtm: {
+    type: 'tile',
+    name: 'Alaska IFSAR DTM',
+    attribution: 'Alaska Geospatial Office',
+    tileUrl: 'https://geoportal.alaska.gov/arcgis/rest/services/Alaska_IFSAR_DTM/ImageServer/exportImage',
+    exportImageRasterFunction: 'Hillshade', // Use Hillshade for better elevation visualization
+  },
   // USFS FIA Forest Atlas - Alaska Forest-Type Group
   // Raster/tiled basemap service - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
@@ -2600,7 +2633,9 @@ const MapView: React.FC<MapViewProps> = ({
     'Basemaps': true, // Default to expanded
     'USGS National Map': false,
     'USFS': false,
+    'Alaska': false,
   });
+  const [showThematicThemes, setShowThematicThemes] = useState<boolean>(false); // Toggle to show/hide thematic themes list
   const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
 
@@ -29220,6 +29255,9 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'alaska_dnr_astar_map_usgs_mining_tracts_all', icon: '⛏️', color: '#f59e0b', title: 'Alaska DNR - ASTARMap USGS Mining Tracts', isPolygon: true },
         { key: 'alaska_dnr_astar_map_ownership_all', icon: '🏛️', color: '#3b82f6', title: 'Alaska DNR - ASTARMap Ownership', isPolygon: true },
         { key: 'alaska_dnr_ws_hydro_base_glacier_1mil_py_all', icon: '🧊', color: '#0ea5e9', title: 'Alaska DNR - WSHydroBase Glacier 1mil Py', isPolygon: true },
+        { key: 'alaska_dnr_infrastructure_power_line_all', icon: '⚡', color: '#fbbf24', title: 'Alaska DNR - Infrastructure Power Line', isPolyline: true },
+        { key: 'alaska_dnr_infrastructure_pipeline_all', icon: '🛢️', color: '#a855f7', title: 'Alaska DNR - Infrastructure Pipeline', isPolyline: true },
+        { key: 'alaska_dnr_infrastructure_fiberoptic_cable_all', icon: '📡', color: '#06b6d4', title: 'Alaska DNR - Infrastructure Fiberoptic Cable', isPolyline: true },
         { key: 'alaska_dnr_ws_hydro_base_river_1mil_ln_all', icon: '🌊', color: '#0284c7', title: 'Alaska DNR - WSHydroBase River 1mil Ln', isPolyline: true },
         { key: 'alaska_dnr_ws_hydro_base_lake_1mil_py_all', icon: '💧', color: '#06b6d4', title: 'Alaska DNR - WSHydroBase Lake 1mil Py', isPolygon: true },
       ];
@@ -36658,75 +36696,125 @@ const MapView: React.FC<MapViewProps> = ({
                 </div>
               </div>
               <div className="border border-gray-300 rounded-md bg-white max-h-96 overflow-y-auto">
-                {/* USGS National Map basemaps - First (top layer) */}
+                {/* Thematic Basemap Themes - Collapsible */}
                 <div className="border-b border-gray-200">
                   <button
-                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USGS National Map': !prev['USGS National Map'] }))}
-                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
-                    style={{ backgroundColor: '#2563eb' }}
+                    onClick={() => setShowThematicThemes(!showThematicThemes)}
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors bg-gray-100"
                   >
-                    <span>USGS National Map</span>
-                    <span className={`transform transition-transform ${expandedBasemapSections['USGS National Map'] ? 'rotate-180' : ''}`}>
+                    <span>🎨 Thematic Basemap Themes</span>
+                    <span className={`transform transition-transform ${showThematicThemes ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
                   </button>
-                  {expandedBasemapSections['USGS National Map'] && (
-                    <div className="pb-1">
-                      {Object.entries(BASEMAP_CONFIGS)
-                        .filter(([_, config]) => config.type === 'wms')
-                        .map(([key, config]) => (
-                          <button
-                            key={key}
-                            onClick={() => {
-                              // Toggle: if already selected, deselect it; otherwise select it
-                              setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
-                            }}
-                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                              selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
-                            }`}
-                          >
-                            {config.name}
-                          </button>
-                        ))}
+                  {showThematicThemes && (
+                    <div className="bg-gray-50">
+                      {/* USGS National Map basemaps */}
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USGS National Map': !prev['USGS National Map'] }))}
+                          className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                          style={{ backgroundColor: '#2563eb' }}
+                        >
+                          <span>USGS National Map</span>
+                          <span className={`transform transition-transform ${expandedBasemapSections['USGS National Map'] ? 'rotate-180' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+                        {expandedBasemapSections['USGS National Map'] && (
+                          <div className="pb-1 bg-white">
+                            {Object.entries(BASEMAP_CONFIGS)
+                              .filter(([key]) => key.startsWith('usgs_'))
+                              .map(([key, config]) => (
+                                <button
+                                  key={key}
+                                  onClick={() => {
+                                    // Toggle: if already selected, deselect it; otherwise select it
+                                    setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {config.name}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* USFS basemaps (includes FIA Forest Atlas) */}
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USFS': !prev['USFS'] }))}
+                          className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                          style={{ backgroundColor: '#dc2626' }}
+                        >
+                          <span>USFS</span>
+                          <span className={`transform transition-transform ${expandedBasemapSections['USFS'] ? 'rotate-180' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+                        {expandedBasemapSections['USFS'] && (
+                          <div className="pb-1 bg-white">
+                            {Object.entries(BASEMAP_CONFIGS)
+                              .filter(([key]) => (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || (key.startsWith('fia_') && key.endsWith('_basemap') && !key.includes('alaska')))
+                              .map(([key, config]) => (
+                                <button
+                                  key={key}
+                                  onClick={() => {
+                                    // Toggle: if already selected, deselect it; otherwise select it
+                                    setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {config.name}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Alaska basemaps */}
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'Alaska': !prev['Alaska'] }))}
+                          className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                          style={{ backgroundColor: '#059669' }}
+                        >
+                          <span>Alaska</span>
+                          <span className={`transform transition-transform ${expandedBasemapSections['Alaska'] ? 'rotate-180' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+                        {expandedBasemapSections['Alaska'] && (
+                          <div className="pb-1 bg-white">
+                            {Object.entries(BASEMAP_CONFIGS)
+                              .filter(([key]) => key.startsWith('alaska_') || (key.startsWith('fia_') && key.includes('alaska')))
+                              .map(([key, config]) => (
+                                <button
+                                  key={key}
+                                  onClick={() => {
+                                    // Toggle: if already selected, deselect it; otherwise select it
+                                    setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {config.name}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
                 
-                {/* USFS basemaps (includes FIA Forest Atlas) */}
-                <div className="border-b border-gray-200">
-                  <button
-                    onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USFS': !prev['USFS'] }))}
-                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
-                    style={{ backgroundColor: '#dc2626' }}
-                  >
-                    <span>USFS</span>
-                    <span className={`transform transition-transform ${expandedBasemapSections['USFS'] ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </button>
-                  {expandedBasemapSections['USFS'] && (
-                    <div className="pb-1">
-                      {Object.entries(BASEMAP_CONFIGS)
-                        .filter(([key]) => (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || (key.startsWith('fia_') && key.endsWith('_basemap')))
-                        .map(([key, config]) => (
-                          <button
-                            key={key}
-                            onClick={() => {
-                              // Toggle: if already selected, deselect it; otherwise select it
-                              setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
-                            }}
-                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                              selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
-                            }`}
-                          >
-                            {config.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Basemaps - Last (bottom/base layer) */}
+                {/* Basemaps - Always visible (bottom/base layer) */}
                 <div className="border-b border-gray-200 last:border-b-0">
                   <button
                     onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'Basemaps': !prev['Basemaps'] }))}

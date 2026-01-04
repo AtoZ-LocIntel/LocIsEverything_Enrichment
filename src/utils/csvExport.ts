@@ -12632,7 +12632,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           dataSource,
           (location.confidence || 'N/A').toString(),
           layerInfo.name,
-          `${layerInfo.icon} Grid ${gridId}`,
+          `Grid ${gridId}`,
           location.lat.toString(),
           location.lon.toString(),
           distance,
@@ -13294,7 +13294,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'USGS The National Map',
           (location.confidence || 'N/A').toString(),
           layerInfo.name,
-          `${layerInfo.icon} ${featureName}`,
+          featureName,
           featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
           featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
           distance,
@@ -13368,7 +13368,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'USGS The National Map',
           (location.confidence || 'N/A').toString(),
           layerInfo.name,
-          `${layerInfo.icon} ${featureName}`,
+          featureName,
           featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
           featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
           distance,
@@ -13440,7 +13440,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'USGS The National Map',
           (location.confidence || 'N/A').toString(),
           layerInfo.name,
-          `${layerInfo.icon} ${featureName}${feature.isContaining ? ' (Contains Point)' : ''}`,
+          `${featureName}${feature.isContaining ? ' (Contains Point)' : ''}`,
           featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
           featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
           distance,
@@ -13518,7 +13518,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'USGS The National Map',
           (location.confidence || 'N/A').toString(),
           layerInfo.name,
-          `${layerInfo.icon} ${featureName}${feature.isContaining ? ' (Contains Point)' : ''}`,
+          `${featureName}${feature.isContaining ? ' (Contains Point)' : ''}`,
           featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
           featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
           distance,
@@ -13588,7 +13588,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'USGS The National Map',
           (location.confidence || 'N/A').toString(),
           layerInfo.name,
-          `${layerInfo.icon} ${featureName}${feature.ELEV || feature.elev || feature.ELEVATION ? ` (${feature.ELEV || feature.elev || feature.ELEVATION} ft)` : ''}`,
+          `${featureName}${feature.ELEV || feature.elev || feature.ELEVATION ? ` (${feature.ELEV || feature.elev || feature.ELEVATION} ft)` : ''}`,
           featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
           featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
           distance,
@@ -13905,6 +13905,9 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'alaska_dnr_astar_map_usgs_mining_tracts_all': { name: 'ALASKA_DNR_ASTAR_MAP_USGS_MINING_TRACT', icon: '⛏️' },
       'alaska_dnr_astar_map_ownership_all': { name: 'ALASKA_DNR_ASTAR_MAP_OWNERSHIP', icon: '🏛️' },
       'alaska_dnr_ws_hydro_base_glacier_1mil_py_all': { name: 'ALASKA_DNR_WS_HYDRO_BASE_GLACIER_1MIL_PY', icon: '🧊' },
+      'alaska_dnr_infrastructure_power_line_all': { name: 'ALASKA_DNR_INFRASTRUCTURE_POWER_LINE', icon: '⚡' },
+      'alaska_dnr_infrastructure_pipeline_all': { name: 'ALASKA_DNR_INFRASTRUCTURE_PIPELINE', icon: '🛢️' },
+      'alaska_dnr_infrastructure_fiberoptic_cable_all': { name: 'ALASKA_DNR_INFRASTRUCTURE_FIBEROPTIC_CABLE', icon: '📡' },
       'alaska_dnr_ws_hydro_base_river_1mil_ln_all': { name: 'ALASKA_DNR_WS_HYDRO_BASE_RIVER_1MIL_LN', icon: '🌊' },
       'alaska_dnr_ws_hydro_base_lake_1mil_py_all': { name: 'ALASKA_DNR_WS_HYDRO_BASE_LAKE_1MIL_PY', icon: '💧' },
       'alaska_dnr_mht_tlo_land_exchange_all': { name: 'ALASKA_DNR_MHT_TLO_LAND_EXCHANGE', icon: '🔄' },
@@ -13976,7 +13979,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const attributesJson = JSON.stringify(allAttributes);
         
         // Build description
-        let description = `${layerInfo.icon} ${featureName}`;
+        let description = featureName;
         if (feature.isContaining) description += ' (Contains Point)';
         
         rows.push([
@@ -14094,7 +14097,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
         const isContaining = feature.isContaining ? 'Yes' : 'No';
         
         // Build description with relevant fields
-        let description = `${layerInfo.icon} ${stationName}`;
+        let description = stationName;
         if (mbtaLine) description += ` (${mbtaLine} Line)`;
         else if (mbtaRoute) description += ` (${mbtaRoute})`;
         else if (totalDocks) description += ` (${totalDocks} docks)`;
@@ -14178,7 +14181,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'LA County Public GIS',
           (location.confidence || 'N/A').toString(),
           layerInfo.name,
-          `${layerInfo.icon} Hazard ${hazardId}`,
+          `Hazard ${hazardId}`,
           location.lat.toString(),
           location.lon.toString(),
           distance,

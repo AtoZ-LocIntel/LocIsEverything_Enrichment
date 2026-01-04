@@ -3870,3 +3870,57 @@ export async function getAlaskaDNRMHTMentalHealthLandQCDData(
   );
 }
 
+/**
+ * Query Alaska DNR Infrastructure - Power Line 1:63,360 (Layer 5) - Polyline layer
+ */
+export async function getAlaskaDNRInfrastructurePowerLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    `${BASE_SERVICE_URL_ALASKA_DNR}/Infrastructure_Infrastructure/MapServer`,
+    5,
+    'Power Line 1:63,360',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Infrastructure - Pipeline 1:63,360 (Layer 8) - Polyline layer
+ */
+export async function getAlaskaDNRInfrastructurePipelineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    `${BASE_SERVICE_URL_ALASKA_DNR}/Infrastructure_Infrastructure/MapServer`,
+    8,
+    'Pipeline 1:63,360',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Infrastructure - Fiberoptic Cable 1:63,360 (Layer 11) - Polyline layer
+ */
+export async function getAlaskaDNRInfrastructureFiberopticCableData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    `${BASE_SERVICE_URL_ALASKA_DNR}/Infrastructure_Infrastructure/MapServer`,
+    11,
+    'Fiberoptic Cable 1:63,360',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+

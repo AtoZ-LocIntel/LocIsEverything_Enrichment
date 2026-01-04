@@ -257,7 +257,7 @@ import {
   getBostonDOITMBTARapidTransitData,
   getBostonDOITRailData,
 } from '../adapters/bostonOpenData';
-import { getAlaskaDNRTransAlaskaPipelineData, getAlaskaDNRWellSitesData, getAlaskaDNROilGasLeaseSaleTractData, getAlaskaDNRStateParkRoadsData, getAlaskaDNRStateParkTrailsData, getAlaskaDNRStateParkBoundariesData, getAlaskaDNRStateParkFacilitiesData, getAlaskaDNRControlledLivestockDistrictsData, getAlaskaDNRLandCapacityClassificationData, getAlaskaDNRShoreFisheryLeasesData, getAlaskaDNRAquaticFarmLeasesData, getAlaskaDNRWELTSData, getAlaskaDNRPLSSSectionData, getAlaskaDNRPLSSTownshipData, getAlaskaDNRSurfaceWaterRightLocationData, getAlaskaDNRSubSurfaceWaterRightLocationData, getAlaskaDNRSurfaceWaterRightsData, getAlaskaDNRSubSurfaceWaterRightsData, getAlaskaDNRInstreamFlowWaterReservationsPointData, getAlaskaDNRInstreamFlowWaterReservationsLineData, getAlaskaDNRInstreamFlowWaterReservationsPolygonData, getAlaskaDNRShoreFisheryLeasesLineData, getAlaskaDNRShoreFisheryLeasesPolygonData, getAlaskaDNRAquaticFarmLeasesWaterEstateData, getAlaskaDNRLeaseLineData, getAlaskaDNRLeaseAreaData, getAlaskaDNRHattersPassPlanBoundaryData, getAlaskaDNRHattersPassNonMotorizedSummerData, getAlaskaDNRHattersPassNonMotorizedYearRoundData, getAlaskaDNRNationalGeodeticSurveyPtData, getAlaskaDNRStateControlMonumentsData, getAlaskaDNRBLMMonumentsGCDBData, getAlaskaDNRBLMMonumentsSDMSData, getAlaskaDNRSurveyBoundaryPtData, getAlaskaDNRSimpleCoastlineData, getAlaskaDNRSurveyTractLineData, getAlaskaDNRSurveyBlockLineData, getAlaskaDNRSurveyBoundaryLineData, getAlaskaDNRSectionData, getAlaskaDNRSurveyLotPolyData, getAlaskaDNRSurveyTractPolyData, getAlaskaDNRSurveyBlockPolyData, getAlaskaDNRSurveyBoundaryPolyData, getAlaskaDNRTownshipData, getAlaskaDNRIncorporatedCityBoundaryData, getAlaskaDNRRecordingDistrictBoundaryData, getAlaskaDNRDCCEDCRABoroughBoundaryData, getAlaskaDNRAgreementSettlementReconveyPtData, getAlaskaDNRRestrictedUseAuthorizationPtData, getAlaskaDNRPotentialHazardousSitesPtData, getAlaskaDNRTrespassPtData, getAlaskaDNRPermitLeaseLEPtData, getAlaskaDNREasementPtData, getAlaskaDNRLandDisposalOtherPtData, getAlaskaDNRLandEstateSurveyBoundaryPtData, getAlaskaDNRLandEstateSimpleCoastlineData, getAlaskaDNRAgreementSettlementReconveyLineData, getAlaskaDNRRestrictedUseAuthorizationLineData, getAlaskaDNRPotentialHazardousSitesLineData, getAlaskaDNRTrespassLineData, getAlaskaDNRPermitLeaseLELineData, getAlaskaDNREasementLineData, getAlaskaDNRResourceSaleLineData, getAlaskaDNRFederalActionLineData, getAlaskaDNRLandDisposalAvailableLineData, getAlaskaDNRLandDisposalConveyedLineData, getAlaskaDNRLandDisposalOtherLineData, getAlaskaDNRManagementAgreementLineData, getAlaskaDNROtherStateAcquiredLELineData, getAlaskaDNRS2477LineData, getAlaskaDNRStateSelectedLandLELineData, getAlaskaDNRStateTAPatentedLELineData, getAlaskaDNRLandEstateSurveyBoundaryLineData, getAlaskaDNRLandEstateSectionData, getAlaskaDNRAgreementSettlementReconPolyData, getAlaskaDNRRestrictedUseAuthorizationPolyData, getAlaskaDNRPotentialHazardousSitesPolyData, getAlaskaDNRTrespassPolyData, getAlaskaDNRPermitLeaseLEPolyData, getAlaskaDNREasementPolyData, getAlaskaDNRResourceSalePolyData, getAlaskaDNRFederalActionPolyData, getAlaskaDNRLandDisposalAvailablePolyData, getAlaskaDNRLandDisposalConveyedPolyData, getAlaskaDNRLandDisposalOtherPolyData, getAlaskaDNRManagementAgreementPolyData, getAlaskaDNRMentalHealthTrustLandPolyData, getAlaskaDNRMunicipalEntitlementPolyData, getAlaskaDNRMunicipalTidelandPolyData, getAlaskaDNRStateInterestNativeAllotmentPolyData, getAlaskaDNROtherStateAcquiredLEPolyData, getAlaskaDNRStateSelectedOrANILCATopfiledLandLEPolyData, getAlaskaDNRStateTAPatentedLEPolyData, getAlaskaDNRLandEstateSurveyBoundaryPolyData, getAlaskaDNRLandEstateRecordingDistrictBoundaryData, getAlaskaDNRLandEstateTownshipData, getAlaskaDNRMineralEstateAgreementSettlementReconPointData, getAlaskaDNRMineralEstateAgreementSettlementReconLineData, getAlaskaDNRMineralEstateAgreementSettlementReconPolyData, getAlaskaDNRMineralEstateFederalActionLineData, getAlaskaDNRMineralEstateFederalActionPolyData, getAlaskaDNRMineralEstateLeaseholdLocationLineData, getAlaskaDNRMineralEstateLeaseholdLocationPolyData, getAlaskaDNRMineralEstateManagementAgreementLineData, getAlaskaDNRMineralEstateManagementAgreementPolyData, getAlaskaDNRMineralEstateMentalHealthTrustLandPolyData, getAlaskaDNRMineralEstateMineralOrderLineData, getAlaskaDNRMineralEstateMineralOrderPolyData, getAlaskaDNRMineralEstateStateInterestNativeAllotmentPolyData, getAlaskaDNRMineralEstateOilGasLeaseSaleTractCurrentData, getAlaskaDNRMineralEstateOtherStateAcquiredMELineData, getAlaskaDNRMineralEstateOtherStateAcquiredMEPolyData, getAlaskaDNRMineralEstatePermitLeaseMEPolyData, getAlaskaDNRMineralEstateStateMiningClaimPolyData, getAlaskaDNRMineralEstateStateMiningClaimPendingPolyData, getAlaskaDNRMineralEstateStateMiningClaimClosedPolyData, getAlaskaDNRMineralEstateStateProspectingSitePolyData, getAlaskaDNRMineralEstateMunicipalEntitlementPolyData, getAlaskaDNRMineralEstateStateSelectedLandMELineData, getAlaskaDNRMineralEstateStateSelectedOrANILCATopfiledLandMEPolyData, getAlaskaDNRMineralEstateStateTAPatentedMELineData, getAlaskaDNRMineralEstateStateTAPatentedMEPolyData, getAlaskaDNRMineralEstateSurveyBoundaryPtData, getAlaskaDNRMineralEstateSurveyBoundaryLineData, getAlaskaDNRMineralEstateSurveyBoundaryPolyData, getAlaskaDNRMineralEstateRecordingDistrictBoundaryData, getAlaskaDNRMineralEstateWellSitePointData, getAlaskaDNRMineralEstateDCCEDCRABoroughBoundaryData, getAlaskaDNRMineralEstateTownshipData, getAlaskaDNRMHTTrustLandSurveyData, getAlaskaDNRMHTOtherActivityData, getAlaskaDNRMHTTrespassPointData, getAlaskaDNRMHTTrespassLineData, getAlaskaDNRMHTTrespassAreaData, getAlaskaDNRMHTEasementsData, getAlaskaDNRMHTEasementPointData, getAlaskaDNRMHTEasementLineData, getAlaskaDNRMHTEasementAreaData, getAlaskaDNRMHTLandSalesData, getAlaskaDNRMHTLandSaleConveyedData, getAlaskaDNRMHTLandSaleContractData, getAlaskaDNRMHTLandSaleAvailableOTCData, getAlaskaDNRMHTLandSalePendingInterestData, getAlaskaDNRMHTLandSalePotentialReofferData, getAlaskaDNRMHTLandSaleNewInventoryData, getAlaskaDNRMHTLandSalePredisposalData, getAlaskaDNRMHTLandSaleAllData, getAlaskaDNRMHTResourceSalesData, getAlaskaDNRMHTMaterialSaleData, getAlaskaDNRMHTTimberSaleData, getAlaskaDNRMHTLandLeasesLicensesData, getAlaskaDNRMHTLandUseLicenseLineData, getAlaskaDNRMHTLandUseLicenseAreaData, getAlaskaDNRMHTLandLeaseData, getAlaskaDNRMHTMineralLeasesLicensesData, getAlaskaDNRMHTMineralLeaseData, getAlaskaDNRMHTOilGasLeaseData, getAlaskaDNRMHTCoalLeaseData, getAlaskaDNRMHTMineralExplorationLicenseData, getAlaskaDNRMHTOilGasExplorationLicenseData, getAlaskaDNRMHTCoalExplorationLicenseData, getAlaskaDNRMHTOtherExplorationLicenseData, getAlaskaDNRMHTTLOLandExchangeData, getAlaskaDNRMHTTLOAgreementData, getAlaskaDNRMHTTitleData, getAlaskaDNRMHTMentalHealthParcelData, getAlaskaDNRMHTMentalHealthLandQCDData, getAlaskaDNRTundraAreaStationsData, getAlaskaDNRTundraAreaDaltonHighwayData, getAlaskaDNRTundraAreaTundraRegionsData, getAlaskaDNRSoilWaterConservationDistrictsData, getAlaskaDNRASTARPublicAirports0Data, getAlaskaDNRASTARAlaskaPortsHarborsData, getAlaskaDNRASTARPublicAirports2Data, getAlaskaDNRASTARDEWLineSitesData, getAlaskaDNRASTARRoadsDOTData, getAlaskaDNRASTARAllRoadsNSSIData, getAlaskaDNRASTARVillageRoadsNSBData, getAlaskaDNRASTARTrailsStateOfAlaskaData, getAlaskaDNRASTARAirportRunwayUSGSData, getAlaskaDNRASTAREasementsNSBData, getAlaskaDNRASTARParcelsNSBData, getAlaskaDNRASTARMapNorthSlopeCommunitiesData, getAlaskaDNRASTARMapExistingMineralResourceData, getAlaskaDNRASTARMapPotentialMarineFacilitiesData, getAlaskaDNRASTARMapResourceAreasData, getAlaskaDNRASTARMapTransportationCorridorsPotentialData, getAlaskaDNRASTARMapASAPProposedData, getAlaskaDNRASTARMapExistingRoadsData, getAlaskaDNRASTARMapExistingInfrastructureData, getAlaskaDNRASTARMapANWR1002BoundaryData, getAlaskaDNRASTARMapCSUData, getAlaskaDNRASTARMapUSGSMiningTractsData, getAlaskaDNRASTARMapOwnershipData, getAlaskaDNRWSHydroBaseGlacier1milPyData, getAlaskaDNRWSHydroBaseRiver1milLnData, getAlaskaDNRWSHydroBaseLake1milPyData } from '../adapters/alaskaDNR';
+import { getAlaskaDNRTransAlaskaPipelineData, getAlaskaDNRWellSitesData, getAlaskaDNROilGasLeaseSaleTractData, getAlaskaDNRStateParkRoadsData, getAlaskaDNRStateParkTrailsData, getAlaskaDNRStateParkBoundariesData, getAlaskaDNRStateParkFacilitiesData, getAlaskaDNRControlledLivestockDistrictsData, getAlaskaDNRLandCapacityClassificationData, getAlaskaDNRShoreFisheryLeasesData, getAlaskaDNRAquaticFarmLeasesData, getAlaskaDNRWELTSData, getAlaskaDNRPLSSSectionData, getAlaskaDNRPLSSTownshipData, getAlaskaDNRSurfaceWaterRightLocationData, getAlaskaDNRSubSurfaceWaterRightLocationData, getAlaskaDNRSurfaceWaterRightsData, getAlaskaDNRSubSurfaceWaterRightsData, getAlaskaDNRInstreamFlowWaterReservationsPointData, getAlaskaDNRInstreamFlowWaterReservationsLineData, getAlaskaDNRInstreamFlowWaterReservationsPolygonData, getAlaskaDNRShoreFisheryLeasesLineData, getAlaskaDNRShoreFisheryLeasesPolygonData, getAlaskaDNRAquaticFarmLeasesWaterEstateData, getAlaskaDNRLeaseLineData, getAlaskaDNRLeaseAreaData, getAlaskaDNRHattersPassPlanBoundaryData, getAlaskaDNRHattersPassNonMotorizedSummerData, getAlaskaDNRHattersPassNonMotorizedYearRoundData, getAlaskaDNRNationalGeodeticSurveyPtData, getAlaskaDNRStateControlMonumentsData, getAlaskaDNRBLMMonumentsGCDBData, getAlaskaDNRBLMMonumentsSDMSData, getAlaskaDNRSurveyBoundaryPtData, getAlaskaDNRSimpleCoastlineData, getAlaskaDNRSurveyTractLineData, getAlaskaDNRSurveyBlockLineData, getAlaskaDNRSurveyBoundaryLineData, getAlaskaDNRSectionData, getAlaskaDNRSurveyLotPolyData, getAlaskaDNRSurveyTractPolyData, getAlaskaDNRSurveyBlockPolyData, getAlaskaDNRSurveyBoundaryPolyData, getAlaskaDNRTownshipData, getAlaskaDNRIncorporatedCityBoundaryData, getAlaskaDNRRecordingDistrictBoundaryData, getAlaskaDNRDCCEDCRABoroughBoundaryData, getAlaskaDNRAgreementSettlementReconveyPtData, getAlaskaDNRRestrictedUseAuthorizationPtData, getAlaskaDNRPotentialHazardousSitesPtData, getAlaskaDNRTrespassPtData, getAlaskaDNRPermitLeaseLEPtData, getAlaskaDNREasementPtData, getAlaskaDNRLandDisposalOtherPtData, getAlaskaDNRLandEstateSurveyBoundaryPtData, getAlaskaDNRLandEstateSimpleCoastlineData, getAlaskaDNRAgreementSettlementReconveyLineData, getAlaskaDNRRestrictedUseAuthorizationLineData, getAlaskaDNRPotentialHazardousSitesLineData, getAlaskaDNRTrespassLineData, getAlaskaDNRPermitLeaseLELineData, getAlaskaDNREasementLineData, getAlaskaDNRResourceSaleLineData, getAlaskaDNRFederalActionLineData, getAlaskaDNRLandDisposalAvailableLineData, getAlaskaDNRLandDisposalConveyedLineData, getAlaskaDNRLandDisposalOtherLineData, getAlaskaDNRManagementAgreementLineData, getAlaskaDNROtherStateAcquiredLELineData, getAlaskaDNRS2477LineData, getAlaskaDNRStateSelectedLandLELineData, getAlaskaDNRStateTAPatentedLELineData, getAlaskaDNRLandEstateSurveyBoundaryLineData, getAlaskaDNRLandEstateSectionData, getAlaskaDNRAgreementSettlementReconPolyData, getAlaskaDNRRestrictedUseAuthorizationPolyData, getAlaskaDNRPotentialHazardousSitesPolyData, getAlaskaDNRTrespassPolyData, getAlaskaDNRPermitLeaseLEPolyData, getAlaskaDNREasementPolyData, getAlaskaDNRResourceSalePolyData, getAlaskaDNRFederalActionPolyData, getAlaskaDNRLandDisposalAvailablePolyData, getAlaskaDNRLandDisposalConveyedPolyData, getAlaskaDNRLandDisposalOtherPolyData, getAlaskaDNRManagementAgreementPolyData, getAlaskaDNRMentalHealthTrustLandPolyData, getAlaskaDNRMunicipalEntitlementPolyData, getAlaskaDNRMunicipalTidelandPolyData, getAlaskaDNRStateInterestNativeAllotmentPolyData, getAlaskaDNROtherStateAcquiredLEPolyData, getAlaskaDNRStateSelectedOrANILCATopfiledLandLEPolyData, getAlaskaDNRStateTAPatentedLEPolyData, getAlaskaDNRLandEstateSurveyBoundaryPolyData, getAlaskaDNRLandEstateRecordingDistrictBoundaryData, getAlaskaDNRLandEstateTownshipData, getAlaskaDNRMineralEstateAgreementSettlementReconPointData, getAlaskaDNRMineralEstateAgreementSettlementReconLineData, getAlaskaDNRMineralEstateAgreementSettlementReconPolyData, getAlaskaDNRMineralEstateFederalActionLineData, getAlaskaDNRMineralEstateFederalActionPolyData, getAlaskaDNRMineralEstateLeaseholdLocationLineData, getAlaskaDNRMineralEstateLeaseholdLocationPolyData, getAlaskaDNRMineralEstateManagementAgreementLineData, getAlaskaDNRMineralEstateManagementAgreementPolyData, getAlaskaDNRMineralEstateMentalHealthTrustLandPolyData, getAlaskaDNRMineralEstateMineralOrderLineData, getAlaskaDNRMineralEstateMineralOrderPolyData, getAlaskaDNRMineralEstateStateInterestNativeAllotmentPolyData, getAlaskaDNRMineralEstateOilGasLeaseSaleTractCurrentData, getAlaskaDNRMineralEstateOtherStateAcquiredMELineData, getAlaskaDNRMineralEstateOtherStateAcquiredMEPolyData, getAlaskaDNRMineralEstatePermitLeaseMEPolyData, getAlaskaDNRMineralEstateStateMiningClaimPolyData, getAlaskaDNRMineralEstateStateMiningClaimPendingPolyData, getAlaskaDNRMineralEstateStateMiningClaimClosedPolyData, getAlaskaDNRMineralEstateStateProspectingSitePolyData, getAlaskaDNRMineralEstateMunicipalEntitlementPolyData, getAlaskaDNRMineralEstateStateSelectedLandMELineData, getAlaskaDNRMineralEstateStateSelectedOrANILCATopfiledLandMEPolyData, getAlaskaDNRMineralEstateStateTAPatentedMELineData, getAlaskaDNRMineralEstateStateTAPatentedMEPolyData, getAlaskaDNRMineralEstateSurveyBoundaryPtData, getAlaskaDNRMineralEstateSurveyBoundaryLineData, getAlaskaDNRMineralEstateSurveyBoundaryPolyData, getAlaskaDNRMineralEstateRecordingDistrictBoundaryData, getAlaskaDNRMineralEstateWellSitePointData, getAlaskaDNRMineralEstateDCCEDCRABoroughBoundaryData, getAlaskaDNRMineralEstateTownshipData, getAlaskaDNRMHTTrustLandSurveyData, getAlaskaDNRMHTOtherActivityData, getAlaskaDNRMHTTrespassPointData, getAlaskaDNRMHTTrespassLineData, getAlaskaDNRMHTTrespassAreaData, getAlaskaDNRMHTEasementsData, getAlaskaDNRMHTEasementPointData, getAlaskaDNRMHTEasementLineData, getAlaskaDNRMHTEasementAreaData, getAlaskaDNRMHTLandSalesData, getAlaskaDNRMHTLandSaleConveyedData, getAlaskaDNRMHTLandSaleContractData, getAlaskaDNRMHTLandSaleAvailableOTCData, getAlaskaDNRMHTLandSalePendingInterestData, getAlaskaDNRMHTLandSalePotentialReofferData, getAlaskaDNRMHTLandSaleNewInventoryData, getAlaskaDNRMHTLandSalePredisposalData, getAlaskaDNRMHTLandSaleAllData, getAlaskaDNRMHTResourceSalesData, getAlaskaDNRMHTMaterialSaleData, getAlaskaDNRMHTTimberSaleData, getAlaskaDNRMHTLandLeasesLicensesData, getAlaskaDNRMHTLandUseLicenseLineData, getAlaskaDNRMHTLandUseLicenseAreaData, getAlaskaDNRMHTLandLeaseData, getAlaskaDNRMHTMineralLeasesLicensesData, getAlaskaDNRMHTMineralLeaseData, getAlaskaDNRMHTOilGasLeaseData, getAlaskaDNRMHTCoalLeaseData, getAlaskaDNRMHTMineralExplorationLicenseData, getAlaskaDNRMHTOilGasExplorationLicenseData, getAlaskaDNRMHTCoalExplorationLicenseData, getAlaskaDNRMHTOtherExplorationLicenseData, getAlaskaDNRMHTTLOLandExchangeData, getAlaskaDNRMHTTLOAgreementData, getAlaskaDNRMHTTitleData, getAlaskaDNRMHTMentalHealthParcelData, getAlaskaDNRMHTMentalHealthLandQCDData, getAlaskaDNRTundraAreaStationsData, getAlaskaDNRTundraAreaDaltonHighwayData, getAlaskaDNRTundraAreaTundraRegionsData, getAlaskaDNRSoilWaterConservationDistrictsData, getAlaskaDNRASTARPublicAirports0Data, getAlaskaDNRASTARAlaskaPortsHarborsData, getAlaskaDNRASTARPublicAirports2Data, getAlaskaDNRASTARDEWLineSitesData, getAlaskaDNRASTARRoadsDOTData, getAlaskaDNRASTARAllRoadsNSSIData, getAlaskaDNRASTARVillageRoadsNSBData, getAlaskaDNRASTARTrailsStateOfAlaskaData, getAlaskaDNRASTARAirportRunwayUSGSData, getAlaskaDNRASTAREasementsNSBData, getAlaskaDNRASTARParcelsNSBData, getAlaskaDNRASTARMapNorthSlopeCommunitiesData, getAlaskaDNRASTARMapExistingMineralResourceData, getAlaskaDNRASTARMapPotentialMarineFacilitiesData, getAlaskaDNRASTARMapResourceAreasData, getAlaskaDNRASTARMapTransportationCorridorsPotentialData, getAlaskaDNRASTARMapASAPProposedData, getAlaskaDNRASTARMapExistingRoadsData, getAlaskaDNRASTARMapExistingInfrastructureData, getAlaskaDNRASTARMapANWR1002BoundaryData, getAlaskaDNRASTARMapCSUData, getAlaskaDNRASTARMapUSGSMiningTractsData, getAlaskaDNRASTARMapOwnershipData, getAlaskaDNRWSHydroBaseGlacier1milPyData, getAlaskaDNRWSHydroBaseRiver1milLnData, getAlaskaDNRWSHydroBaseLake1milPyData, getAlaskaDNRInfrastructurePowerLineData, getAlaskaDNRInfrastructurePipelineData, getAlaskaDNRInfrastructureFiberopticCableData } from '../adapters/alaskaDNR';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
@@ -3619,6 +3619,12 @@ export class EnrichmentService {
       
       case 'alaska_dnr_astar_map_ownership':
         return await this.getAlaskaDNRASTARMapOwnership(lat, lon, radius);
+      case 'alaska_dnr_infrastructure_power_line':
+        return await this.getAlaskaDNRInfrastructurePowerLine(lat, lon, radius);
+      case 'alaska_dnr_infrastructure_pipeline':
+        return await this.getAlaskaDNRInfrastructurePipeline(lat, lon, radius);
+      case 'alaska_dnr_infrastructure_fiberoptic_cable':
+        return await this.getAlaskaDNRInfrastructureFiberopticCable(lat, lon, radius);
       
       case 'alaska_dnr_ws_hydro_base_glacier_1mil_py':
         return await this.getAlaskaDNRWSHydroBaseGlacier1milPy(lat, lon, radius);
@@ -37605,6 +37611,87 @@ out center;`;
         'alaska_dnr_ws_hydro_base_lake_1mil_py_count': 0,
         'alaska_dnr_ws_hydro_base_lake_1mil_py_summary': 'Error fetching Lakes data',
         'alaska_dnr_ws_hydro_base_lake_1mil_py_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRInfrastructurePowerLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRInfrastructurePowerLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_infrastructure_power_line_count': 0,
+          'alaska_dnr_infrastructure_power_line_summary': 'No Power Lines found',
+          'alaska_dnr_infrastructure_power_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_infrastructure_power_line_count': features.length,
+        'alaska_dnr_infrastructure_power_line_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_infrastructure_power_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Infrastructure Power Line data:', error);
+      return {
+        'alaska_dnr_infrastructure_power_line_count': 0,
+        'alaska_dnr_infrastructure_power_line_summary': 'Error fetching Power Lines data',
+        'alaska_dnr_infrastructure_power_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRInfrastructurePipeline(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRInfrastructurePipelineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_infrastructure_pipeline_count': 0,
+          'alaska_dnr_infrastructure_pipeline_summary': 'No Pipelines found',
+          'alaska_dnr_infrastructure_pipeline_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_infrastructure_pipeline_count': features.length,
+        'alaska_dnr_infrastructure_pipeline_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_infrastructure_pipeline_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Infrastructure Pipeline data:', error);
+      return {
+        'alaska_dnr_infrastructure_pipeline_count': 0,
+        'alaska_dnr_infrastructure_pipeline_summary': 'Error fetching Pipelines data',
+        'alaska_dnr_infrastructure_pipeline_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRInfrastructureFiberopticCable(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRInfrastructureFiberopticCableData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_infrastructure_fiberoptic_cable_count': 0,
+          'alaska_dnr_infrastructure_fiberoptic_cable_summary': 'No Fiberoptic Cables found',
+          'alaska_dnr_infrastructure_fiberoptic_cable_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_infrastructure_fiberoptic_cable_count': features.length,
+        'alaska_dnr_infrastructure_fiberoptic_cable_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_infrastructure_fiberoptic_cable_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Infrastructure Fiberoptic Cable data:', error);
+      return {
+        'alaska_dnr_infrastructure_fiberoptic_cable_count': 0,
+        'alaska_dnr_infrastructure_fiberoptic_cable_summary': 'Error fetching Fiberoptic Cables data',
+        'alaska_dnr_infrastructure_fiberoptic_cable_all': []
       };
     }
   }

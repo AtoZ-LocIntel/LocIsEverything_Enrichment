@@ -4408,6 +4408,30 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/SSD/ASTARMap/MapServer/13"
         },
         {
+          name: "Alaska DNR - Infrastructure Power Line 1:63,360",
+          description: "Alaska Department of Natural Resources - Infrastructure Power Line 1:63,360 (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Infrastructure_Infrastructure/MapServer/5"
+        },
+        {
+          name: "Alaska DNR - Infrastructure Pipeline 1:63,360",
+          description: "Alaska Department of Natural Resources - Infrastructure Pipeline 1:63,360 (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Infrastructure_Infrastructure/MapServer/8"
+        },
+        {
+          name: "Alaska DNR - Infrastructure Fiberoptic Cable 1:63,360",
+          description: "Alaska Department of Natural Resources - Infrastructure Fiberoptic Cable 1:63,360 (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Infrastructure_Infrastructure/MapServer/11"
+        },
+        {
           name: "Alaska DNR - WSHydroBase Glacier 1mil Py",
           description: "Alaska Department of Natural Resources - WSHydroBase Glacier 1mil Py (point-in-polygon and proximity queries up to 50 miles)",
           coverage: "Alaska",
