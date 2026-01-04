@@ -1909,3 +1909,597 @@ export async function getAlaskaDNRLandEstateTownshipData(
   );
 }
 
+/**
+ * Query Alaska DNR Mineral Estate - Agreement Settlement Recon Point (Layer 11) - Point layer
+ */
+export async function getAlaskaDNRMineralEstateAgreementSettlementReconPointData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    11,
+    'Agreement Settlement Recon Point',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Agreement Settlement Recon Line (Layer 5) - Polyline layer
+ */
+export async function getAlaskaDNRMineralEstateAgreementSettlementReconLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    5,
+    'Agreement Settlement Recon Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Agreement Settlement Recon Poly (Layer 22) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateAgreementSettlementReconPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    22,
+    'Agreement Settlement Recon Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Federal Action Line (Layer 6) - Polyline layer
+ */
+export async function getAlaskaDNRMineralEstateFederalActionLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    6,
+    'Federal Action Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Federal Action Poly (Layer 20) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateFederalActionPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    20,
+    'Federal Action Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Leasehold Location Line (Layer 3) - Polyline layer
+ */
+export async function getAlaskaDNRMineralEstateLeaseholdLocationLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    3,
+    'Leasehold Location Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Leasehold Location Poly (Layer 17) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateLeaseholdLocationPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    17,
+    'Leasehold Location Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Management Agreement Line (Layer 2) - Polyline layer
+ */
+export async function getAlaskaDNRMineralEstateManagementAgreementLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    2,
+    'Management Agreement Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Management Agreement Poly (Layer 9) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateManagementAgreementPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    9,
+    'Management Agreement Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Mental Health Trust Land Poly (Layer 19) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateMentalHealthTrustLandPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    19,
+    'Mental Health Trust Land Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Mineral Order Line (Layer 4) - Polyline layer
+ */
+export async function getAlaskaDNRMineralEstateMineralOrderLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    4,
+    'Mineral Order Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Mineral Order Poly (Layer 16) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateMineralOrderPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    16,
+    'Mineral Order Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - State Interest Native Allotment Poly (Layer 21) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateStateInterestNativeAllotmentPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    21,
+    'State Interest Native Allotment Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Oil and Gas Lease Sale Tract Current (Layer 18) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateOilGasLeaseSaleTractCurrentData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    18,
+    'Oil and Gas Lease Sale Tract Current',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Other State Acquired ME Line (Layer 8) - Polyline layer
+ */
+export async function getAlaskaDNRMineralEstateOtherStateAcquiredMELineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    8,
+    'Other State Acquired ME Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Other State Acquired ME Poly (Layer 23) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateOtherStateAcquiredMEPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    23,
+    'Other State Acquired ME Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Permit Lease ME Poly (Layer 10) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstatePermitLeaseMEPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    10,
+    'Permit Lease ME Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - State Mining Claim Poly (Layer 112) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateStateMiningClaimPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    112,
+    'State Mining Claim Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - State Mining Claim Pending Poly (Layer 13) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateStateMiningClaimPendingPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    13,
+    'State Mining Claim Pending Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - State Mining Claim Closed Poly (Layer 14) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateStateMiningClaimClosedPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    14,
+    'State Mining Claim Closed Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - State Prospecting Site Poly (Layer 111) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateStateProspectingSitePolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    111,
+    'State Prospecting Site Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Municipal Entitlement Poly (Layer 113) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateMunicipalEntitlementPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    113,
+    'Municipal Entitlement Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - State Selected Land ME Line (Layer 114) - Polyline layer
+ */
+export async function getAlaskaDNRMineralEstateStateSelectedLandMELineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    114,
+    'State Selected Land ME Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - State Selected or ANILCA Topfiled Land ME Poly (Layer 1) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateStateSelectedOrANILCATopfiledLandMEPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    1,
+    'State Selected or ANILCA Topfiled Land ME Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - State TA Patented ME Line (Layer 7) - Polyline layer
+ */
+export async function getAlaskaDNRMineralEstateStateTAPatentedMELineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    7,
+    'State TA Patented ME Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - State TA Patented ME Poly (Layer 24) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateStateTAPatentedMEPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    24,
+    'State TA Patented ME Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Survey Boundary Pt (Layer 51) - Point layer
+ */
+export async function getAlaskaDNRMineralEstateSurveyBoundaryPtData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    51,
+    'Survey Boundary Pt',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Survey Boundary Line (Layer 50) - Polyline layer
+ */
+export async function getAlaskaDNRMineralEstateSurveyBoundaryLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    50,
+    'Survey Boundary Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Survey Boundary Poly (Layer 49) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateSurveyBoundaryPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    49,
+    'Survey Boundary Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Recording District Boundary (Layer 25) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateRecordingDistrictBoundaryData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    25,
+    'Recording District Boundary',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Well Site Point (Layer 12) - Point layer
+ */
+export async function getAlaskaDNRMineralEstateWellSitePointData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    12,
+    'Well Site Point',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - DCCED CRA Borough Boundary (Layer 26) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateDCCEDCRABoroughBoundaryData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    26,
+    'DCCED CRA Borough Boundary',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Mineral Estate - Township (Layer 45) - Polygon layer
+ */
+export async function getAlaskaDNRMineralEstateTownshipData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
+    45,
+    'Township',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+

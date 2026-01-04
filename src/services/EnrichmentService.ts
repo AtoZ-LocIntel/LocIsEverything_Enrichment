@@ -257,7 +257,7 @@ import {
   getBostonDOITMBTARapidTransitData,
   getBostonDOITRailData,
 } from '../adapters/bostonOpenData';
-import { getAlaskaDNRTransAlaskaPipelineData, getAlaskaDNRWellSitesData, getAlaskaDNROilGasLeaseSaleTractData, getAlaskaDNRStateParkRoadsData, getAlaskaDNRStateParkTrailsData, getAlaskaDNRStateParkBoundariesData, getAlaskaDNRStateParkFacilitiesData, getAlaskaDNRControlledLivestockDistrictsData, getAlaskaDNRLandCapacityClassificationData, getAlaskaDNRShoreFisheryLeasesData, getAlaskaDNRAquaticFarmLeasesData, getAlaskaDNRWELTSData, getAlaskaDNRPLSSSectionData, getAlaskaDNRPLSSTownshipData, getAlaskaDNRSurfaceWaterRightLocationData, getAlaskaDNRSubSurfaceWaterRightLocationData, getAlaskaDNRSurfaceWaterRightsData, getAlaskaDNRSubSurfaceWaterRightsData, getAlaskaDNRInstreamFlowWaterReservationsPointData, getAlaskaDNRInstreamFlowWaterReservationsLineData, getAlaskaDNRInstreamFlowWaterReservationsPolygonData, getAlaskaDNRShoreFisheryLeasesLineData, getAlaskaDNRShoreFisheryLeasesPolygonData, getAlaskaDNRAquaticFarmLeasesWaterEstateData, getAlaskaDNRLeaseLineData, getAlaskaDNRLeaseAreaData, getAlaskaDNRHattersPassPlanBoundaryData, getAlaskaDNRHattersPassNonMotorizedSummerData, getAlaskaDNRHattersPassNonMotorizedYearRoundData, getAlaskaDNRNationalGeodeticSurveyPtData, getAlaskaDNRStateControlMonumentsData, getAlaskaDNRBLMMonumentsGCDBData, getAlaskaDNRBLMMonumentsSDMSData, getAlaskaDNRSurveyBoundaryPtData, getAlaskaDNRSimpleCoastlineData, getAlaskaDNRSurveyTractLineData, getAlaskaDNRSurveyBlockLineData, getAlaskaDNRSurveyBoundaryLineData, getAlaskaDNRSectionData, getAlaskaDNRSurveyLotPolyData, getAlaskaDNRSurveyTractPolyData, getAlaskaDNRSurveyBlockPolyData, getAlaskaDNRSurveyBoundaryPolyData, getAlaskaDNRTownshipData, getAlaskaDNRIncorporatedCityBoundaryData, getAlaskaDNRRecordingDistrictBoundaryData, getAlaskaDNRDCCEDCRABoroughBoundaryData, getAlaskaDNRAgreementSettlementReconveyPtData, getAlaskaDNRRestrictedUseAuthorizationPtData, getAlaskaDNRPotentialHazardousSitesPtData, getAlaskaDNRTrespassPtData, getAlaskaDNRPermitLeaseLEPtData, getAlaskaDNREasementPtData, getAlaskaDNRLandDisposalOtherPtData, getAlaskaDNRLandEstateSurveyBoundaryPtData, getAlaskaDNRLandEstateSimpleCoastlineData, getAlaskaDNRAgreementSettlementReconveyLineData, getAlaskaDNRRestrictedUseAuthorizationLineData, getAlaskaDNRPotentialHazardousSitesLineData, getAlaskaDNRTrespassLineData, getAlaskaDNRPermitLeaseLELineData, getAlaskaDNREasementLineData, getAlaskaDNRResourceSaleLineData, getAlaskaDNRFederalActionLineData, getAlaskaDNRLandDisposalAvailableLineData, getAlaskaDNRLandDisposalConveyedLineData, getAlaskaDNRLandDisposalOtherLineData, getAlaskaDNRManagementAgreementLineData, getAlaskaDNROtherStateAcquiredLELineData, getAlaskaDNRS2477LineData, getAlaskaDNRStateSelectedLandLELineData, getAlaskaDNRStateTAPatentedLELineData, getAlaskaDNRLandEstateSurveyBoundaryLineData, getAlaskaDNRLandEstateSectionData, getAlaskaDNRAgreementSettlementReconPolyData, getAlaskaDNRRestrictedUseAuthorizationPolyData, getAlaskaDNRPotentialHazardousSitesPolyData, getAlaskaDNRTrespassPolyData, getAlaskaDNRPermitLeaseLEPolyData, getAlaskaDNREasementPolyData, getAlaskaDNRResourceSalePolyData, getAlaskaDNRFederalActionPolyData, getAlaskaDNRLandDisposalAvailablePolyData, getAlaskaDNRLandDisposalConveyedPolyData, getAlaskaDNRLandDisposalOtherPolyData, getAlaskaDNRManagementAgreementPolyData, getAlaskaDNRMentalHealthTrustLandPolyData, getAlaskaDNRMunicipalEntitlementPolyData, getAlaskaDNRMunicipalTidelandPolyData, getAlaskaDNRStateInterestNativeAllotmentPolyData, getAlaskaDNROtherStateAcquiredLEPolyData, getAlaskaDNRStateSelectedOrANILCATopfiledLandLEPolyData, getAlaskaDNRStateTAPatentedLEPolyData, getAlaskaDNRLandEstateSurveyBoundaryPolyData, getAlaskaDNRLandEstateRecordingDistrictBoundaryData, getAlaskaDNRLandEstateTownshipData } from '../adapters/alaskaDNR';
+import { getAlaskaDNRTransAlaskaPipelineData, getAlaskaDNRWellSitesData, getAlaskaDNROilGasLeaseSaleTractData, getAlaskaDNRStateParkRoadsData, getAlaskaDNRStateParkTrailsData, getAlaskaDNRStateParkBoundariesData, getAlaskaDNRStateParkFacilitiesData, getAlaskaDNRControlledLivestockDistrictsData, getAlaskaDNRLandCapacityClassificationData, getAlaskaDNRShoreFisheryLeasesData, getAlaskaDNRAquaticFarmLeasesData, getAlaskaDNRWELTSData, getAlaskaDNRPLSSSectionData, getAlaskaDNRPLSSTownshipData, getAlaskaDNRSurfaceWaterRightLocationData, getAlaskaDNRSubSurfaceWaterRightLocationData, getAlaskaDNRSurfaceWaterRightsData, getAlaskaDNRSubSurfaceWaterRightsData, getAlaskaDNRInstreamFlowWaterReservationsPointData, getAlaskaDNRInstreamFlowWaterReservationsLineData, getAlaskaDNRInstreamFlowWaterReservationsPolygonData, getAlaskaDNRShoreFisheryLeasesLineData, getAlaskaDNRShoreFisheryLeasesPolygonData, getAlaskaDNRAquaticFarmLeasesWaterEstateData, getAlaskaDNRLeaseLineData, getAlaskaDNRLeaseAreaData, getAlaskaDNRHattersPassPlanBoundaryData, getAlaskaDNRHattersPassNonMotorizedSummerData, getAlaskaDNRHattersPassNonMotorizedYearRoundData, getAlaskaDNRNationalGeodeticSurveyPtData, getAlaskaDNRStateControlMonumentsData, getAlaskaDNRBLMMonumentsGCDBData, getAlaskaDNRBLMMonumentsSDMSData, getAlaskaDNRSurveyBoundaryPtData, getAlaskaDNRSimpleCoastlineData, getAlaskaDNRSurveyTractLineData, getAlaskaDNRSurveyBlockLineData, getAlaskaDNRSurveyBoundaryLineData, getAlaskaDNRSectionData, getAlaskaDNRSurveyLotPolyData, getAlaskaDNRSurveyTractPolyData, getAlaskaDNRSurveyBlockPolyData, getAlaskaDNRSurveyBoundaryPolyData, getAlaskaDNRTownshipData, getAlaskaDNRIncorporatedCityBoundaryData, getAlaskaDNRRecordingDistrictBoundaryData, getAlaskaDNRDCCEDCRABoroughBoundaryData, getAlaskaDNRAgreementSettlementReconveyPtData, getAlaskaDNRRestrictedUseAuthorizationPtData, getAlaskaDNRPotentialHazardousSitesPtData, getAlaskaDNRTrespassPtData, getAlaskaDNRPermitLeaseLEPtData, getAlaskaDNREasementPtData, getAlaskaDNRLandDisposalOtherPtData, getAlaskaDNRLandEstateSurveyBoundaryPtData, getAlaskaDNRLandEstateSimpleCoastlineData, getAlaskaDNRAgreementSettlementReconveyLineData, getAlaskaDNRRestrictedUseAuthorizationLineData, getAlaskaDNRPotentialHazardousSitesLineData, getAlaskaDNRTrespassLineData, getAlaskaDNRPermitLeaseLELineData, getAlaskaDNREasementLineData, getAlaskaDNRResourceSaleLineData, getAlaskaDNRFederalActionLineData, getAlaskaDNRLandDisposalAvailableLineData, getAlaskaDNRLandDisposalConveyedLineData, getAlaskaDNRLandDisposalOtherLineData, getAlaskaDNRManagementAgreementLineData, getAlaskaDNROtherStateAcquiredLELineData, getAlaskaDNRS2477LineData, getAlaskaDNRStateSelectedLandLELineData, getAlaskaDNRStateTAPatentedLELineData, getAlaskaDNRLandEstateSurveyBoundaryLineData, getAlaskaDNRLandEstateSectionData, getAlaskaDNRAgreementSettlementReconPolyData, getAlaskaDNRRestrictedUseAuthorizationPolyData, getAlaskaDNRPotentialHazardousSitesPolyData, getAlaskaDNRTrespassPolyData, getAlaskaDNRPermitLeaseLEPolyData, getAlaskaDNREasementPolyData, getAlaskaDNRResourceSalePolyData, getAlaskaDNRFederalActionPolyData, getAlaskaDNRLandDisposalAvailablePolyData, getAlaskaDNRLandDisposalConveyedPolyData, getAlaskaDNRLandDisposalOtherPolyData, getAlaskaDNRManagementAgreementPolyData, getAlaskaDNRMentalHealthTrustLandPolyData, getAlaskaDNRMunicipalEntitlementPolyData, getAlaskaDNRMunicipalTidelandPolyData, getAlaskaDNRStateInterestNativeAllotmentPolyData, getAlaskaDNROtherStateAcquiredLEPolyData, getAlaskaDNRStateSelectedOrANILCATopfiledLandLEPolyData, getAlaskaDNRStateTAPatentedLEPolyData, getAlaskaDNRLandEstateSurveyBoundaryPolyData, getAlaskaDNRLandEstateRecordingDistrictBoundaryData, getAlaskaDNRLandEstateTownshipData, getAlaskaDNRMineralEstateAgreementSettlementReconPointData, getAlaskaDNRMineralEstateAgreementSettlementReconLineData, getAlaskaDNRMineralEstateAgreementSettlementReconPolyData, getAlaskaDNRMineralEstateFederalActionLineData, getAlaskaDNRMineralEstateFederalActionPolyData, getAlaskaDNRMineralEstateLeaseholdLocationLineData, getAlaskaDNRMineralEstateLeaseholdLocationPolyData, getAlaskaDNRMineralEstateManagementAgreementLineData, getAlaskaDNRMineralEstateManagementAgreementPolyData, getAlaskaDNRMineralEstateMentalHealthTrustLandPolyData, getAlaskaDNRMineralEstateMineralOrderLineData, getAlaskaDNRMineralEstateMineralOrderPolyData, getAlaskaDNRMineralEstateStateInterestNativeAllotmentPolyData, getAlaskaDNRMineralEstateOilGasLeaseSaleTractCurrentData, getAlaskaDNRMineralEstateOtherStateAcquiredMELineData, getAlaskaDNRMineralEstateOtherStateAcquiredMEPolyData, getAlaskaDNRMineralEstatePermitLeaseMEPolyData, getAlaskaDNRMineralEstateStateMiningClaimPolyData, getAlaskaDNRMineralEstateStateMiningClaimPendingPolyData, getAlaskaDNRMineralEstateStateMiningClaimClosedPolyData, getAlaskaDNRMineralEstateStateProspectingSitePolyData, getAlaskaDNRMineralEstateMunicipalEntitlementPolyData, getAlaskaDNRMineralEstateStateSelectedLandMELineData, getAlaskaDNRMineralEstateStateSelectedOrANILCATopfiledLandMEPolyData, getAlaskaDNRMineralEstateStateTAPatentedMELineData, getAlaskaDNRMineralEstateStateTAPatentedMEPolyData, getAlaskaDNRMineralEstateSurveyBoundaryPtData, getAlaskaDNRMineralEstateSurveyBoundaryLineData, getAlaskaDNRMineralEstateSurveyBoundaryPolyData, getAlaskaDNRMineralEstateRecordingDistrictBoundaryData, getAlaskaDNRMineralEstateWellSitePointData, getAlaskaDNRMineralEstateDCCEDCRABoroughBoundaryData, getAlaskaDNRMineralEstateTownshipData } from '../adapters/alaskaDNR';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
@@ -3340,6 +3340,105 @@ export class EnrichmentService {
       
       case 'alaska_dnr_land_estate_township':
         return await this.getAlaskaDNRLandEstateTownship(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_agreement_settlement_recon_point':
+        return await this.getAlaskaDNRMineralEstateAgreementSettlementReconPoint(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_agreement_settlement_recon_line':
+        return await this.getAlaskaDNRMineralEstateAgreementSettlementReconLine(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_agreement_settlement_recon_poly':
+        return await this.getAlaskaDNRMineralEstateAgreementSettlementReconPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_federal_action_line':
+        return await this.getAlaskaDNRMineralEstateFederalActionLine(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_federal_action_poly':
+        return await this.getAlaskaDNRMineralEstateFederalActionPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_leasehold_location_line':
+        return await this.getAlaskaDNRMineralEstateLeaseholdLocationLine(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_leasehold_location_poly':
+        return await this.getAlaskaDNRMineralEstateLeaseholdLocationPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_management_agreement_line':
+        return await this.getAlaskaDNRMineralEstateManagementAgreementLine(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_management_agreement_poly':
+        return await this.getAlaskaDNRMineralEstateManagementAgreementPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_mental_health_trust_land_poly':
+        return await this.getAlaskaDNRMineralEstateMentalHealthTrustLandPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_mineral_order_line':
+        return await this.getAlaskaDNRMineralEstateMineralOrderLine(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_mineral_order_poly':
+        return await this.getAlaskaDNRMineralEstateMineralOrderPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_state_interest_native_allotment_poly':
+        return await this.getAlaskaDNRMineralEstateStateInterestNativeAllotmentPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current':
+        return await this.getAlaskaDNRMineralEstateOilGasLeaseSaleTractCurrent(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_other_state_acquired_me_line':
+        return await this.getAlaskaDNRMineralEstateOtherStateAcquiredMELine(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_other_state_acquired_me_poly':
+        return await this.getAlaskaDNRMineralEstateOtherStateAcquiredMEPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_permit_lease_me_poly':
+        return await this.getAlaskaDNRMineralEstatePermitLeaseMEPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_state_mining_claim_poly':
+        return await this.getAlaskaDNRMineralEstateStateMiningClaimPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_state_mining_claim_pending_poly':
+        return await this.getAlaskaDNRMineralEstateStateMiningClaimPendingPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_state_mining_claim_closed_poly':
+        return await this.getAlaskaDNRMineralEstateStateMiningClaimClosedPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_state_prospecting_site_poly':
+        return await this.getAlaskaDNRMineralEstateStateProspectingSitePoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_municipal_entitlement_poly':
+        return await this.getAlaskaDNRMineralEstateMunicipalEntitlementPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_state_selected_land_me_line':
+        return await this.getAlaskaDNRMineralEstateStateSelectedLandMELine(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly':
+        return await this.getAlaskaDNRMineralEstateStateSelectedOrANILCATopfiledLandMEPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_state_ta_patented_me_line':
+        return await this.getAlaskaDNRMineralEstateStateTAPatentedMELine(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_state_ta_patented_me_poly':
+        return await this.getAlaskaDNRMineralEstateStateTAPatentedMEPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_survey_boundary_pt':
+        return await this.getAlaskaDNRMineralEstateSurveyBoundaryPt(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_survey_boundary_line':
+        return await this.getAlaskaDNRMineralEstateSurveyBoundaryLine(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_survey_boundary_poly':
+        return await this.getAlaskaDNRMineralEstateSurveyBoundaryPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_recording_district_boundary':
+        return await this.getAlaskaDNRMineralEstateRecordingDistrictBoundary(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_well_site_point':
+        return await this.getAlaskaDNRMineralEstateWellSitePoint(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_dcced_cra_borough_boundary':
+        return await this.getAlaskaDNRMineralEstateDCCEDCRABoroughBoundary(lat, lon, radius);
+      
+      case 'alaska_dnr_mineral_estate_township':
+        return await this.getAlaskaDNRMineralEstateTownship(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -33815,6 +33914,1200 @@ out center;`;
     } catch (error) {
       console.error('Error fetching Alaska DNR Land Estate Township data:', error);
       return { 'alaska_dnr_land_estate_township_count': 0, 'alaska_dnr_land_estate_township_summary': 'Error fetching Township data', 'alaska_dnr_land_estate_township_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateAgreementSettlementReconPoint(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateAgreementSettlementReconPointData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_agreement_settlement_recon_point_count': 0,
+          'alaska_dnr_mineral_estate_agreement_settlement_recon_point_summary': 'No Agreement Settlement Recon Points found within the specified radius',
+          'alaska_dnr_mineral_estate_agreement_settlement_recon_point_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_point_count': features.length,
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_point_summary': `Found ${features.length} Agreement Settlement Recon Point${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_point_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Agreement Settlement Recon Point data:', error);
+      return {
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_point_count': 0,
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_point_summary': 'Error fetching Agreement Settlement Recon Point data',
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_point_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateAgreementSettlementReconLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateAgreementSettlementReconLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_agreement_settlement_recon_line_count': 0,
+          'alaska_dnr_mineral_estate_agreement_settlement_recon_line_summary': 'No Agreement Settlement Recon Lines found within the specified radius',
+          'alaska_dnr_mineral_estate_agreement_settlement_recon_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_line_count': features.length,
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_line_summary': `Found ${features.length} Agreement Settlement Recon Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_line_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Agreement Settlement Recon Line data:', error);
+      return {
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_line_count': 0,
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_line_summary': 'Error fetching Agreement Settlement Recon Line data',
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateAgreementSettlementReconPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateAgreementSettlementReconPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_count': 0,
+          'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_summary': 'No Agreement Settlement Recon Polygons found',
+          'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_count': features.length,
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_summary': summary,
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Agreement Settlement Recon Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_count': 0,
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_summary': 'Error fetching Agreement Settlement Recon Poly data',
+        'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateFederalActionLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateFederalActionLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_federal_action_line_count': 0,
+          'alaska_dnr_mineral_estate_federal_action_line_summary': 'No Federal Action Lines found within the specified radius',
+          'alaska_dnr_mineral_estate_federal_action_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_federal_action_line_count': features.length,
+        'alaska_dnr_mineral_estate_federal_action_line_summary': `Found ${features.length} Federal Action Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_federal_action_line_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Federal Action Line data:', error);
+      return {
+        'alaska_dnr_mineral_estate_federal_action_line_count': 0,
+        'alaska_dnr_mineral_estate_federal_action_line_summary': 'Error fetching Federal Action Line data',
+        'alaska_dnr_mineral_estate_federal_action_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateFederalActionPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateFederalActionPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_federal_action_poly_count': 0,
+          'alaska_dnr_mineral_estate_federal_action_poly_summary': 'No Federal Action Polygons found',
+          'alaska_dnr_mineral_estate_federal_action_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_federal_action_poly_count': features.length,
+        'alaska_dnr_mineral_estate_federal_action_poly_summary': summary,
+        'alaska_dnr_mineral_estate_federal_action_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Federal Action Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_federal_action_poly_count': 0,
+        'alaska_dnr_mineral_estate_federal_action_poly_summary': 'Error fetching Federal Action Poly data',
+        'alaska_dnr_mineral_estate_federal_action_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateLeaseholdLocationLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateLeaseholdLocationLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_leasehold_location_line_count': 0,
+          'alaska_dnr_mineral_estate_leasehold_location_line_summary': 'No Leasehold Location Lines found within the specified radius',
+          'alaska_dnr_mineral_estate_leasehold_location_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_leasehold_location_line_count': features.length,
+        'alaska_dnr_mineral_estate_leasehold_location_line_summary': `Found ${features.length} Leasehold Location Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_leasehold_location_line_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Leasehold Location Line data:', error);
+      return {
+        'alaska_dnr_mineral_estate_leasehold_location_line_count': 0,
+        'alaska_dnr_mineral_estate_leasehold_location_line_summary': 'Error fetching Leasehold Location Line data',
+        'alaska_dnr_mineral_estate_leasehold_location_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateLeaseholdLocationPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateLeaseholdLocationPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_leasehold_location_poly_count': 0,
+          'alaska_dnr_mineral_estate_leasehold_location_poly_summary': 'No Leasehold Location Polygons found',
+          'alaska_dnr_mineral_estate_leasehold_location_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_leasehold_location_poly_count': features.length,
+        'alaska_dnr_mineral_estate_leasehold_location_poly_summary': summary,
+        'alaska_dnr_mineral_estate_leasehold_location_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Leasehold Location Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_leasehold_location_poly_count': 0,
+        'alaska_dnr_mineral_estate_leasehold_location_poly_summary': 'Error fetching Leasehold Location Poly data',
+        'alaska_dnr_mineral_estate_leasehold_location_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateManagementAgreementLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateManagementAgreementLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_management_agreement_line_count': 0,
+          'alaska_dnr_mineral_estate_management_agreement_line_summary': 'No Management Agreement Lines found within the specified radius',
+          'alaska_dnr_mineral_estate_management_agreement_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_management_agreement_line_count': features.length,
+        'alaska_dnr_mineral_estate_management_agreement_line_summary': `Found ${features.length} Management Agreement Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_management_agreement_line_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Management Agreement Line data:', error);
+      return {
+        'alaska_dnr_mineral_estate_management_agreement_line_count': 0,
+        'alaska_dnr_mineral_estate_management_agreement_line_summary': 'Error fetching Management Agreement Line data',
+        'alaska_dnr_mineral_estate_management_agreement_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateManagementAgreementPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateManagementAgreementPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_management_agreement_poly_count': 0,
+          'alaska_dnr_mineral_estate_management_agreement_poly_summary': 'No Management Agreement Polygons found',
+          'alaska_dnr_mineral_estate_management_agreement_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_management_agreement_poly_count': features.length,
+        'alaska_dnr_mineral_estate_management_agreement_poly_summary': summary,
+        'alaska_dnr_mineral_estate_management_agreement_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Management Agreement Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_management_agreement_poly_count': 0,
+        'alaska_dnr_mineral_estate_management_agreement_poly_summary': 'Error fetching Management Agreement Poly data',
+        'alaska_dnr_mineral_estate_management_agreement_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateMentalHealthTrustLandPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateMentalHealthTrustLandPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_mental_health_trust_land_poly_count': 0,
+          'alaska_dnr_mineral_estate_mental_health_trust_land_poly_summary': 'No Mental Health Trust Land Polygons found',
+          'alaska_dnr_mineral_estate_mental_health_trust_land_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_mental_health_trust_land_poly_count': features.length,
+        'alaska_dnr_mineral_estate_mental_health_trust_land_poly_summary': summary,
+        'alaska_dnr_mineral_estate_mental_health_trust_land_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Mental Health Trust Land Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_mental_health_trust_land_poly_count': 0,
+        'alaska_dnr_mineral_estate_mental_health_trust_land_poly_summary': 'Error fetching Mental Health Trust Land Poly data',
+        'alaska_dnr_mineral_estate_mental_health_trust_land_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateMineralOrderLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateMineralOrderLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_mineral_order_line_count': 0,
+          'alaska_dnr_mineral_estate_mineral_order_line_summary': 'No Mineral Order Lines found within the specified radius',
+          'alaska_dnr_mineral_estate_mineral_order_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_mineral_order_line_count': features.length,
+        'alaska_dnr_mineral_estate_mineral_order_line_summary': `Found ${features.length} Mineral Order Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_mineral_order_line_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Mineral Order Line data:', error);
+      return {
+        'alaska_dnr_mineral_estate_mineral_order_line_count': 0,
+        'alaska_dnr_mineral_estate_mineral_order_line_summary': 'Error fetching Mineral Order Line data',
+        'alaska_dnr_mineral_estate_mineral_order_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateMineralOrderPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateMineralOrderPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_mineral_order_poly_count': 0,
+          'alaska_dnr_mineral_estate_mineral_order_poly_summary': 'No Mineral Order Polygons found',
+          'alaska_dnr_mineral_estate_mineral_order_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_mineral_order_poly_count': features.length,
+        'alaska_dnr_mineral_estate_mineral_order_poly_summary': summary,
+        'alaska_dnr_mineral_estate_mineral_order_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Mineral Order Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_mineral_order_poly_count': 0,
+        'alaska_dnr_mineral_estate_mineral_order_poly_summary': 'Error fetching Mineral Order Poly data',
+        'alaska_dnr_mineral_estate_mineral_order_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateStateInterestNativeAllotmentPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateStateInterestNativeAllotmentPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_state_interest_native_allotment_poly_count': 0,
+          'alaska_dnr_mineral_estate_state_interest_native_allotment_poly_summary': 'No State Interest Native Allotment Polygons found',
+          'alaska_dnr_mineral_estate_state_interest_native_allotment_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_state_interest_native_allotment_poly_count': features.length,
+        'alaska_dnr_mineral_estate_state_interest_native_allotment_poly_summary': summary,
+        'alaska_dnr_mineral_estate_state_interest_native_allotment_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate State Interest Native Allotment Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_state_interest_native_allotment_poly_count': 0,
+        'alaska_dnr_mineral_estate_state_interest_native_allotment_poly_summary': 'Error fetching State Interest Native Allotment Poly data',
+        'alaska_dnr_mineral_estate_state_interest_native_allotment_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateOilGasLeaseSaleTractCurrent(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateOilGasLeaseSaleTractCurrentData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current_count': 0,
+          'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current_summary': 'No Oil and Gas Lease Sale Tract Current Polygons found',
+          'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current_count': features.length,
+        'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current_summary': summary,
+        'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Oil and Gas Lease Sale Tract Current data:', error);
+      return {
+        'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current_count': 0,
+        'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current_summary': 'Error fetching Oil and Gas Lease Sale Tract Current data',
+        'alaska_dnr_mineral_estate_oil_gas_lease_sale_tract_current_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateOtherStateAcquiredMELine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateOtherStateAcquiredMELineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_other_state_acquired_me_line_count': 0,
+          'alaska_dnr_mineral_estate_other_state_acquired_me_line_summary': 'No Other State Acquired ME Lines found within the specified radius',
+          'alaska_dnr_mineral_estate_other_state_acquired_me_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_other_state_acquired_me_line_count': features.length,
+        'alaska_dnr_mineral_estate_other_state_acquired_me_line_summary': `Found ${features.length} Other State Acquired ME Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_other_state_acquired_me_line_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Other State Acquired ME Line data:', error);
+      return {
+        'alaska_dnr_mineral_estate_other_state_acquired_me_line_count': 0,
+        'alaska_dnr_mineral_estate_other_state_acquired_me_line_summary': 'Error fetching Other State Acquired ME Line data',
+        'alaska_dnr_mineral_estate_other_state_acquired_me_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateOtherStateAcquiredMEPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateOtherStateAcquiredMEPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_other_state_acquired_me_poly_count': 0,
+          'alaska_dnr_mineral_estate_other_state_acquired_me_poly_summary': 'No Other State Acquired ME Polygons found',
+          'alaska_dnr_mineral_estate_other_state_acquired_me_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_other_state_acquired_me_poly_count': features.length,
+        'alaska_dnr_mineral_estate_other_state_acquired_me_poly_summary': summary,
+        'alaska_dnr_mineral_estate_other_state_acquired_me_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Other State Acquired ME Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_other_state_acquired_me_poly_count': 0,
+        'alaska_dnr_mineral_estate_other_state_acquired_me_poly_summary': 'Error fetching Other State Acquired ME Poly data',
+        'alaska_dnr_mineral_estate_other_state_acquired_me_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstatePermitLeaseMEPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstatePermitLeaseMEPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_permit_lease_me_poly_count': 0,
+          'alaska_dnr_mineral_estate_permit_lease_me_poly_summary': 'No Permit Lease ME Polygons found',
+          'alaska_dnr_mineral_estate_permit_lease_me_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_permit_lease_me_poly_count': features.length,
+        'alaska_dnr_mineral_estate_permit_lease_me_poly_summary': summary,
+        'alaska_dnr_mineral_estate_permit_lease_me_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Permit Lease ME Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_permit_lease_me_poly_count': 0,
+        'alaska_dnr_mineral_estate_permit_lease_me_poly_summary': 'Error fetching Permit Lease ME Poly data',
+        'alaska_dnr_mineral_estate_permit_lease_me_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateStateMiningClaimPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateStateMiningClaimPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_state_mining_claim_poly_count': 0,
+          'alaska_dnr_mineral_estate_state_mining_claim_poly_summary': 'No State Mining Claim Polygons found',
+          'alaska_dnr_mineral_estate_state_mining_claim_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_state_mining_claim_poly_count': features.length,
+        'alaska_dnr_mineral_estate_state_mining_claim_poly_summary': summary,
+        'alaska_dnr_mineral_estate_state_mining_claim_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate State Mining Claim Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_state_mining_claim_poly_count': 0,
+        'alaska_dnr_mineral_estate_state_mining_claim_poly_summary': 'Error fetching State Mining Claim Poly data',
+        'alaska_dnr_mineral_estate_state_mining_claim_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateStateMiningClaimPendingPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateStateMiningClaimPendingPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_state_mining_claim_pending_poly_count': 0,
+          'alaska_dnr_mineral_estate_state_mining_claim_pending_poly_summary': 'No State Mining Claim Pending Polygons found',
+          'alaska_dnr_mineral_estate_state_mining_claim_pending_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_state_mining_claim_pending_poly_count': features.length,
+        'alaska_dnr_mineral_estate_state_mining_claim_pending_poly_summary': summary,
+        'alaska_dnr_mineral_estate_state_mining_claim_pending_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate State Mining Claim Pending Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_state_mining_claim_pending_poly_count': 0,
+        'alaska_dnr_mineral_estate_state_mining_claim_pending_poly_summary': 'Error fetching State Mining Claim Pending Poly data',
+        'alaska_dnr_mineral_estate_state_mining_claim_pending_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateStateMiningClaimClosedPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateStateMiningClaimClosedPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_state_mining_claim_closed_poly_count': 0,
+          'alaska_dnr_mineral_estate_state_mining_claim_closed_poly_summary': 'No State Mining Claim Closed Polygons found',
+          'alaska_dnr_mineral_estate_state_mining_claim_closed_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_state_mining_claim_closed_poly_count': features.length,
+        'alaska_dnr_mineral_estate_state_mining_claim_closed_poly_summary': summary,
+        'alaska_dnr_mineral_estate_state_mining_claim_closed_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate State Mining Claim Closed Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_state_mining_claim_closed_poly_count': 0,
+        'alaska_dnr_mineral_estate_state_mining_claim_closed_poly_summary': 'Error fetching State Mining Claim Closed Poly data',
+        'alaska_dnr_mineral_estate_state_mining_claim_closed_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateStateProspectingSitePoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateStateProspectingSitePolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_state_prospecting_site_poly_count': 0,
+          'alaska_dnr_mineral_estate_state_prospecting_site_poly_summary': 'No State Prospecting Site Polygons found',
+          'alaska_dnr_mineral_estate_state_prospecting_site_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_state_prospecting_site_poly_count': features.length,
+        'alaska_dnr_mineral_estate_state_prospecting_site_poly_summary': summary,
+        'alaska_dnr_mineral_estate_state_prospecting_site_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate State Prospecting Site Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_state_prospecting_site_poly_count': 0,
+        'alaska_dnr_mineral_estate_state_prospecting_site_poly_summary': 'Error fetching State Prospecting Site Poly data',
+        'alaska_dnr_mineral_estate_state_prospecting_site_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateMunicipalEntitlementPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateMunicipalEntitlementPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_municipal_entitlement_poly_count': 0,
+          'alaska_dnr_mineral_estate_municipal_entitlement_poly_summary': 'No Municipal Entitlement Polygons found',
+          'alaska_dnr_mineral_estate_municipal_entitlement_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_municipal_entitlement_poly_count': features.length,
+        'alaska_dnr_mineral_estate_municipal_entitlement_poly_summary': summary,
+        'alaska_dnr_mineral_estate_municipal_entitlement_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Municipal Entitlement Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_municipal_entitlement_poly_count': 0,
+        'alaska_dnr_mineral_estate_municipal_entitlement_poly_summary': 'Error fetching Municipal Entitlement Poly data',
+        'alaska_dnr_mineral_estate_municipal_entitlement_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateStateSelectedLandMELine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateStateSelectedLandMELineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_state_selected_land_me_line_count': 0,
+          'alaska_dnr_mineral_estate_state_selected_land_me_line_summary': 'No State Selected Land ME Lines found within the specified radius',
+          'alaska_dnr_mineral_estate_state_selected_land_me_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_state_selected_land_me_line_count': features.length,
+        'alaska_dnr_mineral_estate_state_selected_land_me_line_summary': `Found ${features.length} State Selected Land ME Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_state_selected_land_me_line_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate State Selected Land ME Line data:', error);
+      return {
+        'alaska_dnr_mineral_estate_state_selected_land_me_line_count': 0,
+        'alaska_dnr_mineral_estate_state_selected_land_me_line_summary': 'Error fetching State Selected Land ME Line data',
+        'alaska_dnr_mineral_estate_state_selected_land_me_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateStateSelectedOrANILCATopfiledLandMEPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateStateSelectedOrANILCATopfiledLandMEPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly_count': 0,
+          'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly_summary': 'No State Selected or ANILCA Topfiled Land ME Polygons found',
+          'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly_count': features.length,
+        'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly_summary': summary,
+        'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate State Selected or ANILCA Topfiled Land ME Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly_count': 0,
+        'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly_summary': 'Error fetching State Selected or ANILCA Topfiled Land ME Poly data',
+        'alaska_dnr_mineral_estate_state_selected_or_anilca_topfiled_land_me_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateStateTAPatentedMELine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateStateTAPatentedMELineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_state_ta_patented_me_line_count': 0,
+          'alaska_dnr_mineral_estate_state_ta_patented_me_line_summary': 'No State TA Patented ME Lines found within the specified radius',
+          'alaska_dnr_mineral_estate_state_ta_patented_me_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_state_ta_patented_me_line_count': features.length,
+        'alaska_dnr_mineral_estate_state_ta_patented_me_line_summary': `Found ${features.length} State TA Patented ME Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_state_ta_patented_me_line_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate State TA Patented ME Line data:', error);
+      return {
+        'alaska_dnr_mineral_estate_state_ta_patented_me_line_count': 0,
+        'alaska_dnr_mineral_estate_state_ta_patented_me_line_summary': 'Error fetching State TA Patented ME Line data',
+        'alaska_dnr_mineral_estate_state_ta_patented_me_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateStateTAPatentedMEPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateStateTAPatentedMEPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_state_ta_patented_me_poly_count': 0,
+          'alaska_dnr_mineral_estate_state_ta_patented_me_poly_summary': 'No State TA Patented ME Polygons found',
+          'alaska_dnr_mineral_estate_state_ta_patented_me_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_state_ta_patented_me_poly_count': features.length,
+        'alaska_dnr_mineral_estate_state_ta_patented_me_poly_summary': summary,
+        'alaska_dnr_mineral_estate_state_ta_patented_me_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate State TA Patented ME Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_state_ta_patented_me_poly_count': 0,
+        'alaska_dnr_mineral_estate_state_ta_patented_me_poly_summary': 'Error fetching State TA Patented ME Poly data',
+        'alaska_dnr_mineral_estate_state_ta_patented_me_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateSurveyBoundaryPt(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateSurveyBoundaryPtData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_survey_boundary_pt_count': 0,
+          'alaska_dnr_mineral_estate_survey_boundary_pt_summary': 'No Survey Boundary Points found within the specified radius',
+          'alaska_dnr_mineral_estate_survey_boundary_pt_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_survey_boundary_pt_count': features.length,
+        'alaska_dnr_mineral_estate_survey_boundary_pt_summary': `Found ${features.length} Survey Boundary Point${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_survey_boundary_pt_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Survey Boundary Pt data:', error);
+      return {
+        'alaska_dnr_mineral_estate_survey_boundary_pt_count': 0,
+        'alaska_dnr_mineral_estate_survey_boundary_pt_summary': 'Error fetching Survey Boundary Pt data',
+        'alaska_dnr_mineral_estate_survey_boundary_pt_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateSurveyBoundaryLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateSurveyBoundaryLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_survey_boundary_line_count': 0,
+          'alaska_dnr_mineral_estate_survey_boundary_line_summary': 'No Survey Boundary Lines found within the specified radius',
+          'alaska_dnr_mineral_estate_survey_boundary_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_survey_boundary_line_count': features.length,
+        'alaska_dnr_mineral_estate_survey_boundary_line_summary': `Found ${features.length} Survey Boundary Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_survey_boundary_line_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Survey Boundary Line data:', error);
+      return {
+        'alaska_dnr_mineral_estate_survey_boundary_line_count': 0,
+        'alaska_dnr_mineral_estate_survey_boundary_line_summary': 'Error fetching Survey Boundary Line data',
+        'alaska_dnr_mineral_estate_survey_boundary_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateSurveyBoundaryPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateSurveyBoundaryPolyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_survey_boundary_poly_count': 0,
+          'alaska_dnr_mineral_estate_survey_boundary_poly_summary': 'No Survey Boundary Polygons found',
+          'alaska_dnr_mineral_estate_survey_boundary_poly_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_survey_boundary_poly_count': features.length,
+        'alaska_dnr_mineral_estate_survey_boundary_poly_summary': summary,
+        'alaska_dnr_mineral_estate_survey_boundary_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Survey Boundary Poly data:', error);
+      return {
+        'alaska_dnr_mineral_estate_survey_boundary_poly_count': 0,
+        'alaska_dnr_mineral_estate_survey_boundary_poly_summary': 'Error fetching Survey Boundary Poly data',
+        'alaska_dnr_mineral_estate_survey_boundary_poly_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateRecordingDistrictBoundary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateRecordingDistrictBoundaryData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_recording_district_boundary_count': 0,
+          'alaska_dnr_mineral_estate_recording_district_boundary_summary': 'No Recording District Boundaries found',
+          'alaska_dnr_mineral_estate_recording_district_boundary_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_recording_district_boundary_count': features.length,
+        'alaska_dnr_mineral_estate_recording_district_boundary_summary': summary,
+        'alaska_dnr_mineral_estate_recording_district_boundary_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Recording District Boundary data:', error);
+      return {
+        'alaska_dnr_mineral_estate_recording_district_boundary_count': 0,
+        'alaska_dnr_mineral_estate_recording_district_boundary_summary': 'Error fetching Recording District Boundary data',
+        'alaska_dnr_mineral_estate_recording_district_boundary_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateWellSitePoint(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateWellSitePointData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_well_site_point_count': 0,
+          'alaska_dnr_mineral_estate_well_site_point_summary': 'No Well Site Points found within the specified radius',
+          'alaska_dnr_mineral_estate_well_site_point_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_well_site_point_count': features.length,
+        'alaska_dnr_mineral_estate_well_site_point_summary': `Found ${features.length} Well Site Point${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_mineral_estate_well_site_point_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Well Site Point data:', error);
+      return {
+        'alaska_dnr_mineral_estate_well_site_point_count': 0,
+        'alaska_dnr_mineral_estate_well_site_point_summary': 'Error fetching Well Site Point data',
+        'alaska_dnr_mineral_estate_well_site_point_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateDCCEDCRABoroughBoundary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateDCCEDCRABoroughBoundaryData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_count': 0,
+          'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_summary': 'No DCCED CRA Borough Boundaries found',
+          'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_count': features.length,
+        'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_summary': summary,
+        'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate DCCED CRA Borough Boundary data:', error);
+      return {
+        'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_count': 0,
+        'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_summary': 'Error fetching DCCED CRA Borough Boundary data',
+        'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMineralEstateTownship(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMineralEstateTownshipData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mineral_estate_township_count': 0,
+          'alaska_dnr_mineral_estate_township_summary': 'No Townships found',
+          'alaska_dnr_mineral_estate_township_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mineral_estate_township_count': features.length,
+        'alaska_dnr_mineral_estate_township_summary': summary,
+        'alaska_dnr_mineral_estate_township_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Mineral Estate Township data:', error);
+      return {
+        'alaska_dnr_mineral_estate_township_count': 0,
+        'alaska_dnr_mineral_estate_township_summary': 'Error fetching Township data',
+        'alaska_dnr_mineral_estate_township_all': []
+      };
     }
   }
 

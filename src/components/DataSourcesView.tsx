@@ -3664,6 +3664,270 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/8"
         },
         {
+          name: "Alaska DNR - Mineral Estate Agreement Settlement Recon Point",
+          description: "Alaska Department of Natural Resources - Mineral Estate Agreement Settlement Recon Point (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/11"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Agreement Settlement Recon Line",
+          description: "Alaska Department of Natural Resources - Mineral Estate Agreement Settlement Recon Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/5"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Agreement Settlement Recon Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Agreement Settlement Recon Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/22"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Federal Action Line",
+          description: "Alaska Department of Natural Resources - Mineral Estate Federal Action Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/6"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Federal Action Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Federal Action Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/20"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Leasehold Location Line",
+          description: "Alaska Department of Natural Resources - Mineral Estate Leasehold Location Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/3"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Leasehold Location Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Leasehold Location Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/17"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Management Agreement Line",
+          description: "Alaska Department of Natural Resources - Mineral Estate Management Agreement Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/2"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Management Agreement Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Management Agreement Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/9"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Mental Health Trust Land Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Mental Health Trust Land Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/19"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Mineral Order Line",
+          description: "Alaska Department of Natural Resources - Mineral Estate Mineral Order Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/4"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Mineral Order Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Mineral Order Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/16"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate State Interest Native Allotment Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate State Interest Native Allotment Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/21"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Oil and Gas Lease Sale Tract Current",
+          description: "Alaska Department of Natural Resources - Mineral Estate Oil and Gas Lease Sale Tract Current (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/18"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Other State Acquired ME Line",
+          description: "Alaska Department of Natural Resources - Mineral Estate Other State Acquired ME Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/8"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Other State Acquired ME Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Other State Acquired ME Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/23"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Permit Lease ME Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Permit Lease ME Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/10"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate State Mining Claim Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate State Mining Claim Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/112"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate State Mining Claim Pending Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate State Mining Claim Pending Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/13"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate State Mining Claim Closed Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate State Mining Claim Closed Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/14"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate State Prospecting Site Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate State Prospecting Site Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/111"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Municipal Entitlement Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Municipal Entitlement Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/113"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate State Selected Land ME Line",
+          description: "Alaska Department of Natural Resources - Mineral Estate State Selected Land ME Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/114"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate State Selected or ANILCA Topfiled Land ME Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate State Selected or ANILCA Topfiled Land ME Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/1"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate State TA Patented ME Line",
+          description: "Alaska Department of Natural Resources - Mineral Estate State TA Patented ME Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/7"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate State TA Patented ME Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate State TA Patented ME Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/24"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Survey Boundary Pt",
+          description: "Alaska Department of Natural Resources - Mineral Estate Survey Boundary Pt (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/51"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Survey Boundary Line",
+          description: "Alaska Department of Natural Resources - Mineral Estate Survey Boundary Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/50"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Survey Boundary Poly",
+          description: "Alaska Department of Natural Resources - Mineral Estate Survey Boundary Poly (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/49"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Recording District Boundary",
+          description: "Alaska Department of Natural Resources - Mineral Estate Recording District Boundary (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/25"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Well Site Point",
+          description: "Alaska Department of Natural Resources - Mineral Estate Well Site Point (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/12"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate DCCED CRA Borough Boundary",
+          description: "Alaska Department of Natural Resources - Mineral Estate DCCED CRA Borough Boundary (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/26"
+        },
+        {
+          name: "Alaska DNR - Mineral Estate Township",
+          description: "Alaska Department of Natural Resources - Mineral Estate Township (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/45"
+        },
+        {
           name: "Alaska DNR - Shore Fishery Leases (Line)",
           description: "Alaska Department of Natural Resources - Shore Fishery Leases Line (proximity queries up to 100 miles)",
           coverage: "Alaska",
