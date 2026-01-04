@@ -148,6 +148,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [enrichmentCategories, setEnrichmentCategories] = useState<EnrichmentCategory[]>([]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
+  const [categorySearchQuery, setCategorySearchQuery] = useState<string>('');
   const [viewingNHSubCategories, setViewingNHSubCategories] = useState(false);
   const [viewingMASubCategories, setViewingMASubCategories] = useState(false);
   const [viewingCTSubCategories, setViewingCTSubCategories] = useState(false);
@@ -1305,6 +1306,29 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     };
   }, []);
 
+  // Filter categories based on search query
+  const filteredCategories = useMemo(() => {
+    if (!categorySearchQuery.trim()) {
+      return enrichmentCategories;
+    }
+
+    const searchLower = categorySearchQuery.toLowerCase().trim();
+    return enrichmentCategories.filter(category => {
+      const titleMatch = category.title.toLowerCase().includes(searchLower);
+      const descriptionMatch = category.description.toLowerCase().includes(searchLower);
+      const idMatch = category.id.toLowerCase().includes(searchLower);
+      
+      // Also check sub-categories if they exist
+      const subCategoryMatch = category.subCategories?.some(subCat => 
+        subCat.title.toLowerCase().includes(searchLower) ||
+        subCat.description.toLowerCase().includes(searchLower) ||
+        subCat.id.toLowerCase().includes(searchLower)
+      );
+
+      return titleMatch || descriptionMatch || idMatch || subCategoryMatch;
+    });
+  }, [enrichmentCategories, categorySearchQuery]);
+
   // Calculate total count of all open data layers dynamically
   // Includes both queryable enrichment layers and visual basemap layers
   const totalLayersCount = useMemo(() => {
@@ -1557,25 +1581,48 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 </div>
               </div>
               
-              {/* Reset All Filters Button */}
-              <div className="flex flex-col sm:flex-row gap-2 w-full">
-                <button
-                  onClick={handleResetAllFilters}
-                  className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
-                  title="Reset all selected enrichments and radii to defaults"
-                >
-                  <span className="w-4 h-4">🔄</span>
-                  <span className="whitespace-nowrap">Reset All Filters</span>
-                </button>
-                
-                <button
-                  onClick={handleResetApp}
-                  className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
-                  title="Clear browser cache and refresh application to ensure latest code"
-                >
-                  <span className="w-4 h-4">🔄</span>
-                  <span className="whitespace-nowrap">Reset App</span>
-                </button>
+              {/* Reset All Filters Button and Category Search */}
+              <div className="flex flex-col gap-2 w-full">
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                  <button
+                    onClick={handleResetAllFilters}
+                    className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
+                    title="Reset all selected enrichments and radii to defaults"
+                  >
+                    <span className="w-4 h-4">🔄</span>
+                    <span className="whitespace-nowrap">Reset All Filters</span>
+                  </button>
+                  
+                  <button
+                    onClick={handleResetApp}
+                    className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
+                    title="Clear browser cache and refresh application to ensure latest code"
+                  >
+                    <span className="w-4 h-4">🔄</span>
+                    <span className="whitespace-nowrap">Reset App</span>
+                  </button>
+                </div>
+
+                {/* Category Search Bar */}
+                <div className="relative w-full">
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search categories..."
+                    value={categorySearchQuery}
+                    onChange={(e) => setCategorySearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2 text-sm bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent"
+                    style={{ backdropFilter: 'blur(10px)' }}
+                  />
+                  {categorySearchQuery && (
+                    <button
+                      onClick={() => setCategorySearchQuery('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1584,7 +1631,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             {/* Custom Icon Category Button Grid - 2 Column Layout */}
             <div className="mb-6 w-full px-4">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto">
-                {enrichmentCategories.map((category) => {
+                {filteredCategories.map((category) => {
                   // Debug EU category
                   if (category.id === 'eu') {
                     console.log('🔍 [EU DEBUG] EU category in map:', {
@@ -3898,26 +3945,49 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               </div>
             </div>
             
-            {/* Reset All Filters Button */}
-            <div className="flex flex-col sm:flex-row gap-2 w-full">
-                        <button
-                onClick={handleResetAllFilters}
-                className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
-                title="Reset all selected enrichments and radii to defaults"
-              >
-                <span className="w-4 h-4">🔄</span>
-                <span className="whitespace-nowrap">Reset All Filters</span>
-              </button>
-              
-              <button
-                onClick={handleResetApp}
-                className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
-                title="Clear browser cache and refresh application to ensure latest code"
-                        >
-                <span className="w-4 h-4">🔄</span>
-                <span className="whitespace-nowrap">Reset App</span>
-                        </button>
-                      </div>
+            {/* Reset All Filters Button and Category Search */}
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
+                <button
+                  onClick={handleResetAllFilters}
+                  className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
+                  title="Reset all selected enrichments and radii to defaults"
+                >
+                  <span className="w-4 h-4">🔄</span>
+                  <span className="whitespace-nowrap">Reset All Filters</span>
+                </button>
+                
+                <button
+                  onClick={handleResetApp}
+                  className="btn btn-outline flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
+                  title="Clear browser cache and refresh application to ensure latest code"
+                >
+                  <span className="w-4 h-4">🔄</span>
+                  <span className="whitespace-nowrap">Reset App</span>
+                </button>
+              </div>
+
+              {/* Category Search Bar */}
+              <div className="relative w-full">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search categories..."
+                  value={categorySearchQuery}
+                  onChange={(e) => setCategorySearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2 text-sm bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent"
+                  style={{ backdropFilter: 'blur(10px)' }}
+                />
+                {categorySearchQuery && (
+                  <button
+                    onClick={() => setCategorySearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
               </div>
             </div>
         
@@ -3925,7 +3995,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           {/* Custom Icon Category Button Grid - Desktop */}
           <div className="mb-6 w-full px-2 sm:px-4 overflow-hidden">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-12 max-w-lg mx-auto w-full justify-items-center">
-              {enrichmentCategories.map((category) => {
+              {filteredCategories.map((category) => {
                 const categoryEnrichments = category.enrichments;
                 // For NH, MA, and other states, count sub-category enrichments too
                 const stateSubCategoryEnrichments = (category.id === 'nh' || category.id === 'ma' || category.id === 'ri' || category.id === 'ct' || category.id === 'ny' || category.id === 'vt' || category.id === 'me' || category.id === 'nj' || category.id === 'pa' || category.id === 'de' || category.id === 'il' || category.id === 'tx' || category.id === 'eu' || category.id === 'canada' || category.id === 'uk' || category.id === 'australia' || category.id === 'newzealand') && category.subCategories
