@@ -773,6 +773,26 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://geoportal.alaska.gov/arcgis/rest/services/Alaska_IFSAR_DSM/ImageServer/exportImage',
     exportImageRasterFunction: 'Hillshade', // Use Hillshade for better elevation visualization
   },
+  // Alaska SPOT5 Orthoimagery (CIR - Color Infrared)
+  // WMS service - visualization only, not queryable
+  alaska_spot5_2013_cir_cache: {
+    type: 'wms',
+    name: 'Alaska SPOT5 Orthoimagery (CIR)',
+    attribution: 'Alaska Geospatial Office',
+    wmsUrl: 'https://geoportal.alaska.gov/arcgis/services/spot5_2013_cir_cache/MapServer/WMSServer',
+    wmsLayers: '0', // Use layer 0 for the orthoimagery
+    wmsFormat: 'image/png',
+  },
+  // Alaska SPOT5 Orthoimagery (PAN - Panchromatic)
+  // WMS service - visualization only, not queryable
+  alaska_spot5_2013_pan_cache: {
+    type: 'wms',
+    name: 'Alaska SPOT5 Orthoimagery (PAN)',
+    attribution: 'Alaska Geospatial Office',
+    wmsUrl: 'https://geoportal.alaska.gov/arcgis/services/spot5_2013_pan_cache/MapServer/WMSServer',
+    wmsLayers: '0', // Use layer 0 for the orthoimagery
+    wmsFormat: 'image/png',
+  },
   // Alaska IFSAR DTM (Digital Terrain Model)
   // ImageServer service - visualization only, not queryable
   // Note: Using ExportImage endpoint since Single Fused Map Cache: false
