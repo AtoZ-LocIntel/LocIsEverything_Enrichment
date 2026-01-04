@@ -1168,3 +1168,744 @@ export async function getAlaskaDNRDCCEDCRABoroughBoundaryData(
   );
 }
 
+/**
+ * Query Alaska DNR Mapper Land Estate Layers
+ */
+// Point layers
+export async function getAlaskaDNRAgreementSettlementReconveyPtData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    2,
+    'Agreement Settlement Reconvey Pt',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRRestrictedUseAuthorizationPtData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    36,
+    'Restricted Use Authorization Pt',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRPotentialHazardousSitesPtData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    33,
+    'Potential Hazardous Sites Pt',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRTrespassPtData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    41,
+    'Trespass Pt',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRPermitLeaseLEPtData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    6,
+    'Permit Lease LE Pt',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNREasementPtData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    3,
+    'Easement Pt',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandDisposalOtherPtData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    4,
+    'Land Disposal Other Pt',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandEstateSurveyBoundaryPtData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    51,
+    'Survey Boundary Pt',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+// Polyline layers
+export async function getAlaskaDNRLandEstateSimpleCoastlineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    1,
+    'Simple Coastline',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRAgreementSettlementReconveyLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    42,
+    'Agreement Settlement Reconvey Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRRestrictedUseAuthorizationLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    37,
+    'Restricted Use Authorization Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRPotentialHazardousSitesLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    34,
+    'Potential Hazardous Sites Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRTrespassLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    40,
+    'Trespass Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRPermitLeaseLELineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    13,
+    'Permit Lease LE Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNREasementLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    12,
+    'Easement Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRResourceSaleLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    14,
+    'Resource Sale Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRFederalActionLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    7,
+    'Federal Action Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandDisposalAvailableLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    43,
+    'Land Disposal Available Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandDisposalConveyedLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    9,
+    'Land Disposal Conveyed Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandDisposalOtherLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    44,
+    'Land Disposal Other Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRManagementAgreementLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    10,
+    'Management Agreement Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNROtherStateAcquiredLELineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    8,
+    'Other State Acquired LE Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRS2477LineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    52,
+    'RS2477 - Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRStateSelectedLandLELineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    53,
+    'State Selected Land LE Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRStateTAPatentedLELineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    15,
+    'State TA Patented LE Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandEstateSurveyBoundaryLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    50,
+    'Survey Boundary Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+// Polygon layers
+export async function getAlaskaDNRLandEstateSectionData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    46,
+    'Section',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRAgreementSettlementReconPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    17,
+    'Agreement Settlement Recon Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRRestrictedUseAuthorizationPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    38,
+    'Restricted Use Authorization Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRPotentialHazardousSitesPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    35,
+    'Potential Hazardous Sites Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRTrespassPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    39,
+    'Trespass Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRPermitLeaseLEPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    28,
+    'Permit Lease LE Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNREasementPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    26,
+    'Easement Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRResourceSalePolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    29,
+    'Resource Sale Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRFederalActionPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    16,
+    'Federal Action Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandDisposalAvailablePolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    18,
+    'Land Disposal Available Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandDisposalConveyedPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    19,
+    'Land Disposal Conveyed Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandDisposalOtherPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    20,
+    'Land Disposal Other Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRManagementAgreementPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    21,
+    'Management Agreement Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRMentalHealthTrustLandPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    22,
+    'Mental Health Trust Land Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRMunicipalEntitlementPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    23,
+    'Municipal Entitlement Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRMunicipalTidelandPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    24,
+    'Municipal Tideland Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRStateInterestNativeAllotmentPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    25,
+    'State Interest Native Allotment Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNROtherStateAcquiredLEPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    30,
+    'Other State Acquired LE Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRStateSelectedOrANILCATopfiledLandLEPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    31,
+    'State Selected or ANILCA Topfiled Land LE Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRStateTAPatentedLEPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    32,
+    'State TA, Patented, LE Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandEstateSurveyBoundaryPolyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    49,
+    'Survey Boundary Poly',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandEstateRecordingDistrictBoundaryData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    48,
+    'Recording District Boundary',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+export async function getAlaskaDNRLandEstateTownshipData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer',
+    45,
+    'Township',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+

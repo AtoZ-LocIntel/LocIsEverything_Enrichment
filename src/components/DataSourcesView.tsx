@@ -3872,6 +3872,398 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/26"
         },
         {
+          name: "Alaska DNR - Simple Coastline (Land Estate)",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Simple Coastline (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/1"
+        },
+        {
+          name: "Alaska DNR - Section (Land Estate)",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Section (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/46"
+        },
+        {
+          name: "Alaska DNR - Agreement Settlement Reconvey Pt",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Agreement Settlement Reconvey Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/2"
+        },
+        {
+          name: "Alaska DNR - Agreement Settlement Reconvey Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Agreement Settlement Reconvey Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/42"
+        },
+        {
+          name: "Alaska DNR - Agreement Settlement Recon Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Agreement Settlement Recon Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/17"
+        },
+        {
+          name: "Alaska DNR - Restricted Use Authorization Pt",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Restricted Use Authorization Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/36"
+        },
+        {
+          name: "Alaska DNR - Restricted Use Authorization Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Restricted Use Authorization Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/37"
+        },
+        {
+          name: "Alaska DNR - Restricted Use Authorization Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Restricted Use Authorization Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/38"
+        },
+        {
+          name: "Alaska DNR - Potential Hazardous Sites Pt",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Potential Hazardous Sites Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/33"
+        },
+        {
+          name: "Alaska DNR - Potential Hazardous Sites Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Potential Hazardous Sites Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/34"
+        },
+        {
+          name: "Alaska DNR - Potential Hazardous Sites Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Potential Hazardous Sites Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/35"
+        },
+        {
+          name: "Alaska DNR - Trespass Pt",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Trespass Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/41"
+        },
+        {
+          name: "Alaska DNR - Trespass Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Trespass Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/40"
+        },
+        {
+          name: "Alaska DNR - Trespass Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Trespass Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/39"
+        },
+        {
+          name: "Alaska DNR - Permit Lease LE Pt",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Permit Lease LE Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/6"
+        },
+        {
+          name: "Alaska DNR - Permit Lease LE Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Permit Lease LE Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/13"
+        },
+        {
+          name: "Alaska DNR - Permit Lease LE Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Permit Lease LE Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/28"
+        },
+        {
+          name: "Alaska DNR - Easement Pt",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Easement Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/3"
+        },
+        {
+          name: "Alaska DNR - Easement Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Easement Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/12"
+        },
+        {
+          name: "Alaska DNR - Easement Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Easement Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/26"
+        },
+        {
+          name: "Alaska DNR - Resource Sale Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Resource Sale Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/14"
+        },
+        {
+          name: "Alaska DNR - Resource Sale Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Resource Sale Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/29"
+        },
+        {
+          name: "Alaska DNR - Federal Action Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Federal Action Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/7"
+        },
+        {
+          name: "Alaska DNR - Federal Action Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Federal Action Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/16"
+        },
+        {
+          name: "Alaska DNR - Land Disposal Available Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Land Disposal Available Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/43"
+        },
+        {
+          name: "Alaska DNR - Land Disposal Available Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Land Disposal Available Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/18"
+        },
+        {
+          name: "Alaska DNR - Land Disposal Conveyed Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Land Disposal Conveyed Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/9"
+        },
+        {
+          name: "Alaska DNR - Land Disposal Conveyed Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Land Disposal Conveyed Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/19"
+        },
+        {
+          name: "Alaska DNR - Land Disposal Other Pt",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Land Disposal Other Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/4"
+        },
+        {
+          name: "Alaska DNR - Land Disposal Other Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Land Disposal Other Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/44"
+        },
+        {
+          name: "Alaska DNR - Land Disposal Other Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Land Disposal Other Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/20"
+        },
+        {
+          name: "Alaska DNR - Management Agreement Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Management Agreement Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/10"
+        },
+        {
+          name: "Alaska DNR - Management Agreement Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Management Agreement Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/21"
+        },
+        {
+          name: "Alaska DNR - Mental Health Trust Land Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Mental Health Trust Land Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/22"
+        },
+        {
+          name: "Alaska DNR - Municipal Entitlement Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Municipal Entitlement Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/23"
+        },
+        {
+          name: "Alaska DNR - Municipal Tideland Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Municipal Tideland Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/24"
+        },
+        {
+          name: "Alaska DNR - State Interest Native Allotment Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - State Interest Native Allotment Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/25"
+        },
+        {
+          name: "Alaska DNR - Other State Acquired LE Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Other State Acquired LE Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/8"
+        },
+        {
+          name: "Alaska DNR - Other State Acquired LE Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Other State Acquired LE Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/30"
+        },
+        {
+          name: "Alaska DNR - RS2477 - Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - RS2477 Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/52"
+        },
+        {
+          name: "Alaska DNR - State Selected Land LE Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - State Selected Land LE Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/53"
+        },
+        {
+          name: "Alaska DNR - State Selected or ANILCA Topfiled Land LE Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - State Selected or ANILCA Topfiled Land LE Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/31"
+        },
+        {
+          name: "Alaska DNR - State TA Patented LE Line",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - State TA Patented LE Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/15"
+        },
+        {
+          name: "Alaska DNR - State TA, Patented, LE Poly",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - State TA, Patented, LE Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/32"
+        },
+        {
+          name: "Alaska DNR - Survey Boundary Pt (Land Estate)",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Survey Boundary Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/51"
+        },
+        {
+          name: "Alaska DNR - Survey Boundary Line (Land Estate)",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Survey Boundary Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/50"
+        },
+        {
+          name: "Alaska DNR - Survey Boundary Poly (Land Estate)",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Survey Boundary Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/49"
+        },
+        {
+          name: "Alaska DNR - Recording District Boundary (Land Estate)",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Recording District Boundary (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/48"
+        },
+        {
+          name: "Alaska DNR - Township (Land Estate)",
+          description: "Alaska Department of Natural Resources Mapper Land Estate Layers - Township (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Land_Estate_Layers/MapServer/45"
+        },
+        {
           name: "Boston Parcels 2023",
           description: "Boston Open Data - Parcel polygons for FY23 (point-in-polygon and proximity queries up to 0.25 miles)",
           coverage: "Boston, Massachusetts",
