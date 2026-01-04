@@ -3512,6 +3512,366 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/LandActivity_WellSite/MapServer/0"
         },
         {
+          name: "Alaska DNR - Oil and Gas Lease Sale Tract",
+          description: "Alaska Department of Natural Resources - Oil and Gas Lease Sale Tract (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/MineralActivity_OGLeaseSaleTract/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - State Park Roads",
+          description: "Alaska Department of Natural Resources - State Park Roads (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Recreational_ParkBoundary/MapServer/3"
+        },
+        {
+          name: "Alaska DNR - State Park Trails",
+          description: "Alaska Department of Natural Resources - State Park Trails (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Recreational_ParkBoundary/MapServer/1"
+        },
+        {
+          name: "Alaska DNR - State Park Boundaries",
+          description: "Alaska Department of Natural Resources - State Park Boundaries (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Recreational_ParkBoundary/MapServer/2"
+        },
+        {
+          name: "Alaska DNR - State Park Facilities",
+          description: "Alaska Department of Natural Resources - State Park Facilities (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Recreational_ParkBoundary/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - Controlled Livestock Districts",
+          description: "Alaska Department of Natural Resources - Controlled Livestock Districts (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/AG/Controlled_Livestock_District/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - Land Capacity Classification",
+          description: "Alaska Department of Natural Resources - Land Capacity Classification (point-in-polygon and proximity queries up to 10 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/AG/Land_Capability_Classification/FeatureServer/0"
+        },
+        {
+          name: "Alaska DNR - Shore Fishery Leases",
+          description: "Alaska Department of Natural Resources - Shore Fishery Leases (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/AquaticFarmLeases/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - Aquatic Farm Leases",
+          description: "Alaska Department of Natural Resources - Aquatic Farm Leases (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/AquaticFarmLeases/MapServer/1"
+        },
+        {
+          name: "Alaska DNR - WELTS (Well Log Tracking System)",
+          description: "Alaska Department of Natural Resources - WELTS Well Log Tracking System (proximity queries up to 25 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/welts/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - PLSS Section",
+          description: "Alaska Department of Natural Resources - PLSS Section (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - PLSS Township",
+          description: "Alaska Department of Natural Resources - PLSS Township (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/1"
+        },
+        {
+          name: "Alaska DNR - Surface Water Right Location",
+          description: "Alaska Department of Natural Resources - Surface Water Right Location (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/2"
+        },
+        {
+          name: "Alaska DNR - SubSurface Water Right Location",
+          description: "Alaska Department of Natural Resources - SubSurface Water Right Location (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/3"
+        },
+        {
+          name: "Alaska DNR - Surface Water Rights",
+          description: "Alaska Department of Natural Resources - Surface Water Rights (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/4"
+        },
+        {
+          name: "Alaska DNR - SubSurface Water Rights",
+          description: "Alaska Department of Natural Resources - SubSurface Water Rights (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/5"
+        },
+        {
+          name: "Alaska DNR - Instream Flow Water Reservations (Point)",
+          description: "Alaska Department of Natural Resources - Instream Flow Water Reservations Point (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/6"
+        },
+        {
+          name: "Alaska DNR - Instream Flow Water Reservations (Line)",
+          description: "Alaska Department of Natural Resources - Instream Flow Water Reservations Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/7"
+        },
+        {
+          name: "Alaska DNR - Instream Flow Water Reservations (Polygon)",
+          description: "Alaska Department of Natural Resources - Instream Flow Water Reservations Polygon (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/8"
+        },
+        {
+          name: "Alaska DNR - Shore Fishery Leases (Line)",
+          description: "Alaska Department of Natural Resources - Shore Fishery Leases Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/9"
+        },
+        {
+          name: "Alaska DNR - Shore Fishery Leases (Polygon)",
+          description: "Alaska Department of Natural Resources - Shore Fishery Leases Polygon (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/10"
+        },
+        {
+          name: "Alaska DNR - Aquatic Farm Leases (WaterEstate)",
+          description: "Alaska Department of Natural Resources - Aquatic Farm Leases (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/11"
+        },
+        {
+          name: "Alaska DNR - Lease Line",
+          description: "Alaska Department of Natural Resources - Lease Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/12"
+        },
+        {
+          name: "Alaska DNR - Lease Area",
+          description: "Alaska Department of Natural Resources - Lease Area (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DEC/DEC_WaterEstate/MapServer/13"
+        },
+        {
+          name: "Alaska DNR - Hatcher's Pass Plan Boundary",
+          description: "Alaska Department of Natural Resources - Hatcher's Pass Plan Boundary (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DPOR/HP_MotorizedClosures/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - Hatcher's Pass Non-motorized Summer",
+          description: "Alaska Department of Natural Resources - Hatcher's Pass Non-motorized Summer (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DPOR/HP_MotorizedClosures/MapServer/1"
+        },
+        {
+          name: "Alaska DNR - Hatcher's Pass Non-motorized Year-round",
+          description: "Alaska Department of Natural Resources - Hatcher's Pass Non-motorized Year-round (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/DPOR/HP_MotorizedClosures/MapServer/2"
+        },
+        {
+          name: "Alaska DNR - Simple Coastline",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Simple Coastline (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - Section",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Section (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/22"
+        },
+        {
+          name: "Alaska DNR - National Geodetic Survey Pt",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - National Geodetic Survey Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/1"
+        },
+        {
+          name: "Alaska DNR - State Control Monuments",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - State Control Monuments (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/2"
+        },
+        {
+          name: "Alaska DNR - BLM Monuments GCDB",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - BLM Monuments GCDB (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/5"
+        },
+        {
+          name: "Alaska DNR - BLM Monuments SDMS",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - BLM Monuments SDMS (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/6"
+        },
+        {
+          name: "Alaska DNR - Survey Lot Poly",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Survey Lot Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/16"
+        },
+        {
+          name: "Alaska DNR - Survey Tract Line",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Survey Tract Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/28"
+        },
+        {
+          name: "Alaska DNR - Survey Tract Poly",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Survey Tract Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/18"
+        },
+        {
+          name: "Alaska DNR - Survey Block Line",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Survey Block Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/30"
+        },
+        {
+          name: "Alaska DNR - Survey Block Poly",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Survey Block Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/17"
+        },
+        {
+          name: "Alaska DNR - Survey Boundary Pt",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Survey Boundary Points (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/4"
+        },
+        {
+          name: "Alaska DNR - Survey Boundary Line",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Survey Boundary Lines (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/20"
+        },
+        {
+          name: "Alaska DNR - Survey Boundary Poly",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Survey Boundary Polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/19"
+        },
+        {
+          name: "Alaska DNR - Township",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Township (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/23"
+        },
+        {
+          name: "Alaska DNR - Incorporated City Boundary",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Incorporated City Boundary (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/24"
+        },
+        {
+          name: "Alaska DNR - Recording District Boundary",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - Recording District Boundary (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/25"
+        },
+        {
+          name: "Alaska DNR - DCCED CRA Borough Boundary",
+          description: "Alaska Department of Natural Resources Mapper Base Layers - DCCED CRA Borough Boundary (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Base_Layers/MapServer/26"
+        },
+        {
           name: "Boston Parcels 2023",
           description: "Boston Open Data - Parcel polygons for FY23 (point-in-polygon and proximity queries up to 0.25 miles)",
           coverage: "Boston, Massachusetts",

@@ -257,7 +257,7 @@ import {
   getBostonDOITMBTARapidTransitData,
   getBostonDOITRailData,
 } from '../adapters/bostonOpenData';
-import { getAlaskaDNRTransAlaskaPipelineData, getAlaskaDNRWellSitesData } from '../adapters/alaskaDNR';
+import { getAlaskaDNRTransAlaskaPipelineData, getAlaskaDNRWellSitesData, getAlaskaDNROilGasLeaseSaleTractData, getAlaskaDNRStateParkRoadsData, getAlaskaDNRStateParkTrailsData, getAlaskaDNRStateParkBoundariesData, getAlaskaDNRStateParkFacilitiesData, getAlaskaDNRControlledLivestockDistrictsData, getAlaskaDNRLandCapacityClassificationData, getAlaskaDNRShoreFisheryLeasesData, getAlaskaDNRAquaticFarmLeasesData, getAlaskaDNRWELTSData, getAlaskaDNRPLSSSectionData, getAlaskaDNRPLSSTownshipData, getAlaskaDNRSurfaceWaterRightLocationData, getAlaskaDNRSubSurfaceWaterRightLocationData, getAlaskaDNRSurfaceWaterRightsData, getAlaskaDNRSubSurfaceWaterRightsData, getAlaskaDNRInstreamFlowWaterReservationsPointData, getAlaskaDNRInstreamFlowWaterReservationsLineData, getAlaskaDNRInstreamFlowWaterReservationsPolygonData, getAlaskaDNRShoreFisheryLeasesLineData, getAlaskaDNRShoreFisheryLeasesPolygonData, getAlaskaDNRAquaticFarmLeasesWaterEstateData, getAlaskaDNRLeaseLineData, getAlaskaDNRLeaseAreaData, getAlaskaDNRHattersPassPlanBoundaryData, getAlaskaDNRHattersPassNonMotorizedSummerData, getAlaskaDNRHattersPassNonMotorizedYearRoundData, getAlaskaDNRNationalGeodeticSurveyPtData, getAlaskaDNRStateControlMonumentsData, getAlaskaDNRBLMMonumentsGCDBData, getAlaskaDNRBLMMonumentsSDMSData, getAlaskaDNRSurveyBoundaryPtData, getAlaskaDNRSimpleCoastlineData, getAlaskaDNRSurveyTractLineData, getAlaskaDNRSurveyBlockLineData, getAlaskaDNRSurveyBoundaryLineData, getAlaskaDNRSectionData, getAlaskaDNRSurveyLotPolyData, getAlaskaDNRSurveyTractPolyData, getAlaskaDNRSurveyBlockPolyData, getAlaskaDNRSurveyBoundaryPolyData, getAlaskaDNRTownshipData, getAlaskaDNRIncorporatedCityBoundaryData, getAlaskaDNRRecordingDistrictBoundaryData, getAlaskaDNRDCCEDCRABoroughBoundaryData } from '../adapters/alaskaDNR';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
@@ -3076,6 +3076,120 @@ export class EnrichmentService {
         return await this.getAlaskaDNRTransAlaskaPipeline(lat, lon, radius);
       case 'alaska_dnr_well_sites':
         return await this.getAlaskaDNRWellSites(lat, lon, radius);
+      case 'alaska_dnr_oil_gas_lease_sale_tract':
+        return await this.getAlaskaDNROilGasLeaseSaleTract(lat, lon, radius);
+      case 'alaska_dnr_state_park_roads':
+        return await this.getAlaskaDNRStateParkRoads(lat, lon, radius);
+      case 'alaska_dnr_state_park_trails':
+        return await this.getAlaskaDNRStateParkTrails(lat, lon, radius);
+      case 'alaska_dnr_state_park_boundaries':
+        return await this.getAlaskaDNRStateParkBoundaries(lat, lon, radius);
+      case 'alaska_dnr_state_park_facilities':
+        return await this.getAlaskaDNRStateParkFacilities(lat, lon, radius);
+      case 'alaska_dnr_controlled_livestock_districts':
+        return await this.getAlaskaDNRControlledLivestockDistricts(lat, lon, radius);
+      case 'alaska_dnr_land_capacity_classification':
+        return await this.getAlaskaDNRLandCapacityClassification(lat, lon, radius);
+      case 'alaska_dnr_shore_fishery_leases':
+        return await this.getAlaskaDNRShoreFisheryLeases(lat, lon, radius);
+      case 'alaska_dnr_aquatic_farm_leases':
+        return await this.getAlaskaDNRAquaticFarmLeases(lat, lon, radius);
+      case 'alaska_dnr_welts':
+        return await this.getAlaskaDNRWELTS(lat, lon, radius);
+      case 'alaska_dnr_plss_section':
+        return await this.getAlaskaDNRPLSSSection(lat, lon, radius);
+      case 'alaska_dnr_plss_township':
+        return await this.getAlaskaDNRPLSSTownship(lat, lon, radius);
+      case 'alaska_dnr_surface_water_right_location':
+        return await this.getAlaskaDNRSurfaceWaterRightLocation(lat, lon, radius);
+      case 'alaska_dnr_subsurface_water_right_location':
+        return await this.getAlaskaDNRSubSurfaceWaterRightLocation(lat, lon, radius);
+      case 'alaska_dnr_surface_water_rights':
+        return await this.getAlaskaDNRSurfaceWaterRights(lat, lon, radius);
+      case 'alaska_dnr_subsurface_water_rights':
+        return await this.getAlaskaDNRSubSurfaceWaterRights(lat, lon, radius);
+      case 'alaska_dnr_instream_flow_water_reservations_point':
+        return await this.getAlaskaDNRInstreamFlowWaterReservationsPoint(lat, lon, radius);
+      case 'alaska_dnr_instream_flow_water_reservations_line':
+        return await this.getAlaskaDNRInstreamFlowWaterReservationsLine(lat, lon, radius);
+      case 'alaska_dnr_instream_flow_water_reservations_polygon':
+        return await this.getAlaskaDNRInstreamFlowWaterReservationsPolygon(lat, lon, radius);
+      case 'alaska_dnr_shore_fishery_leases_line':
+        return await this.getAlaskaDNRShoreFisheryLeasesLine(lat, lon, radius);
+      case 'alaska_dnr_shore_fishery_leases_polygon_waterestate':
+        return await this.getAlaskaDNRShoreFisheryLeasesPolygonWaterEstate(lat, lon, radius);
+      case 'alaska_dnr_aquatic_farm_leases_waterestate':
+        return await this.getAlaskaDNRAquaticFarmLeasesWaterEstate(lat, lon, radius);
+      case 'alaska_dnr_lease_line':
+        return await this.getAlaskaDNRLeaseLine(lat, lon, radius);
+      case 'alaska_dnr_lease_area':
+        return await this.getAlaskaDNRLeaseArea(lat, lon, radius);
+      
+      case 'alaska_dnr_hatchers_pass_plan_boundary':
+        return await this.getAlaskaDNRHattersPassPlanBoundary(lat, lon, radius);
+      
+      case 'alaska_dnr_hatchers_pass_non_motorized_summer':
+        return await this.getAlaskaDNRHattersPassNonMotorizedSummer(lat, lon, radius);
+      
+      case 'alaska_dnr_hatchers_pass_non_motorized_year_round':
+        return await this.getAlaskaDNRHattersPassNonMotorizedYearRound(lat, lon, radius);
+      
+      // Alaska DNR Mapper Base Layers - Point layers
+      case 'alaska_dnr_national_geodetic_survey_pt':
+        return await this.getAlaskaDNRNationalGeodeticSurveyPt(lat, lon, radius);
+      
+      case 'alaska_dnr_state_control_monuments':
+        return await this.getAlaskaDNRStateControlMonuments(lat, lon, radius);
+      
+      case 'alaska_dnr_blm_monuments_gcdb':
+        return await this.getAlaskaDNRBLMMonumentsGCDB(lat, lon, radius);
+      
+      case 'alaska_dnr_blm_monuments_sdms':
+        return await this.getAlaskaDNRBLMMonumentsSDMS(lat, lon, radius);
+      
+      case 'alaska_dnr_survey_boundary_pt':
+        return await this.getAlaskaDNRSurveyBoundaryPt(lat, lon, radius);
+      
+      // Alaska DNR Mapper Base Layers - Polyline layers
+      case 'alaska_dnr_simple_coastline':
+        return await this.getAlaskaDNRSimpleCoastline(lat, lon, radius);
+      
+      case 'alaska_dnr_survey_tract_line':
+        return await this.getAlaskaDNRSurveyTractLine(lat, lon, radius);
+      
+      case 'alaska_dnr_survey_block_line':
+        return await this.getAlaskaDNRSurveyBlockLine(lat, lon, radius);
+      
+      case 'alaska_dnr_survey_boundary_line':
+        return await this.getAlaskaDNRSurveyBoundaryLine(lat, lon, radius);
+      
+      // Alaska DNR Mapper Base Layers - Polygon layers
+      case 'alaska_dnr_section':
+        return await this.getAlaskaDNRSection(lat, lon, radius);
+      
+      case 'alaska_dnr_survey_lot_poly':
+        return await this.getAlaskaDNRSurveyLotPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_survey_tract_poly':
+        return await this.getAlaskaDNRSurveyTractPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_survey_block_poly':
+        return await this.getAlaskaDNRSurveyBlockPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_survey_boundary_poly':
+        return await this.getAlaskaDNRSurveyBoundaryPoly(lat, lon, radius);
+      
+      case 'alaska_dnr_township':
+        return await this.getAlaskaDNRTownship(lat, lon, radius);
+      
+      case 'alaska_dnr_incorporated_city_boundary':
+        return await this.getAlaskaDNRIncorporatedCityBoundary(lat, lon, radius);
+      
+      case 'alaska_dnr_recording_district_boundary':
+        return await this.getAlaskaDNRRecordingDistrictBoundary(lat, lon, radius);
+      
+      case 'alaska_dnr_dcced_cra_borough_boundary':
+        return await this.getAlaskaDNRDCCEDCRABoroughBoundary(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -31273,6 +31387,1218 @@ out center;`;
         'alaska_dnr_well_sites_summary': 'Error fetching Well Sites data',
         'alaska_dnr_well_sites_all': []
       };
+    }
+  }
+
+  private async getAlaskaDNROilGasLeaseSaleTract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNROilGasLeaseSaleTractData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_oil_gas_lease_sale_tract_count': 0,
+          'alaska_dnr_oil_gas_lease_sale_tract_summary': 'No Oil and Gas Lease Sale Tract features found within the specified radius',
+          'alaska_dnr_oil_gas_lease_sale_tract_all': []
+        };
+      }
+      
+      const containingCount = features.filter(f => f.isContaining === true).length;
+      const proximityCount = features.length - containingCount;
+      
+      let summary = '';
+      if (containingCount > 0 && proximityCount > 0) {
+        summary = `Found ${containingCount} containing tract${containingCount === 1 ? '' : 's'} and ${proximityCount} within ${radius || 100} miles`;
+      } else if (containingCount > 0) {
+        summary = `Found ${containingCount} containing tract${containingCount === 1 ? '' : 's'}`;
+      } else {
+        summary = `Found ${proximityCount} tract${proximityCount === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_oil_gas_lease_sale_tract_count': features.length,
+        'alaska_dnr_oil_gas_lease_sale_tract_summary': summary,
+        'alaska_dnr_oil_gas_lease_sale_tract_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Oil and Gas Lease Sale Tract data:', error);
+      return {
+        'alaska_dnr_oil_gas_lease_sale_tract_count': 0,
+        'alaska_dnr_oil_gas_lease_sale_tract_summary': 'Error fetching Oil and Gas Lease Sale Tract data',
+        'alaska_dnr_oil_gas_lease_sale_tract_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRStateParkRoads(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRStateParkRoadsData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_state_park_roads_count': 0,
+          'alaska_dnr_state_park_roads_summary': 'No State Park Roads found within the specified radius',
+          'alaska_dnr_state_park_roads_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_state_park_roads_count': features.length,
+        'alaska_dnr_state_park_roads_summary': `Found ${features.length} State Park Road${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_state_park_roads_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR State Park Roads data:', error);
+      return {
+        'alaska_dnr_state_park_roads_count': 0,
+        'alaska_dnr_state_park_roads_summary': 'Error fetching State Park Roads data',
+        'alaska_dnr_state_park_roads_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRStateParkTrails(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRStateParkTrailsData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_state_park_trails_count': 0,
+          'alaska_dnr_state_park_trails_summary': 'No State Park Trails found within the specified radius',
+          'alaska_dnr_state_park_trails_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_state_park_trails_count': features.length,
+        'alaska_dnr_state_park_trails_summary': `Found ${features.length} State Park Trail${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_state_park_trails_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR State Park Trails data:', error);
+      return {
+        'alaska_dnr_state_park_trails_count': 0,
+        'alaska_dnr_state_park_trails_summary': 'Error fetching State Park Trails data',
+        'alaska_dnr_state_park_trails_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRStateParkBoundaries(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRStateParkBoundariesData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_state_park_boundaries_count': 0,
+          'alaska_dnr_state_park_boundaries_summary': 'No State Park Boundaries found within the specified radius',
+          'alaska_dnr_state_park_boundaries_all': []
+        };
+      }
+      
+      // Separate containing and proximity features
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} State Park Boundar${containingFeatures.length === 1 ? 'y' : 'ies'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} State Park Boundar${containingFeatures.length === 1 ? 'y' : 'ies'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} State Park Boundar${proximityFeatures.length === 1 ? 'y' : 'ies'} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_state_park_boundaries_count': features.length,
+        'alaska_dnr_state_park_boundaries_summary': summary,
+        'alaska_dnr_state_park_boundaries_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR State Park Boundaries data:', error);
+      return {
+        'alaska_dnr_state_park_boundaries_count': 0,
+        'alaska_dnr_state_park_boundaries_summary': 'Error fetching State Park Boundaries data',
+        'alaska_dnr_state_park_boundaries_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRStateParkFacilities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRStateParkFacilitiesData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_state_park_facilities_count': 0,
+          'alaska_dnr_state_park_facilities_summary': 'No State Park Facilities found within the specified radius',
+          'alaska_dnr_state_park_facilities_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_state_park_facilities_count': features.length,
+        'alaska_dnr_state_park_facilities_summary': `Found ${features.length} State Park Facilit${features.length === 1 ? 'y' : 'ies'} within ${radius || 100} miles`,
+        'alaska_dnr_state_park_facilities_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR State Park Facilities data:', error);
+      return {
+        'alaska_dnr_state_park_facilities_count': 0,
+        'alaska_dnr_state_park_facilities_summary': 'Error fetching State Park Facilities data',
+        'alaska_dnr_state_park_facilities_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRControlledLivestockDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRControlledLivestockDistrictsData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_controlled_livestock_districts_count': 0,
+          'alaska_dnr_controlled_livestock_districts_summary': 'No Controlled Livestock Districts found within the specified radius',
+          'alaska_dnr_controlled_livestock_districts_all': []
+        };
+      }
+      
+      // Separate containing and proximity features
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Controlled Livestock District${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Controlled Livestock District${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} Controlled Livestock District${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_controlled_livestock_districts_count': features.length,
+        'alaska_dnr_controlled_livestock_districts_summary': summary,
+        'alaska_dnr_controlled_livestock_districts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Controlled Livestock Districts data:', error);
+      return {
+        'alaska_dnr_controlled_livestock_districts_count': 0,
+        'alaska_dnr_controlled_livestock_districts_summary': 'Error fetching Controlled Livestock Districts data',
+        'alaska_dnr_controlled_livestock_districts_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRLandCapacityClassification(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRLandCapacityClassificationData(lat, lon, radius || 10);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_land_capacity_classification_count': 0,
+          'alaska_dnr_land_capacity_classification_summary': 'No Land Capacity Classification found within the specified radius',
+          'alaska_dnr_land_capacity_classification_all': []
+        };
+      }
+      
+      // Separate containing and proximity features
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Land Capacity Classification${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 10} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Land Capacity Classification${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} Land Capacity Classification${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 10} miles`;
+      }
+      
+      return {
+        'alaska_dnr_land_capacity_classification_count': features.length,
+        'alaska_dnr_land_capacity_classification_summary': summary,
+        'alaska_dnr_land_capacity_classification_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Land Capacity Classification data:', error);
+      return {
+        'alaska_dnr_land_capacity_classification_count': 0,
+        'alaska_dnr_land_capacity_classification_summary': 'Error fetching Land Capacity Classification data',
+        'alaska_dnr_land_capacity_classification_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRShoreFisheryLeases(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRShoreFisheryLeasesData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_shore_fishery_leases_count': 0,
+          'alaska_dnr_shore_fishery_leases_summary': 'No Shore Fishery Leases found within the specified radius',
+          'alaska_dnr_shore_fishery_leases_all': []
+        };
+      }
+      
+      // Separate containing and proximity features
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Shore Fishery Lease${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Shore Fishery Lease${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} Shore Fishery Lease${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_shore_fishery_leases_count': features.length,
+        'alaska_dnr_shore_fishery_leases_summary': summary,
+        'alaska_dnr_shore_fishery_leases_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Shore Fishery Leases data:', error);
+      return {
+        'alaska_dnr_shore_fishery_leases_count': 0,
+        'alaska_dnr_shore_fishery_leases_summary': 'Error fetching Shore Fishery Leases data',
+        'alaska_dnr_shore_fishery_leases_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRAquaticFarmLeases(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRAquaticFarmLeasesData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_aquatic_farm_leases_count': 0,
+          'alaska_dnr_aquatic_farm_leases_summary': 'No Aquatic Farm Leases found within the specified radius',
+          'alaska_dnr_aquatic_farm_leases_all': []
+        };
+      }
+      
+      // Separate containing and proximity features
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Aquatic Farm Lease${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Aquatic Farm Lease${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} Aquatic Farm Lease${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_aquatic_farm_leases_count': features.length,
+        'alaska_dnr_aquatic_farm_leases_summary': summary,
+        'alaska_dnr_aquatic_farm_leases_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Aquatic Farm Leases data:', error);
+      return {
+        'alaska_dnr_aquatic_farm_leases_count': 0,
+        'alaska_dnr_aquatic_farm_leases_summary': 'Error fetching Aquatic Farm Leases data',
+        'alaska_dnr_aquatic_farm_leases_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRWELTS(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRWELTSData(lat, lon, radius || 25);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_welts_count': 0,
+          'alaska_dnr_welts_summary': 'No WELTS well logs found within the specified radius',
+          'alaska_dnr_welts_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_welts_count': features.length,
+        'alaska_dnr_welts_summary': `Found ${features.length} WELTS well log${features.length === 1 ? '' : 's'} within ${radius || 25} miles`,
+        'alaska_dnr_welts_all': features.map(feature => ({
+          ...feature.attributes,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          objectid: feature.objectid,
+          layerName: feature.layerName
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR WELTS data:', error);
+      return {
+        'alaska_dnr_welts_count': 0,
+        'alaska_dnr_welts_summary': 'Error fetching WELTS data',
+        'alaska_dnr_welts_all': []
+      };
+    }
+  }
+
+  // Alaska DNR DEC WaterEstate Layers
+  private async getAlaskaDNRPLSSSection(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRPLSSSectionData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_plss_section_count': 0, 'alaska_dnr_plss_section_summary': 'No PLSS Sections found', 'alaska_dnr_plss_section_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} PLSS Section${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} PLSS Section${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} PLSS Section${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_plss_section_count': features.length,
+        'alaska_dnr_plss_section_summary': summary,
+        'alaska_dnr_plss_section_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR PLSS Section data:', error);
+      return { 'alaska_dnr_plss_section_count': 0, 'alaska_dnr_plss_section_summary': 'Error fetching PLSS Section data', 'alaska_dnr_plss_section_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRPLSSTownship(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRPLSSTownshipData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_plss_township_count': 0, 'alaska_dnr_plss_township_summary': 'No PLSS Townships found', 'alaska_dnr_plss_township_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} PLSS Township${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} PLSS Township${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} PLSS Township${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_plss_township_count': features.length,
+        'alaska_dnr_plss_township_summary': summary,
+        'alaska_dnr_plss_township_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR PLSS Township data:', error);
+      return { 'alaska_dnr_plss_township_count': 0, 'alaska_dnr_plss_township_summary': 'Error fetching PLSS Township data', 'alaska_dnr_plss_township_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurfaceWaterRightLocation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurfaceWaterRightLocationData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_surface_water_right_location_count': 0, 'alaska_dnr_surface_water_right_location_summary': 'No Surface Water Right Locations found', 'alaska_dnr_surface_water_right_location_all': [] };
+      }
+      return {
+        'alaska_dnr_surface_water_right_location_count': features.length,
+        'alaska_dnr_surface_water_right_location_summary': `Found ${features.length} Surface Water Right Location${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_surface_water_right_location_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Surface Water Right Location data:', error);
+      return { 'alaska_dnr_surface_water_right_location_count': 0, 'alaska_dnr_surface_water_right_location_summary': 'Error fetching Surface Water Right Location data', 'alaska_dnr_surface_water_right_location_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSubSurfaceWaterRightLocation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSubSurfaceWaterRightLocationData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_subsurface_water_right_location_count': 0, 'alaska_dnr_subsurface_water_right_location_summary': 'No SubSurface Water Right Locations found', 'alaska_dnr_subsurface_water_right_location_all': [] };
+      }
+      return {
+        'alaska_dnr_subsurface_water_right_location_count': features.length,
+        'alaska_dnr_subsurface_water_right_location_summary': `Found ${features.length} SubSurface Water Right Location${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_subsurface_water_right_location_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR SubSurface Water Right Location data:', error);
+      return { 'alaska_dnr_subsurface_water_right_location_count': 0, 'alaska_dnr_subsurface_water_right_location_summary': 'Error fetching SubSurface Water Right Location data', 'alaska_dnr_subsurface_water_right_location_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurfaceWaterRights(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurfaceWaterRightsData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_surface_water_rights_count': 0, 'alaska_dnr_surface_water_rights_summary': 'No Surface Water Rights found', 'alaska_dnr_surface_water_rights_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Surface Water Right${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Surface Water Right${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} Surface Water Right${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_surface_water_rights_count': features.length,
+        'alaska_dnr_surface_water_rights_summary': summary,
+        'alaska_dnr_surface_water_rights_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Surface Water Rights data:', error);
+      return { 'alaska_dnr_surface_water_rights_count': 0, 'alaska_dnr_surface_water_rights_summary': 'Error fetching Surface Water Rights data', 'alaska_dnr_surface_water_rights_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSubSurfaceWaterRights(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSubSurfaceWaterRightsData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_subsurface_water_rights_count': 0, 'alaska_dnr_subsurface_water_rights_summary': 'No SubSurface Water Rights found', 'alaska_dnr_subsurface_water_rights_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} SubSurface Water Right${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} SubSurface Water Right${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} SubSurface Water Right${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_subsurface_water_rights_count': features.length,
+        'alaska_dnr_subsurface_water_rights_summary': summary,
+        'alaska_dnr_subsurface_water_rights_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR SubSurface Water Rights data:', error);
+      return { 'alaska_dnr_subsurface_water_rights_count': 0, 'alaska_dnr_subsurface_water_rights_summary': 'Error fetching SubSurface Water Rights data', 'alaska_dnr_subsurface_water_rights_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRInstreamFlowWaterReservationsPoint(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRInstreamFlowWaterReservationsPointData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_instream_flow_water_reservations_point_count': 0, 'alaska_dnr_instream_flow_water_reservations_point_summary': 'No Instream Flow Water Reservations (Point) found', 'alaska_dnr_instream_flow_water_reservations_point_all': [] };
+      }
+      return {
+        'alaska_dnr_instream_flow_water_reservations_point_count': features.length,
+        'alaska_dnr_instream_flow_water_reservations_point_summary': `Found ${features.length} Instream Flow Water Reservation${features.length === 1 ? '' : 's'} (Point) within ${radius || 100} miles`,
+        'alaska_dnr_instream_flow_water_reservations_point_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Instream Flow Water Reservations Point data:', error);
+      return { 'alaska_dnr_instream_flow_water_reservations_point_count': 0, 'alaska_dnr_instream_flow_water_reservations_point_summary': 'Error fetching Instream Flow Water Reservations Point data', 'alaska_dnr_instream_flow_water_reservations_point_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRInstreamFlowWaterReservationsLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRInstreamFlowWaterReservationsLineData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_instream_flow_water_reservations_line_count': 0, 'alaska_dnr_instream_flow_water_reservations_line_summary': 'No Instream Flow Water Reservations (Line) found', 'alaska_dnr_instream_flow_water_reservations_line_all': [] };
+      }
+      return {
+        'alaska_dnr_instream_flow_water_reservations_line_count': features.length,
+        'alaska_dnr_instream_flow_water_reservations_line_summary': `Found ${features.length} Instream Flow Water Reservation${features.length === 1 ? '' : 's'} (Line) within ${radius || 100} miles`,
+        'alaska_dnr_instream_flow_water_reservations_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Instream Flow Water Reservations Line data:', error);
+      return { 'alaska_dnr_instream_flow_water_reservations_line_count': 0, 'alaska_dnr_instream_flow_water_reservations_line_summary': 'Error fetching Instream Flow Water Reservations Line data', 'alaska_dnr_instream_flow_water_reservations_line_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRInstreamFlowWaterReservationsPolygon(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRInstreamFlowWaterReservationsPolygonData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_instream_flow_water_reservations_polygon_count': 0, 'alaska_dnr_instream_flow_water_reservations_polygon_summary': 'No Instream Flow Water Reservations (Polygon) found', 'alaska_dnr_instream_flow_water_reservations_polygon_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Instream Flow Water Reservation${containingFeatures.length === 1 ? '' : 's'} (Polygon) containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Instream Flow Water Reservation${containingFeatures.length === 1 ? '' : 's'} (Polygon) containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} Instream Flow Water Reservation${proximityFeatures.length === 1 ? '' : 's'} (Polygon) within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_instream_flow_water_reservations_polygon_count': features.length,
+        'alaska_dnr_instream_flow_water_reservations_polygon_summary': summary,
+        'alaska_dnr_instream_flow_water_reservations_polygon_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Instream Flow Water Reservations Polygon data:', error);
+      return { 'alaska_dnr_instream_flow_water_reservations_polygon_count': 0, 'alaska_dnr_instream_flow_water_reservations_polygon_summary': 'Error fetching Instream Flow Water Reservations Polygon data', 'alaska_dnr_instream_flow_water_reservations_polygon_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRShoreFisheryLeasesLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRShoreFisheryLeasesLineData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_shore_fishery_leases_line_count': 0, 'alaska_dnr_shore_fishery_leases_line_summary': 'No Shore Fishery Leases (Line) found', 'alaska_dnr_shore_fishery_leases_line_all': [] };
+      }
+      return {
+        'alaska_dnr_shore_fishery_leases_line_count': features.length,
+        'alaska_dnr_shore_fishery_leases_line_summary': `Found ${features.length} Shore Fishery Lease${features.length === 1 ? '' : 's'} (Line) within ${radius || 100} miles`,
+        'alaska_dnr_shore_fishery_leases_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Shore Fishery Leases Line data:', error);
+      return { 'alaska_dnr_shore_fishery_leases_line_count': 0, 'alaska_dnr_shore_fishery_leases_line_summary': 'Error fetching Shore Fishery Leases Line data', 'alaska_dnr_shore_fishery_leases_line_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRShoreFisheryLeasesPolygonWaterEstate(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRShoreFisheryLeasesPolygonData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_shore_fishery_leases_polygon_waterestate_count': 0, 'alaska_dnr_shore_fishery_leases_polygon_waterestate_summary': 'No Shore Fishery Leases (Polygon) found', 'alaska_dnr_shore_fishery_leases_polygon_waterestate_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Shore Fishery Lease${containingFeatures.length === 1 ? '' : 's'} (Polygon) containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Shore Fishery Lease${containingFeatures.length === 1 ? '' : 's'} (Polygon) containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} Shore Fishery Lease${proximityFeatures.length === 1 ? '' : 's'} (Polygon) within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_shore_fishery_leases_polygon_waterestate_count': features.length,
+        'alaska_dnr_shore_fishery_leases_polygon_waterestate_summary': summary,
+        'alaska_dnr_shore_fishery_leases_polygon_waterestate_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Shore Fishery Leases Polygon WaterEstate data:', error);
+      return { 'alaska_dnr_shore_fishery_leases_polygon_waterestate_count': 0, 'alaska_dnr_shore_fishery_leases_polygon_waterestate_summary': 'Error fetching Shore Fishery Leases Polygon WaterEstate data', 'alaska_dnr_shore_fishery_leases_polygon_waterestate_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRAquaticFarmLeasesWaterEstate(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRAquaticFarmLeasesWaterEstateData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_aquatic_farm_leases_waterestate_count': 0, 'alaska_dnr_aquatic_farm_leases_waterestate_summary': 'No Aquatic Farm Leases found', 'alaska_dnr_aquatic_farm_leases_waterestate_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Aquatic Farm Lease${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Aquatic Farm Lease${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} Aquatic Farm Lease${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_aquatic_farm_leases_waterestate_count': features.length,
+        'alaska_dnr_aquatic_farm_leases_waterestate_summary': summary,
+        'alaska_dnr_aquatic_farm_leases_waterestate_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Aquatic Farm Leases WaterEstate data:', error);
+      return { 'alaska_dnr_aquatic_farm_leases_waterestate_count': 0, 'alaska_dnr_aquatic_farm_leases_waterestate_summary': 'Error fetching Aquatic Farm Leases WaterEstate data', 'alaska_dnr_aquatic_farm_leases_waterestate_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRLeaseLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRLeaseLineData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_lease_line_count': 0, 'alaska_dnr_lease_line_summary': 'No Lease Lines found', 'alaska_dnr_lease_line_all': [] };
+      }
+      return {
+        'alaska_dnr_lease_line_count': features.length,
+        'alaska_dnr_lease_line_summary': `Found ${features.length} Lease Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_lease_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Lease Line data:', error);
+      return { 'alaska_dnr_lease_line_count': 0, 'alaska_dnr_lease_line_summary': 'Error fetching Lease Line data', 'alaska_dnr_lease_line_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRLeaseArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRLeaseAreaData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_lease_area_count': 0, 'alaska_dnr_lease_area_summary': 'No Lease Areas found', 'alaska_dnr_lease_area_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Lease Area${containingFeatures.length === 1 ? '' : 's'} containing the point and ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `Found ${containingFeatures.length} Lease Area${containingFeatures.length === 1 ? '' : 's'} containing the point`;
+      } else {
+        summary = `Found ${proximityFeatures.length} Lease Area${proximityFeatures.length === 1 ? '' : 's'} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_lease_area_count': features.length,
+        'alaska_dnr_lease_area_summary': summary,
+        'alaska_dnr_lease_area_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Lease Area data:', error);
+      return { 'alaska_dnr_lease_area_count': 0, 'alaska_dnr_lease_area_summary': 'Error fetching Lease Area data', 'alaska_dnr_lease_area_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRHattersPassPlanBoundary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRHattersPassPlanBoundaryData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_hatchers_pass_plan_boundary_count': 0, 'alaska_dnr_hatchers_pass_plan_boundary_summary': "No Hatcher's Pass Plan Boundary found", 'alaska_dnr_hatchers_pass_plan_boundary_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_hatchers_pass_plan_boundary_count': features.length,
+        'alaska_dnr_hatchers_pass_plan_boundary_summary': summary,
+        'alaska_dnr_hatchers_pass_plan_boundary_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error("Error fetching Alaska DNR Hatcher's Pass Plan Boundary data:", error);
+      return { 'alaska_dnr_hatchers_pass_plan_boundary_count': 0, 'alaska_dnr_hatchers_pass_plan_boundary_summary': "Error fetching Hatcher's Pass Plan Boundary data", 'alaska_dnr_hatchers_pass_plan_boundary_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRHattersPassNonMotorizedSummer(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRHattersPassNonMotorizedSummerData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_hatchers_pass_non_motorized_summer_count': 0, 'alaska_dnr_hatchers_pass_non_motorized_summer_summary': "No Hatcher's Pass Non-motorized Summer found", 'alaska_dnr_hatchers_pass_non_motorized_summer_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_hatchers_pass_non_motorized_summer_count': features.length,
+        'alaska_dnr_hatchers_pass_non_motorized_summer_summary': summary,
+        'alaska_dnr_hatchers_pass_non_motorized_summer_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error("Error fetching Alaska DNR Hatcher's Pass Non-motorized Summer data:", error);
+      return { 'alaska_dnr_hatchers_pass_non_motorized_summer_count': 0, 'alaska_dnr_hatchers_pass_non_motorized_summer_summary': "Error fetching Hatcher's Pass Non-motorized Summer data", 'alaska_dnr_hatchers_pass_non_motorized_summer_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRHattersPassNonMotorizedYearRound(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRHattersPassNonMotorizedYearRoundData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_hatchers_pass_non_motorized_year_round_count': 0, 'alaska_dnr_hatchers_pass_non_motorized_year_round_summary': "No Hatcher's Pass Non-motorized Year-round found", 'alaska_dnr_hatchers_pass_non_motorized_year_round_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_hatchers_pass_non_motorized_year_round_count': features.length,
+        'alaska_dnr_hatchers_pass_non_motorized_year_round_summary': summary,
+        'alaska_dnr_hatchers_pass_non_motorized_year_round_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error("Error fetching Alaska DNR Hatcher's Pass Non-motorized Year-round data:", error);
+      return { 'alaska_dnr_hatchers_pass_non_motorized_year_round_count': 0, 'alaska_dnr_hatchers_pass_non_motorized_year_round_summary': "Error fetching Hatcher's Pass Non-motorized Year-round data", 'alaska_dnr_hatchers_pass_non_motorized_year_round_all': [] };
+    }
+  }
+
+  // Alaska DNR Mapper Base Layers - Point layers
+  private async getAlaskaDNRNationalGeodeticSurveyPt(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRNationalGeodeticSurveyPtData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_national_geodetic_survey_pt_count': 0, 'alaska_dnr_national_geodetic_survey_pt_summary': 'No National Geodetic Survey Points found', 'alaska_dnr_national_geodetic_survey_pt_all': [] };
+      }
+      return {
+        'alaska_dnr_national_geodetic_survey_pt_count': features.length,
+        'alaska_dnr_national_geodetic_survey_pt_summary': `Found ${features.length} National Geodetic Survey Point${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_national_geodetic_survey_pt_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR National Geodetic Survey Pt data:', error);
+      return { 'alaska_dnr_national_geodetic_survey_pt_count': 0, 'alaska_dnr_national_geodetic_survey_pt_summary': 'Error fetching National Geodetic Survey Pt data', 'alaska_dnr_national_geodetic_survey_pt_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRStateControlMonuments(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRStateControlMonumentsData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_state_control_monuments_count': 0, 'alaska_dnr_state_control_monuments_summary': 'No State Control Monuments found', 'alaska_dnr_state_control_monuments_all': [] };
+      }
+      return {
+        'alaska_dnr_state_control_monuments_count': features.length,
+        'alaska_dnr_state_control_monuments_summary': `Found ${features.length} State Control Monument${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_state_control_monuments_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR State Control Monuments data:', error);
+      return { 'alaska_dnr_state_control_monuments_count': 0, 'alaska_dnr_state_control_monuments_summary': 'Error fetching State Control Monuments data', 'alaska_dnr_state_control_monuments_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRBLMMonumentsGCDB(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRBLMMonumentsGCDBData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_blm_monuments_gcdb_count': 0, 'alaska_dnr_blm_monuments_gcdb_summary': 'No BLM Monuments GCDB found', 'alaska_dnr_blm_monuments_gcdb_all': [] };
+      }
+      return {
+        'alaska_dnr_blm_monuments_gcdb_count': features.length,
+        'alaska_dnr_blm_monuments_gcdb_summary': `Found ${features.length} BLM Monument${features.length === 1 ? '' : 's'} (GCDB) within ${radius || 100} miles`,
+        'alaska_dnr_blm_monuments_gcdb_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR BLM Monuments GCDB data:', error);
+      return { 'alaska_dnr_blm_monuments_gcdb_count': 0, 'alaska_dnr_blm_monuments_gcdb_summary': 'Error fetching BLM Monuments GCDB data', 'alaska_dnr_blm_monuments_gcdb_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRBLMMonumentsSDMS(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRBLMMonumentsSDMSData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_blm_monuments_sdms_count': 0, 'alaska_dnr_blm_monuments_sdms_summary': 'No BLM Monuments SDMS found', 'alaska_dnr_blm_monuments_sdms_all': [] };
+      }
+      return {
+        'alaska_dnr_blm_monuments_sdms_count': features.length,
+        'alaska_dnr_blm_monuments_sdms_summary': `Found ${features.length} BLM Monument${features.length === 1 ? '' : 's'} (SDMS) within ${radius || 100} miles`,
+        'alaska_dnr_blm_monuments_sdms_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR BLM Monuments SDMS data:', error);
+      return { 'alaska_dnr_blm_monuments_sdms_count': 0, 'alaska_dnr_blm_monuments_sdms_summary': 'Error fetching BLM Monuments SDMS data', 'alaska_dnr_blm_monuments_sdms_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurveyBoundaryPt(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurveyBoundaryPtData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_survey_boundary_pt_count': 0, 'alaska_dnr_survey_boundary_pt_summary': 'No Survey Boundary Points found', 'alaska_dnr_survey_boundary_pt_all': [] };
+      }
+      return {
+        'alaska_dnr_survey_boundary_pt_count': features.length,
+        'alaska_dnr_survey_boundary_pt_summary': `Found ${features.length} Survey Boundary Point${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_survey_boundary_pt_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Survey Boundary Pt data:', error);
+      return { 'alaska_dnr_survey_boundary_pt_count': 0, 'alaska_dnr_survey_boundary_pt_summary': 'Error fetching Survey Boundary Pt data', 'alaska_dnr_survey_boundary_pt_all': [] };
+    }
+  }
+
+  // Alaska DNR Mapper Base Layers - Polyline layers
+  private async getAlaskaDNRSimpleCoastline(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSimpleCoastlineData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_simple_coastline_count': 0, 'alaska_dnr_simple_coastline_summary': 'No Simple Coastline found', 'alaska_dnr_simple_coastline_all': [] };
+      }
+      return {
+        'alaska_dnr_simple_coastline_count': features.length,
+        'alaska_dnr_simple_coastline_summary': `Found ${features.length} Simple Coastline segment${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_simple_coastline_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Simple Coastline data:', error);
+      return { 'alaska_dnr_simple_coastline_count': 0, 'alaska_dnr_simple_coastline_summary': 'Error fetching Simple Coastline data', 'alaska_dnr_simple_coastline_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurveyTractLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurveyTractLineData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_survey_tract_line_count': 0, 'alaska_dnr_survey_tract_line_summary': 'No Survey Tract Lines found', 'alaska_dnr_survey_tract_line_all': [] };
+      }
+      return {
+        'alaska_dnr_survey_tract_line_count': features.length,
+        'alaska_dnr_survey_tract_line_summary': `Found ${features.length} Survey Tract Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_survey_tract_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Survey Tract Line data:', error);
+      return { 'alaska_dnr_survey_tract_line_count': 0, 'alaska_dnr_survey_tract_line_summary': 'Error fetching Survey Tract Line data', 'alaska_dnr_survey_tract_line_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurveyBlockLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurveyBlockLineData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_survey_block_line_count': 0, 'alaska_dnr_survey_block_line_summary': 'No Survey Block Lines found', 'alaska_dnr_survey_block_line_all': [] };
+      }
+      return {
+        'alaska_dnr_survey_block_line_count': features.length,
+        'alaska_dnr_survey_block_line_summary': `Found ${features.length} Survey Block Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_survey_block_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Survey Block Line data:', error);
+      return { 'alaska_dnr_survey_block_line_count': 0, 'alaska_dnr_survey_block_line_summary': 'Error fetching Survey Block Line data', 'alaska_dnr_survey_block_line_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurveyBoundaryLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurveyBoundaryLineData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_survey_boundary_line_count': 0, 'alaska_dnr_survey_boundary_line_summary': 'No Survey Boundary Lines found', 'alaska_dnr_survey_boundary_line_all': [] };
+      }
+      return {
+        'alaska_dnr_survey_boundary_line_count': features.length,
+        'alaska_dnr_survey_boundary_line_summary': `Found ${features.length} Survey Boundary Line${features.length === 1 ? '' : 's'} within ${radius || 100} miles`,
+        'alaska_dnr_survey_boundary_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Survey Boundary Line data:', error);
+      return { 'alaska_dnr_survey_boundary_line_count': 0, 'alaska_dnr_survey_boundary_line_summary': 'Error fetching Survey Boundary Line data', 'alaska_dnr_survey_boundary_line_all': [] };
+    }
+  }
+
+  // Alaska DNR Mapper Base Layers - Polygon layers
+  private async getAlaskaDNRSection(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSectionData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_section_count': 0, 'alaska_dnr_section_summary': 'No Sections found', 'alaska_dnr_section_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_section_count': features.length,
+        'alaska_dnr_section_summary': summary,
+        'alaska_dnr_section_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Section data:', error);
+      return { 'alaska_dnr_section_count': 0, 'alaska_dnr_section_summary': 'Error fetching Section data', 'alaska_dnr_section_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurveyLotPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurveyLotPolyData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_survey_lot_poly_count': 0, 'alaska_dnr_survey_lot_poly_summary': 'No Survey Lot Polygons found', 'alaska_dnr_survey_lot_poly_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_survey_lot_poly_count': features.length,
+        'alaska_dnr_survey_lot_poly_summary': summary,
+        'alaska_dnr_survey_lot_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Survey Lot Poly data:', error);
+      return { 'alaska_dnr_survey_lot_poly_count': 0, 'alaska_dnr_survey_lot_poly_summary': 'Error fetching Survey Lot Poly data', 'alaska_dnr_survey_lot_poly_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurveyTractPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurveyTractPolyData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_survey_tract_poly_count': 0, 'alaska_dnr_survey_tract_poly_summary': 'No Survey Tract Polygons found', 'alaska_dnr_survey_tract_poly_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_survey_tract_poly_count': features.length,
+        'alaska_dnr_survey_tract_poly_summary': summary,
+        'alaska_dnr_survey_tract_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Survey Tract Poly data:', error);
+      return { 'alaska_dnr_survey_tract_poly_count': 0, 'alaska_dnr_survey_tract_poly_summary': 'Error fetching Survey Tract Poly data', 'alaska_dnr_survey_tract_poly_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurveyBlockPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurveyBlockPolyData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_survey_block_poly_count': 0, 'alaska_dnr_survey_block_poly_summary': 'No Survey Block Polygons found', 'alaska_dnr_survey_block_poly_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_survey_block_poly_count': features.length,
+        'alaska_dnr_survey_block_poly_summary': summary,
+        'alaska_dnr_survey_block_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Survey Block Poly data:', error);
+      return { 'alaska_dnr_survey_block_poly_count': 0, 'alaska_dnr_survey_block_poly_summary': 'Error fetching Survey Block Poly data', 'alaska_dnr_survey_block_poly_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRSurveyBoundaryPoly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSurveyBoundaryPolyData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_survey_boundary_poly_count': 0, 'alaska_dnr_survey_boundary_poly_summary': 'No Survey Boundary Polygons found', 'alaska_dnr_survey_boundary_poly_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_survey_boundary_poly_count': features.length,
+        'alaska_dnr_survey_boundary_poly_summary': summary,
+        'alaska_dnr_survey_boundary_poly_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Survey Boundary Poly data:', error);
+      return { 'alaska_dnr_survey_boundary_poly_count': 0, 'alaska_dnr_survey_boundary_poly_summary': 'Error fetching Survey Boundary Poly data', 'alaska_dnr_survey_boundary_poly_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRTownship(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRTownshipData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_township_count': 0, 'alaska_dnr_township_summary': 'No Townships found', 'alaska_dnr_township_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_township_count': features.length,
+        'alaska_dnr_township_summary': summary,
+        'alaska_dnr_township_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Township data:', error);
+      return { 'alaska_dnr_township_count': 0, 'alaska_dnr_township_summary': 'Error fetching Township data', 'alaska_dnr_township_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRIncorporatedCityBoundary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRIncorporatedCityBoundaryData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_incorporated_city_boundary_count': 0, 'alaska_dnr_incorporated_city_boundary_summary': 'No Incorporated City Boundaries found', 'alaska_dnr_incorporated_city_boundary_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_incorporated_city_boundary_count': features.length,
+        'alaska_dnr_incorporated_city_boundary_summary': summary,
+        'alaska_dnr_incorporated_city_boundary_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Incorporated City Boundary data:', error);
+      return { 'alaska_dnr_incorporated_city_boundary_count': 0, 'alaska_dnr_incorporated_city_boundary_summary': 'Error fetching Incorporated City Boundary data', 'alaska_dnr_incorporated_city_boundary_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRRecordingDistrictBoundary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRRecordingDistrictBoundaryData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_recording_district_boundary_count': 0, 'alaska_dnr_recording_district_boundary_summary': 'No Recording District Boundaries found', 'alaska_dnr_recording_district_boundary_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_recording_district_boundary_count': features.length,
+        'alaska_dnr_recording_district_boundary_summary': summary,
+        'alaska_dnr_recording_district_boundary_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Recording District Boundary data:', error);
+      return { 'alaska_dnr_recording_district_boundary_count': 0, 'alaska_dnr_recording_district_boundary_summary': 'Error fetching Recording District Boundary data', 'alaska_dnr_recording_district_boundary_all': [] };
+    }
+  }
+
+  private async getAlaskaDNRDCCEDCRABoroughBoundary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRDCCEDCRABoroughBoundaryData(lat, lon, radius || 100);
+      if (features.length === 0) {
+        return { 'alaska_dnr_dcced_cra_borough_boundary_count': 0, 'alaska_dnr_dcced_cra_borough_boundary_summary': 'No DCCED CRA Borough Boundaries found', 'alaska_dnr_dcced_cra_borough_boundary_all': [] };
+      }
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      return {
+        'alaska_dnr_dcced_cra_borough_boundary_count': features.length,
+        'alaska_dnr_dcced_cra_borough_boundary_summary': summary,
+        'alaska_dnr_dcced_cra_borough_boundary_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR DCCED CRA Borough Boundary data:', error);
+      return { 'alaska_dnr_dcced_cra_borough_boundary_count': 0, 'alaska_dnr_dcced_cra_borough_boundary_summary': 'Error fetching DCCED CRA Borough Boundary data', 'alaska_dnr_dcced_cra_borough_boundary_all': [] };
     }
   }
 
