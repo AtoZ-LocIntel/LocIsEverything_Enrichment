@@ -19,6 +19,52 @@ export interface AlaskaDNRFeature {
 }
 
 /**
+ * Point-in-polygon check using ray casting algorithm
+ * Used when server-side contains queries are not supported (e.g., 403 errors)
+ */
+function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean {
+  if (!rings || rings.length === 0) return false;
+  
+  const outerRing = rings[0];
+  if (!outerRing || outerRing.length < 3) return false;
+  
+  let inside = false;
+  for (let i = 0, j = outerRing.length - 1; i < outerRing.length; j = i++) {
+    const xi = outerRing[i][0]; // lon
+    const yi = outerRing[i][1]; // lat
+    const xj = outerRing[j][0]; // lon
+    const yj = outerRing[j][1]; // lat
+    
+    const intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  
+  // Check if point is in any holes
+  for (let h = 1; h < rings.length; h++) {
+    const hole = rings[h];
+    if (!hole || hole.length < 3) continue;
+    
+    let inHole = false;
+    for (let i = 0, j = hole.length - 1; i < hole.length; j = i++) {
+      const xi = hole[i][0];
+      const yi = hole[i][1];
+      const xj = hole[j][0];
+      const yj = hole[j][1];
+      
+      const intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+      if (intersect) inHole = !inHole;
+    }
+    
+    if (inHole) {
+      inside = false; // Point is in a hole, so not inside polygon
+      break;
+    }
+  }
+  
+  return inside;
+}
+
+/**
  * Calculate haversine distance between two points in miles
  */
 function calculateHaversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -230,26 +276,49 @@ async function queryAlaskaDNRPolygonLayer(
       containsQueryUrl.searchParams.set('resultRecordCount', maxRecordCount.toString());
       containsQueryUrl.searchParams.set('resultOffset', resultOffset.toString());
       
-      const containsResponse = await fetchJSONSmart(containsQueryUrl.toString());
+      let containsResponse: any;
+      let containsQueryFailed = false;
+      try {
+        console.log(`🔍 Alaska DNR ${layerName} contains query URL: ${containsQueryUrl.toString()}`);
+        containsResponse = await fetchJSONSmart(containsQueryUrl.toString());
+        console.log(`🔍 Alaska DNR ${layerName} contains query response:`, {
+          hasFeatures: Array.isArray(containsResponse.features) && containsResponse.features.length > 0,
+          featureCount: containsResponse.features?.length || 0,
+          hasError: !!containsResponse.error,
+          error: containsResponse.error
+        });
+      } catch (error: any) {
+        // Handle 403 or other errors - some layers don't support contains queries
+        console.error(`❌ Alaska DNR ${layerName} contains query error:`, error);
+        if (error.message?.includes('403') || error.message?.includes('HTTP 403')) {
+          console.warn(`⚠️ Alaska DNR ${layerName} contains query returned 403 (not supported), using proximity only`);
+          containsQueryFailed = true;
+        } else {
+          // Re-throw other errors
+          throw error;
+        }
+      }
 
       // Check if we have features - prioritize features over error property
       let containsFeatures: any[] = [];
-      const responseFeatures = containsResponse.features || [];
-      const hasContainsFeatures = Array.isArray(responseFeatures) && responseFeatures.length > 0;
-      
-      if (containsResponse.error && !hasContainsFeatures) {
-        // Only treat as failure if there's an error AND no features
-        console.warn(`⚠️ Alaska DNR ${layerName} contains query failed, using proximity only: ${JSON.stringify(containsResponse.error)}`);
-      } else if (hasContainsFeatures) {
-        // We have features, use them regardless of error property
-        containsFeatures = responseFeatures;
-        // Track object IDs from contains query
-        containsFeatures.forEach((f: any) => {
-          const objectid = f.attributes?.OBJECTID || f.attributes?.objectid || f.attributes?.OBJECTID_1 || f.attributes?.FID || 0;
-          containsObjectIdsSet.add(objectid);
-        });
-        const containsFeaturesWithFlag = containsFeatures.map((f: any) => ({ ...f, _fromContains: true }));
-        allFeatures = allFeatures.concat(containsFeaturesWithFlag);
+      if (!containsQueryFailed && containsResponse) {
+        const responseFeatures = containsResponse.features || [];
+        const hasContainsFeatures = Array.isArray(responseFeatures) && responseFeatures.length > 0;
+        
+        if (containsResponse.error && !hasContainsFeatures) {
+          // Only treat as failure if there's an error AND no features
+          console.warn(`⚠️ Alaska DNR ${layerName} contains query failed, using proximity only: ${JSON.stringify(containsResponse.error)}`);
+        } else if (hasContainsFeatures) {
+          // We have features, use them regardless of error property
+          containsFeatures = responseFeatures;
+          // Track object IDs from contains query
+          containsFeatures.forEach((f: any) => {
+            const objectid = f.attributes?.OBJECTID || f.attributes?.objectid || f.attributes?.OBJECTID_1 || f.attributes?.FID || 0;
+            containsObjectIdsSet.add(objectid);
+          });
+          const containsFeaturesWithFlag = containsFeatures.map((f: any) => ({ ...f, _fromContains: true }));
+          allFeatures = allFeatures.concat(containsFeaturesWithFlag);
+        }
       }
 
       // Then, try proximity query (intersects with distance)
@@ -275,7 +344,15 @@ async function queryAlaskaDNRPolygonLayer(
       proximityQueryUrl.searchParams.set('resultRecordCount', maxRecordCount.toString());
       proximityQueryUrl.searchParams.set('resultOffset', resultOffset.toString());
       
+      console.log(`🔍 Alaska DNR ${layerName} proximity query URL: ${proximityQueryUrl.toString()}`);
       let proximityResponse = await fetchJSONSmart(proximityQueryUrl.toString());
+      console.log(`🔍 Alaska DNR ${layerName} proximity query response:`, {
+        hasFeatures: Array.isArray(proximityResponse.features) && proximityResponse.features.length > 0,
+        featureCount: proximityResponse.features?.length || 0,
+        hasError: !!proximityResponse.error,
+        error: proximityResponse.error
+      });
+      
       let proximityFeatures: any[] = [];
       let hasProximityFeatures = false;
 
@@ -345,7 +422,9 @@ async function queryAlaskaDNRPolygonLayer(
           return !existingObjectIds.has(objectid);
         });
         
-        allFeatures = allFeatures.concat(newProximityFeatures);
+        // Mark proximity features so we know they're already within radius
+        const proximityFeaturesWithFlag = newProximityFeatures.map((f: any) => ({ ...f, _fromProximity: true }));
+        allFeatures = allFeatures.concat(proximityFeaturesWithFlag);
 
         hasMore = (containsFeatures.length === maxRecordCount || proximityFeatures.length === maxRecordCount) && resultOffset < 100000;
         resultOffset += Math.max(containsFeatures.length, proximityFeatures.length);
@@ -369,19 +448,68 @@ async function queryAlaskaDNRPolygonLayer(
     // Track which features came from contains query (use the set we created earlier)
     // We'll check this in the map function below
 
-    // Process features and calculate distances
+      // Process features and calculate distances
     const processedFeatures: AlaskaDNRFeature[] = allFeatures.map((feature: any) => {
       const attributes = feature.attributes || {};
       const geometry = feature.geometry;
       const objectid = attributes.OBJECTID || attributes.objectid || attributes.OBJECTID_1 || attributes.FID || 0;
 
-      // Check if this feature came from the contains query
-      const isContaining = containsObjectIdsSet.has(objectid);
+      // Check if this feature came from the contains query or proximity query
+      let isContaining = containsObjectIdsSet.has(objectid);
+      const isFromProximity = feature._fromProximity === true;
+      const isFromContains = feature._fromContains === true;
       let distanceMiles = 0; // Default to 0 for containing features
+
+      // If contains query failed (403), do client-side point-in-polygon check for polygons
+      if (!isContaining && geometry && geometry.rings && geometry.rings.length > 0) {
+        isContaining = pointInPolygon(lat, lon, geometry.rings);
+        if (isContaining) {
+          // Mark as containing and add to set for consistency
+          containsObjectIdsSet.add(objectid);
+        }
+      }
 
       if (isContaining) {
         // Feature contains the point
         distanceMiles = 0;
+      } else if (isFromProximity && !isFromContains) {
+        // Feature came from proximity query only (not contains) - server already verified it's within radius
+        // For polygons, find the closest point in the ring to get a reasonable distance estimate
+        if (geometry && geometry.rings && geometry.rings.length > 0) {
+          const ring = geometry.rings[0];
+          if (ring && ring.length > 0) {
+            // Find the closest point in the ring to our query point
+            let minDistance = Infinity;
+            for (const point of ring) {
+              if (point && point.length >= 2) {
+                const pointDist = calculateHaversineDistance(lat, lon, point[1], point[0]);
+                minDistance = Math.min(minDistance, pointDist);
+              }
+            }
+            // Use the minimum distance, but cap at 99% of radius to ensure it passes filter
+            distanceMiles = minDistance < Infinity ? Math.min(minDistance, radiusMiles * 0.99) : radiusMiles * 0.99;
+          } else {
+            distanceMiles = radiusMiles * 0.99;
+          }
+        } else if (geometry && geometry.paths && geometry.paths.length > 0) {
+          // For polylines, find closest point
+          let minDistance = Infinity;
+          for (const path of geometry.paths) {
+            for (const point of path) {
+              if (point && point.length >= 2) {
+                const pointDist = calculateHaversineDistance(lat, lon, point[1], point[0]);
+                minDistance = Math.min(minDistance, pointDist);
+              }
+            }
+          }
+          distanceMiles = minDistance < Infinity ? Math.min(minDistance, radiusMiles * 0.99) : radiusMiles * 0.99;
+        } else if (geometry && geometry.x !== undefined && geometry.y !== undefined) {
+          distanceMiles = calculateHaversineDistance(lat, lon, geometry.y, geometry.x);
+          distanceMiles = Math.min(distanceMiles, radiusMiles * 0.99);
+        } else {
+          // Fallback: set to a value that will pass the filter
+          distanceMiles = radiusMiles * 0.99;
+        }
       } else if (geometry && geometry.rings && geometry.rings.length > 0) {
         // Polygon geometry - calculate distance to nearest edge/centroid
         const ring = geometry.rings[0];
@@ -429,13 +557,28 @@ async function queryAlaskaDNRPolygonLayer(
     });
 
     // Filter by radius
-    const filteredFeatures = processedFeatures.filter(f => (f.distance_miles || Infinity) <= radiusMiles);
+    // Note: Features from proximity queries are already within radius, so we only filter non-proximity features
+    const filteredFeatures = processedFeatures.filter(f => {
+      // If it's a containing feature or came from proximity query, include it
+      if (f.isContaining) return true;
+      // For other features, check distance
+      return (f.distance_miles || Infinity) <= radiusMiles;
+    });
 
     console.log(`✅ Processed ${filteredFeatures.length} Alaska DNR ${layerName} feature(s) within ${radiusMiles} miles`);
+    
+    if (filteredFeatures.length === 0) {
+      console.warn(`⚠️ Alaska DNR ${layerName}: No features returned. This could indicate:
+        - Point is outside layer extent
+        - Layer has no data in this area
+        - Query parameters may need adjustment
+        - Check console above for detailed query responses`);
+    }
 
     return filteredFeatures;
   } catch (error) {
     console.error(`❌ Alaska DNR ${layerName} API Error:`, error);
+    console.error(`❌ Error details:`, error instanceof Error ? error.message : error);
     throw error;
   }
 }
@@ -2497,6 +2640,762 @@ export async function getAlaskaDNRMineralEstateTownshipData(
     'https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer',
     45,
     'Township',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Trust Land Survey (TLS) (Layer 0) - Polygon layer
+ */
+export async function getAlaskaDNRMHTTrustLandSurveyData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    0,
+    'Trust Land Survey (TLS)',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Other Activity (Layer 1) - Polygon layer
+ */
+export async function getAlaskaDNRMHTOtherActivityData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    1,
+    'Other Activity',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Trespass Point (Layer 2) - Point layer
+ */
+export async function getAlaskaDNRMHTTrespassPointData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    2,
+    'Trespass Point',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Trespass Line (Layer 3) - Polyline layer
+ */
+export async function getAlaskaDNRMHTTrespassLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    3,
+    'Trespass Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Trespass Area (Layer 4) - Polygon layer
+ */
+export async function getAlaskaDNRMHTTrespassAreaData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    4,
+    'Trespass Area',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Easements (Layer 5) - Polygon layer
+ */
+export async function getAlaskaDNRMHTEasementsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    5,
+    'Easements',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Easement Point (Layer 6) - Point layer
+ */
+export async function getAlaskaDNRMHTEasementPointData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    6,
+    'Easement Point',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Easement Line (Layer 7) - Polyline layer
+ */
+export async function getAlaskaDNRMHTEasementLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    7,
+    'Easement Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Easement Area (Layer 8) - Polygon layer
+ */
+export async function getAlaskaDNRMHTEasementAreaData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    8,
+    'Easement Area',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Sales (Layer 9) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandSalesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    9,
+    'Land Sales',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Sale, Conveyed (Layer 10) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandSaleConveyedData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    10,
+    'Land Sale, Conveyed',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Sale, Contract (Layer 11) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandSaleContractData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    11,
+    'Land Sale, Contract',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Sale, Available OTC (Layer 12) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandSaleAvailableOTCData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    12,
+    'Land Sale, Available OTC',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Sale, Pending Interest (Layer 13) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandSalePendingInterestData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    13,
+    'Land Sale, Pending Interest',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Sale, Potential Reoffer (Layer 14) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandSalePotentialReofferData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    14,
+    'Land Sale, Potential Reoffer',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Sale, New Inventory (Layer 15) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandSaleNewInventoryData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    15,
+    'Land Sale, New Inventory',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Sale, Predisposal (Layer 16) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandSalePredisposalData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    16,
+    'Land Sale, Predisposal',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Sale, All (Layer 17) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandSaleAllData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    17,
+    'Land Sale, All',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Resource Sales (Layer 18) - Polygon layer
+ */
+export async function getAlaskaDNRMHTResourceSalesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    18,
+    'Resource Sales',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Material Sale (Layer 19) - Polygon layer
+ */
+export async function getAlaskaDNRMHTMaterialSaleData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    19,
+    'Material Sale',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Timber Sale (Layer 20) - Polygon layer
+ */
+export async function getAlaskaDNRMHTTimberSaleData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    20,
+    'Timber Sale',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Leases & Licenses (Layer 21) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandLeasesLicensesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    21,
+    'Land Leases & Licenses',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Use License Line (Layer 22) - Polyline layer
+ */
+export async function getAlaskaDNRMHTLandUseLicenseLineData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    22,
+    'Land Use License Line',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Use License Area (Layer 23) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandUseLicenseAreaData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    23,
+    'Land Use License Area',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Land Lease (Layer 24) - Polygon layer
+ */
+export async function getAlaskaDNRMHTLandLeaseData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    24,
+    'Land Lease',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Mineral Leases & Licenses (Layer 25) - Polygon layer
+ */
+export async function getAlaskaDNRMHTMineralLeasesLicensesData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    25,
+    'Mineral Leases & Licenses',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Mineral Lease (Layer 26) - Polygon layer
+ */
+export async function getAlaskaDNRMHTMineralLeaseData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    26,
+    'Mineral Lease',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Oil & Gas Lease (Layer 27) - Polygon layer
+ */
+export async function getAlaskaDNRMHTOilGasLeaseData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    27,
+    'Oil & Gas Lease',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Coal Lease (Layer 28) - Polygon layer
+ */
+export async function getAlaskaDNRMHTCoalLeaseData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    28,
+    'Coal Lease',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Mineral Exploration License (Layer 29) - Polygon layer
+ */
+export async function getAlaskaDNRMHTMineralExplorationLicenseData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    29,
+    'Mineral Exploration License',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Oil & Gas Exploration License (Layer 30) - Polygon layer
+ */
+export async function getAlaskaDNRMHTOilGasExplorationLicenseData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    30,
+    'Oil & Gas Exploration License',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Coal Exploration License (Layer 31) - Polygon layer
+ */
+export async function getAlaskaDNRMHTCoalExplorationLicenseData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    31,
+    'Coal Exploration License',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Other Exploration License (Layer 32) - Polygon layer
+ */
+export async function getAlaskaDNRMHTOtherExplorationLicenseData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    32,
+    'Other Exploration License',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Tundra Area - Stations (Layer 14) - Point layer
+ */
+export async function getAlaskaDNRTundraAreaStationsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MLW/TundraArea/MapServer',
+    14,
+    'Stations',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Tundra Area - Dalton Highway (Layer 12) - Polyline layer
+ */
+export async function getAlaskaDNRTundraAreaDaltonHighwayData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MLW/TundraArea/MapServer',
+    12,
+    'Dalton Highway',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Tundra Area - Tundra Regions (Layer 13) - Polygon layer
+ */
+export async function getAlaskaDNRTundraAreaTundraRegionsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MLW/TundraArea/MapServer',
+    13,
+    'Tundra Regions',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR Administrative - Soil and Water Conservation Districts (Layer 0) - Polygon layer
+ */
+export async function getAlaskaDNRSoilWaterConservationDistrictsData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Administrative_SoilWaterConservationDistricts/MapServer',
+    0,
+    'Soil and Water Conservation Districts',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - TLO Land Exchange (Layer 34) - Polygon layer
+ */
+export async function getAlaskaDNRMHTTLOLandExchangeData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    34,
+    'TLO Land Exchange',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - TLO Agreement (Layer 35) - Polygon layer
+ */
+export async function getAlaskaDNRMHTTLOAgreementData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    35,
+    'TLO Agreement',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Title (Layer 36) - Polygon layer
+ */
+export async function getAlaskaDNRMHTTitleData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    36,
+    'Title',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Mental Health Parcel (Layer 37) - Polygon layer
+ */
+export async function getAlaskaDNRMHTMentalHealthParcelData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    37,
+    'Mental Health Parcel',
+    lat,
+    lon,
+    Math.min(radiusMiles, 100.0)
+  );
+}
+
+/**
+ * Query Alaska DNR MHT Land Activity - Mental Health Land (QCD) (Layer 38) - Polygon layer
+ */
+export async function getAlaskaDNRMHTMentalHealthLandQCDData(
+  lat: number,
+  lon: number,
+  radiusMiles: number
+): Promise<AlaskaDNRFeature[]> {
+  return queryAlaskaDNRPolygonLayer(
+    'https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer',
+    38,
+    'Mental Health Land (QCD)',
     lat,
     lon,
     Math.min(radiusMiles, 100.0)

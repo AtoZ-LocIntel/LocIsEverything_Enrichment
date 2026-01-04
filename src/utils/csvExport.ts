@@ -717,6 +717,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('usgs_wbd_') && key.endsWith('_all')) || // Skip USGS WBD arrays (handled separately)
         (key.startsWith('usgs_contours_') && key.endsWith('_all')) || // Skip USGS Contours arrays (handled separately)
         (key.startsWith('boston_') && key.endsWith('_all')) || // Skip Boston Open Data arrays (handled separately)
+        (key.startsWith('alaska_dnr_') && key.endsWith('_all')) || // Skip Alaska DNR arrays (handled separately)
         (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately)
         (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately)
         (key.startsWith('dc_property_') && key.endsWith('_all')) || // Skip DC Property and Land arrays (handled separately)
@@ -807,7 +808,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
 
     // Determine data source based on enrichment key
     let dataSource = '';
-    if (key.includes('nh_')) {
+    if (key.includes('alaska_dnr_')) {
+      dataSource = 'Alaska DNR';
+    } else if (key.includes('nh_')) {
       if (key.includes('nwi_plus') || key.includes('source_water') || key.includes('underground_storage') || 
           key.includes('water_well') || key.includes('remediation') || key.includes('automobile_salvage') || 
           key.includes('solid_waste')) {
@@ -13682,6 +13685,36 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'boston_doit_hydro_all': { name: 'BOSTON_DOIT_HYDRO', icon: '💧' },
       'boston_doit_mbta_rapid_transit_all': { name: 'BOSTON_DOIT_MBTA_RAPID_TRANSIT', icon: '🚇' },
       'boston_doit_rail_all': { name: 'BOSTON_DOIT_RAIL', icon: '🚂' },
+      'boston_fiber_pic_conduit_all': { name: 'BOSTON_FIBER_PIC_CONDUIT', icon: '🔌' },
+      'boston_fiber_rcn_fiber_all': { name: 'BOSTON_FIBER_RCN_FIBER', icon: '🔌' },
+      'boston_fiber_nstar_conduit_all': { name: 'BOSTON_FIBER_NSTAR_CONDUIT', icon: '🔌' },
+      'boston_fiber_btd_all': { name: 'BOSTON_FIBER_BTD', icon: '🚗' },
+      'boston_fiber_lit_fiber_all': { name: 'BOSTON_FIBER_LIT_FIBER', icon: '💡' },
+      'boston_fiber_core_fiber_all': { name: 'BOSTON_FIBER_CORE_FIBER', icon: '🔷' },
+      'boston_fiber_wireless_all': { name: 'BOSTON_FIBER_WIRELESS', icon: '📶' },
+      'boston_fiber_planning_areas_all': { name: 'BOSTON_FIBER_PLANNING_AREAS', icon: '🗺️' },
+      'boston_infrastructure_sidewalk_inventory_all': { name: 'BOSTON_SIDEWALK_INVENTORY', icon: '🚶' },
+      'boston_infrastructure_mbta_stops_all': { name: 'BOSTON_MBTA_STOPS_INFRASTRUCTURE', icon: '🚇' },
+      'boston_infrastructure_hospitals_all': { name: 'BOSTON_HOSPITALS', icon: '🏥' },
+      'boston_infrastructure_ramp_inventory_all': { name: 'BOSTON_RAMP_INVENTORY', icon: '♿' },
+      'boston_infrastructure_mbta_bus_stops_all': { name: 'BOSTON_MBTA_BUS_STOPS', icon: '🚌' },
+      'boston_infrastructure_sidewalk_centerline_all': { name: 'BOSTON_SIDEWALK_CENTERLINE', icon: '🚶' },
+      'boston_infrastructure_curbs_all': { name: 'BOSTON_CURBS', icon: '🛣️' },
+      'boston_infrastructure_snow_emergency_routes_all': { name: 'BOSTON_SNOW_EMERGENCY_ROUTES', icon: '❄️' },
+      'boston_infrastructure_segments_all': { name: 'BOSTON_SEGMENTS', icon: '🛣️' },
+      'boston_infrastructure_parking_meters_all': { name: 'BOSTON_PARKING_METERS', icon: '🅿️' },
+      'boston_infrastructure_trash_collection_days_all': { name: 'BOSTON_TRASH_COLLECTION_DAYS', icon: '🗑️' },
+      'boston_infrastructure_street_lights_all': { name: 'BOSTON_STREET_LIGHTS', icon: '💡' },
+      'boston_infrastructure_traffic_signals_all': { name: 'BOSTON_TRAFFIC_SIGNALS', icon: '🚦' },
+      'boston_infrastructure_curbs2_all': { name: 'BOSTON_CURBS_LAYER_13', icon: '🛣️' },
+      'boston_infrastructure_massdot_road_inventory_all': { name: 'BOSTON_MASSDOT_ROAD_INVENTORY', icon: '🛣️' },
+      'boston_infrastructure_mbta_bus_routes_all': { name: 'BOSTON_MBTA_BUS_ROUTES', icon: '🚌' },
+      'boston_infrastructure_mbcr_train_routes_all': { name: 'BOSTON_MBCR_TRAIN_ROUTES', icon: '🚂' },
+      'boston_infrastructure_mbcr_train_stations_all': { name: 'BOSTON_MBCR_TRAIN_STATIONS', icon: '🚉' }
+    };
+    
+    // Add Alaska DNR data rows - separate handler to avoid Boston Open Data categorization
+    const alaskaDNRLayerMap: Record<string, { name: string, icon: string }> = {
       'alaska_dnr_trans_alaska_pipeline_all': { name: 'ALASKA_DNR_TRANS_ALASKA_PIPELINE', icon: '🛢️' },
       'alaska_dnr_well_sites_all': { name: 'ALASKA_DNR_WELL_SITES', icon: '⛽' },
       'alaska_dnr_oil_gas_lease_sale_tract_all': { name: 'ALASKA_DNR_OIL_GAS_LEASE_SALE_TRACT', icon: '🛢️' },
@@ -13711,18 +13744,15 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'alaska_dnr_hatchers_pass_plan_boundary_all': { name: 'ALASKA_DNR_HATCHERS_PASS_PLAN_BOUNDARY', icon: '🏔️' },
       'alaska_dnr_hatchers_pass_non_motorized_summer_all': { name: 'ALASKA_DNR_HATCHERS_PASS_NON_MOTORIZED_SUMMER', icon: '🚫' },
       'alaska_dnr_hatchers_pass_non_motorized_year_round_all': { name: 'ALASKA_DNR_HATCHERS_PASS_NON_MOTORIZED_YEAR_ROUND', icon: '🚫' },
-      // Alaska DNR Mapper Base Layers - Point layers
       'alaska_dnr_national_geodetic_survey_pt_all': { name: 'ALASKA_DNR_NATIONAL_GEODETIC_SURVEY_PT', icon: '📍' },
       'alaska_dnr_state_control_monuments_all': { name: 'ALASKA_DNR_STATE_CONTROL_MONUMENTS', icon: '🗿' },
       'alaska_dnr_blm_monuments_gcdb_all': { name: 'ALASKA_DNR_BLM_MONUMENTS_GCDB', icon: '🗿' },
       'alaska_dnr_blm_monuments_sdms_all': { name: 'ALASKA_DNR_BLM_MONUMENTS_SDMS', icon: '🗿' },
       'alaska_dnr_survey_boundary_pt_all': { name: 'ALASKA_DNR_SURVEY_BOUNDARY_PT', icon: '📍' },
-      // Alaska DNR Mapper Base Layers - Polyline layers
       'alaska_dnr_simple_coastline_all': { name: 'ALASKA_DNR_SIMPLE_COASTLINE', icon: '🌊' },
       'alaska_dnr_survey_tract_line_all': { name: 'ALASKA_DNR_SURVEY_TRACT_LINE', icon: '📏' },
       'alaska_dnr_survey_block_line_all': { name: 'ALASKA_DNR_SURVEY_BLOCK_LINE', icon: '📐' },
       'alaska_dnr_survey_boundary_line_all': { name: 'ALASKA_DNR_SURVEY_BOUNDARY_LINE', icon: '📏' },
-      // Alaska DNR Mapper Base Layers - Polygon layers
       'alaska_dnr_section_all': { name: 'ALASKA_DNR_SECTION', icon: '🗺️' },
       'alaska_dnr_survey_lot_poly_all': { name: 'ALASKA_DNR_SURVEY_LOT_POLY', icon: '📋' },
       'alaska_dnr_survey_tract_poly_all': { name: 'ALASKA_DNR_SURVEY_TRACT_POLY', icon: '📋' },
@@ -13732,7 +13762,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'alaska_dnr_incorporated_city_boundary_all': { name: 'ALASKA_DNR_INCORPORATED_CITY_BOUNDARY', icon: '🏙️' },
       'alaska_dnr_recording_district_boundary_all': { name: 'ALASKA_DNR_RECORDING_DISTRICT_BOUNDARY', icon: '🏛️' },
       'alaska_dnr_dcced_cra_borough_boundary_all': { name: 'ALASKA_DNR_DCCED_CRA_BOROUGH_BOUNDARY', icon: '🏛️' },
-      // Alaska DNR Mapper Land Estate Layers - Point layers
       'alaska_dnr_agreement_settlement_reconvey_pt_all': { name: 'ALASKA_DNR_AGREEMENT_SETTLEMENT_RECONVEY_PT', icon: '📍' },
       'alaska_dnr_restricted_use_authorization_pt_all': { name: 'ALASKA_DNR_RESTRICTED_USE_AUTHORIZATION_PT', icon: '🚫' },
       'alaska_dnr_potential_hazardous_sites_pt_all': { name: 'ALASKA_DNR_POTENTIAL_HAZARDOUS_SITES_PT', icon: '⚠️' },
@@ -13741,7 +13770,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'alaska_dnr_easement_pt_all': { name: 'ALASKA_DNR_EASEMENT_PT', icon: '🛤️' },
       'alaska_dnr_land_disposal_other_pt_all': { name: 'ALASKA_DNR_LAND_DISPOSAL_OTHER_PT', icon: '🏘️' },
       'alaska_dnr_land_estate_survey_boundary_pt_all': { name: 'ALASKA_DNR_LAND_ESTATE_SURVEY_BOUNDARY_PT', icon: '📍' },
-      // Alaska DNR Mapper Land Estate Layers - Polyline layers
       'alaska_dnr_land_estate_simple_coastline_all': { name: 'ALASKA_DNR_LAND_ESTATE_SIMPLE_COASTLINE', icon: '🌊' },
       'alaska_dnr_agreement_settlement_reconvey_line_all': { name: 'ALASKA_DNR_AGREEMENT_SETTLEMENT_RECONVEY_LINE', icon: '📏' },
       'alaska_dnr_restricted_use_authorization_line_all': { name: 'ALASKA_DNR_RESTRICTED_USE_AUTHORIZATION_LINE', icon: '🚫' },
@@ -13760,7 +13788,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'alaska_dnr_state_selected_land_le_line_all': { name: 'ALASKA_DNR_STATE_SELECTED_LAND_LE_LINE', icon: '🗺️' },
       'alaska_dnr_state_ta_patented_le_line_all': { name: 'ALASKA_DNR_STATE_TA_PATENTED_LE_LINE', icon: '📜' },
       'alaska_dnr_land_estate_survey_boundary_line_all': { name: 'ALASKA_DNR_LAND_ESTATE_SURVEY_BOUNDARY_LINE', icon: '📏' },
-      // Alaska DNR Mapper Land Estate Layers - Polygon layers
       'alaska_dnr_land_estate_section_all': { name: 'ALASKA_DNR_LAND_ESTATE_SECTION', icon: '🗺️' },
       'alaska_dnr_agreement_settlement_recon_poly_all': { name: 'ALASKA_DNR_AGREEMENT_SETTLEMENT_RECON_POLY', icon: '📋' },
       'alaska_dnr_restricted_use_authorization_poly_all': { name: 'ALASKA_DNR_RESTRICTED_USE_AUTHORIZATION_POLY', icon: '🚫' },
@@ -13784,15 +13811,12 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'alaska_dnr_land_estate_survey_boundary_poly_all': { name: 'ALASKA_DNR_LAND_ESTATE_SURVEY_BOUNDARY_POLY', icon: '📋' },
       'alaska_dnr_land_estate_recording_district_boundary_all': { name: 'ALASKA_DNR_LAND_ESTATE_RECORDING_DISTRICT_BOUNDARY', icon: '🏛️' },
       'alaska_dnr_land_estate_township_all': { name: 'ALASKA_DNR_LAND_ESTATE_TOWNSHIP', icon: '🏘️' },
-      // Alaska DNR Mapper Mineral Estate Layers - Point layers
       'alaska_dnr_mineral_estate_agreement_settlement_recon_point_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_AGREEMENT_SETTLEMENT_RECON_POINT', icon: '📋' },
-      // Alaska DNR Mapper Mineral Estate Layers - Polyline layers
       'alaska_dnr_mineral_estate_agreement_settlement_recon_line_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_AGREEMENT_SETTLEMENT_RECON_LINE', icon: '📏' },
       'alaska_dnr_mineral_estate_federal_action_line_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_FEDERAL_ACTION_LINE', icon: '🏛️' },
       'alaska_dnr_mineral_estate_leasehold_location_line_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_LEASEHOLD_LOCATION_LINE', icon: '📍' },
       'alaska_dnr_mineral_estate_management_agreement_line_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_MANAGEMENT_AGREEMENT_LINE', icon: '📄' },
       'alaska_dnr_mineral_estate_mineral_order_line_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_MINERAL_ORDER_LINE', icon: '⛏️' },
-      // Alaska DNR Mapper Mineral Estate Layers - Polygon layers
       'alaska_dnr_mineral_estate_agreement_settlement_recon_poly_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_AGREEMENT_SETTLEMENT_RECON_POLY', icon: '📋' },
       'alaska_dnr_mineral_estate_federal_action_poly_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_FEDERAL_ACTION_POLY', icon: '🏛️' },
       'alaska_dnr_mineral_estate_leasehold_location_poly_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_LEASEHOLD_LOCATION_POLY', icon: '📍' },
@@ -13820,33 +13844,135 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       'alaska_dnr_mineral_estate_well_site_point_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_WELL_SITE_POINT', icon: '⛽' },
       'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_DCCED_CRA_BOROUGH_BOUNDARY', icon: '🏛️' },
       'alaska_dnr_mineral_estate_township_all': { name: 'ALASKA_DNR_MINERAL_ESTATE_TOWNSHIP', icon: '🏘️' },
-      'boston_fiber_pic_conduit_all': { name: 'BOSTON_FIBER_PIC_CONDUIT', icon: '🔌' },
-      'boston_fiber_rcn_fiber_all': { name: 'BOSTON_FIBER_RCN_FIBER', icon: '🔌' },
-      'boston_fiber_nstar_conduit_all': { name: 'BOSTON_FIBER_NSTAR_CONDUIT', icon: '🔌' },
-      'boston_fiber_btd_all': { name: 'BOSTON_FIBER_BTD', icon: '🚗' },
-      'boston_fiber_lit_fiber_all': { name: 'BOSTON_FIBER_LIT_FIBER', icon: '💡' },
-      'boston_fiber_core_fiber_all': { name: 'BOSTON_FIBER_CORE_FIBER', icon: '🔷' },
-      'boston_fiber_wireless_all': { name: 'BOSTON_FIBER_WIRELESS', icon: '📶' },
-      'boston_fiber_planning_areas_all': { name: 'BOSTON_FIBER_PLANNING_AREAS', icon: '🗺️' },
-      'boston_infrastructure_sidewalk_inventory_all': { name: 'BOSTON_SIDEWALK_INVENTORY', icon: '🚶' },
-      'boston_infrastructure_mbta_stops_all': { name: 'BOSTON_MBTA_STOPS_INFRASTRUCTURE', icon: '🚇' },
-      'boston_infrastructure_hospitals_all': { name: 'BOSTON_HOSPITALS', icon: '🏥' },
-      'boston_infrastructure_ramp_inventory_all': { name: 'BOSTON_RAMP_INVENTORY', icon: '♿' },
-      'boston_infrastructure_mbta_bus_stops_all': { name: 'BOSTON_MBTA_BUS_STOPS', icon: '🚌' },
-      'boston_infrastructure_sidewalk_centerline_all': { name: 'BOSTON_SIDEWALK_CENTERLINE', icon: '🚶' },
-      'boston_infrastructure_curbs_all': { name: 'BOSTON_CURBS', icon: '🛣️' },
-      'boston_infrastructure_snow_emergency_routes_all': { name: 'BOSTON_SNOW_EMERGENCY_ROUTES', icon: '❄️' },
-      'boston_infrastructure_segments_all': { name: 'BOSTON_SEGMENTS', icon: '🛣️' },
-      'boston_infrastructure_parking_meters_all': { name: 'BOSTON_PARKING_METERS', icon: '🅿️' },
-      'boston_infrastructure_trash_collection_days_all': { name: 'BOSTON_TRASH_COLLECTION_DAYS', icon: '🗑️' },
-      'boston_infrastructure_street_lights_all': { name: 'BOSTON_STREET_LIGHTS', icon: '💡' },
-      'boston_infrastructure_traffic_signals_all': { name: 'BOSTON_TRAFFIC_SIGNALS', icon: '🚦' },
-      'boston_infrastructure_curbs2_all': { name: 'BOSTON_CURBS_LAYER_13', icon: '🛣️' },
-      'boston_infrastructure_massdot_road_inventory_all': { name: 'BOSTON_MASSDOT_ROAD_INVENTORY', icon: '🛣️' },
-      'boston_infrastructure_mbta_bus_routes_all': { name: 'BOSTON_MBTA_BUS_ROUTES', icon: '🚌' },
-      'boston_infrastructure_mbcr_train_routes_all': { name: 'BOSTON_MBCR_TRAIN_ROUTES', icon: '🚂' },
-      'boston_infrastructure_mbcr_train_stations_all': { name: 'BOSTON_MBCR_TRAIN_STATIONS', icon: '🚉' }
+      'alaska_dnr_mht_trust_land_survey_all': { name: 'ALASKA_DNR_MHT_TRUST_LAND_SURVEY', icon: '🗺️' },
+      'alaska_dnr_mht_other_activity_all': { name: 'ALASKA_DNR_MHT_OTHER_ACTIVITY', icon: '📋' },
+      'alaska_dnr_mht_trespass_point_all': { name: 'ALASKA_DNR_MHT_TRESPASS_POINT', icon: '📍' },
+      'alaska_dnr_mht_trespass_line_all': { name: 'ALASKA_DNR_MHT_TRESPASS_LINE', icon: '📏' },
+      'alaska_dnr_mht_trespass_area_all': { name: 'ALASKA_DNR_MHT_TRESPASS_AREA', icon: '🚫' },
+      'alaska_dnr_mht_easements_all': { name: 'ALASKA_DNR_MHT_EASEMENTS', icon: '🛤️' },
+      'alaska_dnr_mht_easement_point_all': { name: 'ALASKA_DNR_MHT_EASEMENT_POINT', icon: '📍' },
+      'alaska_dnr_mht_easement_line_all': { name: 'ALASKA_DNR_MHT_EASEMENT_LINE', icon: '📏' },
+      'alaska_dnr_mht_easement_area_all': { name: 'ALASKA_DNR_MHT_EASEMENT_AREA', icon: '🛤️' },
+      'alaska_dnr_mht_land_sales_all': { name: 'ALASKA_DNR_MHT_LAND_SALES', icon: '🏠' },
+      'alaska_dnr_mht_land_sale_conveyed_all': { name: 'ALASKA_DNR_MHT_LAND_SALE_CONVEYED', icon: '✅' },
+      'alaska_dnr_mht_land_sale_contract_all': { name: 'ALASKA_DNR_MHT_LAND_SALE_CONTRACT', icon: '📝' },
+      'alaska_dnr_mht_land_sale_available_otc_all': { name: 'ALASKA_DNR_MHT_LAND_SALE_AVAILABLE_OTC', icon: '🛒' },
+      'alaska_dnr_mht_land_sale_pending_interest_all': { name: 'ALASKA_DNR_MHT_LAND_SALE_PENDING_INTEREST', icon: '⏳' },
+      'alaska_dnr_mht_land_sale_potential_reoffer_all': { name: 'ALASKA_DNR_MHT_LAND_SALE_POTENTIAL_REOFFER', icon: '🔄' },
+      'alaska_dnr_mht_land_sale_new_inventory_all': { name: 'ALASKA_DNR_MHT_LAND_SALE_NEW_INVENTORY', icon: '🆕' },
+      'alaska_dnr_mht_land_sale_predisposal_all': { name: 'ALASKA_DNR_MHT_LAND_SALE_PREDISPOSAL', icon: '📦' },
+      'alaska_dnr_mht_land_sale_all_all': { name: 'ALASKA_DNR_MHT_LAND_SALE_ALL', icon: '🏘️' },
+      'alaska_dnr_mht_resource_sales_all': { name: 'ALASKA_DNR_MHT_RESOURCE_SALES', icon: '💰' },
+      'alaska_dnr_mht_material_sale_all': { name: 'ALASKA_DNR_MHT_MATERIAL_SALE', icon: '⛏️' },
+      'alaska_dnr_mht_timber_sale_all': { name: 'ALASKA_DNR_MHT_TIMBER_SALE', icon: '🌲' },
+      'alaska_dnr_mht_land_leases_licenses_all': { name: 'ALASKA_DNR_MHT_LAND_LEASES_LICENSES', icon: '📄' },
+      'alaska_dnr_mht_land_use_license_line_all': { name: 'ALASKA_DNR_MHT_LAND_USE_LICENSE_LINE', icon: '📏' },
+      'alaska_dnr_mht_land_use_license_area_all': { name: 'ALASKA_DNR_MHT_LAND_USE_LICENSE_AREA', icon: '📋' },
+      'alaska_dnr_mht_land_lease_all': { name: 'ALASKA_DNR_MHT_LAND_LEASE', icon: '🏢' },
+      'alaska_dnr_mht_mineral_leases_licenses_all': { name: 'ALASKA_DNR_MHT_MINERAL_LEASES_LICENSES', icon: '💎' },
+      'alaska_dnr_mht_mineral_lease_all': { name: 'ALASKA_DNR_MHT_MINERAL_LEASE', icon: '⛏️' },
+      'alaska_dnr_mht_oil_gas_lease_all': { name: 'ALASKA_DNR_MHT_OIL_GAS_LEASE', icon: '🛢️' },
+      'alaska_dnr_mht_coal_lease_all': { name: 'ALASKA_DNR_MHT_COAL_LEASE', icon: '⚫' },
+      'alaska_dnr_mht_mineral_exploration_license_all': { name: 'ALASKA_DNR_MHT_MINERAL_EXPLORATION_LICENSE', icon: '🔍' },
+      'alaska_dnr_mht_oil_gas_exploration_license_all': { name: 'ALASKA_DNR_MHT_OIL_GAS_EXPLORATION_LICENSE', icon: '🔎' },
+      'alaska_dnr_mht_coal_exploration_license_all': { name: 'ALASKA_DNR_MHT_COAL_EXPLORATION_LICENSE', icon: '🔬' },
+      'alaska_dnr_mht_other_exploration_license_all': { name: 'ALASKA_DNR_MHT_OTHER_EXPLORATION_LICENSE', icon: '🔭' },
+      'alaska_dnr_tundra_area_stations_all': { name: 'ALASKA_DNR_TUNDRA_AREA_STATIONS', icon: '📍' },
+      'alaska_dnr_tundra_area_dalton_highway_all': { name: 'ALASKA_DNR_TUNDRA_AREA_DALTON_HIGHWAY', icon: '🛣️' },
+      'alaska_dnr_tundra_area_tundra_regions_all': { name: 'ALASKA_DNR_TUNDRA_AREA_TUNDRA_REGIONS', icon: '🏔️' },
+      'alaska_dnr_soil_water_conservation_districts_all': { name: 'ALASKA_DNR_SOIL_WATER_CONSERVATION_DISTRICTS', icon: '💧' },
+      'alaska_dnr_mht_tlo_land_exchange_all': { name: 'ALASKA_DNR_MHT_TLO_LAND_EXCHANGE', icon: '🔄' },
+      'alaska_dnr_mht_tlo_agreement_all': { name: 'ALASKA_DNR_MHT_TLO_AGREEMENT', icon: '📜' },
+      'alaska_dnr_mht_title_all': { name: 'ALASKA_DNR_MHT_TITLE', icon: '📑' },
+      'alaska_dnr_mht_mental_health_parcel_all': { name: 'ALASKA_DNR_MHT_MENTAL_HEALTH_PARCEL', icon: '🏥' },
+      'alaska_dnr_mht_mental_health_land_qcd_all': { name: 'ALASKA_DNR_MHT_MENTAL_HEALTH_LAND_QCD', icon: '🏥' }
     };
+    
+    if (alaskaDNRLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = alaskaDNRLayerMap[key];
+      value.forEach((feature: any) => {
+        // Handle Alaska DNR features - points, polylines, and polygons
+        const featureName = feature.name || feature.NAME || feature.NAME1 || feature.NAME2 ||
+          feature.Station_Name || feature.station_name || feature.STATION_NAME ||
+          feature.SITE_NAME || feature.site_name || feature.SITE_NAME_ ||
+          feature.layerName || feature.LAYER_NAME || feature.LayerName ||
+          feature.OBJECTID || feature.objectid || feature.ObjectId || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        
+        // Extract coordinates from geometry or attributes
+        let lat = '';
+        let lon = '';
+        if (feature.Latitude && feature.Longitude) {
+          lat = feature.Latitude.toString();
+          lon = feature.Longitude.toString();
+        } else if (feature.geometry) {
+          if (feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
+            lat = feature.geometry.y.toString();
+            lon = feature.geometry.x.toString();
+          } else if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline - use first point of first path
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const firstPoint = firstPath[0];
+              lat = firstPoint[1].toString();
+              lon = firstPoint[0].toString();
+            }
+          } else if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Polygon - use first point of first ring
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              lat = firstPoint[1].toString();
+              lon = firstPoint[0].toString();
+            }
+          }
+        }
+        
+        if (!lat || !lon) {
+          lat = location.lat.toString();
+          lon = location.lon.toString();
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.ObjectId;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        delete allAttributes.Latitude;
+        delete allAttributes.Longitude;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        // Build description
+        let description = `${layerInfo.icon} ${featureName}`;
+        if (feature.isContaining) description += ' (Contains Point)';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Alaska DNR',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          description,
+          lat || location.lat.toString(),
+          lon || location.lon.toString(),
+          distance,
+          featureName,
+          isContaining,
+          '',
+          '',
+          attributesJson,
+          'Alaska DNR'
+        ]);
+      });
+    }
     
     if (bostonLayerMap[key] && Array.isArray(value)) {
       const layerInfo = bostonLayerMap[key];

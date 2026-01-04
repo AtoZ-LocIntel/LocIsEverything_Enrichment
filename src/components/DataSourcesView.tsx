@@ -3928,6 +3928,342 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/Mapper/Mineral_Estate_Layers/MapServer/45"
         },
         {
+          name: "Alaska DNR - MHT Trust Land Survey (TLS)",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Trust Land Survey (TLS) (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - MHT Other Activity",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Other Activity (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/1"
+        },
+        {
+          name: "Alaska DNR - MHT Trespass Point",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Trespass Point (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/2"
+        },
+        {
+          name: "Alaska DNR - MHT Trespass Line",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Trespass Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/3"
+        },
+        {
+          name: "Alaska DNR - MHT Trespass Area",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Trespass Area (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/4"
+        },
+        {
+          name: "Alaska DNR - MHT Easements",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Easements (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/5"
+        },
+        {
+          name: "Alaska DNR - MHT Easement Point",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Easement Point (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/6"
+        },
+        {
+          name: "Alaska DNR - MHT Easement Line",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Easement Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/7"
+        },
+        {
+          name: "Alaska DNR - MHT Easement Area",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Easement Area (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/8"
+        },
+        {
+          name: "Alaska DNR - MHT Land Sales",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Sales (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/9"
+        },
+        {
+          name: "Alaska DNR - MHT Land Sale, Conveyed",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Sale, Conveyed (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/10"
+        },
+        {
+          name: "Alaska DNR - MHT Land Sale, Contract",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Sale, Contract (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/11"
+        },
+        {
+          name: "Alaska DNR - MHT Land Sale, Available OTC",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Sale, Available OTC (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/12"
+        },
+        {
+          name: "Alaska DNR - MHT Land Sale, Pending Interest",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Sale, Pending Interest (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/13"
+        },
+        {
+          name: "Alaska DNR - MHT Land Sale, Potential Reoffer",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Sale, Potential Reoffer (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/14"
+        },
+        {
+          name: "Alaska DNR - MHT Land Sale, New Inventory",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Sale, New Inventory (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/15"
+        },
+        {
+          name: "Alaska DNR - MHT Land Sale, Predisposal",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Sale, Predisposal (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/16"
+        },
+        {
+          name: "Alaska DNR - MHT Land Sale, All",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Sale, All (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/17"
+        },
+        {
+          name: "Alaska DNR - MHT Resource Sales",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Resource Sales (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/18"
+        },
+        {
+          name: "Alaska DNR - MHT Material Sale",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Material Sale (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/19"
+        },
+        {
+          name: "Alaska DNR - MHT Timber Sale",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Timber Sale (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/20"
+        },
+        {
+          name: "Alaska DNR - MHT Land Leases & Licenses",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Leases & Licenses (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/21"
+        },
+        {
+          name: "Alaska DNR - MHT Land Use License Line",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Use License Line (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/22"
+        },
+        {
+          name: "Alaska DNR - MHT Land Use License Area",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Use License Area (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/23"
+        },
+        {
+          name: "Alaska DNR - MHT Land Lease",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Land Lease (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/24"
+        },
+        {
+          name: "Alaska DNR - MHT Mineral Leases & Licenses",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Mineral Leases & Licenses (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/25"
+        },
+        {
+          name: "Alaska DNR - MHT Mineral Lease",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Mineral Lease (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/26"
+        },
+        {
+          name: "Alaska DNR - MHT Oil & Gas Lease",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Oil & Gas Lease (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/27"
+        },
+        {
+          name: "Alaska DNR - MHT Coal Lease",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Coal Lease (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/28"
+        },
+        {
+          name: "Alaska DNR - MHT Mineral Exploration License",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Mineral Exploration License (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/29"
+        },
+        {
+          name: "Alaska DNR - MHT Oil & Gas Exploration License",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Oil & Gas Exploration License (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/30"
+        },
+        {
+          name: "Alaska DNR - MHT Coal Exploration License",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Coal Exploration License (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/31"
+        },
+        {
+          name: "Alaska DNR - MHT Other Exploration License",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Other Exploration License (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/32"
+        },
+        {
+          name: "Alaska DNR - Tundra Area Stations",
+          description: "Alaska Department of Natural Resources - Tundra Area Stations (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MLW/TundraArea/MapServer/14"
+        },
+        {
+          name: "Alaska DNR - Tundra Area Dalton Highway",
+          description: "Alaska Department of Natural Resources - Tundra Area Dalton Highway (proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MLW/TundraArea/MapServer/12"
+        },
+        {
+          name: "Alaska DNR - Tundra Area Tundra Regions",
+          description: "Alaska Department of Natural Resources - Tundra Area Tundra Regions (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MLW/TundraArea/MapServer/13"
+        },
+        {
+          name: "Alaska DNR - Soil and Water Conservation Districts",
+          description: "Alaska Department of Natural Resources - Administrative Soil and Water Conservation Districts (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/Administrative_SoilWaterConservationDistricts/MapServer/0"
+        },
+        {
+          name: "Alaska DNR - MHT TLO Land Exchange",
+          description: "Alaska Department of Natural Resources - MHT Land Activity TLO Land Exchange (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/34"
+        },
+        {
+          name: "Alaska DNR - MHT TLO Agreement",
+          description: "Alaska Department of Natural Resources - MHT Land Activity TLO Agreement (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/35"
+        },
+        {
+          name: "Alaska DNR - MHT Title",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Title (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/36"
+        },
+        {
+          name: "Alaska DNR - MHT Mental Health Parcel",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Mental Health Parcel (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/37"
+        },
+        {
+          name: "Alaska DNR - MHT Mental Health Land (QCD)",
+          description: "Alaska Department of Natural Resources - MHT Land Activity Mental Health Land (QCD) (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "Alaska",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://arcgis.dnr.alaska.gov/arcgis/rest/services/MentalHealth/MHTLandActivity/MapServer/38"
+        },
+        {
           name: "Alaska DNR - Shore Fishery Leases (Line)",
           description: "Alaska Department of Natural Resources - Shore Fishery Leases Line (proximity queries up to 100 miles)",
           coverage: "Alaska",

@@ -257,7 +257,7 @@ import {
   getBostonDOITMBTARapidTransitData,
   getBostonDOITRailData,
 } from '../adapters/bostonOpenData';
-import { getAlaskaDNRTransAlaskaPipelineData, getAlaskaDNRWellSitesData, getAlaskaDNROilGasLeaseSaleTractData, getAlaskaDNRStateParkRoadsData, getAlaskaDNRStateParkTrailsData, getAlaskaDNRStateParkBoundariesData, getAlaskaDNRStateParkFacilitiesData, getAlaskaDNRControlledLivestockDistrictsData, getAlaskaDNRLandCapacityClassificationData, getAlaskaDNRShoreFisheryLeasesData, getAlaskaDNRAquaticFarmLeasesData, getAlaskaDNRWELTSData, getAlaskaDNRPLSSSectionData, getAlaskaDNRPLSSTownshipData, getAlaskaDNRSurfaceWaterRightLocationData, getAlaskaDNRSubSurfaceWaterRightLocationData, getAlaskaDNRSurfaceWaterRightsData, getAlaskaDNRSubSurfaceWaterRightsData, getAlaskaDNRInstreamFlowWaterReservationsPointData, getAlaskaDNRInstreamFlowWaterReservationsLineData, getAlaskaDNRInstreamFlowWaterReservationsPolygonData, getAlaskaDNRShoreFisheryLeasesLineData, getAlaskaDNRShoreFisheryLeasesPolygonData, getAlaskaDNRAquaticFarmLeasesWaterEstateData, getAlaskaDNRLeaseLineData, getAlaskaDNRLeaseAreaData, getAlaskaDNRHattersPassPlanBoundaryData, getAlaskaDNRHattersPassNonMotorizedSummerData, getAlaskaDNRHattersPassNonMotorizedYearRoundData, getAlaskaDNRNationalGeodeticSurveyPtData, getAlaskaDNRStateControlMonumentsData, getAlaskaDNRBLMMonumentsGCDBData, getAlaskaDNRBLMMonumentsSDMSData, getAlaskaDNRSurveyBoundaryPtData, getAlaskaDNRSimpleCoastlineData, getAlaskaDNRSurveyTractLineData, getAlaskaDNRSurveyBlockLineData, getAlaskaDNRSurveyBoundaryLineData, getAlaskaDNRSectionData, getAlaskaDNRSurveyLotPolyData, getAlaskaDNRSurveyTractPolyData, getAlaskaDNRSurveyBlockPolyData, getAlaskaDNRSurveyBoundaryPolyData, getAlaskaDNRTownshipData, getAlaskaDNRIncorporatedCityBoundaryData, getAlaskaDNRRecordingDistrictBoundaryData, getAlaskaDNRDCCEDCRABoroughBoundaryData, getAlaskaDNRAgreementSettlementReconveyPtData, getAlaskaDNRRestrictedUseAuthorizationPtData, getAlaskaDNRPotentialHazardousSitesPtData, getAlaskaDNRTrespassPtData, getAlaskaDNRPermitLeaseLEPtData, getAlaskaDNREasementPtData, getAlaskaDNRLandDisposalOtherPtData, getAlaskaDNRLandEstateSurveyBoundaryPtData, getAlaskaDNRLandEstateSimpleCoastlineData, getAlaskaDNRAgreementSettlementReconveyLineData, getAlaskaDNRRestrictedUseAuthorizationLineData, getAlaskaDNRPotentialHazardousSitesLineData, getAlaskaDNRTrespassLineData, getAlaskaDNRPermitLeaseLELineData, getAlaskaDNREasementLineData, getAlaskaDNRResourceSaleLineData, getAlaskaDNRFederalActionLineData, getAlaskaDNRLandDisposalAvailableLineData, getAlaskaDNRLandDisposalConveyedLineData, getAlaskaDNRLandDisposalOtherLineData, getAlaskaDNRManagementAgreementLineData, getAlaskaDNROtherStateAcquiredLELineData, getAlaskaDNRS2477LineData, getAlaskaDNRStateSelectedLandLELineData, getAlaskaDNRStateTAPatentedLELineData, getAlaskaDNRLandEstateSurveyBoundaryLineData, getAlaskaDNRLandEstateSectionData, getAlaskaDNRAgreementSettlementReconPolyData, getAlaskaDNRRestrictedUseAuthorizationPolyData, getAlaskaDNRPotentialHazardousSitesPolyData, getAlaskaDNRTrespassPolyData, getAlaskaDNRPermitLeaseLEPolyData, getAlaskaDNREasementPolyData, getAlaskaDNRResourceSalePolyData, getAlaskaDNRFederalActionPolyData, getAlaskaDNRLandDisposalAvailablePolyData, getAlaskaDNRLandDisposalConveyedPolyData, getAlaskaDNRLandDisposalOtherPolyData, getAlaskaDNRManagementAgreementPolyData, getAlaskaDNRMentalHealthTrustLandPolyData, getAlaskaDNRMunicipalEntitlementPolyData, getAlaskaDNRMunicipalTidelandPolyData, getAlaskaDNRStateInterestNativeAllotmentPolyData, getAlaskaDNROtherStateAcquiredLEPolyData, getAlaskaDNRStateSelectedOrANILCATopfiledLandLEPolyData, getAlaskaDNRStateTAPatentedLEPolyData, getAlaskaDNRLandEstateSurveyBoundaryPolyData, getAlaskaDNRLandEstateRecordingDistrictBoundaryData, getAlaskaDNRLandEstateTownshipData, getAlaskaDNRMineralEstateAgreementSettlementReconPointData, getAlaskaDNRMineralEstateAgreementSettlementReconLineData, getAlaskaDNRMineralEstateAgreementSettlementReconPolyData, getAlaskaDNRMineralEstateFederalActionLineData, getAlaskaDNRMineralEstateFederalActionPolyData, getAlaskaDNRMineralEstateLeaseholdLocationLineData, getAlaskaDNRMineralEstateLeaseholdLocationPolyData, getAlaskaDNRMineralEstateManagementAgreementLineData, getAlaskaDNRMineralEstateManagementAgreementPolyData, getAlaskaDNRMineralEstateMentalHealthTrustLandPolyData, getAlaskaDNRMineralEstateMineralOrderLineData, getAlaskaDNRMineralEstateMineralOrderPolyData, getAlaskaDNRMineralEstateStateInterestNativeAllotmentPolyData, getAlaskaDNRMineralEstateOilGasLeaseSaleTractCurrentData, getAlaskaDNRMineralEstateOtherStateAcquiredMELineData, getAlaskaDNRMineralEstateOtherStateAcquiredMEPolyData, getAlaskaDNRMineralEstatePermitLeaseMEPolyData, getAlaskaDNRMineralEstateStateMiningClaimPolyData, getAlaskaDNRMineralEstateStateMiningClaimPendingPolyData, getAlaskaDNRMineralEstateStateMiningClaimClosedPolyData, getAlaskaDNRMineralEstateStateProspectingSitePolyData, getAlaskaDNRMineralEstateMunicipalEntitlementPolyData, getAlaskaDNRMineralEstateStateSelectedLandMELineData, getAlaskaDNRMineralEstateStateSelectedOrANILCATopfiledLandMEPolyData, getAlaskaDNRMineralEstateStateTAPatentedMELineData, getAlaskaDNRMineralEstateStateTAPatentedMEPolyData, getAlaskaDNRMineralEstateSurveyBoundaryPtData, getAlaskaDNRMineralEstateSurveyBoundaryLineData, getAlaskaDNRMineralEstateSurveyBoundaryPolyData, getAlaskaDNRMineralEstateRecordingDistrictBoundaryData, getAlaskaDNRMineralEstateWellSitePointData, getAlaskaDNRMineralEstateDCCEDCRABoroughBoundaryData, getAlaskaDNRMineralEstateTownshipData } from '../adapters/alaskaDNR';
+import { getAlaskaDNRTransAlaskaPipelineData, getAlaskaDNRWellSitesData, getAlaskaDNROilGasLeaseSaleTractData, getAlaskaDNRStateParkRoadsData, getAlaskaDNRStateParkTrailsData, getAlaskaDNRStateParkBoundariesData, getAlaskaDNRStateParkFacilitiesData, getAlaskaDNRControlledLivestockDistrictsData, getAlaskaDNRLandCapacityClassificationData, getAlaskaDNRShoreFisheryLeasesData, getAlaskaDNRAquaticFarmLeasesData, getAlaskaDNRWELTSData, getAlaskaDNRPLSSSectionData, getAlaskaDNRPLSSTownshipData, getAlaskaDNRSurfaceWaterRightLocationData, getAlaskaDNRSubSurfaceWaterRightLocationData, getAlaskaDNRSurfaceWaterRightsData, getAlaskaDNRSubSurfaceWaterRightsData, getAlaskaDNRInstreamFlowWaterReservationsPointData, getAlaskaDNRInstreamFlowWaterReservationsLineData, getAlaskaDNRInstreamFlowWaterReservationsPolygonData, getAlaskaDNRShoreFisheryLeasesLineData, getAlaskaDNRShoreFisheryLeasesPolygonData, getAlaskaDNRAquaticFarmLeasesWaterEstateData, getAlaskaDNRLeaseLineData, getAlaskaDNRLeaseAreaData, getAlaskaDNRHattersPassPlanBoundaryData, getAlaskaDNRHattersPassNonMotorizedSummerData, getAlaskaDNRHattersPassNonMotorizedYearRoundData, getAlaskaDNRNationalGeodeticSurveyPtData, getAlaskaDNRStateControlMonumentsData, getAlaskaDNRBLMMonumentsGCDBData, getAlaskaDNRBLMMonumentsSDMSData, getAlaskaDNRSurveyBoundaryPtData, getAlaskaDNRSimpleCoastlineData, getAlaskaDNRSurveyTractLineData, getAlaskaDNRSurveyBlockLineData, getAlaskaDNRSurveyBoundaryLineData, getAlaskaDNRSectionData, getAlaskaDNRSurveyLotPolyData, getAlaskaDNRSurveyTractPolyData, getAlaskaDNRSurveyBlockPolyData, getAlaskaDNRSurveyBoundaryPolyData, getAlaskaDNRTownshipData, getAlaskaDNRIncorporatedCityBoundaryData, getAlaskaDNRRecordingDistrictBoundaryData, getAlaskaDNRDCCEDCRABoroughBoundaryData, getAlaskaDNRAgreementSettlementReconveyPtData, getAlaskaDNRRestrictedUseAuthorizationPtData, getAlaskaDNRPotentialHazardousSitesPtData, getAlaskaDNRTrespassPtData, getAlaskaDNRPermitLeaseLEPtData, getAlaskaDNREasementPtData, getAlaskaDNRLandDisposalOtherPtData, getAlaskaDNRLandEstateSurveyBoundaryPtData, getAlaskaDNRLandEstateSimpleCoastlineData, getAlaskaDNRAgreementSettlementReconveyLineData, getAlaskaDNRRestrictedUseAuthorizationLineData, getAlaskaDNRPotentialHazardousSitesLineData, getAlaskaDNRTrespassLineData, getAlaskaDNRPermitLeaseLELineData, getAlaskaDNREasementLineData, getAlaskaDNRResourceSaleLineData, getAlaskaDNRFederalActionLineData, getAlaskaDNRLandDisposalAvailableLineData, getAlaskaDNRLandDisposalConveyedLineData, getAlaskaDNRLandDisposalOtherLineData, getAlaskaDNRManagementAgreementLineData, getAlaskaDNROtherStateAcquiredLELineData, getAlaskaDNRS2477LineData, getAlaskaDNRStateSelectedLandLELineData, getAlaskaDNRStateTAPatentedLELineData, getAlaskaDNRLandEstateSurveyBoundaryLineData, getAlaskaDNRLandEstateSectionData, getAlaskaDNRAgreementSettlementReconPolyData, getAlaskaDNRRestrictedUseAuthorizationPolyData, getAlaskaDNRPotentialHazardousSitesPolyData, getAlaskaDNRTrespassPolyData, getAlaskaDNRPermitLeaseLEPolyData, getAlaskaDNREasementPolyData, getAlaskaDNRResourceSalePolyData, getAlaskaDNRFederalActionPolyData, getAlaskaDNRLandDisposalAvailablePolyData, getAlaskaDNRLandDisposalConveyedPolyData, getAlaskaDNRLandDisposalOtherPolyData, getAlaskaDNRManagementAgreementPolyData, getAlaskaDNRMentalHealthTrustLandPolyData, getAlaskaDNRMunicipalEntitlementPolyData, getAlaskaDNRMunicipalTidelandPolyData, getAlaskaDNRStateInterestNativeAllotmentPolyData, getAlaskaDNROtherStateAcquiredLEPolyData, getAlaskaDNRStateSelectedOrANILCATopfiledLandLEPolyData, getAlaskaDNRStateTAPatentedLEPolyData, getAlaskaDNRLandEstateSurveyBoundaryPolyData, getAlaskaDNRLandEstateRecordingDistrictBoundaryData, getAlaskaDNRLandEstateTownshipData, getAlaskaDNRMineralEstateAgreementSettlementReconPointData, getAlaskaDNRMineralEstateAgreementSettlementReconLineData, getAlaskaDNRMineralEstateAgreementSettlementReconPolyData, getAlaskaDNRMineralEstateFederalActionLineData, getAlaskaDNRMineralEstateFederalActionPolyData, getAlaskaDNRMineralEstateLeaseholdLocationLineData, getAlaskaDNRMineralEstateLeaseholdLocationPolyData, getAlaskaDNRMineralEstateManagementAgreementLineData, getAlaskaDNRMineralEstateManagementAgreementPolyData, getAlaskaDNRMineralEstateMentalHealthTrustLandPolyData, getAlaskaDNRMineralEstateMineralOrderLineData, getAlaskaDNRMineralEstateMineralOrderPolyData, getAlaskaDNRMineralEstateStateInterestNativeAllotmentPolyData, getAlaskaDNRMineralEstateOilGasLeaseSaleTractCurrentData, getAlaskaDNRMineralEstateOtherStateAcquiredMELineData, getAlaskaDNRMineralEstateOtherStateAcquiredMEPolyData, getAlaskaDNRMineralEstatePermitLeaseMEPolyData, getAlaskaDNRMineralEstateStateMiningClaimPolyData, getAlaskaDNRMineralEstateStateMiningClaimPendingPolyData, getAlaskaDNRMineralEstateStateMiningClaimClosedPolyData, getAlaskaDNRMineralEstateStateProspectingSitePolyData, getAlaskaDNRMineralEstateMunicipalEntitlementPolyData, getAlaskaDNRMineralEstateStateSelectedLandMELineData, getAlaskaDNRMineralEstateStateSelectedOrANILCATopfiledLandMEPolyData, getAlaskaDNRMineralEstateStateTAPatentedMELineData, getAlaskaDNRMineralEstateStateTAPatentedMEPolyData, getAlaskaDNRMineralEstateSurveyBoundaryPtData, getAlaskaDNRMineralEstateSurveyBoundaryLineData, getAlaskaDNRMineralEstateSurveyBoundaryPolyData, getAlaskaDNRMineralEstateRecordingDistrictBoundaryData, getAlaskaDNRMineralEstateWellSitePointData, getAlaskaDNRMineralEstateDCCEDCRABoroughBoundaryData, getAlaskaDNRMineralEstateTownshipData, getAlaskaDNRMHTTrustLandSurveyData, getAlaskaDNRMHTOtherActivityData, getAlaskaDNRMHTTrespassPointData, getAlaskaDNRMHTTrespassLineData, getAlaskaDNRMHTTrespassAreaData, getAlaskaDNRMHTEasementsData, getAlaskaDNRMHTEasementPointData, getAlaskaDNRMHTEasementLineData, getAlaskaDNRMHTEasementAreaData, getAlaskaDNRMHTLandSalesData, getAlaskaDNRMHTLandSaleConveyedData, getAlaskaDNRMHTLandSaleContractData, getAlaskaDNRMHTLandSaleAvailableOTCData, getAlaskaDNRMHTLandSalePendingInterestData, getAlaskaDNRMHTLandSalePotentialReofferData, getAlaskaDNRMHTLandSaleNewInventoryData, getAlaskaDNRMHTLandSalePredisposalData, getAlaskaDNRMHTLandSaleAllData, getAlaskaDNRMHTResourceSalesData, getAlaskaDNRMHTMaterialSaleData, getAlaskaDNRMHTTimberSaleData, getAlaskaDNRMHTLandLeasesLicensesData, getAlaskaDNRMHTLandUseLicenseLineData, getAlaskaDNRMHTLandUseLicenseAreaData, getAlaskaDNRMHTLandLeaseData, getAlaskaDNRMHTMineralLeasesLicensesData, getAlaskaDNRMHTMineralLeaseData, getAlaskaDNRMHTOilGasLeaseData, getAlaskaDNRMHTCoalLeaseData, getAlaskaDNRMHTMineralExplorationLicenseData, getAlaskaDNRMHTOilGasExplorationLicenseData, getAlaskaDNRMHTCoalExplorationLicenseData, getAlaskaDNRMHTOtherExplorationLicenseData, getAlaskaDNRMHTTLOLandExchangeData, getAlaskaDNRMHTTLOAgreementData, getAlaskaDNRMHTTitleData, getAlaskaDNRMHTMentalHealthParcelData, getAlaskaDNRMHTMentalHealthLandQCDData, getAlaskaDNRTundraAreaStationsData, getAlaskaDNRTundraAreaDaltonHighwayData, getAlaskaDNRTundraAreaTundraRegionsData, getAlaskaDNRSoilWaterConservationDistrictsData } from '../adapters/alaskaDNR';
 import { getDCUrbanTreeCanopyData } from '../adapters/dcUrbanTreeCanopy';
 import { getDCBikeTrailsData } from '../adapters/dcBikeTrails';
 import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
@@ -3439,6 +3439,132 @@ export class EnrichmentService {
       
       case 'alaska_dnr_mineral_estate_township':
         return await this.getAlaskaDNRMineralEstateTownship(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_trust_land_survey':
+        return await this.getAlaskaDNRMHTTrustLandSurvey(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_other_activity':
+        return await this.getAlaskaDNRMHTOtherActivity(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_trespass_point':
+        return await this.getAlaskaDNRMHTTrespassPoint(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_trespass_line':
+        return await this.getAlaskaDNRMHTTrespassLine(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_trespass_area':
+        return await this.getAlaskaDNRMHTTrespassArea(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_easements':
+        return await this.getAlaskaDNRMHTEasements(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_easement_point':
+        return await this.getAlaskaDNRMHTEasementPoint(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_easement_line':
+        return await this.getAlaskaDNRMHTEasementLine(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_easement_area':
+        return await this.getAlaskaDNRMHTEasementArea(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_sales':
+        return await this.getAlaskaDNRMHTLandSales(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_sale_conveyed':
+        return await this.getAlaskaDNRMHTLandSaleConveyed(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_sale_contract':
+        return await this.getAlaskaDNRMHTLandSaleContract(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_sale_available_otc':
+        return await this.getAlaskaDNRMHTLandSaleAvailableOTC(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_sale_pending_interest':
+        return await this.getAlaskaDNRMHTLandSalePendingInterest(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_sale_potential_reoffer':
+        return await this.getAlaskaDNRMHTLandSalePotentialReoffer(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_sale_new_inventory':
+        return await this.getAlaskaDNRMHTLandSaleNewInventory(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_sale_predisposal':
+        return await this.getAlaskaDNRMHTLandSalePredisposal(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_sale_all':
+        return await this.getAlaskaDNRMHTLandSaleAll(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_resource_sales':
+        return await this.getAlaskaDNRMHTResourceSales(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_material_sale':
+        return await this.getAlaskaDNRMHTMaterialSale(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_timber_sale':
+        return await this.getAlaskaDNRMHTTimberSale(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_leases_licenses':
+        return await this.getAlaskaDNRMHTLandLeasesLicenses(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_use_license_line':
+        return await this.getAlaskaDNRMHTLandUseLicenseLine(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_use_license_area':
+        return await this.getAlaskaDNRMHTLandUseLicenseArea(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_land_lease':
+        return await this.getAlaskaDNRMHTLandLease(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_mineral_leases_licenses':
+        return await this.getAlaskaDNRMHTMineralLeasesLicenses(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_mineral_lease':
+        return await this.getAlaskaDNRMHTMineralLease(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_oil_gas_lease':
+        return await this.getAlaskaDNRMHTOilGasLease(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_coal_lease':
+        return await this.getAlaskaDNRMHTCoalLease(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_mineral_exploration_license':
+        return await this.getAlaskaDNRMHTMineralExplorationLicense(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_oil_gas_exploration_license':
+        return await this.getAlaskaDNRMHTOilGasExplorationLicense(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_coal_exploration_license':
+        return await this.getAlaskaDNRMHTCoalExplorationLicense(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_other_exploration_license':
+        return await this.getAlaskaDNRMHTOtherExplorationLicense(lat, lon, radius);
+      
+      case 'alaska_dnr_tundra_area_stations':
+        return await this.getAlaskaDNRTundraAreaStations(lat, lon, radius);
+      
+      case 'alaska_dnr_tundra_area_dalton_highway':
+        return await this.getAlaskaDNRTundraAreaDaltonHighway(lat, lon, radius);
+      
+      case 'alaska_dnr_tundra_area_tundra_regions':
+        return await this.getAlaskaDNRTundraAreaTundraRegions(lat, lon, radius);
+      
+      case 'alaska_dnr_soil_water_conservation_districts':
+        return await this.getAlaskaDNRSoilWaterConservationDistricts(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_tlo_land_exchange':
+        return await this.getAlaskaDNRMHTTLOLandExchange(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_tlo_agreement':
+        return await this.getAlaskaDNRMHTTLOAgreement(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_title':
+        return await this.getAlaskaDNRMHTTitle(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_mental_health_parcel':
+        return await this.getAlaskaDNRMHTMentalHealthParcel(lat, lon, radius);
+      
+      case 'alaska_dnr_mht_mental_health_land_qcd':
+        return await this.getAlaskaDNRMHTMentalHealthLandQCD(lat, lon, radius);
       
       // DC Urban Tree Canopy Layers
       case 'dc_urban_tree_canopy_anc_2020':
@@ -35107,6 +35233,1526 @@ out center;`;
         'alaska_dnr_mineral_estate_township_count': 0,
         'alaska_dnr_mineral_estate_township_summary': 'Error fetching Township data',
         'alaska_dnr_mineral_estate_township_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTTrustLandSurvey(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTTrustLandSurveyData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_trust_land_survey_count': 0,
+          'alaska_dnr_mht_trust_land_survey_summary': 'No Trust Land Survey (TLS) found',
+          'alaska_dnr_mht_trust_land_survey_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_trust_land_survey_count': features.length,
+        'alaska_dnr_mht_trust_land_survey_summary': summary,
+        'alaska_dnr_mht_trust_land_survey_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Trust Land Survey data:', error);
+      return {
+        'alaska_dnr_mht_trust_land_survey_count': 0,
+        'alaska_dnr_mht_trust_land_survey_summary': 'Error fetching Trust Land Survey (TLS) data',
+        'alaska_dnr_mht_trust_land_survey_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTOtherActivity(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTOtherActivityData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_other_activity_count': 0,
+          'alaska_dnr_mht_other_activity_summary': 'No Other Activity found',
+          'alaska_dnr_mht_other_activity_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_other_activity_count': features.length,
+        'alaska_dnr_mht_other_activity_summary': summary,
+        'alaska_dnr_mht_other_activity_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Other Activity data:', error);
+      return {
+        'alaska_dnr_mht_other_activity_count': 0,
+        'alaska_dnr_mht_other_activity_summary': 'Error fetching Other Activity data',
+        'alaska_dnr_mht_other_activity_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTTrespassPoint(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTTrespassPointData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_trespass_point_count': 0,
+          'alaska_dnr_mht_trespass_point_summary': 'No Trespass Points found',
+          'alaska_dnr_mht_trespass_point_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mht_trespass_point_count': features.length,
+        'alaska_dnr_mht_trespass_point_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_mht_trespass_point_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Trespass Point data:', error);
+      return {
+        'alaska_dnr_mht_trespass_point_count': 0,
+        'alaska_dnr_mht_trespass_point_summary': 'Error fetching Trespass Point data',
+        'alaska_dnr_mht_trespass_point_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTTrespassLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTTrespassLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_trespass_line_count': 0,
+          'alaska_dnr_mht_trespass_line_summary': 'No Trespass Lines found',
+          'alaska_dnr_mht_trespass_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mht_trespass_line_count': features.length,
+        'alaska_dnr_mht_trespass_line_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_mht_trespass_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Trespass Line data:', error);
+      return {
+        'alaska_dnr_mht_trespass_line_count': 0,
+        'alaska_dnr_mht_trespass_line_summary': 'Error fetching Trespass Line data',
+        'alaska_dnr_mht_trespass_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTTrespassArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTTrespassAreaData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_trespass_area_count': 0,
+          'alaska_dnr_mht_trespass_area_summary': 'No Trespass Areas found',
+          'alaska_dnr_mht_trespass_area_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_trespass_area_count': features.length,
+        'alaska_dnr_mht_trespass_area_summary': summary,
+        'alaska_dnr_mht_trespass_area_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Trespass Area data:', error);
+      return {
+        'alaska_dnr_mht_trespass_area_count': 0,
+        'alaska_dnr_mht_trespass_area_summary': 'Error fetching Trespass Area data',
+        'alaska_dnr_mht_trespass_area_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTEasements(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTEasementsData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_easements_count': 0,
+          'alaska_dnr_mht_easements_summary': 'No Easements found',
+          'alaska_dnr_mht_easements_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_easements_count': features.length,
+        'alaska_dnr_mht_easements_summary': summary,
+        'alaska_dnr_mht_easements_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Easements data:', error);
+      return {
+        'alaska_dnr_mht_easements_count': 0,
+        'alaska_dnr_mht_easements_summary': 'Error fetching Easements data',
+        'alaska_dnr_mht_easements_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTEasementPoint(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTEasementPointData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_easement_point_count': 0,
+          'alaska_dnr_mht_easement_point_summary': 'No Easement Points found',
+          'alaska_dnr_mht_easement_point_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mht_easement_point_count': features.length,
+        'alaska_dnr_mht_easement_point_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_mht_easement_point_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Easement Point data:', error);
+      return {
+        'alaska_dnr_mht_easement_point_count': 0,
+        'alaska_dnr_mht_easement_point_summary': 'Error fetching Easement Point data',
+        'alaska_dnr_mht_easement_point_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTEasementLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTEasementLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_easement_line_count': 0,
+          'alaska_dnr_mht_easement_line_summary': 'No Easement Lines found',
+          'alaska_dnr_mht_easement_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mht_easement_line_count': features.length,
+        'alaska_dnr_mht_easement_line_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_mht_easement_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Easement Line data:', error);
+      return {
+        'alaska_dnr_mht_easement_line_count': 0,
+        'alaska_dnr_mht_easement_line_summary': 'Error fetching Easement Line data',
+        'alaska_dnr_mht_easement_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTEasementArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTEasementAreaData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_easement_area_count': 0,
+          'alaska_dnr_mht_easement_area_summary': 'No Easement Areas found',
+          'alaska_dnr_mht_easement_area_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_easement_area_count': features.length,
+        'alaska_dnr_mht_easement_area_summary': summary,
+        'alaska_dnr_mht_easement_area_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Easement Area data:', error);
+      return {
+        'alaska_dnr_mht_easement_area_count': 0,
+        'alaska_dnr_mht_easement_area_summary': 'Error fetching Easement Area data',
+        'alaska_dnr_mht_easement_area_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandSales(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandSalesData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_sales_count': 0,
+          'alaska_dnr_mht_land_sales_summary': 'No Land Sales found',
+          'alaska_dnr_mht_land_sales_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_sales_count': features.length,
+        'alaska_dnr_mht_land_sales_summary': summary,
+        'alaska_dnr_mht_land_sales_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Sales data:', error);
+      return {
+        'alaska_dnr_mht_land_sales_count': 0,
+        'alaska_dnr_mht_land_sales_summary': 'Error fetching Land Sales data',
+        'alaska_dnr_mht_land_sales_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandSaleConveyed(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandSaleConveyedData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_sale_conveyed_count': 0,
+          'alaska_dnr_mht_land_sale_conveyed_summary': 'No Land Sale, Conveyed found',
+          'alaska_dnr_mht_land_sale_conveyed_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_sale_conveyed_count': features.length,
+        'alaska_dnr_mht_land_sale_conveyed_summary': summary,
+        'alaska_dnr_mht_land_sale_conveyed_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Sale, Conveyed data:', error);
+      return {
+        'alaska_dnr_mht_land_sale_conveyed_count': 0,
+        'alaska_dnr_mht_land_sale_conveyed_summary': 'Error fetching Land Sale, Conveyed data',
+        'alaska_dnr_mht_land_sale_conveyed_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandSaleContract(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandSaleContractData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_sale_contract_count': 0,
+          'alaska_dnr_mht_land_sale_contract_summary': 'No Land Sale, Contract found',
+          'alaska_dnr_mht_land_sale_contract_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_sale_contract_count': features.length,
+        'alaska_dnr_mht_land_sale_contract_summary': summary,
+        'alaska_dnr_mht_land_sale_contract_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Sale, Contract data:', error);
+      return {
+        'alaska_dnr_mht_land_sale_contract_count': 0,
+        'alaska_dnr_mht_land_sale_contract_summary': 'Error fetching Land Sale, Contract data',
+        'alaska_dnr_mht_land_sale_contract_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandSaleAvailableOTC(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandSaleAvailableOTCData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_sale_available_otc_count': 0,
+          'alaska_dnr_mht_land_sale_available_otc_summary': 'No Land Sale, Available OTC found',
+          'alaska_dnr_mht_land_sale_available_otc_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_sale_available_otc_count': features.length,
+        'alaska_dnr_mht_land_sale_available_otc_summary': summary,
+        'alaska_dnr_mht_land_sale_available_otc_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Sale, Available OTC data:', error);
+      return {
+        'alaska_dnr_mht_land_sale_available_otc_count': 0,
+        'alaska_dnr_mht_land_sale_available_otc_summary': 'Error fetching Land Sale, Available OTC data',
+        'alaska_dnr_mht_land_sale_available_otc_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandSalePendingInterest(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandSalePendingInterestData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_sale_pending_interest_count': 0,
+          'alaska_dnr_mht_land_sale_pending_interest_summary': 'No Land Sale, Pending Interest found',
+          'alaska_dnr_mht_land_sale_pending_interest_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_sale_pending_interest_count': features.length,
+        'alaska_dnr_mht_land_sale_pending_interest_summary': summary,
+        'alaska_dnr_mht_land_sale_pending_interest_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Sale, Pending Interest data:', error);
+      return {
+        'alaska_dnr_mht_land_sale_pending_interest_count': 0,
+        'alaska_dnr_mht_land_sale_pending_interest_summary': 'Error fetching Land Sale, Pending Interest data',
+        'alaska_dnr_mht_land_sale_pending_interest_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandSalePotentialReoffer(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandSalePotentialReofferData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_sale_potential_reoffer_count': 0,
+          'alaska_dnr_mht_land_sale_potential_reoffer_summary': 'No Land Sale, Potential Reoffer found',
+          'alaska_dnr_mht_land_sale_potential_reoffer_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_sale_potential_reoffer_count': features.length,
+        'alaska_dnr_mht_land_sale_potential_reoffer_summary': summary,
+        'alaska_dnr_mht_land_sale_potential_reoffer_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Sale, Potential Reoffer data:', error);
+      return {
+        'alaska_dnr_mht_land_sale_potential_reoffer_count': 0,
+        'alaska_dnr_mht_land_sale_potential_reoffer_summary': 'Error fetching Land Sale, Potential Reoffer data',
+        'alaska_dnr_mht_land_sale_potential_reoffer_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandSaleNewInventory(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandSaleNewInventoryData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_sale_new_inventory_count': 0,
+          'alaska_dnr_mht_land_sale_new_inventory_summary': 'No Land Sale, New Inventory found',
+          'alaska_dnr_mht_land_sale_new_inventory_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_sale_new_inventory_count': features.length,
+        'alaska_dnr_mht_land_sale_new_inventory_summary': summary,
+        'alaska_dnr_mht_land_sale_new_inventory_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Sale, New Inventory data:', error);
+      return {
+        'alaska_dnr_mht_land_sale_new_inventory_count': 0,
+        'alaska_dnr_mht_land_sale_new_inventory_summary': 'Error fetching Land Sale, New Inventory data',
+        'alaska_dnr_mht_land_sale_new_inventory_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandSalePredisposal(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandSalePredisposalData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_sale_predisposal_count': 0,
+          'alaska_dnr_mht_land_sale_predisposal_summary': 'No Land Sale, Predisposal found',
+          'alaska_dnr_mht_land_sale_predisposal_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_sale_predisposal_count': features.length,
+        'alaska_dnr_mht_land_sale_predisposal_summary': summary,
+        'alaska_dnr_mht_land_sale_predisposal_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Sale, Predisposal data:', error);
+      return {
+        'alaska_dnr_mht_land_sale_predisposal_count': 0,
+        'alaska_dnr_mht_land_sale_predisposal_summary': 'Error fetching Land Sale, Predisposal data',
+        'alaska_dnr_mht_land_sale_predisposal_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandSaleAll(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandSaleAllData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_sale_all_count': 0,
+          'alaska_dnr_mht_land_sale_all_summary': 'No Land Sale, All found',
+          'alaska_dnr_mht_land_sale_all_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_sale_all_count': features.length,
+        'alaska_dnr_mht_land_sale_all_summary': summary,
+        'alaska_dnr_mht_land_sale_all_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Sale, All data:', error);
+      return {
+        'alaska_dnr_mht_land_sale_all_count': 0,
+        'alaska_dnr_mht_land_sale_all_summary': 'Error fetching Land Sale, All data',
+        'alaska_dnr_mht_land_sale_all_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTResourceSales(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTResourceSalesData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_resource_sales_count': 0,
+          'alaska_dnr_mht_resource_sales_summary': 'No Resource Sales found',
+          'alaska_dnr_mht_resource_sales_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_resource_sales_count': features.length,
+        'alaska_dnr_mht_resource_sales_summary': summary,
+        'alaska_dnr_mht_resource_sales_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Resource Sales data:', error);
+      return {
+        'alaska_dnr_mht_resource_sales_count': 0,
+        'alaska_dnr_mht_resource_sales_summary': 'Error fetching Resource Sales data',
+        'alaska_dnr_mht_resource_sales_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTMaterialSale(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTMaterialSaleData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_material_sale_count': 0,
+          'alaska_dnr_mht_material_sale_summary': 'No Material Sale found',
+          'alaska_dnr_mht_material_sale_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_material_sale_count': features.length,
+        'alaska_dnr_mht_material_sale_summary': summary,
+        'alaska_dnr_mht_material_sale_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Material Sale data:', error);
+      return {
+        'alaska_dnr_mht_material_sale_count': 0,
+        'alaska_dnr_mht_material_sale_summary': 'Error fetching Material Sale data',
+        'alaska_dnr_mht_material_sale_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTTimberSale(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTTimberSaleData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_timber_sale_count': 0,
+          'alaska_dnr_mht_timber_sale_summary': 'No Timber Sale found',
+          'alaska_dnr_mht_timber_sale_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_timber_sale_count': features.length,
+        'alaska_dnr_mht_timber_sale_summary': summary,
+        'alaska_dnr_mht_timber_sale_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Timber Sale data:', error);
+      return {
+        'alaska_dnr_mht_timber_sale_count': 0,
+        'alaska_dnr_mht_timber_sale_summary': 'Error fetching Timber Sale data',
+        'alaska_dnr_mht_timber_sale_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandLeasesLicenses(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandLeasesLicensesData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_leases_licenses_count': 0,
+          'alaska_dnr_mht_land_leases_licenses_summary': 'No Land Leases & Licenses found',
+          'alaska_dnr_mht_land_leases_licenses_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_leases_licenses_count': features.length,
+        'alaska_dnr_mht_land_leases_licenses_summary': summary,
+        'alaska_dnr_mht_land_leases_licenses_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Leases & Licenses data:', error);
+      return {
+        'alaska_dnr_mht_land_leases_licenses_count': 0,
+        'alaska_dnr_mht_land_leases_licenses_summary': 'Error fetching Land Leases & Licenses data',
+        'alaska_dnr_mht_land_leases_licenses_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandUseLicenseLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandUseLicenseLineData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_use_license_line_count': 0,
+          'alaska_dnr_mht_land_use_license_line_summary': 'No Land Use License Lines found',
+          'alaska_dnr_mht_land_use_license_line_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_mht_land_use_license_line_count': features.length,
+        'alaska_dnr_mht_land_use_license_line_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_mht_land_use_license_line_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Use License Line data:', error);
+      return {
+        'alaska_dnr_mht_land_use_license_line_count': 0,
+        'alaska_dnr_mht_land_use_license_line_summary': 'Error fetching Land Use License Line data',
+        'alaska_dnr_mht_land_use_license_line_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandUseLicenseArea(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandUseLicenseAreaData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_use_license_area_count': 0,
+          'alaska_dnr_mht_land_use_license_area_summary': 'No Land Use License Areas found',
+          'alaska_dnr_mht_land_use_license_area_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_use_license_area_count': features.length,
+        'alaska_dnr_mht_land_use_license_area_summary': summary,
+        'alaska_dnr_mht_land_use_license_area_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Use License Area data:', error);
+      return {
+        'alaska_dnr_mht_land_use_license_area_count': 0,
+        'alaska_dnr_mht_land_use_license_area_summary': 'Error fetching Land Use License Area data',
+        'alaska_dnr_mht_land_use_license_area_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTLandLease(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTLandLeaseData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_land_lease_count': 0,
+          'alaska_dnr_mht_land_lease_summary': 'No Land Leases found',
+          'alaska_dnr_mht_land_lease_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_land_lease_count': features.length,
+        'alaska_dnr_mht_land_lease_summary': summary,
+        'alaska_dnr_mht_land_lease_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Land Lease data:', error);
+      return {
+        'alaska_dnr_mht_land_lease_count': 0,
+        'alaska_dnr_mht_land_lease_summary': 'Error fetching Land Lease data',
+        'alaska_dnr_mht_land_lease_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTMineralLeasesLicenses(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTMineralLeasesLicensesData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_mineral_leases_licenses_count': 0,
+          'alaska_dnr_mht_mineral_leases_licenses_summary': 'No Mineral Leases & Licenses found',
+          'alaska_dnr_mht_mineral_leases_licenses_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_mineral_leases_licenses_count': features.length,
+        'alaska_dnr_mht_mineral_leases_licenses_summary': summary,
+        'alaska_dnr_mht_mineral_leases_licenses_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Mineral Leases & Licenses data:', error);
+      return {
+        'alaska_dnr_mht_mineral_leases_licenses_count': 0,
+        'alaska_dnr_mht_mineral_leases_licenses_summary': 'Error fetching Mineral Leases & Licenses data',
+        'alaska_dnr_mht_mineral_leases_licenses_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTMineralLease(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTMineralLeaseData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_mineral_lease_count': 0,
+          'alaska_dnr_mht_mineral_lease_summary': 'No Mineral Leases found',
+          'alaska_dnr_mht_mineral_lease_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_mineral_lease_count': features.length,
+        'alaska_dnr_mht_mineral_lease_summary': summary,
+        'alaska_dnr_mht_mineral_lease_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Mineral Lease data:', error);
+      return {
+        'alaska_dnr_mht_mineral_lease_count': 0,
+        'alaska_dnr_mht_mineral_lease_summary': 'Error fetching Mineral Lease data',
+        'alaska_dnr_mht_mineral_lease_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTOilGasLease(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTOilGasLeaseData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_oil_gas_lease_count': 0,
+          'alaska_dnr_mht_oil_gas_lease_summary': 'No Oil & Gas Leases found',
+          'alaska_dnr_mht_oil_gas_lease_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_oil_gas_lease_count': features.length,
+        'alaska_dnr_mht_oil_gas_lease_summary': summary,
+        'alaska_dnr_mht_oil_gas_lease_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Oil & Gas Lease data:', error);
+      return {
+        'alaska_dnr_mht_oil_gas_lease_count': 0,
+        'alaska_dnr_mht_oil_gas_lease_summary': 'Error fetching Oil & Gas Lease data',
+        'alaska_dnr_mht_oil_gas_lease_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTCoalLease(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTCoalLeaseData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_coal_lease_count': 0,
+          'alaska_dnr_mht_coal_lease_summary': 'No Coal Leases found',
+          'alaska_dnr_mht_coal_lease_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_coal_lease_count': features.length,
+        'alaska_dnr_mht_coal_lease_summary': summary,
+        'alaska_dnr_mht_coal_lease_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Coal Lease data:', error);
+      return {
+        'alaska_dnr_mht_coal_lease_count': 0,
+        'alaska_dnr_mht_coal_lease_summary': 'Error fetching Coal Lease data',
+        'alaska_dnr_mht_coal_lease_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTMineralExplorationLicense(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTMineralExplorationLicenseData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_mineral_exploration_license_count': 0,
+          'alaska_dnr_mht_mineral_exploration_license_summary': 'No Mineral Exploration Licenses found',
+          'alaska_dnr_mht_mineral_exploration_license_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_mineral_exploration_license_count': features.length,
+        'alaska_dnr_mht_mineral_exploration_license_summary': summary,
+        'alaska_dnr_mht_mineral_exploration_license_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Mineral Exploration License data:', error);
+      return {
+        'alaska_dnr_mht_mineral_exploration_license_count': 0,
+        'alaska_dnr_mht_mineral_exploration_license_summary': 'Error fetching Mineral Exploration License data',
+        'alaska_dnr_mht_mineral_exploration_license_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTOilGasExplorationLicense(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTOilGasExplorationLicenseData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_oil_gas_exploration_license_count': 0,
+          'alaska_dnr_mht_oil_gas_exploration_license_summary': 'No Oil & Gas Exploration Licenses found',
+          'alaska_dnr_mht_oil_gas_exploration_license_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_oil_gas_exploration_license_count': features.length,
+        'alaska_dnr_mht_oil_gas_exploration_license_summary': summary,
+        'alaska_dnr_mht_oil_gas_exploration_license_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Oil & Gas Exploration License data:', error);
+      return {
+        'alaska_dnr_mht_oil_gas_exploration_license_count': 0,
+        'alaska_dnr_mht_oil_gas_exploration_license_summary': 'Error fetching Oil & Gas Exploration License data',
+        'alaska_dnr_mht_oil_gas_exploration_license_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTCoalExplorationLicense(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTCoalExplorationLicenseData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_coal_exploration_license_count': 0,
+          'alaska_dnr_mht_coal_exploration_license_summary': 'No Coal Exploration Licenses found',
+          'alaska_dnr_mht_coal_exploration_license_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_coal_exploration_license_count': features.length,
+        'alaska_dnr_mht_coal_exploration_license_summary': summary,
+        'alaska_dnr_mht_coal_exploration_license_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Coal Exploration License data:', error);
+      return {
+        'alaska_dnr_mht_coal_exploration_license_count': 0,
+        'alaska_dnr_mht_coal_exploration_license_summary': 'Error fetching Coal Exploration License data',
+        'alaska_dnr_mht_coal_exploration_license_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTOtherExplorationLicense(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTOtherExplorationLicenseData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_other_exploration_license_count': 0,
+          'alaska_dnr_mht_other_exploration_license_summary': 'No Other Exploration Licenses found',
+          'alaska_dnr_mht_other_exploration_license_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_other_exploration_license_count': features.length,
+        'alaska_dnr_mht_other_exploration_license_summary': summary,
+        'alaska_dnr_mht_other_exploration_license_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Other Exploration License data:', error);
+      return {
+        'alaska_dnr_mht_other_exploration_license_count': 0,
+        'alaska_dnr_mht_other_exploration_license_summary': 'Error fetching Other Exploration License data',
+        'alaska_dnr_mht_other_exploration_license_all': []
+      };
+    }
+  }
+
+
+  private async getAlaskaDNRMHTTLOLandExchange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTTLOLandExchangeData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_tlo_land_exchange_count': 0,
+          'alaska_dnr_mht_tlo_land_exchange_summary': 'No TLO Land Exchanges found',
+          'alaska_dnr_mht_tlo_land_exchange_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_tlo_land_exchange_count': features.length,
+        'alaska_dnr_mht_tlo_land_exchange_summary': summary,
+        'alaska_dnr_mht_tlo_land_exchange_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT TLO Land Exchange data:', error);
+      return {
+        'alaska_dnr_mht_tlo_land_exchange_count': 0,
+        'alaska_dnr_mht_tlo_land_exchange_summary': 'Error fetching TLO Land Exchange data',
+        'alaska_dnr_mht_tlo_land_exchange_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTTLOAgreement(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTTLOAgreementData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_tlo_agreement_count': 0,
+          'alaska_dnr_mht_tlo_agreement_summary': 'No TLO Agreements found',
+          'alaska_dnr_mht_tlo_agreement_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_tlo_agreement_count': features.length,
+        'alaska_dnr_mht_tlo_agreement_summary': summary,
+        'alaska_dnr_mht_tlo_agreement_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT TLO Agreement data:', error);
+      return {
+        'alaska_dnr_mht_tlo_agreement_count': 0,
+        'alaska_dnr_mht_tlo_agreement_summary': 'Error fetching TLO Agreement data',
+        'alaska_dnr_mht_tlo_agreement_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTTitle(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTTitleData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_title_count': 0,
+          'alaska_dnr_mht_title_summary': 'No Title found',
+          'alaska_dnr_mht_title_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_title_count': features.length,
+        'alaska_dnr_mht_title_summary': summary,
+        'alaska_dnr_mht_title_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Title data:', error);
+      return {
+        'alaska_dnr_mht_title_count': 0,
+        'alaska_dnr_mht_title_summary': 'Error fetching Title data',
+        'alaska_dnr_mht_title_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTMentalHealthParcel(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTMentalHealthParcelData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_mental_health_parcel_count': 0,
+          'alaska_dnr_mht_mental_health_parcel_summary': 'No Mental Health Parcels found',
+          'alaska_dnr_mht_mental_health_parcel_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_mental_health_parcel_count': features.length,
+        'alaska_dnr_mht_mental_health_parcel_summary': summary,
+        'alaska_dnr_mht_mental_health_parcel_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Mental Health Parcel data:', error);
+      return {
+        'alaska_dnr_mht_mental_health_parcel_count': 0,
+        'alaska_dnr_mht_mental_health_parcel_summary': 'Error fetching Mental Health Parcel data',
+        'alaska_dnr_mht_mental_health_parcel_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRTundraAreaStations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRTundraAreaStationsData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_tundra_area_stations_count': 0,
+          'alaska_dnr_tundra_area_stations_summary': 'No Stations found',
+          'alaska_dnr_tundra_area_stations_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_tundra_area_stations_count': features.length,
+        'alaska_dnr_tundra_area_stations_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_tundra_area_stations_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Tundra Area Stations data:', error);
+      return {
+        'alaska_dnr_tundra_area_stations_count': 0,
+        'alaska_dnr_tundra_area_stations_summary': 'Error fetching Stations data',
+        'alaska_dnr_tundra_area_stations_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRTundraAreaDaltonHighway(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRTundraAreaDaltonHighwayData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_tundra_area_dalton_highway_count': 0,
+          'alaska_dnr_tundra_area_dalton_highway_summary': 'No Dalton Highway found',
+          'alaska_dnr_tundra_area_dalton_highway_all': []
+        };
+      }
+      
+      return {
+        'alaska_dnr_tundra_area_dalton_highway_count': features.length,
+        'alaska_dnr_tundra_area_dalton_highway_summary': `${features.length} within ${radius || 100} miles`,
+        'alaska_dnr_tundra_area_dalton_highway_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Tundra Area Dalton Highway data:', error);
+      return {
+        'alaska_dnr_tundra_area_dalton_highway_count': 0,
+        'alaska_dnr_tundra_area_dalton_highway_summary': 'Error fetching Dalton Highway data',
+        'alaska_dnr_tundra_area_dalton_highway_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRTundraAreaTundraRegions(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRTundraAreaTundraRegionsData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_tundra_area_tundra_regions_count': 0,
+          'alaska_dnr_tundra_area_tundra_regions_summary': 'No Tundra Regions found',
+          'alaska_dnr_tundra_area_tundra_regions_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_tundra_area_tundra_regions_count': features.length,
+        'alaska_dnr_tundra_area_tundra_regions_summary': summary,
+        'alaska_dnr_tundra_area_tundra_regions_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Tundra Area Tundra Regions data:', error);
+      return {
+        'alaska_dnr_tundra_area_tundra_regions_count': 0,
+        'alaska_dnr_tundra_area_tundra_regions_summary': 'Error fetching Tundra Regions data',
+        'alaska_dnr_tundra_area_tundra_regions_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRSoilWaterConservationDistricts(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRSoilWaterConservationDistrictsData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_soil_water_conservation_districts_count': 0,
+          'alaska_dnr_soil_water_conservation_districts_summary': 'No Soil and Water Conservation Districts found',
+          'alaska_dnr_soil_water_conservation_districts_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_soil_water_conservation_districts_count': features.length,
+        'alaska_dnr_soil_water_conservation_districts_summary': summary,
+        'alaska_dnr_soil_water_conservation_districts_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR Soil and Water Conservation Districts data:', error);
+      return {
+        'alaska_dnr_soil_water_conservation_districts_count': 0,
+        'alaska_dnr_soil_water_conservation_districts_summary': 'Error fetching Soil and Water Conservation Districts data',
+        'alaska_dnr_soil_water_conservation_districts_all': []
+      };
+    }
+  }
+
+  private async getAlaskaDNRMHTMentalHealthLandQCD(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const features = await getAlaskaDNRMHTMentalHealthLandQCDData(lat, lon, radius || 100);
+      
+      if (features.length === 0) {
+        return {
+          'alaska_dnr_mht_mental_health_land_qcd_count': 0,
+          'alaska_dnr_mht_mental_health_land_qcd_summary': 'No Mental Health Land (QCD) found',
+          'alaska_dnr_mht_mental_health_land_qcd_all': []
+        };
+      }
+      
+      const containingFeatures = features.filter(f => f.isContaining);
+      const proximityFeatures = features.filter(f => !f.isContaining);
+      let summary = '';
+      if (containingFeatures.length > 0 && proximityFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing, ${proximityFeatures.length} within ${radius || 100} miles`;
+      } else if (containingFeatures.length > 0) {
+        summary = `${containingFeatures.length} containing`;
+      } else {
+        summary = `${proximityFeatures.length} within ${radius || 100} miles`;
+      }
+      
+      return {
+        'alaska_dnr_mht_mental_health_land_qcd_count': features.length,
+        'alaska_dnr_mht_mental_health_land_qcd_summary': summary,
+        'alaska_dnr_mht_mental_health_land_qcd_all': features.map(f => ({ ...f.attributes, geometry: f.geometry, distance_miles: f.distance_miles, isContaining: f.isContaining, objectid: f.objectid, layerName: f.layerName }))
+      };
+    } catch (error) {
+      console.error('Error fetching Alaska DNR MHT Mental Health Land (QCD) data:', error);
+      return {
+        'alaska_dnr_mht_mental_health_land_qcd_count': 0,
+        'alaska_dnr_mht_mental_health_land_qcd_summary': 'Error fetching Mental Health Land (QCD) data',
+        'alaska_dnr_mht_mental_health_land_qcd_all': []
       };
     }
   }

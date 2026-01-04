@@ -1359,12 +1359,18 @@ const UNIQUE_COLOR_PALETTE = [
 const usedColors = new Map<string, string>(); // Maps POI key to color
 const colorUsage = new Map<string, string[]>(); // Maps color to array of POI keys using it
 
+// Track used colors for polygon layers to ensure uniqueness
+const usedPolygonColors = new Map<string, string>(); // Maps layer key to color
+const polygonColorUsage = new Map<string, string[]>(); // Maps color to array of layer keys using it
+
 /**
  * Reset the color tracking system (call at start of each map render)
  */
 function resetColorTracking(): void {
   usedColors.clear();
   colorUsage.clear();
+  usedPolygonColors.clear();
+  polygonColorUsage.clear();
 }
 
 /**
@@ -1404,6 +1410,60 @@ function getUniqueColorForPointFeature(poiKey: string, defaultColor: string): st
   colorUsage.set(randomColor, [poiKey]);
   console.warn(`⚠️ All palette colors used, generated random color ${randomColor} for ${poiKey}`);
   return randomColor;
+}
+
+/**
+ * Get a unique color for a polygon layer, ensuring no duplicates across all polygon layers
+ */
+function getUniqueColorForPolygonLayer(layerKey: string, defaultColor: string): string {
+  // Check if this layer already has an assigned color
+  if (usedPolygonColors.has(layerKey)) {
+    return usedPolygonColors.get(layerKey)!;
+  }
+
+  // Check if default color is already used by another polygon layer
+  const currentUsers = polygonColorUsage.get(defaultColor) || [];
+  
+  if (currentUsers.length === 0) {
+    // Color is available, use it
+    usedPolygonColors.set(layerKey, defaultColor);
+    polygonColorUsage.set(defaultColor, [layerKey]);
+    return defaultColor;
+  }
+
+  // Color is already used, find a unique one from palette
+  // Skip very light colors (near white) as they're hard to see on maps
+  const visiblePalette = UNIQUE_COLOR_PALETTE.filter(color => {
+    // Filter out very light colors (last few in palette)
+    return !['#f8fafc', '#ffffff', '#f1f5f9', '#e2e8f0'].includes(color);
+  });
+
+  for (const candidateColor of visiblePalette) {
+    const users = polygonColorUsage.get(candidateColor) || [];
+    if (users.length === 0) {
+      // Found an unused color
+      usedPolygonColors.set(layerKey, candidateColor);
+      polygonColorUsage.set(candidateColor, [layerKey]);
+      console.log(`🎨 Assigned unique polygon color ${candidateColor} to ${layerKey} (default ${defaultColor} was already used)`);
+      return candidateColor;
+    }
+  }
+
+  // All colors used? Generate a distinct color using hash of layer key
+  let hash = 0;
+  for (let i = 0; i < layerKey.length; i++) {
+    hash = layerKey.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  // Generate a color in the visible range (avoid too light or too dark)
+  const hue = Math.abs(hash) % 360;
+  const saturation = 60 + (Math.abs(hash) % 30); // 60-90%
+  const lightness = 40 + (Math.abs(hash) % 20); // 40-60%
+  const generatedColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  
+  usedPolygonColors.set(layerKey, generatedColor);
+  polygonColorUsage.set(generatedColor, [layerKey]);
+  console.warn(`⚠️ All palette colors used, generated color ${generatedColor} for polygon layer ${layerKey}`);
+  return generatedColor;
 }
 
 /**
@@ -29177,11 +29237,14 @@ const MapView: React.FC<MapViewProps> = ({
                       feature.layerName || 'Unknown';
                     const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (isContaining ? '0.00' : '');
 
+                    // Get unique color for this polygon layer to ensure distinct colors across layers
+                    const polygonColor = getUniqueColorForPolygonLayer(layerConfig.key, layerConfig.color);
+                    
                     const polygon = L.polygon(latlngs, {
-                      color: isContaining ? layerConfig.color : '#78716c',
+                      color: polygonColor,
                       weight: isContaining ? 3 : 2,
                       opacity: 0.8,
-                      fillColor: isContaining ? layerConfig.color : '#a3a3a3',
+                      fillColor: polygonColor,
                       fillOpacity: isContaining ? 0.4 : 0.2
                     });
 
@@ -29220,13 +29283,20 @@ const MapView: React.FC<MapViewProps> = ({
 
             if (featureCount > 0) {
               const legendKey = layerConfig.key.replace('_all', '');
+              
+              // Get unique color for polygon layers to ensure distinct colors
+              const uniqueColor = getUniqueColorForPolygonLayer(layerConfig.key, layerConfig.color);
+              
               if (!legendAccumulator[legendKey]) {
                 legendAccumulator[legendKey] = {
                   icon: layerConfig.icon,
-                  color: layerConfig.color,
+                  color: uniqueColor,
                   title: layerConfig.title,
                   count: 0,
                 };
+              } else {
+                // Update color to ensure it matches the rendered polygons
+                legendAccumulator[legendKey].color = uniqueColor;
               }
               legendAccumulator[legendKey].count += featureCount;
             }
@@ -34240,6 +34310,48 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'alaska_dnr_mineral_estate_well_site_point_all', icon: '⛽', color: '#f59e0b', title: 'Alaska DNR - Mineral Estate Well Site Point', isPoint: true },
         { key: 'alaska_dnr_mineral_estate_dcced_cra_borough_boundary_all', icon: '🏛️', color: '#3b82f6', title: 'Alaska DNR - Mineral Estate DCCED CRA Borough Boundary', isPolygon: true },
         { key: 'alaska_dnr_mineral_estate_township_all', icon: '🏘️', color: '#10b981', title: 'Alaska DNR - Mineral Estate Township', isPolygon: true },
+        { key: 'alaska_dnr_mht_trust_land_survey_all', icon: '🗺️', color: '#8b5cf6', title: 'Alaska DNR - MHT Trust Land Survey (TLS)', isPolygon: true },
+        { key: 'alaska_dnr_mht_other_activity_all', icon: '📋', color: '#6366f1', title: 'Alaska DNR - MHT Other Activity', isPolygon: true },
+        { key: 'alaska_dnr_mht_trespass_point_all', icon: '📍', color: '#ef4444', title: 'Alaska DNR - MHT Trespass Point', isPoint: true },
+        { key: 'alaska_dnr_mht_trespass_line_all', icon: '📏', color: '#f97316', title: 'Alaska DNR - MHT Trespass Line', isPolyline: true },
+        { key: 'alaska_dnr_mht_trespass_area_all', icon: '🚫', color: '#dc2626', title: 'Alaska DNR - MHT Trespass Area', isPolygon: true },
+        { key: 'alaska_dnr_mht_easements_all', icon: '🛤️', color: '#7c3aed', title: 'Alaska DNR - MHT Easements', isPolygon: true },
+        { key: 'alaska_dnr_mht_easement_point_all', icon: '📍', color: '#9333ea', title: 'Alaska DNR - MHT Easement Point', isPoint: true },
+        { key: 'alaska_dnr_mht_easement_line_all', icon: '📏', color: '#a855f7', title: 'Alaska DNR - MHT Easement Line', isPolyline: true },
+        { key: 'alaska_dnr_mht_easement_area_all', icon: '🛤️', color: '#c084fc', title: 'Alaska DNR - MHT Easement Area', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_sales_all', icon: '🏠', color: '#059669', title: 'Alaska DNR - MHT Land Sales', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_sale_conveyed_all', icon: '✅', color: '#10b981', title: 'Alaska DNR - MHT Land Sale, Conveyed', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_sale_contract_all', icon: '📝', color: '#34d399', title: 'Alaska DNR - MHT Land Sale, Contract', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_sale_available_otc_all', icon: '🛒', color: '#6ee7b7', title: 'Alaska DNR - MHT Land Sale, Available OTC', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_sale_pending_interest_all', icon: '⏳', color: '#a7f3d0', title: 'Alaska DNR - MHT Land Sale, Pending Interest', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_sale_potential_reoffer_all', icon: '🔄', color: '#d1fae5', title: 'Alaska DNR - MHT Land Sale, Potential Reoffer', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_sale_new_inventory_all', icon: '🆕', color: '#ecfdf5', title: 'Alaska DNR - MHT Land Sale, New Inventory', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_sale_predisposal_all', icon: '📦', color: '#f0fdf4', title: 'Alaska DNR - MHT Land Sale, Predisposal', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_sale_all_all', icon: '🏘️', color: '#065f46', title: 'Alaska DNR - MHT Land Sale, All', isPolygon: true },
+        { key: 'alaska_dnr_mht_resource_sales_all', icon: '💰', color: '#047857', title: 'Alaska DNR - MHT Resource Sales', isPolygon: true },
+        { key: 'alaska_dnr_mht_material_sale_all', icon: '⛏️', color: '#059669', title: 'Alaska DNR - MHT Material Sale', isPolygon: true },
+        { key: 'alaska_dnr_mht_timber_sale_all', icon: '🌲', color: '#10b981', title: 'Alaska DNR - MHT Timber Sale', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_leases_licenses_all', icon: '📄', color: '#34d399', title: 'Alaska DNR - MHT Land Leases & Licenses', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_use_license_line_all', icon: '📏', color: '#6ee7b7', title: 'Alaska DNR - MHT Land Use License Line', isPolyline: true },
+        { key: 'alaska_dnr_mht_land_use_license_area_all', icon: '📋', color: '#a7f3d0', title: 'Alaska DNR - MHT Land Use License Area', isPolygon: true },
+        { key: 'alaska_dnr_mht_land_lease_all', icon: '🏢', color: '#d1fae5', title: 'Alaska DNR - MHT Land Lease', isPolygon: true },
+        { key: 'alaska_dnr_mht_mineral_leases_licenses_all', icon: '💎', color: '#0c4a6e', title: 'Alaska DNR - MHT Mineral Leases & Licenses', isPolygon: true },
+        { key: 'alaska_dnr_mht_mineral_lease_all', icon: '⛏️', color: '#075985', title: 'Alaska DNR - MHT Mineral Lease', isPolygon: true },
+        { key: 'alaska_dnr_mht_oil_gas_lease_all', icon: '🛢️', color: '#0e7490', title: 'Alaska DNR - MHT Oil & Gas Lease', isPolygon: true },
+        { key: 'alaska_dnr_mht_coal_lease_all', icon: '⚫', color: '#155e75', title: 'Alaska DNR - MHT Coal Lease', isPolygon: true },
+        { key: 'alaska_dnr_mht_mineral_exploration_license_all', icon: '🔍', color: '#164e63', title: 'Alaska DNR - MHT Mineral Exploration License', isPolygon: true },
+        { key: 'alaska_dnr_mht_oil_gas_exploration_license_all', icon: '🔎', color: '#155e75', title: 'Alaska DNR - MHT Oil & Gas Exploration License', isPolygon: true },
+        { key: 'alaska_dnr_mht_coal_exploration_license_all', icon: '🔬', color: '#0e7490', title: 'Alaska DNR - MHT Coal Exploration License', isPolygon: true },
+        { key: 'alaska_dnr_mht_other_exploration_license_all', icon: '🔭', color: '#075985', title: 'Alaska DNR - MHT Other Exploration License', isPolygon: true },
+        { key: 'alaska_dnr_tundra_area_stations_all', icon: '📍', color: '#059669', title: 'Alaska DNR - Tundra Area Stations', isPoint: true },
+        { key: 'alaska_dnr_tundra_area_dalton_highway_all', icon: '🛣️', color: '#dc2626', title: 'Alaska DNR - Tundra Area Dalton Highway', isPolyline: true },
+        { key: 'alaska_dnr_tundra_area_tundra_regions_all', icon: '🏔️', color: '#7c3aed', title: 'Alaska DNR - Tundra Area Tundra Regions', isPolygon: true },
+        { key: 'alaska_dnr_soil_water_conservation_districts_all', icon: '💧', color: '#0891b2', title: 'Alaska DNR - Soil and Water Conservation Districts', isPolygon: true },
+        { key: 'alaska_dnr_mht_tlo_land_exchange_all', icon: '🔄', color: '#0369a1', title: 'Alaska DNR - MHT TLO Land Exchange', isPolygon: true },
+        { key: 'alaska_dnr_mht_tlo_agreement_all', icon: '📜', color: '#0284c7', title: 'Alaska DNR - MHT TLO Agreement', isPolygon: true },
+        { key: 'alaska_dnr_mht_title_all', icon: '📑', color: '#0ea5e9', title: 'Alaska DNR - MHT Title', isPolygon: true },
+        { key: 'alaska_dnr_mht_mental_health_parcel_all', icon: '🏥', color: '#38bdf8', title: 'Alaska DNR - MHT Mental Health Parcel', isPolygon: true },
+        { key: 'alaska_dnr_mht_mental_health_land_qcd_all', icon: '🏥', color: '#60a5fa', title: 'Alaska DNR - MHT Mental Health Land (QCD)', isPolygon: true },
         { key: 'alaska_dnr_instream_flow_water_reservations_polygon_all', icon: '🌊', color: '#0f766e', title: 'Alaska DNR - Instream Flow Water Reservations (Polygon)', isPolygon: true },
         { key: 'alaska_dnr_shore_fishery_leases_line_all', icon: '🐟', color: '#06b6d4', title: 'Alaska DNR - Shore Fishery Leases (Line)', isPolyline: true },
         { key: 'alaska_dnr_shore_fishery_leases_polygon_waterestate_all', icon: '🐟', color: '#0891b2', title: 'Alaska DNR - Shore Fishery Leases (Polygon)', isPolygon: true },
@@ -34660,11 +34772,14 @@ const MapView: React.FC<MapViewProps> = ({
                         const households = feature.Households || feature.households || feature.HOUSEHOLDS || feature.HH2025 || feature.hh2025 || '';
                         const housingUnits = feature.Housing_Units || feature.housing_units || feature.HOUSING_UNITS || feature.HU2025 || feature.hu2025 || '';
 
+                        // Get unique color for this polygon layer to ensure distinct colors across layers
+                        const polygonColor = getUniqueColorForPolygonLayer(layerConfig.key, layerConfig.color);
+                        
                         const polygon = L.polygon(latlngs, {
-                          color: isContaining ? layerConfig.color : '#78716c',
+                          color: polygonColor,
                           weight: isContaining ? 3 : 2,
                           opacity: 0.8,
-                          fillColor: isContaining ? layerConfig.color : '#a3a3a3',
+                          fillColor: polygonColor,
                           fillOpacity: isContaining ? 0.4 : 0.2
                         });
 
@@ -34729,15 +34844,23 @@ const MapView: React.FC<MapViewProps> = ({
               const radius = getRadiusForLegendKey(legendKey);
               const radiusDisplay = formatRadiusDisplay(legendKey, radius);
               
+              // Get unique color for polygon layers to ensure distinct colors
+              const uniqueColor = layerConfig.isPolygon 
+                ? getUniqueColorForPolygonLayer(layerConfig.key, layerConfig.color)
+                : layerConfig.color;
+              
               if (!legendAccumulator[legendKey]) {
                 legendAccumulator[legendKey] = {
                   icon: layerConfig.icon,
-                  color: layerConfig.color,
+                  color: uniqueColor,
                   title: layerConfig.title,
                   count: 0,
                   radius: radius,
                   radiusDisplay: radiusDisplay,
                 };
+              } else {
+                // Update color to ensure it matches the rendered polygons
+                legendAccumulator[legendKey].color = uniqueColor;
               }
               legendAccumulator[legendKey].count += featureCount;
               // Always update radius info (in case poiRadii was updated or we want to ensure it's set)
