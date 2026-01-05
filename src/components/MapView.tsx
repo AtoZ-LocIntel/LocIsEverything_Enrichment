@@ -793,6 +793,15 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsLayers: '0', // Use layer 0 for the orthoimagery
     wmsFormat: 'image/png',
   },
+  // Alaska NWI (National Wetlands Inventory) Vector Tiles
+  // VectorTileServer - visualization only, not queryable
+  // Uses MapLibre style URL for vector tile rendering
+  alaska_nwi_ak: {
+    type: 'maplibre',
+    name: 'Alaska NWI (National Wetlands Inventory)',
+    attribution: 'Alaska Geospatial Office, USFWS',
+    styleUrl: 'https://geoportal.alaska.gov/arcgis/rest/services/Hosted/NWI_AK/VectorTileServer/resources/styles/root.json',
+  },
   // Alaska IFSAR DTM (Digital Terrain Model)
   // ImageServer service - visualization only, not queryable
   // Note: Using ExportImage endpoint since Single Fused Map Cache: false
@@ -877,6 +886,17 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     attribution: 'USDA Forest Service – FIA Forest Atlas',
     tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonHarvest/MapServer/tile/{z}/{y}/{x}',
   },
+  // NOAA DEM Global Mosaic Hillshade - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Uses ExportImage endpoint with ColorHillshade raster function for elevation-tinted shaded relief visualization
+  noaa_dem_global_mosaic_hillshade: {
+    type: 'tile',
+    name: 'NOAA DEM Global Mosaic Hillshade',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic_hillshade/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'ColorHillshade', // Multidirectional Color Hillshade with global bathy/topo color palette
+  },
   // Note: ArcGIS Online services (services.arcgisonline.com) do not support WMS.
   // They use WMTS or direct tile services instead, which would require a different implementation.
   // The ArcGIS World Imagery layers have been removed as they don't support WMS protocol.
@@ -903,6 +923,183 @@ if (isMobileDevice && (L.Icon as any).DivIcon) {
 }
 
 // Custom tile layer for ArcGIS ImageServer ExportImage endpoint with raster functions
+/**
+ * Fetch and transform ArcGIS VectorTileServer style JSON to fix relative sprite URLs
+ */
+async function fetchAndTransformVectorTileStyle(styleUrl: string): Promise<any> {
+  try {
+    const response = await fetch(styleUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch style: ${response.statusText}`);
+    }
+    const style = await response.json();
+    
+    // Extract base URL from style URL - this is the directory containing the style JSON
+    // For ArcGIS VectorTileServer, the style URL is typically:
+    // https://geoportal.alaska.gov/arcgis/rest/services/Hosted/NWI_AK/VectorTileServer/resources/styles/root.json
+    // Style directory: https://geoportal.alaska.gov/arcgis/rest/services/Hosted/NWI_AK/VectorTileServer/resources/styles/
+    const urlObj = new URL(styleUrl);
+    // Get the directory containing the style JSON (remove the filename)
+    const styleDir = urlObj.pathname.substring(0, urlObj.pathname.lastIndexOf('/') + 1);
+    const styleDirUrl = `${urlObj.protocol}//${urlObj.host}${styleDir}`;
+    
+    // Helper function to resolve relative URLs
+    // Special handling for glyphs URLs which may contain template tokens like {fontstack} and {range}
+    const resolveUrl = (relativeUrl: string, preserveTokens: boolean = false): string => {
+      if (relativeUrl.startsWith('http://') || relativeUrl.startsWith('https://')) {
+        return relativeUrl; // Already absolute
+      }
+      
+      // For glyphs URLs with template tokens, we need to preserve {fontstack} and {range}
+      // The new URL() constructor will URL-encode these tokens, so we handle them manually
+      if (preserveTokens && (relativeUrl.includes('{fontstack}') || relativeUrl.includes('{range}'))) {
+        const baseUrlObj = new URL(styleDirUrl);
+        let resolvedPath = baseUrlObj.pathname;
+        
+        // Ensure styleDirUrl path ends with /
+        if (!resolvedPath.endsWith('/')) {
+          resolvedPath += '/';
+        }
+        
+        // Handle relative paths
+        if (relativeUrl.startsWith('../')) {
+          // Go up one directory: remove last segment from path
+          const pathParts = resolvedPath.split('/').filter(p => p !== '');
+          if (pathParts.length > 0) {
+            pathParts.pop();
+          }
+          resolvedPath = '/' + pathParts.join('/') + '/';
+          // Remove '../' prefix and append the rest
+          const remainingPath = relativeUrl.substring(3);
+          resolvedPath = resolvedPath + remainingPath;
+        } else if (relativeUrl.startsWith('./')) {
+          resolvedPath = resolvedPath + relativeUrl.substring(2);
+        } else {
+          resolvedPath = resolvedPath + relativeUrl;
+        }
+        
+        // Construct final URL manually to avoid encoding template tokens
+        const finalUrl = `${baseUrlObj.protocol}//${baseUrlObj.host}${resolvedPath}`;
+        console.log('🔍 [DEBUG] Resolving glyphs URL with tokens:', { relativeUrl, styleDirUrl, resolvedPath, finalUrl });
+        return finalUrl;
+      }
+      
+      // For other URLs, use standard URL resolution
+      return new URL(relativeUrl, styleDirUrl).href;
+    };
+    
+    // Transform sprite URLs from relative to absolute
+    if (style.sprite) {
+      const originalSprite = style.sprite;
+      style.sprite = resolveUrl(style.sprite);
+      console.log('🔍 [DEBUG] Original sprite URL:', originalSprite);
+      console.log('🔍 [DEBUG] Transformed sprite URL:', style.sprite);
+      
+      // Verify sprite URL format - MapLibre expects base URL without extension
+      // It will automatically append .json and .png
+      // If the sprite URL has an extension, remove it
+      if (style.sprite.endsWith('.json') || style.sprite.endsWith('.png')) {
+        console.warn('⚠️ Sprite URL has extension, removing:', style.sprite);
+        style.sprite = style.sprite.replace(/\.(json|png)$/, '');
+        console.log('🔍 [DEBUG] Corrected sprite URL:', style.sprite);
+      }
+      
+      // Test sprite URL accessibility (optional - for debugging)
+      try {
+        const spriteTestUrl = style.sprite + '.json';
+        console.log('🔍 [DEBUG] Testing sprite URL accessibility:', spriteTestUrl);
+      } catch (e) {
+        console.warn('⚠️ Could not test sprite URL:', e);
+      }
+    }
+    
+    // Transform glyphs URLs if present - preserve template tokens
+    if (style.glyphs) {
+      // Glyphs URLs contain template tokens {fontstack} and {range} that must be preserved
+      const originalGlyphs = style.glyphs;
+      style.glyphs = resolveUrl(originalGlyphs, true);
+      console.log('🔍 [DEBUG] Original glyphs URL:', originalGlyphs);
+      console.log('🔍 [DEBUG] Style directory URL:', styleDirUrl);
+      console.log('🔍 [DEBUG] Transformed glyphs URL:', style.glyphs);
+    }
+    
+    // Transform sources URLs if present (for vector tile sources)
+    // These are critical - if source URLs are wrong, tiles won't load
+    if (style.sources) {
+      console.log('🔍 [DEBUG] Transforming source URLs:', Object.keys(style.sources));
+      
+      // Determine if this is an ArcGIS VectorTileServer based on the style URL
+      const isArcGISVectorTileServer = styleUrl.includes('/VectorTileServer');
+      const vectorTileServerBaseUrl = isArcGISVectorTileServer 
+        ? styleUrl.replace(/\/resources\/styles\/.*$/, '')
+        : null;
+      
+      for (const sourceKey in style.sources) {
+        const source = style.sources[sourceKey];
+        
+        // Check if source uses 'url' property (single URL template)
+        if (source.url && !source.url.startsWith('http://') && !source.url.startsWith('https://')) {
+          const originalSourceUrl = source.url;
+          source.url = resolveUrl(source.url);
+          console.log(`🔍 [DEBUG] Source "${sourceKey}": ${originalSourceUrl} -> ${source.url}`);
+          
+          // For ArcGIS VectorTileServer, if the URL points to the service root (ends with VectorTileServer/),
+          // we need to append the tile endpoint pattern
+          if (isArcGISVectorTileServer && vectorTileServerBaseUrl && 
+              (source.url.endsWith('/VectorTileServer/') || source.url.endsWith('/VectorTileServer'))) {
+            // Convert to tiles array format for MapLibre
+            if (!source.tiles) {
+              source.tiles = [`${vectorTileServerBaseUrl}/tile/{z}/{y}/{x}.pbf`];
+              delete source.url; // Remove url property, use tiles array instead
+              console.log(`✅ Fixed ArcGIS VectorTileServer source "${sourceKey}" - converted to tiles array:`, source.tiles);
+            }
+          } else if (isArcGISVectorTileServer && !source.url.includes('/tile/') && !source.url.includes('{z}')) {
+            console.warn(`⚠️ Source "${sourceKey}" URL might be incorrect - doesn't contain tile endpoint pattern:`, source.url);
+          }
+        } else if (source.url) {
+          console.log(`🔍 [DEBUG] Source "${sourceKey}" already absolute: ${source.url}`);
+          
+          // Even if absolute, check if it's an ArcGIS VectorTileServer root URL that needs fixing
+          if (isArcGISVectorTileServer && vectorTileServerBaseUrl && 
+              (source.url.endsWith('/VectorTileServer/') || source.url.endsWith('/VectorTileServer'))) {
+            if (!source.tiles) {
+              source.tiles = [`${vectorTileServerBaseUrl}/tile/{z}/{y}/{x}.pbf`];
+              delete source.url;
+              console.log(`✅ Fixed ArcGIS VectorTileServer source "${sourceKey}" - converted to tiles array:`, source.tiles);
+            }
+          }
+        }
+        
+        // Also check for tiles array (some vector sources use tiles array instead of url)
+        if (source.tiles && Array.isArray(source.tiles)) {
+          source.tiles = source.tiles.map((tileUrl: string) => {
+            const original = tileUrl;
+            if (!tileUrl.startsWith('http://') && !tileUrl.startsWith('https://')) {
+              tileUrl = resolveUrl(tileUrl);
+            }
+            console.log(`🔍 [DEBUG] Source "${sourceKey}" tile: ${original} -> ${tileUrl}`);
+            return tileUrl;
+          });
+          console.log(`🔍 [DEBUG] Source "${sourceKey}" all tiles:`, source.tiles);
+        }
+      }
+    }
+    
+    // Log the complete transformed style for debugging
+    console.log('🔍 [DEBUG] Complete transformed style:', {
+      sprite: style.sprite,
+      glyphs: style.glyphs,
+      sources: style.sources ? Object.keys(style.sources) : null,
+      layers: style.layers ? style.layers.length : 0
+    });
+    
+    return style;
+  } catch (error) {
+    console.error('Error fetching/transforming vector tile style:', error);
+    throw error;
+  }
+}
+
 const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: string, options: any): L.TileLayer => {
   // Create a standard tile layer with a placeholder URL
   const layer = L.tileLayer('', options);
@@ -3053,9 +3250,63 @@ const MapView: React.FC<MapViewProps> = ({
         // Thematic overlay persists when switching basemaps from "Basemaps" section
         if (selectedThematicBasemap) {
           const thematicConfig = BASEMAP_CONFIGS[selectedThematicBasemap];
-          // Thematic basemaps are never maplibre type - they're always tile or wms from other sections
-          if (thematicConfig && thematicConfig.type !== 'maplibre' && selectedThematicBasemap !== 'usa_topo_maps' && selectedThematicBasemap !== 'natgeo_world_map') {
-            if (thematicConfig.type === 'tile') {
+          // Thematic basemaps can be tile, wms, or maplibre (vector tiles) from other sections
+          // Exclude base basemaps from "Basemaps" section (usa_topo_maps, natgeo_world_map, and maplibre base basemaps like liberty, bright, positron)
+          const isBaseBasemap = selectedThematicBasemap === 'usa_topo_maps' || selectedThematicBasemap === 'natgeo_world_map' || 
+                                 selectedThematicBasemap === 'liberty' || selectedThematicBasemap === 'bright' || selectedThematicBasemap === 'positron';
+          if (thematicConfig && !isBaseBasemap) {
+            if (thematicConfig.type === 'maplibre') {
+              // Vector tile overlay using MapLibre GL
+              // For ArcGIS VectorTileServer, fetch and transform style JSON to fix relative URLs
+              (async () => {
+                try {
+                  console.log('🔍 [DEBUG] Fetching and transforming style:', thematicConfig.styleUrl);
+                  const transformedStyle = await fetchAndTransformVectorTileStyle(thematicConfig.styleUrl!);
+                  console.log('🔍 [DEBUG] Transformed style sprite URL:', transformedStyle.sprite);
+                  console.log('🔍 [DEBUG] Transformed style glyphs URL:', transformedStyle.glyphs);
+                  
+                  // Create a custom pane for vector tile overlays to ensure they're above basemaps
+                  if (!map.getPane('vectorTileOverlayPane')) {
+                    const vectorTilePane = map.createPane('vectorTileOverlayPane');
+                    vectorTilePane.style.zIndex = '450'; // Above tilePane (200) and overlayPane (400), below markers (600+)
+                  }
+                  
+                  // The maplibreGL plugin accepts either a style URL or a style object
+                  // Since we've already transformed it, pass the object directly
+                  overlayLayer = (L as any).maplibreGL({
+                    style: transformedStyle, // Pass the transformed style object, not the URL
+                    attribution: thematicConfig.attribution,
+                    interactive: false,
+                  });
+                  
+                  overlayLayer.addTo(map);
+                  
+                  // After adding to map, ensure the container is above basemaps but same z-index as other thematic overlays
+                  // Use setTimeout to ensure the container is created
+                  setTimeout(() => {
+                    if (overlayLayer && overlayLayer.getContainer) {
+                      const container = overlayLayer.getContainer();
+                      if (container) {
+                        container.style.opacity = '0.7';
+                        // Use same z-index as overlayPane (400) but ensure it's in overlayPane which is above tilePane
+                        // This ensures it's above basemaps but doesn't prevent replacement by other thematic overlays
+                        container.style.zIndex = '400';
+                        container.style.position = 'absolute';
+                        // Ensure it's in the overlayPane which is above tilePane (where basemaps are)
+                        const overlayPane = map.getPane('overlayPane');
+                        if (overlayPane && container.parentNode !== overlayPane) {
+                          overlayPane.appendChild(container);
+                        }
+                      }
+                    }
+                  }, 100);
+                  
+                  overlayLayerRef.current = overlayLayer;
+                } catch (error) {
+                  console.error('❌ Error loading MapLibre vector tile overlay:', error);
+                }
+              })();
+            } else if (thematicConfig.type === 'tile') {
               if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
                 overlayLayer = createExportImageTileLayer(
                   thematicConfig.tileUrl,
@@ -3238,8 +3489,29 @@ const MapView: React.FC<MapViewProps> = ({
           
           if (overlayLayerRef.current) {
             try {
-              if (mapInstanceRef.current.hasLayer(overlayLayerRef.current)) {
-                mapInstanceRef.current.removeLayer(overlayLayerRef.current);
+              const oldOverlay = overlayLayerRef.current;
+              // For maplibre layers, we need defensive cleanup to prevent stacking
+              // MapLibre layers create canvas elements that can persist even after layer removal
+              if (oldOverlay._maplibreMap || oldOverlay.getMaplibreMap || oldOverlay._container) {
+                try {
+                  // First, try to get the maplibre map instance
+                  const mlMap = oldOverlay.getMaplibreMap ? oldOverlay.getMaplibreMap() : oldOverlay._maplibreMap;
+                  if (mlMap) {
+                    // Clean up maplibre map instance first (this handles most cleanup)
+                    if (typeof mlMap.remove === 'function') {
+                      try {
+                        mlMap.remove();
+                      } catch (e) {
+                        // MapLibre might have already been cleaned up, continue
+                      }
+                    }
+                  }
+                } catch (e) {
+                  // Continue with normal removal even if maplibre cleanup fails
+                }
+              }
+              if (mapInstanceRef.current.hasLayer(oldOverlay)) {
+                mapInstanceRef.current.removeLayer(oldOverlay);
               }
             } catch (e) {
               // Layer might already be removed
@@ -3352,13 +3624,36 @@ const MapView: React.FC<MapViewProps> = ({
     }
     
     // Remove overlay layer - but preserve the state so it can be recreated
+    // CRITICAL: For MapLibre vector tile overlays (like Alaska theme), we need special cleanup
+    // to prevent them from persisting when switching themes
     if (overlayLayerRef.current) {
       try {
         const oldOverlay = overlayLayerRef.current;
+        // For maplibre layers, we need defensive cleanup to prevent stacking
+        // MapLibre layers create canvas elements that can persist even after layer removal
+        if (oldOverlay._maplibreMap || oldOverlay.getMaplibreMap || oldOverlay._container) {
+          try {
+            // First, try to get the maplibre map instance
+            const mlMap = oldOverlay.getMaplibreMap ? oldOverlay.getMaplibreMap() : oldOverlay._maplibreMap;
+            if (mlMap) {
+              // Clean up maplibre map instance first (this handles most cleanup)
+              if (typeof mlMap.remove === 'function') {
+                try {
+                  mlMap.remove();
+                } catch (e) {
+                  // MapLibre might have already been cleaned up, continue
+                }
+              }
+            }
+          } catch (e) {
+            // Continue with normal removal even if maplibre cleanup fails
+          }
+        }
+        // Remove the layer from the map
         if (map.hasLayer(oldOverlay)) {
           map.removeLayer(oldOverlay);
         }
-        // Ensure overlay is fully removed
+        // Double-check that layer is fully removed (especially important for maplibre)
         if (map.hasLayer(oldOverlay)) {
           map.removeLayer(oldOverlay);
         }
@@ -3451,12 +3746,95 @@ const MapView: React.FC<MapViewProps> = ({
     // Thematic overlay persists when switching basemaps from "Basemaps" section
     if (selectedThematicBasemap) {
       const thematicConfig = BASEMAP_CONFIGS[selectedThematicBasemap];
-      // Thematic basemaps are never maplibre type - they're always tile or wms from other sections (USGS, FIA, USFS)
+      // Thematic basemaps can be tile, wms, or maplibre (vector tiles) from other sections
       // Make sure we're not accidentally treating "Basemaps" section basemaps as thematic
       // Note: usa_topo_maps and natgeo_world_map are in "Basemaps" section, so they should never be in selectedThematicBasemap
-      if (thematicConfig && thematicConfig.type !== 'maplibre' && selectedThematicBasemap !== 'usa_topo_maps' && selectedThematicBasemap !== 'natgeo_world_map') {
+      const isBaseBasemap = selectedThematicBasemap === 'usa_topo_maps' || selectedThematicBasemap === 'natgeo_world_map' || 
+                             selectedThematicBasemap === 'liberty' || selectedThematicBasemap === 'bright' || selectedThematicBasemap === 'positron';
+      if (thematicConfig && !isBaseBasemap) {
           // Thematic basemap as overlay (with opacity)
-          if (thematicConfig.type === 'tile') {
+          if (thematicConfig.type === 'maplibre') {
+            // Vector tile overlay using MapLibre GL
+            // For ArcGIS VectorTileServer, fetch and transform style JSON to fix relative URLs
+            (async () => {
+              try {
+                console.log('🔍 [DEBUG] Fetching and transforming style:', thematicConfig.styleUrl);
+                const transformedStyle = await fetchAndTransformVectorTileStyle(thematicConfig.styleUrl!);
+                
+                // The maplibreGL plugin accepts either a style URL or a style object
+                // Since we've already transformed it, pass the object directly
+                // Note: maplibreGL plugin may internally fetch resources, so ensure all URLs are absolute
+                console.log('🔍 [DEBUG] Creating MapLibre GL layer with transformed style');
+                
+                // Before creating the layer, verify critical URLs are accessible
+                if (transformedStyle.sprite) {
+                  console.log('🔍 [DEBUG] Sprite URL to be used:', transformedStyle.sprite);
+                }
+                if (transformedStyle.glyphs) {
+                  console.log('🔍 [DEBUG] Glyphs URL to be used:', transformedStyle.glyphs);
+                }
+                if (transformedStyle.sources) {
+                  for (const [sourceKey, source] of Object.entries(transformedStyle.sources as any)) {
+                    if ((source as any).url) {
+                      console.log(`🔍 [DEBUG] Source "${sourceKey}" URL:`, (source as any).url);
+                    }
+                    if ((source as any).tiles) {
+                      console.log(`🔍 [DEBUG] Source "${sourceKey}" tiles:`, (source as any).tiles);
+                    }
+                  }
+                }
+                
+                newOverlayLayer = (L as any).maplibreGL({
+                  style: transformedStyle, // Pass the transformed style object, not the URL
+                  attribution: thematicConfig.attribution,
+                  interactive: false,
+                });
+                
+                newOverlayLayer.addTo(map);
+                
+                // Add error handlers to catch any resource loading failures
+                if (newOverlayLayer) {
+                  // Wait for the map to be initialized before accessing _glMap
+                  setTimeout(() => {
+                    if (newOverlayLayer && newOverlayLayer._glMap) {
+                      newOverlayLayer._glMap.on('error', (e: any) => {
+                        console.error('❌ MapLibre GL error:', e);
+                        if (e.error && e.error.message) {
+                          console.error('❌ Error message:', e.error.message);
+                        }
+                      });
+                      newOverlayLayer._glMap.on('data', (e: any) => {
+                        if (e.dataType === 'source' && e.isSourceLoaded === false && e.error) {
+                          console.error('❌ Source failed to load:', e.sourceId, e.error);
+                        }
+                      });
+                    }
+                    
+                    // After adding to map, ensure the container is above basemaps but same z-index as other thematic overlays
+                    if (newOverlayLayer && newOverlayLayer.getContainer) {
+                      const container = newOverlayLayer.getContainer();
+                      if (container) {
+                        container.style.opacity = '0.7';
+                        // Use same z-index as overlayPane (400) but ensure it's in overlayPane which is above tilePane
+                        // This ensures it's above basemaps but doesn't prevent replacement by other thematic overlays
+                        container.style.zIndex = '400';
+                        container.style.position = 'absolute';
+                        // Ensure it's in the overlayPane which is above tilePane (where basemaps are)
+                        const overlayPane = map.getPane('overlayPane');
+                        if (overlayPane && container.parentNode !== overlayPane) {
+                          overlayPane.appendChild(container);
+                        }
+                      }
+                    }
+                  }, 100);
+                }
+                
+                overlayLayerRef.current = newOverlayLayer;
+              } catch (error) {
+                console.error('❌ Error loading MapLibre vector tile overlay:', error);
+              }
+            })();
+          } else if (thematicConfig.type === 'tile') {
             if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
               newOverlayLayer = createExportImageTileLayer(
                 thematicConfig.tileUrl,
@@ -36722,7 +37100,7 @@ const MapView: React.FC<MapViewProps> = ({
                     onClick={() => setShowThematicThemes(!showThematicThemes)}
                     className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors bg-gray-100"
                   >
-                    <span>🎨 Thematic Basemap Themes</span>
+                    <span>🎨 Basemap Themes</span>
                     <span className={`transform transition-transform ${showThematicThemes ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
@@ -36830,6 +37208,40 @@ const MapView: React.FC<MapViewProps> = ({
                           </div>
                         )}
                       </div>
+                      
+                      {/* NOAA basemaps */}
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'NOAA': !prev['NOAA'] }))}
+                          className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                          style={{ backgroundColor: '#0891b2' }}
+                        >
+                          <span>NOAA</span>
+                          <span className={`transform transition-transform ${expandedBasemapSections['NOAA'] ? 'rotate-180' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+                        {expandedBasemapSections['NOAA'] && (
+                          <div className="pb-1 bg-white">
+                            {Object.entries(BASEMAP_CONFIGS)
+                              .filter(([key]) => key.startsWith('noaa_'))
+                              .map(([key, config]) => (
+                                <button
+                                  key={key}
+                                  onClick={() => {
+                                    // Toggle: if already selected, deselect it; otherwise select it
+                                    setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {config.name}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -36848,7 +37260,7 @@ const MapView: React.FC<MapViewProps> = ({
                   {expandedBasemapSections['Basemaps'] && (
                     <div className="pb-1">
                       {Object.entries(BASEMAP_CONFIGS)
-                        .filter(([key, config]) => config.type === 'maplibre' || key === 'natgeo_world_map' || key === 'usa_topo_maps')
+                        .filter(([key, config]) => (config.type === 'maplibre' && !key.startsWith('alaska_')) || key === 'natgeo_world_map' || key === 'usa_topo_maps')
                         .map(([key, config]) => (
                           <button
                             key={key}

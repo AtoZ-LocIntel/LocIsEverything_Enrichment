@@ -2257,11 +2257,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                             {selectedCount}
                           </div>
                         )}
-                        
-                        {/* Category Title Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold p-2 text-center z-10">
-                          {subCategory.title}
-                        </div>
                       </button>
                     );
                   })
