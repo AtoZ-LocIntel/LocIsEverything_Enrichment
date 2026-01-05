@@ -41,12 +41,15 @@ interface BasemapConfig {
   wmsLayers?: string;
   wmsFormat?: string;
   wmsCrs?: string; // 'EPSG4326' or 'EPSG3857'
+  wmsVersion?: string; // '1.1.1' or '1.3.0' (default: '1.3.0')
   wmsUppercase?: boolean; // Required for some WMS 1.3.0 services
   wmsRasterFunction?: string; // Raster function name for ImageServer services (e.g., 'RoadDensity')
   // For direct tile layers (ArcGIS MapServer tiles)
-  tileUrl?: string; // URL template with {z}/{y}/{x} placeholders, or ExportImage endpoint URL
+  tileUrl?: string; // URL template with {z}/{y}/{x} placeholders, or ExportImage endpoint URL, or MapServer base URL for ExportMap
   // For ExportImage-based tile layers
   exportImageRasterFunction?: string; // Raster function name for ExportImage endpoint
+  // For ExportMap-based tile layers (MapServer raster services)
+  exportMapLayerId?: number; // Layer ID for MapServer ExportMap endpoint (e.g., 0, 1, 2...)
 }
 
 export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
@@ -291,6 +294,17 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_TCA_FireDeficit/ImageServer/exportImage',
     // Custom parameters for ExportImage
     exportImageRasterFunction: 'Fire Deficit',
+  },
+  // USFS National Snag Hazard - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // National Snag Hazard Map provides landscape-level view of current snag hazard for firefighter safety
+  usfs_national_snag_hazard: {
+    type: 'tile',
+    name: 'USFS National Snag Hazard',
+    attribution: 'USDA Forest Service, Fire and Aviation Management, Strategic Analytics Branch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_NationalSnagHazard/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'SnagHaz', // Snag hazard raster function
   },
   // USFS FIA Forest Atlas - American Elm Historical Range Boundary
   // Raster/tiled basemap service - visualization only, not queryable
@@ -952,6 +966,96 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     // Custom parameters for ExportImage - service already provides hillshade visualization, use "None" for default
     exportImageRasterFunction: 'None',
   },
+  // NOAA Tsunami Energy - Cascadia Subduction Zone (1700/01/27)
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  noaa_tsunami_cascadia_1700: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Cascadia Subduction Zone (1700)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 0, // Layer ID for ExportMap endpoint
+  },
+  // NOAA Tsunami Energy - Lisbon, Portugal (1755/11/01)
+  noaa_tsunami_lisbon_1755: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Lisbon, Portugal (1755)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 1,
+  },
+  // NOAA Tsunami Energy - Unimak Island, Alaska (1946/04/01)
+  noaa_tsunami_unimak_1946: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Unimak Island, Alaska (1946)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 2,
+  },
+  // NOAA Tsunami Energy - Andreanof Islands, Alaska (1957/03/09)
+  noaa_tsunami_andreanof_1957: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Andreanof Islands, Alaska (1957)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 3,
+  },
+  // NOAA Tsunami Energy - Southern Chile (1960/05/22)
+  noaa_tsunami_chile_1960: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Southern Chile (1960)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 4,
+  },
+  // NOAA Tsunami Energy - Prince William Sound, Alaska (1964/03/28)
+  noaa_tsunami_prince_william_1964: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Prince William Sound, Alaska (1964)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 5,
+  },
+  // NOAA Tsunami Energy - Sumatra, Indonesia (2004/12/16)
+  noaa_tsunami_sumatra_2004: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Sumatra, Indonesia (2004)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 6,
+  },
+  // NOAA Tsunami Energy - Samoa (2009/09/29)
+  noaa_tsunami_samoa_2009: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Samoa (2009)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 7,
+  },
+  // NOAA Tsunami Energy - Central Chile (2010/02/27)
+  noaa_tsunami_chile_2010: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Central Chile (2010)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 8,
+  },
+  // NOAA Tsunami Energy - Tohoku, Japan (2011/03/11)
+  noaa_tsunami_tohoku_2011: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - Tohoku, Japan (2011)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 9,
+  },
+  // NOAA Tsunami Energy - South Sandwich Is. (2021/08/12)
+  noaa_tsunami_south_sandwich_2021: {
+    type: 'tile',
+    name: 'NOAA Tsunami Energy - South Sandwich Is. (2021)',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
+    exportMapLayerId: 10,
+  },
   // Note: ArcGIS Online services (services.arcgisonline.com) do not support WMS.
   // They use WMTS or direct tile services instead, which would require a different implementation.
   // The ArcGIS World Imagery layers have been removed as they don't support WMS protocol.
@@ -1187,6 +1291,71 @@ const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: stri
     const rasterFunctionJson = JSON.stringify({ rasterFunction: layerInstance._rasterFunction });
     
     return `${layerInstance._exportImageUrl}?bbox=${bbox}&bboxSR=3857&imageSR=3857&size=256,256&f=image&rasterFunction=${encodeURIComponent(rasterFunctionJson)}`;
+  };
+  
+  return layer;
+};
+
+// Create a tile layer for ArcGIS MapServer Export Map endpoint
+// Used for MapServer raster services (like NOAA tsunami energy)
+// Note: Handles global layers that wrap around the dateline
+const createExportMapTileLayer = (mapServerUrl: string, layerId: number, options: any): L.TileLayer => {
+  // Create a standard tile layer with a placeholder URL
+  // Use noWrap: true to prevent Leaflet from requesting duplicate wrapped tiles
+  const layerOptions = { ...options, noWrap: true };
+  const layer = L.tileLayer('', layerOptions);
+  
+  // Store the map server URL and layer ID
+  (layer as any)._mapServerUrl = mapServerUrl;
+  (layer as any)._layerId = layerId;
+  
+  // Track requested tiles to prevent duplicates
+  const tileCache = new Map<string, string>();
+  
+  // Override getTileUrl method
+  (layer as any).getTileUrl = function(coords: any) {
+    const z = coords.z;
+    let x = coords.x;
+    const y = coords.y;
+    const layerInstance = this as any;
+    
+    // Normalize x coordinate to prevent duplicate tile requests
+    // This ensures each unique geographic area only gets one tile request
+    const n = Math.pow(2, z);
+    const normalizedX = ((x % n) + n) % n; // Normalize x to 0 to n-1 range
+    
+    // Create a unique key for this tile to prevent duplicates
+    const tileKey = `${z}_${normalizedX}_${y}`;
+    
+    // Check if we've already generated a URL for this normalized tile
+    if (tileCache.has(tileKey)) {
+      return tileCache.get(tileKey)!;
+    }
+    
+    // Convert normalized tile coordinates to Web Mercator bbox (EPSG:3857)
+    // Using Web Mercator matches Leaflet's internal coordinate system better
+    const lonMin = (normalizedX / n) * 360 - 180;
+    const lonMax = ((normalizedX + 1) / n) * 360 - 180;
+    const latMin = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 1) / n))) * 180 / Math.PI;
+    const latMax = Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / Math.PI;
+    
+    // Convert to Web Mercator bbox (EPSG:3857) for better compatibility
+    const bboxMinX = lonMin * 20037508.34 / 180;
+    const bboxMaxX = lonMax * 20037508.34 / 180;
+    const bboxMinY = Math.log(Math.tan((90 + latMin) * Math.PI / 360)) / (Math.PI / 180) * 20037508.34 / 180;
+    const bboxMaxY = Math.log(Math.tan((90 + latMax) * Math.PI / 360)) / (Math.PI / 180) * 20037508.34 / 180;
+    
+    const bbox = `${bboxMinX},${bboxMinY},${bboxMaxX},${bboxMaxY}`;
+    
+    // Export Map endpoint format: /export?bbox=...&size=...&format=png&f=image&layers=show:0
+    // Use Web Mercator (EPSG:3857) which matches Leaflet's coordinate system
+    // This should prevent duplicate rendering issues
+    const url = `${layerInstance._mapServerUrl}/export?bbox=${bbox}&bboxSR=3857&imageSR=3857&size=256,256&format=png&f=image&layers=show:${layerInstance._layerId}`;
+    
+    // Cache the URL for this normalized tile
+    tileCache.set(tileKey, url);
+    
+    return url;
   };
   
   return layer;
@@ -3249,7 +3418,22 @@ const MapView: React.FC<MapViewProps> = ({
           });
           basemapLayer.addTo(map);
         } else if (baseBasemapConfig.type === 'tile') {
-          if (baseBasemapConfig.exportImageRasterFunction && baseBasemapConfig.tileUrl) {
+          if (baseBasemapConfig.exportMapLayerId !== undefined && baseBasemapConfig.tileUrl) {
+            // MapServer ExportMap endpoint
+            basemapLayer = createExportMapTileLayer(
+              baseBasemapConfig.tileUrl,
+              baseBasemapConfig.exportMapLayerId,
+              {
+                attribution: baseBasemapConfig.attribution,
+                maxZoom: 15,
+                minZoom: 4,
+                noWrap: true,
+                opacity: 1.0, // Full opacity - this is the base
+                tileSize: 256,
+              }
+            ).addTo(map);
+          } else if (baseBasemapConfig.exportImageRasterFunction && baseBasemapConfig.tileUrl) {
+            // ImageServer ExportImage endpoint
             basemapLayer = createExportImageTileLayer(
               baseBasemapConfig.tileUrl,
               baseBasemapConfig.exportImageRasterFunction,
@@ -3263,6 +3447,7 @@ const MapView: React.FC<MapViewProps> = ({
               }
             ).addTo(map);
           } else {
+            // Standard tile layer
             basemapLayer = L.tileLayer(baseBasemapConfig.tileUrl!, {
               attribution: baseBasemapConfig.attribution,
               maxZoom: 15,
@@ -3277,7 +3462,7 @@ const MapView: React.FC<MapViewProps> = ({
             transparent: true,
             attribution: baseBasemapConfig.attribution,
             crs: baseBasemapConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
-            version: '1.3.0',
+            version: baseBasemapConfig.wmsVersion || '1.3.0',
             opacity: 1.0, // Full opacity - this is the base
           };
           
@@ -3362,7 +3547,22 @@ const MapView: React.FC<MapViewProps> = ({
                 }
               })();
             } else if (thematicConfig.type === 'tile') {
-              if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
+              if (thematicConfig.exportMapLayerId !== undefined && thematicConfig.tileUrl) {
+                // MapServer ExportMap endpoint
+                overlayLayer = createExportMapTileLayer(
+                  thematicConfig.tileUrl,
+                  thematicConfig.exportMapLayerId,
+                  {
+                    attribution: thematicConfig.attribution,
+                    maxZoom: 15,
+                    minZoom: 4,
+                    noWrap: true,
+                    opacity: 0.7, // Transparent overlay
+                    tileSize: 256,
+                  }
+                ).addTo(map);
+              } else if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
+                // ImageServer ExportImage endpoint
                 overlayLayer = createExportImageTileLayer(
                   thematicConfig.tileUrl,
                   thematicConfig.exportImageRasterFunction,
@@ -3376,6 +3576,7 @@ const MapView: React.FC<MapViewProps> = ({
                   }
                 ).addTo(map);
               } else {
+                // Standard tile layer
                 overlayLayer = L.tileLayer(thematicConfig.tileUrl!, {
                   attribution: thematicConfig.attribution,
                   maxZoom: 15,
@@ -3390,7 +3591,7 @@ const MapView: React.FC<MapViewProps> = ({
                 transparent: true,
                 attribution: thematicConfig.attribution,
                 crs: thematicConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
-                version: '1.3.0',
+                version: thematicConfig.wmsVersion || '1.3.0',
                 opacity: 0.7, // Transparent overlay
               };
               
@@ -3744,7 +3945,22 @@ const MapView: React.FC<MapViewProps> = ({
         }).addTo(map);
       } else if (finalBaseConfig.type === 'tile') {
         // Tile basemaps (USA Topo, NatGeo) - these REPLACE maplibre basemaps, not stack on top
-        if (finalBaseConfig.exportImageRasterFunction && finalBaseConfig.tileUrl) {
+        if (finalBaseConfig.exportMapLayerId !== undefined && finalBaseConfig.tileUrl) {
+          // MapServer ExportMap endpoint
+          newBasemapLayer = createExportMapTileLayer(
+            finalBaseConfig.tileUrl,
+            finalBaseConfig.exportMapLayerId,
+            {
+              attribution: finalBaseConfig.attribution,
+              maxZoom: 15,
+              minZoom: 4,
+              noWrap: true,
+              opacity: 1.0, // Full opacity - this is the base, replaces any previous basemap
+              tileSize: 256,
+            }
+          ).addTo(map);
+        } else if (finalBaseConfig.exportImageRasterFunction && finalBaseConfig.tileUrl) {
+          // ImageServer ExportImage endpoint
           newBasemapLayer = createExportImageTileLayer(
             finalBaseConfig.tileUrl,
             finalBaseConfig.exportImageRasterFunction,
@@ -3758,6 +3974,7 @@ const MapView: React.FC<MapViewProps> = ({
             }
           ).addTo(map);
         } else {
+          // Standard tile layer
           newBasemapLayer = L.tileLayer(finalBaseConfig.tileUrl!, {
             attribution: finalBaseConfig.attribution,
             maxZoom: 15,
@@ -3772,7 +3989,7 @@ const MapView: React.FC<MapViewProps> = ({
           transparent: true,
           attribution: finalBaseConfig.attribution,
           crs: finalBaseConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
-          version: '1.3.0',
+          version: finalBaseConfig.wmsVersion || '1.3.0',
           opacity: 1.0, // Full opacity - this is the base, replaces any previous basemap
         };
         
@@ -3890,7 +4107,22 @@ const MapView: React.FC<MapViewProps> = ({
               }
             })();
           } else if (thematicConfig.type === 'tile') {
-            if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
+            if (thematicConfig.exportMapLayerId !== undefined && thematicConfig.tileUrl) {
+              // MapServer ExportMap endpoint
+              newOverlayLayer = createExportMapTileLayer(
+                thematicConfig.tileUrl,
+                thematicConfig.exportMapLayerId,
+                {
+                  attribution: thematicConfig.attribution,
+                  maxZoom: 15,
+                  minZoom: 4,
+                  noWrap: true,
+                  opacity: 0.7, // Transparent overlay
+                  tileSize: 256,
+                }
+              ).addTo(map);
+            } else if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
+              // ImageServer ExportImage endpoint
               newOverlayLayer = createExportImageTileLayer(
                 thematicConfig.tileUrl,
                 thematicConfig.exportImageRasterFunction,
@@ -3904,6 +4136,7 @@ const MapView: React.FC<MapViewProps> = ({
                 }
               ).addTo(map);
             } else {
+              // Standard tile layer
               newOverlayLayer = L.tileLayer(thematicConfig.tileUrl!, {
                 attribution: thematicConfig.attribution,
                 maxZoom: 15,
@@ -3927,7 +4160,7 @@ const MapView: React.FC<MapViewProps> = ({
               transparent: true,
               attribution: thematicConfig.attribution,
               crs: thematicConfig.wmsCrs === 'EPSG4326' ? L.CRS.EPSG4326 : L.CRS.EPSG3857,
-              version: '1.3.0',
+              version: thematicConfig.wmsVersion || '1.3.0',
               opacity: 0.7, // Transparent overlay
             };
             
