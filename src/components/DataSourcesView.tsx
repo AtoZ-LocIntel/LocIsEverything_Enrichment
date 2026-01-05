@@ -2154,6 +2154,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://sanctuaries.noaa.gov/"
         },
         {
+          name: "NOAA Critical Fisheries Habitat",
+          description: "NOAA Critical Fisheries Habitat - All Critical Habitat polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States (coastal waters)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps.fisheries.noaa.gov/server/rest/services/All_Critical_Habitat/MapServer/229"
+        },
+        {
+          name: "NOAA World Ocean Atlas Water Temperature",
+          description: "NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours for each month (January-December) - proximity queries up to 100 miles",
+          coverage: "Global (ocean waters)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.ngdc.noaa.gov/arcgis/rest/services/climatology/WorldOceanAtlas_WaterTemperature/MapServer"
+        },
+        {
           name: "ISRIC SoilGrids (via ESRI Living Atlas)",
           description: "World Soils 250m Organic Carbon Density - point-in-pixel queries for soil organic carbon density (kg/m²)",
           coverage: "Global",

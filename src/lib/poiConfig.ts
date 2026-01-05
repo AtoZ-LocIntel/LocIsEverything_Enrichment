@@ -130,6 +130,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'TIGERweb.webp'
   },
   {
+    id: 'noaa',
+    title: 'NOAA',
+    description: 'National Oceanic and Atmospheric Administration data and layers',
+    icon: 'NOAA.webp'
+  },
+  {
     id: 'nationalmap',
     title: 'The National Map',
     description: 'USGS The National Map data and layers',
@@ -691,6 +697,23 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_usda_agritourism', label: 'Agritourism', description: 'Farm tours, pick-your-own, and farm experiences', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
   { id: 'poi_usda_food_hub', label: 'Food Hubs', description: 'Local food distribution and aggregation centers', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
   { id: 'poi_usda_onfarm_market', label: 'On-Farm Markets', description: 'Direct farm sales and on-site markets', isPOI: true, defaultRadius: 5, category: 'food_beverage', section: 'food_beverage' },
+  
+  // NOAA Critical Fisheries Habitat
+  { id: 'noaa_critical_fisheries_habitat', label: 'NOAA Critical Fisheries Habitat', description: 'NOAA Critical Fisheries Habitat - All Critical Habitat polygons (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaacriticalhabitat', section: 'noaa' },
+  
+  // NOAA World Ocean Atlas Water Temperature
+  { id: 'noaa_water_temp_january', label: 'NOAA Water Temperature - January', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (January) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_february', label: 'NOAA Water Temperature - February', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (February) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_march', label: 'NOAA Water Temperature - March', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (March) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_april', label: 'NOAA Water Temperature - April', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (April) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_may', label: 'NOAA Water Temperature - May', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (May) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_june', label: 'NOAA Water Temperature - June', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (June) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_july', label: 'NOAA Water Temperature - July', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (July) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_august', label: 'NOAA Water Temperature - August', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (August) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_september', label: 'NOAA Water Temperature - September', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (September) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_october', label: 'NOAA Water Temperature - October', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (October) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_november', label: 'NOAA Water Temperature - November', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (November) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
+  { id: 'noaa_water_temp_december', label: 'NOAA Water Temperature - December', description: 'NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours (December) (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawatertemp', section: 'noaa' },
   
   // Health & Wellness
   { id: 'poi_hospitals', label: 'Hospitals', description: 'Medical facilities and hospitals', isPOI: true, defaultRadius: 5, category: 'health', section: 'health' },

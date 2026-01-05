@@ -1,5 +1,5 @@
 import React from 'react';
-import { Map, Download, ArrowLeft } from 'lucide-react';
+import { MapPin, Download, ArrowLeft } from 'lucide-react';
 import { EnrichmentResult } from '../App';
 
 interface DesktopResultsViewProps {
@@ -809,6 +809,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Hazards';
       } else if (key.includes('poi_epa_')) {
         category = 'Human Caused Hazards';
+      } else if (key.startsWith('noaa_') || key.includes('noaa_critical_fisheries_habitat') || key.includes('noaa_water_temp_')) {
+        category = 'NOAA';
       } else if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('nps_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';
       } else if (key.startsWith('at_') || (key.includes('at_') && !key.includes('blm_'))) {
@@ -948,7 +950,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                 onClick={onViewMap}
                 className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md"
               >
-                <Map className="w-5 h-5" />
+                <MapPin className="w-5 h-5" />
                 <span>View in Map</span>
               </button>
               
@@ -1114,7 +1116,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
                 onClick={onViewMap}
                 className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md"
               >
-                <Map className="w-5 h-5" />
+                <MapPin className="w-5 h-5" />
                 <span>View in Map</span>
               </button>
               

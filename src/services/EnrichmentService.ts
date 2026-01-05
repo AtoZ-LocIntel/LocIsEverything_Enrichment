@@ -148,6 +148,23 @@ import {
   getUSGSContoursLargeScaleLinesData,
 } from '../adapters/usgsContours';
 import {
+  getNOAACriticalFisheriesHabitatData,
+} from '../adapters/noaaCriticalFisheriesHabitat';
+import {
+  getNOAOWaterTemperatureJanuary,
+  getNOAOWaterTemperatureFebruary,
+  getNOAOWaterTemperatureMarch,
+  getNOAOWaterTemperatureApril,
+  getNOAOWaterTemperatureMay,
+  getNOAOWaterTemperatureJune,
+  getNOAOWaterTemperatureJuly,
+  getNOAOWaterTemperatureAugust,
+  getNOAOWaterTemperatureSeptember,
+  getNOAOWaterTemperatureOctober,
+  getNOAOWaterTemperatureNovember,
+  getNOAOWaterTemperatureDecember,
+} from '../adapters/noaaWorldOceanAtlasWaterTemperature';
+import {
   getBostonChargingStationsData,
   getBostonBlueBikeStationsData,
   getBostonBicycleNetwork2023Data,
@@ -2854,6 +2871,36 @@ export class EnrichmentService {
         return await this.getUSGSContoursLargeScale(lat, lon, radius);
       case 'usgs_contours_large_scale_lines':
         return await this.getUSGSContoursLargeScaleLines(lat, lon, radius);
+      
+      // NOAA Critical Fisheries Habitat
+      case 'noaa_critical_fisheries_habitat':
+        return await this.getNOAACriticalFisheriesHabitat(lat, lon, radius);
+      
+      // NOAA World Ocean Atlas Water Temperature Layers
+      case 'noaa_water_temp_january':
+        return await this.getNOAOWaterTemperatureJanuary(lat, lon, radius);
+      case 'noaa_water_temp_february':
+        return await this.getNOAOWaterTemperatureFebruary(lat, lon, radius);
+      case 'noaa_water_temp_march':
+        return await this.getNOAOWaterTemperatureMarch(lat, lon, radius);
+      case 'noaa_water_temp_april':
+        return await this.getNOAOWaterTemperatureApril(lat, lon, radius);
+      case 'noaa_water_temp_may':
+        return await this.getNOAOWaterTemperatureMay(lat, lon, radius);
+      case 'noaa_water_temp_june':
+        return await this.getNOAOWaterTemperatureJune(lat, lon, radius);
+      case 'noaa_water_temp_july':
+        return await this.getNOAOWaterTemperatureJuly(lat, lon, radius);
+      case 'noaa_water_temp_august':
+        return await this.getNOAOWaterTemperatureAugust(lat, lon, radius);
+      case 'noaa_water_temp_september':
+        return await this.getNOAOWaterTemperatureSeptember(lat, lon, radius);
+      case 'noaa_water_temp_october':
+        return await this.getNOAOWaterTemperatureOctober(lat, lon, radius);
+      case 'noaa_water_temp_november':
+        return await this.getNOAOWaterTemperatureNovember(lat, lon, radius);
+      case 'noaa_water_temp_december':
+        return await this.getNOAOWaterTemperatureDecember(lat, lon, radius);
       
       // Boston Open Data Layers
       case 'boston_charging_stations':
@@ -27764,6 +27811,462 @@ out center;`;
         'usgs_contours_large_scale_lines_count': 0,
         'usgs_contours_large_scale_lines_summary': 'Error fetching USGS Contours Large Scale Lines data',
         'usgs_contours_large_scale_lines_all': []
+      };
+    }
+  }
+
+  private async getNOAACriticalFisheriesHabitat(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐟 Fetching NOAA Critical Fisheries Habitat data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAACriticalFisheriesHabitatData(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['noaa_critical_fisheries_habitat_count'] = 0;
+        result['noaa_critical_fisheries_habitat_summary'] = 'No critical fisheries habitat found';
+        result['noaa_critical_fisheries_habitat_all'] = [];
+      } else {
+        result['noaa_critical_fisheries_habitat_count'] = features.length;
+        result['noaa_critical_fisheries_habitat_summary'] = `Found ${features.length} critical fisheries habitat feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['noaa_critical_fisheries_habitat_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Critical Fisheries Habitat data:`, error);
+      return {
+        'noaa_critical_fisheries_habitat_count': 0,
+        'noaa_critical_fisheries_habitat_summary': 'Error fetching NOAA Critical Fisheries Habitat data',
+        'noaa_critical_fisheries_habitat_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureJanuary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature January data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureJanuary(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_january_count'] = 0;
+        result['noaa_water_temp_january_summary'] = 'No water temperature contours found for January within the specified radius';
+        result['noaa_water_temp_january_all'] = [];
+      } else {
+        result['noaa_water_temp_january_count'] = features.length;
+        result['noaa_water_temp_january_summary'] = `Found ${features.length} water temperature contour(s) for January within ${radius || 100} miles`;
+        result['noaa_water_temp_january_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature January data:`, error);
+      return {
+        'noaa_water_temp_january_count': 0,
+        'noaa_water_temp_january_summary': 'Error fetching NOAA Water Temperature January data',
+        'noaa_water_temp_january_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureFebruary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature February data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureFebruary(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_february_count'] = 0;
+        result['noaa_water_temp_february_summary'] = 'No water temperature contours found for February within the specified radius';
+        result['noaa_water_temp_february_all'] = [];
+      } else {
+        result['noaa_water_temp_february_count'] = features.length;
+        result['noaa_water_temp_february_summary'] = `Found ${features.length} water temperature contour(s) for February within ${radius || 100} miles`;
+        result['noaa_water_temp_february_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature February data:`, error);
+      return {
+        'noaa_water_temp_february_count': 0,
+        'noaa_water_temp_february_summary': 'Error fetching NOAA Water Temperature February data',
+        'noaa_water_temp_february_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureMarch(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature March data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureMarch(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_march_count'] = 0;
+        result['noaa_water_temp_march_summary'] = 'No water temperature contours found for March within the specified radius';
+        result['noaa_water_temp_march_all'] = [];
+      } else {
+        result['noaa_water_temp_march_count'] = features.length;
+        result['noaa_water_temp_march_summary'] = `Found ${features.length} water temperature contour(s) for March within ${radius || 100} miles`;
+        result['noaa_water_temp_march_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature March data:`, error);
+      return {
+        'noaa_water_temp_march_count': 0,
+        'noaa_water_temp_march_summary': 'Error fetching NOAA Water Temperature March data',
+        'noaa_water_temp_march_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureApril(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature April data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureApril(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_april_count'] = 0;
+        result['noaa_water_temp_april_summary'] = 'No water temperature contours found for April within the specified radius';
+        result['noaa_water_temp_april_all'] = [];
+      } else {
+        result['noaa_water_temp_april_count'] = features.length;
+        result['noaa_water_temp_april_summary'] = `Found ${features.length} water temperature contour(s) for April within ${radius || 100} miles`;
+        result['noaa_water_temp_april_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature April data:`, error);
+      return {
+        'noaa_water_temp_april_count': 0,
+        'noaa_water_temp_april_summary': 'Error fetching NOAA Water Temperature April data',
+        'noaa_water_temp_april_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureMay(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature May data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureMay(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_may_count'] = 0;
+        result['noaa_water_temp_may_summary'] = 'No water temperature contours found for May within the specified radius';
+        result['noaa_water_temp_may_all'] = [];
+      } else {
+        result['noaa_water_temp_may_count'] = features.length;
+        result['noaa_water_temp_may_summary'] = `Found ${features.length} water temperature contour(s) for May within ${radius || 100} miles`;
+        result['noaa_water_temp_may_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature May data:`, error);
+      return {
+        'noaa_water_temp_may_count': 0,
+        'noaa_water_temp_may_summary': 'Error fetching NOAA Water Temperature May data',
+        'noaa_water_temp_may_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureJune(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature June data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureJune(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_june_count'] = 0;
+        result['noaa_water_temp_june_summary'] = 'No water temperature contours found for June within the specified radius';
+        result['noaa_water_temp_june_all'] = [];
+      } else {
+        result['noaa_water_temp_june_count'] = features.length;
+        result['noaa_water_temp_june_summary'] = `Found ${features.length} water temperature contour(s) for June within ${radius || 100} miles`;
+        result['noaa_water_temp_june_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature June data:`, error);
+      return {
+        'noaa_water_temp_june_count': 0,
+        'noaa_water_temp_june_summary': 'Error fetching NOAA Water Temperature June data',
+        'noaa_water_temp_june_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureJuly(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature July data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureJuly(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_july_count'] = 0;
+        result['noaa_water_temp_july_summary'] = 'No water temperature contours found for July within the specified radius';
+        result['noaa_water_temp_july_all'] = [];
+      } else {
+        result['noaa_water_temp_july_count'] = features.length;
+        result['noaa_water_temp_july_summary'] = `Found ${features.length} water temperature contour(s) for July within ${radius || 100} miles`;
+        result['noaa_water_temp_july_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature July data:`, error);
+      return {
+        'noaa_water_temp_july_count': 0,
+        'noaa_water_temp_july_summary': 'Error fetching NOAA Water Temperature July data',
+        'noaa_water_temp_july_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureAugust(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature August data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureAugust(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_august_count'] = 0;
+        result['noaa_water_temp_august_summary'] = 'No water temperature contours found for August within the specified radius';
+        result['noaa_water_temp_august_all'] = [];
+      } else {
+        result['noaa_water_temp_august_count'] = features.length;
+        result['noaa_water_temp_august_summary'] = `Found ${features.length} water temperature contour(s) for August within ${radius || 100} miles`;
+        result['noaa_water_temp_august_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature August data:`, error);
+      return {
+        'noaa_water_temp_august_count': 0,
+        'noaa_water_temp_august_summary': 'Error fetching NOAA Water Temperature August data',
+        'noaa_water_temp_august_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureSeptember(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature September data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureSeptember(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_september_count'] = 0;
+        result['noaa_water_temp_september_summary'] = 'No water temperature contours found for September within the specified radius';
+        result['noaa_water_temp_september_all'] = [];
+      } else {
+        result['noaa_water_temp_september_count'] = features.length;
+        result['noaa_water_temp_september_summary'] = `Found ${features.length} water temperature contour(s) for September within ${radius || 100} miles`;
+        result['noaa_water_temp_september_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature September data:`, error);
+      return {
+        'noaa_water_temp_september_count': 0,
+        'noaa_water_temp_september_summary': 'Error fetching NOAA Water Temperature September data',
+        'noaa_water_temp_september_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureOctober(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature October data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureOctober(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_october_count'] = 0;
+        result['noaa_water_temp_october_summary'] = 'No water temperature contours found for October within the specified radius';
+        result['noaa_water_temp_october_all'] = [];
+      } else {
+        result['noaa_water_temp_october_count'] = features.length;
+        result['noaa_water_temp_october_summary'] = `Found ${features.length} water temperature contour(s) for October within ${radius || 100} miles`;
+        result['noaa_water_temp_october_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature October data:`, error);
+      return {
+        'noaa_water_temp_october_count': 0,
+        'noaa_water_temp_october_summary': 'Error fetching NOAA Water Temperature October data',
+        'noaa_water_temp_october_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureNovember(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature November data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureNovember(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_november_count'] = 0;
+        result['noaa_water_temp_november_summary'] = 'No water temperature contours found for November within the specified radius';
+        result['noaa_water_temp_november_all'] = [];
+      } else {
+        result['noaa_water_temp_november_count'] = features.length;
+        result['noaa_water_temp_november_summary'] = `Found ${features.length} water temperature contour(s) for November within ${radius || 100} miles`;
+        result['noaa_water_temp_november_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature November data:`, error);
+      return {
+        'noaa_water_temp_november_count': 0,
+        'noaa_water_temp_november_summary': 'Error fetching NOAA Water Temperature November data',
+        'noaa_water_temp_november_all': []
+      };
+    }
+  }
+
+  private async getNOAOWaterTemperatureDecember(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Water Temperature December data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAOWaterTemperatureDecember(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_water_temp_december_count'] = 0;
+        result['noaa_water_temp_december_summary'] = 'No water temperature contours found for December within the specified radius';
+        result['noaa_water_temp_december_all'] = [];
+      } else {
+        result['noaa_water_temp_december_count'] = features.length;
+        result['noaa_water_temp_december_summary'] = `Found ${features.length} water temperature contour(s) for December within ${radius || 100} miles`;
+        result['noaa_water_temp_december_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerName: feature.layerName
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA Water Temperature December data:`, error);
+      return {
+        'noaa_water_temp_december_count': 0,
+        'noaa_water_temp_december_summary': 'Error fetching NOAA Water Temperature December data',
+        'noaa_water_temp_december_all': []
       };
     }
   }

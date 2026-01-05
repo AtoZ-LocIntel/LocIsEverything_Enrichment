@@ -6739,6 +6739,124 @@ const MapView: React.FC<MapViewProps> = ({
         });
       }
 
+      // Draw NOAA Critical Fisheries Habitat as polygons
+      if (enrichments.noaa_critical_fisheries_habitat_all && Array.isArray(enrichments.noaa_critical_fisheries_habitat_all)) {
+        enrichments.noaa_critical_fisheries_habitat_all.forEach((habitat: any) => {
+          if (habitat.geometry && habitat.geometry.rings) {
+            try {
+              const rings = habitat.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                
+                const isContaining = habitat.isContaining;
+                const color = isContaining ? '#10b981' : '#06b6d4'; // Green for containing, cyan for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+                
+                const distance = habitat.distance_miles;
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🐟 Containing Critical Fisheries Habitat' : '🐟 Nearby Critical Fisheries Habitat'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add attributes to popup
+                const excludeFields = ['geometry', 'distance_miles', 'objectid', 'OBJECTID', 'isContaining'];
+                Object.entries(habitat).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    popupContent += `<div><strong>${displayKey}:</strong> ${value}</div>`;
+                  }
+                });
+                
+                popupContent += `</div></div>`;
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                if (!legendAccumulator['noaa_critical_fisheries_habitat']) {
+                  legendAccumulator['noaa_critical_fisheries_habitat'] = { icon: '🐟', color: '#10b981', title: 'NOAA Critical Fisheries Habitat', count: 0 };
+                }
+                legendAccumulator['noaa_critical_fisheries_habitat'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing NOAA Critical Fisheries Habitat:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NOAA Water Temperature Contours as polylines
+      const noaaWaterTempMonths = [
+        { key: 'noaa_water_temp_january', name: 'January', color: '#0ea5e9' },
+        { key: 'noaa_water_temp_february', name: 'February', color: '#3b82f6' },
+        { key: 'noaa_water_temp_march', name: 'March', color: '#6366f1' },
+        { key: 'noaa_water_temp_april', name: 'April', color: '#8b5cf6' },
+        { key: 'noaa_water_temp_may', name: 'May', color: '#a855f7' },
+        { key: 'noaa_water_temp_june', name: 'June', color: '#d946ef' },
+        { key: 'noaa_water_temp_july', name: 'July', color: '#ec4899' },
+        { key: 'noaa_water_temp_august', name: 'August', color: '#f43f5e' },
+        { key: 'noaa_water_temp_september', name: 'September', color: '#ef4444' },
+        { key: 'noaa_water_temp_october', name: 'October', color: '#f97316' },
+        { key: 'noaa_water_temp_november', name: 'November', color: '#fb923c' },
+        { key: 'noaa_water_temp_december', name: 'December', color: '#fbbf24' }
+      ];
+
+      noaaWaterTempMonths.forEach(month => {
+        if (enrichments[`${month.key}_all`] && Array.isArray(enrichments[`${month.key}_all`])) {
+          enrichments[`${month.key}_all`].forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.paths) {
+              try {
+                feature.geometry.paths.forEach((path: number[][]) => {
+                  const latlngs = path.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  const polyline = L.polyline(latlngs, {
+                    color: month.color,
+                    weight: 2,
+                    opacity: 0.7
+                  });
+                  const distance = feature.distance_miles;
+                  const layerName = feature.layerName || month.name;
+                  let popupContent = `<div><strong>NOAA Water Temperature - ${month.name}</strong>${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                  
+                  // Add attributes to popup
+                  const excludeFields = ['geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      popupContent += `<div><strong>${displayKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  polyline.bindPopup(popupContent);
+                  polyline.addTo(primary);
+                  bounds.extend(polyline.getBounds());
+                });
+                if (!legendAccumulator[month.key]) {
+                  legendAccumulator[month.key] = { icon: '🌊', color: month.color, title: `NOAA Water Temperature - ${month.name}`, count: 0 };
+                }
+                legendAccumulator[month.key].count += 1;
+              } catch (error) {
+                console.error(`Error drawing NOAA Water Temperature ${month.name}:`, error);
+              }
+            }
+          });
+        }
+      });
+
       // Draw DE Park Facilities as markers
       if (enrichments.de_park_facilities_all && Array.isArray(enrichments.de_park_facilities_all)) {
         enrichments.de_park_facilities_all.forEach((feature: any) => {

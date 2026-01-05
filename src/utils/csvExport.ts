@@ -716,6 +716,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('usgs_selectable_polygons_') && key.endsWith('_all')) || // Skip USGS Selectable Polygons arrays (handled separately)
         (key.startsWith('usgs_wbd_') && key.endsWith('_all')) || // Skip USGS WBD arrays (handled separately)
         (key.startsWith('usgs_contours_') && key.endsWith('_all')) || // Skip USGS Contours arrays (handled separately)
+        (key === 'noaa_critical_fisheries_habitat_all') || // Skip NOAA Critical Fisheries Habitat array (handled separately)
+        (key.startsWith('noaa_water_temp_') && key.endsWith('_all')) || // Skip NOAA Water Temperature arrays (handled separately)
         (key.startsWith('boston_') && key.endsWith('_all')) || // Skip Boston Open Data arrays (handled separately)
         (key.startsWith('alaska_dnr_') && key.endsWith('_all')) || // Skip Alaska DNR arrays (handled separately)
         (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately)
@@ -13597,6 +13599,135 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '',
           '',
           'USGS The National Map'
+        ]);
+      });
+    }
+    
+    // Add NOAA Critical Fisheries Habitat data rows
+    if (key === 'noaa_critical_fisheries_habitat_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        // Try to find identifier from common attribute fields
+        const featureName = feature.HABITAT || feature.habitat || feature.NAME || feature.name ||
+          feature.SPECIES || feature.species || feature.COMMON_NAME || feature.common_name ||
+          feature.OBJECTID || feature.objectid ||
+          (feature.attributes ? (feature.attributes.HABITAT || feature.attributes.habitat || feature.attributes.NAME || feature.attributes.name) : null) ||
+          'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        
+        // Extract coordinates from geometry (polygons)
+        let featureCoords = '';
+        if (feature.geometry) {
+          if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Polygon geometry - use first point of first ring
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NOAA',
+          (location.confidence || 'N/A').toString(),
+          'NOAA_CRITICAL_FISHERIES_HABITAT',
+          `${featureName}${isContaining === 'Yes' ? ' (Containing)' : ''}`,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `Critical Fisheries Habitat${isContaining === 'Yes' ? ' - Containing Point' : ' - Nearby'}`,
+          attributesJson,
+          '',
+          '',
+          'NOAA'
+        ]);
+      });
+    }
+    
+    // Add NOAA Water Temperature data rows
+    const noaaWaterTempLayerMap: Record<string, { name: string, icon: string }> = {
+      'noaa_water_temp_january_all': { name: 'NOAA_WATER_TEMP_JANUARY', icon: '🌊' },
+      'noaa_water_temp_february_all': { name: 'NOAA_WATER_TEMP_FEBRUARY', icon: '🌊' },
+      'noaa_water_temp_march_all': { name: 'NOAA_WATER_TEMP_MARCH', icon: '🌊' },
+      'noaa_water_temp_april_all': { name: 'NOAA_WATER_TEMP_APRIL', icon: '🌊' },
+      'noaa_water_temp_may_all': { name: 'NOAA_WATER_TEMP_MAY', icon: '🌊' },
+      'noaa_water_temp_june_all': { name: 'NOAA_WATER_TEMP_JUNE', icon: '🌊' },
+      'noaa_water_temp_july_all': { name: 'NOAA_WATER_TEMP_JULY', icon: '🌊' },
+      'noaa_water_temp_august_all': { name: 'NOAA_WATER_TEMP_AUGUST', icon: '🌊' },
+      'noaa_water_temp_september_all': { name: 'NOAA_WATER_TEMP_SEPTEMBER', icon: '🌊' },
+      'noaa_water_temp_october_all': { name: 'NOAA_WATER_TEMP_OCTOBER', icon: '🌊' },
+      'noaa_water_temp_november_all': { name: 'NOAA_WATER_TEMP_NOVEMBER', icon: '🌊' },
+      'noaa_water_temp_december_all': { name: 'NOAA_WATER_TEMP_DECEMBER', icon: '🌊' }
+    };
+    
+    if (noaaWaterTempLayerMap[key] && Array.isArray(value)) {
+      const layerInfo = noaaWaterTempLayerMap[key];
+      value.forEach((feature: any) => {
+        // Try to find identifier from common attribute fields
+        const featureName = feature.TEMP || feature.temp || feature.TEMPERATURE || feature.temperature ||
+          feature.CONTOUR || feature.contour || feature.INDEX || feature.index ||
+          feature.OBJECTID || feature.objectid ||
+          (feature.attributes ? (feature.attributes.TEMP || feature.attributes.temp || feature.attributes.TEMPERATURE) : null) ||
+          feature.layerName || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polylines)
+        let featureCoords = '';
+        if (feature.geometry) {
+          if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline geometry - use first point of first path
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const firstPoint = firstPath[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          } else if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Some layers might have rings - use first point of first ring
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NOAA',
+          (location.confidence || 'N/A').toString(),
+          layerInfo.name,
+          `${featureName}${feature.TEMP || feature.temp || feature.TEMPERATURE ? ` (${feature.TEMP || feature.temp || feature.TEMPERATURE}°C)` : ''}`,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `Nearby ${feature.layerName || layerInfo.name.replace('NOAA_WATER_TEMP_', '').replace(/_/g, ' ')}`,
+          attributesJson,
+          '',
+          '',
+          'NOAA'
         ]);
       });
     }

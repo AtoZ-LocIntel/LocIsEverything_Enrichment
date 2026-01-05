@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, ArrowLeft, Map } from 'lucide-react';
+import { Download, ArrowLeft, MapPin } from 'lucide-react';
 import { EnrichmentResult } from '../App';
 
 interface MobileResultsViewProps {
@@ -488,6 +488,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_airports') || key.includes('poi_railroads') || key.includes('poi_gas')) {
       return 'Transportation';
     }
+    // NOAA layers - check before AT/PCT to avoid false matches
+    if (key.startsWith('noaa_') || key.includes('noaa_critical_fisheries_habitat') || key.includes('noaa_water_temp_')) {
+      return 'NOAA';
+    }
+    
     // Check BLM, PADUS, and USFS before AT/PCT to avoid false matches
     if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('nps_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
       return 'Public Lands';
@@ -1072,7 +1077,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
               onClick={onViewMap}
               className="flex-1 bg-blue-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
             >
-              <Map className="w-4 h-4 sm:w-5 sm:h-5" />
+              <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>View Map</span>
             </button>
             
