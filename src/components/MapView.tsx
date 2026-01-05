@@ -897,6 +897,61 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     // Custom parameters for ExportImage
     exportImageRasterFunction: 'ColorHillshade', // Multidirectional Color Hillshade with global bathy/topo color palette
   },
+  // NOAA ETOPO1 Bedrock - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // ETOPO1 is a 1 arc-minute global relief model of Earth's surface that integrates land topography and ocean bathymetry
+  noaa_etopo1_bedrock: {
+    type: 'tile',
+    name: 'NOAA ETOPO1 Bedrock',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/ETOPO1_bedrock/ImageServer/exportImage',
+    // Custom parameters for ExportImage - service only supports "None" raster function
+    exportImageRasterFunction: 'None',
+  },
+  // NOAA ETOPO1 Ice Surface - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // ETOPO1 ice surface shows the top of the Greenland and Antarctic ice sheets
+  noaa_etopo1_ice_surface: {
+    type: 'tile',
+    name: 'NOAA ETOPO1 Ice Surface',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/ETOPO1_ice_surface/ImageServer/exportImage',
+    // Custom parameters for ExportImage - service only supports "None" raster function
+    exportImageRasterFunction: 'None',
+  },
+  // NOAA CRM Mosaic - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Coastal Relief Model (CRM) provides comprehensive coverage of the U.S. coastal zone
+  noaa_crm_mosaic: {
+    type: 'tile',
+    name: 'NOAA CRM Mosaic',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/CRM_mosaic/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'ColorHillshade', // Multidirectional Color Hillshade with global bathy/topo color palette
+  },
+  // NOAA DEM Global Mosaic - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Global digital elevation model mosaic combining multiple DEM sources
+  noaa_dem_global_mosaic: {
+    type: 'tile',
+    name: 'NOAA DEM Global Mosaic',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'ColorHillshade', // Multidirectional Color Hillshade with global bathy/topo color palette
+  },
+  // NOAA DEM Tiles Mosaic Hillshade - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Hillshade visualization of the global DEM tiles mosaic
+  noaa_dem_tiles_mosaic_hillshade: {
+    type: 'tile',
+    name: 'NOAA DEM Tiles Mosaic Hillshade',
+    attribution: 'NOAA National Centers for Environmental Information (NCEI)',
+    tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_tiles_mosaic_hillshade/ImageServer/exportImage',
+    // Custom parameters for ExportImage - service already provides hillshade visualization, use "None" for default
+    exportImageRasterFunction: 'None',
+  },
   // Note: ArcGIS Online services (services.arcgisonline.com) do not support WMS.
   // They use WMTS or direct tile services instead, which would require a different implementation.
   // The ArcGIS World Imagery layers have been removed as they don't support WMS protocol.
