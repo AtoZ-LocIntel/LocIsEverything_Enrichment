@@ -718,6 +718,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('usgs_contours_') && key.endsWith('_all')) || // Skip USGS Contours arrays (handled separately)
         (key === 'noaa_critical_fisheries_habitat_all') || // Skip NOAA Critical Fisheries Habitat array (handled separately)
         (key === 'noaa_weather_radar_impact_zones_all') || // Skip NOAA Weather Radar Impact Zones array (handled separately)
+        (key.startsWith('noaa_maritime_') && key.endsWith('_all')) || // Skip NOAA Maritime Limits arrays (handled separately)
         (key.startsWith('noaa_west_coast_efh_') && key.endsWith('_all')) || // Skip NOAA West Coast EFH arrays (handled separately)
         (key.startsWith('noaa_esa_species_ranges_') && key.endsWith('_all')) || // Skip NOAA ESA Species Ranges arrays (handled separately)
         (key.startsWith('noaa_nmfs_critical_habitat_') && key.endsWith('_all')) || // Skip NOAA NMFS Critical Habitat arrays (handled separately)
@@ -13701,6 +13702,64 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
           distance,
           `Weather Radar Impact Zones - ${feature.impactzone || feature.ImpactZone || 'Unknown'}${isContaining === 'Yes' ? ' - Containing Point' : ' - Nearby'}`,
+          attributesJson,
+          '',
+          '',
+          'NOAA'
+        ]);
+      });
+    }
+
+    // Handle NOAA Maritime Limits and Boundaries layers (polylines)
+    if (key.startsWith('noaa_maritime_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerKey = key.replace('_all', '');
+      const layerNameMap: Record<string, string> = {
+        'noaa_maritime_overview': 'Overview',
+        'noaa_maritime_12nm': '12NM Territorial Sea',
+        'noaa_maritime_24nm': '24NM Contiguous Zone',
+        'noaa_maritime_200nm': '200NM EEZ and Maritime Boundaries',
+        'noaa_maritime_us_canada_boundary': 'US/Canada Land Boundary'
+      };
+      const layerName = layerNameMap[layerKey] || layerKey.replace('noaa_maritime_', '').replace(/_/g, ' ');
+      
+      value.forEach((feature: any) => {
+        const featureName = feature.NAME || feature.name || feature.OBJECTID || feature.objectid || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        
+        // Extract coordinates from geometry (polylines)
+        let featureCoords = '';
+        if (feature.geometry) {
+          if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline geometry - use first point of first path
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const firstPoint = firstPath[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NOAA',
+          (location.confidence || 'N/A').toString(),
+          `NOAA_MARITIME_${layerKey.toUpperCase().replace('NOAA_MARITIME_', '')}`,
+          featureName,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `Maritime Limits - ${layerName}`,
           attributesJson,
           '',
           '',

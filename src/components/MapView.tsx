@@ -1402,6 +1402,11 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_osm_financial_institutions': { icon: '💰', color: '#1e3a8a', title: 'Financial Institutions' },
   'poi_airports': { icon: '✈️', color: '#6366f1', title: 'Airports' },
   'noaa_weather_radar_impact_zones': { icon: '🌩️', color: '#ef4444', title: 'NOAA Weather Radar Impact Zones' },
+  'noaa_maritime_overview': { icon: '🌊', color: '#3b82f6', title: 'NOAA Maritime Limits - Overview' },
+  'noaa_maritime_12nm': { icon: '🌊', color: '#06b6d4', title: 'NOAA Maritime Limits - 12NM Territorial Sea' },
+  'noaa_maritime_24nm': { icon: '🌊', color: '#10b981', title: 'NOAA Maritime Limits - 24NM Contiguous Zone' },
+  'noaa_maritime_200nm': { icon: '🌊', color: '#8b5cf6', title: 'NOAA Maritime Limits - 200NM EEZ' },
+  'noaa_maritime_us_canada_boundary': { icon: '🌊', color: '#f59e0b', title: 'NOAA Maritime Limits - US/Canada Boundary' },
   'poi_tnm_trails': { icon: '🥾', color: '#059669', title: 'Trails' },
   'poi_mountain_biking': { icon: '🚵', color: '#10b981', title: 'Mountain Biking & Biking Trails' },
   'poi_wikipedia': { icon: '📖', color: '#1d4ed8', title: 'Wikipedia Articles' },
@@ -7000,6 +7005,75 @@ const MapView: React.FC<MapViewProps> = ({
                 }
               } catch (error) {
                 console.error(`Error drawing NOAA ESA Species Ranges ${layerKey}:`, error);
+              }
+            }
+          });
+        }
+      });
+
+      // Draw NOAA Maritime Limits and Boundaries layers (polylines)
+      const noaaMaritimeLayers = [
+        { key: 'noaa_maritime_overview', name: 'Overview', color: '#3b82f6' },
+        { key: 'noaa_maritime_12nm', name: '12NM Territorial Sea', color: '#06b6d4' },
+        { key: 'noaa_maritime_24nm', name: '24NM Contiguous Zone', color: '#10b981' },
+        { key: 'noaa_maritime_200nm', name: '200NM EEZ and Maritime Boundaries', color: '#8b5cf6' },
+        { key: 'noaa_maritime_us_canada_boundary', name: 'US/Canada Land Boundary', color: '#f59e0b' }
+      ];
+
+      noaaMaritimeLayers.forEach(layer => {
+        if (enrichments[`${layer.key}_all`] && Array.isArray(enrichments[`${layer.key}_all`])) {
+          enrichments[`${layer.key}_all`].forEach((boundary: any) => {
+            if (boundary.geometry && boundary.geometry.paths) {
+              try {
+                const paths = boundary.geometry.paths;
+                if (paths && paths.length > 0) {
+                  paths.forEach((path: number[][]) => {
+                    if (path && path.length > 0) {
+                      const latlngs = path.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                      
+                      const distance = boundary.distance_miles;
+                      const displayLayerName = boundary.layerName || layer.name;
+                      
+                      const polyline = L.polyline(latlngs, {
+                        color: layer.color,
+                        weight: 3,
+                        opacity: 0.8
+                      });
+                      
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            🌊 ${displayLayerName}
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                          </div>
+                          <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                      `;
+                      
+                      // Add attributes to popup
+                      const excludeFields = ['geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName'];
+                      Object.entries(boundary).forEach(([key, value]) => {
+                        if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                          const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                          popupContent += `<div><strong>${displayKey}:</strong> ${value}</div>`;
+                        }
+                      });
+                      
+                      popupContent += `</div></div>`;
+                      polyline.bindPopup(popupContent, { maxWidth: 400 });
+                      polyline.addTo(primary);
+                      bounds.extend(polyline.getBounds());
+                      
+                      if (!legendAccumulator[layer.key]) {
+                        legendAccumulator[layer.key] = { icon: '🌊', color: layer.color, title: `NOAA Maritime - ${layer.name}`, count: 0 };
+                      }
+                      legendAccumulator[layer.key].count += 1;
+                    }
+                  });
+                }
+              } catch (error) {
+                console.error(`Error drawing NOAA Maritime Limits ${layer.name}:`, error);
               }
             }
           });

@@ -2170,6 +2170,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://coast.noaa.gov/arcgis/rest/services/Hosted/WeatherRadarImpactZones/FeatureServer/0"
         },
         {
+          name: "NOAA US Maritime Limits and Boundaries",
+          description: "Territorial Sea, Contiguous Zone, US/Canada International Boundary, Exclusive Economic Zone, and Maritime Boundaries of the United States. Includes Overview, 12NM Territorial Sea, 24NM Contiguous Zone, 200NM EEZ and Maritime Boundaries, and US/Canada Land Boundary (proximity queries up to 250 miles)",
+          coverage: "United States (coastal waters)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.charttools.noaa.gov/arcgis/rest/services/MaritimeBoundaries/US_Maritime_Limits_Boundaries/MapServer"
+        },
+        {
           name: "NOAA West Coast Essential Fish Habitat (EFH)",
           description: "NOAA West Coast Essential Fish Habitat - HAPC, EFHA, EFH Salmon, and EFH HMS/CPS/Groundfish polygons (point-in-polygon and proximity queries up to 100 miles)",
           coverage: "United States (West Coast)",

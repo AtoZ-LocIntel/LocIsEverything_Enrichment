@@ -160,6 +160,13 @@ import * as NOAAESASpeciesRanges from '../adapters/noaaESASpeciesRanges';
 import * as NOAANMFSCriticalHabitat from '../adapters/noaaNMFSCriticalHabitat';
 import { queryNOAAWeatherRadarImpactZones } from '../adapters/noaaWeatherRadarImpactZones';
 import {
+  queryNOAAMaritimeOverview,
+  queryNOAAMaritime12NM,
+  queryNOAAMaritime24NM,
+  queryNOAAMaritime200NM,
+  queryNOAAMaritimeUSCanadaBoundary
+} from '../adapters/noaaMaritimeLimitsBoundaries';
+import {
   getNOAOWaterTemperatureJanuary,
   getNOAOWaterTemperatureFebruary,
   getNOAOWaterTemperatureMarch,
@@ -2887,6 +2894,18 @@ export class EnrichmentService {
       
       case 'noaa_weather_radar_impact_zones':
         return await this.getNOAAWeatherRadarImpactZones(lat, lon, radius);
+      
+      // NOAA Maritime Limits and Boundaries Layers
+      case 'noaa_maritime_overview':
+        return await this.getNOAAMaritimeOverview(lat, lon, radius);
+      case 'noaa_maritime_12nm':
+        return await this.getNOAAMaritime12NM(lat, lon, radius);
+      case 'noaa_maritime_24nm':
+        return await this.getNOAAMaritime24NM(lat, lon, radius);
+      case 'noaa_maritime_200nm':
+        return await this.getNOAAMaritime200NM(lat, lon, radius);
+      case 'noaa_maritime_us_canada_boundary':
+        return await this.getNOAAMaritimeUSCanadaBoundary(lat, lon, radius);
       
       // NOAA West Coast Essential Fish Habitat (EFH) Layers
       case 'noaa_west_coast_efh_hapc':
@@ -28385,6 +28404,186 @@ out center tags;`;
         [`${enrichmentId}_count`]: 0,
         [`${enrichmentId}_summary`]: `Error fetching NOAA ESA Species Ranges layer ${layerId} data`,
         [`${enrichmentId}_all`]: []
+      };
+    }
+  }
+
+  private async getNOAAMaritimeOverview(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Maritime Limits - Overview data for [${lat}, ${lon}]`);
+      
+      const features = await queryNOAAMaritimeOverview(lat, lon, radius || 250);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_maritime_overview_count'] = 0;
+        result['noaa_maritime_overview_summary'] = 'No Maritime Limits - Overview found';
+        result['noaa_maritime_overview_all'] = [];
+      } else {
+        result['noaa_maritime_overview_count'] = features.length;
+        result['noaa_maritime_overview_summary'] = `Found ${features.length} Maritime Limits - Overview feature(s)`;
+        result['noaa_maritime_overview_all'] = features.map(feature => ({
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerId: feature.layerId,
+          layerName: feature.layerName,
+          ...feature.attributes,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NOAA Maritime Limits - Overview data:', error);
+      return {
+        'noaa_maritime_overview_count': 0,
+        'noaa_maritime_overview_summary': 'Error fetching NOAA Maritime Limits - Overview data',
+        'noaa_maritime_overview_all': []
+      };
+    }
+  }
+
+  private async getNOAAMaritime12NM(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Maritime Limits - 12NM Territorial Sea data for [${lat}, ${lon}]`);
+      
+      const features = await queryNOAAMaritime12NM(lat, lon, radius || 250);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_maritime_12nm_count'] = 0;
+        result['noaa_maritime_12nm_summary'] = 'No Maritime Limits - 12NM Territorial Sea found';
+        result['noaa_maritime_12nm_all'] = [];
+      } else {
+        result['noaa_maritime_12nm_count'] = features.length;
+        result['noaa_maritime_12nm_summary'] = `Found ${features.length} Maritime Limits - 12NM Territorial Sea feature(s)`;
+        result['noaa_maritime_12nm_all'] = features.map(feature => ({
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerId: feature.layerId,
+          layerName: feature.layerName,
+          ...feature.attributes,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NOAA Maritime Limits - 12NM Territorial Sea data:', error);
+      return {
+        'noaa_maritime_12nm_count': 0,
+        'noaa_maritime_12nm_summary': 'Error fetching NOAA Maritime Limits - 12NM Territorial Sea data',
+        'noaa_maritime_12nm_all': []
+      };
+    }
+  }
+
+  private async getNOAAMaritime24NM(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Maritime Limits - 24NM Contiguous Zone data for [${lat}, ${lon}]`);
+      
+      const features = await queryNOAAMaritime24NM(lat, lon, radius || 250);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_maritime_24nm_count'] = 0;
+        result['noaa_maritime_24nm_summary'] = 'No Maritime Limits - 24NM Contiguous Zone found';
+        result['noaa_maritime_24nm_all'] = [];
+      } else {
+        result['noaa_maritime_24nm_count'] = features.length;
+        result['noaa_maritime_24nm_summary'] = `Found ${features.length} Maritime Limits - 24NM Contiguous Zone feature(s)`;
+        result['noaa_maritime_24nm_all'] = features.map(feature => ({
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerId: feature.layerId,
+          layerName: feature.layerName,
+          ...feature.attributes,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NOAA Maritime Limits - 24NM Contiguous Zone data:', error);
+      return {
+        'noaa_maritime_24nm_count': 0,
+        'noaa_maritime_24nm_summary': 'Error fetching NOAA Maritime Limits - 24NM Contiguous Zone data',
+        'noaa_maritime_24nm_all': []
+      };
+    }
+  }
+
+  private async getNOAAMaritime200NM(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Maritime Limits - 200NM EEZ and Maritime Boundaries data for [${lat}, ${lon}]`);
+      
+      const features = await queryNOAAMaritime200NM(lat, lon, radius || 250);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_maritime_200nm_count'] = 0;
+        result['noaa_maritime_200nm_summary'] = 'No Maritime Limits - 200NM EEZ and Maritime Boundaries found';
+        result['noaa_maritime_200nm_all'] = [];
+      } else {
+        result['noaa_maritime_200nm_count'] = features.length;
+        result['noaa_maritime_200nm_summary'] = `Found ${features.length} Maritime Limits - 200NM EEZ and Maritime Boundaries feature(s)`;
+        result['noaa_maritime_200nm_all'] = features.map(feature => ({
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerId: feature.layerId,
+          layerName: feature.layerName,
+          ...feature.attributes,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NOAA Maritime Limits - 200NM EEZ and Maritime Boundaries data:', error);
+      return {
+        'noaa_maritime_200nm_count': 0,
+        'noaa_maritime_200nm_summary': 'Error fetching NOAA Maritime Limits - 200NM EEZ and Maritime Boundaries data',
+        'noaa_maritime_200nm_all': []
+      };
+    }
+  }
+
+  private async getNOAAMaritimeUSCanadaBoundary(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Maritime Limits - US/Canada Land Boundary data for [${lat}, ${lon}]`);
+      
+      const features = await queryNOAAMaritimeUSCanadaBoundary(lat, lon, radius || 250);
+      
+      const result: Record<string, any> = {};
+      
+      if (features.length === 0) {
+        result['noaa_maritime_us_canada_boundary_count'] = 0;
+        result['noaa_maritime_us_canada_boundary_summary'] = 'No Maritime Limits - US/Canada Land Boundary found';
+        result['noaa_maritime_us_canada_boundary_all'] = [];
+      } else {
+        result['noaa_maritime_us_canada_boundary_count'] = features.length;
+        result['noaa_maritime_us_canada_boundary_summary'] = `Found ${features.length} Maritime Limits - US/Canada Land Boundary feature(s)`;
+        result['noaa_maritime_us_canada_boundary_all'] = features.map(feature => ({
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          layerId: feature.layerId,
+          layerName: feature.layerName,
+          ...feature.attributes,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NOAA Maritime Limits - US/Canada Land Boundary data:', error);
+      return {
+        'noaa_maritime_us_canada_boundary_count': 0,
+        'noaa_maritime_us_canada_boundary_summary': 'Error fetching NOAA Maritime Limits - US/Canada Land Boundary data',
+        'noaa_maritime_us_canada_boundary_all': []
       };
     }
   }
