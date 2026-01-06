@@ -2178,6 +2178,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://maps.fisheries.noaa.gov/server/rest/services/WCR/ESA_Species_Ranges/MapServer"
         },
         {
+          name: "NOAA NMFS Critical Habitat",
+          description: "NOAA National Marine Fisheries Service (NMFS) Endangered Species Act (ESA) Critical Habitat - All NMFS-listed species critical habitat designations including corals, fishes, salmon, steelhead, sturgeon, sea turtles, seals, whales, and proposed critical habitat (point-in-polygon for polygons, proximity queries up to 100 miles for all geometry types)",
+          coverage: "United States (Marine and Coastal)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps.fisheries.noaa.gov/server/rest/services/All_NMFS_Critical_Habitat/MapServer"
+        },
+        {
           name: "NOAA World Ocean Atlas Water Temperature",
           description: "NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours for each month (January-December) - proximity queries up to 100 miles",
           coverage: "Global (ocean waters)",

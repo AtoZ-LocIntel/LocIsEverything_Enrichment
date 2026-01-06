@@ -6938,6 +6938,154 @@ const MapView: React.FC<MapViewProps> = ({
         }
       });
 
+      // Draw NOAA NMFS Critical Habitat layers (polygons and polylines)
+      Object.keys(enrichments).forEach((key) => {
+        if (key.startsWith('noaa_nmfs_critical_habitat_') && key.endsWith('_all') && Array.isArray(enrichments[key])) {
+          const layerKey = key.replace('_all', '');
+          enrichments[key].forEach((habitat: any) => {
+            if (habitat.geometry) {
+              try {
+                const isContaining = habitat.isContaining;
+                const geometryType = habitat.geometryType || (habitat.geometry.rings ? 'polygon' : 'polyline');
+                const distance = habitat.distance_miles;
+                const displayLayerName = habitat.layerName || layerKey.replace('noaa_nmfs_critical_habitat_', '').replace(/_/g, ' ');
+                
+                // Handle polygons (including multipart polygons)
+                if (geometryType === 'polygon' && habitat.geometry.rings) {
+                  const rings = habitat.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    // Helper function to calculate polygon area (using shoelace formula)
+                    const calculateRingArea = (ring: number[][]): number => {
+                      if (!ring || ring.length < 3) return 0;
+                      let area = 0;
+                      for (let i = 0; i < ring.length - 1; i++) {
+                        area += ring[i][0] * ring[i + 1][1]; // lon1 * lat2
+                        area -= ring[i + 1][0] * ring[i][1]; // lon2 * lat1
+                      }
+                      return Math.abs(area) / 2;
+                    };
+                    
+                    // Convert all rings to lat/lng arrays and calculate areas
+                    const ringData = rings.map((ring: number[][]) => ({
+                      latlngs: ring.map((coord: number[]) => [coord[1], coord[0]] as [number, number]),
+                      area: calculateRingArea(ring)
+                    }));
+                    
+                    // Sort by area (largest first) to prioritize larger parts
+                    ringData.sort((a: { latlngs: [number, number][], area: number }, b: { latlngs: [number, number][], area: number }) => b.area - a.area);
+                    
+                    // Render all parts as separate polygons (preferred) or use largest if needed
+                    // For multipart polygons, we'll render each part separately so all are visible
+                    ringData.forEach((ringInfo: { latlngs: [number, number][], area: number }, index: number) => {
+                      const color = isContaining ? '#10b981' : '#06b6d4';
+                      const weight = isContaining ? 3 : 2;
+                      const opacity = isContaining ? 0.8 : 0.5;
+                      
+                      const polygon = L.polygon(ringInfo.latlngs, {
+                        color: color,
+                        weight: weight,
+                        opacity: opacity,
+                        fillColor: color,
+                        fillOpacity: 0.2
+                      });
+                      
+                      // Only add popup to the first (largest) part to avoid duplicate popups
+                      if (index === 0) {
+                        let popupContent = `
+                          <div style="min-width: 250px; max-width: 400px;">
+                            <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                              ${isContaining ? `🐟 Containing ${displayLayerName}` : `🐟 Nearby ${displayLayerName}`}
+                            </h3>
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                              ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                              ${rings.length > 1 ? `<div><strong>Parts:</strong> ${rings.length} (multipart polygon)</div>` : ''}
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                        `;
+                        
+                        // Add attributes to popup
+                        const excludeFields = ['geometry', 'distance_miles', 'objectid', 'OBJECTID', 'isContaining', 'layerId', 'layerName', 'geometryType'];
+                        Object.entries(habitat).forEach(([key, value]) => {
+                          if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                            const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            popupContent += `<div><strong>${displayKey}:</strong> ${value}</div>`;
+                          }
+                        });
+                        
+                        popupContent += `</div></div>`;
+                        polygon.bindPopup(popupContent, { maxWidth: 400 });
+                      }
+                      
+                      polygon.addTo(primary);
+                      bounds.extend(polygon.getBounds());
+                    });
+                    
+                    // Only count once per feature (not per part)
+                    if (!legendAccumulator[layerKey]) {
+                      legendAccumulator[layerKey] = { icon: '🐟', color: isContaining ? '#10b981' : '#06b6d4', title: `NOAA NMFS - ${displayLayerName}`, count: 0 };
+                    }
+                    legendAccumulator[layerKey].count += 1;
+                  }
+                }
+                // Handle polylines
+                else if (geometryType === 'polyline' && habitat.geometry.paths) {
+                  const paths = habitat.geometry.paths;
+                  if (paths && paths.length > 0) {
+                    paths.forEach((path: number[][]) => {
+                      if (path && path.length > 0) {
+                        const latlngs = path.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                        
+                        const color = '#06b6d4';
+                        const weight = 2;
+                        const opacity = 0.7;
+                        
+                        const polyline = L.polyline(latlngs, {
+                          color: color,
+                          weight: weight,
+                          opacity: opacity
+                        });
+                        
+                        let popupContent = `
+                          <div style="min-width: 250px; max-width: 400px;">
+                            <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                              🐟 Nearby ${displayLayerName}
+                            </h3>
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                              ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                        `;
+                        
+                        // Add attributes to popup
+                        const excludeFields = ['geometry', 'distance_miles', 'objectid', 'OBJECTID', 'isContaining', 'layerId', 'layerName', 'geometryType'];
+                        Object.entries(habitat).forEach(([key, value]) => {
+                          if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                            const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            popupContent += `<div><strong>${displayKey}:</strong> ${value}</div>`;
+                          }
+                        });
+                        
+                        popupContent += `</div></div>`;
+                        polyline.bindPopup(popupContent, { maxWidth: 400 });
+                        polyline.addTo(primary);
+                        bounds.extend(polyline.getBounds());
+                        
+                        if (!legendAccumulator[layerKey]) {
+                          legendAccumulator[layerKey] = { icon: '🐟', color: color, title: `NOAA NMFS - ${displayLayerName}`, count: 0 };
+                        }
+                        legendAccumulator[layerKey].count += 1;
+                      }
+                    });
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing NOAA NMFS Critical Habitat ${layerKey}:`, error);
+              }
+            }
+          });
+        }
+      });
+
       // Draw NOAA Water Temperature Contours as polylines
       const noaaWaterTempMonths = [
         { key: 'noaa_water_temp_january', name: 'January', color: '#0ea5e9' },

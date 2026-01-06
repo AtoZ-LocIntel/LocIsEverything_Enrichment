@@ -271,12 +271,22 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
             const poiConfig = poiConfigManager.getPOIType(enrichment.id);
             const maxRadius = poiConfig?.maxRadius || 25;
             
+            // Special debug for airports
+            if (enrichment.id === 'poi_airports') {
+              console.log(`✈️ AIRPORT DEBUG: enrichment.id=${enrichment.id}, poiConfig=${JSON.stringify(poiConfig)}, maxRadius=${maxRadius}`);
+            }
             console.log(`🔍 DEBUG EnrichmentCategoryView: enrichment.id=${enrichment.id}, poiConfig.maxRadius=${poiConfig?.maxRadius}, using maxRadius=${maxRadius}`);
             
             // Generate radiusOptions dynamically based on maxRadius, but keep special cases
             let radiusOptions: number[];
             if (enrichment.id === 'poi_aurora_viewing_sites') {
               radiusOptions = [5, 10, 25, 50, 100];
+            } else if (enrichment.id === 'poi_airports') {
+              // Explicit handling for airports with 50 mile maxRadius
+              const baseOptions = [0.5, 1, 2, 3, 5, 10, 15];
+              radiusOptions = [...baseOptions, 25, 50];
+              radiusOptions.sort((a, b) => a - b);
+              console.log(`✈️ AIRPORT: Explicit radiusOptions=${JSON.stringify(radiusOptions)} for maxRadius=${maxRadius}`);
             } else if (enrichment.id === 'nh_parcels' || enrichment.id === 'nj_parcels' || enrichment.id === 'ireland_pois' || enrichment.id === 'uk_nspl_postcode_centroids' || enrichment.id === 'us_national_grid_100m' || enrichment.id === 'dc_trees') {
               radiusOptions = [0.25, 0.50, 0.75, 1.0];
             } else if (enrichment.id === 'nh_nwi_plus' || enrichment.id === 'ma_dep_wetlands' || enrichment.id === 'ma_open_space' || enrichment.id === 'cape_cod_zoning') {

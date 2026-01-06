@@ -719,6 +719,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key === 'noaa_critical_fisheries_habitat_all') || // Skip NOAA Critical Fisheries Habitat array (handled separately)
         (key.startsWith('noaa_west_coast_efh_') && key.endsWith('_all')) || // Skip NOAA West Coast EFH arrays (handled separately)
         (key.startsWith('noaa_esa_species_ranges_') && key.endsWith('_all')) || // Skip NOAA ESA Species Ranges arrays (handled separately)
+        (key.startsWith('noaa_nmfs_critical_habitat_') && key.endsWith('_all')) || // Skip NOAA NMFS Critical Habitat arrays (handled separately)
         (key.startsWith('noaa_water_temp_') && key.endsWith('_all')) || // Skip NOAA Water Temperature arrays (handled separately)
         (key.startsWith('boston_') && key.endsWith('_all')) || // Skip Boston Open Data arrays (handled separately)
         (key.startsWith('alaska_dnr_') && key.endsWith('_all')) || // Skip Alaska DNR arrays (handled separately)
@@ -13766,6 +13767,71 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           'NOAA',
           (location.confidence || 'N/A').toString(),
           `NOAA_ESA_${layerKey.toUpperCase().replace(/NOAA_ESA_SPECIES_RANGES_/g, '')}`,
+          `${featureName}${isContaining === 'Yes' ? ' (Containing)' : ''}`,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `${layerName}${isContaining === 'Yes' ? ' - Containing Point' : ' - Nearby'}`,
+          attributesJson,
+          '',
+          '',
+          'NOAA'
+        ]);
+      });
+    }
+
+    // Handle NOAA NMFS Critical Habitat layers (polygons and polylines)
+    if (key.startsWith('noaa_nmfs_critical_habitat_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerKey = key.replace('_all', '');
+      value.forEach((feature: any) => {
+        // Try to find identifier from common attribute fields
+        const featureName = feature.SPECIES || feature.species || feature.NAME || feature.name ||
+          feature.COMMON_NAME || feature.common_name || feature.ESU || feature.DPS ||
+          feature.OBJECTID || feature.objectid ||
+          (feature.attributes ? (feature.attributes.SPECIES || feature.attributes.species || feature.attributes.NAME || feature.attributes.name) : null) ||
+          feature.layerName || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        
+        // Extract coordinates from geometry (polygons or polylines)
+        let featureCoords = '';
+        if (feature.geometry) {
+          if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Polygon geometry - use first point of first ring
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          } else if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+            // Polyline geometry - use first point of first path
+            const firstPath = feature.geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              const firstPoint = firstPath[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          }
+        }
+        
+        // Extract all attributes as JSON
+        const excludeFields = ['geometry', 'distance_miles', 'objectid', 'OBJECTID', 'isContaining', 'layerId', 'layerName', 'geometryType'];
+        const attributes: Record<string, any> = {};
+        Object.entries(feature).forEach(([key, val]) => {
+          if (!excludeFields.includes(key) && val !== null && val !== undefined && val !== '') {
+            attributes[key] = val;
+          }
+        });
+        const attributesJson = JSON.stringify(attributes);
+        
+        const layerName = feature.layerName || layerKey.replace('noaa_nmfs_critical_habitat_', '').replace(/_/g, ' ');
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NOAA',
+          (location.confidence || 'N/A').toString(),
+          'NOAA NMFS Critical Habitat',
           `${featureName}${isContaining === 'Yes' ? ' (Containing)' : ''}`,
           featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
           featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),

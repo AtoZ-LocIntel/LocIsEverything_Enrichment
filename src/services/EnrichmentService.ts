@@ -157,6 +157,7 @@ import {
   getNOAAWestCoastEFHHMSCPSGroundfish,
 } from '../adapters/noaaWestCoastEFH';
 import * as NOAAESASpeciesRanges from '../adapters/noaaESASpeciesRanges';
+import * as NOAANMFSCriticalHabitat from '../adapters/noaaNMFSCriticalHabitat';
 import {
   getNOAOWaterTemperatureJanuary,
   getNOAOWaterTemperatureFebruary,
@@ -3007,6 +3008,93 @@ export class EnrichmentService {
       case 'noaa_esa_species_ranges_steelhead_southern_california_dps_access_overlay':
       case 'noaa_esa_species_ranges_steelhead_southern_california_dps_2':
         return await this.getNOAAESASpeciesRanges(enrichmentId, lat, lon, radius);
+      
+      // NOAA NMFS Critical Habitat Layers
+      case 'noaa_nmfs_critical_habitat_all_critical_habitat_poly_20230502':
+      case 'noaa_nmfs_critical_habitat_all_critical_habitat_line_20220404':
+      case 'noaa_nmfs_critical_habitat_coral_acroporaglobiceps_20250715':
+      case 'noaa_nmfs_critical_habitat_coral_acroporaretusa_20250715':
+      case 'noaa_nmfs_critical_habitat_coral_acroporaspeciosa_20250715':
+      case 'noaa_nmfs_critical_habitat_coral_fimbriaphylliaparadivisa_20250715':
+      case 'noaa_nmfs_critical_habitat_coral_isoporacrateriformis_20250715':
+      case 'noaa_nmfs_critical_habitat_coral_boulder_star_20230809':
+      case 'noaa_nmfs_critical_habitat_coral_lobed_star_20230809':
+      case 'noaa_nmfs_critical_habitat_coral_mountainous_star_20230809':
+      case 'noaa_nmfs_critical_habitat_coral_rough_cactus_20230809':
+      case 'noaa_nmfs_critical_habitat_coral_pillar_20230809':
+      case 'noaa_nmfs_critical_habitat_coral_staghorn_20081126':
+      case 'noaa_nmfs_critical_habitat_coral_elkhorn_20081126':
+      case 'noaa_nmfs_critical_habitat_grouper_nassau_20240102':
+      case 'noaa_nmfs_critical_habitat_bocaccio_puget_sound_georgia_basin_dps_20141113':
+      case 'noaa_nmfs_critical_habitat_eulachon_southern_dps_20111020':
+      case 'noaa_nmfs_critical_habitat_rockfish_yelloweye_puget_sound_georgia_basin_dps_20141113':
+      case 'noaa_nmfs_critical_habitat_salmon_atlantic_gulf_of_maine_dps_20090619':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_california_coastal_esu_20050902':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_central_valley_spring_run_esu_20050902':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_lower_columbia_river_esu_20050902':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_puget_sound_esu_20050902_line':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_puget_sound_esu_20050902_poly':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_sacramento_river_winter_run_esu_19930616_line':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_sacramento_river_winter_run_esu_19930616_poly':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_snake_river_fall_run_esu_19931228':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_upper_columbia_river_spring_run_esu_20050902':
+      case 'noaa_nmfs_critical_habitat_salmon_chinook_upper_willamette_river_esu_20050902':
+      case 'noaa_nmfs_critical_habitat_salmon_chum_columbia_river_esu_20050902':
+      case 'noaa_nmfs_critical_habitat_salmon_chum_hood_canal_summer_run_esu_20050902_line':
+      case 'noaa_nmfs_critical_habitat_salmon_chum_hood_canal_summer_run_esu_20050902_poly':
+      case 'noaa_nmfs_critical_habitat_salmon_coho_central_california_coast_esu_19990505':
+      case 'noaa_nmfs_critical_habitat_salmon_coho_lower_columbia_river_esu_20160224':
+      case 'noaa_nmfs_critical_habitat_salmon_coho_oregon_coast_esu_20080211':
+      case 'noaa_nmfs_critical_habitat_salmon_sockeye_ozette_lake_esu_20050902':
+      case 'noaa_nmfs_critical_habitat_salmon_sockeye_snake_river_esu_19931228_line':
+      case 'noaa_nmfs_critical_habitat_salmon_sockeye_snake_river_esu_19931228_poly':
+      case 'noaa_nmfs_critical_habitat_sawfish_smalltooth_us_dps_20090902':
+      case 'noaa_nmfs_critical_habitat_steelhead_california_central_valley_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_steelhead_central_california_coast_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_steelhead_lower_columbia_river_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_steelhead_middle_columbia_river_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_steelhead_northern_california_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_steelhead_puget_sound_dps_20160224':
+      case 'noaa_nmfs_critical_habitat_steelhead_snake_river_basin_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_steelhead_south_central_california_coast_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_steelhead_southern_california_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_steelhead_upper_columbia_river_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_steelhead_upper_willamette_river_dps_20050902':
+      case 'noaa_nmfs_critical_habitat_sturgeon_atlantic_atlantic_subspecies_carolina_dps_20170817':
+      case 'noaa_nmfs_critical_habitat_sturgeon_atlantic_atlantic_subspecies_chesapeake_bay_dps_20170817':
+      case 'noaa_nmfs_critical_habitat_sturgeon_atlantic_atlantic_subspecies_gulf_of_maine_dps_20170817':
+      case 'noaa_nmfs_critical_habitat_sturgeon_atlantic_atlantic_subspecies_new_york_bight_dps_20170817':
+      case 'noaa_nmfs_critical_habitat_sturgeon_atlantic_atlantic_subspecies_south_atlantic_dps_20170817':
+      case 'noaa_nmfs_critical_habitat_sturgeon_atlantic_gulf_subspecies_20030319_line':
+      case 'noaa_nmfs_critical_habitat_sturgeon_atlantic_gulf_subspecies_20030319_poly':
+      case 'noaa_nmfs_critical_habitat_sturgeon_green_southern_dps_20091009_line':
+      case 'noaa_nmfs_critical_habitat_sturgeon_green_southern_dps_20091009_poly':
+      case 'noaa_nmfs_critical_habitat_abalone_black_20111027':
+      case 'noaa_nmfs_critical_habitat_sea_turtle_green_north_atlantic_dps_19980902':
+      case 'noaa_nmfs_critical_habitat_sea_turtle_hawksbill_19980902':
+      case 'noaa_nmfs_critical_habitat_sea_turtle_leatherback_20120126':
+      case 'noaa_nmfs_critical_habitat_sea_turtle_loggerhead_northwest_atlantic_ocean_dps_20140710':
+      case 'noaa_nmfs_critical_habitat_seal_bearded_beringia_dps_20220401':
+      case 'noaa_nmfs_critical_habitat_seal_hawaiian_monk_20150821_line':
+      case 'noaa_nmfs_critical_habitat_seal_hawaiian_monk_20150821_poly':
+      case 'noaa_nmfs_critical_habitat_sea_lion_steller_western_dps_19940615':
+      case 'noaa_nmfs_critical_habitat_seal_ringed_arctic_subspecies_20220401':
+      case 'noaa_nmfs_critical_habitat_whale_beluga_cook_inlet_dps_20110411':
+      case 'noaa_nmfs_critical_habitat_whale_false_killer_main_hawaiian_islands_insular_dps_20180724':
+      case 'noaa_nmfs_critical_habitat_whale_humpback_central_america_dps_20210421':
+      case 'noaa_nmfs_critical_habitat_whale_humpback_mexico_dps_20210421':
+      case 'noaa_nmfs_critical_habitat_whale_humpback_western_north_pacific_dps_20210421':
+      case 'noaa_nmfs_critical_habitat_whale_killer_southern_resident_dps_20210802':
+      case 'noaa_nmfs_critical_habitat_whale_north_atlantic_right_20160127':
+      case 'noaa_nmfs_critical_habitat_whale_north_pacific_right_20080408':
+      case 'noaa_nmfs_critical_habitat_proposed_rices_whale_20230724':
+      case 'noaa_nmfs_critical_habitat_proposed_sea_turtle_green_central_north_pacific_dps_20230719':
+      case 'noaa_nmfs_critical_habitat_proposed_sea_turtle_green_central_south_pacific_dps_20230719':
+      case 'noaa_nmfs_critical_habitat_proposed_sea_turtle_green_central_west_pacific_dps_20230719':
+      case 'noaa_nmfs_critical_habitat_proposed_sea_turtle_green_east_pacific_dps_20230719':
+      case 'noaa_nmfs_critical_habitat_proposed_sea_turtle_green_north_atlantic_dps_20230719':
+      case 'noaa_nmfs_critical_habitat_proposed_sea_turtle_green_south_atlantic_dps_20230719':
+        return await this.getNOAANMFSCriticalHabitat(enrichmentId, lat, lon, radius);
       
       // NOAA World Ocean Atlas Water Temperature Layers
       case 'noaa_water_temp_january':
@@ -13206,7 +13294,7 @@ export class EnrichmentService {
     if (id === "poi_markets") return ["shop=marketplace", "amenity=marketplace"];
     
          // Add missing POI types that were showing up in your results
-    if (id === "poi_airports") return ["aeroway=aerodrome", "aeroway=airstrip", "aeroway=heliport", "aeroway=landing_strip"];
+    if (id === "poi_airports") return ["aeroway=aerodrome", "aeroway=airport", "aeroway=airfield", "aeroway=airstrip", "aeroway=heliport", "aeroway=landing_strip"];
      if (id === "poi_substations") return ["power=substation"];
      if (id === "poi_powerlines") return ["power=line"];
      if (id === "poi_power_plants_openei") return ["power=plant", "power=generator"];
@@ -13220,7 +13308,7 @@ export class EnrichmentService {
      if (id === "poi_wildfires") return ["custom_api"];
      
      // Fix missing POI types showing 0 counts
-     if (id === "poi_tnm_airports") return ["aeroway=aerodrome", "aeroway=airport"];
+     if (id === "poi_tnm_airports") return ["aeroway=aerodrome", "aeroway=airport", "aeroway=airfield"];
      if (id === "poi_tnm_railroads") return ["railway=rail"];
      if (id === "poi_tnm_trails") return ["route=hiking", "route=foot", "leisure=park"];
      if (id === "poi_tnm_trailheads") return ["highway=trailhead", "information=trailhead", "amenity=trailhead", "parking=trailhead"];
@@ -13487,6 +13575,7 @@ out center;`;
       );
       
       let queryParts: string[] = [];
+      const isAirportQuery = filters.some(f => f.startsWith('aeroway='));
       
       if (isDentalVisionQuery) {
         // Use advanced Overpass query with regex matching and multiple tag conditions
@@ -13503,22 +13592,36 @@ out center;`;
         queryParts.push(`  nwr["name"~"Dental|Dentistry|DDS|DMD|Orthodontic|Oral Surgery|Oral Surgeon", i](${bbox});`);
       } else {
         // Build query using standard syntax - ALL element types for POIs
-        filters.forEach(filter => {
-          // Fix: Overpass needs separate quotes around key and value: ["key"="value"]
-          const [key, value] = filter.split('=');
-          // Overpass expects bbox in parentheses: (south,west,north,east)
-          // The bbox variable already contains the comma-separated values
-          queryParts.push(`  node["${key}"="${value}"](${bbox});`);
-          queryParts.push(`  way["${key}"="${value}"](${bbox});`);
-          queryParts.push(`  relation["${key}"="${value}"](${bbox});`);
-        });
+        // Check if this is an airport query by looking for aeroway filters
+        const isAirportQuery = filters.some(f => f.startsWith('aeroway='));
+        
+        if (isAirportQuery) {
+          // Use around: syntax for radius-based queries (NOT bbox!)
+          // Pattern matching: aerodrome|airstrip|heliport|helipad to catch all airport types
+          // Convert radius from miles to meters for around: syntax
+          const radiusMeters = Math.round(radiusMiles * 1609.34);
+          queryParts.push(`  node["aeroway"~"aerodrome|airstrip|heliport|helipad"](around:${radiusMeters}, ${lat}, ${lon});`);
+          queryParts.push(`  way["aeroway"~"aerodrome|airstrip|heliport|helipad"](around:${radiusMeters}, ${lat}, ${lon});`);
+          queryParts.push(`  relation["aeroway"~"aerodrome|airstrip|heliport|helipad"](around:${radiusMeters}, ${lat}, ${lon});`);
+        } else {
+          // Standard exact match for other POI types
+          filters.forEach(filter => {
+            // Fix: Overpass needs separate quotes around key and value: ["key"="value"]
+            const [key, value] = filter.split('=');
+            // Overpass expects bbox in parentheses: (south,west,north,east)
+            // The bbox variable already contains the comma-separated values
+            queryParts.push(`  node["${key}"="${value}"](${bbox});`);
+            queryParts.push(`  way["${key}"="${value}"](${bbox});`);
+            queryParts.push(`  relation["${key}"="${value}"](${bbox});`);
+          });
+        }
       }
       
-             const q = `[out:json][timeout:60];
- (
- ${queryParts.join('\n')}
- );
- out center;`;
+             const q = `[out:json][timeout:900];
+(
+${queryParts.join('\n')}
+);
+out center tags;`;
       
       console.log(`🗺️  Overpass API Query for ${radiusMiles}mi radius:`);
       console.log(`📍 Location: ${lat}, ${lon}`);
@@ -13544,6 +13647,14 @@ out center;`;
       const elements = res.elements || [];
       console.log(`📊 Overpass API returned ${elements.length} elements within bbox`);
       
+      // Debug: Log airport-specific info
+      if (isAirportQuery) {
+        console.log(`✈️ AIRPORT QUERY DEBUG: Found ${elements.length} total elements`);
+        elements.forEach((el: any, idx: number) => {
+          console.log(`  Element ${idx + 1}: type=${el.type}, aeroway=${el.tags?.aeroway}, name=${el.tags?.name || 'unnamed'}`);
+        });
+      }
+      
       // Process POIs returned by bbox (server has already filtered spatially)
       const nearbyPOIs: any[] = [];
       const seen = new Set();
@@ -13564,10 +13675,18 @@ out center;`;
           lonc = el.center?.lon;
         }
         
-        if (latc == null || lonc == null) continue;
+        if (latc == null || lonc == null) {
+          if (isAirportQuery) {
+            console.log(`✈️ SKIPPING airport element (no coordinates): type=${el.type}, aeroway=${el.tags?.aeroway}`);
+          }
+          continue;
+        }
         
         const distanceMiles = this.calculateDistance(lat, lon, latc, lonc) * 0.621371;
         if (!Number.isFinite(distanceMiles) || distanceMiles > radiusMiles) {
+          if (isAirportQuery && distanceMiles > radiusMiles) {
+            console.log(`✈️ SKIPPING airport (too far): ${el.tags?.name || el.tags?.aeroway}, distance=${distanceMiles.toFixed(2)}mi, max=${radiusMiles}mi`);
+          }
           continue;
         }
         
@@ -13597,6 +13716,7 @@ out center;`;
         
         const nameOrType =
           el.tags?.name ||
+          el.tags?.aeroway ||
           el.tags?.amenity ||
           el.tags?.shop ||
           el.tags?.tourism ||
@@ -28260,6 +28380,51 @@ out center;`;
       return {
         [`${enrichmentId}_count`]: 0,
         [`${enrichmentId}_summary`]: `Error fetching NOAA ESA Species Ranges layer ${layerId} data`,
+        [`${enrichmentId}_all`]: []
+      };
+    }
+  }
+
+  private async getNOAANMFSCriticalHabitat(enrichmentId: string, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐟 Fetching NOAA NMFS Critical Habitat data for [${lat}, ${lon}] for ${enrichmentId}`);
+      
+      const layerId = NOAANMFSCriticalHabitat.layerIdMap[enrichmentId];
+      
+      if (layerId === undefined) {
+        throw new Error(`Unknown NMFS Critical Habitat layer ID for enrichmentId: ${enrichmentId}`);
+      }
+      
+      const features = await NOAANMFSCriticalHabitat.queryNMFSCriticalHabitatLayer(layerId, lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      const layerName = features.length > 0 ? features[0].layerName : enrichmentId.replace('noaa_nmfs_critical_habitat_', '').replace(/_/g, ' ');
+      
+      if (features.length === 0) {
+        result[`${enrichmentId}_count`] = 0;
+        result[`${enrichmentId}_summary`] = `No ${layerName} found`;
+        result[`${enrichmentId}_all`] = [];
+      } else {
+        result[`${enrichmentId}_count`] = features.length;
+        result[`${enrichmentId}_summary`] = `Found ${features.length} ${layerName} feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result[`${enrichmentId}_all`] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName,
+          geometryType: feature.geometryType
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA NMFS Critical Habitat data for ${enrichmentId}:`, error);
+      return {
+        [`${enrichmentId}_count`]: 0,
+        [`${enrichmentId}_summary`]: `Error fetching NOAA NMFS Critical Habitat data for ${enrichmentId}`,
         [`${enrichmentId}_all`]: []
       };
     }
