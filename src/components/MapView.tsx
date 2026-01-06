@@ -6899,11 +6899,11 @@ const MapView: React.FC<MapViewProps> = ({
                   });
                   
                   const distance = habitat.distance_miles;
-                  const layerName = habitat.layerName || layerKey.replace('noaa_esa_species_ranges_', '').replace(/_/g, ' ');
+                  const displayLayerName = habitat.layerName || layerKey.replace('noaa_esa_species_ranges_', '').replace(/_/g, ' ');
                   let popupContent = `
                     <div style="min-width: 250px; max-width: 400px;">
                       <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                        ${isContaining ? `🐟 Containing ${layerName}` : `🐟 Nearby ${layerName}`}
+                        ${isContaining ? `🐟 Containing ${displayLayerName}` : `🐟 Nearby ${displayLayerName}`}
                       </h3>
                       <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
                         ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
@@ -6926,7 +6926,7 @@ const MapView: React.FC<MapViewProps> = ({
                   bounds.extend(polygon.getBounds());
                   
                   if (!legendAccumulator[layerKey]) {
-                    legendAccumulator[layerKey] = { icon: '🐟', color: color, title: `NOAA ESA - ${layerName}`, count: 0 };
+                    legendAccumulator[layerKey] = { icon: '🐟', color: color, title: `NOAA ESA - ${displayLayerName}`, count: 0 };
                   }
                   legendAccumulator[layerKey].count += 1;
                 }
@@ -6967,7 +6967,6 @@ const MapView: React.FC<MapViewProps> = ({
                     opacity: 0.7
                   });
                   const distance = feature.distance_miles;
-                  const layerName = feature.layerName || month.name;
                   let popupContent = `<div><strong>NOAA Water Temperature - ${month.name}</strong>${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
                   
                   // Add attributes to popup
