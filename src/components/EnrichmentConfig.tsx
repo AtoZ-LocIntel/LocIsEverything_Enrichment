@@ -1917,10 +1917,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           </div>
                         )}
                         
-                        {/* Category Title Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs font-semibold py-1 px-2 text-center">
-                          {subCategory.title}
-                        </div>
+                        {/* Category Title Overlay - Removed for NJ (names are in icon graphics) */}
                       </button>
                     );
                   })
