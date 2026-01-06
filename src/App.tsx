@@ -190,7 +190,6 @@ function App() {
     // If we have a previous view mode (came from results), go back to it
     // Otherwise, go to config (home)
     const targetViewMode = previousViewMode || 'config';
-    const isComingFromCategory = viewMode === 'enrichment-category';
     const isComingFromMap = viewMode === 'map';
     
     // Restore scroll position IMMEDIATELY before changing view mode to prevent flash
