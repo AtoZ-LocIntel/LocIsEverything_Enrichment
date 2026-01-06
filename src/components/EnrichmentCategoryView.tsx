@@ -91,9 +91,9 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
 
   const selectedCount = filteredEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
 
-  // Scroll to top when component mounts
+  // Scroll to top when category view opens (always start at top of layer list)
   useEffect(() => {
-    // Force scroll to top immediately
+    // Force scroll to top immediately when opening category view
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
@@ -104,7 +104,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     }, 100);
-  }, []);
+  }, [category.id]); // Re-run when category changes
 
   return (
     <div className="min-h-screen bg-gray-50">

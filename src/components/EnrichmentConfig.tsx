@@ -150,6 +150,27 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
   const [categorySearchQuery, setCategorySearchQuery] = useState<string>('');
+  const [savedScrollPosition, setSavedScrollPosition] = useState<number>(0);
+  
+  // Helper function to close sub-category view and restore scroll position
+  const handleCloseSubCategoryView = (setViewingSubCategories: (value: boolean) => void) => {
+    // Restore scroll position IMMEDIATELY before closing to prevent flash
+    if (savedScrollPosition > 0) {
+      window.scrollTo(0, savedScrollPosition);
+      document.documentElement.scrollTop = savedScrollPosition;
+      document.body.scrollTop = savedScrollPosition;
+    }
+    setViewingSubCategories(false);
+    // Ensure scroll position is maintained after state change
+    setTimeout(() => {
+      if (savedScrollPosition > 0) {
+        window.scrollTo(0, savedScrollPosition);
+        document.documentElement.scrollTop = savedScrollPosition;
+        document.body.scrollTop = savedScrollPosition;
+      }
+    }, 50);
+  };
+  
   const [viewingNHSubCategories, setViewingNHSubCategories] = useState(false);
   const [viewingMASubCategories, setViewingMASubCategories] = useState(false);
   const [viewingCTSubCategories, setViewingCTSubCategories] = useState(false);
@@ -1667,6 +1688,14 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           subCategories: category.subCategories?.map(sc => sc.id) || [],
                           subCategoryDetails: category.subCategories?.map(sc => ({ id: sc.id, title: sc.title, enrichmentsCount: sc.enrichments.length })) || []
                         });
+                        // Save scroll position before opening sub-categories
+                        if (category.subCategories && category.subCategories.length > 0) {
+                          setSavedScrollPosition(window.pageYOffset || document.documentElement.scrollTop);
+                          // Scroll to top when opening sub-categories page
+                          window.scrollTo(0, 0);
+                          document.documentElement.scrollTop = 0;
+                          document.body.scrollTop = 0;
+                        }
                         if (category.id === 'nh' && category.subCategories && category.subCategories.length > 0) {
                           setViewingNHSubCategories(true);
                         } else if (category.id === 'ma' && category.subCategories && category.subCategories.length > 0) {
@@ -1720,6 +1749,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                           });
                           setViewingDCSubCategories(true);
                         } else if (onViewCategory) {
+                          // Scroll to top when opening category layer list
+                          window.scrollTo(0, 0);
+                          document.documentElement.scrollTop = 0;
+                          document.body.scrollTop = 0;
                           onViewCategory(category);
                         } else {
                           setActiveModal(category.id);
@@ -1813,7 +1846,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setViewingNJSubCategories(false)}
+                  onClick={() => handleCloseSubCategoryView(setViewingNJSubCategories)}
                   className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
                   title="Back to categories"
                 >
@@ -1851,10 +1884,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         onClick={() => {
                           // Use onViewCategory to show sub-category layers (same pattern as NH, MA, CT, DE)
                           if (onViewCategory) {
+                            // Scroll to top when opening sub-category layer list
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setViewingNJSubCategories(false);
                             onViewCategory(subCategory);
                           } else {
-                            // Fallback to modal
+                            // Fallback to modal - scroll to top of modal content
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setCameFromNJSubCategories(true);
                             setActiveModal(subCategory.id);
                             setViewingNJSubCategories(false);
@@ -1909,7 +1949,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           <div className="flex flex-col space-y-4">
             <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setViewingCTSubCategories(false)}
+                  onClick={() => handleCloseSubCategoryView(setViewingCTSubCategories)}
                   className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
                   title="Back to categories"
                 >
@@ -1947,10 +1987,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         onClick={() => {
                           // Use onViewCategory to show sub-category layers (same pattern as NH and MA)
                           if (onViewCategory) {
+                            // Scroll to top when opening sub-category layer list
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setViewingCTSubCategories(false);
                             onViewCategory(subCategory);
                           } else {
-                            // Fallback to modal
+                            // Fallback to modal - scroll to top of modal content
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setCameFromCTSubCategories(true);
                             setActiveModal(subCategory.id);
                             setViewingCTSubCategories(false);
@@ -2000,7 +2047,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setViewingDESubCategories(false)}
+                  onClick={() => handleCloseSubCategoryView(setViewingDESubCategories)}
                   className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
                   title="Back to categories"
                 >
@@ -2038,10 +2085,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         onClick={() => {
                           // Use onViewCategory to show sub-category layers (same pattern as NH, MA, CT)
                           if (onViewCategory) {
+                            // Scroll to top when opening sub-category layer list
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setViewingDESubCategories(false);
                             onViewCategory(subCategory);
                           } else {
-                            // Fallback to modal
+                            // Fallback to modal - scroll to top of modal content
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setCameFromDESubCategories(true);
                             setActiveModal(subCategory.id);
                             setViewingDESubCategories(false);
@@ -2142,6 +2196,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         key={subCategory.id}
                         onClick={() => {
                           if (onViewCategory) {
+                            // Scroll to top when opening sub-category layer list
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setViewingState(false);
                             onViewCategory(subCategory);
                           } else {
@@ -2196,7 +2254,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setViewingCASubCategories(false)}
+                  onClick={() => handleCloseSubCategoryView(setViewingCASubCategories)}
                   className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
                   title="Back to categories"
                 >
@@ -2234,10 +2292,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         onClick={() => {
                           // Use onViewCategory to show sub-category layers (same pattern as NH, MA, CT, DE)
                           if (onViewCategory) {
+                            // Scroll to top when opening sub-category layer list
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setViewingCASubCategories(false);
                             onViewCategory(subCategory);
                           } else {
-                            // Fallback to modal
+                            // Fallback to modal - scroll to top of modal content
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setCameFromCASubCategories(true);
                             setActiveModal(subCategory.id);
                             setViewingCASubCategories(false);
@@ -2287,7 +2352,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-3">
               <button
-                  onClick={() => setViewingMASubCategories(false)}
+                  onClick={() => handleCloseSubCategoryView(setViewingMASubCategories)}
                   className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
                   title="Back to categories"
               >
@@ -2325,10 +2390,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                     onClick={() => {
                           // Use onViewCategory to show sub-category layers (same pattern as NH)
                       if (onViewCategory) {
+                            // Scroll to top when opening sub-category layer list
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setViewingMASubCategories(false);
                             onViewCategory(subCategory);
                       } else {
-                            // Fallback to modal
+                            // Fallback to modal - scroll to top of modal content
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setCameFromMASubCategories(true);
                             setActiveModal(subCategory.id);
                             setViewingMASubCategories(false);
@@ -2662,7 +2734,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setViewingEUSubCategories(false)}
+                  onClick={() => handleCloseSubCategoryView(setViewingEUSubCategories)}
                   className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
                   title="Back to categories"
                 >
@@ -2700,10 +2772,17 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         onClick={() => {
                           // Use onViewCategory to show sub-category layers (same pattern as NH, MA, CT, DE, NJ)
                           if (onViewCategory) {
+                            // Scroll to top when opening sub-category layer list
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setViewingEUSubCategories(false);
                             onViewCategory(subCategory);
                           } else {
-                            // Fallback to modal
+                            // Fallback to modal - scroll to top of modal content
+                            window.scrollTo(0, 0);
+                            document.documentElement.scrollTop = 0;
+                            document.body.scrollTop = 0;
                             setCameFromEUSubCategories(true);
                             setActiveModal(subCategory.id);
                             setViewingEUSubCategories(false);
@@ -2762,7 +2841,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setViewingNHSubCategories(false)}
+                  onClick={() => handleCloseSubCategoryView(setViewingNHSubCategories)}
                   className="text-white text-2xl font-bold p-2 hover:bg-white hover:bg-opacity-20 rounded flex-shrink-0"
                   title="Back to categories"
                 >
@@ -2799,6 +2878,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                       onClick={() => {
                         // Use onViewCategory to navigate to full page view (like regular categories)
                         if (onViewCategory) {
+                          // Scroll to top when opening sub-category layer list
+                          window.scrollTo(0, 0);
+                          document.documentElement.scrollTop = 0;
+                          document.body.scrollTop = 0;
                           onViewCategory(subCategory);
                         }
                       }}
@@ -2985,7 +3068,23 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                 return (
                   <div className="p-4">
                     <button
-                      onClick={() => setActiveModal(null)}
+                      onClick={() => {
+                        // Restore scroll position IMMEDIATELY before closing modal to prevent flash
+                        if (savedScrollPosition > 0) {
+                          window.scrollTo(0, savedScrollPosition);
+                          document.documentElement.scrollTop = savedScrollPosition;
+                          document.body.scrollTop = savedScrollPosition;
+                        }
+                        setActiveModal(null);
+                        // Ensure scroll position is maintained after modal closes
+                        setTimeout(() => {
+                          if (savedScrollPosition > 0) {
+                            window.scrollTo(0, savedScrollPosition);
+                            document.documentElement.scrollTop = savedScrollPosition;
+                            document.body.scrollTop = savedScrollPosition;
+                          }
+                        }, 50);
+                      }}
                       className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors font-semibold"
                     >
                       <ArrowLeft className="w-5 h-5" />
@@ -3310,8 +3409,21 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               setActiveModal(null);
                               setViewingILSubCategories(true);
                             } else {
-                              // Go back to main configuration
+                              // Go back to main configuration - restore scroll position IMMEDIATELY
+                              if (savedScrollPosition > 0) {
+                                window.scrollTo(0, savedScrollPosition);
+                                document.documentElement.scrollTop = savedScrollPosition;
+                                document.body.scrollTop = savedScrollPosition;
+                              }
                               setActiveModal(null);
+                              // Ensure scroll position is maintained after modal closes
+                              setTimeout(() => {
+                                if (savedScrollPosition > 0) {
+                                  window.scrollTo(0, savedScrollPosition);
+                                  document.documentElement.scrollTop = savedScrollPosition;
+                                  document.body.scrollTop = savedScrollPosition;
+                                }
+                              }, 50);
                             }
                           }}
                           className="flex items-center space-x-2 text-white hover:text-gray-200 transition-colors font-semibold text-sm sm:text-base"

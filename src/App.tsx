@@ -192,18 +192,32 @@ function App() {
     const targetViewMode = previousViewMode || 'config';
     const isComingFromCategory = viewMode === 'enrichment-category';
     const isComingFromMap = viewMode === 'map';
+    
+    // Restore scroll position IMMEDIATELY before changing view mode to prevent flash
+    if (!isComingFromMap && savedScrollPosition > 0) {
+      // Immediately set scroll position to prevent showing top of page
+      window.scrollTo(0, savedScrollPosition);
+      document.documentElement.scrollTop = savedScrollPosition;
+      document.body.scrollTop = savedScrollPosition;
+    }
+    
     setViewMode(targetViewMode);
     setPreviousViewMode(null); // Clear the previous view mode
     setError(null);
-    // If coming from category page or map view, scroll to top for better UX
-    // Otherwise, restore scroll position after a brief delay to ensure the view has rendered
-    setTimeout(() => {
-      if (isComingFromCategory || isComingFromMap) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
+    
+    // Ensure scroll position is maintained after view mode change
+    if (!isComingFromMap) {
+      setTimeout(() => {
         window.scrollTo(0, savedScrollPosition);
-      }
-    }, 100);
+        document.documentElement.scrollTop = savedScrollPosition;
+        document.body.scrollTop = savedScrollPosition;
+      }, 50);
+    } else {
+      // Coming from map view, scroll to top
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    }
   };
 
 
@@ -233,8 +247,18 @@ function App() {
   const handleViewEnrichmentCategory = (category: any) => {
     // Save current scroll position before navigating to category view
     setSavedScrollPosition(window.pageYOffset || document.documentElement.scrollTop);
+    // Scroll to top IMMEDIATELY when opening category view (before state change)
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     setActiveCategory(category);
     setViewMode('enrichment-category');
+    // Ensure scroll position stays at top after view mode change
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 50);
   };
 
   const handleBackToMain = () => {
