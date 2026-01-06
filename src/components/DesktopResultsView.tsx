@@ -248,12 +248,12 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           key.includes('_features') ||
           key.endsWith('_all') ||
           key.endsWith(' All') ||
-          (hasAllToken && !key.endsWith('_count')) ||
+          (hasAllToken && !key.endsWith('_count') && !key.endsWith('_summary')) ||
           (key.includes('poi_') && hasAllToken) ||
           // Catch specific patterns like "Poi Cafes Coffee All" and "Poi Banks All"
           (key.toLowerCase().includes('poi') && /[^a-z]all[^a-z]|all$/.test(key.toLowerCase())) ||
           // Catch any field that ends with "All" regardless of case
-          key.toLowerCase().endsWith('all')) && !key.endsWith('_count')) {
+          key.toLowerCase().endsWith('all')) && !key.endsWith('_count') && !key.endsWith('_summary')) {
         return acc;
       }
       
@@ -388,6 +388,13 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         // PCT fields - only show if PCT is selected
         if (selected.includes('pct_') && key.includes('pct_')) {
           return selectedEnrichments.includes('pct_centerline') || selectedEnrichments.some(s => s.startsWith('pct_'));
+        }
+        
+        // NOAA fields - only show if NOAA enrichment is selected
+        if (key.startsWith('noaa_') && selected.startsWith('noaa_')) {
+          // Match NOAA enrichment IDs to their count/summary fields
+          // e.g., 'noaa_weather_radar_impact_zones' matches 'noaa_weather_radar_impact_zones_count'
+          return key.includes(selected);
         }
         
         // USDA wildfire fields - only show if specific USDA wildfire enrichment is selected
@@ -795,6 +802,9 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       } else if (key.includes('poi_epa_') || key.startsWith('tri_')) {
         // Ensure EPA/Toxic Release fields don't get captured by the generic POI count bucket
         category = 'Human Caused Hazards';
+      } else if (key.startsWith('noaa_') || key.includes('noaa_critical_fisheries_habitat') || key.includes('noaa_water_temp_') || key.includes('noaa_west_coast_efh') || key.includes('noaa_esa_species_ranges') || key.includes('noaa_nmfs_critical_habitat') || key.includes('noaa_weather_radar') || key.includes('noaa_ocean_temp')) {
+        // NOAA layers - check BEFORE Weather & Climate to avoid false matches (e.g., noaa_weather_radar_impact_zones)
+        category = 'NOAA';
       } else if (key.startsWith('nws_')) {
         category = 'Watching the Weather';
       } else if (key.includes('weather') || key.includes('climate')) {
@@ -809,8 +819,6 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Hazards';
       } else if (key.includes('poi_epa_')) {
         category = 'Human Caused Hazards';
-      } else if (key.startsWith('noaa_') || key.includes('noaa_critical_fisheries_habitat') || key.includes('noaa_water_temp_')) {
-        category = 'NOAA';
       } else if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('nps_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';
       } else if (key.startsWith('at_') || (key.includes('at_') && !key.includes('blm_'))) {

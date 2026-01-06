@@ -158,6 +158,7 @@ import {
 } from '../adapters/noaaWestCoastEFH';
 import * as NOAAESASpeciesRanges from '../adapters/noaaESASpeciesRanges';
 import * as NOAANMFSCriticalHabitat from '../adapters/noaaNMFSCriticalHabitat';
+import { queryNOAAWeatherRadarImpactZones } from '../adapters/noaaWeatherRadarImpactZones';
 import {
   getNOAOWaterTemperatureJanuary,
   getNOAOWaterTemperatureFebruary,
@@ -2883,6 +2884,9 @@ export class EnrichmentService {
       // NOAA Critical Fisheries Habitat
       case 'noaa_critical_fisheries_habitat':
         return await this.getNOAACriticalFisheriesHabitat(lat, lon, radius);
+      
+      case 'noaa_weather_radar_impact_zones':
+        return await this.getNOAAWeatherRadarImpactZones(lat, lon, radius);
       
       // NOAA West Coast Essential Fish Habitat (EFH) Layers
       case 'noaa_west_coast_efh_hapc':
@@ -28381,6 +28385,44 @@ out center tags;`;
         [`${enrichmentId}_count`]: 0,
         [`${enrichmentId}_summary`]: `Error fetching NOAA ESA Species Ranges layer ${layerId} data`,
         [`${enrichmentId}_all`]: []
+      };
+    }
+  }
+
+  private async getNOAAWeatherRadarImpactZones(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌩️ Fetching NOAA Weather Radar Impact Zones data for [${lat}, ${lon}]`);
+      
+      const features = await queryNOAAWeatherRadarImpactZones(lat, lon, radius || 50);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['noaa_weather_radar_impact_zones_count'] = 0;
+        result['noaa_weather_radar_impact_zones_summary'] = 'No Weather Radar Impact Zones found';
+        result['noaa_weather_radar_impact_zones_all'] = [];
+      } else {
+        result['noaa_weather_radar_impact_zones_count'] = features.length;
+        result['noaa_weather_radar_impact_zones_summary'] = `Found ${features.length} Weather Radar Impact Zone(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['noaa_weather_radar_impact_zones_all'] = features.map(feature => ({
+          objectid: feature.objectid,
+          siteidentifier: feature.siteidentifier,
+          sitename: feature.sitename,
+          impactzone: feature.impactzone,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NOAA Weather Radar Impact Zones data:', error);
+      return {
+        'noaa_weather_radar_impact_zones_count': 0,
+        'noaa_weather_radar_impact_zones_summary': 'Error fetching NOAA Weather Radar Impact Zones data',
+        'noaa_weather_radar_impact_zones_all': []
       };
     }
   }

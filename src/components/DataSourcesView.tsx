@@ -2162,6 +2162,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://maps.fisheries.noaa.gov/server/rest/services/All_Critical_Habitat/MapServer/229"
         },
         {
+          name: "NOAA Weather Radar Impact Zones",
+          description: "National impacts of wind turbine interference with NEXRAD radar stations. Four zones: No Build, Mitigation, Consultation, and Notification (point-in-polygon and proximity queries up to 50 miles)",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/Hosted/WeatherRadarImpactZones/FeatureServer/0"
+        },
+        {
           name: "NOAA West Coast Essential Fish Habitat (EFH)",
           description: "NOAA West Coast Essential Fish Habitat - HAPC, EFHA, EFH Salmon, and EFH HMS/CPS/Groundfish polygons (point-in-polygon and proximity queries up to 100 miles)",
           coverage: "United States (West Coast)",

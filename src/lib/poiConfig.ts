@@ -700,6 +700,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   
   // NOAA Critical Fisheries Habitat
   { id: 'noaa_critical_fisheries_habitat', label: 'NOAA Critical Fisheries Habitat', description: 'NOAA Critical Fisheries Habitat - All Critical Habitat polygons (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaacriticalhabitat', section: 'noaa' },
+  { id: 'noaa_weather_radar_impact_zones', label: 'Weather Radar Impact Zones', description: 'National impacts of wind turbine interference with NEXRAD radar stations. Four zones: No Build, Mitigation, Consultation, and Notification (point-in-polygon and proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'noaaweatherradar', section: 'noaa' },
   
   // NOAA West Coast Essential Fish Habitat (EFH)
   { id: 'noaa_west_coast_efh_hapc', label: 'NOAA West Coast EFH - HAPC', description: 'NOAA West Coast Essential Fish Habitat - HAPC (Habitat Areas of Particular Concern) (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawestcoastefh', section: 'noaa' },

@@ -488,8 +488,8 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_airports') || key.includes('poi_railroads') || key.includes('poi_gas')) {
       return 'Transportation';
     }
-    // NOAA layers - check before AT/PCT to avoid false matches
-    if (key.startsWith('noaa_') || key.includes('noaa_critical_fisheries_habitat') || key.includes('noaa_water_temp_')) {
+    // NOAA layers - check BEFORE Weather & Climate and AT/PCT to avoid false matches (e.g., noaa_weather_radar_impact_zones)
+    if (key.startsWith('noaa_') || key.includes('noaa_critical_fisheries_habitat') || key.includes('noaa_water_temp_') || key.includes('noaa_west_coast_efh') || key.includes('noaa_esa_species_ranges') || key.includes('noaa_nmfs_critical_habitat') || key.includes('noaa_weather_radar') || key.includes('noaa_ocean_temp')) {
       return 'NOAA';
     }
     
@@ -520,8 +520,8 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     // Filter out detailed POI data from mobile form display (same as desktop)
     // NOTE: Check for _all as a separate token (not substring like in "halls")
     // Use regex to match _all as complete token: _all followed by _ or end of string
-    const hasAllToken = /_all(_|$)/.test(key) || key.endsWith('_all');
-    if (key.includes('_all_pois') ||
+      const hasAllToken = /_all(_|$)/.test(key) || key.endsWith('_all');
+      if ((key.includes('_all_pois') ||
         key.includes('_detailed') ||
         key.includes('_elements') ||
         key.includes('_features') ||
@@ -530,7 +530,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         hasAllToken ||
         (key.includes('poi_') && hasAllToken) ||
         (key.toLowerCase().includes('poi') && /[^a-z]all[^a-z]|all$/.test(key.toLowerCase())) ||
-        key.toLowerCase().endsWith('all')) {
+        key.toLowerCase().endsWith('all')) && !key.endsWith('_count') && !key.endsWith('_summary')) {
       return acc;
     }
     
@@ -665,6 +665,13 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // PCT fields - only show if PCT is selected
       if (selected.includes('pct_') && key.includes('pct_')) {
         return selectedEnrichments.includes('pct_centerline') || selectedEnrichments.some(s => s.startsWith('pct_'));
+      }
+      
+      // NOAA fields - only show if NOAA enrichment is selected
+      if (key.startsWith('noaa_') && selected.startsWith('noaa_')) {
+        // Match NOAA enrichment IDs to their count/summary fields
+        // e.g., 'noaa_weather_radar_impact_zones' matches 'noaa_weather_radar_impact_zones_count'
+        return key.includes(selected);
       }
       
       // USDA wildfire fields - only show if specific USDA wildfire enrichment is selected

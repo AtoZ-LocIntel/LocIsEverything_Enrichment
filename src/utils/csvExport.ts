@@ -717,6 +717,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key.startsWith('usgs_wbd_') && key.endsWith('_all')) || // Skip USGS WBD arrays (handled separately)
         (key.startsWith('usgs_contours_') && key.endsWith('_all')) || // Skip USGS Contours arrays (handled separately)
         (key === 'noaa_critical_fisheries_habitat_all') || // Skip NOAA Critical Fisheries Habitat array (handled separately)
+        (key === 'noaa_weather_radar_impact_zones_all') || // Skip NOAA Weather Radar Impact Zones array (handled separately)
         (key.startsWith('noaa_west_coast_efh_') && key.endsWith('_all')) || // Skip NOAA West Coast EFH arrays (handled separately)
         (key.startsWith('noaa_esa_species_ranges_') && key.endsWith('_all')) || // Skip NOAA ESA Species Ranges arrays (handled separately)
         (key.startsWith('noaa_nmfs_critical_habitat_') && key.endsWith('_all')) || // Skip NOAA NMFS Critical Habitat arrays (handled separately)
@@ -13651,6 +13652,55 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
           distance,
           `Critical Fisheries Habitat${isContaining === 'Yes' ? ' - Containing Point' : ' - Nearby'}`,
+          attributesJson,
+          '',
+          '',
+          'NOAA'
+        ]);
+      });
+    }
+
+    // Add NOAA Weather Radar Impact Zones data rows
+    if (key === 'noaa_weather_radar_impact_zones_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        const featureName = feature.sitename || feature.SiteName || feature.siteidentifier || feature.SiteIdentifier || 
+          feature.impactzone || feature.ImpactZone || feature.OBJECTID || feature.objectid || 'Unknown';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        const isContaining = feature.isContaining ? 'Yes' : 'No';
+        
+        // Extract coordinates from geometry (polygons)
+        let featureCoords = '';
+        if (feature.geometry) {
+          if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+            // Polygon geometry - use first point of first ring
+            const firstRing = feature.geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              const firstPoint = firstRing[0];
+              featureCoords = `${firstPoint[1]},${firstPoint[0]}`; // lat,lon
+            }
+          }
+        }
+        
+        const allAttributes = { ...feature };
+        delete allAttributes.objectid;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NOAA',
+          (location.confidence || 'N/A').toString(),
+          'NOAA_WEATHER_RADAR_IMPACT_ZONES',
+          `${featureName}${isContaining === 'Yes' ? ' (Containing)' : ''}`,
+          featureCoords ? featureCoords.split(',')[0] : location.lat.toString(),
+          featureCoords ? featureCoords.split(',')[1] : location.lon.toString(),
+          distance,
+          `Weather Radar Impact Zones - ${feature.impactzone || feature.ImpactZone || 'Unknown'}${isContaining === 'Yes' ? ' - Containing Point' : ' - Nearby'}`,
           attributesJson,
           '',
           '',

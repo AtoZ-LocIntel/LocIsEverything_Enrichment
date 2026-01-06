@@ -1401,6 +1401,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_osm_credit_unions': { icon: '🏛️', color: '#2563eb', title: 'Credit Unions' },
   'poi_osm_financial_institutions': { icon: '💰', color: '#1e3a8a', title: 'Financial Institutions' },
   'poi_airports': { icon: '✈️', color: '#6366f1', title: 'Airports' },
+  'noaa_weather_radar_impact_zones': { icon: '🌩️', color: '#ef4444', title: 'NOAA Weather Radar Impact Zones' },
   'poi_tnm_trails': { icon: '🥾', color: '#059669', title: 'Trails' },
   'poi_mountain_biking': { icon: '🚵', color: '#10b981', title: 'Mountain Biking & Biking Trails' },
   'poi_wikipedia': { icon: '📖', color: '#1d4ed8', title: 'Wikipedia Articles' },
@@ -6795,6 +6796,73 @@ const MapView: React.FC<MapViewProps> = ({
               }
             } catch (error) {
               console.error('Error drawing NOAA Critical Fisheries Habitat:', error);
+            }
+          }
+        });
+      }
+
+      // Draw NOAA Weather Radar Impact Zones as polygons
+      if (enrichments.noaa_weather_radar_impact_zones_all && Array.isArray(enrichments.noaa_weather_radar_impact_zones_all)) {
+        enrichments.noaa_weather_radar_impact_zones_all.forEach((zone: any) => {
+          if (zone.geometry && zone.geometry.rings) {
+            try {
+              const rings = zone.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                
+                const isContaining = zone.isContaining;
+                const impactZone = zone.impactzone || 'Unknown';
+                
+                // Color based on impact zone type
+                let color = '#6b7280'; // Default gray
+                if (impactZone === 'No Build Zone') {
+                  color = isContaining ? '#ef4444' : '#f87171'; // Red
+                } else if (impactZone === 'Mitigation Zone') {
+                  color = isContaining ? '#f97316' : '#fb923c'; // Orange
+                } else if (impactZone === 'Consultation Zone') {
+                  color = isContaining ? '#eab308' : '#facc15'; // Yellow
+                } else if (impactZone === 'Notification Zone') {
+                  color = isContaining ? '#22c55e' : '#4ade80'; // Green
+                }
+                
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+                
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+                
+                const distance = zone.distance_miles;
+                const siteName = zone.sitename || 'Unknown Site';
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? `🌩️ Containing ${impactZone}` : `🌩️ Nearby ${impactZone}`}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Site Name:</strong> ${siteName}</div>
+                      ${zone.siteidentifier ? `<div><strong>Site Identifier:</strong> ${zone.siteidentifier}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                if (!legendAccumulator['noaa_weather_radar_impact_zones']) {
+                  legendAccumulator['noaa_weather_radar_impact_zones'] = { icon: '🌩️', color: color, title: 'NOAA Weather Radar Impact Zones', count: 0 };
+                }
+                legendAccumulator['noaa_weather_radar_impact_zones'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing NOAA Weather Radar Impact Zones:', error);
             }
           }
         });
@@ -37832,6 +37900,40 @@ const MapView: React.FC<MapViewProps> = ({
                         )}
                       </div>
                       
+                      {/* NOAA basemaps */}
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'NOAA': !prev['NOAA'] }))}
+                          className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                          style={{ backgroundColor: '#0891b2' }}
+                        >
+                          <span>NOAA</span>
+                          <span className={`transform transition-transform ${expandedBasemapSections['NOAA'] ? 'rotate-180' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+                        {expandedBasemapSections['NOAA'] && (
+                          <div className="pb-1 bg-white">
+                            {Object.entries(BASEMAP_CONFIGS)
+                              .filter(([key]) => key.startsWith('noaa_'))
+                              .map(([key, config]) => (
+                                <button
+                                  key={key}
+                                  onClick={() => {
+                                    // Toggle: if already selected, deselect it; otherwise select it
+                                    setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {config.name}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                      
                       {/* USFS basemaps (includes FIA Forest Atlas) */}
                       <div className="border-b border-gray-200">
                         <button
@@ -37882,40 +37984,6 @@ const MapView: React.FC<MapViewProps> = ({
                           <div className="pb-1 bg-white">
                             {Object.entries(BASEMAP_CONFIGS)
                               .filter(([key]) => key.startsWith('alaska_') || (key.startsWith('fia_') && key.includes('alaska')))
-                              .map(([key, config]) => (
-                                <button
-                                  key={key}
-                                  onClick={() => {
-                                    // Toggle: if already selected, deselect it; otherwise select it
-                                    setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
-                                  }}
-                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
-                                  }`}
-                                >
-                                  {config.name}
-                                </button>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* NOAA basemaps */}
-                      <div className="border-b border-gray-200">
-                        <button
-                          onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'NOAA': !prev['NOAA'] }))}
-                          className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
-                          style={{ backgroundColor: '#0891b2' }}
-                        >
-                          <span>NOAA</span>
-                          <span className={`transform transition-transform ${expandedBasemapSections['NOAA'] ? 'rotate-180' : ''}`}>
-                            ▼
-                          </span>
-                        </button>
-                        {expandedBasemapSections['NOAA'] && (
-                          <div className="pb-1 bg-white">
-                            {Object.entries(BASEMAP_CONFIGS)
-                              .filter(([key]) => key.startsWith('noaa_'))
                               .map(([key, config]) => (
                                 <button
                                   key={key}
