@@ -925,7 +925,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
               onClick={onViewMap}
               className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <Map className="w-4 h-4" />
+              <MapPin className="w-4 h-4" />
               <span>Map</span>
             </button>
             <button

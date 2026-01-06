@@ -151,6 +151,13 @@ import {
   getNOAACriticalFisheriesHabitatData,
 } from '../adapters/noaaCriticalFisheriesHabitat';
 import {
+  getNOAAWestCoastEFHHAPC,
+  getNOAAWestCoastEFHEFHA,
+  getNOAAWestCoastEFHSalmon,
+  getNOAAWestCoastEFHHMSCPSGroundfish,
+} from '../adapters/noaaWestCoastEFH';
+import * as NOAAESASpeciesRanges from '../adapters/noaaESASpeciesRanges';
+import {
   getNOAOWaterTemperatureJanuary,
   getNOAOWaterTemperatureFebruary,
   getNOAOWaterTemperatureMarch,
@@ -2875,6 +2882,131 @@ export class EnrichmentService {
       // NOAA Critical Fisheries Habitat
       case 'noaa_critical_fisheries_habitat':
         return await this.getNOAACriticalFisheriesHabitat(lat, lon, radius);
+      
+      // NOAA West Coast Essential Fish Habitat (EFH) Layers
+      case 'noaa_west_coast_efh_hapc':
+        return await this.getNOAAWestCoastEFHHAPC(lat, lon, radius);
+      case 'noaa_west_coast_efh_efha':
+        return await this.getNOAAWestCoastEFHEFHA(lat, lon, radius);
+      case 'noaa_west_coast_efh_salmon':
+        return await this.getNOAAWestCoastEFHSalmon(lat, lon, radius);
+      case 'noaa_west_coast_efh_hms_cps_gfish':
+        return await this.getNOAAWestCoastEFHHMSCPSGroundfish(lat, lon, radius);
+      
+      // NOAA ESA Species Ranges Layers - All handled dynamically
+      case 'noaa_esa_species_ranges_salmon':
+      case 'noaa_esa_species_ranges_salmon_chum_hood_canal_summer_run_esu':
+      case 'noaa_esa_species_ranges_salmon_chum_hood_canal_summer_run_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chum_hood_canal_summer_run_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chum_hood_canal_summer_run_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_chum_columbia_river_esu':
+      case 'noaa_esa_species_ranges_salmon_chum_columbia_river_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chum_columbia_river_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chum_columbia_river_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_coho_lower_columbia_river_esu':
+      case 'noaa_esa_species_ranges_salmon_coho_lower_columbia_river_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_coho_lower_columbia_river_esu_2':
+      case 'noaa_esa_species_ranges_salmon_coho_lower_columbia_river_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_coho_oregon_coast_esu':
+      case 'noaa_esa_species_ranges_salmon_coho_oregon_coast_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_coho_oregon_coast_esu_2':
+      case 'noaa_esa_species_ranges_salmon_coho_oregon_coast_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_coho_southern_oregon_northern_california_coast_esu':
+      case 'noaa_esa_species_ranges_salmon_coho_southern_oregon_northern_california_coast_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_coho_southern_oregon_northern_california_coast_esu_2':
+      case 'noaa_esa_species_ranges_salmon_coho_central_california_coast_esu':
+      case 'noaa_esa_species_ranges_salmon_coho_central_california_coast_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_coho_central_california_coast_esu_2':
+      case 'noaa_esa_species_ranges_salmon_sockeye_ozette_lake_esu':
+      case 'noaa_esa_species_ranges_salmon_sockeye_ozette_lake_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_sockeye_ozette_lake_esu_2':
+      case 'noaa_esa_species_ranges_salmon_sockeye_ozette_lake_esu_population':
+      case 'noaa_esa_species_ranges_salmon_sockeye_snake_river_esu':
+      case 'noaa_esa_species_ranges_salmon_sockeye_snake_river_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_sockeye_snake_river_esu_2':
+      case 'noaa_esa_species_ranges_salmon_sockeye_snake_river_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_chinook_puget_sound_esu':
+      case 'noaa_esa_species_ranges_salmon_chinook_puget_sound_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_puget_sound_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chinook_puget_sound_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_xn':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_xn_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_xn_2':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_xn_reintroduced_population':
+      case 'noaa_esa_species_ranges_salmon_chinook_lower_columbia_river_esu':
+      case 'noaa_esa_species_ranges_salmon_chinook_lower_columbia_river_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_lower_columbia_river_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chinook_lower_columbia_river_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_willamette_river_esu':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_willamette_river_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_willamette_river_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chinook_upper_willamette_river_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_chinook_snake_river_spring_summer_run_esu':
+      case 'noaa_esa_species_ranges_salmon_chinook_snake_river_spring_summer_run_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_snake_river_spring_summer_run_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chinook_snake_river_spring_summer_run_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_chinook_snake_river_fall_run_esu':
+      case 'noaa_esa_species_ranges_salmon_chinook_snake_river_fall_run_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_snake_river_fall_run_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chinook_snake_river_fall_run_esu_populations':
+      case 'noaa_esa_species_ranges_salmon_chinook_california_coastal_esu':
+      case 'noaa_esa_species_ranges_salmon_chinook_california_coastal_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_california_coastal_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chinook_sacramento_river_winter_run_esu':
+      case 'noaa_esa_species_ranges_salmon_chinook_sacramento_river_winter_run_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_sacramento_river_winter_run_esu_2':
+      case 'noaa_esa_species_ranges_salmon_chinook_central_valley_spring_run_esu':
+      case 'noaa_esa_species_ranges_salmon_chinook_central_valley_spring_run_esu_access_overlay':
+      case 'noaa_esa_species_ranges_salmon_chinook_central_valley_spring_run_esu_2':
+      case 'noaa_esa_species_ranges_steelhead':
+      case 'noaa_esa_species_ranges_steelhead_puget_sound_dps':
+      case 'noaa_esa_species_ranges_steelhead_puget_sound_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_puget_sound_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_puget_sound_dps_populations':
+      case 'noaa_esa_species_ranges_steelhead_upper_columbia_river_dps':
+      case 'noaa_esa_species_ranges_steelhead_upper_columbia_river_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_upper_columbia_river_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_upper_columbia_river_dps_populations':
+      case 'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps':
+      case 'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_populations':
+      case 'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_xn':
+      case 'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_xn_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_xn_2':
+      case 'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_xn_reintroduced_population':
+      case 'noaa_esa_species_ranges_steelhead_lower_columbia_river_dps':
+      case 'noaa_esa_species_ranges_steelhead_lower_columbia_river_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_lower_columbia_river_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_lower_columbia_river_dps_populations':
+      case 'noaa_esa_species_ranges_steelhead_snake_river_basin_dps':
+      case 'noaa_esa_species_ranges_steelhead_snake_river_basin_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_snake_river_basin_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_snake_river_basin_dps_populations':
+      case 'noaa_esa_species_ranges_steelhead_upper_willamette_river_dps':
+      case 'noaa_esa_species_ranges_steelhead_upper_willamette_river_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_upper_willamette_river_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_upper_willamette_river_dps_populations':
+      case 'noaa_esa_species_ranges_steelhead_northern_california_dps':
+      case 'noaa_esa_species_ranges_steelhead_northern_california_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_northern_california_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_central_california_coast_dps':
+      case 'noaa_esa_species_ranges_steelhead_central_california_coast_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_central_california_coast_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_california_central_valley_dps':
+      case 'noaa_esa_species_ranges_steelhead_california_central_valley_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_california_central_valley_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_south_central_california_coast_dps':
+      case 'noaa_esa_species_ranges_steelhead_south_central_california_coast_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_south_central_california_coast_dps_2':
+      case 'noaa_esa_species_ranges_steelhead_southern_california_dps':
+      case 'noaa_esa_species_ranges_steelhead_southern_california_dps_access_overlay':
+      case 'noaa_esa_species_ranges_steelhead_southern_california_dps_2':
+        return await this.getNOAAESASpeciesRanges(enrichmentId, lat, lon, radius);
       
       // NOAA World Ocean Atlas Water Temperature Layers
       case 'noaa_water_temp_january':
@@ -27847,6 +27979,325 @@ out center;`;
         'noaa_critical_fisheries_habitat_count': 0,
         'noaa_critical_fisheries_habitat_summary': 'Error fetching NOAA Critical Fisheries Habitat data',
         'noaa_critical_fisheries_habitat_all': []
+      };
+    }
+  }
+
+  private async getNOAAWestCoastEFHHAPC(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐟 Fetching NOAA West Coast EFH HAPC data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAAWestCoastEFHHAPC(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['noaa_west_coast_efh_hapc_count'] = 0;
+        result['noaa_west_coast_efh_hapc_summary'] = 'No HAPC features found';
+        result['noaa_west_coast_efh_hapc_all'] = [];
+      } else {
+        result['noaa_west_coast_efh_hapc_count'] = features.length;
+        result['noaa_west_coast_efh_hapc_summary'] = `Found ${features.length} HAPC feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['noaa_west_coast_efh_hapc_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA West Coast EFH HAPC data:`, error);
+      return {
+        'noaa_west_coast_efh_hapc_count': 0,
+        'noaa_west_coast_efh_hapc_summary': 'Error fetching NOAA West Coast EFH HAPC data',
+        'noaa_west_coast_efh_hapc_all': []
+      };
+    }
+  }
+
+  private async getNOAAWestCoastEFHEFHA(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐟 Fetching NOAA West Coast EFH EFHA data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAAWestCoastEFHEFHA(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['noaa_west_coast_efh_efha_count'] = 0;
+        result['noaa_west_coast_efh_efha_summary'] = 'No EFHA features found';
+        result['noaa_west_coast_efh_efha_all'] = [];
+      } else {
+        result['noaa_west_coast_efh_efha_count'] = features.length;
+        result['noaa_west_coast_efh_efha_summary'] = `Found ${features.length} EFHA feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['noaa_west_coast_efh_efha_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA West Coast EFH EFHA data:`, error);
+      return {
+        'noaa_west_coast_efh_efha_count': 0,
+        'noaa_west_coast_efh_efha_summary': 'Error fetching NOAA West Coast EFH EFHA data',
+        'noaa_west_coast_efh_efha_all': []
+      };
+    }
+  }
+
+  private async getNOAAWestCoastEFHSalmon(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐟 Fetching NOAA West Coast EFH Salmon data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAAWestCoastEFHSalmon(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['noaa_west_coast_efh_salmon_count'] = 0;
+        result['noaa_west_coast_efh_salmon_summary'] = 'No EFH Salmon features found';
+        result['noaa_west_coast_efh_salmon_all'] = [];
+      } else {
+        result['noaa_west_coast_efh_salmon_count'] = features.length;
+        result['noaa_west_coast_efh_salmon_summary'] = `Found ${features.length} EFH Salmon feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['noaa_west_coast_efh_salmon_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA West Coast EFH Salmon data:`, error);
+      return {
+        'noaa_west_coast_efh_salmon_count': 0,
+        'noaa_west_coast_efh_salmon_summary': 'Error fetching NOAA West Coast EFH Salmon data',
+        'noaa_west_coast_efh_salmon_all': []
+      };
+    }
+  }
+
+  private async getNOAAESASpeciesRanges(enrichmentId: string, lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    // Map enrichment ID to layer ID
+    const layerIdMap: Record<string, number> = {
+      'noaa_esa_species_ranges_salmon': 0,
+      'noaa_esa_species_ranges_salmon_chum_hood_canal_summer_run_esu': 1,
+      'noaa_esa_species_ranges_salmon_chum_hood_canal_summer_run_esu_access_overlay': 2,
+      'noaa_esa_species_ranges_salmon_chum_hood_canal_summer_run_esu_2': 3,
+      'noaa_esa_species_ranges_salmon_chum_hood_canal_summer_run_esu_populations': 4,
+      'noaa_esa_species_ranges_salmon_chum_columbia_river_esu': 5,
+      'noaa_esa_species_ranges_salmon_chum_columbia_river_esu_access_overlay': 6,
+      'noaa_esa_species_ranges_salmon_chum_columbia_river_esu_2': 7,
+      'noaa_esa_species_ranges_salmon_chum_columbia_river_esu_populations': 8,
+      'noaa_esa_species_ranges_salmon_coho_lower_columbia_river_esu': 9,
+      'noaa_esa_species_ranges_salmon_coho_lower_columbia_river_esu_access_overlay': 10,
+      'noaa_esa_species_ranges_salmon_coho_lower_columbia_river_esu_2': 11,
+      'noaa_esa_species_ranges_salmon_coho_lower_columbia_river_esu_populations': 12,
+      'noaa_esa_species_ranges_salmon_coho_oregon_coast_esu': 13,
+      'noaa_esa_species_ranges_salmon_coho_oregon_coast_esu_access_overlay': 14,
+      'noaa_esa_species_ranges_salmon_coho_oregon_coast_esu_2': 15,
+      'noaa_esa_species_ranges_salmon_coho_oregon_coast_esu_populations': 16,
+      'noaa_esa_species_ranges_salmon_coho_southern_oregon_northern_california_coast_esu': 82,
+      'noaa_esa_species_ranges_salmon_coho_southern_oregon_northern_california_coast_esu_access_overlay': 83,
+      'noaa_esa_species_ranges_salmon_coho_southern_oregon_northern_california_coast_esu_2': 84,
+      'noaa_esa_species_ranges_salmon_coho_central_california_coast_esu': 85,
+      'noaa_esa_species_ranges_salmon_coho_central_california_coast_esu_access_overlay': 86,
+      'noaa_esa_species_ranges_salmon_coho_central_california_coast_esu_2': 87,
+      'noaa_esa_species_ranges_salmon_sockeye_ozette_lake_esu': 17,
+      'noaa_esa_species_ranges_salmon_sockeye_ozette_lake_esu_access_overlay': 18,
+      'noaa_esa_species_ranges_salmon_sockeye_ozette_lake_esu_2': 19,
+      'noaa_esa_species_ranges_salmon_sockeye_ozette_lake_esu_population': 20,
+      'noaa_esa_species_ranges_salmon_sockeye_snake_river_esu': 21,
+      'noaa_esa_species_ranges_salmon_sockeye_snake_river_esu_access_overlay': 22,
+      'noaa_esa_species_ranges_salmon_sockeye_snake_river_esu_2': 23,
+      'noaa_esa_species_ranges_salmon_sockeye_snake_river_esu_populations': 24,
+      'noaa_esa_species_ranges_salmon_chinook_puget_sound_esu': 25,
+      'noaa_esa_species_ranges_salmon_chinook_puget_sound_esu_access_overlay': 26,
+      'noaa_esa_species_ranges_salmon_chinook_puget_sound_esu_2': 27,
+      'noaa_esa_species_ranges_salmon_chinook_puget_sound_esu_populations': 28,
+      'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu': 29,
+      'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_access_overlay': 30,
+      'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_2': 31,
+      'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_populations': 32,
+      'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_xn': 33,
+      'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_xn_access_overlay': 34,
+      'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_xn_2': 35,
+      'noaa_esa_species_ranges_salmon_chinook_upper_columbia_river_spring_run_esu_xn_reintroduced_population': 36,
+      'noaa_esa_species_ranges_salmon_chinook_lower_columbia_river_esu': 37,
+      'noaa_esa_species_ranges_salmon_chinook_lower_columbia_river_esu_access_overlay': 38,
+      'noaa_esa_species_ranges_salmon_chinook_lower_columbia_river_esu_2': 39,
+      'noaa_esa_species_ranges_salmon_chinook_lower_columbia_river_esu_populations': 40,
+      'noaa_esa_species_ranges_salmon_chinook_upper_willamette_river_esu': 41,
+      'noaa_esa_species_ranges_salmon_chinook_upper_willamette_river_esu_access_overlay': 42,
+      'noaa_esa_species_ranges_salmon_chinook_upper_willamette_river_esu_2': 43,
+      'noaa_esa_species_ranges_salmon_chinook_upper_willamette_river_esu_populations': 44,
+      'noaa_esa_species_ranges_salmon_chinook_snake_river_spring_summer_run_esu': 45,
+      'noaa_esa_species_ranges_salmon_chinook_snake_river_spring_summer_run_esu_access_overlay': 46,
+      'noaa_esa_species_ranges_salmon_chinook_snake_river_spring_summer_run_esu_2': 47,
+      'noaa_esa_species_ranges_salmon_chinook_snake_river_spring_summer_run_esu_populations': 48,
+      'noaa_esa_species_ranges_salmon_chinook_snake_river_fall_run_esu': 49,
+      'noaa_esa_species_ranges_salmon_chinook_snake_river_fall_run_esu_access_overlay': 50,
+      'noaa_esa_species_ranges_salmon_chinook_snake_river_fall_run_esu_2': 51,
+      'noaa_esa_species_ranges_salmon_chinook_snake_river_fall_run_esu_populations': 52,
+      'noaa_esa_species_ranges_salmon_chinook_california_coastal_esu': 88,
+      'noaa_esa_species_ranges_salmon_chinook_california_coastal_esu_access_overlay': 89,
+      'noaa_esa_species_ranges_salmon_chinook_california_coastal_esu_2': 90,
+      'noaa_esa_species_ranges_salmon_chinook_sacramento_river_winter_run_esu': 91,
+      'noaa_esa_species_ranges_salmon_chinook_sacramento_river_winter_run_esu_access_overlay': 92,
+      'noaa_esa_species_ranges_salmon_chinook_sacramento_river_winter_run_esu_2': 93,
+      'noaa_esa_species_ranges_salmon_chinook_central_valley_spring_run_esu': 94,
+      'noaa_esa_species_ranges_salmon_chinook_central_valley_spring_run_esu_access_overlay': 95,
+      'noaa_esa_species_ranges_salmon_chinook_central_valley_spring_run_esu_2': 96,
+      'noaa_esa_species_ranges_steelhead': 53,
+      'noaa_esa_species_ranges_steelhead_puget_sound_dps': 54,
+      'noaa_esa_species_ranges_steelhead_puget_sound_dps_access_overlay': 55,
+      'noaa_esa_species_ranges_steelhead_puget_sound_dps_2': 56,
+      'noaa_esa_species_ranges_steelhead_puget_sound_dps_populations': 57,
+      'noaa_esa_species_ranges_steelhead_upper_columbia_river_dps': 58,
+      'noaa_esa_species_ranges_steelhead_upper_columbia_river_dps_access_overlay': 59,
+      'noaa_esa_species_ranges_steelhead_upper_columbia_river_dps_2': 60,
+      'noaa_esa_species_ranges_steelhead_upper_columbia_river_dps_populations': 61,
+      'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps': 62,
+      'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_access_overlay': 63,
+      'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_2': 64,
+      'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_populations': 65,
+      'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_xn': 66,
+      'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_xn_access_overlay': 67,
+      'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_xn_2': 68,
+      'noaa_esa_species_ranges_steelhead_middle_columbia_river_dps_xn_reintroduced_population': 69,
+      'noaa_esa_species_ranges_steelhead_lower_columbia_river_dps': 70,
+      'noaa_esa_species_ranges_steelhead_lower_columbia_river_dps_access_overlay': 71,
+      'noaa_esa_species_ranges_steelhead_lower_columbia_river_dps_2': 72,
+      'noaa_esa_species_ranges_steelhead_lower_columbia_river_dps_populations': 73,
+      'noaa_esa_species_ranges_steelhead_snake_river_basin_dps': 74,
+      'noaa_esa_species_ranges_steelhead_snake_river_basin_dps_access_overlay': 75,
+      'noaa_esa_species_ranges_steelhead_snake_river_basin_dps_2': 76,
+      'noaa_esa_species_ranges_steelhead_snake_river_basin_dps_populations': 77,
+      'noaa_esa_species_ranges_steelhead_upper_willamette_river_dps': 78,
+      'noaa_esa_species_ranges_steelhead_upper_willamette_river_dps_access_overlay': 79,
+      'noaa_esa_species_ranges_steelhead_upper_willamette_river_dps_2': 80,
+      'noaa_esa_species_ranges_steelhead_upper_willamette_river_dps_populations': 81,
+      'noaa_esa_species_ranges_steelhead_northern_california_dps': 97,
+      'noaa_esa_species_ranges_steelhead_northern_california_dps_access_overlay': 98,
+      'noaa_esa_species_ranges_steelhead_northern_california_dps_2': 99,
+      'noaa_esa_species_ranges_steelhead_central_california_coast_dps': 100,
+      'noaa_esa_species_ranges_steelhead_central_california_coast_dps_access_overlay': 101,
+      'noaa_esa_species_ranges_steelhead_central_california_coast_dps_2': 102,
+      'noaa_esa_species_ranges_steelhead_california_central_valley_dps': 103,
+      'noaa_esa_species_ranges_steelhead_california_central_valley_dps_access_overlay': 104,
+      'noaa_esa_species_ranges_steelhead_california_central_valley_dps_2': 105,
+      'noaa_esa_species_ranges_steelhead_south_central_california_coast_dps': 106,
+      'noaa_esa_species_ranges_steelhead_south_central_california_coast_dps_access_overlay': 107,
+      'noaa_esa_species_ranges_steelhead_south_central_california_coast_dps_2': 108,
+      'noaa_esa_species_ranges_steelhead_southern_california_dps': 109,
+      'noaa_esa_species_ranges_steelhead_southern_california_dps_access_overlay': 110,
+      'noaa_esa_species_ranges_steelhead_southern_california_dps_2': 111,
+    };
+
+    const layerId = layerIdMap[enrichmentId];
+    if (layerId === undefined) {
+      console.error(`❌ Unknown NOAA ESA Species Ranges enrichment ID: ${enrichmentId}`);
+      return {
+        [`${enrichmentId}_count`]: 0,
+        [`${enrichmentId}_summary`]: 'Unknown layer',
+        [`${enrichmentId}_all`]: []
+      };
+    }
+
+    try {
+      console.log(`🐟 Fetching NOAA ESA Species Ranges layer ${layerId} data for [${lat}, ${lon}]`);
+      
+      const functionName = `getNOAAESASpeciesRangesLayer${layerId}`;
+      const queryFunction = (NOAAESASpeciesRanges as any)[functionName];
+      
+      if (!queryFunction) {
+        throw new Error(`Function ${functionName} not found`);
+      }
+      
+      const features = await queryFunction(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter((f: any) => f.isContaining).length;
+      const layerName = features.length > 0 ? features[0].layerName : `Layer ${layerId}`;
+      
+      if (features.length === 0) {
+        result[`${enrichmentId}_count`] = 0;
+        result[`${enrichmentId}_summary`] = `No ${layerName} features found`;
+        result[`${enrichmentId}_all`] = [];
+      } else {
+        result[`${enrichmentId}_count`] = features.length;
+        result[`${enrichmentId}_summary`] = `Found ${features.length} ${layerName} feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result[`${enrichmentId}_all`] = features.map((feature: any) => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA ESA Species Ranges layer ${layerId} data:`, error);
+      return {
+        [`${enrichmentId}_count`]: 0,
+        [`${enrichmentId}_summary`]: `Error fetching NOAA ESA Species Ranges layer ${layerId} data`,
+        [`${enrichmentId}_all`]: []
+      };
+    }
+  }
+
+  private async getNOAAWestCoastEFHHMSCPSGroundfish(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐟 Fetching NOAA West Coast EFH HMS/CPS/Groundfish data for [${lat}, ${lon}]`);
+      
+      const features = await getNOAAWestCoastEFHHMSCPSGroundfish(lat, lon, radius || 100);
+      
+      const result: Record<string, any> = {};
+      const containingCount = features.filter(f => f.isContaining).length;
+      
+      if (features.length === 0) {
+        result['noaa_west_coast_efh_hms_cps_gfish_count'] = 0;
+        result['noaa_west_coast_efh_hms_cps_gfish_summary'] = 'No EFH HMS/CPS/Groundfish features found';
+        result['noaa_west_coast_efh_hms_cps_gfish_all'] = [];
+      } else {
+        result['noaa_west_coast_efh_hms_cps_gfish_count'] = features.length;
+        result['noaa_west_coast_efh_hms_cps_gfish_summary'] = `Found ${features.length} EFH HMS/CPS/Groundfish feature(s)${containingCount > 0 ? ` (${containingCount} containing point)` : ''}`;
+        result['noaa_west_coast_efh_hms_cps_gfish_all'] = features.map(feature => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: feature.geometry,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerName: feature.layerName,
+        }));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA West Coast EFH HMS/CPS/Groundfish data:`, error);
+      return {
+        'noaa_west_coast_efh_hms_cps_gfish_count': 0,
+        'noaa_west_coast_efh_hms_cps_gfish_summary': 'Error fetching NOAA West Coast EFH HMS/CPS/Groundfish data',
+        'noaa_west_coast_efh_hms_cps_gfish_all': []
       };
     }
   }

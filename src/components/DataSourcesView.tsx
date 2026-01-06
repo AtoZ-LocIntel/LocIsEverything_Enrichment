@@ -2162,6 +2162,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://maps.fisheries.noaa.gov/server/rest/services/All_Critical_Habitat/MapServer/229"
         },
         {
+          name: "NOAA West Coast Essential Fish Habitat (EFH)",
+          description: "NOAA West Coast Essential Fish Habitat - HAPC, EFHA, EFH Salmon, and EFH HMS/CPS/Groundfish polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States (West Coast)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps.fisheries.noaa.gov/server/rest/services/WCR/EFH_mapservice/MapServer"
+        },
+        {
+          name: "NOAA ESA Species Ranges - West Coast",
+          description: "NOAA Endangered Species Act (ESA) Species Ranges - West Coast salmon and steelhead ESUs/DPSs (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States (West Coast)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps.fisheries.noaa.gov/server/rest/services/WCR/ESA_Species_Ranges/MapServer"
+        },
+        {
           name: "NOAA World Ocean Atlas Water Temperature",
           description: "NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours for each month (January-December) - proximity queries up to 100 miles",
           coverage: "Global (ocean waters)",

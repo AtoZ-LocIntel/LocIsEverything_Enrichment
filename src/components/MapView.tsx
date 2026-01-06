@@ -6800,6 +6800,144 @@ const MapView: React.FC<MapViewProps> = ({
         });
       }
 
+      // Draw NOAA West Coast EFH as polygons
+      const noaaWestCoastEFHLayers = [
+        { key: 'noaa_west_coast_efh_hapc', name: 'HAPC', color: '#10b981' },
+        { key: 'noaa_west_coast_efh_efha', name: 'EFHA', color: '#06b6d4' },
+        { key: 'noaa_west_coast_efh_salmon', name: 'EFH Salmon', color: '#3b82f6' },
+        { key: 'noaa_west_coast_efh_hms_cps_gfish', name: 'EFH HMS/CPS/Groundfish', color: '#8b5cf6' }
+      ];
+
+      noaaWestCoastEFHLayers.forEach(layer => {
+        if (enrichments[`${layer.key}_all`] && Array.isArray(enrichments[`${layer.key}_all`])) {
+          enrichments[`${layer.key}_all`].forEach((habitat: any) => {
+            if (habitat.geometry && habitat.geometry.rings) {
+              try {
+                const rings = habitat.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  
+                  const isContaining = habitat.isContaining;
+                  const color = isContaining ? layer.color : layer.color;
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const distance = habitat.distance_miles;
+                  const displayLayerName = habitat.layerName || layer.name;
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${isContaining ? `🐟 Containing ${displayLayerName}` : `🐟 Nearby ${displayLayerName}`}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add attributes to popup
+                  const excludeFields = ['geometry', 'distance_miles', 'objectid', 'OBJECTID', 'isContaining', 'layerId', 'layerName'];
+                  Object.entries(habitat).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      popupContent += `<div><strong>${displayKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `</div></div>`;
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  
+                  if (!legendAccumulator[layer.key]) {
+                    legendAccumulator[layer.key] = { icon: '🐟', color: layer.color, title: `NOAA West Coast EFH - ${layer.name}`, count: 0 };
+                  }
+                  legendAccumulator[layer.key].count += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing NOAA West Coast EFH ${layer.name}:`, error);
+              }
+            }
+          });
+        }
+      });
+
+      // Draw NOAA ESA Species Ranges as polygons
+      // Handle all layers dynamically by checking for the pattern
+      Object.keys(enrichments).forEach(key => {
+        if (key.startsWith('noaa_esa_species_ranges_') && key.endsWith('_all') && Array.isArray(enrichments[key])) {
+          const layerKey = key.replace('_all', '');
+          enrichments[key].forEach((habitat: any) => {
+            if (habitat.geometry && habitat.geometry.rings) {
+              try {
+                const rings = habitat.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  
+                  const isContaining = habitat.isContaining;
+                  // Use a consistent color for all ESA layers (blue-green)
+                  const color = isContaining ? '#10b981' : '#06b6d4';
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const distance = habitat.distance_miles;
+                  const layerName = habitat.layerName || layerKey.replace('noaa_esa_species_ranges_', '').replace(/_/g, ' ');
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${isContaining ? `🐟 Containing ${layerName}` : `🐟 Nearby ${layerName}`}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add attributes to popup
+                  const excludeFields = ['geometry', 'distance_miles', 'objectid', 'OBJECTID', 'isContaining', 'layerId', 'layerName'];
+                  Object.entries(habitat).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      popupContent += `<div><strong>${displayKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `</div></div>`;
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  
+                  if (!legendAccumulator[layerKey]) {
+                    legendAccumulator[layerKey] = { icon: '🐟', color: color, title: `NOAA ESA - ${layerName}`, count: 0 };
+                  }
+                  legendAccumulator[layerKey].count += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing NOAA ESA Species Ranges ${layerKey}:`, error);
+              }
+            }
+          });
+        }
+      });
+
       // Draw NOAA Water Temperature Contours as polylines
       const noaaWaterTempMonths = [
         { key: 'noaa_water_temp_january', name: 'January', color: '#0ea5e9' },
